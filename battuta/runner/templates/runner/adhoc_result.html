@@ -1,0 +1,48 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block header %}{% endblock %}
+{% block content %}
+    <script src="{% static 'runner/adhoc_result.js' %}"></script>
+    <h4>Ad-Hoc command results</h4>
+    <input id="task_id" type="hidden" value="{{ task.id }}">
+    <hr>
+    <div class="row">
+        <div class="col-md-1"><h5>Status:</h5></div>
+        <div class="col-md-1"><h5><strong id="task_status">{{ task.status }}</strong></h5></div>
+        <div class="col-md-1" style="margin: 8px 0">
+            <span id="waiting_icon"><img src="{% static 'images/waiting-small.gif' %}"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-1">Pattern:</div>
+        <div class="col-md-7"><strong>{{ task.pattern }}</strong></div>
+        <div class="col-md-1" style="text-align: right">User:</div>
+        <div class="col-md-3"><strong>{{ task.user }}</strong></div>
+    </div>
+    <div class="row">
+        <div class="col-md-1">Module:</div>
+        <div class="col-md-7"><strong>{{ task.module }}</strong></div>
+        <div class="col-md-1" style="text-align: right">Created:</div>
+        <div class="col-md-3"><strong>{{ task.created_on }}</strong></div>
+    </div>
+    <div class="row">
+        <div class="col-md-1">Arguments:</div>
+        <div class="col-md-11"><strong>{{ task.arguments }}</strong></div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <a name="result_table"></a>
+            <table id="result_table" class="result_table table table-condensed table-hover table-striped">
+                <thead>
+                <tr>
+                    <th class="col-md-2">host</th>
+                    <th class="col-md-2">status</th>
+                    <th class="col-md-7">message</th>
+                    <th class="col-md-1"></th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+{% endblock %}

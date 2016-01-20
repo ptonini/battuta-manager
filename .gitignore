@@ -1,0 +1,6 @@
+.idea
+.vagrant
+ans_data/uploads/*
+migrations
+db.sqlite3
+

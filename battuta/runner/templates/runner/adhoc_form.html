@@ -1,0 +1,107 @@
+{% load staticfiles %}
+<script src="{% static 'runner/adhoc_form.js' %}"></script>
+<input type="hidden" id="app" value="{{ app }}">
+<input type="hidden" id="has_rsa" value="{% if user.userdata.rsa_key %}true{% else %}false{% endif %}">
+<h5 id="adhoc_form_label">Run command</h5>
+<form id="adhoc_form" method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-2">
+            <input type="hidden" id="adhoc_id" value="{{ adhoc_id }}">
+            <div class="form-group">
+                <label for="module" class="sr-only requiredField">Module</label>
+                <select class="select form-control input-sm" id="module">
+                    <option value="" disabled selected hidden>Select module</option>
+                </select>
+            </div>
+        </div>
+        {% if app == 'runner' %}
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input class="form-control input-sm" id="pattern" placeholder="pattern" type="text">
+                        <span class="input-group-btn">
+                            <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
+                                <span class="glyphicon glyphicon-edit"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div id="optional_fields"></div>
+        </div>
+        <div class="col-md-1">
+            <div id="sudo_div" class="hidden text-right">
+                <button id="sudo" title="Run with sudo" class="btn btn-default btn-sm">sudo</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            <button id="run_command" class="btn btn-default btn-xs">Run</button>
+            <button id="save_command" class="btn btn-default btn-xs">Save</button>
+            <button id="cancel_edit" class="btn btn-default btn-xs" style="display: none">Cancel</button>
+            <small id="module_reference" style="float: right; margin-top: 7px; color: #777; display: none">
+                module reference
+            </small>
+        </div>
+    </div>
+</form>
+<hr>
+<h5>Saved commands</h5>
+<div class="row">
+    <div class="col-md-12">
+        <table id="adhoc_table" class="table table-condensed table-hover table-striped">
+            <thead>
+            <tr>
+                <th class="col-md-3">pattern</th>
+                <th class="col-md-1">module</th>
+                <th class="col-md-6">arguments</th>
+                <th class="col-md-1">sudo</th>
+                <th class="col-md-1">&nbsp;</th>
+            </tr>
+            </thead>
+        </table>
+    </div>-
+</div>
+<hr>
+<div class="hidden">
+    <div id="pattern_dialog" class="text-center">
+        <h5>Pattern builder</h5>
+        <hr>
+            <div class="row text-left pattern_editor_row">
+                <div class="col-md-4 text-right">OR</div>
+                <div class="col-md-3">
+                    <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
+                </div>
+                <div class="col-md-5">
+                    <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+                </div>
+            </div>
+            <div class="row text-left pattern_editor_row">
+                <div class="col-md-4 text-right">AND</div>
+                <div class="col-md-3">
+                    <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
+                </div>
+                <div class="col-md-5">
+                    <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+                </div>
+            </div>
+            <div class="row text-left pattern_editor_row">
+                <div class="col-md-4 text-right">NOT</div>
+                <div class="col-md-3">
+                    <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button
+                    ></div>
+                <div class="col-md-5">
+                    <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+                </div>
+            </div>
+        <br>
+        <pre id="pattern_container" class="text-left hidden"></pre>
+    </div>
+</div>
+
+

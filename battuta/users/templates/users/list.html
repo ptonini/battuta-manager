@@ -1,0 +1,19 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block content %}
+    <script src="{% static 'users/user_list.js' %}"></script>
+    <h3>User list</h3>
+    <hr>
+    <table id="user_table" class="result_table table table-condensed table-hover table-striped">
+        <thead>
+        <tr>
+            <th class="col-md-2">user</th>
+            <th class="col-md-2">ansible user</th>
+            <th class="col-md-2">date created</th>
+            <th class="col-md-2">last logon</th>
+            <th class="col-md-1">superuser</th>
+            <th class="col-md-1"></th>
+        </tr>
+        </thead>
+        </table>
+{% endblock %}

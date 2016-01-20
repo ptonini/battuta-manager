@@ -1,0 +1,7 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block content %}
+    <h3>Ad-Hoc commands</h3>
+    <hr>
+    {% include 'runner/adhoc_form.html' with app='runner'%}
+{% endblock %}

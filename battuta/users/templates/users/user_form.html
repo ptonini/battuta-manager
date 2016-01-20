@@ -1,0 +1,115 @@
+{% load staticfiles %}
+<script src="{% static 'users/user_form.js' %}"></script>
+<form id="user_form" method="post">
+    <input id="page" type="hidden" value="{{ page }}">
+    <input id="user_id" type="hidden" value="{{ view_user.id }}">
+    <input id="db_timezone" type="hidden" value="{{ view_user.userdata.timezone }}">
+    <div class="row">
+        {% if page == 'new' %}
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="username" class="requiredField">Username</label>
+                    <input class="textinput textInput form-control input-sm" id="username" type="text" value="">
+                </div>
+            </div>
+        {% endif %}
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="ansible_user" class="requiredField">Ansible user</label>
+                <input class="textinput textInput form-control input-sm" id="ansible_user"
+                       type="text" value="{{ view_user.userdata.ansible_username }}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="first_name" class="requiredField">First name</label>
+                <input class="textinput textInput form-control input-sm" id="first_name"
+                       type="text" value="{{ view_user.first_name }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="last_name" class="requiredField">Last name</label>
+                <input class="textinput textInput form-control input-sm" id="last_name"
+                       type="text" value="{{ view_user.last_name }}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="email" class="requiredField">E-mail</label>
+                <input class="textinput textInput form-control input-sm" id="email"
+                       type="text" value="{{ view_user.email }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="timezone" class="requiredField">Timezone</label>
+                <select class="select form-control input-sm" id="timezone"></select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="rsa_key" class="requiredField">RSA Key</label>
+                <textarea class="textarea form-control input-sm"
+                          id="rsa_key">{{ view_user.userdata.rsa_key }}</textarea>
+            </div>
+        </div>
+    </div>
+    {% if page == 'new' %}
+        <div class="row">
+            <div class="col-md-6">
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="password1" class="requiredField">New password</label>
+                    <input class="textinput textInput form-control input-sm" id="password1" type="password">
+                </div>
+                <div class="form-group">
+                    <label for="password2" class="requiredField">Retype new password</label>
+                    <input class="textinput textInput form-control input-sm" id="password2" type="password">
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <button type="submit" class="btn btn-default btn-xs">Save</button>
+</form>
+{% if page == 'view' and user.id == view_user.id %}
+    <div class="row">
+        <div class="col-md-6">
+            <hr>
+        </div>
+    </div>
+    <form id="password_form" method="POST">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="oldpass" class="requiredField">Current password</label>
+                    <input class="textinput textInput form-control input-sm" id="oldpass" type="password">
+                </div>
+                <div class="form-group">
+                    <label for="password1" class="requiredField">New password</label>
+                    <input class="textinput textInput form-control input-sm" id="password1" type="password">
+                </div>
+                <div class="form-group">
+                    <label for="password2" class="requiredField">Retype new password</label>
+                    <input class="textinput textInput form-control input-sm" id="password2" type="password">
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-default btn-xs">Change password</button>
+    </form>
+{% endif %}
+<div class="row">
+    <div class="col-md-6">
+        <hr>
+    </div>
+</div>

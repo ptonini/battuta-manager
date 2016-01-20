@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{% csrf_token %}
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'Bootstrap-3.3.5/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'DataTables-1.10.10/css/dataTables.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'jQueryUI-1.11.4/jquery-ui.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'jQuery-JSONView/jquery.jsonview.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-fileinput-4.2.7/css/fileinput.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'jQuery-DynamicList-1.0.0/jquery.dynamiclist.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/battuta.css' %}"/>
+    <script src="{% static 'jQuery-2.1.4/jquery-2.1.4.min.js' %}"></script>
+    <script src="{% static 'Bootstrap-3.3.5/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'jQueryUI-1.11.4/jquery-ui.js' %}"></script>
+    <script src="{% static 'DataTables-1.10.10/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'DataTables-1.10.10/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'jQuery-JSONView/jquery.jsonview.js' %}"></script>
+    <script src="{% static 'timezones-2.8.3/timezones.full.min.js' %}"></script>
+    <script src="{% static 'jQuery-actual-1.0.17/jquery.actual.min.js' %}"></script>
+    <script src="{% static 'bootstrap-fileinput-4.2.7/js/fileinput.min.js' %}"></script>
+    <script src="{% static 'jQuery-DynamicList-1.0.0/jquery.dynamiclist.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/classes.js' %}"></script>
+    <meta charset="utf-8">
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Battuta</title>
+</head>
+<body>
+{% block header %}
+    <header class="navbar navbar-default navbar-top">
+        <div class="container">
+            <div class="navbar-header"><a class="navbar-brand" href="{% url 'main' %}">Battuta</a></div>
+            {% if user.is_authenticated %}
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="open_entity" data-type="group">Groups</a></li>
+                            <li><a class="open_entity" data-type="host">Hosts</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'runner:adhoc' %}">Ad-Hoc commands</a></li>
+                            <li><a href="{% url 'runner:adhoc_history' %}">Ad-Hoc history</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'users:view' %}?user_id={{ user.id }}">User details</a></li>
+                            {% if user.is_superuser %}
+                                <li><a href="{% url 'users:new' %}">New user</a></li>
+                                <li><a href="{% url 'users:list' %}">List users</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#" data-toggle="tooltip" title="Settings">
+                            <span class="glyphicon glyphicon-cog hidden"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <form id="search_form" action="{% url 'search' %}" class="navbar-form" method="get">
+                            <div class="input-group">
+                                <input type="text" title="searchbox" id="searchbox"
+                                       class="form-control input-sm" name="search_pattern">
+                                <span class="input-group-btn">
+                                    <button type="submit" class="btn btn-default btn-sm">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                    </button>
+                                </span>
+                            </div>
+                        </form>
+                    </li>
+                    <li>
+                        <form id="login_form" class="navbar-form">
+                            <button type="submit" id="user_login" data-toggle="tooltip"
+                                    title="logout" class="btn btn-link">
+                                <span class="glyphicon glyphicon-log-out"></span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <form id="login_form" class="navbar-form">
+                            <div id="div_id_username" class="form-group">
+                                <label for="id_username" class="sr-only requiredField">Username</label>
+                                <input class="textinput textInput form-control input-sm"
+                                       id="id_username" placeholder="Username" type="text">
+                            </div>
+                            <div id="div_id_password" class="form-group">
+                                <label for="id_password" class="sr-only requiredField">Password</label>
+                                <input class="textinput textInput form-control input-sm"
+                                       id="id_password" placeholder="Password" type="password">
+                            </div>
+                            <button type="submit" id="user_login" data-toggle="tooltip"
+                                    title="login" class="btn btn-link">
+                                <span class="glyphicon glyphicon-log-in"></span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+    </header>
+{% endblock %}
+<section class="container">
+    <div class="row">
+        <div class="col-md-12 main">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</section>
+<footer class="footer">
+    <div class="container">
+        {% block footer %}{% endblock %}
+    </div>
+</footer>
+<span style="visibility: hidden" id="get_length"></span>
+<div class="hidden">
+    <div id="delete_dialog" class="text-center"><strong>This action cannot be undone</strong></div>
+    <div id="alert_dialog" class="text-center"></div>
+    <div id="entity_dialog" class="text-center">
+        <h5 id="entity_dialog_header"></h5>
+        <hr>
+        <form id="entity_form" method="post">
+            <div id="div_id_name" class="form-group">
+                <label for="id_name" class="sr-only requiredField">Name</label>
+                <input class="textinput textInput form-control input-sm" id="id_name"
+                       placeholder="Name" type="text" value="{{ entity.name }}">
+            </div>
+            <div id="div_id_description" class="form-group">
+                <label for="id_description" class="sr-only">Description</label>
+                <textarea class="textarea form-control input-sm" id="id_description"
+                          placeholder="Description">{{ entity.description }}</textarea>
+            </div>
+        </form>
+    </div>
+    <div id="select_dialog"></div>
+    <div id="json_dialog"><pre id="json_box"></pre></div>
+    <div id="password_dialog" class="text-center">
+        <h5>Please enter your password</h5>
+        <input class="form-control input-sm" id="ansible_pass" placeholder="Password" type="password">
+    </div>
+</div>
+</body>
+</html>
