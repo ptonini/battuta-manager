@@ -73,7 +73,7 @@
                     <li>
                         <form id="search_form" action="{% url 'search' %}" class="navbar-form" method="get">
                             <div class="input-group">
-                                <input type="text" title="searchbox" id="searchbox"
+                                <input type="text" title="Search" id="searchbox"
                                        class="form-control input-sm" name="search_pattern">
                                 <span class="input-group-btn">
                                     <button type="submit" class="btn btn-default btn-sm">
@@ -85,8 +85,7 @@
                     </li>
                     <li>
                         <form id="login_form" class="navbar-form">
-                            <button type="submit" id="user_login" data-toggle="tooltip"
-                                    title="logout" class="btn btn-link">
+                            <button type="submit" id="user_login" title="Logout" class="btn btn-link">
                                 <span class="glyphicon glyphicon-log-out"></span>
                             </button>
                         </form>
@@ -106,8 +105,7 @@
                                 <input class="textinput textInput form-control input-sm"
                                        id="id_password" placeholder="Password" type="password">
                             </div>
-                            <button type="submit" id="user_login" data-toggle="tooltip"
-                                    title="login" class="btn btn-link">
+                            <button type="submit" id="user_login" title="Login" class="btn btn-link">
                                 <span class="glyphicon glyphicon-log-in"></span>
                             </button>
                         </form>
@@ -150,7 +148,9 @@
         </form>
     </div>
     <div id="select_dialog"></div>
-    <div id="json_dialog"><pre id="json_box"></pre></div>
+    <div id="json_dialog">
+        <pre id="json_box"></pre>
+    </div>
     <div id="password_dialog" class="text-center">
         <h5>Please enter your password</h5>
         <input class="form-control input-sm" id="ansible_pass" placeholder="Password" type="password">

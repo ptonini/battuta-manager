@@ -9,3 +9,4 @@ ln -s /vagrant/etc/supervisor/conf.d/battuta.conf /etc/supervisor/conf.d/battuta
 ln -s /vagrant/etc/ansible /etc/ansible
 pip install -r  /opt/battuta/requirements.txt
 service supervisor restart
+

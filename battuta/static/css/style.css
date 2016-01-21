@@ -94,12 +94,6 @@ table.dataTable thead .sorting_desc_disabled:after{
     display: none;
 }
 
-.btn:focus,
-.btn:active,
-#sudo:focus {
-    outline-width: 0;
-}
-
 .checked_button,
 .checked_button:focus,
 .checked_button:hover {

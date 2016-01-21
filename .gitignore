@@ -1,6 +1,7 @@
 .idea
 .vagrant
 ans_data/uploads/*
+ans_data/facts/*
 migrations
 db.sqlite3
 
