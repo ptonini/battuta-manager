@@ -1,19 +1,19 @@
 import ast
 import json
-import django_rq
 import os
-from rq import Worker
+
+import django_rq
 from ansible import runner
+from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.conf import settings
 from pytz import timezone
+from rq import Worker
+from runner.forms import AdHocForm
+from runner.models import AdHoc, Task
 
-
-from .forms import AdHocForm
-from .models import AdHoc, Task
-from .tasks import run_task
+from runner.tasks import run_task
 
 
 class BaseView(View):
@@ -76,6 +76,7 @@ class AdHocView(BaseView):
                     command.become = request.POST['become']
                     task = Task.objects.create(user=request.user,
                                                module=command.module_name,
+                                               arguments=command.module_args,
                                                pattern=command.pattern,
                                                status='created')
                     task.save()

@@ -122,5 +122,5 @@ RQ_QUEUES = {
 }
 
 FACTS_DIR = '/opt/ans_data/facts/'
-UPLOAD_DIR = (os.path.join(BASE_DIR, 'uploads'),)
+UPLOAD_DIR = '/opt/ans_data/uploads/'
 

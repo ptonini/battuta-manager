@@ -1,5 +1,8 @@
+__author__ = 'ptonini'
+
 from django import forms
-from .models import Group, Host, Variable
+
+from inventory.models import Group, Host, Variable
 
 
 class HostForm(forms.ModelForm):

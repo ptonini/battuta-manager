@@ -1,13 +1,14 @@
-from django.shortcuts import get_object_or_404, render
-from django.contrib.auth import authenticate, login, logout
-from django.http import Http404, HttpResponse
-from django.core.exceptions import PermissionDenied
-from django.views.generic import View
-from pytz import timezone
 import json
 
-from .forms import UserForm, UserDataForm
-from .models import User, UserData
+from django.contrib.auth import authenticate, login, logout
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import View
+from pytz import timezone
+from users.models import User, UserData
+
+from users.forms import UserForm, UserDataForm
 
 
 class LoginView(View):

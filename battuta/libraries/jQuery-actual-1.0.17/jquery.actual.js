@@ -8,7 +8,7 @@
 ;( function ( factory ) {
 if ( typeof define === 'function' && define.amd ) {
     // AMD. Register module depending on jQuery using requirejs define.
-    define( ['jquery'], factory );
+    define( ['jquery.actual'], factory );
 } else {
     // No AMD.
     factory( jQuery );

@@ -1,7 +1,8 @@
 import django_rq
 from django.core.management.base import BaseCommand
 from rq import Queue, Worker
-from runner.models import Task
+
+from battuta_app.runner.models import Task
 
 
 def error_handler(job, *exc_info):

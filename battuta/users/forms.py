@@ -2,7 +2,7 @@ __author__ = 'ptonini'
 
 from django import forms
 
-from .models import User, UserData
+from users.models import User, UserData
 
 
 class UserForm(forms.ModelForm):

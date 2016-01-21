@@ -1,7 +1,6 @@
 $(document).ready(function () {
 
     var app = $('#app').val();
-    var ansibleModules = ['ping', 'shell', 'script', 'setup'];
     var adhocTableSelector = $('#adhoc_table');
     var alertDialog = $('#alert_dialog');
     var deleteDialog = $('#delete_dialog');
@@ -114,7 +113,7 @@ $(document).ready(function () {
     });
 
     // Build module menu
-    $.each(ansibleModules, function (index, value) {
+    $.each(ansibleModuleList, function (index, value) {
         $('#module').append($('<option>').attr('value', value).append(value))
     });
 

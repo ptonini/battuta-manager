@@ -8,3 +8,4 @@ apt-get install -y python-pip redis-server supervisor
 ln -s /vagrant/etc/supervisor/conf.d/battuta.conf /etc/supervisor/conf.d/battuta.conf
 ln -s /vagrant/etc/ansible /etc/ansible
 pip install -r  /opt/battuta/requirements.txt
+service supervisor restart

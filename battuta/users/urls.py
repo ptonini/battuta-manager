@@ -1,9 +1,9 @@
 __author__ = 'ptonini'
 
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
 
-from . import views
+from users import views
 
 urlpatterns = [
     url(r'^login/$', views.LoginView.as_view(), name='login'),

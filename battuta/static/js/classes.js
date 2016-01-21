@@ -1,3 +1,10 @@
+var ansibleModuleList = [
+    'ping',
+    'script',
+    'shell',
+    'setup'
+];
+
 function AnsibleModules (name) {
     this.name = name;
     this.uploadsFile = false;
@@ -22,31 +29,22 @@ function AnsibleModules (name) {
 }
 
 AnsibleModules.prototype.buildFormFields = function (fieldsContainer, sudoDiv) {
+    var name = this.name;
     fieldsContainer.html('');
-    var moduleReference = $('#module_reference');
-    moduleReference.show().hover(function() {
-        $(this).css('cursor', 'pointer')
-    });
-    switch (this.name) {
-        case 'ping':
-            moduleReference.click(function() {
-                window.open('http://docs.ansible.com/ansible/ping_module.html')
-            });
-            sudoDiv.addClass('hidden');
-            break;
-        case 'setup':
-            moduleReference.click(function() {
-                window.open('http://docs.ansible.com/ansible/setup_module.html')
-            });
-            sudoDiv.addClass('hidden');
-            break;
+    $('#module_reference')
+        .show()
+        .hover(function() {
+            $(this).css('cursor', 'pointer')
+        })
+        .off('click')
+        .click(function() {
+            window.open('http://docs.ansible.com/ansible/'+ name + '_module.html')
+        });
+    switch (name) {
         case 'shell':
-            moduleReference.click(function() {
-                window.open('http://docs.ansible.com/ansible/shell_module.html')
-            });
-            fieldsContainer.append(
-                $('<div>').attr('class', 'form-group').append(
-                    $('<input>').attr({
+            fieldsContainer
+                .append($('<div>').attr('class', 'form-group')
+                    .append($('<input>').attr({
                         'class': 'form-control input-sm',
                         'type': 'text',
                         'id': 'arguments',
@@ -57,31 +55,29 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer, sudoDiv) {
             sudoDiv.removeClass('hidden');
             break;
         case 'script':
-            moduleReference.click(function() {
-                window.open('http://docs.ansible.com/ansible/script_module.html')
-            });
             fieldsContainer.append(
                 $('<div>').attr('class', 'form-group')
-                    .append(
-                        $('<input>').attr({
-                            'class': 'input-file',
-                            'type': 'file',
-                            'id': 'file'})
-                            .on('change', function (event) {
-                                $(this).data('files', event.target.files)
-                            })
+                    .append($('<input>')
+                        .attr({'class': 'input-file', 'type': 'file', 'id': 'file'})
+                        .on('change', function (event) {
+                            $(this).data('files', event.target.files)
+                        })
                     ),
-                $('<div>').attr('class', 'form-group').append(
-                    $('<input>').attr({
-                        'class': 'form-control input-sm',
-                        'type': 'text',
-                        'placeholder': 'Additional parameters'
-                    })
-                )
+                $('<div>').attr('class', 'form-group')
+                    .append($('<input>')
+                        .attr({
+                            'class': 'form-control input-sm',
+                            'type': 'text',
+                            'placeholder': 'Additional parameters'
+                        })
+                    )
             );
             this.fileInputSettings.initialCaption = 'Select script';
             $('#file').fileinput(this.fileInputSettings);
             sudoDiv.removeClass('hidden');
+            break;
+        default:
+            sudoDiv.addClass('hidden');
             break;
     }
 };

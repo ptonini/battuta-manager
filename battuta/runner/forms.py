@@ -1,7 +1,8 @@
 __author__ = 'ptonini'
 
 from django import forms
-from .models import AdHoc
+
+from runner.models import AdHoc
 
 
 class AdHocForm(forms.ModelForm):
