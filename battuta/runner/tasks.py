@@ -1,8 +1,9 @@
 import os
 import json
+import django_rq
+
 from rq import get_current_job, Connection
 from ansible import inventory
-import django_rq
 from django.conf import settings
 from tempfile import NamedTemporaryFile
 

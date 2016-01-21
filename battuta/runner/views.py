@@ -11,9 +11,9 @@ from django.views.generic import View
 from pytz import timezone
 from rq import Worker
 
-from runner.forms import AdHocForm
-from runner.models import AdHoc, Task
-from runner.tasks import run_task
+from .forms import AdHocForm
+from .models import AdHoc, Task
+from .tasks import run_task
 
 
 class BaseView(View):

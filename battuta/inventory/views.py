@@ -5,9 +5,9 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from inventory.models import Host, Group, Variable
 
-from inventory.forms import HostForm, GroupForm, VariableForm
+from .models import Host, Group, Variable
+from .forms import HostForm, GroupForm, VariableForm
 
 
 class EntitiesView(View):

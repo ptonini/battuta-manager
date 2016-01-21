@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from inventory.models import Host, Group, Variable
+from .models import Host, Group, Variable
 
 
 class VariableInLine(admin.TabularInline):

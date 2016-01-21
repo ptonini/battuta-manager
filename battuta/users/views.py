@@ -6,9 +6,9 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
-from users.models import User, UserData
 
-from users.forms import UserForm, UserDataForm
+from .models import User, UserData
+from .forms import UserForm, UserDataForm
 
 
 class LoginView(View):
@@ -68,25 +68,24 @@ class UserView(View):
 
     @staticmethod
     def post(request, **kwargs):
-        post_data = dict(request.POST.iteritems())
+        form_data = dict(request.POST.iteritems())
         if kwargs['page'] == 'new':
-            print request.POST
             user = User()
             user.userdata = UserData()
         elif kwargs['page'] == 'view':
-            user = get_object_or_404(User, pk=post_data['user_id'])
-            post_data['username'] = user.username
-            post_data['password'] = user.password
+            user = get_object_or_404(User, pk=form_data['user_id'])
+            form_data['username'] = user.username
+            form_data['password'] = user.password
         else:
             raise Http404('Invalid request type')
         if request.POST['action'] == 'save':
             if request.user.id == user.id or request.user.is_superuser:
-                user_form = UserForm(post_data or None, instance=user)
-                userdata_form = UserDataForm(post_data or None, instance=user.userdata)
+                user_form = UserForm(form_data or None, instance=user)
+                userdata_form = UserDataForm(form_data or None, instance=user.userdata)
                 if user_form.is_valid() and userdata_form.is_valid():
                     user = user_form.save()
                     if kwargs['page'] == 'new':
-                        user.set_password(post_data['password'])
+                        user.set_password(form_data['password'])
                     user.save()
                     userdata = userdata_form.save(commit=False)
                     userdata.user = user
