@@ -1,8 +1,8 @@
 import ast
 import json
 import os
-
 import django_rq
+
 from ansible import runner
 from django.conf import settings
 from django.http import HttpResponse, Http404
@@ -10,9 +10,9 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
 from rq import Worker
+
 from runner.forms import AdHocForm
 from runner.models import AdHoc, Task
-
 from runner.tasks import run_task
 
 

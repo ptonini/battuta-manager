@@ -6,6 +6,7 @@ import django_rq
 from django.conf import settings
 from tempfile import NamedTemporaryFile
 
+
 @django_rq.job('default')
 def run_task(command, task):
     with Connection():
