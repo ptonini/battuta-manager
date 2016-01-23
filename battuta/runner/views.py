@@ -3,7 +3,7 @@ import json
 import os
 import django_rq
 
-from ansible import runner
+
 from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -13,7 +13,7 @@ from rq import Worker
 
 from .forms import AdHocForm
 from .models import AdHoc, Task
-from .tasks import run_task
+from .tasks import run_playbook
 
 
 class BaseView(View):
@@ -44,43 +44,49 @@ class AdHocView(BaseView):
         else:
             adhoc = AdHoc()
         form = AdHocForm(request.POST or None, instance=adhoc)
+
+        # List saved adhoc tasks
         if request.POST['action'] == 'list':
             data = list()
             for command in AdHoc.objects.all():
                 if request.POST['pattern'] == '' or request.POST['pattern'] == command.pattern:
                     data.append([command.pattern, command.module, command.arguments, command.sudo, command.id])
+
+        # Handle file upload during task execution
         elif request.POST['action'] == 'file':
-            uploaded_file = request.FILES['0']
-            user_upload_dir = os.path.join(settings.UPLOAD_DIR[0], str(request.user.username))
+            user_upload_dir = os.path.join(settings.UPLOAD_DIR, str(request.user.username))
             try:
                 os.makedirs(user_upload_dir)
             except:
                 pass
-            filepath = os.path.join(user_upload_dir, str(uploaded_file.name))
-            with open(filepath, 'wb+') as destination:
-                for chunk in uploaded_file.chunks():
-                    destination.write(chunk)
-            data = {'result': 'ok', 'filepath': filepath}
+            filepaths = list()
+            for key, value in request.FILES.iteritems():
+                filepath = os.path.join(user_upload_dir, str(value.name))
+                filepaths.append(filepath)
+                with open(filepath, 'wb+') as destination:
+                    for chunk in value.chunks():
+                        destination.write(chunk)
+            data = {'result': 'ok', 'filepaths': filepaths}
+
+        # Execute task
         elif request.POST['action'] == 'run':
             if form.is_valid():
                 result = self.check_rq()
                 if result[0] is True:
-                    command = runner.Runner()
-                    command.transport = 'paramiko'
-                    command.remote_user = request.user.userdata.ansible_username
-                    command.remote_pass = request.POST['remote_pass']
-                    command.become_pass = request.POST['become_pass']
-                    command.pattern = request.POST['pattern']
-                    command.module_name = request.POST['module']
-                    command.module_args = request.POST['arguments']
-                    command.become = request.POST['become']
+                    form_data = dict(request.POST.iteritems())
+                    form_data['username'] = request.user.userdata.ansible_username
+                    passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
+                    playbook = {'name': 'AdHoc task',
+                                'hosts': form_data['pattern'],
+                                'gather_facts': 'no',
+                                'tasks': [{'action': {'module': form_data['module'], 'args': form_data['arguments']}}]}
                     task = Task.objects.create(user=request.user,
-                                               module=command.module_name,
-                                               arguments=command.module_args,
-                                               pattern=command.pattern,
+                                               module=form_data['module'],
+                                               arguments=form_data['arguments'],
+                                               pattern=form_data['pattern'],
                                                status='created')
                     task.save()
-                    job = run_task.delay(command, task)
+                    job = run_playbook.delay(form_data, passwords, playbook, task)
                     if job.is_queued is True:
                         task.status = 'enqueued'
                         task.save()
@@ -148,7 +154,7 @@ class AdHocResultView(BaseView):
             return render(request, "runner/adhoc_result.html", self.context)
         else:
             if request.GET['action'] == 'task_status':
-                data = {'status': task.status}
+                data = {'status': task.status, 'error_message': task.error_message}
             elif request.GET['action'] == 'task_results':
                 result_list = list()
                 for result in task.taskresult_set.all():

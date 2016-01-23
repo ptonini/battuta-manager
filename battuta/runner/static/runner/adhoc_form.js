@@ -334,7 +334,7 @@ $(document).ready(function () {
                         processData: false,
                         contentType: false,
                         success: function (data) {
-                            currentModule.filepath = data.filepath;
+                            currentModule.filepath = data.filepaths[0];
                             postData.arguments = currentModule.buildArguments();
                             runCommand(postData, askPassword);
                             adhocIdSelector.val('');

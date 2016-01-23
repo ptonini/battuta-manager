@@ -7,22 +7,19 @@ function updateStatus (intervalId, taskStatus, resultTable) {
             action: 'task_status'
         },
         success: function (data) {
-            if (['finished', 'timeout', 'undefined'].indexOf(data.status) > -1) {
+            if (['finished', 'timeout', 'error'].indexOf(data.status) > -1) {
+                $('#waiting_icon').hide();
                 switch (data.status) {
+                    case 'error':
                     case 'timeout':
                         taskStatus.css('color', 'red');
-                        break;
-                    case 'undefined':
-                        taskStatus.css('color', 'orange');
                         break;
                     case 'finished':
                         taskStatus.css('color', 'green');
                         break;
                 }
-                $('#waiting_icon').hide();
                 clearInterval(intervalId);
             }
-            taskStatus.html(data.status);
             resultTable.ajax.reload();
         }
     });
@@ -50,6 +47,7 @@ $(document).ready(function () {
                     case 'unreachable':
                         $(node).css('color', 'orange');
                         break;
+                    case 'error':
                     case 'failed':
                         $(node).css('color', 'red');
                         break;

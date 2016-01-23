@@ -20,11 +20,9 @@ $(document).ready(function () {
                 var row = tableApi.row(rowIndex);
                 var node = row.node();
                 switch (row.data()[4]) {
+                    case 'error':
                     case 'timeout':
                         $(node).css('color', 'red');
-                        break;
-                    case 'undefined':
-                        $(node).css('color', 'orange');
                         break;
                     case 'finished':
                         $(node).css('color', 'green');

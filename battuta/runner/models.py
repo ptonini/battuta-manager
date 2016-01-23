@@ -17,6 +17,7 @@ class Task(models.Model):
     module = models.CharField(max_length=32)
     job_id = models.CharField(max_length=128)
     status = models.CharField(max_length=32)
+    error_message = models.CharField(max_length=1024, blank=True, null=True)
 
 
 class TaskResult(models.Model):
