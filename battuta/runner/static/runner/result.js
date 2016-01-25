@@ -1,4 +1,4 @@
-function updateStatus (intervalId, taskStatus, resultTable) {
+function updateStatus (intervalId, taskStatus, taskDetails, resultTable) {
     $.ajax({
         url: '',
         type: 'GET',
@@ -7,18 +7,27 @@ function updateStatus (intervalId, taskStatus, resultTable) {
             action: 'task_status'
         },
         success: function (data) {
-            if (['finished', 'timeout', 'error'].indexOf(data.status) > -1) {
-                $('#waiting_icon').hide();
+            if (['finished', 'error', 'canceled'].indexOf(data.status) > -1) {
                 switch (data.status) {
-                    case 'error':
-                    case 'timeout':
-                        taskStatus.css('color', 'red');
-                        break;
                     case 'finished':
                         taskStatus.css('color', 'green');
                         break;
+                    case 'finished with errors':
+                        taskStatus.css('color', 'orange');
+                        break;
+                    case 'error':
+                        taskStatus.css('color', 'red');
+                        break;
+                    case 'canceled':
+                        taskStatus.css('color', 'gray');
+                        break;
                 }
+                taskStatus.html(data.status);
+                taskDetails.hide();
                 clearInterval(intervalId);
+            }
+            else {
+                taskDetails.show();
             }
             resultTable.ajax.reload();
         }
@@ -27,6 +36,7 @@ function updateStatus (intervalId, taskStatus, resultTable) {
 
 $(document).ready(function () {
     var taskStatus = $('#task_status');
+    var taskDetails = $('#task_details');
     var resultTable = $('#result_table').DataTable({
         paginate: false,
         searching: false,
@@ -74,9 +84,9 @@ $(document).ready(function () {
     });
 
     // Refresh table until task is complete
-    updateStatus(0, taskStatus, resultTable);
+    updateStatus(0, taskStatus, taskDetails, resultTable);
     var intervalId = setInterval(function () {
-        updateStatus(intervalId, taskStatus, resultTable);
+        updateStatus(intervalId, taskStatus, taskDetails, resultTable);
     }, 1000);
 
     // Cancel jobs

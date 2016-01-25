@@ -9,15 +9,21 @@ class AdHoc(models.Model):
     sudo = models.BooleanField()
 
 
-class Task(models.Model):
+class Runner(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User)
+    name = models.CharField(max_length=64)
     pattern = models.CharField(max_length=64)
-    arguments = models.CharField(max_length=1024, blank=True)
-    module = models.CharField(max_length=32)
+    sudo = models.BooleanField()
     job_id = models.CharField(max_length=128)
     status = models.CharField(max_length=32)
     error_message = models.CharField(max_length=1024, blank=True, null=True)
+
+
+class Task(models.Model):
+    task = models.ForeignKey(Runner)
+    arguments = models.CharField(max_length=1024, blank=True)
+    module = models.CharField(max_length=32)
 
 
 class TaskResult(models.Model):

@@ -2,15 +2,18 @@
 {% load staticfiles %}
 {% block header %}{% endblock %}
 {% block content %}
-    <script src="{% static 'runner/adhoc_result.js' %}"></script>
+    <script src="{% static 'runner/result.js' %}"></script>
     <h4>Ad-Hoc command results</h4>
     <input id="task_id" type="hidden" value="{{ task.id }}">
     <hr>
     <div class="row">
         <div class="col-md-1"><h5>Status:</h5></div>
-        <div class="col-md-1"><h5><strong id="task_status">{{ task.status }}</strong></h5></div>
-        <div class="col-md-1" style="margin: 8px 0">
-            <span id="waiting_icon"><img src="{% static 'images/waiting-small.gif' %}"></span>
+        <div class="col-md-2"><h5><strong id="task_status">{{ task.status }}</strong></h5></div>
+        <div class="col-md-9" style="margin: 10px 0">
+            <span id="task_details" style="visibility: hidden;">
+                <img src="{% static 'images/waiting-small.gif' %}">
+                <button id="cancel_task" class="btn btn-danger btn-xs">Cancel</button>
+            </span>
         </div>
     </div>
     <div class="row">

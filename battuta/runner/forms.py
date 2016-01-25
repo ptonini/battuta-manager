@@ -1,6 +1,18 @@
 from django import forms
 
-from .models import AdHoc
+from .models import AdHoc, Runner, Task
+
+
+class RunnerForm(forms.ModelForm):
+    class Meta:
+        model = Runner
+        fields = ['name', 'pattern', 'sudo']
+
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['module', 'arguments']
 
 
 class AdHocForm(forms.ModelForm):

@@ -14,7 +14,7 @@ from .forms import UserForm, UserDataForm
 class LoginView(View):
     @staticmethod
     def post(request):
-        if request.POST['action'] == 'login':
+        if request.POST['action'] == 'Login':
             user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
             if user:
                 if user.is_active:
@@ -24,7 +24,7 @@ class LoginView(View):
                     data = {'result': 'fail', 'msg': 'Account disabled'}
             else:
                 data = {'result': 'fail', 'msg': 'Invalid login'}
-        elif request.POST['action'] == 'logout':
+        elif request.POST['action'] == 'Logout':
             logout(request)
             data = {'result': 'ok'}
         else:

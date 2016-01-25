@@ -20,13 +20,19 @@ $(document).ready(function () {
                 var row = tableApi.row(rowIndex);
                 var node = row.node();
                 switch (row.data()[4]) {
-                    case 'error':
-                    case 'timeout':
-                        $(node).css('color', 'red');
-                        break;
                     case 'finished':
                         $(node).css('color', 'green');
                         break;
+                    case 'finished with errors':
+                        $(node).css('color', 'orange');
+                        break;
+                    case 'error':
+                        $(node).css('color', 'red');
+                        break;
+                    case 'canceled':
+                        $(node).css('color', 'gray');
+                        break;
+
                 }
                 $(node).children('td:nth-child(6)').html(
                     $('<span>').attr('style', 'float: right').append(

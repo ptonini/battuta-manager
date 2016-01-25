@@ -6,7 +6,6 @@ from rq import get_current_job, Connection
 from django.conf import settings
 from tempfile import NamedTemporaryFile
 
-
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
@@ -33,17 +32,27 @@ Options = namedtuple('Options', ['connection',
 
 
 @django_rq.job('default')
-def run_playbook(form_data, passwords, playbook, task):
+def run_play(form_data, passwords, play_data, runner):
     with Connection():
+
+        # Get job ID amd mark play as 'enqueued'
         job = get_current_job()
-        task.job_id = job.get_id()
-        task.status = 'started'
-        task.save()
+        runner.job_id = job.get_id()
+        runner.status = 'enqueued'
+        runner.save()
+
+        # Create temporary RSA key file
         rsakey_file = NamedTemporaryFile(delete=False)
-        rsakey_file.write(task.user.userdata.rsa_key)
+        rsakey_file.write(runner.user.userdata.rsa_key)
         rsakey_file.close()
+
+        # Create default ansible objects
         variable_manager = VariableManager()
         loader = DataLoader()
+        inventory = Inventory(loader=loader, variable_manager=variable_manager)
+        variable_manager.set_inventory(inventory)
+
+        # Set ansible options
         options = Options(connection='paramiko',
                           module_path=C.DEFAULT_MODULE_PATH,
                           forks=C.DEFAULT_FORKS,
@@ -58,37 +67,52 @@ def run_playbook(form_data, passwords, playbook, task):
                           become_user=C.DEFAULT_BECOME_USER,
                           verbosity=None,
                           check=False)
-        inventory = Inventory(loader=loader, variable_manager=variable_manager)
-        variable_manager.set_inventory(inventory)
-        play = Play().load(playbook, variable_manager=variable_manager, loader=loader)
+
+        # Create ansible play object
+        play = Play().load(play_data, variable_manager=variable_manager, loader=loader)
+
+        # Create ansible queue
         tqm = TaskQueueManager(inventory=inventory,
                                variable_manager=variable_manager,
                                passwords=passwords,
                                loader=loader,
                                options=options,
-                               stdout_callback=BattutaCallback(task))
-        task.status = 'running'
-        task.save()
+                               stdout_callback=BattutaCallback(runner))
+ 
+        # Check if pattern match any hosts
         hosts_query = inventory.get_hosts(pattern=form_data['pattern'])
         if len(hosts_query) > 0:
+            runner.status = 'running'
+            runner.save()
+
+            # Create response objects
             for host in hosts_query:
-                task.taskresult_set.create(host=host.name, status='started', message='', response={})
+                runner.taskresult_set.create(host=host.name, status='started', message='', response={})
+
+            # Execute play
             tqm.run(play)
             tqm.cleanup()
-            task.status = 'finished'
+            runner.status = 'finished'
+
+            # Check is all hosts responded with 'ok' status
+            for result in runner.taskresult_set.all():
+                if result.status != 'ok':
+                    runner.status = 'finished with errors'
         else:
-            task.status = 'empty'
-        task.save()
+            # Return error if no hosts matched
+            runner.status = 'error'
+            runner.error_message = 'No hosts matched'
+        runner.save()
         os.remove(rsakey_file.name)
 
 
 class BattutaCallback(CallbackBase):
-    def __init__(self, task):
+    def __init__(self, runner):
         super(BattutaCallback, self).__init__()
-        self.task = task
+        self.task = runner
 
     def __update_db(self, host, status, message, result):
-        query_set = self.task.taskresult_set.filter(host=host)
+        query_set = self.runner.taskresult_set.filter(host=host)
         host = query_set[0]
         host.status = status
         host.message = message
@@ -119,7 +143,7 @@ class BattutaCallback(CallbackBase):
             message = 'Exception raised'
             response = [response]
         elif self.task.module == 'shell' or self.task.module == 'script':
-            message = result._result['stdout'] + result._result['stderr']
+            message = response['stdout'] + response['stderr']
         self.__update_db(host, 'failed', message, response)
 
     def v2_runner_on_skipped(self, host, item=None):
@@ -128,10 +152,9 @@ class BattutaCallback(CallbackBase):
     def v2_runner_on_unreachable(self, result):
         host = result._host.get_name()
         response = result._result
-        if 'msg' in result._result:
-            message = result._result['msg']
-            result = result._result
+        if 'msg' in response:
+            message = response['msg']
         else:
             message = 'view details'
-            result = [result._result]
-        self.__update_db(host, 'unreachable', message, result)
+            response = [response]
+        self.__update_db(host, 'unreachable', message, response)

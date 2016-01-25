@@ -7,10 +7,7 @@ from runner.models import Task
 
 def error_handler(job, *exc_info):
     message = str(exc_info[0].__name__) + ': ' + str(exc_info[1])
-    if exc_info[0].__name__ == 'JobTimeoutException':
-        job_status = 'timeout'
-    else:
-        job_status = 'error'
+    job_status = 'error'
     task = Task.objects.get(job_id=job.get_id())
     task.status = job_status
     task.error_message = message

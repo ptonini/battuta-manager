@@ -5,9 +5,10 @@ from . import views
 
 urlpatterns = [
 
+    url(r'^/$', login_required(views.RunnerView.as_view()), name='runner'),
     url(r'^adhoc/$', login_required(views.AdHocView.as_view()), name='adhoc'),
-    url(r'^adhoc/result/(?P<task_id>[0-9]+)/$', login_required(views.AdHocResultView.as_view()), name='adhoc_result'),
-    url(r'^adhoc/history/$', login_required(views.AdhocHistoryView.as_view()), name='adhoc_history'),
+    url(r'^result/(?P<runner_id>[0-9]+)/$', login_required(views.ResultView.as_view()), name='result'),
+    url(r'^history/$', login_required(views.HistoryView.as_view()), name='history'),
 
 ]
 
