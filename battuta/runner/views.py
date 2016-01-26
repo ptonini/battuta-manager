@@ -12,7 +12,7 @@ from django.views.generic import View
 from pytz import timezone
 from rq import Worker
 
-from .forms import AdHocForm, RunnerForm, TaskForm
+from .forms import AdHocForm, RunnerForm
 from .models import AdHoc, Runner
 from .tasks import run_play
 
@@ -77,8 +77,8 @@ class RunnerView(View):
         # Execute adhoc task
         elif request.POST['action'] == 'run_adhoc':
             runner_form = RunnerForm(request.POST)
-            task_form = TaskForm(request.POST)
-            if runner_form.is_valid() and task_form.is_valid():
+            adhoc_form = AdHocForm(request.POST)
+            if runner_form.is_valid() and adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
                 request.POST['username'] = request.user.userdata.ansible_username
                 passwords = {'conn_pass': request.POST['remote_pass'], 'become_pass': request.POST['become_pass']}

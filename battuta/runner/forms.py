@@ -9,12 +9,6 @@ class RunnerForm(forms.ModelForm):
         fields = ['name', 'pattern', 'sudo']
 
 
-class TaskForm(forms.ModelForm):
-    class Meta:
-        model = Task
-        fields = ['module', 'arguments']
-
-
 class AdHocForm(forms.ModelForm):
     class Meta:
         model = AdHoc
