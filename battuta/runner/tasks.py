@@ -13,7 +13,7 @@ from ansible.inventory import Inventory
 from ansible.playbook.play import Play
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
-from ansible import constants as C
+from ansible import constants as c
 
 Options = namedtuple('Options', ['connection',
                                  'module_path',
@@ -46,7 +46,7 @@ def run_play(form_data, passwords, play_data, runner):
         rsakey_file.write(runner.user.userdata.rsa_key)
         rsakey_file.close()
 
-        # Create default ansible objects
+        # Create ansible default objects
         variable_manager = VariableManager()
         loader = DataLoader()
         inventory = Inventory(loader=loader, variable_manager=variable_manager)
@@ -54,8 +54,8 @@ def run_play(form_data, passwords, play_data, runner):
 
         # Set ansible options
         options = Options(connection='paramiko',
-                          module_path=C.DEFAULT_MODULE_PATH,
-                          forks=C.DEFAULT_FORKS,
+                          module_path=c.DEFAULT_MODULE_PATH,
+                          forks=c.DEFAULT_FORKS,
                           remote_user=form_data['username'],
                           private_key_file=rsakey_file.name,
                           ssh_common_args=None,
@@ -63,65 +63,77 @@ def run_play(form_data, passwords, play_data, runner):
                           sftp_extra_args=None,
                           scp_extra_args=None,
                           become=form_data['become'],
-                          become_method=C.DEFAULT_BECOME_METHOD,
-                          become_user=C.DEFAULT_BECOME_USER,
+                          become_method=c.DEFAULT_BECOME_METHOD,
+                          become_user=c.DEFAULT_BECOME_USER,
                           verbosity=None,
                           check=False)
 
         # Create ansible play object
         play = Play().load(play_data, variable_manager=variable_manager, loader=loader)
 
-        # Create ansible queue
-        tqm = TaskQueueManager(inventory=inventory,
-                               variable_manager=variable_manager,
-                               passwords=passwords,
-                               loader=loader,
-                               options=options,
-                               stdout_callback=BattutaCallback(runner))
- 
-        # Check if pattern match any hosts
-        hosts_query = inventory.get_hosts(pattern=form_data['pattern'])
-        if len(hosts_query) > 0:
-            runner.status = 'running'
-            runner.save()
-
-            # Create response objects
-            for host in hosts_query:
-                runner.taskresult_set.create(host=host.name, status='started', message='', response={})
-
-            # Execute play
+        # Execute play
+        tqm = None
+        try:
+            tqm = TaskQueueManager(inventory=inventory,
+                                   variable_manager=variable_manager,
+                                   passwords=passwords,
+                                   loader=loader,
+                                   options=options,
+                                   stdout_callback=BattutaCallback(runner))
             tqm.run(play)
-            tqm.cleanup()
-            runner.status = 'finished'
-
-            # Check is all hosts responded with 'ok' status
-            for result in runner.taskresult_set.all():
-                if result.status != 'ok':
-                    runner.status = 'finished with errors'
-        else:
-            # Return error if no hosts matched
-            runner.status = 'error'
-            runner.error_message = 'No hosts matched'
-        runner.save()
-        os.remove(rsakey_file.name)
+        finally:
+            if tqm is not None:
+                tqm.cleanup()
 
 
 class BattutaCallback(CallbackBase):
     def __init__(self, runner):
         super(BattutaCallback, self).__init__()
-        self.task = runner
+        self.runner = runner
 
-    def __update_db(self, host, status, message, result):
-        query_set = self.runner.taskresult_set.filter(host=host)
+    @staticmethod
+    def __extract_result(result):
+        return result._host.get_name(), result._result
+
+    def __save_result(self, host, status, message, result):
+        runner_task = self.runner.task_set.objects.latest('id')
+        query_set = runner_task.result_set.filter(host=host)
         host = query_set[0]
         host.status = status
         host.message = message
         host.response = result
         host.save()
 
+    def v2_playbook_on_play_start(self, play):
+        self.runner.status = 'started'
+        self.runner.save()
+
+    def v2_playbook_on_task_start(self, task, is_conditional):
+        runner_task = self.runner.task_set.create()
+        runner_task.name = task.get_name().strip()
+        runner_task.save()
+        print task
+
+    def v2_playbook_on_no_hosts_matched(self):
+        self.runner.message = 'No hosts matched'
+        self.runner.save()
+
+    def v2_playbook_on_stats(self, stats):
+
+        print stats
+
+    def v2_runner_on_failed(self, result, ignore_errors=False):
+        host, response = self.__extract_result(result)
+        message = self.task.module + ' failed'
+        if 'exception' in response:
+            message = 'Exception raised'
+            response = [response]
+        elif self.task.module == 'shell' or self.task.module == 'script':
+            message = response['stdout'] + response['stderr']
+        self.__save_result(host, 'failed', message, response)
+
     def v2_runner_on_ok(self, result):
-        host = result._host.get_name()
-        response = result._result
+        host, response = self.__extract_result(result)
         message = self.task.module + ' successful'
         if self.task.module == 'setup':
             facts = {'ansible_facts': response['ansible_facts']}
@@ -132,29 +144,17 @@ class BattutaCallback(CallbackBase):
                 message = 'Facts saved to ' + filename
         elif self.task.module == 'shell' or self.task.module == 'script':
             message = response['stdout'] + response['stderr']
-        self.__update_db(host, 'ok', message, response)
+        self.__save_result(host, 'ok', message, response)
 
-    def v2_runner_on_failed(self, result, ignore_errors=False):
-        host = result._host.get_name()
-        response = result._result
-        print json.dumps(response)
-        message = self.task.module + ' failed'
-        if 'exception' in response:
-            message = 'Exception raised'
-            response = [response]
-        elif self.task.module == 'shell' or self.task.module == 'script':
-            message = response['stdout'] + response['stderr']
-        self.__update_db(host, 'failed', message, response)
-
-    def v2_runner_on_skipped(self, host, item=None):
-        self.__update_db(host, 'skipped', host + ' skipped', {})
+    def v2_runner_on_skipped(self, result):
+        host, response = self.__extract_result(result)
+        self.__save_result(host, 'skipped', host + ' skipped', {})
 
     def v2_runner_on_unreachable(self, result):
-        host = result._host.get_name()
-        response = result._result
+        host, response = self.__extract_result(result)
         if 'msg' in response:
             message = response['msg']
         else:
-            message = 'view details'
+            message = 'Host unreachable'
             response = [response]
-        self.__update_db(host, 'unreachable', message, response)
+        self.__save_result(host, 'unreachable', message, response)

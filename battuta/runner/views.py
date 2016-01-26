@@ -61,7 +61,10 @@ class RunnerView(View):
         # Upload file for task
         if request.POST['action'] == 'upload':
             user_upload_dir = os.path.join(settings.UPLOAD_DIR, str(request.user.username))
-            os.makedirs(user_upload_dir)
+            try:
+                os.makedirs(user_upload_dir)
+            finally:
+                pass
             filepaths = list()
             for key, value in request.FILES.iteritems():
                 filepath = os.path.join(user_upload_dir, str(value.name))
