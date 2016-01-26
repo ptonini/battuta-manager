@@ -107,13 +107,13 @@ function runCommand(postData, askPass) {
     var alertDialog = $('#alert_dialog');
     function postCommand(postData) {
         $.ajax({
-            url: '/runner/adhoc/',
+            url: '/runner/',
             type: 'POST',
             dataType: 'json',
             data: postData,
             success: function (data) {
                 if ( data.result == 'ok' ) {
-                    popupCenter('/runner/adhoc/result/' + data.task_id + '/', data.task_id, 1000);
+                    popupCenter('/runner/result/' + data.runner_id + '/', data.runner_id, 1000);
                 }
                 else {
                     alertDialog.html('<strong>Submit error<strong><br><br>');

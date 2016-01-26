@@ -262,7 +262,6 @@ $(document).ready(function () {
     // Ad-Hoc form button events
     $('#adhoc_form').on('submit', function () {
         event.preventDefault();
-        var url = '/runner/adhoc/';
         var currentModule = new AnsibleModules($('#module').val());
         var sudo = $('#sudo').hasClass('checked_button');
         var adhocIdSelector = $('#adhoc_id');
@@ -282,7 +281,7 @@ $(document).ready(function () {
                 postData.id = adhocIdSelector.val();
                 postData.arguments = currentModule.buildArguments();
                 $.ajax({
-                    url: url,
+                    url: '/runner/adhoc/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
@@ -308,6 +307,7 @@ $(document).ready(function () {
                 break;
             case 'Run':
                 postData.action = 'run';
+                postData.name = 'AdHoc task';
                 var askPassword = false;
                 if (sudo || $('#has_rsa').val() == 'false') {
                     askPassword = true
@@ -326,7 +326,7 @@ $(document).ready(function () {
                         .insertBefore(fileInputContainer);
                     fileInputContainer.hide();
                     $.ajax({
-                        url: url,
+                        url: '/runner/',
                         type: 'POST',
                         data: fileData,
                         cache: false,

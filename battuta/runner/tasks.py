@@ -84,6 +84,8 @@ def run_play(form_data, passwords, play_data, runner):
         finally:
             if tqm is not None:
                 tqm.cleanup()
+                runner.status = 'finished'
+                runner.save()
 
 
 class BattutaCallback(CallbackBase):
@@ -119,7 +121,8 @@ class BattutaCallback(CallbackBase):
         self.runner.save()
 
     def v2_playbook_on_stats(self, stats):
-
+        self.runner.status = 'finished'
+        self.runner.save()
         print stats
 
     def v2_runner_on_failed(self, result, ignore_errors=False):

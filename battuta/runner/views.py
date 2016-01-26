@@ -37,14 +37,14 @@ class RunnerView(View):
         except Exception as error:
             return [False, str(error)]
 
-    # Execute task/play
+    # Execute play
     def execute(self, form_data, play_data, passwords, runner):
         result = self.check_rq()
         if result[0] is True:
             job = run_play.delay(form_data, passwords, play_data, runner)
             index = 0
             while job.is_queued is False:
-                if index > 3:
+                if index == 3:
                     runner.delete()
                     return {'result': 'fail', 'msg': 'Play was not enqueued'}
                 else:
@@ -88,7 +88,9 @@ class RunnerView(View):
                              'tasks': [
                                  {'action': {'module': request.POST['module'], 'args': request.POST['arguments']}}
                              ]}
-                runner = runner_form.save()
+                runner = runner_form.save(commit=False)
+                runner.status = 'created'
+                runner.save()
                 data = self.execute(form_data, play_data, passwords, runner)
             else:
                 data = {'result': 'fail', 'msg': str(runner_form.errors) + str(task_form.errors)}
