@@ -29,7 +29,6 @@ class Result(models.Model):
     task = models.ForeignKey(Task)
     host = models.CharField(max_length=64)
     status = models.CharField(max_length=32)
-    changed = models.BooleanField()
     message = models.CharField(max_length=32768, blank=True)
     response = models.CharField(max_length=65536, blank=True)
 

@@ -2,21 +2,14 @@ import django_rq
 from django.core.management.base import BaseCommand
 from rq import Queue, Worker
 
-from runner.models import Task
+from runner.models import Runner
 
 
 def error_handler(job, *exc_info):
-    message = str(exc_info[0].__name__) + ': ' + str(exc_info[1])
-    job_status = 'error'
-    task = Task.objects.get(job_id=job.get_id())
-    task.status = job_status
-    task.error_message = message
-    for task_result in task.taskresult_set.all():
-        if task_result.status == 'started':
-            task_result.status = job_status
-            task_result.message = 'Job error - ' + message
-            task_result.save()
-    task.save()
+    runner = Runner.objects.get(job_id=job.get_id())
+    runner.status = 'failed'
+    runner.error_message = str(exc_info[0].__name__) + ': ' + str(exc_info[1])
+    runner.save()
     job.delete()
     return False
 

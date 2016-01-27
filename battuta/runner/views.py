@@ -13,8 +13,10 @@ from pytz import timezone
 from rq import Worker
 
 from .forms import AdHocForm, RunnerForm
-from .models import AdHoc, Runner
+from .models import AdHoc, Runner, Task, Result
 from .tasks import run_play
+
+date_format = '%Y-%m-%d %H:%M:%S'
 
 
 class BaseView(View):
@@ -24,7 +26,7 @@ class BaseView(View):
 
 
 class RunnerView(View):
-    queues = ['default']
+    queues = 'default'
 
     # Check if there are workers running
     def check_rq(self):
@@ -80,7 +82,7 @@ class RunnerView(View):
             adhoc_form = AdHocForm(request.POST)
             if runner_form.is_valid() and adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
-                request.POST['username'] = request.user.userdata.ansible_username
+                form_data['username'] = request.user.userdata.ansible_username
                 passwords = {'conn_pass': request.POST['remote_pass'], 'become_pass': request.POST['become_pass']}
                 play_data = {'name': request.POST['name'],
                              'hosts': request.POST['pattern'],
@@ -90,10 +92,11 @@ class RunnerView(View):
                              ]}
                 runner = runner_form.save(commit=False)
                 runner.status = 'created'
+                runner.user = request.user
                 runner.save()
                 data = self.execute(form_data, play_data, passwords, runner)
             else:
-                data = {'result': 'fail', 'msg': str(runner_form.errors) + str(task_form.errors)}
+                data = {'result': 'fail', 'msg': str(runner_form.errors) + str(adhoc_form.errors)}
 
         # Kill task/play
         elif request.POST['action'] == 'kill':
@@ -150,42 +153,48 @@ class HistoryView(BaseView):
             self.context['user'] = request.user
             return render(request, "runner/history.html", self.context)
         else:
-            if request.GET['action'] == 'tasks':
+            if request.GET['action'] == 'list':
                 tz = timezone(request.user.userdata.timezone)
                 data = list()
-                for task in Runner.objects.all():
-                    if task.user == request.user or request.user.is_superuser == 1:
-                        data.append([task.created_on.astimezone(tz).ctime(),
-                                     task.user.username,
-                                     task.module,
-                                     task.pattern,
-                                     task.status,
-                                     task.id])
+                for runner in Runner.objects.all():
+                    if runner.user == request.user or request.user.is_superuser == 1:
+                        data.append([runner.created_on.astimezone(tz).strftime(date_format),
+                                     runner.user.username,
+                                     runner.name,
+                                     runner.pattern,
+                                     runner.status,
+                                     runner.id])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 class ResultView(BaseView):
-    def get(self, request, task_id):
-        task = get_object_or_404(Runner, pk=task_id)
+    def get(self, request, runner_id):
+        runner = get_object_or_404(Runner, pk=runner_id)
         if 'action' not in request.GET:
-            tz = timezone(task.user.userdata.timezone)
-            task.created_on = task.created_on.astimezone(tz).ctime()
+            tz = timezone(runner.user.userdata.timezone)
+            runner.created_on = runner.created_on.astimezone(tz).strftime(date_format)
             self.context['user'] = request.user
-            self.context['task'] = task
+            self.context['runner'] = runner
             return render(request, "runner/result.html", self.context)
         else:
-            if request.GET['action'] == 'task_status':
-                data = {'status': task.status, 'error_message': task.error_message}
+            if request.GET['action'] == 'runner_status':
+                data = {'status': runner.status, 'message': runner.message}
+
+            elif request.GET['action'] == 'tasks':
+                data = list()
+                for task in runner.task_set.all():
+                    data.append([task.id, task.name, task.is_complete])
+
             elif request.GET['action'] == 'task_results':
-                result_list = list()
-                for result in task.taskresult_set.all():
-                    result_list.append([result.host,
-                                        result.status,
-                                        result.message,
-                                        {result.host: ast.literal_eval(result.response)}])
-                data = result_list
+                task = get_object_or_404(Task, pk=request.GET['task_id'])
+                data = list()
+                for result in task.result_set.all():
+                    data.append([result.host,
+                                 result.status,
+                                 result.message,
+                                 {result.host: ast.literal_eval(result.response)}])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")

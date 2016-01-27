@@ -1,4 +1,6 @@
 function updateStatus (intervalId, taskStatus, taskDetails, resultTable) {
+
+
     $.ajax({
         url: '',
         type: 'GET',

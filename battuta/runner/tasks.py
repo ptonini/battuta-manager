@@ -52,6 +52,9 @@ def run_play(form_data, passwords, play_data, runner):
         inventory = Inventory(loader=loader, variable_manager=variable_manager)
         variable_manager.set_inventory(inventory)
 
+        # Add host list to runner object
+        host_list = inventory.get_hosts(pattern=runner.pattern)
+
         # Set ansible options
         options = Options(connection='paramiko',
                           module_path=c.DEFAULT_MODULE_PATH,
@@ -79,7 +82,7 @@ def run_play(form_data, passwords, play_data, runner):
                                    passwords=passwords,
                                    loader=loader,
                                    options=options,
-                                   stdout_callback=BattutaCallback(runner))
+                                   stdout_callback=BattutaCallback(runner, host_list))
             tqm.run(play)
         finally:
             if tqm is not None:
@@ -89,16 +92,17 @@ def run_play(form_data, passwords, play_data, runner):
 
 
 class BattutaCallback(CallbackBase):
-    def __init__(self, runner):
+    def __init__(self, runner, host_list):
         super(BattutaCallback, self).__init__()
         self.runner = runner
+        self.host_list = host_list
 
     @staticmethod
     def __extract_result(result):
         return result._host.get_name(), result._result
 
     def __save_result(self, host, status, message, result):
-        runner_task = self.runner.task_set.objects.latest('id')
+        runner_task = self.runner.task_set.latest('id')
         query_set = runner_task.result_set.filter(host=host)
         host = query_set[0]
         host.status = status
@@ -111,43 +115,45 @@ class BattutaCallback(CallbackBase):
         self.runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        runner_task = self.runner.task_set.create()
-        runner_task.name = task.get_name().strip()
-        runner_task.save()
-        print task
+        runner_task = self.runner.task_set.create(name=task.get_name().strip())
+        for host in self.host_list:
+            runner_task.result_set.create(host=host, status='started', response='{}')
 
     def v2_playbook_on_no_hosts_matched(self):
         self.runner.message = 'No hosts matched'
         self.runner.save()
 
     def v2_playbook_on_stats(self, stats):
-        self.runner.status = 'finished'
-        self.runner.save()
-        print stats
+        print 'play stats: ' + str(stats)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self.__extract_result(result)
-        message = self.task.module + ' failed'
+        module = str(response['invocation']['module_name'])
+        message = module + ' failed'
         if 'exception' in response:
             message = 'Exception raised'
             response = [response]
-        elif self.task.module == 'shell' or self.task.module == 'script':
+        elif module == 'shell' or module == 'script':
             message = response['stdout'] + response['stderr']
         self.__save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):
         host, response = self.__extract_result(result)
-        message = self.task.module + ' successful'
-        if self.task.module == 'setup':
+        module = str(response['invocation']['module_name'])
+        message = module + ' successful'
+        status = 'ok'
+        if module == 'setup':
             facts = {'ansible_facts': response['ansible_facts']}
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
                 response['ansible_facts'] = 'saved to file'
                 message = 'Facts saved to ' + filename
-        elif self.task.module == 'shell' or self.task.module == 'script':
+        elif module == 'command' or module == 'script':
             message = response['stdout'] + response['stderr']
-        self.__save_result(host, 'ok', message, response)
+        elif response['changed']:
+            status = 'changed'
+        self.__save_result(host, status, message, response)
 
     def v2_runner_on_skipped(self, result):
         host, response = self.__extract_result(result)

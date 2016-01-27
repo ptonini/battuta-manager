@@ -306,7 +306,7 @@ $(document).ready(function () {
                 });
                 break;
             case 'Run':
-                postData.action = 'run';
+                postData.action = 'run_adhoc';
                 postData.name = 'AdHoc task';
                 var askPassword = false;
                 if (sudo || $('#has_rsa').val() == 'false') {

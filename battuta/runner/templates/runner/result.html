@@ -2,35 +2,36 @@
 {% load staticfiles %}
 {% block header %}{% endblock %}
 {% block content %}
-    <script src="{% static 'runner/result.js' %}"></script>
-    <h4>Ad-Hoc command results</h4>
-    <input id="task_id" type="hidden" value="{{ task.id }}">
+{#    <script src="{% static 'runner/result.js' %}"></script>#}
+    <h4>Runner results</h4>
+    <input id="runner_id" type="hidden" value="{{ runner.id }}">
     <hr>
     <div class="row">
         <div class="col-md-1"><h5>Status:</h5></div>
-        <div class="col-md-2"><h5><strong id="task_status">{{ task.status }}</strong></h5></div>
+        <div class="col-md-2"><h5><strong id="task_status">{{ runner.status }}</strong></h5></div>
         <div class="col-md-9" style="margin: 10px 0">
             <span id="task_details" style="visibility: hidden;">
                 <img src="{% static 'images/waiting-small.gif' %}">
-                <button id="cancel_task" class="btn btn-danger btn-xs">Cancel</button>
+                <button id="cancel_runner" class="btn btn-danger btn-xs">Cancel</button>
             </span>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-1">Pattern:</div>
-        <div class="col-md-7"><strong>{{ task.pattern }}</strong></div>
+        <div class="col-md-1">Name:</div>
+        <div class="col-md-7"><strong>{{ runner.name }}</strong></div>
         <div class="col-md-1" style="text-align: right">User:</div>
-        <div class="col-md-3"><strong>{{ task.user }}</strong></div>
+        <div class="col-md-3"><strong>{{ runner.user }}</strong></div>
     </div>
     <div class="row">
-        <div class="col-md-1">Module:</div>
-        <div class="col-md-7"><strong>{{ task.module }}</strong></div>
+        <div class="col-md-1">Hosts:</div>
+        <div class="col-md-7"><strong>{{ runner.pattern }}</strong></div>
         <div class="col-md-1" style="text-align: right">Created:</div>
-        <div class="col-md-3"><strong>{{ task.created_on }}</strong></div>
+        <div class="col-md-3"><strong>{{ runner.created_on }}</strong></div>
     </div>
     <div class="row">
-        <div class="col-md-1">Arguments:</div>
-        <div class="col-md-11"><strong>{{ task.arguments }}</strong></div>
+        <div class="col-md-12">
+            <strong id="runner_message">{% if runner.message %}{{ runner.message }}{% endif %}</strong>
+        </div>
     </div>
     <br>
     <div class="row">
