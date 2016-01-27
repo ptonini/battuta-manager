@@ -13,8 +13,8 @@ from pytz import timezone
 from rq import Worker
 
 from .forms import AdHocForm, RunnerForm
-from .models import AdHoc, Runner, Task, Result
-from .tasks import run_play
+from .models import AdHoc, Runner, Task
+from .plays import enqueue_play
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -26,24 +26,13 @@ class BaseView(View):
 
 
 class RunnerView(View):
-    queues = 'default'
-
-    # Check if there are workers running
-    def check_rq(self):
-        redis_conn = django_rq.get_connection(self.queues)
-        try:
-            if len(Worker.all(connection=redis_conn)) > 0:
-                return [True]
-            else:
-                return [False, 'Error: no workers found']
-        except Exception as error:
-            return [False, str(error)]
+    queue = 'default'
 
     # Execute play
     def execute(self, form_data, play_data, passwords, runner):
-        result = self.check_rq()
-        if result[0] is True:
-            job = run_play.delay(form_data, passwords, play_data, runner)
+        redis_conn = django_rq.get_connection(self.queue)
+        if len(Worker.all(connection=redis_conn)) > 0:
+            job = enqueue_play.delay(form_data, passwords, play_data, runner)
             index = 0
             while job.is_queued is False:
                 if index == 3:
@@ -56,7 +45,7 @@ class RunnerView(View):
             runner.save()
             return {'result': 'ok', 'runner_id': runner.id}
         else:
-            return {'result': 'fail', 'msg': result[1]}
+            return {'result': 'fail', 'msg': 'Error: no workers found'}
 
     def post(self, request):
 
@@ -102,7 +91,7 @@ class RunnerView(View):
         elif request.POST['action'] == 'kill':
             data = {}
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
-            redis_conn = django_rq.get_connection(self.queues)
+            redis_conn = django_rq.get_connection(self.queue)
             for worker in Worker.all(connection=redis_conn):
                 if worker.get_current_job_id() == runner.job_id:
                     process = psutil.Process(int(worker.name.split('.')[1]))
@@ -120,7 +109,8 @@ class AdHocView(BaseView):
         self.context['user'] = request.user
         return render(request, "runner/adhoc.html", self.context)
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if 'id' in request.POST and request.POST['id'] is not unicode(''):
             adhoc = get_object_or_404(AdHoc, pk=request.POST['id'])
         else:
@@ -179,14 +169,11 @@ class ResultView(BaseView):
             self.context['runner'] = runner
             return render(request, "runner/result.html", self.context)
         else:
-            if request.GET['action'] == 'runner_status':
-                data = {'status': runner.status, 'message': runner.message}
-
-            elif request.GET['action'] == 'tasks':
-                data = list()
-                for task in runner.task_set.all():
-                    data.append([task.id, task.name, task.is_complete])
-
+            if request.GET['action'] == 'status':
+                task_list = list()
+                for t in runner.task_set.all():
+                    task_list.append([t.id, t.name])
+                data = {'status': runner.status, 'message': runner.message, 'task_list': task_list}
             elif request.GET['action'] == 'task_results':
                 task = get_object_or_404(Task, pk=request.GET['task_id'])
                 data = list()

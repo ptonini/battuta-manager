@@ -32,7 +32,7 @@ Options = namedtuple('Options', ['connection',
 
 
 @django_rq.job('default')
-def run_play(form_data, passwords, play_data, runner):
+def enqueue_play(form_data, passwords, play_data, runner):
     with Connection():
 
         # Get job ID amd mark play as 'enqueued'

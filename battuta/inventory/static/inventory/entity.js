@@ -297,7 +297,8 @@ $(document).ready(function () {
     // Gather facts on entity
     $('#gather_facts').click(function () {
         var postData = {
-            action: 'run',
+            action: 'run_adhoc',
+            name: 'Gather facts',
             pattern: entityName,
             module: 'setup',
             remote_pass: '',
