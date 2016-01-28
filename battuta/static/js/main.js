@@ -103,7 +103,7 @@ function popupCenter(url, title, w) {
 }
 
 // Run Ad-Hoc command
-function runCommand(postData, askPass) {
+function runAdHocTask(postData, askPass) {
     var alertDialog = $('#alert_dialog');
     function postCommand(postData) {
         $.ajax({

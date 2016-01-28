@@ -35,7 +35,7 @@ class RunnerView(View):
             job = enqueue_play.delay(form_data, passwords, play_data, runner)
             index = 0
             while job.is_queued is False:
-                if index == 3:
+                if index == 5:
                     runner.delete()
                     return {'result': 'fail', 'msg': 'Play was not enqueued'}
                 else:

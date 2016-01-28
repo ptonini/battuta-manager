@@ -111,7 +111,7 @@ class BattutaCallback(CallbackBase):
         host.save()
 
     def v2_playbook_on_play_start(self, play):
-        self.runner.status = 'started'
+        self.runner.status = 'running'
         self.runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):

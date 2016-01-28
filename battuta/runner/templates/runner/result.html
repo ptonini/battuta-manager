@@ -2,18 +2,20 @@
 {% load staticfiles %}
 {% block header %}{% endblock %}
 {% block content %}
-{#    <script src="{% static 'runner/result.js' %}"></script>#}
+    <script src="{% static 'runner/result.js' %}"></script>
     <h4>Runner results</h4>
     <input id="runner_id" type="hidden" value="{{ runner.id }}">
     <hr>
     <div class="row">
-        <div class="col-md-1"><h5>Status:</h5></div>
-        <div class="col-md-2"><h5><strong id="task_status">{{ runner.status }}</strong></h5></div>
-        <div class="col-md-9" style="margin: 10px 0">
-            <span id="task_details" style="visibility: hidden;">
-                <img src="{% static 'images/waiting-small.gif' %}">
-                <button id="cancel_runner" class="btn btn-danger btn-xs">Cancel</button>
-            </span>
+        <div class="col-md-1" style="margin: 7px 0"><h5>Status:</h5></div>
+        <div class="col-md-3" style="margin: 7px 0">
+            <h5>
+                <strong id="runner_status">{{ runner.status }}</strong>
+                <span id="running_span" style="float: right; display: none;">
+                    <img src="{% static 'images/waiting-small.gif' %}">&nbsp&nbsp
+                    <button id="cancel_runner" class="btn btn-danger btn-xs">Cancel</button>
+                </span>
+            </h5>
         </div>
     </div>
     <div class="row">
@@ -33,20 +35,6 @@
             <strong id="runner_message">{% if runner.message %}{{ runner.message }}{% endif %}</strong>
         </div>
     </div>
-    <br>
-    <div class="row">
-        <div class="col-md-12">
-            <a name="result_table"></a>
-            <table id="result_table" class="result_table table table-condensed table-hover table-striped">
-                <thead>
-                <tr>
-                    <th class="col-md-2">host</th>
-                    <th class="col-md-2">status</th>
-                    <th class="col-md-7">message</th>
-                    <th class="col-md-1"></th>
-                </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
+    <hr>
+    <div id="result_container"></div>
 {% endblock %}

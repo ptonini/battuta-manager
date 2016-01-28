@@ -336,7 +336,7 @@ $(document).ready(function () {
                         success: function (data) {
                             currentModule.filepath = data.filepaths[0];
                             postData.arguments = currentModule.buildArguments();
-                            runCommand(postData, askPassword);
+                            runAdHocTask(postData, askPassword);
                             adhocIdSelector.val('');
                         },
                         complete: function () {
@@ -347,7 +347,7 @@ $(document).ready(function () {
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
-                    runCommand(postData, askPassword);
+                    runAdHocTask(postData, askPassword);
                     adhocIdSelector.val('');
                 }
                 break;
