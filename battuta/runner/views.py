@@ -1,20 +1,20 @@
 import ast
 import json
 import os
-import django_rq
 import psutil
 import time
 
-from django.conf import settings
+
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
-from rq import Worker
+from rq import Worker, Queue
+from redis import Redis
 
 from .forms import AdHocForm, RunnerForm
 from .models import AdHoc, Runner, Task
-from .plays import enqueue_play
+from .plays import BattutaRunner, enqueue_play
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -26,55 +26,36 @@ class BaseView(View):
 
 
 class RunnerView(View):
-    queue = 'default'
 
     # Execute play
-    def execute(self, form_data, play_data, passwords, runner):
-        redis_conn = django_rq.get_connection(self.queue)
+    @staticmethod
+    def _execute(form_data, play_data, runner):
+        redis_conn = Redis()
         if len(Worker.all(connection=redis_conn)) > 0:
-            job = enqueue_play.delay(form_data, passwords, play_data, runner)
-            index = 0
-            while job.is_queued is False:
-                if index == 5:
-                    runner.delete()
-                    return {'result': 'fail', 'msg': 'Play was not enqueued'}
-                else:
-                    time.sleep(1)
-                index += 1
-            runner.status = 'enqueued'
-            runner.save()
-            return {'result': 'ok', 'runner_id': runner.id}
+            battuta_runner = BattutaRunner(form_data, play_data, runner)
+            try:
+                enqueue_play.delay(form_data, play_data, runner)
+            except Exception as e:
+                runner.delete()
+                return {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+            else:
+                runner.status = 'enqueued'
+                runner.save()
+                return {'result': 'ok', 'runner_id': runner.id}
         else:
             return {'result': 'fail', 'msg': 'Error: no workers found'}
 
     def post(self, request):
 
-        # Upload file for task
-        if request.POST['action'] == 'upload':
-            user_upload_dir = os.path.join(settings.UPLOAD_DIR, str(request.user.username))
-            try:
-                os.makedirs(user_upload_dir)
-            finally:
-                pass
-            filepaths = list()
-            for key, value in request.FILES.iteritems():
-                filepath = os.path.join(user_upload_dir, str(value.name))
-                filepaths.append(filepath)
-                with open(filepath, 'wb+') as destination:
-                    for chunk in value.chunks():
-                        destination.write(chunk)
-            data = {'result': 'ok', 'filepaths': filepaths}
-
         # Execute adhoc task
-        elif request.POST['action'] == 'run_adhoc':
+        if request.POST['action'] == 'run_adhoc':
             runner_form = RunnerForm(request.POST)
             adhoc_form = AdHocForm(request.POST)
-            if runner_form.is_valid() and adhoc_form.is_valid():
+            if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
                 form_data['username'] = request.user.userdata.ansible_username
-                passwords = {'conn_pass': request.POST['remote_pass'], 'become_pass': request.POST['become_pass']}
                 play_data = {'name': request.POST['name'],
-                             'hosts': request.POST['pattern'],
+                             'hosts': request.POST['hosts'],
                              'gather_facts': 'no',
                              'tasks': [
                                  {'action': {'module': request.POST['module'], 'args': request.POST['arguments']}}
@@ -83,21 +64,23 @@ class RunnerView(View):
                 runner.status = 'created'
                 runner.user = request.user
                 runner.save()
-                data = self.execute(form_data, play_data, passwords, runner)
+                data = self._execute(form_data, play_data, runner)
             else:
-                data = {'result': 'fail', 'msg': str(runner_form.errors) + str(adhoc_form.errors)}
+                data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
 
         # Kill task/play
         elif request.POST['action'] == 'kill':
             data = {}
+            print 'killing', request.POST['runner_id']
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
-            redis_conn = django_rq.get_connection(self.queue)
+            redis_conn = Redis()
             for worker in Worker.all(connection=redis_conn):
                 if worker.get_current_job_id() == runner.job_id:
                     process = psutil.Process(int(worker.name.split('.')[1]))
                     process.terminate()
                     process.terminate()
-                    print 'Worker killed'
+                    runner.status = 'canceled'
+                    runner.save()
 
         else:
             raise Http404('Invalid action')
@@ -121,8 +104,8 @@ class AdHocView(BaseView):
         if request.POST['action'] == 'list':
             data = list()
             for task in AdHoc.objects.all():
-                if request.POST['pattern'] == '' or request.POST['pattern'] == task.pattern:
-                    data.append([task.pattern, task.module, task.arguments, task.sudo, task.id])
+                if request.POST['hosts'] == '' or request.POST['hosts'] == task.hosts:
+                    data.append([task.hosts, task.module, task.arguments, task.sudo, task.id])
         elif request.POST['action'] == 'save':
             if form.is_valid():
                 form.save(commit=True)
@@ -151,7 +134,7 @@ class HistoryView(BaseView):
                         data.append([runner.created_on.astimezone(tz).strftime(date_format),
                                      runner.user.username,
                                      runner.name,
-                                     runner.pattern,
+                                     runner.hosts,
                                      runner.status,
                                      runner.id])
             else:

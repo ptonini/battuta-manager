@@ -97,9 +97,7 @@ function updateStatus (intervalId, runnerStatus, runningSpan) {
                             }
                         });
                     }
-
                 });
-
                 if (['finished', 'failed', 'canceled'].indexOf(data.status) > -1) {
                     runningSpan.hide();
                     clearInterval(intervalId);
@@ -126,14 +124,15 @@ $(document).ready(function () {
     }, 1000);
 
     // Cancel jobs
-    $('#cancel_task').click(function () {
+    $('#cancel_runner').click(function () {
+        console.log('killing ', $('#runner_id').val());
         $.ajax({
-            url: '/runner/adhoc/',
+            url: '/runner/',
             type: 'POST',
             dataType: 'json',
             data: {
                 action: 'kill',
-                task_id: $('#task_id').val()
+                runner_id: $('#runner_id').val()
             }
         });
     });

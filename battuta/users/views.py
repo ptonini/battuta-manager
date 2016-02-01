@@ -1,5 +1,7 @@
 import json
+import os
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse
@@ -77,8 +79,29 @@ class UserView(View):
             form_data['username'] = user.username
             form_data['password'] = user.password
         else:
-            raise Http404('Invalid request type')
-        if request.POST['action'] == 'save':
+            user = request.user
+
+        if request.POST['action'] == 'upload':
+            upload_dir = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username))
+            filepaths = list()
+            if request.POST['type'] == 'rsakey':
+                upload_dir = os.path.join(upload_dir, '.ssh')
+            try:
+                os.makedirs(upload_dir)
+            except:
+                pass
+            for key, value in request.FILES.iteritems():
+                if request.POST['type'] == 'rsakey':
+                    filepath = os.path.join(upload_dir, 'rsakey')
+                else:
+                    filepath = os.path.join(upload_dir, str(value.name))
+                filepaths.append(filepath)
+                with open(filepath, 'wb+') as destination:
+                    for chunk in value.chunks():
+                        destination.write(chunk)
+            data = {'result': 'ok', 'filepaths': filepaths}
+
+        elif request.POST['action'] == 'save':
             if request.user.id == user.id or request.user.is_superuser:
                 user_form = UserForm(form_data or None, instance=user)
                 userdata_form = UserDataForm(form_data or None, instance=user.userdata)

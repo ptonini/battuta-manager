@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class AdHoc(models.Model):
-    pattern = models.CharField(max_length=64)
+    hosts = models.CharField(max_length=64)
     module = models.CharField(max_length=32)
     arguments = models.TextField(max_length=1024, blank=True)
     sudo = models.BooleanField()
@@ -13,10 +13,12 @@ class Runner(models.Model):
     user = models.ForeignKey(User)
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128)
-    pattern = models.CharField(max_length=64)
-    sudo = models.BooleanField()
+    hosts = models.CharField(max_length=64)
     job_id = models.CharField(max_length=128)
     status = models.CharField(max_length=32)
+    tags = models.CharField(max_length=64, blank=True, null=True)
+    subset = models.CharField(max_length=64, blank=True, null=True)
+    check = models.BooleanField()
     message = models.CharField(max_length=1024, blank=True, null=True)
 
 

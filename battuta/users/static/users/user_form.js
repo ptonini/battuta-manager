@@ -3,6 +3,7 @@ $(document).ready(function () {
     var timezoneSelector = $('#timezone');
     var dbTimezone = $('#db_timezone').val();
     var page = $('#page').val();
+    var uploadRSA = false;
 
     timezoneSelector.timezones();
 
@@ -13,6 +14,22 @@ $(document).ready(function () {
     $('#username').keyup(function () {
         $('#ansible_user').val($(this).val())
     });
+
+    $('#rsa_key')
+        .on('change', function (event) {
+            $(this).data('files', event.target.files);
+            uploadRSA = true;
+        })
+        .fileinput({
+            showPreview: false,
+            showRemove: false,
+            showCancel: false,
+            showUpload: false,
+            browseLabel: '',
+            captionClass: 'form-control input-sm',
+            browseClass: 'btn btn-default btn-sm'
+        });
+
 
     // Save user
     $('#user_form').on('submit', function (event) {
@@ -27,49 +44,66 @@ $(document).ready(function () {
             email: $('#email').val(),
             timezone: $('#timezone').val(),
             ansible_username: $('#ansible_user').val(),
-            rsa_key: $('#rsa_key').val()
         };
-        function saveUser(postData) {
-            var alertDialog = $('#alert_dialog');
-            $.ajax({
-                url: '',
-                type: 'POST',
-                dataType: 'json',
-                data: postData,
-                success: function (data) {
-                    if (data.result == 'ok') {
-                        if (page == 'new') {
-                            location.reload();
+        function checkPasswordAndSave(page, postData) {
+            function saveUser(postData) {
+                var alertDialog = $('#alert_dialog');
+                $.ajax({
+                    url: '',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: postData,
+                    success: function (data) {
+                        if (data.result == 'ok') {
+                            if (page == 'new') {
+                                location.reload();
+                            }
+                            else if (page == 'view') {
+                                alertDialog.html('<strong>User saved</strong>');
+                                alertDialog.dialog('open');
+                            }
                         }
-                        else if (page == 'view') {
-                            alertDialog.html('<strong>User saved</strong>');
-                            alertDialog.dialog('open');
+                        else if (data.result == 'fail') {
+                            alertDialog.html('<strong>Form submit error<strong><br><br>');
+                            alertDialog.append(data.msg);
+                            alertDialog.dialog('open')
                         }
                     }
-                    else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Form submit error<strong><br><br>');
-                        alertDialog.append(data.msg);
-                        alertDialog.dialog('open')
-                    }
+                });
+            }
+
+            if (page == 'new') {
+                postData.username = $('#username').val();
+                postData.password = pass1Selector.val();
+                if (postData.password == pass2Selector.val()) {
+                    saveUser(postData)
                 }
-            });
-        }
-        if (page == 'new') {
-            postData.username = $('#username').val();
-            postData.password = pass1Selector.val();
-            if (postData.password == pass2Selector.val()) {
+                else {
+                    alertDialog.html('<strong>Passwords do not match</strong>');
+                    alertDialog.dialog('open')
+                }
+            }
+            else if (page == 'view') {
                 saveUser(postData)
             }
-            else {
-                alertDialog.html('<strong>Passwords do not match</strong>');
-                alertDialog.dialog('open')
+            pass1Selector.val('');
+            pass2Selector.val('');
+        }
+
+        if (uploadRSA) {
+            function successCallback(data) {
+                postData.rsa_key = data.filepaths[0];
+                checkPasswordAndSave(page, postData)
             }
+            uploadFiles($('#rsa_key'), 'rsakey', successCallback)
         }
-        else if (page == 'view') {
-            saveUser(postData)
+        else {
+            checkPasswordAndSave(page, postData)
         }
-        pass1Selector.val('');
-        pass2Selector.val('');
+
+
+
+
     });
 
     //Change password

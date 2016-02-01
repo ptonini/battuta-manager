@@ -10,6 +10,5 @@ urlpatterns = [
     url(r'^search/', login_required(views.SearchView.as_view()), name='search'),
     url(r'^inventory/', include('inventory.urls', namespace='inventory')),
     url(r'^runner/', include('runner.urls', namespace='runner')),
-    url(r'^users/', include('users.urls', namespace='users')),
-    url(r'^django-rq/', include('django_rq.urls')),
+    url(r'^users/', include('users.urls', namespace='users'))
 ]

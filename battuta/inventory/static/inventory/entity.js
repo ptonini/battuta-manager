@@ -299,7 +299,7 @@ $(document).ready(function () {
         var postData = {
             action: 'run_adhoc',
             name: 'Gather facts',
-            pattern: entityName,
+            hosts: entityName,
             module: 'setup',
             remote_pass: '',
             become_pass: '',

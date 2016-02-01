@@ -9,14 +9,14 @@ $(document).ready(function () {
     var patternContainer = $('#pattern_container');
     var fieldsContainer = $('#optional_fields');
     var sudoDiv = $('#sudo_div');
-    var pattern;
+    var hosts;
 
-    // Set pattern based on app
+    // Set hosts pattern based on app
     if (app == 'inventory') {
-        pattern = $('#entity_name').html()
+        hosts = $('#entity_name').html()
     }
     else if (app == 'runner') {
-        pattern = ''
+        hosts = ''
     }
 
     // Build adhoc table
@@ -27,7 +27,7 @@ $(document).ready(function () {
             type: 'POST',
             dataSrc: '',
             data: {
-                pattern: pattern,
+                hosts: hosts,
                 action: 'list'
             }
         },
@@ -90,7 +90,7 @@ $(document).ready(function () {
             deleteDialog.dialog('open');
         }
         else {
-            $('#pattern').val(adhocTable.row($(this).parents('tr')).data()[0]);
+            $('#hosts').val(adhocTable.row($(this).parents('tr')).data()[0]);
             $('#module').val(adhocTable.row($(this).parents('tr')).data()[1]).trigger('change');
             $('#arguments').val(adhocTable.row($(this).parents('tr')).data()[2]);
             if (adhocTable.row($(this).parents('tr')).data()[3] == true) {
@@ -122,6 +122,33 @@ $(document).ready(function () {
             var currentModule = new AnsibleModules(this.value);
             currentModule.buildFormFields(fieldsContainer, sudoDiv)
     });
+
+    // Open pattern editor
+    $('#pattern_editor').click(function () {
+        event.preventDefault();
+        patternContainer.html('');
+        $('#pattern_dialog').dialog({
+            modal: true,
+            show: true,
+            hide: true,
+            width: 400,
+            dialogClass: 'no_title',
+            buttons: {
+                Use: function () {
+                    $('#hosts').val(patternContainer.text());
+                    $(this).dialog('close');
+                },
+                Reset: function () {
+                    patternContainer.addClass('hidden').html('');
+                    $('#hosts').val('');
+                },
+                Cancel: function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+    });
+
 
     // Select entities
     $('.select_entities').click(function () {
@@ -233,32 +260,6 @@ $(document).ready(function () {
         selectDialog.dialog('open');
     });
 
-    // Open pattern editor
-    $('#pattern_editor').click(function () {
-        event.preventDefault();
-        patternContainer.html('');
-        $('#pattern_dialog').dialog({
-            modal: true,
-            show: true,
-            hide: true,
-            width: 400,
-            dialogClass: 'no_title',
-            buttons: {
-                Use: function () {
-                    $('#pattern').val(patternContainer.text());
-                    $(this).dialog('close');
-                },
-                Reset: function () {
-                    patternContainer.addClass('hidden').html('');
-                    $('#pattern').val('');
-                },
-                Cancel: function () {
-                    $(this).dialog('close');
-                }
-            }
-        });
-    });
-
     // Ad-Hoc form button events
     $('#adhoc_form').on('submit', function () {
         event.preventDefault();
@@ -266,11 +267,11 @@ $(document).ready(function () {
         var sudo = $('#sudo').hasClass('checked_button');
         var adhocIdSelector = $('#adhoc_id');
         if (app == 'runner') {
-            pattern = $('#pattern').val()
+            hosts = $('#hosts').val()
         }
         var postData = {
             module: currentModule.name,
-            pattern: pattern,
+            hosts: hosts,
             remote_pass: '',
             become_pass: '',
             become: sudo
@@ -313,43 +314,18 @@ $(document).ready(function () {
                     askPassword = true
                 }
                 if (currentModule.uploadsFile) {
-                    var fileData = new FormData();
-                    var fileInput = $('#file');
-                    var fileInputContainer = fileInput.closest('.file-input');
-                    fileData.append('action', 'file');
-                    $.each(fileInput.data('files'), function (key, value) {
-                        fileData.append(key, value);
-                    });
-                    $('<div>')
-                        .css('height', '30px')
-                        .append($('<img src="/static/images/waiting-small.gif">'))
-                        .insertBefore(fileInputContainer);
-                    fileInputContainer.hide();
-                    $.ajax({
-                        url: '/runner/',
-                        type: 'POST',
-                        data: fileData,
-                        cache: false,
-                        dataType: 'json',
-                        processData: false,
-                        contentType: false,
-                        success: function (data) {
-                            currentModule.filepath = data.filepaths[0];
-                            postData.arguments = currentModule.buildArguments();
-                            runAdHocTask(postData, askPassword);
-                            adhocIdSelector.val('');
-                        },
-                        complete: function () {
-                            fileInputContainer.prev().remove();
-                            fileInputContainer.show();
-                        }
-                    });
+                    function successCallback(data) {
+                        currentModule.filepath = data.filepaths[0];
+                        postData.arguments = currentModule.buildArguments();
+                        runAdHocTask(postData, askPassword);
+                    }
+                    uploadFiles($('#file'), 'file', successCallback);
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
                     runAdHocTask(postData, askPassword);
-                    adhocIdSelector.val('');
                 }
+                adhocIdSelector.val('');
                 break;
             case 'Cancel':
                 $('#cancel_edit').hide();

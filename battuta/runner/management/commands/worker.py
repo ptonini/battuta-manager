@@ -1,6 +1,6 @@
-import django_rq
 from django.core.management.base import BaseCommand
 from rq import Queue, Worker
+from redis import Redis
 
 from runner.models import Runner
 
@@ -16,7 +16,7 @@ def error_handler(job, *exc_info):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        redis_conn = django_rq.get_connection('default')
+        redis_conn = Redis()
         q = Queue(connection=redis_conn)
         worker = Worker([q], exc_handler=error_handler, connection=redis_conn)
         worker.work()

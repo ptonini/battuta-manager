@@ -159,6 +159,39 @@ function prettyBoolean (row, cellIndex) {
     }
 }
 
+// Uploads files to user data folder
+function uploadFiles(fileInput, type, successCallback) {
+    var fileData = new FormData();
+    var fileInputContainer = fileInput.closest('.file-input');
+    fileData.append('action', 'upload');
+    fileData.append('type', type);
+    $.each(fileInput.data('files'), function (key, value) {
+        fileData.append(key, value);
+    });
+    $('<div>')
+        .css('height', '30px')
+        .append($('<img src="/static/images/waiting-small.gif">'))
+        .insertBefore(fileInputContainer);
+    fileInputContainer.hide();
+    $.ajax({
+        url: '/users/',
+        type: 'POST',
+        data: fileData,
+        cache: false,
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            successCallback(data)
+        },
+        complete: function () {
+            fileInputContainer.prev().remove();
+            fileInputContainer.show();
+        }
+    });
+}
+
+
 $(document).ready(function () {
 
     var deleteDialog = $('#delete_dialog');

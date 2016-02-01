@@ -30,7 +30,6 @@ INSTALLED_APPS = (
     'inventory',
     'users',
     'runner',
-    'django_rq'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -114,13 +113,7 @@ CACHES = {
     }
 }
 
-# Use the same redis as with caches for RQ
-RQ_QUEUES = {
-    'default': {
-        'USE_REDIS_CACHE': 'default',
-    },
-}
-
+DATA_DIR = '/opt/ans_data'
 FACTS_DIR = '/opt/ans_data/facts/'
 UPLOAD_DIR = '/opt/ans_data/uploads/'
 
