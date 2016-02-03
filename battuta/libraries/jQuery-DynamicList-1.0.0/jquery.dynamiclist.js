@@ -23,9 +23,11 @@
         var lineHeight = parseFloat(listItems.css('line-height'));
         var lineTopPadding = parseFloat(listItems.css('padding-top'));
         var lineBottomPadding = parseFloat(listItems.css('padding-bottom'));
+
         if (opts.showCount) {
             $('#' + opts.listTitle + '_count').html(' (' + listLength + ')')
         }
+
         for (var i = opts.minColumns; i <= opts.maxColumns; i++) {
             var columnCount = i;
             var itemsPerColumn = parseInt(listLength / i);
@@ -135,21 +137,21 @@
                             'data-toggle': 'tooltip',
                             'title': 'Select all'
                         })
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-check btn-sm'))
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-unchecked btn-sm'))
                         .after(' ')
                         .click( function () {
                             var addClass;
                             switch ($(this).attr('title')) {
                                 case 'Select all':
                                     $(this).attr('title', 'Deselect all');
-                                    $(this).children('span').removeClass('glyphicon-check');
-                                    $(this).children('span').addClass('glyphicon-unchecked');
+                                    $(this).children('span').removeClass('glyphicon-unchecked');
+                                    $(this).children('span').addClass('glyphicon-check');
                                     addClass = true;
                                     break;
                                 case 'Deselect all':
                                     $(this).attr('title', 'Select all');
-                                    $(this).children('span').removeClass('glyphicon-unchecked');
-                                    $(this).children('span').addClass('glyphicon-check');
+                                    $(this).children('span').removeClass('glyphicon-check');
+                                    $(this).children('span').addClass('glyphicon-unchecked');
                                     addClass = false;
                                     break;
                             }

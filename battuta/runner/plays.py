@@ -1,6 +1,9 @@
 import os
 import json
+import hashlib
+import ast
 
+from Crypto.Cipher import AES
 from redis import Redis
 from rq import Connection, get_current_job
 from rq.decorators import job
@@ -33,70 +36,13 @@ Options = namedtuple('Options', ['connection',
 
 
 @job('default', connection=Redis())
-class BattutaRunner:
-
-    def __init__(self, form_data, play_data, runner):
-        self._runner = runner
-
-        # Create ansible default objects
-        variable_manager = VariableManager()
-        loader = DataLoader()
-        inventory = Inventory(loader=loader, variable_manager=variable_manager)
-        variable_manager.set_inventory(inventory)
-
-        passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
-
-        # Add host list to runner object
-        host_list = inventory.get_hosts(pattern=runner.hosts)
-
-        # Set inventory subset if available:
-        if 'subset' in form_data:
-            inventory.subset(form_data['subset'])
-
-        # Set ansible options
-        options = Options(connection='paramiko',
-                          module_path=c.DEFAULT_MODULE_PATH,
-                          forks=c.DEFAULT_FORKS,
-                          remote_user=form_data['username'],
-                          private_key_file=runner.user.userdata.rsa_key,
-                          ssh_common_args=None,
-                          ssh_extra_args=None,
-                          sftp_extra_args=None,
-                          scp_extra_args=None,
-                          become=form_data['become'],
-                          become_method=c.DEFAULT_BECOME_METHOD,
-                          become_user=c.DEFAULT_BECOME_USER,
-                          verbosity=None,
-                          check=False,
-                          tags=False,
-                          skip_tags=False,)
-
-        # Create ansible play object
-        self._play = Play().load(play_data, variable_manager=variable_manager, loader=loader)
-
-        # Execute play
-        self._tqm = TaskQueueManager(inventory=inventory,
-                                     variable_manager=variable_manager,
-                                     passwords=passwords,
-                                     loader=loader,
-                                     options=options,
-                                     stdout_callback=BattutaCallback(runner, host_list))
-
-    def run(self):
-        tqm = None
-        try:
-            tqm = self._tqm
-            tqm.run(self._play)
-        finally:
-            if tqm is not None:
-                tqm.cleanup()
-                self._runner.status = 'finished'
-                self._runner.save()
-
-
-@job('default', connection=Redis())
-def enqueue_play(form_data, play_data, runner):
+def enqueue_play(play_data, runner, encrypted_data):
     with Connection():
+        key = hashlib.sha256('12345678').digest()
+        decryptor = AES.new(key, AES.MODE_CBC, 16 * '\x00')
+        decrypted_data = decryptor.decrypt(encrypted_data)
+        form_data = ast.literal_eval(decrypted_data)
+
         current_job = get_current_job()
         runner.job_id = current_job.get_id()
         runner.status = 'enqueued'
@@ -153,6 +99,7 @@ def enqueue_play(form_data, play_data, runner):
                 tqm.cleanup()
                 runner.status = 'finished'
                 runner.save()
+                current_job.delete()
 
 
 class BattutaCallback(CallbackBase):

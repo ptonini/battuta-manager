@@ -8,7 +8,7 @@ from runner.models import Runner
 def error_handler(job, *exc_info):
     runner = Runner.objects.get(job_id=job.get_id())
     runner.status = 'failed'
-    runner.error_message = str(exc_info[0].__name__) + ': ' + str(exc_info[1])
+    runner.message = str(exc_info[0].__name__) + ': ' + str(exc_info[1])
     runner.save()
     job.delete()
     return False

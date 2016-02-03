@@ -1,20 +1,19 @@
 import ast
 import json
-import os
 import psutil
-import time
+import hashlib
 
-
+from Crypto.Cipher import AES
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
-from rq import Worker, Queue
+from rq import Worker
 from redis import Redis
 
 from .forms import AdHocForm, RunnerForm
 from .models import AdHoc, Runner, Task
-from .plays import BattutaRunner, enqueue_play
+from .plays import enqueue_play
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -30,11 +29,14 @@ class RunnerView(View):
     # Execute play
     @staticmethod
     def _execute(form_data, play_data, runner):
-        redis_conn = Redis()
-        if len(Worker.all(connection=redis_conn)) > 0:
-            battuta_runner = BattutaRunner(form_data, play_data, runner)
+        padded_data = form_data + (16 - len(form_data) % 16) * ' '
+        key = hashlib.sha256('12345678').digest()
+        encryptor = AES.new(key, AES.MODE_CBC, 16 * '\x00')
+        encrypted_data = encryptor.encrypt(padded_data)
+
+        if len(Worker.all(connection=(Redis()))) > 0:
             try:
-                enqueue_play.delay(form_data, play_data, runner)
+                enqueue_play.delay(play_data, runner, encrypted_data)
             except Exception as e:
                 runner.delete()
                 return {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
@@ -54,6 +56,7 @@ class RunnerView(View):
             if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
                 form_data['username'] = request.user.userdata.ansible_username
+                form_data = json.dumps(form_data)
                 play_data = {'name': request.POST['name'],
                              'hosts': request.POST['hosts'],
                              'gather_facts': 'no',
