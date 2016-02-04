@@ -101,7 +101,7 @@ class BattutaCallback(CallbackBase):
     def _extract_result(result):
         return result._host.get_name(), result._result
 
-    def __save_result(self, host, status, message, result):
+    def _save_result(self, host, status, message, result):
         runner_task = self.runner.task_set.latest('id')
         query_set = runner_task.result_set.filter(host=host)
         host = query_set[0]
@@ -135,7 +135,7 @@ class BattutaCallback(CallbackBase):
             response = [response]
         elif module == 'shell' or module == 'script':
             message = response['stdout'] + response['stderr']
-        self.__save_result(host, 'failed', message, response)
+        self._save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):
         host, response = self._extract_result(result)
@@ -153,11 +153,11 @@ class BattutaCallback(CallbackBase):
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
-        self.__save_result(host, status, message, response)
+        self._save_result(host, status, message, response)
 
     def v2_runner_on_skipped(self, result):
         host, response = self._extract_result(result)
-        self.__save_result(host, 'skipped', host + ' skipped', {})
+        self._save_result(host, 'skipped', host + ' skipped', {})
 
     def v2_runner_on_unreachable(self, result):
         host, response = self._extract_result(result)
@@ -166,4 +166,4 @@ class BattutaCallback(CallbackBase):
         else:
             message = 'Host unreachable'
             response = [response]
-        self.__save_result(host, 'unreachable', message, response)
+        self._save_result(host, 'unreachable', message, response)

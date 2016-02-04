@@ -34,8 +34,6 @@ class RunnerView(View):
             runner.delete()
             return {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
         else:
-            runner.status = 'enqueued'
-            runner.save()
             return {'result': 'ok', 'runner_id': runner.id}
 
     def post(self, request):
