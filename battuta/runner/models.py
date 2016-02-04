@@ -14,7 +14,7 @@ class Runner(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128)
     hosts = models.CharField(max_length=64)
-    job_id = models.CharField(max_length=128)
+    pid = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=32)
     tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)

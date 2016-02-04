@@ -1,19 +1,17 @@
 import ast
 import json
 import psutil
-import hashlib
 
-from Crypto.Cipher import AES
+
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
-from rq import Worker
-from redis import Redis
+from multiprocessing import Process
 
 from .forms import AdHocForm, RunnerForm
 from .models import AdHoc, Runner, Task
-from .plays import enqueue_play
+from . import run_play
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -28,24 +26,17 @@ class RunnerView(View):
 
     # Execute play
     @staticmethod
-    def _execute(form_data, play_data, runner):
-        padded_data = form_data + (16 - len(form_data) % 16) * ' '
-        key = hashlib.sha256('12345678').digest()
-        encryptor = AES.new(key, AES.MODE_CBC, 16 * '\x00')
-        encrypted_data = encryptor.encrypt(padded_data)
-
-        if len(Worker.all(connection=(Redis()))) > 0:
-            try:
-                enqueue_play.delay(play_data, runner, encrypted_data)
-            except Exception as e:
-                runner.delete()
-                return {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
-            else:
-                runner.status = 'enqueued'
-                runner.save()
-                return {'result': 'ok', 'runner_id': runner.id}
+    def _run(form_data, play_data, runner):
+        try:
+            p = Process(target=run_play, args=(play_data, runner, form_data,))
+            p.start()
+        except Exception as e:
+            runner.delete()
+            return {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
         else:
-            return {'result': 'fail', 'msg': 'Error: no workers found'}
+            runner.status = 'enqueued'
+            runner.save()
+            return {'result': 'ok', 'runner_id': runner.id}
 
     def post(self, request):
 
@@ -56,7 +47,6 @@ class RunnerView(View):
             if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
                 form_data['username'] = request.user.userdata.ansible_username
-                form_data = json.dumps(form_data)
                 play_data = {'name': request.POST['name'],
                              'hosts': request.POST['hosts'],
                              'gather_facts': 'no',
@@ -67,23 +57,21 @@ class RunnerView(View):
                 runner.status = 'created'
                 runner.user = request.user
                 runner.save()
-                data = self._execute(form_data, play_data, runner)
+                data = self._run(form_data, play_data, runner)
             else:
                 data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
 
         # Kill task/play
         elif request.POST['action'] == 'kill':
             data = {}
-            print 'killing', request.POST['runner_id']
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
-            redis_conn = Redis()
-            for worker in Worker.all(connection=redis_conn):
-                if worker.get_current_job_id() == runner.job_id:
-                    process = psutil.Process(int(worker.name.split('.')[1]))
-                    process.terminate()
-                    process.terminate()
-                    runner.status = 'canceled'
-                    runner.save()
+            process = psutil.Process(runner.pid)
+            process.suspend()
+            for child in process.children(recursive=True):
+                child.kill()
+            process.kill()
+            runner.status = 'canceled'
+            runner.save()
 
         else:
             raise Http404('Invalid action')
