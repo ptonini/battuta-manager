@@ -1,7 +1,7 @@
 .idea
 .vagrant
 *.iml
-ans_data/uploads/*
+ans_data/userdata/*
 ans_data/facts/*
 migrations
 db.sqlite3

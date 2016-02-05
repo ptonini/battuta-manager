@@ -3,6 +3,7 @@ $(document).ready(function () {
     var timezoneSelector = $('#timezone');
     var dbTimezone = $('#db_timezone').val();
     var page = $('#page').val();
+    var rsaKey = $('#rsa_key');
     var uploadRSA = false;
 
     timezoneSelector.timezones();
@@ -14,8 +15,7 @@ $(document).ready(function () {
     $('#username').keyup(function () {
         $('#ansible_user').val($(this).val())
     });
-
-    $('#rsa_key')
+    rsaKey
         .on('change', function (event) {
             $(this).data('files', event.target.files);
             uploadRSA = true;
@@ -27,7 +27,8 @@ $(document).ready(function () {
             showUpload: false,
             browseLabel: '',
             captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm'
+            browseClass: 'btn btn-default btn-sm',
+            initialCaption: rsaKey.data('value')
         });
 
 

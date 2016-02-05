@@ -61,16 +61,19 @@ class RunnerView(View):
 
         # Kill task/play
         elif request.POST['action'] == 'kill':
-            data = {}
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
-            process = psutil.Process(runner.pid)
-            process.suspend()
-            for child in process.children(recursive=True):
-                child.kill()
-            process.kill()
-            runner.status = 'canceled'
-            runner.save()
-
+            try:
+                process = psutil.Process(runner.pid)
+            except Exception as e:
+                data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(runner.pid)}
+            else:
+                process.suspend()
+                for child in process.children(recursive=True):
+                    child.kill()
+                process.kill()
+                runner.status = 'canceled'
+                runner.save()
+                data = {'result': 'ok', 'runner_id': runner.id}
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")

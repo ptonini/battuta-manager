@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
 
+*
 from .models import User, UserData
 from .forms import UserForm, UserDataForm
 
@@ -118,10 +119,12 @@ class UserView(View):
                     data = {'result': 'fail', 'msg': str(user_form.errors) + str(userdata_form.errors)}
             else:
                 raise PermissionDenied
+
         elif request.POST['action'] == 'delete':
             user.userdata.delete()
             user.delete()
             data = {'result': 'ok'}
+
         elif request.POST['action'] == 'chgpass':
             if request.user.check_password(request.POST['oldpass']):
                 request.user.set_password(request.POST['newpass'])

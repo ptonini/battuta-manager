@@ -125,7 +125,7 @@ $(document).ready(function () {
 
     // Cancel jobs
     $('#cancel_runner').click(function () {
-        console.log('killing ', $('#runner_id').val());
+        var alertDialog = $('#alert_dialog');
         $.ajax({
             url: '/runner/',
             type: 'POST',
@@ -133,8 +133,16 @@ $(document).ready(function () {
             data: {
                 action: 'kill',
                 runner_id: $('#runner_id').val()
+            },
+            success: function (data) {
+                if (data.result == 'fail') {
+                    alertDialog.html('<strong>Submit error<strong><br><br>');
+                    alertDialog.append(data.msg);
+                    alertDialog.dialog('open')
+                }
             }
-        });
+        })
+
     });
 
 });
