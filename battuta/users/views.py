@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from pytz import timezone
 
-*
 from .models import User, UserData
 from .forms import UserForm, UserDataForm
 

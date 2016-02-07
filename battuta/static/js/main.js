@@ -312,7 +312,7 @@ $(document).ready(function () {
             'minColumns': 3,
             'maxColumns': 6,
             'breakPoint': 9,
-            'ajaxUrl': '/inventory/get/' + entityType + 's/',
+            'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
             'formatItem': function (listItem) {
                 $(listItem).click(function () {
                     window.open('/inventory/' + entityType + '/' + $(this).data('id'), '_self')

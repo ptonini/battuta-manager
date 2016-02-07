@@ -10,6 +10,44 @@ from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
 
+class InventoryView(View):
+    @staticmethod
+    def get(request):
+        if request.GET['action'] == 'search':
+            data = list()
+            if request.GET['type'] == 'host':
+                for host in Host.objects.order_by('name'):
+                    if host.name.find(request.GET['pattern']) > -1:
+                        data.append([host.name, host.id])
+            elif request.GET['type'] == 'group':
+                for group in Group.objects.order_by('name'):
+                    if group.name.find(request.GET['pattern']) > -1:
+                        data.append([group.name, group.id])
+            else:
+                return Http404('Invalid entity type')
+        elif request.GET['action'] == 'list':
+            groups = Group.objects.order_by('name')
+            data = {'_meta': {'hostvars': {}}}
+            for host in Host.objects.order_by('name'):
+                data['_meta']['hostvars'][host.name] = {}
+                for var in host.variable_set.all():
+                    data['_meta']['hostvars'][host.name][var.key] = var.value
+            for group in groups:
+                data[group.name] = dict()
+                data[group.name]['hosts'] = list()
+                data[group.name]['vars'] = dict()
+                data[group.name]['children'] = list()
+                for host in group.members.all():
+                    data[group.name]['hosts'].append(host.name)
+                for var in group.variable_set.all():
+                    data[group.name]['vars'][var.key] = var.value
+                for child in group.children.all():
+                    data[group.name]['children'].append(child.name)
+        else:
+            return Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
 class EntitiesView(View):
     context = dict()
 
@@ -173,34 +211,3 @@ class RelationsView(View):
         return HttpResponse(json.dumps({'result': 'ok'}), content_type="application/json")
 
 
-class InventoryView(View):
-    @staticmethod
-    def get(request, action):
-        data = list()
-        if action == 'hosts':
-            for host in Host.objects.order_by('name'):
-                data.append([host.name, host.id])
-        elif action == 'groups':
-            for group in Group.objects.order_by('name'):
-                data.append([group.name, group.id])
-        elif action == 'all':
-            groups = Group.objects.order_by('name')
-            data = {'_meta': {'hostvars': {}}}
-            for host in Host.objects.order_by('name'):
-                data['_meta']['hostvars'][host.name] = {}
-                for var in host.variable_set.all():
-                    data['_meta']['hostvars'][host.name][var.key] = var.value
-            for group in groups:
-                data[group.name] = dict()
-                data[group.name]['hosts'] = list()
-                data[group.name]['vars'] = dict()
-                data[group.name]['children'] = list()
-                for host in group.members.all():
-                    data[group.name]['hosts'].append(host.name)
-                for var in group.variable_set.all():
-                    data[group.name]['vars'][var.key] = var.value
-                for child in group.children.all():
-                    data[group.name]['children'].append(child.name)
-        else:
-            return Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")

@@ -2,7 +2,6 @@ import ast
 import json
 import psutil
 
-
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
@@ -52,8 +51,8 @@ class RunnerView(View):
                                  {'action': {'module': request.POST['module'], 'args': request.POST['arguments']}}
                              ]}
                 runner = runner_form.save(commit=False)
-                runner.status = 'created'
                 runner.user = request.user
+                runner.status = 'created'
                 runner.save()
                 data = self._run(form_data, play_data, runner)
             else:

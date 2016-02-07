@@ -185,7 +185,7 @@ $(document).ready(function () {
             'maxColumns': 6,
             'breakPoint': 9,
             'itemToggle': true,
-            'ajaxUrl': '/inventory/get/' + entityType + 's/',
+            'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
             'loadCallback': function (listContainer) {
                 var currentList = listContainer.find('div.dynamic-list');
                 selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);

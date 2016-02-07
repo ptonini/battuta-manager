@@ -4,17 +4,24 @@
 
 (function ($) {
 
-    function _buildList(listDiv, data) {
-        listDiv.empty();
-        $.each(data, function (index, value) {
-            listDiv.append(
-                $('<div>').html(value[0]).attr({
-                    'class': 'list-group-item dynamic-item',
-                    'data-value': value[0],
-                    'data-id': value[1]
-                }).css({'vertical-align': 'middle'})
-            );
-        });
+    function _buildList(listDiv, listContainer,  data, opts) {
+        if (data.length == 0 && opts.hideIfEmpty) {
+            listContainer.hide()
+        }
+        else {
+            listContainer.show();
+            listDiv.empty();
+            $.each(data, function (index, value) {
+                listDiv.append(
+                    $('<div>').html(value[0]).attr({
+                        'class': 'list-group-item dynamic-item',
+                        'data-value': value[0],
+                        'data-id': value[1]
+                    }).css({'vertical-align': 'middle'})
+                );
+            });
+        }
+
     }
 
     function _formatList(listDiv, opts) {
@@ -80,7 +87,7 @@
             dataType: 'JSON',
             data: opts.ajaxData,
             success: function (data) {
-                _buildList(listDiv, data);
+                _buildList(listDiv, listContainer, data, opts);
                 _formatList(listDiv, opts);
                 _formatItems(listDiv, opts);
                 opts.loadCallback(listContainer)
@@ -89,7 +96,7 @@
     }
 
     function _loadFromArray(data, listContainer, listDiv, opts) {
-        _buildList(listDiv, data);
+        _buildList(listDiv, listContainer,  data, opts);
         _formatList(listDiv, opts);
         _formatItems(listDiv, opts);
         opts.loadCallback(listContainer);
@@ -109,7 +116,10 @@
                     'class': 'dynamic-list-header',
                     'title': opts.listTitle
                 })
-                .css({'padding-bottom': opts.headerBottomPadding});
+                .css({
+                    'padding-bottom': opts.headerBottomPadding,
+                    'text-transform': 'capitalize'
+                });
             $(listDiv)
                 .attr({
                     'class': 'list-group dynamic-list',
@@ -252,6 +262,7 @@
         'showAddButton': false,
         'showHeaderHR': false,
         'showListHR': false,
+        'hideIfEmpty': false,
         'addButtonClass': '',
         'addButtonTitle':'',
         "titleFontSize": '14px',
