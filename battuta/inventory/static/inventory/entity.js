@@ -131,11 +131,11 @@ $(document).ready(function () {
                                             description: $('#id_description').val()
                                         },
                                         success: function (data) {
-                                            if (data.result == 'OK') {
+                                            if (data.result == 'ok') {
                                                 selectDialog.DynamicList('load');
                                                 entityDialog.dialog('close');
                                             }
-                                            else if (data.result == 'FAIL') {
+                                            else if (data.result == 'fail') {
                                                 alertDialog.html('<strong>Form submit error<br><br></strong>');
                                                 alertDialog.append(data.msg);
                                                 alertDialog.dialog('open');
@@ -261,6 +261,14 @@ $(document).ready(function () {
                 return '<a href="/inventory/group/' + data[3] + '">' + data[2] + '</a>';
             }
         }]
+    });
+
+
+    // Edit entity
+    $('#edit_entity').click(function () {
+        event.preventDefault();
+        $('#entity_dialog_header').html('Edit ' + entityName);
+        entityDialog.dialog('open');
     });
 
     // Delete entity

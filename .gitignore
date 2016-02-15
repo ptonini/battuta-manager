@@ -3,7 +3,8 @@
 *.iml
 ans_data/userdata/*
 ans_data/facts/*
+ans_data/roles/*
+ans_data/playbooks/*
 migrations
 db.sqlite3
 
-]

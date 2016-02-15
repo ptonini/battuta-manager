@@ -14,6 +14,4 @@ urlpatterns = [
 
     url(r'^(?P<entity_type>\w+)/(?P<entity_id>[0-9]+)/(?P<relation>\w+)/$',
         login_required(views.RelationsView.as_view()), name='relations'),
-
-
 ]

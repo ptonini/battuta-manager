@@ -150,6 +150,7 @@
                         .append($('<span>').attr('class', 'glyphicon glyphicon-unchecked btn-sm'))
                         .after(' ')
                         .click( function () {
+                            event.preventDefault();
                             var addClass;
                             switch ($(this).attr('title')) {
                                 case 'Select all':
@@ -184,6 +185,7 @@
                         .append('<span class="glyphicon glyphicon-plus btn-sm"></span>')
                         .after(' ')
                         .click(function () {
+                            event.preventDefault();
                             opts.addButtonAction(this)
                         })
                 )
