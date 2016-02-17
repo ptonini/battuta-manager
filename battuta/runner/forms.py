@@ -12,7 +12,7 @@ class RunnerForm(forms.ModelForm):
 class AdHocForm(forms.ModelForm):
     class Meta:
         model = AdHoc
-        fields = ['module', 'hosts', 'arguments', 'sudo']
+        fields = ['module', 'hosts', 'arguments', 'become']
 
 
 

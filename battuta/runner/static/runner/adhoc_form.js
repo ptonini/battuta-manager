@@ -149,7 +149,6 @@ $(document).ready(function () {
         });
     });
 
-
     // Select entities
     $('.select_entities').click(function () {
         var entityType = $(this).data('type');
@@ -269,6 +268,7 @@ $(document).ready(function () {
         if (app == 'runner') {
             hosts = $('#hosts').val()
         }
+        console.log(sudo);
         var postData = {
             module: currentModule.name,
             hosts: hosts,

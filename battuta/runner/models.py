@@ -6,7 +6,7 @@ class AdHoc(models.Model):
     hosts = models.CharField(max_length=64)
     module = models.CharField(max_length=32)
     arguments = models.TextField(max_length=1024, blank=True)
-    sudo = models.BooleanField()
+    become = models.BooleanField()
 
 
 class Runner(models.Model):
