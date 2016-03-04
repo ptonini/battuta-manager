@@ -52,9 +52,11 @@
                         <div class="form-group">
                             <label for="value" class="sr-only requiredField">Value</label>
                             <input class="textinput textInput form-control input-sm"
-                                   id="value" placeholder="Value" type="text">
+                                   id="value" placeholder="Value" type="text" style="width: 400px">
                         </div>
                         <button type="submit" id="save_variable" class="btn btn-default btn-sm">Save</button>
+                        <button type="submit" id="cancel_var_edit" class="btn btn-default btn-sm"
+                                style="display: none">Cancel</button>
                     </form>
                     {% if entity.name != 'all' %}
                         <hr>

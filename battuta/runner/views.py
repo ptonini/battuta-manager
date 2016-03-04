@@ -96,7 +96,7 @@ class AdHocView(BaseView):
             data = list()
             for task in AdHoc.objects.all():
                 if request.POST['hosts'] == '' or request.POST['hosts'] == task.hosts:
-                    data.append([task.hosts, task.module, task.arguments, task.sudo, task.id])
+                    data.append([task.hosts, task.module, task.arguments, task.become, task.id])
         elif request.POST['action'] == 'save':
             if form.is_valid():
                 form.save(commit=True)

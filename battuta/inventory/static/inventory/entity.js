@@ -23,6 +23,7 @@ $(document).ready(function () {
     var deleteDialog = $('#delete_dialog');
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
+    var cancelVarEdit = $('#cancel_var_edit');
     var jsonBox = $('#json_box');
     var jsonDialog = $('#json_dialog');
 
@@ -181,8 +182,10 @@ $(document).ready(function () {
 
     // Edit or delete variable
     variableTableSelector.children('tbody').on('click', 'a', function () {
+        event.preventDefault();
         var var_id = variableTable.row($(this).parents('tr')).data()[2];
         if ($(this).attr('title') == 'Edit') {
+            cancelVarEdit.show();
             $('#var_form_label').html('Edit variable');
             $('#key').val(variableTable.row($(this).parents('tr')).data()[0]);
             $('#value').val(variableTable.row($(this).parents('tr')).data()[1]);
@@ -221,30 +224,44 @@ $(document).ready(function () {
     // Save variable
     $('#variable_form').on('submit', function (event) {
         event.preventDefault();
-        $.ajax({
-            url: 'variable/save/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                id: $('#variable_id').val(),
-                key: $('#key').val(),
-                value: $('#value').val()
-            },
-            success: function (data) {
-                if (data.result == 'ok') {
-                    variableTable.ajax.reload();
-                    $('#key').val('').focus();
-                    $('#value').val('');
-                    $('#variable_id').val('');
-                    $('#var_form_label').html('Add variable');
-                }
-                else if (data.result == 'fail') {
-                    alertDialog.html('<strong>Form submit error<br><br></strong>');
-                    alertDialog.append(data.msg);
-                    alertDialog.dialog('open');
-                }
-            }
-        });
+        function clearVariableForm () {
+            cancelVarEdit.hide();
+            $('#key').val('').focus();
+            $('#value').val('');
+            $('#variable_id').val('');
+            $('#var_form_label').html('Add variable');
+        }
+        console.log($(document.activeElement).html());
+        switch ($(document.activeElement).html()) {
+            case 'Save':
+                $.ajax({
+                    url: 'variable/save/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        id: $('#variable_id').val(),
+                        key: $('#key').val(),
+                        value: $('#value').val()
+                    },
+                    success: function (data) {
+                        if (data.result == 'ok') {
+                            variableTable.ajax.reload();
+                            clearVariableForm();
+                        }
+                        else if (data.result == 'fail') {
+                            alertDialog.html('<strong>Form submit error<br><br></strong>');
+                            alertDialog.append(data.msg);
+                            alertDialog.dialog('open');
+                        }
+                    }
+                });
+                break;
+            case 'Cancel':
+                console.log('bunda');
+                clearVariableForm();
+                break;
+        }
+
     });
 
     // Build inherited variables table
@@ -263,11 +280,43 @@ $(document).ready(function () {
         }]
     });
 
-
     // Edit entity
     $('#edit_entity').click(function () {
         event.preventDefault();
         $('#entity_dialog_header').html('Edit ' + entityName);
+        entityDialog.dialog('option', 'buttons', [
+            {
+                text: 'Save',
+                click: function () {
+                    $.ajax({
+                        url: '',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'save',
+                            name: $('#id_name').val(),
+                            description: $('#id_description').val()
+                        },
+                        success: function (data) {
+                            if (data.result == 'ok') {
+                                entityDialog.dialog('close');
+                            }
+                            else if (data.result == 'fail') {
+                                alertDialog.html('<strong>Form submit error<br><br></strong>');
+                                alertDialog.append(data.msg);
+                                alertDialog.dialog('open');
+                            }
+                        }
+                    });
+                }
+            },
+            {
+                text: 'Cancel',
+                click: function () {
+                    entityDialog.dialog('close');
+                }
+            }
+        ]);
         entityDialog.dialog('open');
     });
 
