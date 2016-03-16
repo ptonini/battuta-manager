@@ -196,6 +196,7 @@ $(document).ready(function () {
 
     var deleteDialog = $('#delete_dialog');
     var alertDialog = $('#alert_dialog');
+    var importDialog = $('#import_dialog');
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
     var jsonDialog = $('#json_dialog');
@@ -218,6 +219,20 @@ $(document).ready(function () {
         dialogClass: 'no_title',
         buttons: {
             Ok: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+
+    // Initialize import dialog
+    importDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Cancel: function () {
                 $(this).dialog('close');
             }
         }

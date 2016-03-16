@@ -1,5 +1,7 @@
 import json
 import os
+import tempfile
+import csv
 
 from django.conf import settings
 from django.http import HttpResponse, Http404
@@ -11,41 +13,79 @@ from .forms import HostForm, GroupForm, VariableForm
 
 
 class InventoryView(View):
-    @staticmethod
-    def get(request):
+    data = None
+
+    def get(self, request):
         if request.GET['action'] == 'search':
-            data = list()
+            self.data = list()
             if request.GET['type'] == 'host':
                 for host in Host.objects.order_by('name'):
                     if host.name.find(request.GET['pattern']) > -1:
-                        data.append([host.name, host.id])
+                        self.data.append([host.name, host.id])
             elif request.GET['type'] == 'group':
                 for group in Group.objects.order_by('name'):
                     if group.name.find(request.GET['pattern']) > -1:
-                        data.append([group.name, group.id])
+                        self.data.append([group.name, group.id])
             else:
                 return Http404('Invalid entity type')
         elif request.GET['action'] == 'list':
             groups = Group.objects.order_by('name')
-            data = {'_meta': {'hostvars': {}}}
+            self.data = {'_meta': {'hostvars': {}}}
             for host in Host.objects.order_by('name'):
-                data['_meta']['hostvars'][host.name] = {}
+                self.data['_meta']['hostvars'][host.name] = {}
                 for var in host.variable_set.all():
-                    data['_meta']['hostvars'][host.name][var.key] = var.value
+                    self.data['_meta']['hostvars'][host.name][var.key] = var.value
             for group in groups:
-                data[group.name] = dict()
-                data[group.name]['hosts'] = list()
-                data[group.name]['vars'] = dict()
-                data[group.name]['children'] = list()
+                self.data[group.name] = dict()
+                self.data[group.name]['hosts'] = list()
+                self.data[group.name]['vars'] = dict()
+                self.data[group.name]['children'] = list()
                 for host in group.members.all():
-                    data[group.name]['hosts'].append(host.name)
+                    self.data[group.name]['hosts'].append(host.name)
                 for var in group.variable_set.all():
-                    data[group.name]['vars'][var.key] = var.value
+                    self.data[group.name]['vars'][var.key] = var.value
                 for child in group.children.all():
-                    data[group.name]['children'].append(child.name)
+                    self.data[group.name]['children'].append(child.name)
+
+        elif request.GET['action'] == 'import':
+            with open('/opt/ans_data/import.csv', 'r') as csv_file:
+                csv_data = csv.reader(csv_file)
+                next(csv_data)
+                for row in csv_data:
+                    host = get_object_or_404(Host, name=row[0])
+                    variable = Variable(key='ansible_host', value=row[1], host=host)
+                    variable.save()
+
         else:
             return Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(self.data), content_type="application/json")
+
+    def post(self, request):
+        if request.GET['action'] == 'import':
+            for key, value in request.FILES.iteritems():
+                csv_file = tempfile.TemporaryFile()
+                for chunk in value.chunks():
+                    csv_file.write(chunk)
+                if csv.Sniffer().has_header(csv_file.read(1024)):
+                    csv_data = csv.reader(csv_file)
+                    header = csv_data[0]
+                    next(csv_data)
+                    for row in csv_data:
+                        host = Host(name=row[0])
+                        host.save()
+                        variable = Variable(key='ansible_host', value=row[1], host=host)
+                        variable.save()
+                    self.data = {'result': 'ok'}
+                else:
+                    self.data = {'result': 'failed', 'msg': 'No header found'}
+                csv_file.close()
+
+
+
+
+        else:
+            return Http404('Invalid action')
+        return HttpResponse(json.dumps(self.data), content_type="application/json")
 
 
 class EntitiesView(View):
@@ -209,5 +249,3 @@ class RelationsView(View):
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps({'result': 'ok'}), content_type="application/json")
-
-

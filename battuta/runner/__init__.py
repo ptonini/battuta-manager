@@ -133,7 +133,7 @@ class BattutaCallback(CallbackBase):
         if 'exception' in response:
             message = 'Exception raised'
             response = [response]
-        elif module == 'shell' or module == 'script':
+        elif module == 'command' or module == 'script':
             message = response['stdout'] + response['stderr']
         self._save_result(host, 'failed', message, response)
 

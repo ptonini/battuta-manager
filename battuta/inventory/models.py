@@ -30,7 +30,7 @@ class Group(models.Model):
 
 class Variable(models.Model):
     key = models.CharField(max_length=32, blank=False)
-    value = models.CharField(max_length=128)
+    value = models.CharField(max_length=1024)
     host = models.ForeignKey('Host', blank=True, null=True)
     group = models.ForeignKey('Group', blank=True, null=True)
 

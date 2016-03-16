@@ -44,6 +44,12 @@
                         <ul class="dropdown-menu">
                             <li><a class="open_entity" data-type="group">Groups</a></li>
                             <li><a class="open_entity" data-type="host">Hosts</a></li>
+                            <li class="dropdown">
+                                <a tabindex="-1" href="#">Import</a>
+                                <ul class="dropdown-menu">
+                                    <li><a>CSV/XML</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -129,6 +135,7 @@
 </footer>
 <span style="visibility: hidden" id="get_length"></span>
 <div class="hidden">
+    <div id="import_dialog"></div>
     <div id="delete_dialog" class="text-center"><strong>This action cannot be undone</strong></div>
     <div id="alert_dialog" class="text-center"></div>
     <div id="entity_dialog" class="text-center">
