@@ -46,8 +46,8 @@ class InventoryView(View):
                     self.data[group.name]['vars'][var.key] = var.value
                 for child in group.children.all():
                     self.data[group.name]['children'].append(child.name)
-
         elif request.GET['action'] == 'import':
+            print 'aqui'
             with open('/opt/ans_data/import.csv', 'r') as csv_file:
                 csv_data = csv.reader(csv_file)
                 next(csv_data)
