@@ -47,41 +47,15 @@ class InventoryView(View):
                 for child in group.children.all():
                     self.data[group.name]['children'].append(child.name)
         elif request.GET['action'] == 'import':
-            print 'aqui'
-            with open('/opt/ans_data/import.csv', 'r') as csv_file:
+            import_file = request.GET['importFile']
+            with open(import_file, 'r') as csv_file:
                 csv_data = csv.reader(csv_file)
                 next(csv_data)
                 for row in csv_data:
                     host = get_object_or_404(Host, name=row[0])
                     variable = Variable(key='ansible_host', value=row[1], host=host)
                     variable.save()
-
-        else:
-            return Http404('Invalid action')
-        return HttpResponse(json.dumps(self.data), content_type="application/json")
-
-    def post(self, request):
-        if request.GET['action'] == 'import':
-            for key, value in request.FILES.iteritems():
-                csv_file = tempfile.TemporaryFile()
-                for chunk in value.chunks():
-                    csv_file.write(chunk)
-                if csv.Sniffer().has_header(csv_file.read(1024)):
-                    csv_data = csv.reader(csv_file)
-                    header = csv_data[0]
-                    next(csv_data)
-                    for row in csv_data:
-                        host = Host(name=row[0])
-                        host.save()
-                        variable = Variable(key='ansible_host', value=row[1], host=host)
-                        variable.save()
-                    self.data = {'result': 'ok'}
-                else:
-                    self.data = {'result': 'failed', 'msg': 'No header found'}
-                csv_file.close()
-
-
-
+            self.data = {'result': 'ok'}
 
         else:
             return Http404('Invalid action')

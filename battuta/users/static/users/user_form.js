@@ -15,6 +15,8 @@ $(document).ready(function () {
     $('#username').keyup(function () {
         $('#ansible_user').val($(this).val())
     });
+
+    //
     rsaKey
         .on('change', function (event) {
             $(this).data('files', event.target.files);

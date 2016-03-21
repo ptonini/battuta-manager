@@ -200,6 +200,8 @@ $(document).ready(function () {
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
     var jsonDialog = $('#json_dialog');
+    var importFile = $('#import_file');
+    var uploadFile = false;
 
     // Initialize delete dialog
     deleteDialog.dialog({
@@ -224,19 +226,7 @@ $(document).ready(function () {
         }
     });
 
-    // Initialize import dialog
-    importDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        dialogClass: 'no_title',
-        buttons: {
-            Cancel: function () {
-                $(this).dialog('close');
-            }
-        }
-    });
+
 
     // Initialize select dialog
     selectDialog.dialog({
@@ -379,8 +369,63 @@ $(document).ready(function () {
             }
         });
         selectDialog.dialog('open');
-
     });
+
+    importFile
+        .on('change', function (event) {
+            $(this).data('files', event.target.files);
+            uploadFile = true;
+        })
+        .fileinput({
+            showPreview: false,
+            showRemove: false,
+            showCancel: false,
+            showUpload: false,
+            browseLabel: '',
+            captionClass: 'form-control input-sm',
+            browseClass: 'btn btn-default btn-sm',
+            initialCaption: 'Select file'
+        });
+
+    // Initialize import dialog
+    importDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Import: function () {
+                if (uploadFile) {
+                    function successCallback(data) {
+                        $.ajax({
+                            url: '/inventory/',
+                            type: 'get',
+                            data: {
+                                action: 'import',
+                                importFile: data.filepaths[0]
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                successCallback(data)
+                            }
+                        });
+                    }
+                    uploadFiles($('#import_file'), 'import', successCallback)
+                }
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+
+
+    // Open import dialog
+    $('#import_data').click(function () {
+        importDialog.dialog('open');
+    });
+
 
     // Capture enter on password prompt
     $('#ansible_pass').keypress(function (event) {
