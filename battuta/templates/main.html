@@ -134,10 +134,16 @@
     <div id="import_dialog">
         <form id="import_form">
             <div class="form-group">
-                <label for="import_file" class="requiredField sr-only">Import file</label>
+                <label for="import_file" class="requiredField">Import inventory data</label>
                 <input class="input-file" type="file" id="import_file">
             </div>
         </form>
+    </div>
+    <div id="copy_dialog" class="text-center">
+        <strong>Select entity type</strong>
+        <br>
+        <button id="select_host" class="btn btn-default btn-sm">Hosts</button>
+        <button id="select_group" class="btn btn-default btn-sm">Group</button>
     </div>
     <div id="delete_dialog" class="text-center"><strong>This action cannot be undone</strong></div>
     <div id="alert_dialog" class="text-center"></div>

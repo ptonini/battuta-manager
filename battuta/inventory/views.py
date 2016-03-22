@@ -12,8 +12,6 @@ from .forms import HostForm, GroupForm, VariableForm
 
 
 class InventoryView(View):
-    data = None
-
     def get(self, request):
         if request.GET['action'] == 'search':
             self.data = list()
@@ -55,7 +53,7 @@ class InventoryView(View):
                 try:
                     host_index = header.index('host')
                 except ValueError:
-                    self.data = {'result': 'failed', 'msg': 'Could not find hosts column'}
+                    self.data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
                 else:
                     for row in reader:
                         try:
@@ -68,7 +66,14 @@ class InventoryView(View):
                         for index, cel in enumerate(row):
                             if index != host_index and cel != '':
                                 if header[index] == 'group':
-                                    pass
+                                    try:
+                                        group = Group.objects.get(name=cel)
+                                    except Group.DoesNotExist:
+                                        group = Group(name=cel)
+                                        group.save()
+                                    finally:
+                                        host.group_set.add(group)
+                                        host.save()
                                 else:
                                     try:
                                         var = Variable.objects.get(key=header[index], host=host)

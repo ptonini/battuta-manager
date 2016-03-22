@@ -226,7 +226,6 @@ $(document).ready(function () {
         }
     });
 
-
     // Initialize import dialog
     importDialog.dialog({
         autoOpen: false,
@@ -237,7 +236,6 @@ $(document).ready(function () {
         buttons: {
             Import: function () {
                 if (uploadFile) {
-                    $(this).dialog('close');
                     function successCallback(data) {
                         $.ajax({
                             url: '/inventory/',
@@ -248,6 +246,9 @@ $(document).ready(function () {
                             },
                             dataType: 'json',
                             success: function (data) {
+                                if (data.result == 'ok') {
+                                    importDialog.dialog('close');
+                                }
                                 alertDialog.html('<strong>' + data.msg + '</strong>');
                                 alertDialog.dialog('open')
                             }
@@ -329,7 +330,7 @@ $(document).ready(function () {
         });
     });
 
-    //
+    // Search form
     $('#search_form').submit(function (event) {
        if ($('#searchbox').val() == '') {
            event.preventDefault()
@@ -405,6 +406,7 @@ $(document).ready(function () {
         selectDialog.dialog('open');
     });
 
+    // Import data
     importFile
         .on('change', function (event) {
             $(this).data('files', event.target.files);
@@ -421,13 +423,10 @@ $(document).ready(function () {
             initialCaption: 'Select file'
         });
 
-
-
     // Open import dialog
     $('#import_data').click(function () {
         importDialog.dialog('open');
     });
-
 
     // Capture enter on password prompt
     $('#ansible_pass').keypress(function (event) {

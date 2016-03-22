@@ -234,7 +234,7 @@ $(document).ready(function () {
         console.log($(document.activeElement).html());
         switch ($(document.activeElement).html()) {
             case 'Save':
-                $.ajax({
+/*                $.ajax({
                     url: 'variable/save/',
                     type: 'POST',
                     dataType: 'json',
@@ -254,11 +254,13 @@ $(document).ready(function () {
                             alertDialog.dialog('open');
                         }
                     }
-                });
+                });*/
                 break;
             case 'Cancel':
-                console.log('bunda');
                 clearVariableForm();
+                break;
+            case 'Copy':
+                $('#copy_dialog').dialog('open');
                 break;
         }
 
