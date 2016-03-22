@@ -227,6 +227,40 @@ $(document).ready(function () {
     });
 
 
+    // Initialize import dialog
+    importDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Import: function () {
+                if (uploadFile) {
+                    $(this).dialog('close');
+                    function successCallback(data) {
+                        $.ajax({
+                            url: '/inventory/',
+                            type: 'get',
+                            data: {
+                                action: 'import',
+                                importFile: data.filepaths[0]
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                alertDialog.html('<strong>' + data.msg + '</strong>');
+                                alertDialog.dialog('open')
+                            }
+                        });
+                    }
+                    uploadFiles($('#import_file'), 'import', successCallback)
+                }
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
 
     // Initialize select dialog
     selectDialog.dialog({
@@ -387,38 +421,6 @@ $(document).ready(function () {
             initialCaption: 'Select file'
         });
 
-    // Initialize import dialog
-    importDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        dialogClass: 'no_title',
-        buttons: {
-            Import: function () {
-                if (uploadFile) {
-                    function successCallback(data) {
-                        $.ajax({
-                            url: '/inventory/',
-                            type: 'get',
-                            data: {
-                                action: 'import',
-                                importFile: data.filepaths[0]
-                            },
-                            dataType: 'json',
-                            success: function (data) {
-                                successCallback(data)
-                            }
-                        });
-                    }
-                    uploadFiles($('#import_file'), 'import', successCallback)
-                }
-            },
-            Cancel: function () {
-                $(this).dialog('close');
-            }
-        }
-    });
 
 
     // Open import dialog

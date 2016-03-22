@@ -1,6 +1,5 @@
 import json
 import os
-import tempfile
 import csv
 
 from django.conf import settings
@@ -48,15 +47,40 @@ class InventoryView(View):
                     self.data[group.name]['children'].append(child.name)
         elif request.GET['action'] == 'import':
             import_file = request.GET['importFile']
+            added = 0
+            updated = 0
             with open(import_file, 'r') as csv_file:
-                csv_data = csv.reader(csv_file)
-                next(csv_data)
-                for row in csv_data:
-                    host = get_object_or_404(Host, name=row[0])
-                    variable = Variable(key='ansible_host', value=row[1], host=host)
-                    variable.save()
-            self.data = {'result': 'ok'}
-
+                reader = csv.reader(csv_file)
+                header = next(reader)
+                try:
+                    host_index = header.index('host')
+                except ValueError:
+                    self.data = {'result': 'failed', 'msg': 'Could not find hosts column'}
+                else:
+                    for row in reader:
+                        try:
+                            host = Host.objects.get(name=row[host_index])
+                            updated += 1
+                        except Host.DoesNotExist:
+                            host = Host(name=row[host_index])
+                            host.save()
+                            added += 1
+                        for index, cel in enumerate(row):
+                            if index != host_index and cel != '':
+                                if header[index] == 'group':
+                                    pass
+                                else:
+                                    try:
+                                        var = Variable.objects.get(key=header[index], host=host)
+                                    except Variable.DoesNotExist:
+                                        var = Variable(key=header[index], host=host)
+                                    except Variable.MultipleObjectsReturned:
+                                        var = Variable.objects.filter(key=header[index], host=host)[0]
+                                    finally:
+                                        var.value = cel
+                                        var.save()
+                    self.data = {'result': 'ok',
+                                 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
         else:
             return Http404('Invalid action')
         return HttpResponse(json.dumps(self.data), content_type="application/json")
