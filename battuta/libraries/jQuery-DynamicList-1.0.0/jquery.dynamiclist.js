@@ -21,7 +21,6 @@
                 );
             });
         }
-
     }
 
     function _formatList(listDiv, opts) {
@@ -188,6 +187,12 @@
                             event.preventDefault();
                             opts.addButtonAction(this)
                         })
+                )
+            }
+
+            if (opts.itemToggle == false && opts.showAddButton == false && opts.showFilter == true) {
+                $(headerDiv).append(
+                    $('<span>').attr({'class': 'glyphicon', 'style': 'color: transparent'})
                 )
             }
 

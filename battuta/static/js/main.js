@@ -200,6 +200,7 @@ $(document).ready(function () {
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
     var jsonDialog = $('#json_dialog');
+
     var importFile = $('#import_file');
     var uploadFile = false;
 
@@ -303,6 +304,7 @@ $(document).ready(function () {
             }
         }
     });
+
 
     // Login form
     $('#login_form').on('submit', function (event) {
@@ -420,7 +422,6 @@ $(document).ready(function () {
             browseLabel: '',
             captionClass: 'form-control input-sm',
             browseClass: 'btn btn-default btn-sm',
-            initialCaption: 'Select file'
         });
 
     // Open import dialog

@@ -23,9 +23,25 @@ $(document).ready(function () {
     var deleteDialog = $('#delete_dialog');
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
+    var copyDialog = $('#copy_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
     var jsonBox = $('#json_box');
     var jsonDialog = $('#json_dialog');
+
+    // Initialize copy variables dialog
+    copyDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Cancel: function () {
+                $('.filter_box').val('');
+                $(this).dialog('close');
+            }
+        }
+    });
 
     // Format page to 'all' group
     if (entityName == 'all') {
@@ -221,7 +237,7 @@ $(document).ready(function () {
         }
     });
 
-    // Save variable
+    // Submit variable form
     $('#variable_form').on('submit', function (event) {
         event.preventDefault();
         function clearVariableForm () {
@@ -231,10 +247,9 @@ $(document).ready(function () {
             $('#variable_id').val('');
             $('#var_form_label').html('Add variable');
         }
-        console.log($(document.activeElement).html());
         switch ($(document.activeElement).html()) {
             case 'Save':
-/*                $.ajax({
+                $.ajax({
                     url: 'variable/save/',
                     type: 'POST',
                     dataType: 'json',
@@ -254,13 +269,14 @@ $(document).ready(function () {
                             alertDialog.dialog('open');
                         }
                     }
-                });*/
+                });
                 break;
             case 'Cancel':
                 clearVariableForm();
                 break;
             case 'Copy':
-                $('#copy_dialog').dialog('open');
+                clearVariableForm();
+                copyDialog.dialog('open');
                 break;
         }
 
@@ -379,7 +395,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'json',
             data: {
-                facts: ''
+                action: 'facts'
             },
             success: function (data) {
                 jsonBox.JSONView(data);
@@ -387,6 +403,51 @@ $(document).ready(function () {
                 jsonDialog.dialog('open');
             }
         });
+    });
+
+    // Copy variables from entity
+    $('.copy_entity').click(function () {
+        var sourceType = $(this).attr('data-type');
+        copyDialog.dialog('close');
+        selectDialog.DynamicList({
+            'listTitle': 'copy_from_entity',
+            'showListHR': true,
+            'showFilter': true,
+            'headerBottomPadding': 0,
+            'maxHeight': 400,
+            'minColumns': 3,
+            'maxColumns': 6,
+            'breakPoint': 9,
+            'ajaxUrl': '/inventory/?action=search&type=' + sourceType + '&pattern=',
+            'formatItem': function (listItem) {
+                $(listItem).click(function () {
+                    var sourceValue = $(this).data('value');
+                    var sourceId =  $(this).data('id');
+                    $.ajax({
+                        url: '',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: {
+                            action: 'copy_vars',
+                            source_id: sourceId,
+                            type: sourceType
+                        },
+                        success: function () {
+                            selectDialog.dialog('close');
+                            variableTable.ajax.reload();
+                            alertDialog.html('<strong>Variables copied from ' + sourceValue + '</strong>');
+                            alertDialog.dialog('open');
+                        }
+                    });
+                });
+            },
+            'loadCallback': function (listContainer) {
+                var currentList = listContainer.find('div.dynamic-list');
+                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+            }
+        });
+        selectDialog.dialog('open');
+
     });
 
 });

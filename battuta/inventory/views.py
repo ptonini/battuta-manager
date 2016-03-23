@@ -127,17 +127,26 @@ class EntitiesView(View):
 
     def get(self, request, entity_id, entity_type):
         entity = self.build_entity(entity_type, entity_id)
-        if 'facts' not in request.GET:
+        if 'action' not in request.GET:
             self.context['entity'] = entity
             self.context['user'] = request.user
             return render(request, 'inventory/entity.html', self.context)
         else:
-            facts_file = os.path.join(settings.FACTS_DIR, entity.name)
-            if os.path.isfile(facts_file):
-                with open(facts_file, "r") as f:
-                    data = f.read()
+            if request.GET['action'] == 'facts':
+                facts_file = os.path.join(settings.FACTS_DIR, entity.name)
+                if os.path.isfile(facts_file):
+                    with open(facts_file, "r") as f:
+                        data = f.read()
+                else:
+                    data = ['Facts file not found']
+            elif request.GET['action'] == 'copy_vars':
+                source = self.build_entity(request.GET['type'], request.GET['source_id'])
+                for var in source.variable_set.all():
+                    entity.variable_set.create(key=var.key, value=var.value)
+                    entity.save()
+                data = {'result': 'ok'}
             else:
-                data = ['Facts file not found']
+                raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")
 
     def post(self, request, entity_id, entity_type):
