@@ -1,12 +1,10 @@
 $(document).ready(function () {
 
-    var app = $('#app').val();
-    var adhocTableSelector = $('#adhoc_table');
-    var alertDialog = $('#alert_dialog');
-    var deleteDialog = $('#delete_dialog');
-    var selectDialog = $('#select_dialog');
-    var entityDialog = $('#entity_dialog');
-    var patternContainer = $('#pattern_container');
+    var app = $('#app').val();                          // Django app running the script
+    var adhocTableSelector = $('#adhoc_table');         // Adhoc table container selector
+    var alertDialog = $('#alert_dialog');               // 'Alert' dialog selector
+    var deleteDialog = $('#delete_dialog');             // 'Delete' dialog selector
+
     var fieldsContainer = $('#optional_fields');
     var sudoDiv = $('#sudo_div');
     var hosts;
@@ -123,144 +121,10 @@ $(document).ready(function () {
             currentModule.buildFormFields(fieldsContainer, sudoDiv)
     });
 
-    // Open pattern editor
-    $('#pattern_editor').click(function () {
-        event.preventDefault();
-        patternContainer.html('');
-        $('#pattern_dialog').dialog({
-            modal: true,
-            show: true,
-            hide: true,
-            width: 400,
-            dialogClass: 'no_title',
-            buttons: {
-                Use: function () {
-                    $('#hosts').val(patternContainer.text());
-                    $(this).dialog('close');
-                },
-                Reset: function () {
-                    patternContainer.addClass('hidden').html('');
-                    $('#hosts').val('');
-                },
-                Cancel: function () {
-                    $(this).dialog('close');
-                }
-            }
-        });
-    });
 
-    // Select entities
-    $('.select_entities').click(function () {
-        var entityType = $(this).data('type');
-        var op = $(this).closest('div.row').children('div:first').html();
-        var patternContainer = $('#pattern_container');
-        var separator;
-        if (op == 'OR') {
-            separator = ':';
-        }
-        else {
-            if (patternContainer.html() == '') {
-                alertDialog.html($('<strong>').html('Please select "OR" hosts/groups first'));
-                alertDialog.dialog('open');
-                return
-            }
-            if (op == 'AND') {
-                separator = ':&'
-            }
-            else if (op == 'NOT') {
-                separator = ':!'
-            }
-        }
-        selectDialog.DynamicList({
-            'listTitle': 'selection',
-            'showListHR': true,
-            'showFilter': true,
-            'headerBottomPadding': 0,
-            'showAddButton': true,
-            'addButtonClass': 'open_entity_form',
-            'addButtonTitle': 'Add ' + entityType,
-            'maxHeight': 400,
-            'minColumns': 3,
-            'maxColumns': 6,
-            'breakPoint': 9,
-            'itemToggle': true,
-            'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
-            'loadCallback': function (listContainer) {
-                var currentList = listContainer.find('div.dynamic-list');
-                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                selectDialog.dialog('option', 'buttons', [
-                    {
-                        text: 'Add',
-                        click: function () {
-                            var selection = [];
-                            $(currentList).children('div.toggle-on:not(".hidden")').each(function () {
-                                selection.push($(this).data('value'));
-                            });
-                            for (var i = 0; i < selection.length; i++) {
-                                if (patternContainer.html() != '') {
-                                    patternContainer.append(separator)
-                                }
-                                patternContainer.append(selection[i])
-                            }
-                            patternContainer.removeClass('hidden');
-                            $(this).dialog('close');
-                        }
-                    },
-                    {
-                        text: 'Cancel',
-                        click: function () {
-                            $('.filter_box').val('');
-                            $(this).dialog('close');
-                        }
-                    }
-                ]);
-            },
-            'addButtonAction': function (addButton) {
-                $('#entity_dialog_header').html('Add ' + entityType);
-                $('#id_name').val('');
-                $('#id_description').val('');
-                entityDialog.dialog('option', 'buttons', [
-                    {
-                        text: 'Save',
-                        click: function () {
-                            $.ajax({
-                                url: '/inventory/' + entityType + '/0/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: {
-                                    action: 'save',
-                                    name: $('#id_name').val(),
-                                    description: $('#id_description').val()
-                                },
-                                success: function (data) {
-                                    if (data.result == 'OK') {
-                                        selectDialog.DynamicList('load');
-                                        entityDialog.dialog('close');
-                                    }
-                                    else if (data.result == 'FAIL') {
-                                        alertDialog.html('<strong>Form submit error<br><br></strong>');
-                                        alertDialog.append(data.msg);
-                                        alertDialog.dialog('open');
-                                    }
-                                }
-                            });
-                        }
-                    },
-                    {
-                        text: 'Cancel',
-                        click: function () {
-                            entityDialog.dialog('close');
-                        }
-                    }
-                ]);
-                entityDialog.dialog('open')
-            }
-        });
-        selectDialog.dialog('open');
-    });
 
     // Ad-Hoc form button events
-    $('#adhoc_form').on('submit', function () {
+    $('#adhoc_form').submit(function () {
         event.preventDefault();
         var currentModule = new AnsibleModules($('#module').val());
         var sudo = $('#sudo').hasClass('checked_button');
@@ -268,7 +132,6 @@ $(document).ready(function () {
         if (app == 'runner') {
             hosts = $('#hosts').val()
         }
-        console.log(sudo);
         var postData = {
             module: currentModule.name,
             hosts: hosts,

@@ -1,0 +1,63 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block content %}
+    <script src="{% static 'runner/playbooks.js' %}"></script>
+    <h3>Playbooks</h3>
+    <hr>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="playbook_table" class="table table-condensed table-hover table-striped">
+                <thead>
+                <tr>
+                    <th class="col-md-4">name</th>
+                    <th class="col-md-3">hosts</th>
+                    <th class="col-md-3">file</th>
+                    <th class="col-md-2">&nbsp;</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <div class="hidden">
+        <div id="playbook_dialog" style="overflow: hidden" class="text-center">
+            <h5 id="playbook_dialog_header"></h5>
+            <hr>
+            <div class="row">
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <label for="settings" class="sr-only requiredField">Module</label>
+                        <select class="select form-control input-sm" id="settings">
+                            <option value="" disabled selected hidden>Select settings</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <form id="playbook_form" method="post">
+                <div class="row">
+                    <div class="col-md-10">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control input-sm pattern-input"
+                                       id="subset" placeholder="limit to" type="text">
+                                <span class="input-group-btn">
+                                    <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
+                                        <span class="glyphicon glyphicon-edit"></span>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-10">
+                        <div class="form-group">
+                           <label for="tags" class="sr-only requiredField">Tags</label>
+                            <input class="form-control input-sm" id="tags" placeholder="tags" type="text">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

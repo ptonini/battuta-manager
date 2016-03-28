@@ -9,7 +9,7 @@
             <div class="col-md-3">
                 <div class="form-group">
                     <div class="input-group">
-                        <input class="form-control input-sm" id="hosts" placeholder="hosts" type="text">
+                        <input class="form-control input-sm pattern-input" id="hosts" placeholder="hosts" type="text">
                         <span class="input-group-btn">
                             <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
                                 <span class="glyphicon glyphicon-edit"></span>
@@ -65,43 +65,8 @@
             </tr>
             </thead>
         </table>
-    </div>-
-</div>
-<hr>
-<div class="hidden">
-    <div id="pattern_dialog" class="text-center">
-        <h5>Pattern builder</h5>
-        <hr>
-            <div class="row text-left pattern_editor_row">
-                <div class="col-md-4 text-right">OR</div>
-                <div class="col-md-3">
-                    <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
-                </div>
-                <div class="col-md-5">
-                    <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
-                </div>
-            </div>
-            <div class="row text-left pattern_editor_row">
-                <div class="col-md-4 text-right">AND</div>
-                <div class="col-md-3">
-                    <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
-                </div>
-                <div class="col-md-5">
-                    <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
-                </div>
-            </div>
-            <div class="row text-left pattern_editor_row">
-                <div class="col-md-4 text-right">NOT</div>
-                <div class="col-md-3">
-                    <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button
-                    ></div>
-                <div class="col-md-5">
-                    <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
-                </div>
-            </div>
-        <br>
-        <pre id="pattern_container" class="text-left hidden"></pre>
     </div>
 </div>
+<hr>
 
 

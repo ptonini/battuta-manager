@@ -16,9 +16,9 @@ $(document).ready(function () {
         $('#ansible_user').val($(this).val())
     });
 
-    //
+    // Upload RSA key
     rsaKey
-        .on('change', function (event) {
+        .change(function (event) {
             $(this).data('files', event.target.files);
             uploadRSA = true;
         })
@@ -35,7 +35,7 @@ $(document).ready(function () {
 
 
     // Save user
-    $('#user_form').on('submit', function (event) {
+    $('#user_form').submit(function (event) {
         event.preventDefault();
         var pass1Selector = $('#password1');
         var pass2Selector = $('#password2');
@@ -103,14 +103,10 @@ $(document).ready(function () {
         else {
             checkPasswordAndSave(page, postData)
         }
-
-
-
-
     });
 
     //Change password
-    $('#password_form').on('submit', function (event) {
+    $('#password_form').submit(function (event) {
         event.preventDefault();
         var oldPassSelector = $('#id_oldpass');
         var pass1Selector = $('#id_password1');

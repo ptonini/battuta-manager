@@ -9,6 +9,15 @@ class AdHoc(models.Model):
     become = models.BooleanField()
 
 
+class Play(models.Model):
+    playbook = models.CharField(max_length=64)
+    tags = models.CharField(max_length=64, blank=True, null=True)
+    subset = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        unique_together = ('playbook', 'tags', 'subset')
+
+
 class Runner(models.Model):
     user = models.ForeignKey(User)
     created_on = models.DateTimeField(auto_now_add=True)

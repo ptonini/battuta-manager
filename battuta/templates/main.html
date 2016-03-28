@@ -52,17 +52,20 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
                         <ul class="dropdown-menu">
                             <li><a href="{% url 'runner:adhoc' %}">Ad-Hoc</a></li>
+                            <li><a href="{% url 'runner:playbooks' %}">Playbooks</a></li>
+                            <li class="divider"></li>
                             <li><a href="{% url 'runner:history' %}">History</a></li>
                         </ul>
                     </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
                         <ul class="dropdown-menu">
-                            <li><a href="{% url 'users:view' %}?user_id={{ user.id }}">User details</a></li>
                             {% if user.is_superuser %}
                                 <li><a href="{% url 'users:new' %}">New user</a></li>
                                 <li><a href="{% url 'users:list' %}">List users</a></li>
+                                <li class="divider"></li>
                             {% endif %}
+                            <li><a href="{% url 'users:view' %}?user_id={{ user.id }}">User details</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -141,7 +144,6 @@
             </div>
         </form>
     </div>
-
     <div id="delete_dialog" class="text-center"><strong>This action cannot be undone</strong></div>
     <div id="alert_dialog" class="text-center"></div>
     <div id="entity_dialog" class="text-center">
@@ -167,6 +169,39 @@
     <div id="password_dialog" class="text-center">
         <h5>Please enter your password</h5>
         <input class="form-control input-sm" id="ansible_pass" placeholder="Password" type="password">
+    </div>
+    <div id="pattern_dialog" class="text-center">
+        <h5>Pattern builder</h5>
+        <hr>
+        <div class="row text-left pattern_editor_row">
+            <div class="col-md-4 text-right">OR</div>
+            <div class="col-md-3">
+                <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
+            </div>
+            <div class="col-md-5">
+                <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+            </div>
+        </div>
+        <div class="row text-left pattern_editor_row">
+            <div class="col-md-4 text-right">AND</div>
+            <div class="col-md-3">
+                <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
+            </div>
+            <div class="col-md-5">
+                <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+            </div>
+        </div>
+        <div class="row text-left pattern_editor_row">
+            <div class="col-md-4 text-right">NOT</div>
+            <div class="col-md-3">
+                <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button
+                ></div>
+            <div class="col-md-5">
+                <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+            </div>
+        </div>
+        <br>
+        <pre id="pattern_container" class="text-left hidden"></pre>
     </div>
 </div>
 </body>

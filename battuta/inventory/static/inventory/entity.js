@@ -238,7 +238,7 @@ $(document).ready(function () {
     });
 
     // Submit variable form
-    $('#variable_form').on('submit', function (event) {
+    $('#variable_form').submit(function (event) {
         event.preventDefault();
         function clearVariableForm () {
             cancelVarEdit.hide();
@@ -248,7 +248,14 @@ $(document).ready(function () {
             $('#var_form_label').html('Add variable');
         }
         switch ($(document.activeElement).html()) {
-            case 'Save':
+            case 'Cancel':
+                clearVariableForm();
+                break;
+            case 'Copy':
+                clearVariableForm();
+                copyDialog.dialog('open');
+                break;
+            default:
                 $.ajax({
                     url: 'variable/save/',
                     type: 'POST',
@@ -270,14 +277,6 @@ $(document).ready(function () {
                         }
                     }
                 });
-                break;
-            case 'Cancel':
-                clearVariableForm();
-                break;
-            case 'Copy':
-                clearVariableForm();
-                copyDialog.dialog('open');
-                break;
         }
 
     });

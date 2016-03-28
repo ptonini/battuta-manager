@@ -22,6 +22,7 @@ div.dataTables_info,
 }
 
 a:focus,
+a:hover,
 button:focus {
     outline: none;
     text-decoration: none;
@@ -106,6 +107,10 @@ table.dataTable thead .sorting_desc_disabled:after{
     font-size: 12px;
     line-height: 1.5;
     border-radius: 3px;
+}
+
+.ui-widget button {
+    font-size: 12px;
 }
 
 .ui-dialog {

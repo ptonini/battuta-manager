@@ -200,9 +200,12 @@ $(document).ready(function () {
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
     var jsonDialog = $('#json_dialog');
-
+    var entityForm = $('#entity_form');
+    var patternContainer = $('#pattern_container');     // Ansible host pattern selector
     var importFile = $('#import_file');
     var uploadFile = false;
+
+
 
     // Initialize delete dialog
     deleteDialog.dialog({
@@ -285,7 +288,16 @@ $(document).ready(function () {
         modal: true,
         show: true,
         hide: true,
-        dialogClass: 'no_title'
+        dialogClass: 'no_title',
+        buttons: {
+            Save: function (){
+                entityForm.submit()
+            },
+            Cancel: function (){
+                $('this').dialog('close');
+            }
+        }
+
     });
 
     // Initialize result dialog
@@ -305,11 +317,10 @@ $(document).ready(function () {
         }
     });
 
-
     // Login form
-    $('#login_form').on('submit', function (event) {
-        var action = $('#user_login').attr('title');
+    $('#login_form').submit(function (event) {
         event.preventDefault();
+        var action = $('#user_login').attr('title');
         $.ajax({
             url: '/users/login/',
             type: 'POST',
@@ -368,6 +379,160 @@ $(document).ready(function () {
                 $('#entity_dialog_header').html('Add ' + entityType);
                 $('#id_name').val('');
                 $('#id_description').val('');
+                entityForm.off('submit');
+                entityForm.submit(function(event) {
+                    event.preventDefault();
+                    $.ajax({
+                        url: '/inventory/' + entityType + '/0/',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'save',
+                            name: $('#id_name').val(),
+                            description: $('#id_description').val()
+                        },
+                        success: function (data) {
+                            if (data.result == 'ok') {
+                                selectDialog.DynamicList('load');
+                                entityDialog.dialog('close');
+                            }
+                            else if (data.result == 'fail') {
+                                alertDialog.html('<strong>Form submit error<br><br></strong>');
+                                alertDialog.append(data.msg);
+                                alertDialog.dialog('open');
+                            }
+                        }
+                    });
+                });
+                entityDialog.dialog('open')
+            }
+        });
+        selectDialog.dialog('open');
+    });
+
+    // Import data
+    importFile
+        .change(function (event) {
+            $(this).data('files', event.target.files);
+            uploadFile = true;
+        })
+        .fileinput({
+            showPreview: false,
+            showRemove: false,
+            showCancel: false,
+            showUpload: false,
+            browseLabel: '',
+            captionClass: 'form-control input-sm',
+            browseClass: 'btn btn-default btn-sm'
+        });
+
+    // Open import dialog
+    $('#import_data').click(function () {
+        importDialog.dialog('open');
+    });
+
+    // Capture enter on password prompt
+    $('#ansible_pass').keypress(function (event) {
+        if (event.keyCode == 13) {
+            $('.ui-button-text:contains("Run")').parent('button').click()
+        }
+    });
+
+    // Open pattern editor
+    $('#pattern_editor').click(function () {
+        event.preventDefault();
+        patternContainer.addClass('hidden').html('');
+        $('#pattern_dialog').dialog({
+            modal: true,
+            show: true,
+            hide: true,
+            width: 400,
+            dialogClass: 'no_title',
+            buttons: {
+                Use: function () {
+                    $('.pattern-input').val(patternContainer.text());
+                    $(this).dialog('close');
+                },
+                Reset: function () {
+                    patternContainer.addClass('hidden').html('');
+                    $('.pattern-input').val('');
+                },
+                Cancel: function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+    });
+
+    // Select entities
+    $('.select_entities').click(function () {
+        var entityType = $(this).data('type');
+        var op = $(this).closest('div.row').children('div:first').html();
+        var separator;
+        if (op == 'OR') {
+            separator = ':';
+        }
+        else {
+            if (patternContainer.html() == '') {
+                alertDialog.html($('<strong>').html('Please select "OR" hosts/groups first'));
+                alertDialog.dialog('open');
+                return
+            }
+            if (op == 'AND') {
+                separator = ':&'
+            }
+            else if (op == 'NOT') {
+                separator = ':!'
+            }
+        }
+        selectDialog.DynamicList({
+            'listTitle': 'selection',
+            'showListHR': true,
+            'showFilter': true,
+            'headerBottomPadding': 0,
+            'showAddButton': true,
+            'addButtonClass': 'open_entity_form',
+            'addButtonTitle': 'Add ' + entityType,
+            'maxHeight': 400,
+            'minColumns': 3,
+            'maxColumns': 6,
+            'breakPoint': 9,
+            'itemToggle': true,
+            'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
+            'loadCallback': function (listContainer) {
+                var currentList = listContainer.find('div.dynamic-list');
+                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                selectDialog.dialog('option', 'buttons', [
+                    {
+                        text: 'Add',
+                        click: function () {
+                            var selection = [];
+                            $(currentList).children('div.toggle-on:not(".hidden")').each(function () {
+                                selection.push($(this).data('value'));
+                            });
+                            for (var i = 0; i < selection.length; i++) {
+                                if (patternContainer.html() != '') {
+                                    patternContainer.append(separator)
+                                }
+                                patternContainer.append(selection[i])
+                            }
+                            patternContainer.removeClass('hidden');
+                            $(this).dialog('close');
+                        }
+                    },
+                    {
+                        text: 'Cancel',
+                        click: function () {
+                            $('.filter_box').val('');
+                            $(this).dialog('close');
+                        }
+                    }
+                ]);
+            },
+            'addButtonAction': function (addButton) {
+                $('#entity_dialog_header').html('Add ' + entityType);
+                $('#id_name').val('');
+                $('#id_description').val('');
                 entityDialog.dialog('option', 'buttons', [
                     {
                         text: 'Save',
@@ -382,11 +547,11 @@ $(document).ready(function () {
                                     description: $('#id_description').val()
                                 },
                                 success: function (data) {
-                                    if (data.result == 'ok') {
+                                    if (data.result == 'OK') {
                                         selectDialog.DynamicList('load');
                                         entityDialog.dialog('close');
                                     }
-                                    else if (data.result == 'fail') {
+                                    else if (data.result == 'FAIL') {
                                         alertDialog.html('<strong>Form submit error<br><br></strong>');
                                         alertDialog.append(data.msg);
                                         alertDialog.dialog('open');
@@ -406,34 +571,6 @@ $(document).ready(function () {
             }
         });
         selectDialog.dialog('open');
-    });
-
-    // Import data
-    importFile
-        .on('change', function (event) {
-            $(this).data('files', event.target.files);
-            uploadFile = true;
-        })
-        .fileinput({
-            showPreview: false,
-            showRemove: false,
-            showCancel: false,
-            showUpload: false,
-            browseLabel: '',
-            captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm',
-        });
-
-    // Open import dialog
-    $('#import_data').click(function () {
-        importDialog.dialog('open');
-    });
-
-    // Capture enter on password prompt
-    $('#ansible_pass').keypress(function (event) {
-        if (event.keyCode == 13) {
-            $('.ui-button-text:contains("Run")').parent('button').click()
-        }
     });
 
 });

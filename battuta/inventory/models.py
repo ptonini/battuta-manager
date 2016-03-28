@@ -34,5 +34,8 @@ class Variable(models.Model):
     host = models.ForeignKey('Host', blank=True, null=True)
     group = models.ForeignKey('Group', blank=True, null=True)
 
+    class Meta:
+        unique_together = (('key', 'host'), ('key', 'group'))
+
     def __str__(self):
         return self.key

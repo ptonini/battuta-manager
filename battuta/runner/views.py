@@ -1,10 +1,14 @@
 import ast
 import json
 import psutil
+import os
+import yaml
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
+from django.core.cache import caches
+from django.conf import settings
 from pytz import timezone
 from multiprocessing import Process
 
@@ -22,8 +26,6 @@ class BaseView(View):
 
 
 class RunnerView(View):
-
-    # Execute play
     @staticmethod
     def _run(form_data, play_data, runner):
         try:
@@ -36,7 +38,6 @@ class RunnerView(View):
             return {'result': 'ok', 'runner_id': runner.id}
 
     def post(self, request):
-
         # Execute adhoc task
         if request.POST['action'] == 'run_adhoc':
             runner_form = RunnerForm(request.POST)
@@ -111,6 +112,37 @@ class AdHocView(BaseView):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+class PlaybooksView(BaseView):
+    @staticmethod
+    def _build_playbook_cache(playbook_cache):
+        playbook_dir = os.path.join(settings.DATA_DIR, 'playbooks')
+        for root, dirs, files in os.walk(playbook_dir):
+            for f in files:
+                if f.split('.')[-1] == 'yml':
+                    with open(os.path.join(root, f), 'r') as yaml_file:
+                        playbook = yaml.load(yaml_file)
+                        playbook_cache.set(f, playbook)
+
+    def get(self, request):
+        if 'action' not in request.GET:
+            self.context['user'] = request.user
+            return render(request, 'runner/playbooks.html', self.context)
+        else:
+            playbook_cache = caches['battuta-playbooks']
+            if request.GET['action'] == 'get_list':
+                data = list()
+
+                self._build_playbook_cache(playbook_cache)
+                for key in playbook_cache.keys('*.yml'):
+                    playbook = playbook_cache.get(key)
+                    data.append([playbook[0]['name'], playbook[0]['hosts'], key])
+            elif request.GET['action'] == 'get_one':
+                data = playbook_cache.get(request.GET['playbook_file'])
+            else:
+                raise Http404('Invalid action')
+            return HttpResponse(json.dumps(data), content_type='application/json')
+
+
 class HistoryView(BaseView):
     def get(self, request):
         if 'action' not in request.GET:
@@ -159,4 +191,3 @@ class ResultView(BaseView):
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")
-
