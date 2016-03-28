@@ -2,6 +2,7 @@ $(document).ready(function () {
 
     var playbookTableSelector = $('#playbook_table');
     var playbookDialog = $('#playbook_dialog');
+    var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
     var jsonBox = $('#json_box');
 
@@ -11,18 +12,40 @@ $(document).ready(function () {
         modal: true,
         show: true,
         hide: true,
-        width: 400,
+        width: 320,
         dialogClass: 'no_title',
         buttons: {
             Run: function (){
             },
             Save: function (){
+                $.ajax({
+                    url: '/runner/playbooks/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'save_play',
+                        play_id: $('#play_id').val(),
+                        subset: $('#subset').val(),
+                        tags: $('#tags').val(),
+                        playbook: $('#current_playbook').val()
+                    },
+                    success: function (data) {
+                        if (data.result == 'ok') {
+                            alertDialog.html('<strong>Play saved<strong><br><br>');
+                            alertDialog.dialog('open')
+                        }
+                        else if (data.result == 'fail') {
+                            alertDialog.html('<strong>Submit error<strong><br><br>');
+                            alertDialog.append(data.msg);
+                            alertDialog.dialog('open')
+                        }
+                    }
+                })
             },
             Cancel: function (){
                 playbookDialog.dialog('close');
             }
         }
-
     });
 
     playbookTableSelector.DataTable({
@@ -63,6 +86,7 @@ $(document).ready(function () {
             success: function (playbook) {
                 if ( action == 'Run') {
                     $('#playbook_dialog_header').html(playbook[0].name);
+                    $('#current_playbook').val(playbookFile);
                     playbookDialog.dialog('open')
                 }
                 else if (action == 'View') {
@@ -70,14 +94,7 @@ $(document).ready(function () {
                     jsonBox.JSONView('collapse', 2);
                     jsonDialog.dialog('open');
                 }
-
             }
         });
-
-
-
-
     });
-
-
 });

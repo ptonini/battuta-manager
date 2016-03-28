@@ -202,10 +202,7 @@ $(document).ready(function () {
     var jsonDialog = $('#json_dialog');
     var entityForm = $('#entity_form');
     var patternContainer = $('#pattern_container');     // Ansible host pattern selector
-    var importFile = $('#import_file');
     var uploadFile = false;
-
-
 
     // Initialize delete dialog
     deleteDialog.dialog({
@@ -411,7 +408,7 @@ $(document).ready(function () {
     });
 
     // Import data
-    importFile
+    $('#import_file')
         .change(function (event) {
             $(this).data('files', event.target.files);
             uploadFile = true;

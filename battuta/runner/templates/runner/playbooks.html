@@ -23,7 +23,7 @@
             <h5 id="playbook_dialog_header"></h5>
             <hr>
             <div class="row">
-                <div class="col-md-10">
+                <div class="col-md-12">
                     <div class="form-group">
                         <label for="settings" class="sr-only requiredField">Module</label>
                         <select class="select form-control input-sm" id="settings">
@@ -33,8 +33,10 @@
                 </div>
             </div>
             <form id="playbook_form" method="post">
+                <input id="current_playbook" class="hidden" type="text">
+                <input id="play_id" class="hidden" type="text">
                 <div class="row">
-                    <div class="col-md-10">
+                    <div class="col-md-12">
                         <div class="form-group">
                             <div class="input-group">
                                 <input class="form-control input-sm pattern-input"
@@ -49,7 +51,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-10">
+                    <div class="col-md-12">
                         <div class="form-group">
                            <label for="tags" class="sr-only requiredField">Tags</label>
                             <input class="form-control input-sm" id="tags" placeholder="tags" type="text">

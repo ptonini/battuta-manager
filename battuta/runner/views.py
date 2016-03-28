@@ -12,8 +12,8 @@ from django.conf import settings
 from pytz import timezone
 from multiprocessing import Process
 
-from .forms import AdHocForm, RunnerForm
-from .models import AdHoc, Runner, Task
+from .forms import AdHocForm, RunnerForm, PlayForm
+from .models import AdHoc, Runner, Task, Play
 from . import run_play
 
 date_format = '%Y-%m-%d %H:%M:%S'
@@ -141,6 +141,24 @@ class PlaybooksView(BaseView):
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def post(self, request):
+        if request.POST['action'] == 'save_play':
+            try:
+                play = Play.objects.get(playbook=request.POST['playbook'],
+                                        subset=request.POST['subset'],
+                                        tags=request.POST['tags'])
+            except Play.DoesNotExist:
+                play = Play()
+            form = PlayForm(request.POST or None, instance=play)
+            if form.is_valid():
+                form.save(commit=True)
+                data = {'result': 'ok'}
+            else:
+                data = {'result': 'fail', 'msg': str(form.errors)}
+        else:
+            raise Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class HistoryView(BaseView):

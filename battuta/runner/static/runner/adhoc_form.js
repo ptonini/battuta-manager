@@ -121,8 +121,6 @@ $(document).ready(function () {
             currentModule.buildFormFields(fieldsContainer, sudoDiv)
     });
 
-
-
     // Ad-Hoc form button events
     $('#adhoc_form').submit(function () {
         event.preventDefault();

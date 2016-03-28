@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import AdHoc, Runner, Task
+from .models import AdHoc, Runner, Play
 
 
 class RunnerForm(forms.ModelForm):
@@ -15,6 +15,10 @@ class AdHocForm(forms.ModelForm):
         fields = ['module', 'hosts', 'arguments', 'become']
 
 
+class PlayForm(forms.ModelForm):
+    class Meta:
+        model = Play
+        fields = ['playbook', 'subset', 'tags']
 
 
 
