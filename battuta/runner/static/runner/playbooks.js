@@ -45,8 +45,8 @@ $(document).ready(function () {
     var playbookDialog = $('#playbook_dialog');
     var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
-    var settingsSelectionBox = $('#settings');
     var jsonBox = $('#json_box');
+    //var settingsSelectionBox = $('#settings');
 
     // Initialize playbook dialog
     playbookDialog.dialog({
