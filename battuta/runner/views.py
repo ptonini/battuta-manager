@@ -131,18 +131,22 @@ class PlaybooksView(BaseView):
             playbook_cache = caches['battuta-playbooks']
             if request.GET['action'] == 'get_list':
                 data = list()
-
                 self._build_playbook_cache(playbook_cache)
                 for key in playbook_cache.keys('*.yml'):
                     playbook = playbook_cache.get(key)
                     data.append([playbook[0]['name'], playbook[0]['hosts'], key])
             elif request.GET['action'] == 'get_one':
                 data = playbook_cache.get(request.GET['playbook_file'])
+            elif request.GET['action'] == 'get_plays':
+                data = list()
+                for play in Play.objects.filter(playbook=request.GET['playbook_file']):
+                    data.append([play.id, play.subset, play.tags])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.POST['action'] == 'save_play':
             try:
                 play = Play.objects.get(playbook=request.POST['playbook'],

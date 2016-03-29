@@ -14,3 +14,4 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :shell, path: "initial_config.sh"
   config.vm.provision :shell, path: "bootstrap.sh", run: "always"
 end
+

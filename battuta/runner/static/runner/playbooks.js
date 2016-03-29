@@ -1,9 +1,51 @@
+function buildSettingsSelectionBox(playbookFile) {
+    $('#settings').children('option').each(function(){
+        if (typeof $(this).data('id') == 'number') {
+            $(this).remove()
+        }
+    });
+    $.ajax({
+        url: '/runner/playbooks/',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            action: 'get_plays',
+            playbook_file: playbookFile
+        },
+        success: function (data) {
+            $.each(data, function (index, value) {
+                var id = value[0];
+                var subset = value[1];
+                var tags = value[2];
+                var display = '';
+                if (subset != '') {
+                    display = '--limit ' + subset;
+                }
+                if (subset != '' && tags != '') {
+                    display += ' '
+                }
+                if (tags != '') {
+                    display += '--tags ' + tags
+                }
+                $('#settings').append(
+                    $('<option>')
+                        .data('id', value[0])
+                        .data('subset', value[1])
+                        .data('tags', value[2])
+                        .append(display)
+                )
+            });
+        }
+    });
+}
+
 $(document).ready(function () {
 
     var playbookTableSelector = $('#playbook_table');
     var playbookDialog = $('#playbook_dialog');
     var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
+    var settingsSelectionBox = $('#settings');
     var jsonBox = $('#json_box');
 
     // Initialize playbook dialog
@@ -18,6 +60,7 @@ $(document).ready(function () {
             Run: function (){
             },
             Save: function (){
+                var currentPlaybook = $('#current_playbook').val();
                 $.ajax({
                     url: '/runner/playbooks/',
                     type: 'POST',
@@ -27,11 +70,12 @@ $(document).ready(function () {
                         play_id: $('#play_id').val(),
                         subset: $('#subset').val(),
                         tags: $('#tags').val(),
-                        playbook: $('#current_playbook').val()
+                        playbook: currentPlaybook
                     },
                     success: function (data) {
                         if (data.result == 'ok') {
-                            alertDialog.html('<strong>Play saved<strong><br><br>');
+                            buildSettingsSelectionBox(currentPlaybook);
+                            alertDialog.html('<strong>Play saved<strong>');
                             alertDialog.dialog('open')
                         }
                         else if (data.result == 'fail') {
@@ -54,9 +98,7 @@ $(document).ready(function () {
             url: '/runner/playbooks/',
             type: 'GET',
             dataSrc: '',
-            data: {
-                action: 'get_list'
-            }
+            data: {action: 'get_list'}
         },
         columnDefs: [{
             targets: -1,
@@ -74,6 +116,7 @@ $(document).ready(function () {
     playbookTableSelector.children('tbody').on('click', 'a', function () {
         event.preventDefault();
         var playbookFile = $(this).closest('td').prev().html();
+        var playbookName = $(this).closest('td').prev().prev().prev().html();
         var action = $(this).attr('title');
         $.ajax({
             url: '/runner/playbooks/',
@@ -85,8 +128,9 @@ $(document).ready(function () {
             },
             success: function (playbook) {
                 if ( action == 'Run') {
-                    $('#playbook_dialog_header').html(playbook[0].name);
+                    $('#playbook_dialog_header').html(playbookName);
                     $('#current_playbook').val(playbookFile);
+                    buildSettingsSelectionBox(playbookFile);
                     playbookDialog.dialog('open')
                 }
                 else if (action == 'View') {
