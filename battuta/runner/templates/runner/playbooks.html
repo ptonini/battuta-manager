@@ -19,27 +19,26 @@
         </div>
     </div>
     <div class="hidden">
-        <div id="playbook_dialog" style="overflow: hidden" class="text-center">
-            <h5 id="playbook_dialog_header"></h5>
+        <div id="playbook_dialog" style="overflow: hidden">
+            <h5 id="playbook_dialog_header" class="text-center"></h5>
             <hr>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col-md-2">Hosts:</div>
+                <div class="col-md-10"><strong id="play_hosts"></strong></div>
+            </div>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col-md-2">Become:</div>
+                <div class="col-md-10"><strong id="play_become">False</strong></div>
+            </div>
+            <br>
             <div class="row">
-                <div class="col-md-9">
+                <div class="col-md-12">
                     <div class="form-group">
-                            <label for="saved_arguments" class="sr-only requiredField">Saved arguments</label>
-                            <select class="select form-control input-sm" id="saved_arguments">
-                                <option value="" disabled selected hidden>Saved arguments</option>
-                            </select>
+                        <label for="saved_arguments" class="sr-only requiredField">Saved arguments</label>
+                        <select class="select form-control input-sm" id="saved_arguments">
+                            <option value="" disabled selected hidden>Saved arguments</option>
+                        </select>
                     </div>
-                </div>
-                <div class="col-md-3 text-right">
-                    <button id="save_args" class="btn btn-default btn-sm"
-                            data-toggle="tooltip" title="Save arguments">
-                        <span class="glyphicon glyphicon-save"></span>
-                    </button>
-                    <button id="delete_args" class="btn btn-default btn-sm hidden"
-                            data-toggle="tooltip" title="Delete arguments">
-                        <span class="glyphicon glyphicon-remove-sign"></span>
-                    </button>
                 </div>
             </div>
             <br>
@@ -60,6 +59,9 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-3 text-right">
+                        <button id="check" class="btn btn-default btn-sm" data-action="check">Check</button>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-9">
@@ -68,9 +70,18 @@
                             <input class="form-control input-sm" id="tags" placeholder="tags" type="text">
                         </div>
                     </div>
+                    <div class="col-md-3 text-right">
+                        <button id="save_args" class="btn btn-default btn-sm" data-action="save"
+                                data-toggle="tooltip" title="Save arguments">
+                            <span class="glyphicon glyphicon-floppy-disk"  data-action="save"></span>
+                        </button>
+                        <button id="delete_args" class="btn btn-default btn-sm hidden" data-action="delete"
+                                data-toggle="tooltip" title="Delete arguments">
+                            <span class="glyphicon glyphicon-remove-sign" data-action="delete"></span>
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
-
 {% endblock %}

@@ -59,11 +59,12 @@
                 opts.listWidth = '100%'
             }
         }
+
         // Adjust list
         listDiv.css({
             'column-count': columnCount.toString(),
             'width': opts.listWidth,
-            'height': itemsPerColumn * (lineHeight + lineTopPadding + lineBottomPadding) + 'px'
+            'height': itemsPerColumn * (lineHeight + lineTopPadding + lineBottomPadding + 1) + 'px'
         });
     }
 

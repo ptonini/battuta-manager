@@ -23,6 +23,7 @@ $(document).ready(function () {
     var deleteDialog = $('#delete_dialog');
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
+    var entityForm = $('#entity_form');
     var copyDialog = $('#copy_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
     var jsonBox = $('#json_box');
@@ -301,39 +302,31 @@ $(document).ready(function () {
     $('#edit_entity').click(function () {
         event.preventDefault();
         $('#entity_dialog_header').html('Edit ' + entityName);
-        entityDialog.dialog('option', 'buttons', [
-            {
-                text: 'Save',
-                click: function () {
-                    $.ajax({
-                        url: '',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            action: 'save',
-                            name: $('#id_name').val(),
-                            description: $('#id_description').val()
-                        },
-                        success: function (data) {
-                            if (data.result == 'ok') {
-                                entityDialog.dialog('close');
-                            }
-                            else if (data.result == 'fail') {
-                                alertDialog.html('<strong>Form submit error<br><br></strong>');
-                                alertDialog.append(data.msg);
-                                alertDialog.dialog('open');
-                            }
-                        }
-                    });
+        entityForm.off('submit');
+        entityForm.submit(function(event) {
+            event.preventDefault();
+            $.ajax({
+                url: '',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'save',
+                    name: $('#id_name').val(),
+                    description: $('#id_description').val()
+                },
+                success: function (data) {
+                    if (data.result == 'ok') {
+                        $('#entity_name').html($('#id_name').val());
+                        entityDialog.dialog('close');
+                    }
+                    else if (data.result == 'fail') {
+                        alertDialog.html('<strong>Form submit error<br><br></strong>');
+                        alertDialog.append(data.msg);
+                        alertDialog.dialog('open');
+                    }
                 }
-            },
-            {
-                text: 'Cancel',
-                click: function () {
-                    entityDialog.dialog('close');
-                }
-            }
-        ]);
+            });
+        });
         entityDialog.dialog('open');
     });
 

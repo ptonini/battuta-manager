@@ -28,7 +28,7 @@ function buildArgsSelectionBox() {
                     display += '--tags ' + tags
                 }
                 $('#saved_arguments').append(
-                    $('<option>').data({
+                    $('<option>').val(id).data({
                         'id': id,
                         'subset': subset,
                         'tags': tags
@@ -55,10 +55,24 @@ $(document).ready(function () {
         modal: true,
         show: true,
         hide: true,
-        width: 440,
+        width: 420,
         dialogClass: 'no_title',
         buttons: {
             Run: function (){
+                $.ajax({
+                    url: '/runner/playbooks/',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {
+                        action: 'run',
+                        playbook_file: playbookDialog.data('currentPlaybook'),
+                        check: $('#check').hasClass('checked_button'),
+                        subset: $('#subset').val(),
+                        tags: $('#tags').val()
+                    },
+                    success: function () {
+                    }
+                });
             },
             Cancel: function (){
                 playbookDialog.dialog('close');
@@ -103,7 +117,12 @@ $(document).ready(function () {
             },
             success: function (playbook) {
                 if ( action == 'Run') {
+                    console.log(playbook[0].hosts, playbook[0].become);
                     $('#playbook_dialog_header').html(playbookName);
+                    $('#play_hosts').html(playbook[0].hosts);
+                    if (playbook[0].become) {
+                        $('#play_become').html('True')
+                    }
                     playbookDialog.data('currentPlaybook', playbookFile);
                     playbookDialog.dialog('open');
                     buildArgsSelectionBox();
@@ -117,70 +136,79 @@ $(document).ready(function () {
         });
     });
 
-    $('#save_args').click(function() {
-        var argsId = $('#args_id').val();
-        var subset = $('#subset').val();
-        var tags = $('#tags').val();
-        if (subset == '' && tags == '' ) {
-            alertDialog.html('<strong>Submit error<strong><br><br>All fields cannot be blank');
-            alertDialog.dialog('open')
-        }
-        else {
-            $.ajax({
-                url: '/runner/playbooks/',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action: 'save_args',
-                    args_id: argsId,
-                    subset: subset,
-                    tags: tags,
-                    playbook: playbookDialog.data('currentPlaybook')
-                },
-                success: function (data) {
-                    if (data.result == 'ok') {
-                        buildArgsSelectionBox();
-                    }
-                    else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Submit error<strong><br><br>');
-                        alertDialog.append(data.msg);
-                        alertDialog.dialog('open')
-                    }
-                }
-            })
-        }
-
-    });
-
-    $('#delete_args').click(function () {
-        $.ajax({
-            url: '/runner/playbooks/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'del_args',
-                args_id: $('#args_id').val()
-            },
-            success: function (data) {
-                if (data.result == 'ok') {
-                    buildArgsSelectionBox();
-                    $('#arguments_form').find('input').val('');
-                    $('#delete_args').addClass('hidden');
-                }
-                else if (data.result == 'fail') {
-                    alertDialog.html('<strong>Submit error<strong><br><br>');
-                    alertDialog.append(data.msg);
-                    alertDialog.dialog('open')
-                }
-            }
-        })
-    });
-
     savedArguments.on('change', function () {
         var selectedOption = $('option:selected', this);
         $('#args_id').val(selectedOption.data('id'));
         $('#subset').val(selectedOption.data('subset'));
         $('#tags').val(selectedOption.data('tags'));
         $('#delete_args').removeClass('hidden');
-    })
+    });
+
+    $('#arguments_form').submit(function (event) {
+        event.preventDefault();
+        var argsId = $('#args_id').val();
+        var subset = $('#subset').val();
+        var tags = $('#tags').val();
+        switch ($(document.activeElement).data('action')) {
+            case 'save':
+                if (subset == '' && tags == '' ) {
+                    alertDialog.html('<strong>Submit error<strong><br><br>All fields cannot be blank');
+                    alertDialog.dialog('open')
+                }
+                else {
+                    $.ajax({
+                        url: '/runner/playbooks/',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'save_args',
+                            args_id: argsId,
+                            subset: subset,
+                            tags: tags,
+                            playbook: playbookDialog.data('currentPlaybook')
+                        },
+                        success: function (data) {
+                            if (data.result == 'ok') {
+                                buildArgsSelectionBox();
+                                savedArguments.val(data.args_id);
+                                $('#args_id').val(data.args_id);
+                                $('#delete_args').removeClass('hidden');
+                            }
+                            else if (data.result == 'fail') {
+                                alertDialog.html('<strong>Submit error<strong><br><br>');
+                                alertDialog.append(data.msg);
+                                alertDialog.dialog('open')
+                            }
+                        }
+                    })
+                }
+                break;
+            case 'delete':
+                $.ajax({
+                    url: '/runner/playbooks/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'del_args',
+                        args_id: argsId
+                    },
+                    success: function (data) {
+                        if (data.result == 'ok') {
+                            buildArgsSelectionBox();
+                            $('#arguments_form').find('input').val('');
+                            $('#delete_args').addClass('hidden');
+                        }
+                        else if (data.result == 'fail') {
+                            alertDialog.html('<strong>Submit error<strong><br><br>');
+                            alertDialog.append(data.msg);
+                            alertDialog.dialog('open')
+                        }
+                    }
+                });
+                break;
+            case 'check':
+                $(document.activeElement).toggleClass('checked_button');
+                break;
+        }
+    });
 });

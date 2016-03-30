@@ -149,21 +149,21 @@ class PlaybooksView(BaseView):
     def post(request):
         if request.POST['action'] == 'save_args':
             try:
-                play = PlayArguments.objects.get(playbook=request.POST['playbook'],
+                args = PlayArguments.objects.get(playbook=request.POST['playbook'],
                                                  subset=request.POST['subset'],
                                                  tags=request.POST['tags'])
             except PlayArguments.DoesNotExist:
-                play = PlayArguments()
-            form = PlayArgsForm(request.POST or None, instance=play)
+                args = PlayArguments()
+            form = PlayArgsForm(request.POST or None, instance=args)
             if form.is_valid():
                 form.save(commit=True)
-                data = {'result': 'ok'}
+                data = {'result': 'ok', 'args_id': args.id}
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'del_args':
             try:
-                play_args = PlayArguments(pk=request.POST['args_id'])
-                play_args.delete()
+                args = PlayArguments(pk=request.POST['args_id'])
+                args.delete()
                 data = {'result': 'ok'}
             except Exception as e:
                 data = {'result': 'failed', 'msg': e}

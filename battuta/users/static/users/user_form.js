@@ -11,6 +11,9 @@ $(document).ready(function () {
     if (dbTimezone != '') {
         timezoneSelector.val(dbTimezone);
     }
+    else {
+        timezoneSelector.val('America/Sao_Paulo')
+    }
 
     $('#username').keyup(function () {
         $('#ansible_user').val($(this).val())
@@ -32,7 +35,6 @@ $(document).ready(function () {
             browseClass: 'btn btn-default btn-sm',
             initialCaption: rsaKey.data('value')
         });
-
 
     // Save user
     $('#user_form').submit(function (event) {
