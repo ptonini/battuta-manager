@@ -1,5 +1,5 @@
-function buildSettingsSelectionBox(playbookFile) {
-    $('#settings').children('option').each(function(){
+function buildArgsSelectionBox() {
+    $('#saved_arguments').children('option').each(function(){
         if (typeof $(this).data('id') == 'number') {
             $(this).remove()
         }
@@ -9,8 +9,8 @@ function buildSettingsSelectionBox(playbookFile) {
         type: 'GET',
         dataType: 'json',
         data: {
-            action: 'get_plays',
-            playbook_file: playbookFile
+            action: 'get_args',
+            playbook_file: $('#playbook_dialog').data('currentPlaybook')
         },
         success: function (data) {
             $.each(data, function (index, value) {
@@ -27,12 +27,12 @@ function buildSettingsSelectionBox(playbookFile) {
                 if (tags != '') {
                     display += '--tags ' + tags
                 }
-                $('#settings').append(
-                    $('<option>')
-                        .data('id', value[0])
-                        .data('subset', value[1])
-                        .data('tags', value[2])
-                        .append(display)
+                $('#saved_arguments').append(
+                    $('<option>').data({
+                        'id': id,
+                        'subset': subset,
+                        'tags': tags
+                    }).append(display)
                 )
             });
         }
@@ -41,12 +41,13 @@ function buildSettingsSelectionBox(playbookFile) {
 
 $(document).ready(function () {
 
-    var playbookTableSelector = $('#playbook_table');
+    var playbookTable = $('#playbook_table');
     var playbookDialog = $('#playbook_dialog');
     var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
     var jsonBox = $('#json_box');
-    //var settingsSelectionBox = $('#settings');
+    var currentPlaybook = $('#current_playbook');
+    var savedArguments = $('#saved_arguments');
 
     // Initialize playbook dialog
     playbookDialog.dialog({
@@ -54,37 +55,10 @@ $(document).ready(function () {
         modal: true,
         show: true,
         hide: true,
-        width: 320,
+        width: 440,
         dialogClass: 'no_title',
         buttons: {
             Run: function (){
-            },
-            Save: function (){
-                var currentPlaybook = $('#current_playbook').val();
-                $.ajax({
-                    url: '/runner/playbooks/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action: 'save_play',
-                        play_id: $('#play_id').val(),
-                        subset: $('#subset').val(),
-                        tags: $('#tags').val(),
-                        playbook: currentPlaybook
-                    },
-                    success: function (data) {
-                        if (data.result == 'ok') {
-                            buildSettingsSelectionBox(currentPlaybook);
-                            alertDialog.html('<strong>Play saved<strong>');
-                            alertDialog.dialog('open')
-                        }
-                        else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Submit error<strong><br><br>');
-                            alertDialog.append(data.msg);
-                            alertDialog.dialog('open')
-                        }
-                    }
-                })
             },
             Cancel: function (){
                 playbookDialog.dialog('close');
@@ -92,7 +66,8 @@ $(document).ready(function () {
         }
     });
 
-    playbookTableSelector.DataTable({
+    // Build playbook table
+    playbookTable.DataTable({
         pageLength: 10,
         ajax: {
             url: '/runner/playbooks/',
@@ -113,7 +88,7 @@ $(document).ready(function () {
         }]
     });
 
-    playbookTableSelector.children('tbody').on('click', 'a', function () {
+    playbookTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
         var playbookFile = $(this).closest('td').prev().html();
         var playbookName = $(this).closest('td').prev().prev().prev().html();
@@ -129,10 +104,10 @@ $(document).ready(function () {
             success: function (playbook) {
                 if ( action == 'Run') {
                     $('#playbook_dialog_header').html(playbookName);
-                    $('#current_playbook').val(playbookFile);
-                    buildSettingsSelectionBox(playbookFile);
-                    playbookDialog.dialog('open')
-                }
+                    playbookDialog.data('currentPlaybook', playbookFile);
+                    playbookDialog.dialog('open');
+                    buildArgsSelectionBox();
+                    }
                 else if (action == 'View') {
                     jsonBox.JSONView(playbook);
                     jsonBox.JSONView('collapse', 2);
@@ -141,4 +116,71 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('#save_args').click(function() {
+        var argsId = $('#args_id').val();
+        var subset = $('#subset').val();
+        var tags = $('#tags').val();
+        if (subset == '' && tags == '' ) {
+            alertDialog.html('<strong>Submit error<strong><br><br>All fields cannot be blank');
+            alertDialog.dialog('open')
+        }
+        else {
+            $.ajax({
+                url: '/runner/playbooks/',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'save_args',
+                    args_id: argsId,
+                    subset: subset,
+                    tags: tags,
+                    playbook: playbookDialog.data('currentPlaybook')
+                },
+                success: function (data) {
+                    if (data.result == 'ok') {
+                        buildArgsSelectionBox();
+                    }
+                    else if (data.result == 'fail') {
+                        alertDialog.html('<strong>Submit error<strong><br><br>');
+                        alertDialog.append(data.msg);
+                        alertDialog.dialog('open')
+                    }
+                }
+            })
+        }
+
+    });
+
+    $('#delete_args').click(function () {
+        $.ajax({
+            url: '/runner/playbooks/',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'del_args',
+                args_id: $('#args_id').val()
+            },
+            success: function (data) {
+                if (data.result == 'ok') {
+                    buildArgsSelectionBox();
+                    $('#arguments_form').find('input').val('');
+                    $('#delete_args').addClass('hidden');
+                }
+                else if (data.result == 'fail') {
+                    alertDialog.html('<strong>Submit error<strong><br><br>');
+                    alertDialog.append(data.msg);
+                    alertDialog.dialog('open')
+                }
+            }
+        })
+    });
+
+    savedArguments.on('change', function () {
+        var selectedOption = $('option:selected', this);
+        $('#args_id').val(selectedOption.data('id'));
+        $('#subset').val(selectedOption.data('subset'));
+        $('#tags').val(selectedOption.data('tags'));
+        $('#delete_args').removeClass('hidden');
+    })
 });

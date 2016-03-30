@@ -85,6 +85,12 @@ option {
     border-top: none !important;
 }
 
+.input-sm_label {
+    text-align: center;
+    vertical-align: middle;
+    line-height: 30px;
+}
+
 .no_close .ui-dialog-titlebar-close,
 .no_title .ui-dialog-titlebar,
 table.dataTable thead .sorting:after,

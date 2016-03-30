@@ -9,7 +9,7 @@ class AdHoc(models.Model):
     become = models.BooleanField()
 
 
-class Play(models.Model):
+class PlayArguments(models.Model):
     playbook = models.CharField(max_length=64)
     tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)

@@ -12,8 +12,8 @@ from django.conf import settings
 from pytz import timezone
 from multiprocessing import Process
 
-from .forms import AdHocForm, RunnerForm, PlayForm
-from .models import AdHoc, Runner, Task, Play
+from .forms import AdHocForm, RunnerForm, PlayArgsForm
+from .models import AdHoc, Runner, Task, PlayArguments
 from . import run_play
 
 date_format = '%Y-%m-%d %H:%M:%S'
@@ -137,29 +137,36 @@ class PlaybooksView(BaseView):
                     data.append([playbook[0]['name'], playbook[0]['hosts'], key])
             elif request.GET['action'] == 'get_one':
                 data = playbook_cache.get(request.GET['playbook_file'])
-            elif request.GET['action'] == 'get_plays':
+            elif request.GET['action'] == 'get_args':
                 data = list()
-                for play in Play.objects.filter(playbook=request.GET['playbook_file']):
-                    data.append([play.id, play.subset, play.tags])
+                for play_args in PlayArguments.objects.filter(playbook=request.GET['playbook_file']):
+                    data.append([play_args.id, play_args.subset, play_args.tags])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request):
-        if request.POST['action'] == 'save_play':
+        if request.POST['action'] == 'save_args':
             try:
-                play = Play.objects.get(playbook=request.POST['playbook'],
-                                        subset=request.POST['subset'],
-                                        tags=request.POST['tags'])
-            except Play.DoesNotExist:
-                play = Play()
-            form = PlayForm(request.POST or None, instance=play)
+                play = PlayArguments.objects.get(playbook=request.POST['playbook'],
+                                                 subset=request.POST['subset'],
+                                                 tags=request.POST['tags'])
+            except PlayArguments.DoesNotExist:
+                play = PlayArguments()
+            form = PlayArgsForm(request.POST or None, instance=play)
             if form.is_valid():
                 form.save(commit=True)
                 data = {'result': 'ok'}
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
+        elif request.POST['action'] == 'del_args':
+            try:
+                play_args = PlayArguments(pk=request.POST['args_id'])
+                play_args.delete()
+                data = {'result': 'ok'}
+            except Exception as e:
+                data = {'result': 'failed', 'msg': e}
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type='application/json')

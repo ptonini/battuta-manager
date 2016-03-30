@@ -23,24 +23,35 @@
             <h5 id="playbook_dialog_header"></h5>
             <hr>
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-9">
                     <div class="form-group">
-                        <label for="settings" class="sr-only requiredField">Module</label>
-                        <select class="select form-control input-sm" id="settings">
-                            <option value="" disabled selected hidden>Select settings</option>
-                        </select>
+                            <label for="saved_arguments" class="sr-only requiredField">Saved arguments</label>
+                            <select class="select form-control input-sm" id="saved_arguments">
+                                <option value="" disabled selected hidden>Saved arguments</option>
+                            </select>
                     </div>
                 </div>
+                <div class="col-md-3 text-right">
+                    <button id="save_args" class="btn btn-default btn-sm"
+                            data-toggle="tooltip" title="Save arguments">
+                        <span class="glyphicon glyphicon-save"></span>
+                    </button>
+                    <button id="delete_args" class="btn btn-default btn-sm hidden"
+                            data-toggle="tooltip" title="Delete arguments">
+                        <span class="glyphicon glyphicon-remove-sign"></span>
+                    </button>
+                </div>
             </div>
-            <form id="playbook_form" method="post">
-                <input id="current_playbook" class="hidden" type="text">
-                <input id="play_id" class="hidden" type="text">
+            <br>
+            <form id="arguments_form" method="post">
+                <input id="args_id" class="hidden" type="text">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-9">
                         <div class="form-group">
+                            <label for="tags" class="sr-only requiredField">Tags</label>
                             <div class="input-group">
                                 <input class="form-control input-sm pattern-input"
-                                       id="subset" placeholder="limit to" type="text">
+                                       id="subset" placeholder="limit" type="text">
                                 <span class="input-group-btn">
                                     <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
                                         <span class="glyphicon glyphicon-edit"></span>
@@ -51,9 +62,9 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-9">
                         <div class="form-group">
-                           <label for="tags" class="sr-only requiredField">Tags</label>
+                            <label for="tags" class="sr-only requiredField">Tags</label>
                             <input class="form-control input-sm" id="tags" placeholder="tags" type="text">
                         </div>
                     </div>
