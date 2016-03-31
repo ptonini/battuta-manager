@@ -24,7 +24,6 @@ function updateStatus (intervalId, runnerStatus, runningSpan) {
             }
             runnerStatus.html(data.status);
             if (data.task_list.length > 0) {
-                console.log(data.task_list)
                 $.each(data.task_list, function (index, value) {
                     var tableId = 'task_' + value[0];
                     var tableSelector = '#' + tableId;
@@ -109,10 +108,6 @@ function updateStatus (intervalId, runnerStatus, runningSpan) {
                 var last_task = data.task_list[data.task_list.length - 1];
                 var lastTable = $('#task_' + last_task[0]).DataTable();
                 lastTable.ajax.reload();
-            }
-            else {
-                console.log('Task list is empty');
-                clearInterval(intervalId);
             }
         }
     });

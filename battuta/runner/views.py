@@ -46,7 +46,23 @@ class RunnerView(View):
             form_data['username'] = request.user.userdata.ansible_username
             form_data['name'] = playbook['name']
             form_data['hosts'] = playbook['hosts']
-            form_data['become'] = playbook['become']
+
+            # Set 'check' value
+            if form_data['check'] == 'true':
+                form_data['check'] = True
+            else:
+                form_data['check'] = False
+
+            # Set 'tags' value
+            if form_data['tags'] == '':
+                form_data['tags'] = None
+
+            # Set 'become' value
+            if 'become' in playbook:
+                form_data['become'] = playbook['become']
+            else:
+                form_data['become'] = False
+
             runner_form = RunnerForm(form_data)
             runner = runner_form.save(commit=False)
             runner.user = request.user

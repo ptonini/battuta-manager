@@ -60,10 +60,7 @@ $(document).ready(function () {
             Run: function (){
                 var become = false;
                 var askPassword = false;
-                if ($('#become').html() == 'True') {
-                    become = true
-                }
-                if (become || $('#has_rsa').val() == 'false') {
+                if ($('#become').html() == 'True' || $('#has_rsa').val() == 'false') {
                     askPassword = true
                 }
                 var postData = {
@@ -71,7 +68,9 @@ $(document).ready(function () {
                     playbook: playbookDialog.data('currentPlaybook'),
                     check: $('#check').hasClass('checked_button'),
                     subset: $('#subset').val(),
-                    tags: $('#tags').val()
+                    tags: $('#tags').val(),
+                    remote_pass: '',
+                    become_pass: ''
                 };
                 playbookDialog.dialog('close');
                 executePlay(postData, askPassword);

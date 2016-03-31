@@ -1,5 +1,6 @@
 import os
 import json
+import pprint
 
 from django.conf import settings
 from collections import namedtuple
@@ -11,6 +12,7 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
 from ansible import constants as c
 
+pp = pprint.PrettyPrinter()
 
 AnsibleOptions = namedtuple('Options', ['connection',
                                         'module_path',
@@ -43,15 +45,15 @@ def run_playbook(playbook, form_data, runner):
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
 
+    # Set inventory subset if available:
+    if 'subset' in form_data:
+        inventory.subset(form_data['subset'])
+
     # Add host list to runner object
     host_list = inventory.get_hosts(pattern=runner.hosts)
 
     # Create password dictionary
     passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
-
-    # Set inventory subset if available:
-    if 'subset' in form_data:
-        inventory.subset(form_data['subset'])
 
     # Create ansible options tuple
     options = AnsibleOptions(connection='paramiko',
@@ -99,6 +101,7 @@ class BattutaCallback(CallbackBase):
 
     @staticmethod
     def _extract_result(result):
+        pp.pprint(result.__dict__)
         return result._host.get_name(), result._result
 
     def _save_result(self, host, status, message, result):
@@ -115,7 +118,7 @@ class BattutaCallback(CallbackBase):
         self.runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        runner_task = self.runner.task_set.create(name=task.get_name().strip())
+        runner_task = self.runner.task_set.create(name=task.get_name().strip(), module=task.action)
         for host in self.host_list:
             runner_task.result_set.create(host=host, status='started', response='{}')
 
@@ -139,7 +142,8 @@ class BattutaCallback(CallbackBase):
 
     def v2_runner_on_ok(self, result):
         host, response = self._extract_result(result)
-        module = str(response['invocation']['module_name'])
+        runner_task = self.runner.task_set.latest('id')
+        module = runner_task.module
         message = module + ' successful'
         status = 'ok'
         if module == 'setup':

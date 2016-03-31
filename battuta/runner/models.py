@@ -34,6 +34,7 @@ class Runner(models.Model):
 class Task(models.Model):
     runner = models.ForeignKey(Runner)
     name = models.CharField(max_length=128)
+    module = models.CharField(max_length=64, blank=True, null=True)
 
 
 class Result(models.Model):
