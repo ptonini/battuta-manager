@@ -120,7 +120,6 @@ $(document).ready(function () {
             },
             success: function (playbook) {
                 if ( action == 'Run') {
-                    console.log(playbook[0].hosts, playbook[0].become);
                     $('#playbook_dialog_header').html(playbookName);
                     $('#hosts').html(playbook[0].hosts);
                     if (playbook[0].become) {
