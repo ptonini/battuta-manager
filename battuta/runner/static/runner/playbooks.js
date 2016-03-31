@@ -40,7 +40,6 @@ function buildArgsSelectionBox() {
 }
 
 $(document).ready(function () {
-
     var playbookTable = $('#playbook_table');
     var playbookDialog = $('#playbook_dialog');
     var alertDialog = $('#alert_dialog');
@@ -59,20 +58,24 @@ $(document).ready(function () {
         dialogClass: 'no_title',
         buttons: {
             Run: function (){
-                $.ajax({
-                    url: '/runner/playbooks/',
-                    type: 'GET',
-                    dataType: 'json',
-                    data: {
-                        action: 'run',
-                        playbook_file: playbookDialog.data('currentPlaybook'),
-                        check: $('#check').hasClass('checked_button'),
-                        subset: $('#subset').val(),
-                        tags: $('#tags').val()
-                    },
-                    success: function () {
-                    }
-                });
+                var become = false;
+                var askPassword = false;
+                if ($('#become').html() == 'True') {
+                    become = true
+                }
+                if (become || $('#has_rsa').val() == 'false') {
+                    askPassword = true
+                }
+                var postData = {
+                    action: 'run_play',
+                    playbook: playbookDialog.data('currentPlaybook'),
+                    check: $('#check').hasClass('checked_button'),
+                    subset: $('#subset').val(),
+                    tags: $('#tags').val()
+                };
+                playbookDialog.dialog('close');
+                executePlay(postData, askPassword);
+
             },
             Cancel: function (){
                 playbookDialog.dialog('close');
@@ -119,9 +122,9 @@ $(document).ready(function () {
                 if ( action == 'Run') {
                     console.log(playbook[0].hosts, playbook[0].become);
                     $('#playbook_dialog_header').html(playbookName);
-                    $('#play_hosts').html(playbook[0].hosts);
+                    $('#hosts').html(playbook[0].hosts);
                     if (playbook[0].become) {
-                        $('#play_become').html('True')
+                        $('#become').html('True')
                     }
                     playbookDialog.data('currentPlaybook', playbookFile);
                     playbookDialog.dialog('open');
@@ -136,7 +139,7 @@ $(document).ready(function () {
         });
     });
 
-    savedArguments.on('change', function () {
+    savedArguments.change(function () {
         var selectedOption = $('option:selected', this);
         $('#args_id').val(selectedOption.data('id'));
         $('#subset').val(selectedOption.data('subset'));

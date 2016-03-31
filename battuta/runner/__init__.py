@@ -30,7 +30,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'skip_tags'])
 
 
-def run_play(play_data, runner, form_data):
+def run_playbook(playbook, form_data, runner):
 
     # Mark play as started
     runner.pid = os.getpid()
@@ -67,12 +67,12 @@ def run_play(play_data, runner, form_data):
                              become_method=c.DEFAULT_BECOME_METHOD,
                              become_user=c.DEFAULT_BECOME_USER,
                              verbosity=None,
-                             check=False,
-                             tags=False,
-                             skip_tags=False, )
+                             check=form_data['check'],
+                             tags=form_data['tags'],
+                             skip_tags=None)
 
     # Create ansible play object
-    play = Play().load(play_data, variable_manager=variable_manager, loader=loader)
+    play = Play().load(playbook, variable_manager=variable_manager, loader=loader)
 
     # Execute play
     tqm = None

@@ -377,7 +377,7 @@ $(document).ready(function () {
         if ($('#has_rsa').val() == 'true') {
             askPassword = false
         }
-        runAdHocTask(postData, askPassword);
+        executePlay(postData, askPassword);
     });
 
     // Show entity facts

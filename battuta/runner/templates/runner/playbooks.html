@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% block content %}
     <script src="{% static 'runner/playbooks.js' %}"></script>
+    <input type="hidden" id="has_rsa" value="{% if user.userdata.rsa_key %}true{% else %}false{% endif %}">
     <h3>Playbooks</h3>
     <hr>
     <div class="row">
@@ -24,11 +25,11 @@
             <hr>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col-md-2">Hosts:</div>
-                <div class="col-md-10"><strong id="play_hosts"></strong></div>
+                <div class="col-md-10"><strong id="hosts"></strong></div>
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col-md-2">Become:</div>
-                <div class="col-md-10"><strong id="play_become">False</strong></div>
+                <div class="col-md-10"><strong id="become">False</strong></div>
             </div>
             <br>
             <div class="row">
@@ -43,7 +44,7 @@
             </div>
             <br>
             <form id="arguments_form" method="post">
-                <input id="args_id" class="hidden" type="text">
+                <input id="args_id" type="hidden">
                 <div class="row">
                     <div class="col-md-9">
                         <div class="form-group">

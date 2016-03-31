@@ -103,7 +103,7 @@ function popupCenter(url, title, w) {
 }
 
 // Run Ad-Hoc command
-function runAdHocTask(postData, askPass) {
+function executePlay(postData, askPass) {
     var alertDialog = $('#alert_dialog');
     function postCommand(postData) {
         $.ajax({
@@ -123,6 +123,8 @@ function runAdHocTask(postData, askPass) {
             }
         });
     }
+
+
     if (askPass) {
         $('#password_dialog').dialog({
             modal: true,

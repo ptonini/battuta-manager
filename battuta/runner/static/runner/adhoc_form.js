@@ -116,7 +116,7 @@ $(document).ready(function () {
     });
 
     // Build AdHoc form
-    $('#module').on('change', function() {
+    $('#module').change(function() {
             var currentModule = new AnsibleModules(this.value);
             currentModule.buildFormFields(fieldsContainer, sudoDiv)
     });
@@ -178,13 +178,13 @@ $(document).ready(function () {
                     function successCallback(data) {
                         currentModule.filepath = data.filepaths[0];
                         postData.arguments = currentModule.buildArguments();
-                        runAdHocTask(postData, askPassword);
+                        executePlay(postData, askPassword);
                     }
                     uploadFiles($('#file'), 'file', successCallback);
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
-                    runAdHocTask(postData, askPassword);
+                    executePlay(postData, askPassword);
                 }
                 adhocIdSelector.val('');
                 break;

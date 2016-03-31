@@ -14,7 +14,7 @@ from multiprocessing import Process
 
 from .forms import AdHocForm, RunnerForm, PlayArgsForm
 from .models import AdHoc, Runner, Task, PlayArguments
-from . import run_play
+from . import run_playbook
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -27,9 +27,9 @@ class BaseView(View):
 
 class RunnerView(View):
     @staticmethod
-    def _run(form_data, play_data, runner):
+    def _run(playbook, form_data, runner):
         try:
-            p = Process(target=run_play, args=(play_data, runner, form_data,))
+            p = Process(target=run_playbook, args=(playbook, form_data, runner))
             p.start()
         except Exception as e:
             runner.delete()
@@ -39,23 +39,39 @@ class RunnerView(View):
 
     def post(self, request):
         # Execute adhoc task
-        if request.POST['action'] == 'run_adhoc':
+        if request.POST['action'] == 'run_play':
+            playbook_cache = caches['battuta-playbooks']
+            playbook = playbook_cache.get(request.POST['playbook'])[0]
+            form_data = dict(request.POST.iteritems())
+            form_data['username'] = request.user.userdata.ansible_username
+            form_data['name'] = playbook['name']
+            form_data['hosts'] = playbook['hosts']
+            form_data['become'] = playbook['become']
+            runner_form = RunnerForm(form_data)
+            runner = runner_form.save(commit=False)
+            runner.user = request.user
+            runner.status = 'created'
+            runner.save()
+            data = self._run(playbook, form_data, runner)
+        elif request.POST['action'] == 'run_adhoc':
             runner_form = RunnerForm(request.POST)
             adhoc_form = AdHocForm(request.POST)
             if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
                 form_data['username'] = request.user.userdata.ansible_username
-                play_data = {'name': request.POST['name'],
-                             'hosts': request.POST['hosts'],
-                             'gather_facts': 'no',
-                             'tasks': [
-                                 {'action': {'module': request.POST['module'], 'args': request.POST['arguments']}}
+                form_data['check'] = None
+                form_data['tags'] = None
+                playbook = {'name': request.POST['name'],
+                            'hosts': request.POST['hosts'],
+                            'gather_facts': 'no',
+                            'tasks': [
+                                {'action': {'module': request.POST['module'], 'args': request.POST['arguments']}}
                              ]}
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
                 runner.save()
-                data = self._run(form_data, play_data, runner)
+                data = self._run(playbook, form_data, runner)
             else:
                 data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
 
