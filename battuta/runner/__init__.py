@@ -101,7 +101,6 @@ class BattutaCallback(CallbackBase):
 
     @staticmethod
     def _extract_result(result):
-        pp.pprint(result.__dict__)
         return result._host.get_name(), result._result
 
     def _save_result(self, host, status, message, result):
@@ -131,19 +130,20 @@ class BattutaCallback(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self._extract_result(result)
-        module = str(response['invocation']['module_name'])
+        module = self.runner.task_set.latest('id').module
         message = module + ' failed'
         if 'exception' in response:
             message = 'Exception raised'
             response = [response]
         elif module == 'command' or module == 'script':
             message = response['stdout'] + response['stderr']
+        elif 'msg' in response:
+            message = response['msg']
         self._save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):
         host, response = self._extract_result(result)
-        runner_task = self.runner.task_set.latest('id')
-        module = runner_task.module
+        module = self.runner.task_set.latest('id').module
         message = module + ' successful'
         status = 'ok'
         if module == 'setup':

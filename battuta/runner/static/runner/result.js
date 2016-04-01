@@ -69,14 +69,17 @@ function updateStatus (intervalId, runnerStatus, runningSpan) {
                                     var node = row.node();
                                     switch (row.data()[1]) {
                                         case 'unreachable':
+                                            $(node).css('color', 'gray');
+                                            break;
+                                        case 'changed':
                                             $(node).css('color', 'orange');
+                                            break;
+                                        case 'ok':
+                                            $(node).css('color', 'green');
                                             break;
                                         case 'error':
                                         case 'failed':
                                             $(node).css('color', 'red');
-                                            break;
-                                        case 'ok':
-                                            $(node).css('color', 'green');
                                             break;
                                     }
                                     $(node).children('td:nth-child(4)').html(

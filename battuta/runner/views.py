@@ -165,8 +165,8 @@ class PlaybooksView(BaseView):
                 data = list()
                 self._build_playbook_cache(playbook_cache)
                 for key in playbook_cache.keys('*.yml'):
-                    playbook = playbook_cache.get(key)
-                    data.append([playbook[0]['name'], playbook[0]['hosts'], key])
+                    playbook = playbook_cache.get(key)[0]
+                    data.append([playbook['name'], playbook['hosts'], key])
             elif request.GET['action'] == 'get_one':
                 data = playbook_cache.get(request.GET['playbook_file'])
             elif request.GET['action'] == 'get_args':
