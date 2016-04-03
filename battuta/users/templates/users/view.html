@@ -2,8 +2,14 @@
 {% block content %}
     <h3>{{ view_user.username }} details</h3>
     <hr>
-    <div class="details"><strong>Joined in: </strong>{{ view_user.date_joined }}</div>
-    <div class="details"><strong>Last login: </strong>{{ view_user.last_login }}</div>
+    <div class="row">
+        <div class="col-md-1"><strong>Joined in:</strong></div>
+        <div class="col-md-5">{{ view_user.date_joined }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-1"><strong>Last login:</strong></div>
+        <div class="col-md-5">{{ view_user.last_login }}</div>
+    </div>
     <br>
     {% include 'users/user_form.html' with page='view' %}
 {% endblock %}

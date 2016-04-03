@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import User, UserData
+from .models import User, UserData, Credential
 
 
 class UserForm(forms.ModelForm):
@@ -12,4 +12,10 @@ class UserForm(forms.ModelForm):
 class UserDataForm(forms.ModelForm):
     class Meta:
         model = UserData
-        fields = ('timezone', 'ansible_username', 'rsa_key')
+        fields = ('timezone',)
+
+
+class CredentialForm(forms.ModelForm):
+    class Meta:
+        model = Credential
+        fields = ('title', 'shared', 'username', 'password', 'rsa_key', 'sudo_user', 'sudo_pass')

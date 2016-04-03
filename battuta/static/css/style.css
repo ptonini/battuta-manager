@@ -11,6 +11,10 @@ footer {
     height: 45px;
 }
 
+label {
+    font-size: 11px;
+}
+
 a,
 .glyphicon,
 .pagination > li > a,

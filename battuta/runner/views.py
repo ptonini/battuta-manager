@@ -30,6 +30,7 @@ class RunnerView(View):
     def _run(playbook, form_data, runner):
         try:
             p = Process(target=run_playbook, args=(playbook, form_data, runner))
+            p.daemon = False
             p.start()
         except Exception as e:
             runner.delete()

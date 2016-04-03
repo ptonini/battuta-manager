@@ -6,20 +6,13 @@
     <input id="db_timezone" type="hidden" value="{{ view_user.userdata.timezone }}">
     <div class="row">
         {% if page == 'new' %}
-            <div class="col-md-3">
+            <div class="col-md-6">
                 <div class="form-group">
                     <label for="username" class="requiredField">Username</label>
                     <input class="textinput textInput form-control input-sm" id="username" type="text" value="">
                 </div>
             </div>
         {% endif %}
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="ansible_user" class="requiredField">Ansible user</label>
-                <input class="textinput textInput form-control input-sm" id="ansible_user"
-                       type="text" value="{{ view_user.userdata.ansible_username }}">
-            </div>
-        </div>
     </div>
     <div class="row">
         <div class="col-md-3">
@@ -52,14 +45,6 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="rsa_key" class="requiredField">RSA Key</label>
-                <input class="input-file" type="file" id="rsa_key" data-value="{{ view_user.userdata.rsa_key }}">
-            </div>
-        </div>
-    </div>
     {% if page == 'new' %}
         <div class="row">
             <div class="col-md-6">
@@ -80,10 +65,13 @@
         </div>
     {% endif %}
     <button type="submit" class="btn btn-default btn-xs">Save</button>
+    <button id="open_cred_dialog" class="btn btn-default btn-xs">Edit credentials</button>
 </form>
 {% if page == 'view' and user.id == view_user.id %}
     <div class="row">
         <div class="col-md-6">
+            <br>
+
             <hr>
         </div>
     </div>
@@ -110,5 +98,83 @@
 <div class="row">
     <div class="col-md-6">
         <hr>
+    </div>
+</div>
+<div class="hidden">
+    <div id="credential_dialog" style="overflow: hidden">
+        <h5 class="text-center">Credentials</h5>
+        <hr>
+        <div class="row">
+            <div class="col-md-3">
+                <label for="saved_credentials" class="requiredField" style="font-size: 13px; margin-top: 5px">
+                    Saved credentials
+                </label>
+            </div>
+            <div class="col-md-9">
+                <select class="select form-control input-sm" id="saved_credentials">
+                    <option value="" disabled selected hidden></option>
+                </select>
+            </div>
+        </div>
+        <br><br>
+        <form id="credential_form" method="post">
+            <input id="cred_id" type="hidden">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="cred_title" class="requiredField">Title</label>
+                        <input class="form-control input-sm" id="cred_title" type="text">
+                    </div>
+                </div>
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="cred_shared" class="btn btn-default btn-sm">Shared</button>
+                </div>
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="cred_default" class="btn btn-default btn-sm">Default</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_username" class="requiredField">Username</label>
+                        <input class="form-control input-sm" id="cred_username" type="text">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_pass" class="requiredField">Password</label>
+                        <input class="form-control input-sm" id="cred_pass" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="cred_rsakey" class="requiredField">RSA Key</label>
+                        <input class="input-file" type="file" id="cred_rsakey">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_sudo_user" class="requiredField">SUDO Username</label>
+                        <input class="form-control input-sm" id="cred_sudo_user" type="text">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_pass" class=" requiredField">SUDO Password</label>
+                        <input class="form-control input-sm" id="cred_pass" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <button id="save_cred" class="btn btn-default btn-sm">Save</button>
+                    <button id="delete_cred" class="btn btn-default btn-sm hidden">Delete</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>

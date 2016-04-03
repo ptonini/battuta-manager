@@ -11,13 +11,13 @@ $(document).ready(function () {
             type: 'GET',
             dataSrc: '',
             data: {
-                action: 'get_list'
+                action: 'get_users'
             }
         },
         drawCallback: function () {
             var tableApi = this.api();
             tableApi.rows().every(function (rowIndex) {
-                prettyBoolean(tableApi.row(rowIndex), 4)
+                prettyBoolean(tableApi.row(rowIndex), 3)
             });
         },
         columnDefs: [{
@@ -35,7 +35,7 @@ $(document).ready(function () {
 
     // Edit/Delete user command
     userTableSelector.children('tbody').on('click', 'a', function () {
-        var userId = userTable.row($(this).parents('tr')).data()[5];
+        var userId = userTable.row($(this).parents('tr')).data()[4];
         if ($(this).attr('title') == 'Edit') {
             window.open('/users/view/?user_id=' + userId, '_self')
         }

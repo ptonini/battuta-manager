@@ -293,7 +293,7 @@ $(document).ready(function () {
                 entityForm.submit()
             },
             Cancel: function (){
-                $('this').dialog('close');
+                entityDialog.dialog('close');
             }
         }
 

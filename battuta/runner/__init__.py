@@ -84,6 +84,7 @@ def run_playbook(playbook, form_data, runner):
                                passwords=passwords,
                                loader=loader,
                                options=options,
+                               #stdout_callback='default')
                                stdout_callback=BattutaCallback(runner, host_list))
         tqm.run(play)
     finally:

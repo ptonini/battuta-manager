@@ -118,7 +118,7 @@ $(document).ready(function () {
                 playbook_file: playbookFile
             },
             success: function (playbook) {
-                if ( action == 'Run') {
+                if (action == 'Run') {
                     $('#playbook_dialog_header').html(playbookName);
                     $('#hosts').html(playbook[0].hosts);
                     if (playbook[0].become) {
