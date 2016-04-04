@@ -44,35 +44,34 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer, sudoDiv) {
         case 'shell':
             fieldsContainer
                 .append($('<div>').attr('class', 'form-group')
-                    .append($('<input>').attr({
-                        'class': 'form-control input-sm',
-                        'type': 'text',
-                        'id': 'arguments',
-                        'placeholder': 'command'
-                    })
-                )
+                    .append(
+                        $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Command'),
+                        $('<input>').attr({
+                            'class': 'form-control input-sm',
+                            'type': 'text',
+                            'id': 'arguments'
+                        })
+                    )
             );
             sudoDiv.removeClass('hidden');
             break;
         case 'script':
             fieldsContainer.append(
                 $('<div>').attr('class', 'form-group')
-                    .append($('<input>')
-                        .attr({'class': 'input-file', 'type': 'file', 'id': 'file'})
-                        .on('change', function (event) {
-                            $(this).data('files', event.target.files)
-                        })
+                    .append(
+                        $('<label>').attr({'for': 'file', 'class': 'requiredField'}).html('Select script'),
+                        $('<input>')
+                            .attr({'class': 'input-file', 'type': 'file', 'id': 'file'})
+                            .on('change', function (event) {
+                                $(this).data('files', event.target.files)
+                            })
                     ),
                 $('<div>').attr('class', 'form-group')
-                    .append($('<input>')
-                        .attr({
-                            'class': 'form-control input-sm',
-                            'type': 'text',
-                            'placeholder': 'Additional parameters'
-                        })
+                    .append(
+                        $('<label>').attr({'for': 'file', 'class': 'requiredField'}).html('Additional parameters'),
+                        $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
                     )
             );
-            this.fileInputSettings.initialCaption = 'Select script';
             $('#file').fileinput(this.fileInputSettings);
             sudoDiv.removeClass('hidden');
             break;

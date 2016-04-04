@@ -7,7 +7,10 @@ function buildCredentialSelectionBox(start_value) {
         url: '/users/credentials/',
         type: 'GET',
         dataType: 'json',
-        data: {action: 'list'},
+        data: {
+            action: 'list',
+            user_id: $('#user_id').val()
+        },
         success: function (data) {
             $.each(data, function (index, credential) {
                 var display = credential.title;
@@ -41,16 +44,19 @@ function resetCredentialForm() {
 $(document).ready(function () {
 
     var alertDialog = $('#alert_dialog');
-    var timezoneSelector = $('#timezone');
-    var dbTimezone = $('#db_timezone').val();
-    var page = $('#page').val();
+    var timezones = $('#timezones');
+    var userTimezone = $('#user_timezone');
+    var page = $('#page');
+    var addPassword1 = $('#add_password1');
+    var addPassword2 = $('#add_password2');
     var credRsaKey = $('#cred_rsakey');
     var credentialDialog = $('#credential_dialog');
     var savedCredentials = $('#saved_credentials');
     var credentialForm = $("#credential_form");
 
-    // Build timezone select box
-    timezoneSelector.timezones();
+
+    // Build timezone selection box
+    timezones.timezones();
 
     // Initialize playbook dialog
     credentialDialog.dialog({
@@ -67,18 +73,17 @@ $(document).ready(function () {
         }
     });
 
-    if (dbTimezone != '') {
-        timezoneSelector.val(dbTimezone);
+    // Set timezone
+    if (userTimezone.val() != '') {
+        timezones.val(userTimezone.val());
     }
     else {
-        timezoneSelector.val('America/Sao_Paulo')
+        timezones.val('America/Sao_Paulo')
     }
 
     // Save user
     $('#user_form').submit(function (event) {
         event.preventDefault();
-        var pass1Selector = $('#password1');
-        var pass2Selector = $('#password2');
         var postData = {
             action: 'save',
             user_id: $('#user_id').val(),
@@ -95,10 +100,10 @@ $(document).ready(function () {
                 data: postData,
                 success: function (data) {
                     if (data.result == 'ok') {
-                        if (page == 'new') {
+                        if (page.val() == 'new') {
                             location.reload();
                         }
-                        else if (page == 'view') {
+                        else if (page.val() == 'view') {
                             alertDialog.html('<strong>User saved</strong>');
                             alertDialog.dialog('open');
                         }
@@ -112,10 +117,10 @@ $(document).ready(function () {
             });
         }
 
-        if (page == 'new') {
+        if (page.val() == 'new') {
             postData.username = $('#username').val();
-            postData.password = pass1Selector.val();
-            if (postData.password == pass2Selector.val()) {
+            postData.password = addPassword1.val();
+            if (postData.password == addPassword2.val()) {
                 saveUser(postData)
             }
             else {
@@ -123,25 +128,24 @@ $(document).ready(function () {
                 alertDialog.dialog('open')
             }
         }
-        else if (page == 'view') {
+        else if (page.val() == 'view') {
             saveUser(postData)
         }
-        pass1Selector.val('');
-        pass2Selector.val('');
+        addPassword1.val('');
+        addPassword2.val('');
     });
 
     // Change password
     $('#password_form').submit(function (event) {
         event.preventDefault();
-        var oldPassSelector = $('#id_oldpass');
-        var pass1Selector = $('#id_password1');
-        var pass2Selector = $('#id_password2');
+
         var postData = {
             action: 'chgpass',
-            oldpass: oldPassSelector.val(),
-            newpass: pass1Selector.val()
+            user_id: $('#user_id').val(),
+            current_password: $('#current_password').val(),
+            new_password: $('#new_password1').val()
         };
-        if (pass1Selector.val() == pass2Selector.val()) {
+        if (postData.new_password == $('#new_password2').val()) {
             $.ajax({
                 url: '',
                 type: 'POST',
@@ -162,9 +166,7 @@ $(document).ready(function () {
             alertDialog.html('<strong>Passwords do not match</strong>');
             alertDialog.dialog('open')
         }
-        oldPassSelector.val('');
-        pass1Selector.val('');
-        pass2Selector.val('');
+        $(this).find('<input>').val('')
     });
 
     // Open credentials dialog
@@ -235,10 +237,23 @@ $(document).ready(function () {
                 }
             });
         }
-        var postData = new FormData();
+        var postData = {};
         postData.id = credentialForm.data('cred_id');
+        postData.user_id = $('#user_id').val();
         switch ($(document.activeElement).html()) {
-            case 'Save':
+            case 'Delete':
+                // Define post action
+                postData.action = 'delete';
+                // Submit delete form
+                submitCredentials(postData);
+                break;
+            case 'Default':
+                $(document.activeElement).toggleClass('checked_button');
+                break;
+            case 'Shared':
+                $(document.activeElement).toggleClass('checked_button');
+                break;
+            default:
                 // Define post variables
                 postData.action = 'save';
                 postData.title = $("#cred_title").val();
@@ -261,18 +276,6 @@ $(document).ready(function () {
                 else {
                     submitCredentials(postData)
                 }
-                break;
-            case 'Delete':
-                // Define post action
-                postData.action = 'delete';
-                // Submit delete form
-                submitCredentials(postData);
-                break;
-            case 'Default':
-                $(document.activeElement).toggleClass('checked_button');
-                break;
-            case 'Shared':
-                $(document.activeElement).toggleClass('checked_button');
                 break;
         }
     });

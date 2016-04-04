@@ -1,10 +1,10 @@
 $(document).ready(function () {
 
-    var app = $('#app').val();                          // Django app running the script
-    var adhocTableSelector = $('#adhoc_table');         // Adhoc table container selector
-    var alertDialog = $('#alert_dialog');               // 'Alert' dialog selector
-    var deleteDialog = $('#delete_dialog');             // 'Delete' dialog selector
-
+    var app = $('#app').val();                      // Django app running the script
+    var adhocTable = $('#adhoc_table');             // Adhoc table container selector
+    var alertDialog = $('#alert_dialog');           // Alert dialog selector
+    var deleteDialog = $('#delete_dialog');         // Delete dialog selector
+    var credentials = $('#credentials');
     var fieldsContainer = $('#optional_fields');
     var sudoDiv = $('#sudo_div');
     var hosts;
@@ -17,8 +17,32 @@ $(document).ready(function () {
         hosts = ''
     }
 
+    // Build credentials selection box
+    $.ajax({
+        url: '/users/credentials/',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            action: 'list',
+            runner: true,
+            user_id: $('#user_id').val()
+        },
+        success: function (data) {
+            var start_value = null;
+            $.each(data, function (index, credential) {
+                var display = credential.title;
+                if (credential.is_default) {
+                    display += ' (default)';
+                    start_value = credential.id
+                }
+                credentials.append($('<option>').val(credential.id).data(credential).append(display))
+            });
+            credentials.val(start_value)
+        }
+    });
+
     // Build adhoc table
-    var adhocTable = adhocTableSelector.DataTable({
+    var adhocTableObject = adhocTable.DataTable({
         pageLength: 10,
         ajax: {
             url: '/runner/adhoc/',
@@ -55,9 +79,9 @@ $(document).ready(function () {
     });
 
     // Run/Edit/Delete saved adhoc command
-    adhocTableSelector.children('tbody').on('click', 'a', function () {
+    adhocTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
-        var adhocId = adhocTable.row($(this).parents('tr')).data()[4];
+        var adhocId = adhocTableObject.row($(this).parents('tr')).data()[4];
         if ($(this).attr('title') == 'Delete') {
             deleteDialog.dialog('option', 'buttons', [
                 {
@@ -73,7 +97,7 @@ $(document).ready(function () {
                                 id: adhocId
                             },
                             success: function () {
-                                adhocTable.ajax.reload()
+                                adhocTableObject.ajax.reload()
                             }
                         });
                     }
@@ -88,10 +112,10 @@ $(document).ready(function () {
             deleteDialog.dialog('open');
         }
         else {
-            $('#hosts').val(adhocTable.row($(this).parents('tr')).data()[0]);
-            $('#module').val(adhocTable.row($(this).parents('tr')).data()[1]).trigger('change');
-            $('#arguments').val(adhocTable.row($(this).parents('tr')).data()[2]);
-            if (adhocTable.row($(this).parents('tr')).data()[3] == true) {
+            $('#hosts').val(adhocTableObject.row($(this).parents('tr')).data()[0]);
+            $('#module').val(adhocTableObject.row($(this).parents('tr')).data()[1]).trigger('change');
+            $('#arguments').val(adhocTableObject.row($(this).parents('tr')).data()[2]);
+            if (adhocTableObject.row($(this).parents('tr')).data()[3] == true) {
                 $('#sudo').addClass('checked_button')
             }
             else {
@@ -125,7 +149,7 @@ $(document).ready(function () {
     $('#adhoc_form').submit(function () {
         event.preventDefault();
         var currentModule = new AnsibleModules($('#module').val());
-        var sudo = $('#sudo').hasClass('checked_button');
+        var become = $('#sudo').hasClass('checked_button');
         var adhocIdSelector = $('#adhoc_id');
         if (app == 'runner') {
             hosts = $('#hosts').val()
@@ -135,7 +159,7 @@ $(document).ready(function () {
             hosts: hosts,
             remote_pass: '',
             become_pass: '',
-            become: sudo
+            become: become
         };
         switch ($(document.activeElement).html()) {
             case 'Save':
@@ -149,7 +173,7 @@ $(document).ready(function () {
                     data: postData,
                     success: function (data) {
                         if (data.result == 'ok') {
-                            adhocTable.ajax.reload();
+                            adhocTableObject.ajax.reload();
                             $('#adhoc_form').find('input').val('');
                             $('#sudo').removeClass('checked_button');
                             $('#cancel_edit').hide();
@@ -168,11 +192,20 @@ $(document).ready(function () {
                 });
                 break;
             case 'Run':
+                var selectedCredential = $('option:selected', credentials).data();
                 postData.action = 'run_adhoc';
                 postData.name = 'AdHoc task - ' + currentModule.name;
-                var askPassword = false;
-                if (sudo || $('#has_rsa').val() == 'false') {
-                    askPassword = true
+                postData.credentials = credentials.val();
+                postData.executionUser = selectedCredential.username;
+                var askPassword = {
+                    user: false,
+                    sudo: false
+                };
+                if (selectedCredential.password == '' && selectedCredential.rsa_key == '') {
+                    askPassword.user = true
+                }
+                if (become && selectedCredential.sudo_pass == '') {
+                    askPassword.sudo = true
                 }
                 if (currentModule.uploadsFile) {
                     function successCallback(data) {

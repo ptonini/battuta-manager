@@ -1,15 +1,16 @@
 {% load staticfiles %}
 <script src="{% static 'runner/adhoc_form.js' %}"></script>
 <input type="hidden" id="app" value="{{ app }}">
-<input type="hidden" id="has_rsa" value="{% if user.userdata.rsa_key %}true{% else %}false{% endif %}">
+<input type="hidden" id="user_id" value="{{ user.id }}">
 <h5 id="adhoc_form_label">Run command</h5>
 <form id="adhoc_form" method="post" enctype="multipart/form-data">
     <div class="row">
         {% if app == 'runner' %}
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-group">
+                    <label for="hosts" class="requiredField">Hosts</label>
                     <div class="input-group">
-                        <input class="form-control input-sm pattern-input" id="hosts" placeholder="hosts" type="text">
+                        <input class="form-control input-sm pattern-input" id="hosts" type="text">
                         <span class="input-group-btn">
                             <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
                                 <span class="glyphicon glyphicon-edit"></span>
@@ -22,9 +23,9 @@
         <div class="col-md-2">
             <input type="hidden" id="adhoc_id" value="{{ adhoc_id }}">
             <div class="form-group">
-                <label for="module" class="sr-only requiredField">Module</label>
+                <label for="module" class="requiredField">Select module</label>
                 <select class="select form-control input-sm" id="module">
-                    <option value="" disabled selected hidden>Select module</option>
+                    <option value="" disabled selected hidden></option>
                 </select>
             </div>
         </div>
@@ -33,20 +34,30 @@
         <div class="col-md-4">
             <div id="optional_fields"></div>
         </div>
-        <div class="col-md-1">
+        <div class="col-md-2">
             <div id="sudo_div" class="hidden text-right">
                 <button id="sudo" title="Run with sudo" class="btn btn-default btn-sm">sudo</button>
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-5">
+        <div class="col-md-3">
+            <label for="credentials" class="requiredField">Select credentials</label>
+            <select class="select form-control input-sm" id="credentials">
+                <option value="" disabled selected hidden>Select credentials</option>
+            </select>
+        </div>
+        <div class="col-md-3" style="padding-top: 37px">
+            <small id="module_reference" style="float: right; color: #777; display: none">module reference</small>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-6">
             <button id="run_command" class="btn btn-default btn-xs">Run</button>
             <button id="save_command" class="btn btn-default btn-xs">Save</button>
             <button id="cancel_edit" class="btn btn-default btn-xs" style="display: none">Cancel</button>
-            <small id="module_reference" style="float: right; margin-top: 7px; color: #777; display: none">
-                module reference
-            </small>
+
         </div>
     </div>
 </form>

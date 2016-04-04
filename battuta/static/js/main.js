@@ -103,8 +103,13 @@ function popupCenter(url, title, w) {
 }
 
 // Run Ad-Hoc command
-function executePlay(postData, askPass) {
-    var alertDialog = $('#alert_dialog');
+function executePlay(postData, askPassword) {
+    var alertDialog = $('#alert_dialog');           // Alert dialog selector
+    var passwordDialog = $('#password_dialog');     // Password dialog selector
+    var userPassword = $('#user_password');         // User password field selector
+    var sudoPassword = $('#sudo_password');         // Sudo password field selector
+    var userPasswordGroup = $('label[for=user_password], input#user_password'); // User pass field and label selector
+    var sudoPasswordGroup = $('label[for=sudo_password], input#sudo_password'); // Sudo pass field and label selector
     function postCommand(postData) {
         $.ajax({
             url: '/runner/',
@@ -124,9 +129,25 @@ function executePlay(postData, askPass) {
         });
     }
 
+    // Add username to password field label
+    $('#exec_user').html(postData.executionUser);
 
-    if (askPass) {
-        $('#password_dialog').dialog({
+    // Check if passwords are needed
+    if (askPassword.user || askPassword.sudo) {
+
+        // Clear password input fields
+        passwordDialog.find('<input>').val('');
+
+        // Hide password input fields
+        userPasswordGroup.addClass('hidden');
+        sudoPasswordGroup.addClass('hidden');
+
+        // Unhide needed password fields
+        userPasswordGroup.toggleClass('hidden', (!askPassword.user));
+        sudoPasswordGroup.toggleClass('hidden', (!askPassword.sudo));
+
+        // Open password dialog
+        passwordDialog.dialog({
             modal: true,
             show: true,
             hide: true,
@@ -134,10 +155,13 @@ function executePlay(postData, askPass) {
             buttons: {
                 Run: function () {
                     $(this).dialog('close');
-                    var ansiblePassSelector = $('#ansible_pass');
-                    postData.remote_pass = ansiblePassSelector.val();
-                    postData.become_pass = ansiblePassSelector.val();
-                    ansiblePassSelector.val('');
+                    postData.remote_pass = userPassword.val();
+                    if (sudoPassword.val() != '') {
+                        postData.become_pass = sudoPassword.val();
+                    }
+                    else {
+                        postData.become_pass = sudoPassword.val();
+                    }
                     postCommand(postData)
                 },
                 Cancel: function () {

@@ -3,10 +3,10 @@
 <form id="user_form" method="post">
     <input id="page" type="hidden" value="{{ page }}">
     <input id="user_id" type="hidden" value="{{ view_user.id }}">
-    <input id="db_timezone" type="hidden" value="{{ view_user.userdata.timezone }}">
+    <input id="user_timezone" type="hidden" value="{{ view_user.userdata.timezone }}">
     <div class="row">
         {% if page == 'new' %}
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-12">
                 <div class="form-group">
                     <label for="username" class="requiredField">Username</label>
                     <input class="textinput textInput form-control input-sm" id="username" type="text" value="">
@@ -15,14 +15,14 @@
         {% endif %}
     </div>
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="form-group">
                 <label for="first_name" class="requiredField">First name</label>
                 <input class="textinput textInput form-control input-sm" id="first_name"
                        type="text" value="{{ view_user.first_name }}">
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="form-group">
                 <label for="last_name" class="requiredField">Last name</label>
                 <input class="textinput textInput form-control input-sm" id="last_name"
@@ -31,62 +31,62 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="form-group">
                 <label for="email" class="requiredField">E-mail</label>
                 <input class="textinput textInput form-control input-sm" id="email"
                        type="text" value="{{ view_user.email }}">
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="form-group">
-                <label for="timezone" class="requiredField">Timezone</label>
-                <select class="select form-control input-sm" id="timezone"></select>
+                <label for="timezones" class="requiredField">Timezone</label>
+                <select class="select form-control input-sm" id="timezones"></select>
             </div>
         </div>
     </div>
     {% if page == 'new' %}
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-12">
                 <hr>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="form-group">
-                    <label for="password1" class="requiredField">New password</label>
-                    <input class="textinput textInput form-control input-sm" id="password1" type="password">
+                    <label for="add_password1" class="requiredField">New password</label>
+                    <input class="textinput textInput form-control input-sm" id="add_password1" type="password">
                 </div>
                 <div class="form-group">
-                    <label for="password2" class="requiredField">Retype new password</label>
-                    <input class="textinput textInput form-control input-sm" id="password2" type="password">
+                    <label for="add_password2" class="requiredField">Retype new password</label>
+                    <input class="textinput textInput form-control input-sm" id="add_password2" type="password">
                 </div>
             </div>
         </div>
     {% endif %}
     <button type="submit" class="btn btn-default btn-xs">Save</button>
-    {% if user.id == view_user.id %}
+    {% if page == 'view' and user.id == view_user.id or page == 'view' and user.is_superuser %}
         <button id="open_cred_dialog" class="btn btn-default btn-xs">Edit credentials</button>
     {% endif %}
 </form>
-{% if page == 'view' and user.id == view_user.id %}
+{% if page == 'view' and user.id == view_user.id or page == 'view' and user.is_superuser %}
     <div class="row">
-        <div class="col-md-6"><hr></div>
+        <div class="col-md-6 col-sm-12"><hr></div>
     </div>
     <form id="password_form" method="POST">
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="form-group">
-                    <label for="oldpass" class="requiredField">Current password</label>
-                    <input class="textinput textInput form-control input-sm" id="oldpass" type="password">
+                    <label for="current_password" class="requiredField">Current password ({{ request.user }})</label>
+                    <input class="textinput textInput form-control input-sm" id="current_password" type="password">
                 </div>
                 <div class="form-group">
-                    <label for="password1" class="requiredField">New password</label>
-                    <input class="textinput textInput form-control input-sm" id="password1" type="password">
+                    <label for="new_password1" class="requiredField">New password</label>
+                    <input class="textinput textInput form-control input-sm" id="new_password1" type="password">
                 </div>
                 <div class="form-group">
-                    <label for="password2" class="requiredField">Retype new password</label>
-                    <input class="textinput textInput form-control input-sm" id="password2" type="password">
+                    <label for="new_password2" class="requiredField">Retype new password</label>
+                    <input class="textinput textInput form-control input-sm" id="new_password2" type="password">
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@
     </form>
 {% endif %}
 <div class="row">
-    <div class="col-md-6"><hr></div>
+    <div class="col-md-6 col-sm-12"><hr></div>
 </div>
 <div class="hidden">
     <div id="credential_dialog" style="overflow: hidden">
