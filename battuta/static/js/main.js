@@ -162,13 +162,13 @@ function prettyBoolean (row, cellIndex) {
 }
 
 // Uploads files to user data folder
-function uploadFiles(fileInput, type, successCallback) {
-    var fileData = new FormData();
+function uploadFiles(fileInput, type, onUploadSuccess) {
+    var postData = new FormData();
     var fileInputContainer = fileInput.closest('.file-input');
-    fileData.append('action', 'upload');
-    fileData.append('type', type);
+    postData.append('action', 'upload');
+    postData.append('type', type);
     $.each(fileInput.data('files'), function (key, value) {
-        fileData.append(key, value);
+        postData.append(key, value);
     });
     $('<div>')
         .css('height', '30px')
@@ -178,13 +178,13 @@ function uploadFiles(fileInput, type, successCallback) {
     $.ajax({
         url: '/users/',
         type: 'POST',
-        data: fileData,
+        data: postData,
         cache: false,
         dataType: 'json',
         processData: false,
         contentType: false,
         success: function (data) {
-            successCallback(data)
+            onUploadSuccess(data)
         },
         complete: function () {
             fileInputContainer.prev().remove();
@@ -192,7 +192,6 @@ function uploadFiles(fileInput, type, successCallback) {
         }
     });
 }
-
 
 $(document).ready(function () {
 

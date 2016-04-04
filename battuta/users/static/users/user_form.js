@@ -1,9 +1,7 @@
 function buildCredentialSelectionBox(start_value) {
     var savedCredentials = $('#saved_credentials');
     savedCredentials.children('option').each(function(){
-        if ($(this).html() != '') {
-            $(this).remove()
-        }
+        $(this).remove()
     });
     $.ajax({
         url: '/users/credentials/',
@@ -11,39 +9,31 @@ function buildCredentialSelectionBox(start_value) {
         dataType: 'json',
         data: {action: 'list'},
         success: function (data) {
-            $.each(data, function (index, value) {
-                var display = value[1];
-                if (value[8]) {
-                    display += ' (default)'
+            $.each(data, function (index, credential) {
+                var display = credential.title;
+                if (credential.is_default) {
+                    display += ' (default)';
+                    if (start_value == null) {
+                        start_value = credential.id
+                    }
                 }
-                savedCredentials.append(
-                    $('<option>').val(value[0]).data({
-                        id: value[0],
-                        title: value[1],
-                        username: value[2],
-                        password: value[3],
-                        rsakey: value[4],
-                        sudo_user: value[5],
-                        sudo_pass: value[6],
-                        shared: value[7],
-                        default_cred: value[8]
-                    }).append(display)
-                )
+                savedCredentials.append($('<option>').val(credential.id).data(credential).append(display))
             });
-            savedCredentials.append($('<option>').val('new').append('new'));
-            savedCredentials.val(start_value).change();
+            savedCredentials.val(start_value).change().append(
+                $('<option>').data('rsa_key', '').val('new').append('new')
+            );
         }
     });
 }
 
 function resetCredentialForm() {
-    $('#credential_form').data({
-        upload_rsa: false,
-        rsa_key: null,
-        cred_id: null
-    }).find('input').val('');
-    $('#cred_shared').removeClass('checked_button');
-    $('#cred_default').removeClass('checked_button');
+    $('#credential_form')
+        .data('upload_rsa', false)
+        .data('rsa_key', '')
+        .data('cred_id', '')
+        .find('input').val('');
+    $('#cred_is_shared').removeClass('checked_button');
+    $('#cred_is_default').removeClass('checked_button');
     $('#delete_cred').addClass('hidden');
     $('#cred_rsakey').fileinput('reset');
 }
@@ -204,21 +194,20 @@ $(document).ready(function () {
     savedCredentials.change(function () {
         var selectedOption = $('option:selected', this);
         resetCredentialForm();
+        credentialForm
+            .data('rsa_key', selectedOption.data('rsa_key'))
+            .data('cred_id', selectedOption.data('id'));
         $("#cred_title").val(selectedOption.data('title'));
         $("#cred_username").val(selectedOption.data('username'));
         $("#cred_pass").val(selectedOption.data('password'));
         $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
         $("#cred_sudo_pass").val(selectedOption.data('sudo_pass'));
-        credentialForm.data({
-            rsa_key: selectedOption.data('rsakey'),
-            cred_id: selectedOption.data('id')
-        });
-        credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsakey')});
-        if (selectedOption.data('shared')) {
-            $('#cred_shared').addClass('checked_button');
+        credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
+        if (selectedOption.data('is_shared')) {
+            $('#cred_is_shared').addClass('checked_button');
         }
-        if (selectedOption.data('default_cred')) {
-            $('#cred_default').addClass('checked_button');
+        if (selectedOption.data('is_default')) {
+            $('#cred_is_default').addClass('checked_button');
         }
         if (selectedOption.html() != 'new') {
             $('#delete_cred').removeClass('hidden');
@@ -237,7 +226,6 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.result == 'ok') {
                         buildCredentialSelectionBox(data.cred_id);
-
                     }
                     else if (data.result == 'fail') {
                         alertDialog.html('<strong>Submit error<strong><br><br>');
@@ -247,7 +235,7 @@ $(document).ready(function () {
                 }
             });
         }
-        var postData = {};
+        var postData = new FormData();
         postData.id = credentialForm.data('cred_id');
         switch ($(document.activeElement).html()) {
             case 'Save':
@@ -258,16 +246,16 @@ $(document).ready(function () {
                 postData.password = $("#cred_pass").val();
                 postData.sudo_user = $("#cred_sudo_user").val();
                 postData.sudo_pass = $("#cred_sudo_pass").val();
-                postData.shared = $('#cred_shared').hasClass('checked_button');
-                postData.default = $('#cred_default').hasClass('checked_button');
+                postData.is_shared = $('#cred_is_shared').hasClass('checked_button');
+                postData.is_default = $('#cred_is_default').hasClass('checked_button');
                 postData.rsa_key = credentialForm.data('rsa_key');
                 // Upload RSA key before submit if present
                 if (credentialForm.data('upload_rsa')) {
-                    function successCallback(data) {
+                    function onUploadSuccess(data) {
                         postData.rsa_key = data.filepaths[0];
                         submitCredentials(postData)
                     }
-                    uploadFiles(credRsaKey, 'rsakey', successCallback);
+                    uploadFiles(credRsaKey, 'rsakey', onUploadSuccess);
                     credentialForm.data('upload_rsa', false)
                 }
                 else {

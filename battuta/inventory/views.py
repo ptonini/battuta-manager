@@ -45,10 +45,10 @@ class InventoryView(View):
                 for child in group.children.all():
                     data[group.name]['children'].append(child.name)
         elif request.GET['action'] == 'import':
-            import_file = request.GET['importFile']
+            source_file = request.GET['importFile']
             added = 0
             updated = 0
-            with open(import_file, 'r') as csv_file:
+            with open(os.path.join(settings.DATA_DIR, source_file), 'r') as csv_file:
                 reader = csv.reader(csv_file)
                 header = next(reader)
                 try:
@@ -84,6 +84,8 @@ class InventoryView(View):
                                         var.value = cel
                                         var.save()
                     data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
+
+
         else:
             return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
@@ -149,21 +151,20 @@ class EntitiesView(View):
 
     def post(self, request, entity_id, entity_type):
         entity = self.build_entity(entity_type, entity_id)
-        data = dict()
         if request.POST['action'] == 'save':
             form = entity.form_class(request.POST or None, instance=entity)
             if form.is_valid():
                 entity = form.save(commit=True)
+                data = entity.__dict__
+                data.pop('_state', None)
+                data.pop('form_class', None)
                 data['result'] = 'ok'
-                data['name'] = entity.name
                 data['type'] = entity.type
-                data['id'] = entity.id
-                data['description'] = entity.description
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'delete':
             entity.delete()
-            data['result'] = 'ok'
+            data = {'result': 'ok'}
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")

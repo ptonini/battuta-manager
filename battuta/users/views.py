@@ -19,7 +19,6 @@ def set_credentials(username):
     credential.username = user.username
     credential.save()
     user.userdata.default_cred = credential
-    print user, user.userdata.default_cred.id
     user.userdata.save()
 
 
@@ -95,21 +94,21 @@ class UserView(View):
             user = request.user
 
         if request.POST['action'] == 'upload':
-            upload_dir = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username))
-            filepaths = list()
+            subfolder = os.path.join('userdata', str(request.user.username))
             if request.POST['type'] == 'rsakey':
-                upload_dir = os.path.join(upload_dir, '.ssh')
+                subfolder = os.path.join(subfolder, '.ssh')
+            full_path = os.path.join(settings.DATA_DIR, subfolder)
             try:
-                os.makedirs(upload_dir)
+                os.makedirs(full_path)
             except:
                 pass
+            uploaded_files = list()
             for key, value in request.FILES.iteritems():
-                filepath = os.path.join(upload_dir, str(value.name))
-                filepaths.append(filepath)
-                with open(filepath, 'wb+') as destination:
+                uploaded_files.append(os.path.join(subfolder, str(value.name)))
+                with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
                     for chunk in value.chunks():
-                        destination.write(chunk)
-            data = {'result': 'ok', 'filepaths': filepaths}
+                        f.write(chunk)
+            data = {'result': 'ok', 'filepaths': uploaded_files}
 
         elif request.POST['action'] == 'save':
             if request.user.id == user.id or request.user.is_superuser:
@@ -156,23 +155,12 @@ class CredentialView(View):
     def get(request):
         if request.GET['action'] == 'list':
             data = list()
-            credentials = Credential.objects.filter(user=request.user)
-            if len(credentials) == 0:
-                c = Credential(user=request.user, title='Default', username=request.user.username)
-                c.save()
-            for c in credentials:
-                default = False
+            for c in Credential.objects.filter(user=request.user):
                 if c == request.user.userdata.default_cred:
-                    default = True
-                data.append([c.id,
-                             c.title,
-                             c.username,
-                             c.password,
-                             c.rsa_key,
-                             c.sudo_user,
-                             c.sudo_pass,
-                             c.shared,
-                             default])
+                    c.is_default = True
+                c_dict = c.__dict__
+                c_dict.pop('_state', None)
+                data.append(c_dict)
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
@@ -187,11 +175,12 @@ class CredentialView(View):
             if credential.user.id != request.user.id:
                 data = {'result': 'fail', 'msg': 'Permission denied: credential does not belong to current user'}
             else:
+                if credential.rsa_key != request.POST['rsa_key']:
+                    os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
                 form = CredentialForm(request.POST or None, instance=credential)
                 if form.is_valid():
-                    print 'Key is: ' + request.POST['rsa_key']
                     credential = form.save(commit=True)
-                    if request.POST['default'] == 'true':
+                    if request.POST['is_default'] == 'true':
                         request.user.userdata.default_cred = credential
                         request.user.userdata.save()
                     data = {'result': 'ok', 'cred_id': credential.id}

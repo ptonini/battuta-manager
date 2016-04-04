@@ -65,15 +65,13 @@
         </div>
     {% endif %}
     <button type="submit" class="btn btn-default btn-xs">Save</button>
-    <button id="open_cred_dialog" class="btn btn-default btn-xs">Edit credentials</button>
+    {% if user.id == view_user.id %}
+        <button id="open_cred_dialog" class="btn btn-default btn-xs">Edit credentials</button>
+    {% endif %}
 </form>
 {% if page == 'view' and user.id == view_user.id %}
     <div class="row">
-        <div class="col-md-6">
-            <br>
-
-            <hr>
-        </div>
+        <div class="col-md-6"><hr></div>
     </div>
     <form id="password_form" method="POST">
         <div class="row">
@@ -96,9 +94,7 @@
     </form>
 {% endif %}
 <div class="row">
-    <div class="col-md-6">
-        <hr>
-    </div>
+    <div class="col-md-6"><hr></div>
 </div>
 <div class="hidden">
     <div id="credential_dialog" style="overflow: hidden">
@@ -106,14 +102,12 @@
         <hr>
         <div class="row">
             <div class="col-md-3">
-                <label for="saved_credentials" class="requiredField" style="font-size: 13px; margin-top: 5px">
+                <label for="saved_credentials" class="requiredField" style="font-size: 13px; padding: 6px 0">
                     Saved credentials
                 </label>
             </div>
             <div class="col-md-9">
-                <select class="select form-control input-sm" id="saved_credentials">
-                    <option value="" disabled selected hidden></option>
-                </select>
+                <select class="select form-control input-sm" id="saved_credentials"></select>
             </div>
         </div>
         <br><br>
@@ -127,10 +121,10 @@
                     </div>
                 </div>
                 <div class="col-md-2 text-right" style="margin-top: 22px">
-                    <button id="cred_shared" class="btn btn-default btn-sm">Shared</button>
+                    <button id="cred_is_shared" class="btn btn-default btn-sm">Shared</button>
                 </div>
                 <div class="col-md-2 text-right" style="margin-top: 22px">
-                    <button id="cred_default" class="btn btn-default btn-sm">Default</button>
+                    <button id="cred_is_default" class="btn btn-default btn-sm">Default</button>
                 </div>
             </div>
             <div class="row">
@@ -171,8 +165,8 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <button id="save_cred" class="btn btn-default btn-sm">Save</button>
-                    <button id="delete_cred" class="btn btn-default btn-sm hidden">Delete</button>
+                    <button id="save_cred" class="btn btn-default btn-xs">Save</button>
+                    <button id="delete_cred" class="btn btn-default btn-xs hidden">Delete</button>
                 </div>
             </div>
         </form>

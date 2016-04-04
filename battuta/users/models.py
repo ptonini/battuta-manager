@@ -5,12 +5,13 @@ from django.contrib.auth.models import User
 class Credential(models.Model):
     user = models.ForeignKey(User)
     title = models.CharField(max_length=32)
-    shared = models.BooleanField(default=False)
+    is_shared = models.BooleanField(default=False)
     username = models.CharField(max_length=32)
     password = models.CharField(max_length=64, blank=True)
     rsa_key = models.TextField(max_length=128, blank=True)
     sudo_user = models.CharField(max_length=32, blank=True)
     sudo_pass = models.CharField(max_length=64, blank=True)
+    is_default = False
 
     def __str__(self):
         return self.user.username + '_' + self.title
