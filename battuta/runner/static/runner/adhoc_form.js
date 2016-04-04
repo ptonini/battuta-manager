@@ -7,14 +7,11 @@ $(document).ready(function () {
     var credentials = $('#credentials');
     var fieldsContainer = $('#optional_fields');
     var sudoDiv = $('#sudo_div');
-    var hosts;
+    var hosts = '';
 
     // Set hosts pattern based on app
     if (app == 'inventory') {
         hosts = $('#entity_name').html()
-    }
-    else if (app == 'runner') {
-        hosts = ''
     }
 
     // Build credentials selection box
