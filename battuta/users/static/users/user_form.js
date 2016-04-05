@@ -205,10 +205,10 @@ $(document).ready(function () {
         $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
         credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
         if (selectedOption.data('password')) {
-            $("#cred_pass").attr('placeholder', '**********');
+            $("#cred_pass").attr('placeholder', '********');
         }
         if (selectedOption.data('sudo_pass')) {
-            $("#cred_sudo_pass").attr('placeholder', '**********');
+            $("#cred_sudo_pass").attr('placeholder', '********');
         }
         if (selectedOption.data('is_shared')) {
             $('#cred_is_shared').addClass('checked_button');
@@ -224,7 +224,7 @@ $(document).ready(function () {
         }
     });
 
-    // Save/Delete credentials
+    // Credential form submit actions
     credentialForm.submit(function (event) {
         event.preventDefault();
         function submitCredentials(postData) {
@@ -253,6 +253,12 @@ $(document).ready(function () {
             case 'Shared':
             case 'Ask':
                 $(document.activeElement).toggleClass('checked_button');
+                break;
+            case 'Remove':
+                credRsaKey
+                    .fileinput('refresh', {initialCaption: ''})
+                    .fileinput('reset');
+                credentialForm.data('rsa_key', '');
                 break;
             case 'Delete':
                 // Define post action
