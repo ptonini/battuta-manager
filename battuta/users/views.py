@@ -158,47 +158,65 @@ class UserView(View):
 class CredentialView(View):
 
     @staticmethod
-    def get(request):
-        current_user = get_object_or_404(User, pk=request.GET['user_id'])
-        set_credentials(current_user)
-        if request.user == current_user or request.user.is_superuser:
+    def _hide_passwords(c, c_dict):
+        if c.password != '':
+            c_dict['password'] = True
+        else:
+            c_dict['password'] = False
+        if c.sudo_pass != '':
+            c_dict['sudo_pass'] = True
+        else:
+            c_dict['sudo_pass'] = False
+        return c_dict
+
+    def get(self, request):
+        page_user = get_object_or_404(User, pk=request.GET['user_id'])
+        set_credentials(page_user)
+        if request.user == page_user or request.user.is_superuser:
             if request.GET['action'] == 'list':
                 data = list()
-                for c in Credential.objects.filter(user=current_user):
+                for c in Credential.objects.filter(user=page_user):
                     c_dict = model_to_dict(c)
                     c_dict['user_id'] = c_dict['user']
-                    if c == current_user.userdata.default_cred:
+                    if c == page_user.userdata.default_cred:
                         c_dict['is_default'] = True
-                    data.append(c_dict)
+                    data.append(self._hide_passwords(c, c_dict))
                 if 'runner' in request.GET:
-                    for c in Credential.objects.filter(is_shared=True).exclude(user=current_user):
+                    for c in Credential.objects.filter(is_shared=True).exclude(user=page_user):
                         c_dict = model_to_dict(c)
                         c_dict['title'] = c.title + ' (' + c.user.username + ')'
-                        data.append(c_dict)
+                        data.append(self._hide_passwords(c, c_dict))
             else:
                 raise Http404('Invalid action')
         else:
             raise PermissionDenied
-        print json.dumps(data)
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):
-        current_user = get_object_or_404(User, pk=request.POST['user_id'])
-        if request.user == current_user or request.user.is_superuser:
+        page_user = get_object_or_404(User, pk=request.POST['user_id'])
+        if request.user == page_user or request.user.is_superuser:
             if request.POST['action'] == 'save':
                 if request.POST['id'] == '':
-                    credential = Credential(user=current_user)
+                    credential = Credential(user=page_user)
                 else:
                     credential = get_object_or_404(Credential, pk=request.POST['id'])
                 if credential.rsa_key != request.POST['rsa_key']:
-                    os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
-                form = CredentialForm(request.POST or None, instance=credential)
+                    try:
+                        os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
+                    except:
+                        pass
+                form_data = dict(request.POST.iteritems())
+                if request.POST['password'] == '':
+                    form_data['password'] = credential.password
+                if request.POST['sudo_pass'] == '':
+                    form_data['sudo_pass'] = credential.sudo_pass
+                form = CredentialForm(form_data or None, instance=credential)
                 if form.is_valid():
                     credential = form.save(commit=True)
                     if request.POST['is_default'] == 'true':
-                        request.user.userdata.default_cred = credential
-                        request.user.userdata.save()
+                        page_user.userdata.default_cred = credential
+                        page_user.userdata.save()
                     data = {'result': 'ok', 'cred_id': credential.id}
                 else:
                     data = {'result': 'fail', 'msg': str(form.errors)}

@@ -142,7 +142,7 @@ $(document).ready(function () {
             currentModule.buildFormFields(fieldsContainer, sudoDiv)
     });
 
-    // Ad-Hoc form button events
+    // Ad-Hoc form submit events
     $('#adhoc_form').submit(function () {
         event.preventDefault();
         var currentModule = new AnsibleModules($('#module').val());
@@ -154,8 +154,6 @@ $(document).ready(function () {
         var postData = {
             module: currentModule.name,
             hosts: hosts,
-            remote_pass: '',
-            become_pass: '',
             become: become
         };
         switch ($(document.activeElement).html()) {
@@ -192,17 +190,18 @@ $(document).ready(function () {
                 var selectedCredential = $('option:selected', credentials).data();
                 postData.action = 'run_adhoc';
                 postData.name = 'AdHoc task - ' + currentModule.name;
-                postData.credentials = credentials.val();
+                postData.credential = credentials.val();
                 postData.executionUser = selectedCredential.username;
                 var askPassword = {
                     user: false,
                     sudo: false
                 };
-                if (selectedCredential.password == '' && selectedCredential.rsa_key == '') {
+                if (selectedCredential.password == false && selectedCredential.rsa_key == '') {
                     askPassword.user = true
                 }
-                if (become && selectedCredential.sudo_pass == '') {
+                if (become && selectedCredential.sudo_pass == false && selectedCredential.ask_sudo_pass == true ) {
                     askPassword.sudo = true
+
                 }
                 if (currentModule.uploadsFile) {
                     function successCallback(data) {

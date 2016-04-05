@@ -113,6 +113,8 @@
         <br><br>
         <form id="credential_form" method="post">
             <input id="cred_id" type="hidden">
+            <input style="display:none" type="text" name="fakeusernameremembered"/>
+            <input style="display:none" type="password" name="fakepasswordremembered"/>
             <div class="row">
                 <div class="col-md-8">
                     <div class="form-group">
@@ -134,33 +136,40 @@
                         <input class="form-control input-sm" id="cred_username" type="text">
                     </div>
                 </div>
+                <input class="placeholder" type="hidden">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="cred_pass" class="requiredField">Password</label>
-                        <input class="form-control input-sm" id="cred_pass" type="text">
+                        <input class="form-control input-sm" id="cred_pass" type="password">
                     </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-10">
                     <div class="form-group">
                         <label for="cred_rsakey" class="requiredField">RSA Key</label>
                         <input class="input-file" type="file" id="cred_rsakey">
                     </div>
                 </div>
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="remove_rsa" class="btn btn-default btn-sm">Remove</button>
+                </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <div class="form-group">
                         <label for="cred_sudo_user" class="requiredField">SUDO Username</label>
                         <input class="form-control input-sm" id="cred_sudo_user" type="text">
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <div class="form-group">
-                        <label for="cred_pass" class=" requiredField">SUDO Password</label>
-                        <input class="form-control input-sm" id="cred_pass" type="text">
+                        <label for="cred_sudo_pass" class=" requiredField">SUDO Password</label>
+                        <input class="form-control input-sm" id="cred_sudo_pass" type="password">
                     </div>
+                </div>
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="ask_sudo_pass" class="btn btn-default btn-sm">Ask</button>
                 </div>
             </div>
             <div class="row">

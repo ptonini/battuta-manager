@@ -14,6 +14,7 @@ from multiprocessing import Process
 
 from .forms import AdHocForm, RunnerForm, PlayArgsForm
 from .models import AdHoc, Runner, Task, PlayArguments
+from users.models import Credential
 from . import run_playbook
 
 date_format = '%Y-%m-%d %H:%M:%S'
@@ -30,7 +31,7 @@ class RunnerView(View):
     def _run(playbook, form_data, runner):
         try:
             p = Process(target=run_playbook, args=(playbook, form_data, runner))
-            p.daemon = False
+            #p.daemon = False
             p.start()
         except Exception as e:
             runner.delete()
@@ -39,7 +40,7 @@ class RunnerView(View):
             return {'result': 'ok', 'runner_id': runner.id}
 
     def post(self, request):
-        # Execute adhoc task
+
         if request.POST['action'] == 'run_play':
             playbook_cache = caches['battuta-playbooks']
             playbook = playbook_cache.get(request.POST['playbook'])[0]
@@ -70,12 +71,24 @@ class RunnerView(View):
             runner.status = 'created'
             runner.save()
             data = self._run(playbook, form_data, runner)
+
+        # Execute AdHoc task
         elif request.POST['action'] == 'run_adhoc':
             runner_form = RunnerForm(request.POST)
             adhoc_form = AdHocForm(request.POST)
             if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
-                form_data['username'] = request.user.userdata.ansible_username
+                credential = get_object_or_404(Credential, pk=form_data['credential'])
+                form_data['username'] = credential.username
+                if 'remote_pass' not in form_data:
+                    form_data['remote_pass'] = credential.password
+                if 'become_pass' not in form_data:
+                    form_data['become_pass'] = credential.sudo_pass
+                if credential.sudo_user != '':
+                    form_data['sudo_user'] = credential.sudo_user
+                form_data['rsa_key'] = ''
+                if credential.rsa_key != '':
+                    form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
                 form_data['check'] = None
                 form_data['tags'] = None
                 playbook = {'name': request.POST['name'],

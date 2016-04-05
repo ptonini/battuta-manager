@@ -108,8 +108,8 @@ function executePlay(postData, askPassword) {
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector
     var sudoPassword = $('#sudo_password');         // Sudo password field selector
-    var userPasswordGroup = $('label[for=user_password], input#user_password'); // User pass field and label selector
-    var sudoPasswordGroup = $('label[for=sudo_password], input#sudo_password'); // Sudo pass field and label selector
+    var userPasswordGroup = $('.user_pass_group'); // User pass field and label selector
+    var sudoPasswordGroup = $('.sudo_pass_group'); // Sudo pass field and label selector
     function postCommand(postData) {
         $.ajax({
             url: '/runner/',
@@ -136,7 +136,7 @@ function executePlay(postData, askPassword) {
     if (askPassword.user || askPassword.sudo) {
 
         // Clear password input fields
-        passwordDialog.find('<input>').val('');
+        passwordDialog.find('input').val('');
 
         // Hide password input fields
         userPasswordGroup.addClass('hidden');
@@ -160,7 +160,7 @@ function executePlay(postData, askPassword) {
                         postData.become_pass = sudoPassword.val();
                     }
                     else {
-                        postData.become_pass = sudoPassword.val();
+                        postData.become_pass = userPassword.val();
                     }
                     postCommand(postData)
                 },

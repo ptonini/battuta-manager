@@ -34,7 +34,7 @@ function resetCredentialForm() {
         .data('upload_rsa', false)
         .data('rsa_key', '')
         .data('cred_id', '')
-        .find('input').val('');
+        .find('input').val('').attr('placeholder', '');
     $('#cred_is_shared').removeClass('checked_button');
     $('#cred_is_default').removeClass('checked_button');
     $('#delete_cred').addClass('hidden');
@@ -68,6 +68,7 @@ $(document).ready(function () {
         dialogClass: 'no_title',
         buttons: {
             Done: function (){
+                credentialForm.submit();
                 $(this).dialog('close');
             }
         }
@@ -201,15 +202,22 @@ $(document).ready(function () {
             .data('cred_id', selectedOption.data('id'));
         $("#cred_title").val(selectedOption.data('title'));
         $("#cred_username").val(selectedOption.data('username'));
-        $("#cred_pass").val(selectedOption.data('password'));
         $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
-        $("#cred_sudo_pass").val(selectedOption.data('sudo_pass'));
         credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
+        if (selectedOption.data('password')) {
+            $("#cred_pass").attr('placeholder', '**********');
+        }
+        if (selectedOption.data('sudo_pass')) {
+            $("#cred_sudo_pass").attr('placeholder', '**********');
+        }
         if (selectedOption.data('is_shared')) {
             $('#cred_is_shared').addClass('checked_button');
         }
         if (selectedOption.data('is_default')) {
             $('#cred_is_default').addClass('checked_button');
+        }
+        if (selectedOption.data('ask_sudo_pass')) {
+            $('#ask_sudo_pass').addClass('checked_button');
         }
         if (selectedOption.html() != 'new') {
             $('#delete_cred').removeClass('hidden');
@@ -241,28 +249,28 @@ $(document).ready(function () {
         postData.id = credentialForm.data('cred_id');
         postData.user_id = $('#user_id').val();
         switch ($(document.activeElement).html()) {
+            case 'Default':
+            case 'Shared':
+            case 'Ask':
+                $(document.activeElement).toggleClass('checked_button');
+                break;
             case 'Delete':
                 // Define post action
                 postData.action = 'delete';
                 // Submit delete form
                 submitCredentials(postData);
                 break;
-            case 'Default':
-                $(document.activeElement).toggleClass('checked_button');
-                break;
-            case 'Shared':
-                $(document.activeElement).toggleClass('checked_button');
-                break;
             default:
                 // Define post variables
                 postData.action = 'save';
                 postData.title = $("#cred_title").val();
                 postData.username = $("#cred_username").val();
-                postData.password = $("#cred_pass").val();
                 postData.sudo_user = $("#cred_sudo_user").val();
+                postData.password = $("#cred_pass").val();
                 postData.sudo_pass = $("#cred_sudo_pass").val();
                 postData.is_shared = $('#cred_is_shared').hasClass('checked_button');
                 postData.is_default = $('#cred_is_default').hasClass('checked_button');
+                postData.ask_sudo_pass = $('#ask_sudo_pass').hasClass('checked_button');
                 postData.rsa_key = credentialForm.data('rsa_key');
                 // Upload RSA key before submit if present
                 if (credentialForm.data('upload_rsa')) {

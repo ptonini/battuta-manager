@@ -55,19 +55,24 @@ def run_playbook(playbook, form_data, runner):
     # Create password dictionary
     passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
 
+    # Set sudo user
+    become_user = c.DEFAULT_BECOME_USER
+    if 'sudo_user' in form_data:
+        become_user = form_data['sudo_user']
+
     # Create ansible options tuple
     options = AnsibleOptions(connection='paramiko',
                              module_path=c.DEFAULT_MODULE_PATH,
                              forks=c.DEFAULT_FORKS,
                              remote_user=form_data['username'],
-                             private_key_file=runner.user.userdata.rsa_key,
+                             private_key_file=form_data['rsa_key'],
                              ssh_common_args=None,
                              ssh_extra_args=None,
                              sftp_extra_args=None,
                              scp_extra_args=None,
                              become=form_data['become'],
                              become_method=c.DEFAULT_BECOME_METHOD,
-                             become_user=c.DEFAULT_BECOME_USER,
+                             become_user=become_user,
                              verbosity=None,
                              check=form_data['check'],
                              tags=form_data['tags'],
@@ -84,8 +89,8 @@ def run_playbook(playbook, form_data, runner):
                                passwords=passwords,
                                loader=loader,
                                options=options,
-                               #stdout_callback='default')
-                               stdout_callback=BattutaCallback(runner, host_list))
+                               stdout_callback='default')
+                               #stdout_callback=BattutaCallback(runner, host_list))
         tqm.run(play)
     finally:
         if tqm is not None:

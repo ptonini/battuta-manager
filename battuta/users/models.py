@@ -11,6 +11,7 @@ class Credential(models.Model):
     rsa_key = models.TextField(max_length=128, blank=True)
     sudo_user = models.CharField(max_length=32, blank=True)
     sudo_pass = models.CharField(max_length=64, blank=True)
+    ask_sudo_pass = models.BooleanField(default=True)
     is_default = False
 
     def __str__(self):
