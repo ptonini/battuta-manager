@@ -228,6 +228,10 @@ class CredentialView(View):
                 if len(user_list) > 0:
                     data = {'result': 'fail', 'msg': 'Error: credential is default for ' + ', '.join(user_list)}
                 else:
+                    try:
+                        os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
+                    except:
+                        pass
                     credential.delete()
                     data = {'result': 'ok'}
             else:
