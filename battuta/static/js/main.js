@@ -225,6 +225,7 @@ $(document).ready(function () {
     var selectDialog = $('#select_dialog');
     var entityDialog = $('#entity_dialog');
     var jsonDialog = $('#json_dialog');
+    var entityTypeDialog = $('#entity_type_dialog');
     var entityForm = $('#entity_form');
     var patternContainer = $('#pattern_container');     // Ansible host pattern selector
     var uploadFile = false;
@@ -334,6 +335,21 @@ $(document).ready(function () {
         buttons: {
             Ok: function () {
                 $(this).children('pre').html('');
+                $(this).dialog('close');
+            }
+        }
+    });
+
+    // Initialize entity type dialog
+    entityTypeDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Cancel: function () {
+                $('.filter_box').val('');
                 $(this).dialog('close');
             }
         }
@@ -508,7 +524,8 @@ $(document).ready(function () {
                 separator = ':!'
             }
         }
-        selectDialog.DynamicList({
+        selectDialog
+            .DynamicList({
             'listTitle': 'selection',
             "showListSeparator": true,
             'showFilter': true,
@@ -592,8 +609,61 @@ $(document).ready(function () {
                 ]);
                 entityDialog.dialog('open')
             }
-        });
-        selectDialog.dialog('open');
+        })
+            .dialog('open');
     });
+
+    $('#bulk_remove').click(function ()  {
+        $('.select_type').off('click').click(function () {
+            var sourceType = $(this).attr('data-type');
+            entityTypeDialog.dialog('close');
+            selectDialog
+                .DynamicList({
+                    'listTitle': 'remove_entity',
+                    "showListSeparator": true,
+                    'showFilter': true,
+                    'headerBottomPadding': 0,
+                    'maxHeight': 400,
+                    'minColumns': 3,
+                    'maxColumns': 6,
+                    'breakPoint': 9,
+                    'itemToggle': true,
+                    'ajaxUrl': '/inventory/?action=search&type=' + sourceType + '&pattern=',
+                    'loadCallback': function (listContainer) {
+                        var currentList = listContainer.find('div.dynamic-list');
+                        selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                    }
+                })
+                .dialog('option', 'buttons', [
+                {
+                    text: 'Delete',
+                    click: function () {
+                        $(this).dialog('close');
+                        $.ajax({
+                            url: 'variable/del/',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                id: var_id
+                            },
+                            success: function () {
+                                variableTable.ajax.reload()
+                            }
+                        });
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    click: function () {
+                        $(this).dialog('close');
+                    }
+                }
+            ])
+                .dialog('open');
+        });
+        entityTypeDialog.children('h5').html('Select entity type');
+        entityTypeDialog.dialog('open');
+    });
+
 
 });
