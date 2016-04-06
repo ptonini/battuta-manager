@@ -1,5 +1,5 @@
 // Post relationships alterations
-function postRelation(relation, selection, action, successFunction) {
+function alterRelation(relation, selection, action, successFunction) {
     $.ajax({
         url: relation + '/',
         type: 'POST',
@@ -75,13 +75,14 @@ $(document).ready(function () {
                     $('<span>').append(name).click( function () {
                         window.open('/inventory/' + entityType + '/' + id, '_self')
                     }),
-                    $('<span>').attr({
+                    $('<span>')
+                        .attr({
                             'style': 'float: right',
                             'class': 'glyphicon glyphicon-remove-circle btn-incell',
                             'data-toggle': 'tooltip',
                             'title': 'Remove'})
                         .click(function () {
-                            postRelation(relation, [id], 'remove', function () {
+                            alterRelation(relation, [id], 'remove', function () {
                                 inheritedVariablesTable.ajax.reload();
                                 $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
                             })
@@ -115,7 +116,7 @@ $(document).ready(function () {
                                     $(currentList).children('div.toggle-on:not(".hidden")').each(function () {
                                         selection.push($(this).data('id'));
                                     });
-                                    postRelation(relation, selection, 'add', function () {
+                                    alterRelation(relation, selection, 'add', function () {
                                         inheritedVariablesTable.ajax.reload();
                                         $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
                                     });
@@ -439,7 +440,5 @@ $(document).ready(function () {
             }
         });
         selectDialog.dialog('open');
-
     });
-
 });

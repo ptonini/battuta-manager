@@ -43,11 +43,11 @@ class RunnerView(View):
 
         if request.POST['action'] == 'run_play':
             playbook_cache = caches['battuta-playbooks']
-            playbook = playbook_cache.get(request.POST['playbook'])[0]
+            adhoc_task = playbook_cache.get(request.POST['playbook'])[0]
             form_data = dict(request.POST.iteritems())
             form_data['username'] = request.user.userdata.ansible_username
-            form_data['name'] = playbook['name']
-            form_data['hosts'] = playbook['hosts']
+            form_data['name'] = adhoc_task['name']
+            form_data['hosts'] = adhoc_task['hosts']
 
             # Set 'check' value
             if form_data['check'] == 'true':
@@ -60,8 +60,8 @@ class RunnerView(View):
                 form_data['tags'] = None
 
             # Set 'become' value
-            if 'become' in playbook:
-                form_data['become'] = playbook['become']
+            if 'become' in adhoc_task:
+                form_data['become'] = adhoc_task['become']
             else:
                 form_data['become'] = False
 
@@ -70,7 +70,7 @@ class RunnerView(View):
             runner.user = request.user
             runner.status = 'created'
             runner.save()
-            data = self._run(playbook, form_data, runner)
+            data = self._run(adhoc_task, form_data, runner)
 
         # Execute AdHoc task
         elif request.POST['action'] == 'run_adhoc':
@@ -91,17 +91,18 @@ class RunnerView(View):
                     form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
                 form_data['check'] = None
                 form_data['tags'] = None
-                playbook = {'name': request.POST['name'],
-                            'hosts': request.POST['hosts'],
-                            'gather_facts': 'no',
-                            'tasks': [
-                                {'action': {'module': request.POST['module'], 'args': request.POST['arguments']}}
-                             ]}
+                adhoc_task = {'name': request.POST['name'],
+                              'hosts': request.POST['hosts'],
+                              'gather_facts': 'no',
+                              'tasks': [
+                                  {'action': {'module': request.POST['module'],
+                                              'args': request.POST['arguments']}}
+                              ]}
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
                 runner.save()
-                data = self._run(playbook, form_data, runner)
+                data = self._run(adhoc_task, form_data, runner)
             else:
                 data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
 
@@ -110,7 +111,10 @@ class RunnerView(View):
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
             try:
                 process = psutil.Process(runner.pid)
-            except Exception as e:
+            except psutil.NoSuchProcess:
+                runner.status = 'canceled'
+                data = {'result': 'fail', 'msg': 'Job is defunct'}
+            except psutil.Error as e:
                 data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(runner.pid)}
             else:
                 process.suspend()
@@ -118,8 +122,9 @@ class RunnerView(View):
                     child.kill()
                 process.kill()
                 runner.status = 'canceled'
-                runner.save()
                 data = {'result': 'ok', 'runner_id': runner.id}
+            finally:
+                runner.save()
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")

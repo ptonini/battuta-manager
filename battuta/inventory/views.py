@@ -12,8 +12,29 @@ from .forms import HostForm, GroupForm, VariableForm
 
 
 class InventoryView(View):
+
     @staticmethod
-    def get(request):
+    def _export_to_dict():
+        groups = Group.objects.order_by('name')
+        json_inventory = {'_meta': {'hostvars': {}}}
+        for host in Host.objects.order_by('name'):
+            json_inventory['_meta']['hostvars'][host.name] = {}
+            for var in host.variable_set.all():
+                json_inventory['_meta']['hostvars'][host.name][var.key] = var.value
+        for group in groups:
+            json_inventory[group.name] = dict()
+            json_inventory[group.name]['hosts'] = list()
+            json_inventory[group.name]['vars'] = dict()
+            json_inventory[group.name]['children'] = list()
+            for host in group.members.all():
+                json_inventory[group.name]['hosts'].append(host.name)
+            for var in group.variable_set.all():
+                json_inventory[group.name]['vars'][var.key] = var.value
+            for child in group.children.all():
+                json_inventory[group.name]['children'].append(child.name)
+        return json_inventory
+
+    def get(self, request):
         if request.GET['action'] == 'search':
             data = list()
             if request.GET['type'] == 'host':
@@ -27,50 +48,34 @@ class InventoryView(View):
             else:
                 return Http404('Invalid entity type')
         elif request.GET['action'] == 'list':
-            groups = Group.objects.order_by('name')
-            data = {'_meta': {'hostvars': {}}}
-            for host in Host.objects.order_by('name'):
-                data['_meta']['hostvars'][host.name] = {}
-                for var in host.variable_set.all():
-                    data['_meta']['hostvars'][host.name][var.key] = var.value
-            for group in groups:
-                data[group.name] = dict()
-                data[group.name]['hosts'] = list()
-                data[group.name]['vars'] = dict()
-                data[group.name]['children'] = list()
-                for host in group.members.all():
-                    data[group.name]['hosts'].append(host.name)
-                for var in group.variable_set.all():
-                    data[group.name]['vars'][var.key] = var.value
-                for child in group.children.all():
-                    data[group.name]['children'].append(child.name)
+            data = self._export_to_dict()
         elif request.GET['action'] == 'import':
-            source_file = request.GET['importFile']
+            source_file = os.path.join(settings.DATA_DIR, request.GET['importFile'])
             added = 0
             updated = 0
-            with open(os.path.join(settings.DATA_DIR, source_file), 'r') as csv_file:
-                reader = csv.reader(csv_file)
-                header = next(reader)
+            with open(source_file, 'r') as f:
+                csv_file = csv.reader(f)
+                header = next(csv_file)
                 try:
                     host_index = header.index('host')
                 except ValueError:
                     data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
                 else:
-                    for row in reader:
+                    for line in csv_file:
                         try:
-                            host = Host.objects.get(name=row[host_index])
+                            host = Host.objects.get(name=line[host_index])
                             updated += 1
                         except Host.DoesNotExist:
-                            host = Host(name=row[host_index])
+                            host = Host(name=line[host_index])
                             host.save()
                             added += 1
-                        for index, cel in enumerate(row):
-                            if index != host_index and cel != '':
+                        for index, item in enumerate(line):
+                            if index != host_index and item != '':
                                 if header[index] == 'group':
                                     try:
-                                        group = Group.objects.get(name=cel)
+                                        group = Group.objects.get(name=item)
                                     except Group.DoesNotExist:
-                                        group = Group(name=cel)
+                                        group = Group(name=item)
                                         group.save()
                                     finally:
                                         host.group_set.add(group)
@@ -81,11 +86,10 @@ class InventoryView(View):
                                     except Variable.DoesNotExist:
                                         var = Variable(key=header[index], host=host)
                                     finally:
-                                        var.value = cel
+                                        var.value = item
                                         var.save()
                     data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
-
-
+            os.remove(source_file)
         else:
             return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
