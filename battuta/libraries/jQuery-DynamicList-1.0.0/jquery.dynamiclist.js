@@ -4,25 +4,6 @@
 
 (function ($) {
 
-    function _buildList(listDiv, listContainer,  data, opts) {
-        if (data.length == 0 && opts.hideIfEmpty) {
-            listContainer.hide()
-        }
-        else {
-            listContainer.show();
-            listDiv.empty();
-            $.each(data, function (index, value) {
-                listDiv.append(
-                    $('<div>').html(value[0]).attr({
-                        'class': 'list-group-item dynamic-item',
-                        'data-value': value[0],
-                        'data-id': value[1]
-                    }).css({'vertical-align': 'middle'})
-                );
-            });
-        }
-    }
-
     function _formatList(listDiv, opts) {
         var listItems = listDiv.find('.dynamic-item:not(".hidden")');
         var listLength = listItems.length;
@@ -72,12 +53,38 @@
         listDiv.children('.dynamic-item').each(function () {
             opts.formatItem(this);
             if (opts.itemToggle) {
-                $(this).off('click').on('click', function () {
+                $(this).off('click').click(function () {
                     $(this).toggleClass('toggle-on');
                     $('.ui-button-text:contains("Add")').parent('button').focus()
                 });
             }
+            if (opts.onHoverCursor) {
+                $(this).css('cursor', opts.onHoverCursor)
+            }
         });
+    }
+
+    function _loadFromArray(listContainer, listDiv, opts) {
+        if (opts.dataArray == 0 && opts.hideIfEmpty) {
+            listContainer.hide()
+        }
+        else {
+            listContainer.show();
+            listDiv.empty();
+            $.each(opts.dataArray, function (index, value) {
+                listDiv.append(
+                    $('<div>').html(value[0]).attr({
+                        'class': 'list-group-item dynamic-item',
+                        'data-value': value[0],
+                        'data-id': value[1]
+                    }).css({'vertical-align': 'middle'})
+                );
+            });
+        }
+        _formatList(listDiv, opts);
+        _formatItems(listDiv, opts);
+        opts.loadCallback(listContainer);
+        listContainer.data(opts);
     }
 
     function _loadFromAjax(listContainer, listDiv, opts) {
@@ -87,30 +94,35 @@
             dataType: 'JSON',
             data: opts.ajaxData,
             success: function (data) {
-                _buildList(listDiv, listContainer, data, opts);
-                _formatList(listDiv, opts);
-                _formatItems(listDiv, opts);
-                opts.loadCallback(listContainer)
+                opts.dataArray = data;
+                _loadFromArray(listContainer, listDiv, opts)
             }
         });
     }
 
-    function _loadFromArray(data, listContainer, listDiv, opts) {
-        _buildList(listDiv, listContainer,  data, opts);
-        _formatList(listDiv, opts);
-        _formatItems(listDiv, opts);
-        opts.loadCallback(listContainer);
+    function _load(listContainer, listDiv, opts) {
+        switch (opts.dataSource) {
+            case 'ajax':
+                _loadFromAjax(listContainer, listDiv, opts);
+                break;
+            case 'array':
+                _loadFromArray(listContainer, listDiv, opts);
+                break;
+            default:
+                throw '- invalid data source';
+        }
     }
 
     $.fn.DynamicList = function (options) {
 
         var listContainer = this;
-        var opts, headerDiv, listDiv;
+        var opts;
 
-        if (options !== null && typeof options === 'object') {
+        if (typeof options === 'object') {
             opts = $.extend({}, $.fn.DynamicList.defaults, options);
-            headerDiv = document.createElement("div");
-            listDiv = document.createElement("div");
+            var headerDiv = document.createElement("div");
+            var listDiv = document.createElement("div");
+
             $(headerDiv)
                 .attr({
                     'class': 'dynamic-list-header',
@@ -125,9 +137,10 @@
                     'class': 'list-group dynamic-list',
                     'id': opts.listTitle + '_list'
                 });
+
             listContainer.empty().addClass('dynamic-list-group').append(headerDiv, listDiv);
 
-            if (opts.showHeaderHR) {
+            if (opts.showTopSeparator) {
                 $(headerDiv).append($('<hr>'))
             }
 
@@ -191,7 +204,7 @@
                 )
             }
 
-            if (opts.itemToggle == false && opts.showAddButton == false && opts.showFilter == true) {
+            if (!opts.itemToggle && !opts.showAddButton && opts.showFilter) {
                 $(headerDiv).append(
                     $('<span>').attr({'class': 'glyphicon', 'style': 'color: transparent'})
                 )
@@ -223,7 +236,7 @@
                 )
             }
 
-            if (opts.showListHR) {
+            if (opts.showListSeparator) {
                 $(headerDiv).append($('<hr>'))
             }
 
@@ -236,18 +249,18 @@
             }
 
             if (opts.buildNow) {
-                _loadFromAjax(listContainer, $(listDiv), opts)
+                _load(listContainer, $(listDiv), opts)
             }
-
-            listContainer.data('listSettings', opts)
         }
         else {
             listDiv = listContainer.find('div.dynamic-list');
-            var action = options;
-            opts = $.extend({}, $.fn.DynamicList.defaults, listContainer.data('listSettings'));
-            switch (action) {
+            opts = $.extend({}, $.fn.DynamicList.defaults, listContainer.data());
+            switch (arguments[0]) {
                 case 'load':
-                    _loadFromAjax(listContainer, listDiv, opts);
+                    if (Array.isArray(arguments[1])) {
+                        opts.dataArray = arguments[1]
+                    }
+                    _load(listContainer, listDiv, opts);
                     break;
                 case 'format':
                     _formatList(listDiv, opts);
@@ -260,34 +273,37 @@
     };
 
     $.fn.DynamicList.defaults = {
-        'formatItem': function (listItem) { $(listItem).html($(listItem).data('value')) },
-        'loadCallback': function (listContainer) {},
-        'addButtonAction': function (addButton) {},
-        'listTitle': '',
-        'showTitle': false,
-        'showCount': false,
-        'showSelectAll': false,
-        'showAddButton': false,
-        'showHeaderHR': false,
-        'showListHR': false,
-        'hideIfEmpty': false,
-        'addButtonClass': '',
-        'addButtonTitle':'',
-        "titleFontSize": '14px',
-        'headerBottomPadding': '10px',
-        'maxHeight': 0,
-        'showFilter': false,
-        'buildNow': true,
-        'checkered': false,
-        'itemToggle': false,
-        'itemWidth': 25,
-        'listWidth': 0,
-        'minColumns': 1,
-        'maxColumns': 5,
-        'breakPoint': 5,
-        'ajaxData': {},
-        'ajaxUrl': '',
-        'ajaxType': 'GET'
+        formatItem: function (listItem) { $(listItem).html($(listItem).data('value')) },
+        loadCallback: function (listContainer) {},
+        addButtonAction: function (addButton) {},
+        listTitle: Math.random().toString(36).substring(2, 7),
+        showTitle: false,
+        showCount: false,
+        showSelectAll: false,
+        showAddButton: false,
+        showTopSeparator: false,
+        addButtonClass: null,
+        addButtonTitle: null,
+        titleFontSize: '14px',
+        headerBottomPadding: '10px',
+        showListSeparator: false,
+        hideIfEmpty: false,
+        onHoverCursor: 'pointer',
+        maxHeight: 0,
+        showFilter: false,
+        buildNow: true,
+        checkered: false,
+        itemToggle: false,
+        itemWidth: 25,
+        listWidth: 0,
+        minColumns: 1,
+        maxColumns: 5,
+        breakPoint: 5,
+        dataSource: 'ajax',
+        dataArray: [],
+        ajaxData: null,
+        ajaxUrl: null,
+        ajaxType: 'GET'
     };
 
 })(jQuery);

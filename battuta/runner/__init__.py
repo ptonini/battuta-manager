@@ -1,6 +1,5 @@
 import os
 import json
-import pprint
 
 from django.conf import settings
 from collections import namedtuple
@@ -12,7 +11,6 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
 from ansible import constants as c
 
-pp = pprint.PrettyPrinter()
 
 AnsibleOptions = namedtuple('Options', ['connection',
                                         'module_path',
@@ -83,7 +81,8 @@ def run_playbook(playbook, form_data, runner):
 
     # Execute play
     tqm = None
-    try:
+    if True:
+    #try:
         tqm = TaskQueueManager(inventory=inventory,
                                variable_manager=variable_manager,
                                passwords=passwords,
@@ -92,7 +91,7 @@ def run_playbook(playbook, form_data, runner):
                                stdout_callback='default')
                                #stdout_callback=BattutaCallback(runner, host_list))
         tqm.run(play)
-    finally:
+    #finally:
         if tqm is not None:
             tqm.cleanup()
             runner.status = 'finished'

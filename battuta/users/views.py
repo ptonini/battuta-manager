@@ -96,17 +96,17 @@ class UserView(View):
             user = request.user
 
         if request.POST['action'] == 'upload':
-            subfolder = os.path.join('userdata', str(request.user.username))
+            relative_path = os.path.join('userdata', str(request.user.username))
             if request.POST['type'] == 'rsakey':
-                subfolder = os.path.join(subfolder, '.ssh')
-            full_path = os.path.join(settings.DATA_DIR, subfolder)
+                relative_path = os.path.join(relative_path, '.ssh')
+            full_path = os.path.join(settings.DATA_DIR, relative_path)
             try:
                 os.makedirs(full_path)
             except:
                 pass
             uploaded_files = list()
             for key, value in request.FILES.iteritems():
-                uploaded_files.append(os.path.join(subfolder, str(value.name)))
+                uploaded_files.append(os.path.join(relative_path, str(value.name)))
                 with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
                     for chunk in value.chunks():
                         f.write(chunk)
@@ -201,7 +201,9 @@ class CredentialView(View):
                     credential = Credential(user=page_user)
                 else:
                     credential = get_object_or_404(Credential, pk=request.POST['id'])
+                print credential.rsa_key, request.POST['rsa_key']
                 if credential.rsa_key != request.POST['rsa_key']:
+                    print 'cheguei'
                     try:
                         os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
                     except:

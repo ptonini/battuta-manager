@@ -5,7 +5,7 @@ function searchEntities(entityType, resultContainer, searchPattern) {
         'maxColumns': 6,
         'breakPoint': 4,
         'showTitle': true,
-        'showHeaderHR': true,
+        "showTopSeparator": true,
         'hideIfEmpty': true,
         'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
         'formatItem': function (listItem) {

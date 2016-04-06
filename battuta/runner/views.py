@@ -86,7 +86,7 @@ class RunnerView(View):
                     form_data['become_pass'] = credential.sudo_pass
                 if credential.sudo_user != '':
                     form_data['sudo_user'] = credential.sudo_user
-                form_data['rsa_key'] = ''
+                # form_data['rsa_key'] = ''
                 if credential.rsa_key != '':
                     form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
                 form_data['check'] = None

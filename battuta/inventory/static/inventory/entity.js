@@ -60,7 +60,7 @@ $(document).ready(function () {
         }
         $(this).DynamicList({
             'listTitle': relation,
-            'showHeaderHR': true,
+            "showTopSeparator": true,
             'showTitle': true,
             'showCount': true,
             'showAddButton': true,
@@ -92,7 +92,7 @@ $(document).ready(function () {
                 selectDialog.DynamicList({
                     'listTitle': 'selection',
                     'showCount': true,
-                    'showListHR': true,
+                    "showListSeparator": true,
                     'showFilter': true,
                     'headerBottomPadding': 0,
                     'showAddButton': true,
@@ -403,7 +403,7 @@ $(document).ready(function () {
         copyDialog.dialog('close');
         selectDialog.DynamicList({
             'listTitle': 'copy_from_entity',
-            'showListHR': true,
+            "showListSeparator": true,
             'showFilter': true,
             'headerBottomPadding': 0,
             'maxHeight': 400,

@@ -58,7 +58,7 @@ $(document).ready(function () {
     // Build timezone selection box
     timezones.timezones();
 
-    // Initialize playbook dialog
+    // Initialize credentials dialog
     credentialDialog.dialog({
         autoOpen: false,
         modal: true,
@@ -67,9 +67,39 @@ $(document).ready(function () {
         width: 600,
         dialogClass: 'no_title',
         buttons: {
-            Done: function (){
-                credentialForm.submit();
-                $(this).dialog('close');
+            Done: function () {
+                if (credentialForm.data('changed')) {
+                    alertDialog
+                        .html('<strong>You have unsaved changes<br>Save now?</strong>')
+                        .dialog('option', 'buttons', [
+                            {
+                                text: 'Yes',
+                                click: function() {
+                                    credentialDialog.dialog('close');
+                                    alertDialog.dialog('close');
+                                    credentialForm.submit();
+                                }
+                            },
+                            {
+                                text: 'No',
+                                click: function() {
+                                    credentialDialog.dialog('close');
+                                    alertDialog.dialog('close');
+                                }
+                            },
+                            {
+                                text: 'Cancel',
+                                click: function() {
+                                    alertDialog.dialog('close');
+                                }
+                            }
+                        ])
+                        .dialog('open')
+                }
+                else {
+                    credentialDialog.dialog('close');
+                }
+
             }
         }
     });
@@ -222,6 +252,9 @@ $(document).ready(function () {
         if (selectedOption.html() != 'new') {
             $('#delete_cred').removeClass('hidden');
         }
+        credentialForm.off('change').data('changed', false).change(function () {
+                $(this).data('changed', true)
+        })
     });
 
     // Credential form submit actions
@@ -255,10 +288,12 @@ $(document).ready(function () {
                 $(document.activeElement).toggleClass('checked_button');
                 break;
             case 'Remove':
-                credRsaKey
-                    .fileinput('refresh', {initialCaption: ''})
-                    .fileinput('reset');
-                credentialForm.data('rsa_key', '');
+                credentialForm.data({
+                    rsa_key: '',
+                    upload_rsa: false
+                });
+                credRsaKey.fileinput('refresh', {initialCaption: ''});
+                credRsaKey.fileinput('reset');
                 break;
             case 'Delete':
                 // Define post action

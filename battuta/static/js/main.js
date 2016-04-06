@@ -373,11 +373,12 @@ $(document).ready(function () {
     });
 
     // Open entity box
-    $('.open_entity').click(function () {
+    $('.open_entity').click(function (event) {
+        event.preventDefault();
         var entityType = $(this).attr('data-type');
         selectDialog.DynamicList({
             'listTitle': 'selection',
-            'showListHR': true,
+            "showListSeparator": true,
             'showFilter': true,
             'headerBottomPadding': 0,
             'showAddButton': true,
@@ -509,7 +510,7 @@ $(document).ready(function () {
         }
         selectDialog.DynamicList({
             'listTitle': 'selection',
-            'showListHR': true,
+            "showListSeparator": true,
             'showFilter': true,
             'headerBottomPadding': 0,
             'showAddButton': true,
