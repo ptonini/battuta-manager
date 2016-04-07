@@ -106,10 +106,14 @@ class UserView(View):
                 pass
             uploaded_files = list()
             for key, value in request.FILES.iteritems():
-                uploaded_files.append(os.path.join(relative_path, str(value.name)))
-                with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
-                    for chunk in value.chunks():
-                        f.write(chunk)
+                try:
+                    uploaded_files.append(os.path.join(relative_path, str(value.name)))
+                except UnicodeEncodeError:
+                    raise Http404('Error: non-ASCII characters in filename')
+                else:
+                    with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
+                        for chunk in value.chunks():
+                            f.write(chunk)
             data = {'result': 'ok', 'filepaths': uploaded_files}
 
         elif request.POST['action'] == 'save':
@@ -167,6 +171,8 @@ class CredentialView(View):
             c_dict['sudo_pass'] = True
         else:
             c_dict['sudo_pass'] = False
+        if c.rsa_key != '':
+            c_dict['rsa_key'] = c.rsa_key.split('/')[-1]
         return c_dict
 
     def get(self, request):
@@ -178,6 +184,7 @@ class CredentialView(View):
                 for c in Credential.objects.filter(user=page_user):
                     c_dict = model_to_dict(c)
                     c_dict['user_id'] = c_dict['user']
+                    c_dict.pop('user', None)
                     if c == page_user.userdata.default_cred:
                         c_dict['is_default'] = True
                     data.append(self._hide_passwords(c, c_dict))
@@ -201,9 +208,7 @@ class CredentialView(View):
                     credential = Credential(user=page_user)
                 else:
                     credential = get_object_or_404(Credential, pk=request.POST['id'])
-                print credential.rsa_key, request.POST['rsa_key']
-                if credential.rsa_key != request.POST['rsa_key']:
-                    print 'cheguei'
+                if credential.rsa_key.split('/')[-1] != request.POST['rsa_key']:
                     try:
                         os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
                     except:

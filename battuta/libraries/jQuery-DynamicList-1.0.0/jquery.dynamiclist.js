@@ -255,6 +255,7 @@
         else {
             listDiv = listContainer.find('div.dynamic-list');
             opts = $.extend({}, $.fn.DynamicList.defaults, listContainer.data());
+            var selection = [];
             switch (arguments[0]) {
                 case 'load':
                     if (Array.isArray(arguments[1])) {
@@ -265,6 +266,12 @@
                 case 'format':
                     _formatList(listDiv, opts);
                     break;
+                case 'getSelected':
+                    var t = arguments[1];
+                    listDiv.children('div.toggle-on:not(".hidden")').each(function () {
+                        selection.push($(this).data(t));
+                    });
+                    return selection;
                 default:
                     throw '- invalid option';
             }
@@ -289,16 +296,16 @@
         showListSeparator: false,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',
-        maxHeight: 0,
+        maxHeight: null,
         showFilter: false,
         buildNow: true,
         checkered: false,
         itemToggle: false,
         itemWidth: 25,
         listWidth: 0,
-        minColumns: 1,
-        maxColumns: 5,
-        breakPoint: 5,
+        minColumns: 3,
+        maxColumns: 6,
+        breakPoint: 9,
         dataSource: 'ajax',
         dataArray: [],
         ajaxData: null,

@@ -16,23 +16,23 @@ class InventoryView(View):
     @staticmethod
     def _export_to_dict():
         groups = Group.objects.order_by('name')
-        json_inventory = {'_meta': {'hostvars': {}}}
+        dict_inventory = {'_meta': {'hostvars': {}}}
         for host in Host.objects.order_by('name'):
-            json_inventory['_meta']['hostvars'][host.name] = {}
+            dict_inventory['_meta']['hostvars'][host.name] = {}
             for var in host.variable_set.all():
-                json_inventory['_meta']['hostvars'][host.name][var.key] = var.value
+                dict_inventory['_meta']['hostvars'][host.name][var.key] = var.value
         for group in groups:
-            json_inventory[group.name] = dict()
-            json_inventory[group.name]['hosts'] = list()
-            json_inventory[group.name]['vars'] = dict()
-            json_inventory[group.name]['children'] = list()
+            dict_inventory[group.name] = dict()
+            dict_inventory[group.name]['hosts'] = list()
+            dict_inventory[group.name]['vars'] = dict()
+            dict_inventory[group.name]['children'] = list()
             for host in group.members.all():
-                json_inventory[group.name]['hosts'].append(host.name)
+                dict_inventory[group.name]['hosts'].append(host.name)
             for var in group.variable_set.all():
-                json_inventory[group.name]['vars'][var.key] = var.value
+                dict_inventory[group.name]['vars'][var.key] = var.value
             for child in group.children.all():
-                json_inventory[group.name]['children'].append(child.name)
-        return json_inventory
+                dict_inventory[group.name]['children'].append(child.name)
+        return dict_inventory
 
     def get(self, request):
         if request.GET['action'] == 'search':
@@ -62,34 +62,43 @@ class InventoryView(View):
                     data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
                 else:
                     for line in csv_file:
-                        try:
-                            host = Host.objects.get(name=line[host_index])
-                            updated += 1
-                        except Host.DoesNotExist:
-                            host = Host(name=line[host_index])
-                            host.save()
+                        host, created = Host.objects.get_or_create(name=line[host_index])
+                        host.save()
+                        if created:
                             added += 1
+                        else:
+                            updated += 1
                         for index, item in enumerate(line):
                             if index != host_index and item != '':
                                 if header[index] == 'group':
-                                    try:
-                                        group = Group.objects.get(name=item)
-                                    except Group.DoesNotExist:
-                                        group = Group(name=item)
-                                        group.save()
-                                    finally:
-                                        host.group_set.add(group)
-                                        host.save()
+                                    group, created = Group.objects.get_or_create(name=item)
+                                    group.save()
+                                    host.group_set.add(group)
+                                    host.save()
                                 else:
-                                    try:
-                                        var = Variable.objects.get(key=header[index], host=host)
-                                    except Variable.DoesNotExist:
-                                        var = Variable(key=header[index], host=host)
-                                    finally:
-                                        var.value = item
-                                        var.save()
+                                    var, created = Variable.objects.get_or_create(key=header[index], host=host)
+                                    var.value = item
+                                    var.save()
                     data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
+
             os.remove(source_file)
+        else:
+            return Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+    @staticmethod
+    def post(request):
+        data = None
+        if request.POST['action'] == 'bulk_remove':
+            for entity_id in request.POST.getlist('selection[]'):
+                if request.POST['type'] == 'host':
+                    entity = get_object_or_404(Host, pk=entity_id)
+                elif request.POST['type'] == 'group':
+                    entity = get_object_or_404(Group, pk=entity_id)
+                else:
+                    return Http404('Invalid entity type')
+                entity.delete()
+                data = {'result': 'ok'}
         else:
             return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")

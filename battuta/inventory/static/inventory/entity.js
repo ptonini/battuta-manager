@@ -17,7 +17,7 @@ function alterRelation(relation, selection, action, successFunction) {
 $(document).ready(function () {
 
     var entityName = $('#entity_name').html();
-    var variableTableSelector = $('#variable_table');
+    var variableTable = $('#variable_table');
     var relationDivs = $('.relation_div');
     var alertDialog = $('#alert_dialog');
     var deleteDialog = $('#delete_dialog');
@@ -52,6 +52,9 @@ $(document).ready(function () {
             'addButtonClass': 'add_relation',
             'addButtonTitle': 'Add relationship',
             'checkered': true,
+            'minColumns': 1,
+            'maxColumns': 5,
+            'breakPoint': 5,
             'ajaxUrl': relation + '/?list=related',
             'formatItem': function (listItem) {
                 var id = $(listItem).data('id');
@@ -85,9 +88,6 @@ $(document).ready(function () {
                     'addButtonClass': 'open_entity_form',
                     'addButtonTitle': 'Add ' + entityType,
                     'maxHeight': 400,
-                    'minColumns': 3,
-                    'maxColumns': 6,
-                    'breakPoint': 9,
                     'itemToggle': true,
                     'ajaxUrl': relation + '/?list=non_related',
                     'loadCallback': function (listContainer) {
@@ -164,7 +164,7 @@ $(document).ready(function () {
     });
 
     // Build variables table
-    var variableTable = variableTableSelector.DataTable({
+    var variableTableObj = variableTable.DataTable({
         ajax: {
             url: 'variable/list/',
             type: 'GET',
@@ -184,15 +184,15 @@ $(document).ready(function () {
     });
 
     // Edit or delete variable
-    variableTableSelector.children('tbody').on('click', 'a', function () {
+    variableTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
-        var var_id = variableTable.row($(this).parents('tr')).data()[2];
+        var var_id = variableTableObj.row($(this).parents('tr')).data()[2];
         if ($(this).attr('title') == 'Edit') {
             cancelVarEdit.show();
             $('#var_form_label').html('Edit variable');
-            $('#key').val(variableTable.row($(this).parents('tr')).data()[0]);
-            $('#value').val(variableTable.row($(this).parents('tr')).data()[1]);
-            $('#variable_id').val(variableTable.row($(this).parents('tr')).data()[2]);
+            $('#key').val(variableTableObj.row($(this).parents('tr')).data()[0]);
+            $('#value').val(variableTableObj.row($(this).parents('tr')).data()[1]);
+            $('#variable_id').val(variableTableObj.row($(this).parents('tr')).data()[2]);
         }
         else if ($(this).attr('title')  == 'Delete') {
             deleteDialog.dialog('option', 'buttons', [
@@ -208,7 +208,7 @@ $(document).ready(function () {
                                 id: var_id
                             },
                             success: function () {
-                                variableTable.ajax.reload()
+                                variableTableObj.ajax.reload()
                             }
                         });
                     }
@@ -241,7 +241,7 @@ $(document).ready(function () {
             case 'Copy':
                 clearVariableForm();
                 $('.select_type').off('click').click(function () {
-                    var sourceType = $(this).attr('data-type');
+                    var entityType = $(this).attr('data-type');
                     entityTypeDialog.dialog('close');
                     selectDialog.DynamicList({
                         'listTitle': 'copy_from_entity',
@@ -249,10 +249,7 @@ $(document).ready(function () {
                         'showFilter': true,
                         'headerBottomPadding': 0,
                         'maxHeight': 400,
-                        'minColumns': 3,
-                        'maxColumns': 6,
-                        'breakPoint': 9,
-                        'ajaxUrl': '/inventory/?action=search&type=' + sourceType + '&pattern=',
+                        'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
                         'formatItem': function (listItem) {
                             $(listItem).click(function () {
                                 var sourceValue = $(this).data('value');
@@ -264,11 +261,11 @@ $(document).ready(function () {
                                     data: {
                                         action: 'copy_vars',
                                         source_id: sourceId,
-                                        type: sourceType
+                                        type: entityType
                                     },
                                     success: function () {
                                         selectDialog.dialog('close');
-                                        variableTable.ajax.reload();
+                                        variableTableObj.ajax.reload();
                                         alertDialog.html('<strong>Variables copied from ' + sourceValue + '</strong>');
                                         alertDialog.dialog('open');
                                     }
@@ -297,7 +294,7 @@ $(document).ready(function () {
                     },
                     success: function (data) {
                         if (data.result == 'ok') {
-                            variableTable.ajax.reload();
+                            variableTableObj.ajax.reload();
                             clearVariableForm();
                         }
                         else if (data.result == 'fail') {
@@ -426,5 +423,4 @@ $(document).ready(function () {
         });
     });
 
-    // Copy variables from entity
 });

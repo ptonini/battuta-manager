@@ -128,24 +128,18 @@ function executePlay(postData, askPassword) {
             }
         });
     }
-
     // Add username to password field label
     $('#exec_user').html(postData.executionUser);
-
     // Check if passwords are needed
     if (askPassword.user || askPassword.sudo) {
-
         // Clear password input fields
         passwordDialog.find('input').val('');
-
         // Hide password input fields
         userPasswordGroup.addClass('hidden');
         sudoPasswordGroup.addClass('hidden');
-
         // Unhide needed password fields
         userPasswordGroup.toggleClass('hidden', (!askPassword.user));
         sudoPasswordGroup.toggleClass('hidden', (!askPassword.sudo));
-
         // Open password dialog
         passwordDialog.dialog({
             modal: true,
@@ -398,12 +392,9 @@ $(document).ready(function () {
             'showFilter': true,
             'headerBottomPadding': 0,
             'showAddButton': true,
+            'maxHeight': 400,
             'addButtonClass': 'open_entity_form',
             'addButtonTitle': 'Add ' + entityType,
-            'maxHeight': 400,
-            'minColumns': 3,
-            'maxColumns': 6,
-            'breakPoint': 9,
             'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
             'formatItem': function (listItem) {
                 $(listItem).click(function () {
@@ -526,96 +517,91 @@ $(document).ready(function () {
         }
         selectDialog
             .DynamicList({
-            'listTitle': 'selection',
-            "showListSeparator": true,
-            'showFilter': true,
-            'headerBottomPadding': 0,
-            'showAddButton': true,
-            'addButtonClass': 'open_entity_form',
-            'addButtonTitle': 'Add ' + entityType,
-            'maxHeight': 400,
-            'minColumns': 3,
-            'maxColumns': 6,
-            'breakPoint': 9,
-            'itemToggle': true,
-            'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
-            'loadCallback': function (listContainer) {
-                var currentList = listContainer.find('div.dynamic-list');
-                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                selectDialog.dialog('option', 'buttons', [
-                    {
-                        text: 'Add',
-                        click: function () {
-                            var selection = [];
-                            $(currentList).children('div.toggle-on:not(".hidden")').each(function () {
-                                selection.push($(this).data('value'));
-                            });
-                            for (var i = 0; i < selection.length; i++) {
-                                if (patternContainer.html() != '') {
-                                    patternContainer.append(separator)
-                                }
-                                patternContainer.append(selection[i])
+                'listTitle': 'selection',
+                "showListSeparator": true,
+                'showFilter': true,
+                'headerBottomPadding': 0,
+                'showAddButton': true,
+                'addButtonClass': 'open_entity_form',
+                'addButtonTitle': 'Add ' + entityType,
+                'maxHeight': 400,
+                'itemToggle': true,
+                'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
+                'loadCallback': function (listContainer) {
+                    var currentList = listContainer.find('div.dynamic-list');
+                    selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                },
+                'addButtonAction': function (addButton) {
+                    $('#entity_dialog_header').html('Add ' + entityType);
+                    $('#id_name').val('');
+                    $('#id_description').val('');
+                    entityDialog.dialog('option', 'buttons', [
+                        {
+                            text: 'Save',
+                            click: function () {
+                                $.ajax({
+                                    url: '/inventory/' + entityType + '/0/',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {
+                                        action: 'save',
+                                        name: $('#id_name').val(),
+                                        description: $('#id_description').val()
+                                    },
+                                    success: function (data) {
+                                        if (data.result == 'OK') {
+                                            selectDialog.DynamicList('load');
+                                            entityDialog.dialog('close');
+                                        }
+                                        else if (data.result == 'FAIL') {
+                                            alertDialog.html('<strong>Form submit error<br><br></strong>');
+                                            alertDialog.append(data.msg);
+                                            alertDialog.dialog('open');
+                                        }
+                                    }
+                                });
                             }
-                            patternContainer.removeClass('hidden');
-                            $(this).dialog('close');
+                        },
+                        {
+                            text: 'Cancel',
+                            click: function () {
+                                entityDialog.dialog('close');
+                            }
                         }
-                    },
-                    {
-                        text: 'Cancel',
-                        click: function () {
-                            $('.filter_box').val('');
-                            $(this).dialog('close');
+                    ]);
+                    entityDialog.dialog('open')
+                }
+            })
+            .dialog('option', 'buttons', [
+                {
+                    text: 'Add',
+                    click: function () {
+                        var selection = selectDialog.DynamicList('getSelected', 'value');
+                        for (var i = 0; i < selection.length; i++) {
+                            if (patternContainer.html() != '') {
+                                patternContainer.append(separator)
+                            }
+                            patternContainer.append(selection[i])
                         }
+                        patternContainer.removeClass('hidden');
+                        $(this).dialog('close');
                     }
-                ]);
-            },
-            'addButtonAction': function (addButton) {
-                $('#entity_dialog_header').html('Add ' + entityType);
-                $('#id_name').val('');
-                $('#id_description').val('');
-                entityDialog.dialog('option', 'buttons', [
-                    {
-                        text: 'Save',
-                        click: function () {
-                            $.ajax({
-                                url: '/inventory/' + entityType + '/0/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: {
-                                    action: 'save',
-                                    name: $('#id_name').val(),
-                                    description: $('#id_description').val()
-                                },
-                                success: function (data) {
-                                    if (data.result == 'OK') {
-                                        selectDialog.DynamicList('load');
-                                        entityDialog.dialog('close');
-                                    }
-                                    else if (data.result == 'FAIL') {
-                                        alertDialog.html('<strong>Form submit error<br><br></strong>');
-                                        alertDialog.append(data.msg);
-                                        alertDialog.dialog('open');
-                                    }
-                                }
-                            });
-                        }
-                    },
-                    {
-                        text: 'Cancel',
-                        click: function () {
-                            entityDialog.dialog('close');
-                        }
+                },
+                {
+                    text: 'Cancel',
+                    click: function () {
+                        $('.filter_box').val('');
+                        $(this).dialog('close');
                     }
-                ]);
-                entityDialog.dialog('open')
-            }
-        })
+                }
+            ])
             .dialog('open');
     });
 
+    // Bulk remove entities
     $('#bulk_remove').click(function ()  {
         $('.select_type').off('click').click(function () {
-            var sourceType = $(this).attr('data-type');
+            var entityType = $(this).data('type');
             entityTypeDialog.dialog('close');
             selectDialog
                 .DynamicList({
@@ -623,42 +609,57 @@ $(document).ready(function () {
                     "showListSeparator": true,
                     'showFilter': true,
                     'headerBottomPadding': 0,
-                    'maxHeight': 400,
-                    'minColumns': 3,
-                    'maxColumns': 6,
-                    'breakPoint': 9,
                     'itemToggle': true,
-                    'ajaxUrl': '/inventory/?action=search&type=' + sourceType + '&pattern=',
+                    'maxHeight': 400,
+                    'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
                     'loadCallback': function (listContainer) {
                         var currentList = listContainer.find('div.dynamic-list');
                         selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                     }
                 })
                 .dialog('option', 'buttons', [
-                {
-                    text: 'Delete',
-                    click: function () {
-                        $(this).dialog('close');
-                        $.ajax({
-                            url: 'variable/del/',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                id: var_id
-                            },
-                            success: function () {
-                                variableTable.ajax.reload()
-                            }
-                        });
+                    {
+                        text: 'Delete',
+                        click: function () {
+                            deleteDialog
+                                .dialog('option', 'buttons', [
+                                    {
+                                        text: 'Confirm',
+                                        click: function () {
+                                            $.ajax({
+                                                url: '/inventory/',
+                                                type: 'POST',
+                                                dataType: 'json',
+                                                data: {
+                                                    action: 'bulk_remove',
+                                                    selection: selectDialog.DynamicList('getSelected', 'id'),
+                                                    type: entityType
+                                                },
+                                                success: function () {
+                                                    selectDialog.dialog('close');
+                                                    deleteDialog.dialog('close');
+                                                }
+                                            });
+
+                                        }
+                                    },
+                                    {
+                                        text: 'Cancel',
+                                        click: function () {
+                                            deleteDialog.dialog('close');
+                                        }
+                                    }
+                                ])
+                                .dialog('open');
+                        }
+                    },
+                    {
+                        text: 'Cancel',
+                        click: function () {
+                            selectDialog.dialog('close');
+                        }
                     }
-                },
-                {
-                    text: 'Cancel',
-                    click: function () {
-                        $(this).dialog('close');
-                    }
-                }
-            ])
+                ])
                 .dialog('open');
         });
         entityTypeDialog.children('h5').html('Select entity type');
