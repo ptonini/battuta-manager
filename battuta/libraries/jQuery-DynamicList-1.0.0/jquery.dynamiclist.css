@@ -22,7 +22,6 @@ div.dynamic-list div.dynamic-item:last-child {
 div.dynamic-list div.dynamic-item:hover,
 div.dynamic-list div.dynamic-item .glyphicon:hover {
     background: #F4F4F4;
-    cursor: default;
     color: #2a2a2a;
 }
 

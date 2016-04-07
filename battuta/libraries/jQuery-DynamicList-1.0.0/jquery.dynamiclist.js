@@ -244,7 +244,7 @@
                 $(listDiv).addClass('checkered')
             }
 
-            if (opts.maxHeight > 0) {
+            if (opts.maxHeight) {
                 $(listDiv).wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
             }
 
