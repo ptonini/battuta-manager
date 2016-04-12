@@ -136,9 +136,7 @@
 <span style="visibility: hidden" id="get_length"></span>
 <div class="hidden">
     <div id="import_dialog">
-        <div class="text-center">
-            <h5>Select inventory file</h5>
-        </div>
+        <h5>Select inventory file</h5>
         <br>
         <form id="import_form">
             <div class="form-group">
@@ -150,7 +148,7 @@
     <div id="delete_dialog" class="text-center"><strong>This action cannot be undone</strong></div>
     <div id="alert_dialog" class="text-center"></div>
     <div id="entity_dialog">
-        <h5 id="entity_dialog_header" class="text-center"></h5>
+        <h5 id="entity_dialog_header"></h5>
         <hr>
         <form id="entity_form" method="post">
             <div id="div_id_name" class="form-group">
@@ -170,7 +168,7 @@
     </div>
     <div id="password_dialog">
         <br>
-        <label for="user_password" class="user_pass_group"><span id="exec_user"></span> password</label>
+        <label for="user_password" class="user_pass_group">Password for user '<span id="exec_user"></span>'</label>
         <input class="form-control input-sm user_pass_group" id="user_password" type="password">
         <br class="user_pass_group">
         <label for="sudo_password" class="sudo_pass_group">Sudo password
@@ -178,34 +176,39 @@
         </label>
         <input class="form-control input-sm sudo_pass_group" id="sudo_password" type="password">
     </div>
-    <div id="pattern_dialog" class="text-center">
+    <div id="pattern_dialog">
         <h5>Pattern builder</h5>
         <hr>
-        <div class="row text-left pattern_editor_row">
-            <div class="col-md-4 text-right">OR</div>
-            <div class="col-md-3">
+        <div class="row pattern_editor_row">
+            <div class="col-md-2">Select:</div>
+            <div class="col-md-2">
                 <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-8">
                 <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
             </div>
         </div>
-        <div class="row text-left pattern_editor_row">
-            <div class="col-md-4 text-right">AND</div>
-            <div class="col-md-3">
+        <div class="row pattern_editor_row">
+            <div class="col-md-2">and:</div>
+            <div class="col-md-2">
                 <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-8">
                 <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
             </div>
         </div>
-        <div class="row text-left pattern_editor_row">
-            <div class="col-md-4 text-right">NOT</div>
-            <div class="col-md-3">
+        <div class="row pattern_editor_row">
+            <div class="col-md-2">exclude:</div>
+            <div class="col-md-2">
                 <button class="btn btn-default btn-xs select_entities" data-type="group">Groups</button
                 ></div>
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <button class="btn btn-default btn-xs select_entities" data-type="host">Hosts</button>
+            </div>
+            <div class="col-md-4 text-right" style="padding-top: 4px">
+                <a href="http://docs.ansible.com/ansible/intro_patterns.html" target="_blank">
+                    <small style="color: #777">pattern reference</small>
+                </a>
             </div>
         </div>
         <br>

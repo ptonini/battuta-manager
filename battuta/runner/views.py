@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.core.cache import caches
 from django.conf import settings
+from django.forms import model_to_dict
 from pytz import timezone
 from multiprocessing import Process
 
@@ -31,7 +32,7 @@ class RunnerView(View):
     def _run(playbook, form_data, runner):
         try:
             p = Process(target=run_playbook, args=(playbook, form_data, runner))
-            #p.daemon = False
+            p.daemon = False
             p.start()
         except Exception as e:
             runner.delete()
@@ -190,8 +191,9 @@ class PlaybooksView(BaseView):
                 data = playbook_cache.get(request.GET['playbook_file'])
             elif request.GET['action'] == 'get_args':
                 data = list()
-                for play_args in PlayArguments.objects.filter(playbook=request.GET['playbook_file']):
-                    data.append([play_args.id, play_args.subset, play_args.tags])
+                for args in PlayArguments.objects.filter(playbook=request.GET['playbook_file']):
+                    args_dict = model_to_dict(args)
+                    data.append(model_to_dict(args))
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type='application/json')

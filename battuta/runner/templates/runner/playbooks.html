@@ -21,7 +21,7 @@
     </div>
     <div class="hidden">
         <div id="playbook_dialog" style="overflow: hidden">
-            <h5 id="playbook_dialog_header" class="text-center"></h5>
+            <h5 id="playbook_dialog_header"></h5>
             <hr>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col-md-2">Hosts:</div>
@@ -35,23 +35,19 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
-                        <label for="saved_arguments" class="sr-only requiredField">Saved arguments</label>
-                        <select class="select form-control input-sm" id="saved_arguments">
-                            <option value="" disabled selected hidden>Saved arguments</option>
-                        </select>
+                        <label for="saved_arguments" class="requiredField">Saved arguments</label>
+                        <select class="select form-control input-sm" id="saved_arguments"></select>
                     </div>
                 </div>
             </div>
-            <br>
             <form id="arguments_form" method="post">
                 <input id="args_id" type="hidden">
                 <div class="row">
                     <div class="col-md-9">
                         <div class="form-group">
-                            <label for="tags" class="sr-only requiredField">Tags</label>
+                            <label for="subset" class="requiredField">Limit</label>
                             <div class="input-group">
-                                <input class="form-control input-sm pattern-input"
-                                       id="subset" placeholder="limit" type="text">
+                                <input class="form-control input-sm pattern-input" id="subset" type="text">
                                 <span class="input-group-btn">
                                     <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
                                         <span class="glyphicon glyphicon-edit"></span>
@@ -60,18 +56,18 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-3 text-right" style="margin-top: 22px">
                         <button id="check" class="btn btn-default btn-sm" data-action="check">Check</button>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-9">
                         <div class="form-group">
-                            <label for="tags" class="sr-only requiredField">Tags</label>
-                            <input class="form-control input-sm" id="tags" placeholder="tags" type="text">
+                            <label for="tags" class="requiredField">Tags</label>
+                            <input class="form-control input-sm" id="tags"type="text">
                         </div>
                     </div>
-                    <div class="col-md-3 text-right">
+                    <div class="col-md-3 text-right" style="margin-top: 22px">
                         <button id="save_args" class="btn btn-default btn-sm" data-action="save"
                                 data-toggle="tooltip" title="Save arguments">
                             <span class="glyphicon glyphicon-floppy-disk"  data-action="save"></span>

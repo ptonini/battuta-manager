@@ -1,8 +1,7 @@
-function buildArgsSelectionBox() {
-    $('#saved_arguments').children('option').each(function(){
-        if (typeof $(this).data('id') == 'number') {
-            $(this).remove()
-        }
+function buildArgsSelectionBox(start_value) {
+    var savedArguments = $('#saved_arguments');
+    savedArguments.children('option').each(function(){
+        $(this).remove()
     });
     $.ajax({
         url: '/runner/playbooks/',
@@ -13,28 +12,22 @@ function buildArgsSelectionBox() {
             playbook_file: $('#playbook_dialog').data('currentPlaybook')
         },
         success: function (data) {
-            $.each(data, function (index, value) {
-                var id = value[0];
-                var subset = value[1];
-                var tags = value[2];
+            $.each(data, function (index, args) {
                 var display = '';
-                if (subset != '') {
-                    display = '--limit ' + subset;
+                if (args.subset != '') {
+                    display = '--limit ' + args.subset;
                 }
-                if (subset != '' && tags != '') {
+                if (args.subset != '' && args.tags != '') {
                     display += ' '
                 }
-                if (tags != '') {
-                    display += '--tags ' + tags
+                if (args.tags != '') {
+                    display += '--tags ' + args.tags
                 }
-                $('#saved_arguments').append(
-                    $('<option>').val(id).data({
-                        'id': id,
-                        'subset': subset,
-                        'tags': tags
-                    }).append(display)
-                )
+                savedArguments.append($('<option>').val(args.id).data(args).append(display))
             });
+            savedArguments.change().append(
+                $('<option>').val('new').append('new')
+            );
         }
     });
 }

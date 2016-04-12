@@ -1,3 +1,8 @@
+//
+String.prototype.isEmpty = function() {
+    return (this.length === 0 || !this.trim());
+};
+
 // Get cookie
 function getCookie(name) {
     var cookieValue = null;
@@ -108,8 +113,8 @@ function executePlay(postData, askPassword) {
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector
     var sudoPassword = $('#sudo_password');         // Sudo password field selector
-    var userPasswordGroup = $('.user_pass_group'); // User pass field and label selector
-    var sudoPasswordGroup = $('.sudo_pass_group'); // Sudo pass field and label selector
+    var userPasswordGroup = $('.user_pass_group');  // User pass field and label selector
+    var sudoPasswordGroup = $('.sudo_pass_group');  // Sudo pass field and label selector
     function postCommand(postData) {
         $.ajax({
             url: '/runner/',
@@ -134,10 +139,7 @@ function executePlay(postData, askPassword) {
     if (askPassword.user || askPassword.sudo) {
         // Clear password input fields
         passwordDialog.find('input').val('');
-        // Hide password input fields
-        userPasswordGroup.addClass('hidden');
-        sudoPasswordGroup.addClass('hidden');
-        // Unhide needed password fields
+        // Show needed password fields
         userPasswordGroup.toggleClass('hidden', (!askPassword.user));
         sudoPasswordGroup.toggleClass('hidden', (!askPassword.sudo));
         // Open password dialog
@@ -210,7 +212,7 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
         }
     });
 }
-
+-
 $(document).ready(function () {
 
     var deleteDialog = $('#delete_dialog');
@@ -461,8 +463,8 @@ $(document).ready(function () {
         importDialog.dialog('open');
     });
 
-    // Capture enter on password prompt
-    $('#ansible_pass').keypress(function (event) {
+    // Capture enter on password dialog
+    $('#password_dialog').keypress(function (event) {
         if (event.keyCode == 13) {
             $('.ui-button-text:contains("Run")').parent('button').click()
         }
@@ -476,7 +478,7 @@ $(document).ready(function () {
             modal: true,
             show: true,
             hide: true,
-            width: 400,
+            width: 520,
             dialogClass: 'no_title',
             buttons: {
                 Use: function () {
@@ -499,19 +501,19 @@ $(document).ready(function () {
         var entityType = $(this).data('type');
         var op = $(this).closest('div.row').children('div:first').html();
         var separator;
-        if (op == 'OR') {
+        if (op == 'Select:') {
             separator = ':';
         }
         else {
             if (patternContainer.html() == '') {
-                alertDialog.html($('<strong>').html('Please select "OR" hosts/groups first'));
+                alertDialog.html($('<strong>').html('Please select hosts/groups first'));
                 alertDialog.dialog('open');
                 return
             }
-            if (op == 'AND') {
+            if (op == 'and:') {
                 separator = ':&'
             }
-            else if (op == 'NOT') {
+            else if (op == 'but not:') {
                 separator = ':!'
             }
         }

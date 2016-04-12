@@ -7,10 +7,6 @@
     function _formatList(listDiv, opts) {
         var listItems = listDiv.find('.dynamic-item:not(".hidden")');
         var listLength = listItems.length;
-        var lineHeight = parseFloat(listItems.css('line-height'));
-        var lineTopPadding = parseFloat(listItems.css('padding-top'));
-        var lineBottomPadding = parseFloat(listItems.css('padding-bottom'));
-
         if (opts.showCount) {
             $('#' + opts.listTitle + '_count').html(' (' + listLength + ')')
         }
@@ -40,12 +36,13 @@
                 opts.listWidth = '100%'
             }
         }
-
         // Adjust list
         listDiv.css({
             'column-count': columnCount.toString(),
             'width': opts.listWidth,
-            'height': itemsPerColumn * (lineHeight + lineTopPadding + lineBottomPadding + 1) + 'px'
+            'height': itemsPerColumn * (parseFloat(listItems.css('line-height')) +
+            parseFloat(listItems.css('padding-top')) +
+            parseFloat(listItems.css('padding-bottom'))) + 'px'
         });
     }
 
@@ -126,7 +123,7 @@
             $(headerDiv)
                 .attr({
                     'class': 'dynamic-list-header',
-                    'title': opts.listTitle
+                    'id': opts.listTitle
                 })
                 .css({
                     'padding-bottom': opts.headerBottomPadding,
@@ -153,29 +150,20 @@
             }
 
             if (opts.itemToggle) {
-                $(headerDiv).append(
-                    $('<a>')
-                        .attr({
-                            'href': '#',
-                            'data-toggle': 'tooltip',
-                            'title': 'Select all'
-                        })
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-unchecked btn-sm'))
-                        .after(' ')
+                $(headerDiv)
+                    .append($('<button>')
+                        .attr({ class: 'btn btn-default btn-xs', title: 'Select all'})
+                        .append($('<span>').html('A'))
                         .click( function () {
                             event.preventDefault();
                             var addClass;
                             switch ($(this).attr('title')) {
                                 case 'Select all':
-                                    $(this).attr('title', 'Deselect all');
-                                    $(this).children('span').removeClass('glyphicon-unchecked');
-                                    $(this).children('span').addClass('glyphicon-check');
+                                    $(this).attr('title', 'Select none').html($('<span>').html('N'));
                                     addClass = true;
                                     break;
-                                case 'Deselect all':
-                                    $(this).attr('title', 'Select all');
-                                    $(this).children('span').removeClass('glyphicon-check');
-                                    $(this).children('span').addClass('glyphicon-unchecked');
+                                case 'Select none':
+                                    $(this).attr('title', 'Select all').html($('<span>').html('A'));
                                     addClass = false;
                                     break;
                             }
@@ -183,7 +171,21 @@
                                 $(this).toggleClass('toggle-on', addClass);
                             });
                         })
-                )
+                        .after(' ')
+
+                    )
+                    .append($('<button>')
+                        .attr({
+                            title: 'Invert selection',
+                            class: 'btn btn-default btn-xs'
+                        })
+                        .click(function() {
+                            $(listDiv).children('div.dynamic-item').each(function () {
+                                $(this).toggleClass('toggle-on');
+                            });
+                        })
+                        .html($('<span>').html('I'))
+                    )
             }
 
             if (opts.showAddButton) {
@@ -230,7 +232,7 @@
                                         $(this).addClass('hidden')
                                     }
                                 });
-                                listContainer.DynamicList('format');
+                                _formatList(listDiv, opts)
                             })
                     )
                 )

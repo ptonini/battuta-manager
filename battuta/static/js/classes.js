@@ -32,11 +32,10 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer, sudoDiv) {
     var name = this.name;
     fieldsContainer.html('');
     $('#module_reference')
-        .show()
+        .off().show()
         .hover(function() {
             $(this).css('cursor', 'pointer')
         })
-        .off('click')
         .click(function() {
             window.open('http://docs.ansible.com/ansible/'+ name + '_module.html')
         });

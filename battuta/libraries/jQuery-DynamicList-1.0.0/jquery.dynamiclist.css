@@ -2,6 +2,22 @@ div.checkered div:nth-child(odd) {
     background-color: #F8F8F8;
 }
 
+div.dynamic-list-header button {
+    margin-left: 5px;
+    min-width: 25px;
+}
+
+div.dynamic-list-header button span {
+    font-family: "Lucida Console", Monaco, monospace;
+    font-weight: bold;
+    vertical-align: middle;
+    color: #777;
+}
+
+div.dynamic-list {
+    margin-bottom: 0;
+}
+
 div.dynamic-list div.dynamic-item {
     padding: 5px;
     margin-bottom: 0;

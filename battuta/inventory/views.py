@@ -63,7 +63,6 @@ class InventoryView(View):
                 else:
                     for line in csv_file:
                         host, created = Host.objects.get_or_create(name=line[host_index])
-                        host.save()
                         if created:
                             added += 1
                         else:
@@ -72,7 +71,6 @@ class InventoryView(View):
                             if index != host_index and item != '':
                                 if header[index] == 'group':
                                     group, created = Group.objects.get_or_create(name=item)
-                                    group.save()
                                     host.group_set.add(group)
                                     host.save()
                                 else:
@@ -80,7 +78,6 @@ class InventoryView(View):
                                     var.value = item
                                     var.save()
                     data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
-
             os.remove(source_file)
         else:
             return Http404('Invalid action')

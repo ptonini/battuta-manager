@@ -121,6 +121,7 @@ $(document).ready(function () {
             if ($(this).attr('title') == 'Run') {
                 $('#adhoc_id').val('');
                 $('#run_command').focus().trigger('click');
+                $('#adhoc_form').find('input').val('')
             }
             else if ($(this).attr('title') == 'Edit') {
                 $('#adhoc_id').val(adhocId);

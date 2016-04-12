@@ -102,7 +102,7 @@ class UserView(View):
             full_path = os.path.join(settings.DATA_DIR, relative_path)
             try:
                 os.makedirs(full_path)
-            except:
+            except os.error:
                 pass
             uploaded_files = list()
             for key, value in request.FILES.iteritems():
@@ -204,16 +204,18 @@ class CredentialView(View):
         page_user = get_object_or_404(User, pk=request.POST['user_id'])
         if request.user == page_user or request.user.is_superuser:
             if request.POST['action'] == 'save':
+                form_data = dict(request.POST.iteritems())
                 if request.POST['id'] == '':
                     credential = Credential(user=page_user)
                 else:
-                    credential = get_object_or_404(Credential, pk=request.POST['id'])
-                if credential.rsa_key.split('/')[-1] != request.POST['rsa_key']:
+                    credential = get_object_or_404(Credential, pk=form_data['id'])
+                if form_data['rsa_key'] == '<keep>':
+                    form_data['rsa_key'] = credential.rsa_key
+                else:
                     try:
                         os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
-                    except:
+                    except os.error:
                         pass
-                form_data = dict(request.POST.iteritems())
                 if request.POST['password'] == '':
                     form_data['password'] = credential.password
                 if request.POST['sudo_pass'] == '':
@@ -237,7 +239,7 @@ class CredentialView(View):
                 else:
                     try:
                         os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
-                    except:
+                    except os.error:
                         pass
                     credential.delete()
                     data = {'result': 'ok'}
@@ -246,4 +248,3 @@ class CredentialView(View):
         else:
             raise PermissionDenied
         return HttpResponse(json.dumps(data), content_type="application/json")
-

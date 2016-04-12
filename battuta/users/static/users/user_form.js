@@ -227,9 +227,10 @@ $(document).ready(function () {
     savedCredentials.change(function () {
         var selectedOption = $('option:selected', this);
         resetCredentialForm();
-        credentialForm
-            .data('rsa_key', selectedOption.data('rsa_key'))
-            .data('cred_id', selectedOption.data('id'));
+        credentialForm.data('cred_id', selectedOption.data('id'));
+        if (selectedOption.data('rsa_key')) {
+            credentialForm.data('rsa_key_action', '<keep>')
+        }
         $("#cred_title").val(selectedOption.data('title'));
         $("#cred_username").val(selectedOption.data('username'));
         $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
@@ -288,8 +289,8 @@ $(document).ready(function () {
                 $(document.activeElement).toggleClass('checked_button');
                 break;
             case 'Remove':
-                credentialForm.data({
-                    rsa_key: '',
+                credentialForm.change().data({
+                    rsa_key_action: '<del>',
                     upload_rsa: false
                 });
                 credRsaKey.fileinput('refresh', {initialCaption: ''});
@@ -312,7 +313,7 @@ $(document).ready(function () {
                 postData.is_shared = $('#cred_is_shared').hasClass('checked_button');
                 postData.is_default = $('#cred_is_default').hasClass('checked_button');
                 postData.ask_sudo_pass = $('#ask_sudo_pass').hasClass('checked_button');
-                postData.rsa_key = credentialForm.data('rsa_key');
+                postData.rsa_key = credentialForm.data('rsa_key_action');
                 // Upload RSA key before submit if present
                 if (credentialForm.data('upload_rsa')) {
                     function onUploadSuccess(data) {

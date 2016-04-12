@@ -20,8 +20,7 @@ a,
 .pagination > li > a,
 div.dataTables_length,
 div.dataTables_filter,
-div.dataTables_info,
-#var_form_label{
+div.dataTables_info {
     color: #777;
 }
 
@@ -78,6 +77,10 @@ h5 {
 .pattern_editor_row {
     width: 95%;
     margin: 10px 0
+}
+
+.pattern_editor_row div:first-of-type{
+    text-align: right;
 }
 
 .table tbody > tr > td {
