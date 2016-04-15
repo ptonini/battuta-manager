@@ -79,7 +79,9 @@ class RunnerView(View):
             adhoc_form = AdHocForm(request.POST)
             if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
-                credential = get_object_or_404(Credential, pk=form_data['credential'])
+                credential = request.user.userdata.default_cred
+                if 'credential' in form_data:
+                    credential = get_object_or_404(Credential, pk=form_data['credential'])
                 form_data['username'] = credential.username
                 if 'remote_pass' not in form_data:
                     form_data['remote_pass'] = credential.password
@@ -87,7 +89,6 @@ class RunnerView(View):
                     form_data['become_pass'] = credential.sudo_pass
                 if credential.sudo_user != '':
                     form_data['sudo_user'] = credential.sudo_user
-                # form_data['rsa_key'] = ''
                 if credential.rsa_key != '':
                     form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
                 form_data['check'] = None
@@ -132,9 +133,20 @@ class RunnerView(View):
 
 
 class AdHocView(BaseView):
+
     def get(self, request):
-        self.context['user'] = request.user
-        return render(request, "runner/adhoc.html", self.context)
+        if 'action' not in request.GET:
+            self.context['user'] = request.user
+            return render(request, "runner/adhoc.html", self.context)
+        else:
+            if request.GET['action'] == 'list':
+                data = list()
+                for task in AdHoc.objects.all():
+                    if request.GET['hosts'] == '' or request.GET['hosts'] == task.hosts:
+                        data.append([task.hosts, task.module, task.arguments, task.become, task.id])
+            else:
+                raise Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):
@@ -144,13 +156,7 @@ class AdHocView(BaseView):
             adhoc = AdHoc()
         form = AdHocForm(request.POST or None, instance=adhoc)
 
-        # List saved adhoc tasks
-        if request.POST['action'] == 'list':
-            data = list()
-            for task in AdHoc.objects.all():
-                if request.POST['hosts'] == '' or request.POST['hosts'] == task.hosts:
-                    data.append([task.hosts, task.module, task.arguments, task.become, task.id])
-        elif request.POST['action'] == 'save':
+        if request.POST['action'] == 'save':
             if form.is_valid():
                 form.save(commit=True)
                 data = {'result': 'ok'}
@@ -192,7 +198,6 @@ class PlaybooksView(BaseView):
             elif request.GET['action'] == 'get_args':
                 data = list()
                 for args in PlayArguments.objects.filter(playbook=request.GET['playbook_file']):
-                    args_dict = model_to_dict(args)
                     data.append(model_to_dict(args))
             else:
                 raise Http404('Invalid action')

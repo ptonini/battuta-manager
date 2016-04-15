@@ -1,6 +1,6 @@
 import json
 import os
-
+from pytz import timezone
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -9,7 +9,6 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
-from pytz import timezone
 
 from .models import User, UserData, Credential
 from .forms import UserForm, UserDataForm, CredentialForm
@@ -47,6 +46,7 @@ class LoginView(View):
 
 
 class UserView(View):
+
     @staticmethod
     def get(request, **kwargs):
         context = dict()
@@ -154,6 +154,7 @@ class UserView(View):
                     raise PermissionDenied
             else:
                 data = {'result': 'fail', 'msg': 'Invalid password'}
+
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
@@ -162,7 +163,7 @@ class UserView(View):
 class CredentialView(View):
 
     @staticmethod
-    def _hide_passwords(c, c_dict):
+    def _truncate_secure_data(c, c_dict):
         if c.password != '':
             c_dict['password'] = True
         else:
@@ -187,12 +188,12 @@ class CredentialView(View):
                     c_dict.pop('user', None)
                     if c == page_user.userdata.default_cred:
                         c_dict['is_default'] = True
-                    data.append(self._hide_passwords(c, c_dict))
+                    data.append(self._truncate_secure_data(c, c_dict))
                 if 'runner' in request.GET:
                     for c in Credential.objects.filter(is_shared=True).exclude(user=page_user):
                         c_dict = model_to_dict(c)
                         c_dict['title'] = c.title + ' (' + c.user.username + ')'
-                        data.append(self._hide_passwords(c, c_dict))
+                        data.append(self._truncate_secure_data(c, c_dict))
             else:
                 raise Http404('Invalid action')
         else:
@@ -206,42 +207,42 @@ class CredentialView(View):
             if request.POST['action'] == 'save':
                 form_data = dict(request.POST.iteritems())
                 if request.POST['id'] == '':
-                    credential = Credential(user=page_user)
+                    cred = Credential(user=page_user)
                 else:
-                    credential = get_object_or_404(Credential, pk=form_data['id'])
+                    cred = get_object_or_404(Credential, pk=form_data['id'])
                 if form_data['rsa_key'] == '<keep>':
-                    form_data['rsa_key'] = credential.rsa_key
+                    form_data['rsa_key'] = cred.rsa_key
                 else:
                     try:
-                        os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
+                        os.remove(os.path.join(settings.DATA_DIR, cred.rsa_key))
                     except os.error:
                         pass
                 if request.POST['password'] == '':
-                    form_data['password'] = credential.password
+                    form_data['password'] = cred.password
                 if request.POST['sudo_pass'] == '':
-                    form_data['sudo_pass'] = credential.sudo_pass
-                form = CredentialForm(form_data or None, instance=credential)
+                    form_data['sudo_pass'] = cred.sudo_pass
+                form = CredentialForm(form_data or None, instance=cred)
                 if form.is_valid():
-                    credential = form.save(commit=True)
+                    cred = form.save(commit=True)
                     if request.POST['is_default'] == 'true':
-                        page_user.userdata.default_cred = credential
+                        page_user.userdata.default_cred = cred
                         page_user.userdata.save()
-                    data = {'result': 'ok', 'cred_id': credential.id}
+                    data = {'result': 'ok', 'cred_id': cred.id}
                 else:
                     data = {'result': 'fail', 'msg': str(form.errors)}
             elif request.POST['action'] == 'delete':
-                credential = get_object_or_404(Credential, pk=request.POST['id'])
+                cred = get_object_or_404(Credential, pk=request.POST['id'])
                 user_list = list()
-                for user_data in UserData.objects.filter(default_cred=credential):
+                for user_data in UserData.objects.filter(default_cred=cred):
                     user_list.append(user_data.user.username)
                 if len(user_list) > 0:
                     data = {'result': 'fail', 'msg': 'Error: credential is default for ' + ', '.join(user_list)}
                 else:
                     try:
-                        os.remove(os.path.join(settings.DATA_DIR, credential.rsa_key))
+                        os.remove(os.path.join(settings.DATA_DIR, cred.rsa_key))
                     except os.error:
                         pass
-                    credential.delete()
+                    cred.delete()
                     data = {'result': 'ok'}
             else:
                 raise Http404('Invalid action')

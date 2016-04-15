@@ -212,17 +212,17 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
         }
     });
 }
--
+
 $(document).ready(function () {
 
     var deleteDialog = $('#delete_dialog');
     var alertDialog = $('#alert_dialog');
     var importDialog = $('#import_dialog');
     var selectDialog = $('#select_dialog');
-    var entityDialog = $('#entity_dialog');
+    var nodeDialog = $('#node_dialog');
     var jsonDialog = $('#json_dialog');
-    var entityTypeDialog = $('#entity_type_dialog');
-    var entityForm = $('#entity_form');
+    var nodeTypeDialog = $('#node_type_dialog');
+    var nodeForm = $('#node_form');
     var patternContainer = $('#pattern_container');     // Ansible host pattern selector
     var uploadFile = false;
 
@@ -301,8 +301,8 @@ $(document).ready(function () {
         }
     });
 
-    // Initialize entity dialog
-    entityDialog.dialog({
+    // Initialize node dialog
+    nodeDialog.dialog({
         autoOpen: false,
         modal: true,
         show: true,
@@ -310,10 +310,10 @@ $(document).ready(function () {
         dialogClass: 'no_title',
         buttons: {
             Save: function (){
-                entityForm.submit()
+                nodeForm.submit()
             },
             Cancel: function (){
-                entityDialog.dialog('close');
+                nodeDialog.dialog('close');
             }
         }
 
@@ -336,8 +336,8 @@ $(document).ready(function () {
         }
     });
 
-    // Initialize entity type dialog
-    entityTypeDialog.dialog({
+    // Initialize node type dialog
+    nodeTypeDialog.dialog({
         autoOpen: false,
         modal: true,
         show: true,
@@ -361,8 +361,8 @@ $(document).ready(function () {
             dataType: 'json',
             data: {
                 action: action,
-                username: $('#id_username').val(),
-                password: $('#id_password').val()
+                username: $('#login_username').val(),
+                password: $('#login_password').val()
             },
             success: function (data) {
                 if (data.result == 'ok') {
@@ -384,10 +384,10 @@ $(document).ready(function () {
        }
     });
 
-    // Open entity box
-    $('.open_entity').click(function (event) {
+    // Open node select box
+    $('.open_node').click(function (event) {
         event.preventDefault();
-        var entityType = $(this).attr('data-type');
+        var nodeType = $(this).attr('data-type');
         selectDialog.DynamicList({
             'listTitle': 'selection',
             "showListSeparator": true,
@@ -395,12 +395,12 @@ $(document).ready(function () {
             'headerBottomPadding': 0,
             'showAddButton': true,
             'maxHeight': 400,
-            'addButtonClass': 'open_entity_form',
-            'addButtonTitle': 'Add ' + entityType,
-            'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
+            'addButtonClass': 'open_node_form',
+            'addButtonTitle': 'Add ' + nodeType,
+            'ajaxUrl': '/inventory/?action=search&type=' + nodeType + '&pattern=',
             'formatItem': function (listItem) {
                 $(listItem).click(function () {
-                    window.open('/inventory/' + entityType + '/' + $(this).data('id'), '_self')
+                    window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
                 });
             },
             'loadCallback': function (listContainer) {
@@ -408,14 +408,13 @@ $(document).ready(function () {
                 selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
             },
             'addButtonAction': function (addButton) {
-                $('#entity_dialog_header').html('Add ' + entityType);
-                $('#id_name').val('');
-                $('#id_description').val('');
-                entityForm.off('submit');
-                entityForm.submit(function(event) {
+                $('#node_dialog_header').html('Add ' + nodeType);
+                $('#node_form').find('input').val('');
+                nodeForm.off('submit');
+                nodeForm.submit(function(event) {
                     event.preventDefault();
                     $.ajax({
-                        url: '/inventory/' + entityType + '/0/',
+                        url: '/inventory/' + nodeType + '/0/',
                         type: 'POST',
                         dataType: 'json',
                         data: {
@@ -426,7 +425,7 @@ $(document).ready(function () {
                         success: function (data) {
                             if (data.result == 'ok') {
                                 selectDialog.DynamicList('load');
-                                entityDialog.dialog('close');
+                                nodeDialog.dialog('close');
                             }
                             else if (data.result == 'fail') {
                                 alertDialog.html('<strong>Form submit error<br><br></strong>');
@@ -436,7 +435,7 @@ $(document).ready(function () {
                         }
                     });
                 });
-                entityDialog.dialog('open')
+                nodeDialog.dialog('open')
             }
         });
         selectDialog.dialog('open');
@@ -496,9 +495,9 @@ $(document).ready(function () {
         });
     });
 
-    // Select entities
-    $('.select_entities').click(function () {
-        var entityType = $(this).data('type');
+    // Select nodes
+    $('.select_nodes').click(function () {
+        var nodeType = $(this).data('type');
         var op = $(this).closest('div.row').children('div:first').html();
         var separator;
         if (op == 'Select:') {
@@ -524,25 +523,25 @@ $(document).ready(function () {
                 'showFilter': true,
                 'headerBottomPadding': 0,
                 'showAddButton': true,
-                'addButtonClass': 'open_entity_form',
-                'addButtonTitle': 'Add ' + entityType,
+                'addButtonClass': 'open_node_form',
+                'addButtonTitle': 'Add ' + nodeType,
                 'maxHeight': 400,
                 'itemToggle': true,
-                'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
+                'ajaxUrl': '/inventory/?action=search&type=' + nodeType + '&pattern=',
                 'loadCallback': function (listContainer) {
                     var currentList = listContainer.find('div.dynamic-list');
                     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                 },
                 'addButtonAction': function (addButton) {
-                    $('#entity_dialog_header').html('Add ' + entityType);
+                    $('#node_dialog_header').html('Add ' + nodeType);
                     $('#id_name').val('');
                     $('#id_description').val('');
-                    entityDialog.dialog('option', 'buttons', [
+                    nodeDialog.dialog('option', 'buttons', [
                         {
                             text: 'Save',
                             click: function () {
                                 $.ajax({
-                                    url: '/inventory/' + entityType + '/0/',
+                                    url: '/inventory/' + nodeType + '/0/',
                                     type: 'POST',
                                     dataType: 'json',
                                     data: {
@@ -553,7 +552,7 @@ $(document).ready(function () {
                                     success: function (data) {
                                         if (data.result == 'OK') {
                                             selectDialog.DynamicList('load');
-                                            entityDialog.dialog('close');
+                                            nodeDialog.dialog('close');
                                         }
                                         else if (data.result == 'FAIL') {
                                             alertDialog.html('<strong>Form submit error<br><br></strong>');
@@ -567,11 +566,11 @@ $(document).ready(function () {
                         {
                             text: 'Cancel',
                             click: function () {
-                                entityDialog.dialog('close');
+                                nodeDialog.dialog('close');
                             }
                         }
                     ]);
-                    entityDialog.dialog('open')
+                    nodeDialog.dialog('open')
                 }
             })
             .dialog('option', 'buttons', [
@@ -600,20 +599,20 @@ $(document).ready(function () {
             .dialog('open');
     });
 
-    // Bulk remove entities
+    // Bulk remove nodes
     $('#bulk_remove').click(function ()  {
         $('.select_type').off('click').click(function () {
-            var entityType = $(this).data('type');
-            entityTypeDialog.dialog('close');
+            var nodeType = $(this).data('type');
+            nodeTypeDialog.dialog('close');
             selectDialog
                 .DynamicList({
-                    'listTitle': 'remove_entity',
+                    'listTitle': 'remove_node',
                     "showListSeparator": true,
                     'showFilter': true,
                     'headerBottomPadding': 0,
                     'itemToggle': true,
                     'maxHeight': 400,
-                    'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
+                    'ajaxUrl': '/inventory/?action=search&type=' + nodeType + '&pattern=',
                     'loadCallback': function (listContainer) {
                         var currentList = listContainer.find('div.dynamic-list');
                         selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
@@ -635,7 +634,7 @@ $(document).ready(function () {
                                                 data: {
                                                     action: 'bulk_remove',
                                                     selection: selectDialog.DynamicList('getSelected', 'id'),
-                                                    type: entityType
+                                                    type: nodeType
                                                 },
                                                 success: function () {
                                                     selectDialog.dialog('close');
@@ -664,9 +663,8 @@ $(document).ready(function () {
                 ])
                 .dialog('open');
         });
-        entityTypeDialog.children('h5').html('Select entity type');
-        entityTypeDialog.dialog('open');
+        nodeTypeDialog.children('h5').html('Select node type');
+        nodeTypeDialog.dialog('open');
     });
-
-
+    
 });

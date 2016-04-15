@@ -16,22 +16,22 @@ function alterRelation(relation, selection, action, successFunction) {
 
 $(document).ready(function () {
 
-    var entityName = $('#entity_name').html();
+    var nodeName = $('#header_node_name').html();
     var variableTable = $('#variable_table');
     var relationDivs = $('.relation_div');
     var alertDialog = $('#alert_dialog');
     var deleteDialog = $('#delete_dialog');
     var selectDialog = $('#select_dialog');
-    var entityDialog = $('#entity_dialog');
-    var entityForm = $('#entity_form');
-    var entityTypeDialog = $('#entity_type_dialog');
+    var nodeDialog = $('#node_dialog');
+    var nodeForm = $('#node_form');
+    var nodeTypeDialog = $('#node_type_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
     var jsonBox = $('#json_box');
     var jsonDialog = $('#json_dialog');
 
     // Format page to 'all' group
-    if (entityName == 'all') {
-        $("#entity_tabs").remove();
+    if (nodeName == 'all') {
+        $("#node_tabs").remove();
         $('#relationships_tab').removeClass('in active');
         $('#variables_tab').addClass('in active');
     }
@@ -39,9 +39,9 @@ $(document).ready(function () {
     // Build relationship lists
     relationDivs.each(function () {
         var relation = $(this).attr('data-relation');
-        var entityType = 'group';
+        var nodeType = 'group';
         if (relation == 'Members') {
-            entityType = 'host'
+            nodeType = 'host'
         }
         $(this).DynamicList({
             'listTitle': relation,
@@ -61,7 +61,7 @@ $(document).ready(function () {
                 var name = $(listItem).data('value');
                 $(listItem).html('').append(
                     $('<span>').append(name).click( function () {
-                        window.open('/inventory/' + entityType + '/' + id, '_self')
+                        window.open('/inventory/' + nodeType + '/' + id, '_self')
                     }),
                     $('<span>')
                         .attr({
@@ -85,8 +85,8 @@ $(document).ready(function () {
                     'showFilter': true,
                     'headerBottomPadding': 0,
                     'showAddButton': true,
-                    'addButtonClass': 'open_entity_form',
-                    'addButtonTitle': 'Add ' + entityType,
+                    'addButtonClass': 'open_node_form',
+                    'addButtonTitle': 'Add ' + nodeType,
                     'maxHeight': 400,
                     'itemToggle': true,
                     'ajaxUrl': relation + '/?list=non_related',
@@ -118,15 +118,15 @@ $(document).ready(function () {
                         ]);
                     },
                     'addButtonAction': function (addButton) {
-                        $('#entity_dialog_header').html('Add ' + entityType);
+                        $('#node_dialog_header').html('Add ' + nodeType);
                         $('#id_name').val('');
                         $('#id_description').val('');
-                        entityDialog.dialog('option', 'buttons', [
+                        nodeDialog.dialog('option', 'buttons', [
                             {
                                 text: 'Save',
                                 click: function () {
                                     $.ajax({
-                                        url: '/inventory/' + entityType + '/0/',
+                                        url: '/inventory/' + nodeType + '/0/',
                                         type: 'POST',
                                         dataType: 'json',
                                         data: {
@@ -137,7 +137,7 @@ $(document).ready(function () {
                                         success: function (data) {
                                             if (data.result == 'ok') {
                                                 selectDialog.DynamicList('load');
-                                                entityDialog.dialog('close');
+                                                nodeDialog.dialog('close');
                                             }
                                             else if (data.result == 'fail') {
                                                 alertDialog.html('<strong>Form submit error<br><br></strong>');
@@ -151,11 +151,11 @@ $(document).ready(function () {
                             {
                                 text: 'Cancel',
                                 click: function () {
-                                    entityDialog.dialog('close');
+                                    nodeDialog.dialog('close');
                                 }
                             }
                         ]);
-                        entityDialog.dialog('open')
+                        nodeDialog.dialog('open')
                     }
                 });
                 selectDialog.dialog('open');
@@ -189,7 +189,7 @@ $(document).ready(function () {
         var var_id = variableTableObj.row($(this).parents('tr')).data()[2];
         if ($(this).attr('title') == 'Edit') {
             cancelVarEdit.show();
-            $('#var_form_label').html('Edit variable');
+            $('#var_form_label').children('strong').html('Edit variable');
             $('#key').val(variableTableObj.row($(this).parents('tr')).data()[0]);
             $('#value').val(variableTableObj.row($(this).parents('tr')).data()[1]);
             $('#variable_id').val(variableTableObj.row($(this).parents('tr')).data()[2]);
@@ -229,27 +229,26 @@ $(document).ready(function () {
         event.preventDefault();
         function clearVariableForm () {
             cancelVarEdit.hide();
-            $('#key').val('').focus();
-            $('#value').val('');
-            $('#variable_id').val('');
-            $('#var_form_label').html('Add variable');
+            $('#variable_form').find('input').val('');
+            $('#key').focus();
+            $('#var_form_label').children('strong').html('Add variable');
         }
         switch ($(document.activeElement).html()) {
             case 'Cancel':
                 clearVariableForm();
                 break;
-            case 'Copy':
+            case 'Copy from node':
                 clearVariableForm();
                 $('.select_type').off('click').click(function () {
-                    var entityType = $(this).attr('data-type');
-                    entityTypeDialog.dialog('close');
+                    var node = $(this).attr('data-type');
+                    nodeTypeDialog.dialog('close');
                     selectDialog.DynamicList({
-                        'listTitle': 'copy_from_entity',
+                        'listTitle': 'copy_from_node',
                         "showListSeparator": true,
                         'showFilter': true,
                         'headerBottomPadding': 0,
                         'maxHeight': 400,
-                        'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=',
+                        'ajaxUrl': '/inventory/?action=search&type=' + node + '&pattern=',
                         'formatItem': function (listItem) {
                             $(listItem).click(function () {
                                 var sourceValue = $(this).data('value');
@@ -261,7 +260,7 @@ $(document).ready(function () {
                                     data: {
                                         action: 'copy_vars',
                                         source_id: sourceId,
-                                        type: entityType
+                                        type: node
                                     },
                                     success: function () {
                                         selectDialog.dialog('close');
@@ -279,8 +278,8 @@ $(document).ready(function () {
                     });
                     selectDialog.dialog('open');
                 });
-                entityTypeDialog.children('h5').html('Select source entity');
-                entityTypeDialog.dialog('open');
+                nodeTypeDialog.children('h5').html('Select source type');
+                nodeTypeDialog.dialog('open');
                 break;
             default:
                 $.ajax({
@@ -324,12 +323,13 @@ $(document).ready(function () {
         }]
     });
 
-    // Edit entity
-    $('#edit_entity').click(function () {
+    // Edit node
+    $('#edit_node').click(function () {
         event.preventDefault();
-        $('#entity_dialog_header').html('Edit ' + entityName);
-        entityForm.off('submit');
-        entityForm.submit(function(event) {
+        $('#node_dialog_header').html('Edit ' + nodeName);
+        $('#node_name').val($('#header_node_name').html());
+        $('#node_description').val($('#node_description_box').html());
+        nodeForm.off('submit').submit(function(event) {
             event.preventDefault();
             $.ajax({
                 url: '',
@@ -337,27 +337,27 @@ $(document).ready(function () {
                 dataType: 'json',
                 data: {
                     action: 'save',
-                    name: $('#id_name').val(),
-                    description: $('#id_description').val()
+                    name: $('#node_name').val(),
+                    description: $('#node_description').val()
                 },
                 success: function (data) {
                     if (data.result == 'ok') {
-                        $('#entity_name').html($('#id_name').val());
-                        entityDialog.dialog('close');
+                        $('#header_node_name').html(data.name);
+                        $('#node_description_box').html(data.description);
+                        nodeForm.find('input, textarea').val('').html('');
+                        nodeDialog.dialog('close');
                     }
                     else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Form submit error<br><br></strong>');
-                        alertDialog.append(data.msg);
-                        alertDialog.dialog('open');
+                        alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
                     }
                 }
             });
         });
-        entityDialog.dialog('open');
+        nodeDialog.dialog('open');
     });
 
-    // Delete entity
-    $('#delete_entity').click(function () {
+    // Delete node
+    $('#delete_node').click(function () {
         event.preventDefault();
         deleteDialog.dialog('option', 'buttons', [
             {
@@ -365,7 +365,7 @@ $(document).ready(function () {
                 click: function () {
                     $(this).dialog('close');
                     $.ajax({
-                        url: window.location.pathname,
+                        url: '',
                         type: 'POST',
                         dataType: 'json',
                         data: {
@@ -387,12 +387,12 @@ $(document).ready(function () {
         deleteDialog.dialog('open');
     });
 
-    // Gather facts on entity
+    // Gather facts on node
     $('#gather_facts').click(function () {
         var postData = {
             action: 'run_adhoc',
             name: 'Gather facts',
-            hosts: entityName,
+            hosts: nodeName,
             module: 'setup',
             remote_pass: '',
             become_pass: '',
@@ -406,7 +406,7 @@ $(document).ready(function () {
         executePlay(postData, askPassword);
     });
 
-    // Show entity facts
+    // Show node facts
     $('#open_facts').click(function (){
         $.ajax({
             url: '',

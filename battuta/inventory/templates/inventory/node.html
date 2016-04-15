@@ -1,12 +1,12 @@
 {% extends 'main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'inventory/entity.js' %}"></script>
+    <script src="{% static 'inventory/node.js' %}"></script>
     <h3>
-        <small><span id="entity_type">{{ entity.type }}</span></small>
-        <span id="entity_name">{{ entity.name }}</span>
+        <small><span id="header_node_type">{{ node.type }}</span></small>
+        <span id="header_node_name">{{ node.name }}</span>
     </h3>
-    <ul id="entity_tabs" class="nav nav-tabs">
+    <ul id="node_tabs" class="nav nav-tabs">
         <li class="active"><a data-toggle="tab" href="#relationships_tab">Relationships</a></li>
         <li><a data-toggle="tab" href="#variables_tab">Variables</a></li>
         <li><a data-toggle="tab" href="#adhoc_tab">Ad-Hoc</a></li>
@@ -18,7 +18,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <h4>Relationships</h4>
-                    {% for relation in entity.relations %}
+                    {% for relation in node.relations %}
                         <div class="relation_div" data-relation="{{ relation }}"></div>
                     {% endfor %}
                     <hr>
@@ -30,7 +30,7 @@
                 <div class="col-md-12">
                     <h4>Variables</h4>
                     <hr>
-                    <h5>{{ entity.type|title }} variables</h5>
+                    <h5>{{ node.type|title }} variables</h5>
                     <table id="variable_table" class="table table-condensed table-hover table-striped">
                         <thead>
                         <tr>
@@ -40,35 +40,36 @@
                         </tr>
                         </thead>
                     </table>
-                    <br><br>
-                    <h5 id="var_form_label">Add variable</h5>
+                    <br>
+                    <h6 id="var_form_label"><strong>Add variable</strong></h6>
                     <form id="variable_form" class="form-inline" method="post">
                         <input type="hidden" id="variable_id" value="{{ variable_id }}">
                         <div class="form-group">
-                            <label for="key" class="requiredField">Key</label>
-                            <input class="textinput textInput form-control input-sm" id="key" type="text">
+                            <label for="key" class="sr-only requiredField">Key</label>
+                            <input class="textinput form-control input-sm" placeholder="Key" id="key" type="text">
                         </div>
                         <div class="form-group">
-                            <label for="value" class="requiredField">Value</label>
-                            <input class="textinput textInput form-control input-sm"
-                                   id="value" type="text" style="width: 400px">
+                            <label for="value" class="sr-only requiredField">Value</label>
+                            <input class="textinput form-control input-sm"
+                                   id="value" placeholder="Value" type="text" style="width: 400px">
                         </div>
-                        <button type="submit" id="save_variable" class="btn btn-default btn-xs">Save</button>
-                        <button type="submit" id="cancel_var_edit" class="btn btn-default btn-xs"
+                        <button type="submit" id="save_variable" class="btn btn-default btn-sm">Save</button>
+                        <button type="submit" id="cancel_var_edit" class="btn btn-default btn-sm"
                                 style="display: none">Cancel</button>
-                        <span class="pull-right">
-                            <button type="submit" id="copy_variables" class="btn btn-default btn-xs">Copy</button>
+                        <span class="pull-right" style="padding-top: 8px">
+                            <button type="submit" id="copy_variables"
+                                    class="btn btn-default btn-xs">Copy from node</button>
                         </span>
                     </form>
-                    {% if entity.name != 'all' %}
+                    {% if node.name != 'all' %}
                         <hr>
                         <h5>Inherited variables</h5>
                         <table id="inh_var_table" class="table table-condensed table-hover table-striped">
                             <thead>
                             <tr>
                                 <th class="col-md-3">key</th>
-                                <th class="col-md-8">value</th>
-                                <th class="col-md-1">group</th>
+                                <th class="col-md-7">value</th>
+                                <th class="col-md-2">group</th>
                             </tr>
                             </thead>
                         </table>
@@ -89,18 +90,18 @@
         <div id="details_tab" class="tab-pane fade">
             <div class="row">
                 <div class="col-md-12">
-                    <h4>{{ entity.type|title }} details</h4><hr>
+                    <h4>{{ node.type|title }} details</h4><hr>
                     <label>Description</label>
-                    <div id="entity_description">{{ entity.description }}</div>
+                    <div id="node_description_box">{{ node.description }}</div>
                     <br>
-                    <a href="#" id="edit_entity" data-toggle="tooltip" title="Edit {{ entity.type }}">
+                    <a href="#" id="edit_node" data-toggle="tooltip" title="Edit {{ node.type }}">
                         <span class="glyphicon glyphicon-edit glyph_button"></span>
                     </a>
-                    <a href="#" id="delete_entity" data-toggle="tooltip" title="Delete">
+                    <a href="#" id="delete_node" data-toggle="tooltip" title="Delete">
                         <span class="glyphicon glyphicon-remove-circle glyph_button"></span>
                     </a>
                     <br><br>
-                    {% if entity.type == 'host' %}
+                    {% if node.type == 'host' %}
                         <a class="btn btn-default btn-xs" id="open_facts">View facts</a>
                     {% endif %}
                     <a class="btn btn-default btn-xs" id="gather_facts">Gather facts</a>

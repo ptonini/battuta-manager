@@ -19,10 +19,10 @@ class AdHocCallback(CallbackBase):
         self.host_list = host_list
 
     @staticmethod
-    def _extract_result(result):
+    def __extract_result(result):
         return result._host.get_name(), result._result
 
-    def _save_result(self, host, status, message, result):
+    def __save_result(self, host, status, message, result):
         runner_task = self.runner.task_set.latest('id')
         query_set = runner_task.result_set.filter(host=host)
         host = query_set[0]
@@ -48,7 +48,7 @@ class AdHocCallback(CallbackBase):
         print 'play stats: ' + str(stats)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
-        host, response = self._extract_result(result)
+        host, response = self.__extract_result(result)
         module = str(response['invocation']['module_name'])
         message = module + ' failed'
         if 'exception' in response:
@@ -56,10 +56,10 @@ class AdHocCallback(CallbackBase):
             response = [response]
         elif module == 'shell' or module == 'script':
             message = response['stdout'] + response['stderr']
-        self._save_result(host, 'failed', message, response)
+        self.__save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):
-        host, response = self._extract_result(result)
+        host, response = self.__extract_result(result)
         module = str(response['invocation']['module_name'])
         message = module + ' successful'
         status = 'ok'
@@ -74,20 +74,20 @@ class AdHocCallback(CallbackBase):
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
-        self._save_result(host, status, message, response)
+        self.__save_result(host, status, message, response)
 
     def v2_runner_on_skipped(self, result):
-        host, response = self._extract_result(result)
-        self._save_result(host, 'skipped', host + ' skipped', {})
+        host, response = self.__extract_result(result)
+        self.__save_result(host, 'skipped', host + ' skipped', {})
 
     def v2_runner_on_unreachable(self, result):
-        host, response = self._extract_result(result)
+        host, response = self.__extract_result(result)
         if 'msg' in response:
             message = response['msg']
         else:
             message = 'Host unreachable'
             response = [response]
-        self._save_result(host, 'unreachable', message, response)
+        self.__save_result(host, 'unreachable', message, response)
 
 
 class PlaybookCallback(CallbackBase):

@@ -11,7 +11,7 @@ $(document).ready(function () {
 
     // Set hosts pattern based on app
     if (app == 'inventory') {
-        hosts = $('#entity_name').html()
+        hosts = $('#header_node_name').html()
     }
 
     // Build credentials selection box
@@ -43,7 +43,7 @@ $(document).ready(function () {
         pageLength: 10,
         ajax: {
             url: '/runner/adhoc/',
-            type: 'POST',
+            type: 'GET',
             dataSrc: '',
             data: {
                 hosts: hosts,
@@ -53,9 +53,10 @@ $(document).ready(function () {
         drawCallback: function () {
             var tableApi = this.api();
             tableApi.rows().every( function (rowIndex) {
-                prettyBoolean(tableApi.row(rowIndex), 3)
+                prettyBoolean(tableApi.row(rowIndex), -2)
             });
             if (app == 'inventory') {
+                //adhocTable.find('th:contains("module")').removeClass('col-md-1').addClass('col-md-2');
                 var column = tableApi.column(0);
                 column.visible(false);
             }
@@ -225,7 +226,7 @@ $(document).ready(function () {
                 adhocIdSelector.val('');
                 break;
             case 'sudo':
-                $(document.activeElement).toggleClass('checked_button');
+                
                 break;
         }
     });

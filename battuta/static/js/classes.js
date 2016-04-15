@@ -31,8 +31,16 @@ function AnsibleModules (name) {
 AnsibleModules.prototype.buildFormFields = function (fieldsContainer, sudoDiv) {
     var name = this.name;
     fieldsContainer.html('');
+    var sudoButton = $('<button>').html('Sudo').attr({
+        id: 'sudo',
+        title: 'Run with sudo',
+        class:'btn btn-default btn-sm'
+    }).off('click').click(function(event) {
+        event.preventDefault();
+        $(this).toggleClass('checked_button');
+    });
     $('#module_reference')
-        .off().show()
+        .off('click').show()
         .hover(function() {
             $(this).css('cursor', 'pointer')
         })
@@ -51,7 +59,8 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer, sudoDiv) {
                             'id': 'arguments'
                         })
                     )
-            );
+                )
+                .append(sudoButton);
             sudoDiv.removeClass('hidden');
             break;
         case 'script':
