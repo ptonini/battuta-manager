@@ -22,13 +22,13 @@ class Runner(models.Model):
     user = models.ForeignKey(User)
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128)
-    hosts = models.CharField(max_length=64)
     pid = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=32)
+    message = models.CharField(max_length=1024, blank=True, null=True)
+    hosts = models.CharField(max_length=64)
     tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
-    message = models.CharField(max_length=1024, blank=True, null=True)
 
 
 class Task(models.Model):

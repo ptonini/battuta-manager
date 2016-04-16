@@ -43,7 +43,7 @@ function resetCredentialForm() {
 
 $(document).ready(function () {
 
-    var alertDialog = $('#alert_dialog');
+    var confirmChangesDialog = $('#confirm_changes_dialog');
     var timezones = $('#timezones');
     var userTimezone = $('#user_timezone');
     var page = $('#page');
@@ -57,6 +57,29 @@ $(document).ready(function () {
     // Build timezone selection box
     timezones.timezones();
 
+    // Initialize delete dialog
+    confirmChangesDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Yes: function () {
+                credentialDialog.dialog('close');
+                confirmChangesDialog.dialog('close');
+                credentialForm.submit();
+            },
+            No: function () {
+                credentialDialog.dialog('close');
+                confirmChangesDialog.dialog('close');
+            },
+            Cancel: function () {
+                confirmChangesDialog.dialog('close');
+            }
+        }
+    });
+
     // Initialize credentials dialog
     credentialDialog.dialog({
         autoOpen: false,
@@ -68,32 +91,7 @@ $(document).ready(function () {
         buttons: {
             Done: function () {
                 if (credentialForm.data('changed')) {
-                    alertDialog
-                        .html('<strong>You have unsaved changes<br>Save now?</strong>')
-                        .dialog('option', 'buttons', [
-                            {
-                                text: 'Yes',
-                                click: function() {
-                                    credentialDialog.dialog('close');
-                                    alertDialog.dialog('close');
-                                    credentialForm.submit();
-                                }
-                            },
-                            {
-                                text: 'No',
-                                click: function() {
-                                    credentialDialog.dialog('close');
-                                    alertDialog.dialog('close');
-                                }
-                            },
-                            {
-                                text: 'Cancel',
-                                click: function() {
-                                    alertDialog.dialog('close');
-                                }
-                            }
-                        ])
-                        .dialog('open')
+                    confirmChangesDialog.dialog('open')
                 }
                 else {
                     credentialDialog.dialog('close');
@@ -133,11 +131,11 @@ $(document).ready(function () {
                             location.reload();
                         }
                         else if (page.val() == 'view') {
-                            alertDialog.html('<strong>User saved</strong>').dialog('open');
+                            confirmChangesDialog.html('<strong>User saved</strong>').dialog('open');
                         }
                     }
                     else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Form submit error<strong><br><br>').append(data.msg).dialog('open');
+                        confirmChangesDialog.html('<strong>Form submit error<strong><br><br>').append(data.msg).dialog('open');
                     }
                 }
             });
@@ -150,7 +148,7 @@ $(document).ready(function () {
                 saveUser(postData)
             }
             else {
-                alertDialog.html('<strong>Passwords do not match</strong>').dialog('open')
+                confirmChangesDialog.html('<strong>Passwords do not match</strong>').dialog('open')
             }
         }
         else if (page.val() == 'view') {
@@ -179,17 +177,17 @@ $(document).ready(function () {
                     data: postData,
                     success: function (data) {
                         if (data.result == 'ok') {
-                            alertDialog.html('<strong>The password was changed</strong>');
+                            confirmChangesDialog.html('<strong>The password was changed</strong>');
                         }
                         else if (data.result == 'fail') {
-                            alertDialog.html('<strong>' + data.msg + '</strong>');
+                            confirmChangesDialog.html('<strong>' + data.msg + '</strong>');
                         }
-                        alertDialog.dialog('open')
+                        confirmChangesDialog.dialog('open')
                     }
                 });
             }
             else if (postData.new_password != $('#new_password2').val()) {
-                alertDialog.html('<strong>Passwords do not match</strong>').dialog('open');
+                confirmChangesDialog.html('<strong>Passwords do not match</strong>').dialog('open');
             }
         }
 
@@ -212,12 +210,12 @@ $(document).ready(function () {
         })
         .fileinput({
             showPreview: false,
-            showRemove: false,
             showCancel: false,
             showUpload: false,
             browseLabel: '',
             captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm'
+            browseClass: 'btn btn-default btn-sm',
+            removeClass: 'btn btn-default btn-sm'
         });
 
     savedCredentials.change(function () {
@@ -226,7 +224,10 @@ $(document).ready(function () {
         credentialForm.data('cred_id', selectedOption.data('id'));
         $("#cred_title").val(selectedOption.data('title'));
         $("#cred_username").val(selectedOption.data('username'));
-        $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
+        $("#cred_sudo_user").val(selectedOption.data('sudo_user')).attr('placeholder', 'root');
+        $('#cred_is_shared').toggleClass('checked_button', selectedOption.data('is_shared'));
+        $('#cred_is_default').toggleClass('checked_button', selectedOption.data('is_default'));
+        $('#ask_sudo_pass').toggleClass('checked_button', selectedOption.data('ask_sudo_pass'));
         credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
         if (selectedOption.data('rsa_key')) {
             credentialForm.data('rsa_key', '<keep>')
@@ -237,20 +238,11 @@ $(document).ready(function () {
         if (selectedOption.data('sudo_pass')) {
             $("#cred_sudo_pass").attr('placeholder', '********');
         }
-        if (selectedOption.data('is_shared')) {
-            $('#cred_is_shared').addClass('checked_button');
-        }
-        if (selectedOption.data('is_default')) {
-            $('#cred_is_default').addClass('checked_button');
-        }
-        if (selectedOption.data('ask_sudo_pass')) {
-            $('#ask_sudo_pass').addClass('checked_button');
-        }
         if (selectedOption.html() != 'new') {
             $('#delete_cred').removeClass('hidden');
         }
         credentialForm.off('change').data('changed', false).change(function () {
-                $(this).data('changed', true)
+            $(this).data('changed', true)
         })
     });
 
@@ -268,7 +260,7 @@ $(document).ready(function () {
                         buildCredentialSelectionBox(data.cred_id);
                     }
                     else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                        confirmChangesDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
                     }
                 }
             });

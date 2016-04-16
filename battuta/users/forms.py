@@ -15,7 +15,7 @@ class UserDataForm(forms.ModelForm):
         fields = ('timezone',)
 
 
-class CredentialForm(forms.ModelForm):
+class CredentialsForm(forms.ModelForm):
     class Meta:
         model = Credential
         fields = ('title', 'is_shared', 'username', 'password', 'rsa_key', 'sudo_user', 'sudo_pass', 'ask_sudo_pass')

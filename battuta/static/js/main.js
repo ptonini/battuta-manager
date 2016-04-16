@@ -174,6 +174,7 @@ function executePlay(postData, askPassword) {
 // Convert boolean value to glyphicon in tables
 function prettyBoolean (row, cellIndex) {
     if (row.data()[cellIndex]) {
+        //row.data()[cellIndex] = '<span class="glyphicon glyphicon-ok">';
         $(row.node()).children('td:eq(' + cellIndex + ')').html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
     }
     else {
@@ -214,6 +215,7 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
 }
 
 $(document).ready(function () {
+    localStorage.clear();
 
     var deleteDialog = $('#delete_dialog');
     var alertDialog = $('#alert_dialog');
@@ -441,24 +443,23 @@ $(document).ready(function () {
         selectDialog.dialog('open');
     });
 
-    // Import data
-    $('#import_file')
-        .change(function (event) {
-            $(this).data('files', event.target.files);
-            uploadFile = true;
-        })
-        .fileinput({
-            showPreview: false,
-            showRemove: false,
-            showCancel: false,
-            showUpload: false,
-            browseLabel: '',
-            captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm'
-        });
-
     // Open import dialog
     $('#import_data').click(function () {
+        // Import data
+        $('#import_file').off().change(function (event) {
+                $(this).data('files', event.target.files);
+                uploadFile = true;
+            })
+            .fileinput({
+                showPreview: false,
+                showRemove: false,
+                showCancel: false,
+                showUpload: false,
+                browseLabel: '',
+                captionClass: 'form-control input-sm',
+                browseClass: 'btn btn-default btn-sm'
+            })
+            .fileinput('reset');
         importDialog.dialog('open');
     });
 

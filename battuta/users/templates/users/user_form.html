@@ -9,7 +9,7 @@
             <div class="col-md-6 col-sm-12">
                 <div class="form-group">
                     <label for="username" class="requiredField">Username</label>
-                    <input class="textinput textInput form-control input-sm" id="username" type="text" value="">
+                    <input class="form-control input-sm" id="username" type="text" value="">
                 </div>
             </div>
         {% endif %}
@@ -18,15 +18,13 @@
         <div class="col-md-3 col-sm-6">
             <div class="form-group">
                 <label for="first_name" class="requiredField">First name</label>
-                <input class="textinput textInput form-control input-sm" id="first_name"
-                       type="text" value="{{ view_user.first_name }}">
+                <input class="form-control input-sm" id="first_name" type="text" value="{{ view_user.first_name }}">
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="form-group">
                 <label for="last_name" class="requiredField">Last name</label>
-                <input class="textinput textInput form-control input-sm" id="last_name"
-                       type="text" value="{{ view_user.last_name }}">
+                <input class="form-control input-sm" id="last_name" type="text" value="{{ view_user.last_name }}">
             </div>
         </div>
     </div>
@@ -34,8 +32,7 @@
         <div class="col-md-3 col-sm-6">
             <div class="form-group">
                 <label for="email" class="requiredField">E-mail</label>
-                <input class="textinput textInput form-control input-sm" id="email"
-                       type="text" value="{{ view_user.email }}">
+                <input class=" form-control input-sm" id="email" type="text" value="{{ view_user.email }}">
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
@@ -55,13 +52,13 @@
             <div class="col-md-3 col-sm-6">
                 <div class="form-group">
                     <label for="add_password1" class="requiredField">New password</label>
-                    <input class="textinput textInput form-control input-sm" id="add_password1" type="password">
+                    <input class="form-control input-sm" id="add_password1" type="password">
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
                 <div class="form-group">
                     <label for="add_password2" class="requiredField">Retype new password</label>
-                    <input class="textinput textInput form-control input-sm" id="add_password2" type="password">
+                    <input class="form-control input-sm" id="add_password2" type="password">
                 </div>
             </div>
         </div>
@@ -80,7 +77,7 @@
             <div class="col-md-3 col-sm-6">
                 <div class="form-group">
                     <label for="current_password" class="requiredField">Current password ({{ request.user }})</label>
-                    <input class="textinput textInput form-control input-sm" id="current_password" type="password">
+                    <input class="form-control input-sm" id="current_password" type="password">
                 </div>
             </div>
         </div>
@@ -88,13 +85,13 @@
             <div class="col-md-3 col-sm-6">
                 <div class="form-group">
                     <label for="new_password1" class="requiredField">New password</label>
-                    <input class="textinput textInput form-control input-sm" id="new_password1" type="password">
+                    <input class="form-control input-sm" id="new_password1" type="password">
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
                 <div class="form-group">
                     <label for="new_password2" class="requiredField">Retype new password</label>
-                    <input class="textinput textInput form-control input-sm" id="new_password2" type="password">
+                    <input class="form-control input-sm" id="new_password2" type="password">
                 </div>
             </div>
         </div>
@@ -144,7 +141,6 @@
                         <input class="form-control input-sm" id="cred_username" type="text">
                     </div>
                 </div>
-                <input class="placeholder" type="hidden">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="cred_pass" class="requiredField">Password</label>
@@ -164,20 +160,22 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <div class="form-group">
                         <label for="cred_sudo_user" class="requiredField">SUDO Username</label>
                         <input class="form-control input-sm" id="cred_sudo_user" type="text">
                     </div>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <div class="form-group">
                         <label for="cred_sudo_pass" class=" requiredField">SUDO Password</label>
-                        <input class="form-control input-sm" id="cred_sudo_pass" type="password">
+                        <div class="input-group">
+                            <input class="form-control input-sm" id="cred_sudo_pass" type="password">
+                            <span class="input-group-btn">
+                                <button id="ask_sudo_pass" class="btn btn-default btn-sm">Ask</button>
+                            </span>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-2 text-right" style="margin-top: 22px">
-                    <button id="ask_sudo_pass" class="btn btn-default btn-sm">Ask</button>
                 </div>
             </div>
             <div class="row">
@@ -187,5 +185,8 @@
                 </div>
             </div>
         </form>
+    </div>
+    <div id="confirm_changes_dialog" class="text-center" style="min-height: 74px; padding: 20px">
+        <strong>You have unsaved changes<br>Save now?</strong>
     </div>
 </div>

@@ -1,3 +1,15 @@
+function resetAdHocForm() {
+    if ($('#app').val() == 'runner') {
+        $('#hosts').val('');
+    }
+    $('#module').val('');
+    $('#cancel_edit').hide();
+    $('#run_command').show();
+    $('#adhoc_form_label').html('Run command');
+    $('#optional_fields').html('');
+    $('#module_reference').hide();
+}
+
 $(document).ready(function () {
 
     var app = $('#app').val();                      // Django app running the script
@@ -6,12 +18,12 @@ $(document).ready(function () {
     var deleteDialog = $('#delete_dialog');         // Delete dialog selector
     var credentials = $('#credentials');
     var fieldsContainer = $('#optional_fields');
-    var sudoDiv = $('#sudo_div');
-    var hosts = '';
+    var hosts = $('#hosts');
 
-    // Set hosts pattern based on app
+    // Set hosts field value if running from inventory
     if (app == 'inventory') {
-        hosts = $('#header_node_name').html()
+        hosts.attr('disabled', 'disabled').val($('#header_node_name').html());
+        $('#pattern_editor').prop('disabled', true)
     }
 
     // Build credentials selection box
@@ -46,20 +58,19 @@ $(document).ready(function () {
             type: 'GET',
             dataSrc: '',
             data: {
-                hosts: hosts,
+                hosts: hosts.val(),
                 action: 'list'
             }
         },
         drawCallback: function () {
             var tableApi = this.api();
             tableApi.rows().every( function (rowIndex) {
-                prettyBoolean(tableApi.row(rowIndex), -2)
+                prettyBoolean(tableApi.row(rowIndex), 3)
             });
-            if (app == 'inventory') {
-                //adhocTable.find('th:contains("module")').removeClass('col-md-1').addClass('col-md-2');
-                var column = tableApi.column(0);
-                column.visible(false);
-            }
+            //if (app == 'inventory') {
+            //    var column = tableApi.column(0);
+            //    column.visible(false);
+            //}
         },
         columnDefs: [{
             targets: -1,
@@ -110,7 +121,7 @@ $(document).ready(function () {
             deleteDialog.dialog('open');
         }
         else {
-            $('#hosts').val(adhocTableObject.row($(this).parents('tr')).data()[0]);
+            hosts.val(adhocTableObject.row($(this).parents('tr')).data()[0]);
             $('#module').val(adhocTableObject.row($(this).parents('tr')).data()[1]).trigger('change');
             $('#arguments').val(adhocTableObject.row($(this).parents('tr')).data()[2]);
             if (adhocTableObject.row($(this).parents('tr')).data()[3] == true) {
@@ -122,7 +133,7 @@ $(document).ready(function () {
             if ($(this).attr('title') == 'Run') {
                 $('#adhoc_id').val('');
                 $('#run_command').focus().trigger('click');
-                $('#adhoc_form').find('input').val('')
+                resetAdHocForm()
             }
             else if ($(this).attr('title') == 'Edit') {
                 $('#adhoc_id').val(adhocId);
@@ -141,7 +152,7 @@ $(document).ready(function () {
     // Build AdHoc form
     $('#module').change(function() {
             var currentModule = new AnsibleModules(this.value);
-            currentModule.buildFormFields(fieldsContainer, sudoDiv)
+            currentModule.buildFormFields(fieldsContainer)
     });
 
     // Ad-Hoc form submit events
@@ -150,12 +161,9 @@ $(document).ready(function () {
         var currentModule = new AnsibleModules($('#module').val());
         var become = $('#sudo').hasClass('checked_button');
         var adhocIdSelector = $('#adhoc_id');
-        if (app == 'runner') {
-            hosts = $('#hosts').val()
-        }
         var postData = {
             module: currentModule.name,
-            hosts: hosts,
+            hosts: hosts.val(),
             become: become
         };
         switch ($(document.activeElement).html()) {
@@ -171,14 +179,7 @@ $(document).ready(function () {
                     success: function (data) {
                         if (data.result == 'ok') {
                             adhocTableObject.ajax.reload();
-                            $('#adhoc_form').find('input').val('');
-                            $('#sudo').removeClass('checked_button');
-                            $('#cancel_edit').hide();
-                            $('#run_command').show();
-                            $('#adhoc_form_label').html('Run command');
-                            fieldsContainer.html('');
-                            sudoDiv.addClass('hidden');
-                            $('#module_reference').hide();
+                            resetAdHocForm()
                         }
                         else if (data.result == 'fail') {
                             alertDialog.html('<strong>Submit error<strong><br><br>');

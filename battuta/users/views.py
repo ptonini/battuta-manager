@@ -11,7 +11,7 @@ from django.views.generic import View
 from django.forms import model_to_dict
 
 from .models import User, UserData, Credential
-from .forms import UserForm, UserDataForm, CredentialForm
+from .forms import UserForm, UserDataForm, CredentialsForm
 
 
 def set_credentials(username):
@@ -186,6 +186,7 @@ class CredentialView(View):
                     c_dict = model_to_dict(c)
                     c_dict['user_id'] = c_dict['user']
                     c_dict.pop('user', None)
+                    c_dict['is_default'] = False
                     if c == page_user.userdata.default_cred:
                         c_dict['is_default'] = True
                     data.append(self._truncate_secure_data(c, c_dict))
@@ -221,7 +222,7 @@ class CredentialView(View):
                     form_data['password'] = cred.password
                 if request.POST['sudo_pass'] == '':
                     form_data['sudo_pass'] = cred.sudo_pass
-                form = CredentialForm(form_data or None, instance=cred)
+                form = CredentialsForm(form_data or None, instance=cred)
                 if form.is_valid():
                     cred = form.save(commit=True)
                     if request.POST['is_default'] == 'true':
