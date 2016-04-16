@@ -28,30 +28,24 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'skip_tags'])
 
 
-def run_playbook(playbook, form_data, runner):
+def play_runner(playbook, form_data, runner):
 
-    # Mark play as started
     runner.pid = os.getpid()
     runner.status = 'started'
     runner.save()
 
-    # Create ansible default objects
     variable_manager = VariableManager()
     loader = DataLoader()
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
 
-    # Set inventory subset if available:
     if 'subset' in form_data:
         inventory.subset(form_data['subset'])
 
-    # Add host list to runner object
     host_list = inventory.get_hosts(pattern=runner.hosts)
 
-    # Create password dictionary
     passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
 
-    # Set sudo user
     become_user = c.DEFAULT_BECOME_USER
     if 'sudo_user' in form_data:
         become_user = form_data['sudo_user']
@@ -74,13 +68,9 @@ def run_playbook(playbook, form_data, runner):
                              tags=form_data['tags'],
                              skip_tags=None)
 
-    # Create ansible play object
     play = Play().load(playbook, variable_manager=variable_manager, loader=loader)
-
-    # Execute play
     tqm = None
-    if True:
-    # try:
+    try:
         tqm = TaskQueueManager(inventory=inventory,
                                variable_manager=variable_manager,
                                passwords=passwords,
@@ -88,14 +78,15 @@ def run_playbook(playbook, form_data, runner):
                                options=options,
                                # stdout_callback=TestCallback()
                                stdout_callback=AdHocCallback(runner, host_list))
+
         tqm.run(play)
-    # finally:
-        if tqm is not None:
+    finally:
+        if tqm is None:
+            runner.status = 'failed'
+            runner.message = 'tqm object is None'
+        else:
             tqm.cleanup()
             runner.status = 'finished'
-        else:
-            runner.status = 'failed'
-            runner.message = 'tqm object in not None'
         runner.save()
 
 

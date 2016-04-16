@@ -16,7 +16,7 @@ from multiprocessing import Process
 from .forms import AdHocForm, RunnerForm, PlayArgsForm
 from .models import AdHoc, Runner, Task, PlayArguments
 from users.models import Credential
-from . import run_playbook
+from . import play_runner
 
 date_format = '%Y-%m-%d %H:%M:%S'
 
@@ -31,7 +31,7 @@ class RunnerView(View):
     @staticmethod
     def _run(playbook, form_data, runner):
         try:
-            p = Process(target=run_playbook, args=(playbook, form_data, runner))
+            p = Process(target=play_runner, args=(playbook, form_data, runner))
             p.daemon = False
             p.start()
         except Exception as e:
@@ -89,6 +89,7 @@ class RunnerView(View):
                     form_data['become_pass'] = credential.sudo_pass
                 if credential.sudo_user != '':
                     form_data['sudo_user'] = credential.sudo_user
+                form_data['rsa_key'] = ''
                 if credential.rsa_key != '':
                     form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
                 form_data['check'] = None
@@ -96,10 +97,8 @@ class RunnerView(View):
                 adhoc_task = {'name': request.POST['name'],
                               'hosts': request.POST['hosts'],
                               'gather_facts': 'no',
-                              'tasks': [
-                                  {'action': {'module': request.POST['module'],
-                                              'args': request.POST['arguments']}}
-                              ]}
+                              'tasks': [{'action': {'module': request.POST['module'],
+                                                    'args': request.POST['arguments']}}]}
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
