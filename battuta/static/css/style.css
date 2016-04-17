@@ -15,6 +15,20 @@ label {
     font-size: 11px;
 }
 
+hr.thick {
+    border-style: none;
+    height: 3px;
+    color: #777;
+    background-color: #777;
+}
+
+hr.medium {
+    border-style: none;
+    height: 2px;
+    color: #777;
+    background-color: #777;
+}
+
 a,
 .glyphicon,
 .pagination > li > a,

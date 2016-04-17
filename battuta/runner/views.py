@@ -13,8 +13,8 @@ from django.forms import model_to_dict
 from pytz import timezone
 from multiprocessing import Process
 
-from .forms import AdHocForm, RunnerForm, PlayArgsForm
-from .models import AdHoc, Runner, Task, PlayArguments
+from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
+from .models import AdHocTask, Runner, RunnerTask, PlaybookArgs
 from users.models import Credential
 from . import play_runner
 
@@ -76,7 +76,7 @@ class RunnerView(View):
         # Execute AdHoc task
         elif request.POST['action'] == 'run_adhoc':
             runner_form = RunnerForm(request.POST)
-            adhoc_form = AdHocForm(request.POST)
+            adhoc_form = AdHocTaskForm(request.POST)
             if adhoc_form.is_valid():
                 form_data = dict(request.POST.iteritems())
                 credential = request.user.userdata.default_cred
@@ -140,7 +140,7 @@ class AdHocView(BaseView):
         else:
             if request.GET['action'] == 'list':
                 data = list()
-                for task in AdHoc.objects.all():
+                for task in AdHocTask.objects.all():
                     if request.GET['hosts'] == '' or request.GET['hosts'] == task.hosts:
                         data.append([task.hosts, task.module, task.arguments, task.become, task.id])
             else:
@@ -150,10 +150,10 @@ class AdHocView(BaseView):
     @staticmethod
     def post(request):
         if 'id' in request.POST and request.POST['id'] is not unicode(''):
-            adhoc = get_object_or_404(AdHoc, pk=request.POST['id'])
+            adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
         else:
-            adhoc = AdHoc()
-        form = AdHocForm(request.POST or None, instance=adhoc)
+            adhoc = AdHocTask()
+        form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
         if request.POST['action'] == 'save':
             if form.is_valid():
@@ -169,7 +169,7 @@ class AdHocView(BaseView):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class PlaybooksView(BaseView):
+class PlaybookView(BaseView):
     @staticmethod
     def _build_playbook_cache(playbook_cache):
         playbook_dir = os.path.join(settings.DATA_DIR, 'playbooks')
@@ -196,7 +196,7 @@ class PlaybooksView(BaseView):
                 data = playbook_cache.get(request.GET['playbook_file'])
             elif request.GET['action'] == 'get_args':
                 data = list()
-                for args in PlayArguments.objects.filter(playbook=request.GET['playbook_file']):
+                for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']):
                     data.append(model_to_dict(args))
             else:
                 raise Http404('Invalid action')
@@ -206,12 +206,12 @@ class PlaybooksView(BaseView):
     def post(request):
         if request.POST['action'] == 'save_args':
             try:
-                args = PlayArguments.objects.get(playbook=request.POST['playbook'],
-                                                 subset=request.POST['subset'],
-                                                 tags=request.POST['tags'])
-            except PlayArguments.DoesNotExist:
-                args = PlayArguments()
-            form = PlayArgsForm(request.POST or None, instance=args)
+                args = PlaybookArgs.objects.get(playbook=request.POST['playbook'],
+                                                subset=request.POST['subset'],
+                                                tags=request.POST['tags'])
+            except PlaybookArgs.DoesNotExist:
+                args = PlaybookArgs()
+            form = PlaybookArgsForm(request.POST or None, instance=args)
             if form.is_valid():
                 form.save(commit=True)
                 data = {'result': 'ok', 'args_id': args.id}
@@ -219,7 +219,7 @@ class PlaybooksView(BaseView):
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'del_args':
             try:
-                args = PlayArguments(pk=request.POST['args_id'])
+                args = PlaybookArgs(pk=request.POST['args_id'])
                 args.delete()
                 data = {'result': 'ok'}
             except Exception as e:
@@ -243,7 +243,6 @@ class HistoryView(BaseView):
                         data.append([runner.created_on.astimezone(tz).strftime(date_format),
                                      runner.user.username,
                                      runner.name,
-                                     runner.hosts,
                                      runner.status,
                                      runner.id])
             else:
@@ -262,14 +261,20 @@ class ResultView(BaseView):
             return render(request, "runner/result.html", self.context)
         else:
             if request.GET['action'] == 'status':
-                task_list = list()
-                for t in runner.task_set.all():
-                    task_list.append([t.id, t.name])
-                data = {'status': runner.status, 'message': runner.message, 'task_list': task_list}
+                data = model_to_dict(runner)
+                data['plays'] = list()
+                for play in runner.runnerplay_set.all():
+                    play_dict = model_to_dict(play)
+                    play_dict['tasks'] = list()
+                    for task in play.runnertask_set.all():
+                        task_dict = model_to_dict(task)
+                        play_dict['tasks'].append(task_dict)
+                    data['plays'].append(play_dict)
+
             elif request.GET['action'] == 'task_results':
-                task = get_object_or_404(Task, pk=request.GET['task_id'])
+                task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
                 data = list()
-                for result in task.result_set.all():
+                for result in task.runnerresult_set.all():
                     data.append([result.host,
                                  result.status,
                                  result.message,

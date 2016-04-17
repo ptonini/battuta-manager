@@ -1,23 +1,23 @@
 from django import forms
 
-from .models import AdHoc, Runner, PlayArguments
+from .models import AdHocTask, PlaybookArgs, Runner
 
 
 class RunnerForm(forms.ModelForm):
     class Meta:
         model = Runner
-        fields = ['name', 'hosts', 'check', 'tags', 'subset']
+        fields = ['name', 'check', 'tags', 'subset']
 
 
-class AdHocForm(forms.ModelForm):
+class AdHocTaskForm(forms.ModelForm):
     class Meta:
-        model = AdHoc
+        model = AdHocTask
         fields = ['module', 'hosts', 'arguments', 'become']
 
 
-class PlayArgsForm(forms.ModelForm):
+class PlaybookArgsForm(forms.ModelForm):
     class Meta:
-        model = PlayArguments
+        model = PlaybookArgs
         fields = ['playbook', 'subset', 'tags']
 
 

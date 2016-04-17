@@ -174,7 +174,6 @@ function executePlay(postData, askPassword) {
 // Convert boolean value to glyphicon in tables
 function prettyBoolean (row, cellIndex) {
     if (row.data()[cellIndex]) {
-        //row.data()[cellIndex] = '<span class="glyphicon glyphicon-ok">';
         $(row.node()).children('td:eq(' + cellIndex + ')').html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
     }
     else {

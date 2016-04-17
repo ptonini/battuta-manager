@@ -42,8 +42,6 @@ def play_runner(playbook, form_data, runner):
     if 'subset' in form_data:
         inventory.subset(form_data['subset'])
 
-    host_list = inventory.get_hosts(pattern=runner.hosts)
-
     passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
 
     become_user = c.DEFAULT_BECOME_USER
@@ -77,13 +75,12 @@ def play_runner(playbook, form_data, runner):
                                loader=loader,
                                options=options,
                                # stdout_callback=TestCallback()
-                               stdout_callback=AdHocCallback(runner, host_list))
+                               stdout_callback=AdHocCallback(runner, form_data))
 
         tqm.run(play)
     finally:
         if tqm is None:
             runner.status = 'failed'
-            runner.message = 'tqm object is None'
         else:
             tqm.cleanup()
             runner.status = 'finished'

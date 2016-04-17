@@ -2,14 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class AdHoc(models.Model):
+class AdHocTask(models.Model):
     hosts = models.CharField(max_length=64)
     module = models.CharField(max_length=32)
     arguments = models.TextField(max_length=1024, blank=True)
     become = models.BooleanField()
 
 
-class PlayArguments(models.Model):
+class PlaybookArgs(models.Model):
     playbook = models.CharField(max_length=64)
     tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
@@ -25,20 +25,26 @@ class Runner(models.Model):
     pid = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=32)
     message = models.CharField(max_length=1024, blank=True, null=True)
-    hosts = models.CharField(max_length=64)
     tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
 
 
-class Task(models.Model):
+class RunnerPlay(models.Model):
     runner = models.ForeignKey(Runner)
+    name = models.CharField(max_length=128)
+    hosts = models.CharField(max_length=64)
+    become = models.BooleanField()
+
+
+class RunnerTask(models.Model):
+    runner_play = models.ForeignKey(RunnerPlay)
     name = models.CharField(max_length=128)
     module = models.CharField(max_length=64, blank=True, null=True)
 
 
-class Result(models.Model):
-    task = models.ForeignKey(Task)
+class RunnerResult(models.Model):
+    runner_task = models.ForeignKey(RunnerTask)
     host = models.CharField(max_length=64)
     status = models.CharField(max_length=32)
     message = models.CharField(max_length=32768, blank=True)

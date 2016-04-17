@@ -1,14 +1,18 @@
 function updateStatus (intervalId, runnerStatus, runningSpan) {
 
+    var divRow = $('<div>').attr('class', 'row');
+    var divCol1 = $('<div>').attr('class', 'col-md-1');
+    var divCol11 = $('<div>').attr('class', 'col-md-11');
+    var divCol12 = $('<div>').attr('class', 'col-md-12');
+    var basicTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
+
     $.ajax({
         url: '',
         type: 'GET',
         dataType: 'json',
-        data: {
-            action: 'status'
-        },
-        success: function (data) {
-            switch (data.status) {
+        data: {action: 'status'},
+        success: function (runner) {
+            switch (runner.status) {
                 case 'running':
                     runnerStatus.css('color', 'blue');
                     break;
@@ -22,22 +26,43 @@ function updateStatus (intervalId, runnerStatus, runningSpan) {
                     runnerStatus.css('color', 'gray');
                     break;
             }
-            runnerStatus.html(data.status);
-            if (data.task_list.length > 0) {
-                $.each(data.task_list, function (index, value) {
-                    var tableId = 'task_' + value[0];
-                    var tableSelector = '#' + tableId;
-                    if ( $(tableSelector).length == 0 ) {
-                        $('#result_container').append(
-                            $('<div>').attr('class', 'row').append(
-                                $('<div>').attr('class', 'col-md-12').append(
-                                    $('<h5>').html(value[1]),
-                                    $('<table>')
-                                        .attr({
-                                            'id': tableId,
-                                            'class': 'table table-condensed table-hover table-striped'
-                                        })
-                                        .append(
+            runnerStatus.html(runner.status);
+            $.each(runner.plays, function (index, play){
+                var playContainer = null;
+                var playContainerId = 'play_' + play.id + '_container';
+                var playContainerSelector = '#' + playContainerId;
+                if ($(playContainerSelector).length == 0) {
+                    playContainer = $('<div>').attr('id', playContainerId);
+                    $('#result_container').append(playContainer);
+                    playContainer.append(
+                        $('<hr>').attr('class', 'medium'),
+                        divRow.clone().append(
+                            divCol11.clone().html('<h5>' + play.name + '</h5>')
+                        ),
+                        divRow.clone().append(
+                            divCol1.clone().html('Hosts:'),
+                            divCol11.clone().html('<strong>' + play.hosts + '</strong>')
+                        ),
+                        divRow.clone().append(
+                            divCol1.clone().html('Become:'),
+                            divCol11.clone().html('<strong>' + play.become + '</strong>')
+                        )
+                    );
+                }
+                else {
+                    playContainer = $(playContainerSelector)
+                }
+                if (play.tasks.length > 0) {
+                    $.each(play.tasks, function (index, task) {
+                        var tableId = 'task_' + task.id;
+                        var tableSelector = '#' + tableId;
+                        if ( $(tableSelector).length == 0 ) {
+                            playContainer.append(
+                                divRow.clone().append(
+                                    divCol12.clone().append(
+                                        $('<hr>'),
+                                        $('<h6>').html('<strong>Task: ' + task.name + '</strong>'),
+                                        basicTable.clone().attr('id', tableId).append(
                                             $('<thead>').append(
                                                 $('<tr>').append(
                                                     $('<th>').attr('class', 'col-md-2').html('host'),
@@ -47,71 +72,72 @@ function updateStatus (intervalId, runnerStatus, runningSpan) {
                                                 )
                                             )
                                         )
+                                    )
                                 )
-                            )
-                        );
-                        $(tableSelector).DataTable({
-                            paginate: false,
-                            searching: false,
-                            ajax: {
-                                url: '',
-                                type: 'GET',
-                                dataSrc: '',
-                                data: {
-                                    action: 'task_results',
-                                    task_id: value[0]
-                                }
-                            },
-                            drawCallback: function () {
-                                var tableApi = this.api();
-                                tableApi.rows().every( function (rowIndex) {
-                                    var row = tableApi.row(rowIndex);
-                                    var node = row.node();
-                                    switch (row.data()[1]) {
-                                        case 'unreachable':
-                                            $(node).css('color', 'gray');
-                                            break;
-                                        case 'changed':
-                                            $(node).css('color', 'orange');
-                                            break;
-                                        case 'ok':
-                                            $(node).css('color', 'green');
-                                            break;
-                                        case 'error':
-                                        case 'failed':
-                                            $(node).css('color', 'red');
-                                            break;
+                            );
+                            $(tableSelector).DataTable({
+                                paginate: false,
+                                searching: false,
+                                ajax: {
+                                    url: '',
+                                    type: 'GET',
+                                    dataSrc: '',
+                                    data: {
+                                        action: 'task_results',
+                                        task_id: task.id
                                     }
-                                    $(node).children('td:nth-child(4)').html(
-                                        $('<strong>')
-                                            .html('{...}')
-                                            .attr('title', 'Details')
-                                            .css({'float': 'right', 'color': '#777'})
-                                            .click(function () {
-                                                $('#json_box').JSONView(row.data()[3]);
-                                                $('#json_dialog').dialog('open')
-                                            })
-                                            .hover(function () {
-                                                $(this).css('cursor', 'pointer')
-                                            })
-                                    );
-                                });
+                                },
+                                drawCallback: function () {
+                                    var tableApi = this.api();
+                                    tableApi.rows().every( function (rowIndex) {
+                                        var row = tableApi.row(rowIndex);
+                                        var node = row.node();
+                                        switch (row.data()[1]) {
+                                            case 'unreachable':
+                                                $(node).css('color', 'gray');
+                                                break;
+                                            case 'changed':
+                                                $(node).css('color', 'orange');
+                                                break;
+                                            case 'ok':
+                                                $(node).css('color', 'green');
+                                                break;
+                                            case 'error':
+                                            case 'failed':
+                                                $(node).css('color', 'red');
+                                                break;
+                                        }
+                                        $(node).children('td:nth-child(4)').html(
+                                            $('<strong>')
+                                                .html('{...}')
+                                                .attr('title', 'Details')
+                                                .css({'float': 'right', 'color': '#777'})
+                                                .click(function () {
+                                                    $('#json_box').JSONView(row.data()[3]);
+                                                    $('#json_dialog').dialog('open')
+                                                })
+                                                .hover(function () {
+                                                    $(this).css('cursor', 'pointer')
+                                                })
+                                        );
+                                    });
 
-                            }
-                        });
+                                }
+                            });
+                        }
+                    });
+                    if (['finished', 'failed', 'canceled'].indexOf(runner.status) > -1) {
+                        runningSpan.hide();
+                        clearInterval(intervalId);
                     }
-                });
-                if (['finished', 'failed', 'canceled'].indexOf(data.status) > -1) {
-                    runningSpan.hide();
-                    clearInterval(intervalId);
+                    else {
+                        runningSpan.show();
+                    }
+                    var last_task = play.tasks[play.tasks.length - 1];
+                    var lastTable = $('#task_' + last_task[0]).DataTable();
+                    lastTable.ajax.reload();
                 }
-                else {
-                    runningSpan.show();
-                }
-                var last_task = data.task_list[data.task_list.length - 1];
-                var lastTable = $('#task_' + last_task[0]).DataTable();
-                lastTable.ajax.reload();
-            }
+            })
         }
     });
 }

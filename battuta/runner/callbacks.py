@@ -1,7 +1,7 @@
 import os
 import json
 
-from ansible import constants as C
+from ansible import constants as c
 from ansible.plugins.callback import CallbackBase
 from django.conf import settings
 
@@ -13,32 +13,33 @@ except ImportError:
 
 
 class AdHocCallback(CallbackBase):
-    def __init__(self, runner, host_list):
+    def __init__(self, runner, form_data):
         super(AdHocCallback, self).__init__()
         self.runner = runner
-        self.host_list = host_list
+        self.form_data = form_data
+        self.current_play = None
+        self.current_task = None
 
     @staticmethod
     def __extract_result(result):
         return result._host.get_name(), result._result
 
     def __save_result(self, host, status, message, result):
-        runner_task = self.runner.task_set.latest('id')
-        query_set = runner_task.result_set.filter(host=host)
-        host = query_set[0]
-        host.status = status
-        host.message = message
-        host.response = result
-        host.save()
+        runner_result, created = self.current_task.runnerresult_set.get_or_create(host=host)
+        runner_result.status = status
+        runner_result.message = message
+        runner_result.response = result
+        runner_result.save()
 
     def v2_playbook_on_play_start(self, play):
         self.runner.status = 'running'
+        self.current_play = self.runner.runnerplay_set.create(hosts=self.form_data['hosts'],
+                                                              become=self.form_data['become'],
+                                                              name=self.runner.name)
         self.runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        runner_task = self.runner.task_set.create(name=task.get_name().strip())
-        for host in self.host_list:
-            runner_task.result_set.create(host=host, status='started', response='{}')
+        self.current_task = self.current_play.runnertask_set.create(name=task.get_name().strip())
 
     def v2_playbook_on_no_hosts_matched(self):
         self.runner.message = 'No hosts matched'
@@ -251,7 +252,7 @@ class TestCallback(CallbackBase):
         self.runner_on_ok(host, result._result)
 
     def v2_runner_on_skipped(self, result):
-        if C.DISPLAY_SKIPPED_HOSTS:
+        if c.DISPLAY_SKIPPED_HOSTS:
             host = result._host.get_name()
             self.runner_on_skipped(host, self._get_item(getattr(result._result,'results',{})))
 
