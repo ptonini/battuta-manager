@@ -258,7 +258,7 @@ class ResultView(BaseView):
             runner.created_on = runner.created_on.astimezone(tz).strftime(date_format)
             self.context['user'] = request.user
             self.context['runner'] = runner
-            return render(request, "runner/result.html", self.context)
+            return render(request, "runner/results.html", self.context)
         else:
             if request.GET['action'] == 'status':
                 data = model_to_dict(runner)
@@ -278,7 +278,7 @@ class ResultView(BaseView):
                     data.append([result.host,
                                  result.status,
                                  result.message,
-                                 {result.host: ast.literal_eval(result.response)}])
+                                 json.loads(result.response)])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")

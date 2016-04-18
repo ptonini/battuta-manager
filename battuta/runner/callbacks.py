@@ -5,6 +5,10 @@ from ansible import constants as c
 from ansible.plugins.callback import CallbackBase
 from django.conf import settings
 
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
+
+
 try:
     from __main__ import display as global_display
 except ImportError:
@@ -28,18 +32,26 @@ class AdHocCallback(CallbackBase):
         runner_result, created = self.current_task.runnerresult_set.get_or_create(host=host)
         runner_result.status = status
         runner_result.message = message
-        runner_result.response = result
+        runner_result.response = self._dump_results(result._result, keep_invocation=True)
         runner_result.save()
 
     def v2_playbook_on_play_start(self, play):
         self.runner.status = 'running'
-        self.current_play = self.runner.runnerplay_set.create(hosts=self.form_data['hosts'],
-                                                              become=self.form_data['become'],
-                                                              name=self.runner.name)
+        become = False
+        play_name = play.__dict__['_attributes']['name']
+        if play.__dict__['_attributes']['become']:
+            become = True
+        if self.form_data['action'] == 'run_adhoc':
+            play_name = 'AdHoc task'
+        self.current_play = self.runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
+                                                              become=become,
+                                                              name=play_name)
         self.runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         self.current_task = self.current_play.runnertask_set.create(name=task.get_name().strip())
+        self.current_task.module = task.__dict__['_attributes']['action']
+        self.current_task.save()
 
     def v2_playbook_on_no_hosts_matched(self):
         self.runner.message = 'No hosts matched'
@@ -50,36 +62,34 @@ class AdHocCallback(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self.__extract_result(result)
-        module = str(response['invocation']['module_name'])
-        message = module + ' failed'
+        message = self.current_task.module + ' failed'
         if 'exception' in response:
             message = 'Exception raised'
             response = [response]
-        elif module == 'shell' or module == 'script':
+        elif self.current_task.module == 'shell' or self.current_task.module == 'script':
             message = response['stdout'] + response['stderr']
-        self.__save_result(host, 'failed', message, response)
+        self.__save_result(host, 'failed', message, result)
 
     def v2_runner_on_ok(self, result):
         host, response = self.__extract_result(result)
-        module = str(response['invocation']['module_name'])
-        message = module + ' successful'
+        message = self.current_task.module + ' successful'
         status = 'ok'
-        if module == 'setup':
+        if self.current_task.module == 'setup':
             facts = {'ansible_facts': response['ansible_facts']}
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
                 response['ansible_facts'] = 'saved to file'
                 message = 'Facts saved to ' + filename
-        elif module == 'command' or module == 'script':
+        elif self.current_task.module == 'command' or self.current_task.module == 'script':
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
-        self.__save_result(host, status, message, response)
+        self.__save_result(host, status, message, result)
 
     def v2_runner_on_skipped(self, result):
         host, response = self.__extract_result(result)
-        self.__save_result(host, 'skipped', host + ' skipped', {})
+        self.__save_result(host, 'skipped', host + ' skipped', result)
 
     def v2_runner_on_unreachable(self, result):
         host, response = self.__extract_result(result)
@@ -88,7 +98,7 @@ class AdHocCallback(CallbackBase):
         else:
             message = 'Host unreachable'
             response = [response]
-        self.__save_result(host, 'unreachable', message, response)
+        self.__save_result(host, 'unreachable', message, result)
 
 
 class PlaybookCallback(CallbackBase):

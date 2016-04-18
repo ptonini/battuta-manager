@@ -31,7 +31,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
 def play_runner(playbook, form_data, runner):
 
     runner.pid = os.getpid()
-    runner.status = 'started'
+    runner.status = 'starting'
     runner.save()
 
     variable_manager = VariableManager()
