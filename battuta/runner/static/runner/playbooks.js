@@ -57,7 +57,7 @@ $(document).ready(function () {
                     askPassword = true
                 }
                 var postData = {
-                    action: 'run_play',
+                    action: 'run',
                     playbook: playbookDialog.data('currentPlaybook'),
                     check: $('#check').hasClass('checked_button'),
                     subset: $('#subset').val(),

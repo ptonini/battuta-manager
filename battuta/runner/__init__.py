@@ -5,6 +5,7 @@ from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
 from ansible.inventory import Inventory
 from ansible.playbook.play import Play
+from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
 
@@ -25,10 +26,14 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'verbosity',
                                         'check',
                                         'tags',
-                                        'skip_tags'])
+                                        'skip_tags',
+                                        'listhosts',
+                                        'listtasks',
+                                        'listtags',
+                                        'syntax'])
 
 
-def play_runner(playbook, form_data, runner):
+def play_runner(form_data, runner):
 
     runner.pid = os.getpid()
     runner.status = 'starting'
@@ -43,6 +48,12 @@ def play_runner(playbook, form_data, runner):
         inventory.subset(form_data['subset'])
 
     passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
+
+    if 'become' not in form_data:
+        form_data['become'] = c.DEFAULT_BECOME
+
+    if 'rsa_key' not in form_data:
+        form_data['rsa_key'] = ''
 
     become_user = c.DEFAULT_BECOME_USER
     if 'sudo_user' in form_data:
@@ -64,26 +75,52 @@ def play_runner(playbook, form_data, runner):
                              verbosity=None,
                              check=form_data['check'],
                              tags=form_data['tags'],
-                             skip_tags=None)
+                             skip_tags=None,
+                             listhosts=None,
+                             listtasks=None,
+                             listtags=None,
+                             syntax=None)
 
-    play = Play().load(playbook, variable_manager=variable_manager, loader=loader)
-    tqm = None
-    try:
-        tqm = TaskQueueManager(inventory=inventory,
-                               variable_manager=variable_manager,
-                               passwords=passwords,
-                               loader=loader,
-                               options=options,
-                               # stdout_callback=TestCallback()
-                               stdout_callback=AdHocCallback(runner, form_data))
-
-        tqm.run(play)
-    finally:
-        if tqm is None:
-            runner.status = 'failed'
-        else:
-            tqm.cleanup()
+    if 'playbook' in form_data:
+        try:
+            pbex = PlaybookExecutor([form_data['playbook_path']],
+                                    inventory,
+                                    variable_manager,
+                                    loader,
+                                    options,
+                                    passwords)
+            pbex._tqm._stdout_callback = AdHocCallback(runner, form_data)
+            result = pbex.run()
+            print result
             runner.status = 'finished'
+        except Exception as e:
+            runner.status = 'failed'
+            runner.message = type(e).__name__ + ': ' + e.__str__()
+        finally:
+            runner.save()
+
+    elif 'adhoc_task' in form_data:
+        play = Play().load(form_data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+        tqm = None
+        try:
+            tqm = TaskQueueManager(inventory=inventory,
+                                   variable_manager=variable_manager,
+                                   passwords=passwords,
+                                   loader=loader,
+                                   options=options,
+                                   stdout_callback=AdHocCallback(runner, form_data))
+            tqm.run(play)
+        finally:
+            if tqm is None:
+                runner.status = 'failed'
+            else:
+                tqm.cleanup()
+                runner.status = 'finished'
+            runner.save()
+
+    else:
+        runner.status = 'failed'
+        runner.message = 'Invalid form_data'
         runner.save()
 
 

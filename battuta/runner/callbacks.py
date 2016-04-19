@@ -19,69 +19,68 @@ except ImportError:
 class AdHocCallback(CallbackBase):
     def __init__(self, runner, form_data):
         super(AdHocCallback, self).__init__()
-        self.runner = runner
-        self.form_data = form_data
-        self.current_play = None
-        self.current_task = None
+        self._runner = runner
+        self._form_data = form_data
+        self._current_play = None
+        self._current_task = None
 
     @staticmethod
     def __extract_result(result):
         return result._host.get_name(), result._result
 
     def __save_result(self, host, status, message, result):
-        runner_result, created = self.current_task.runnerresult_set.get_or_create(host=host)
+        runner_result, created = self._current_task.runnerresult_set.get_or_create(host=host)
         runner_result.status = status
         runner_result.message = message
         runner_result.response = self._dump_results(result._result, keep_invocation=True)
         runner_result.save()
 
     def v2_playbook_on_play_start(self, play):
-        self.runner.status = 'running'
+        self._runner.status = 'running'
         become = False
-        play_name = play.__dict__['_attributes']['name']
         if play.__dict__['_attributes']['become']:
             become = True
-        if self.form_data['action'] == 'run_adhoc':
+        play_name = play.__dict__['_attributes']['name']
+        if 'adhoc_task' in self._form_data:
             play_name = 'AdHoc task'
-        self.current_play = self.runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
-                                                              become=become,
-                                                              name=play_name)
-        self.runner.save()
+        self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
+                                                                become=become,
+                                                                name=play_name)
+        self._runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self.current_task = self.current_play.runnertask_set.create(name=task.get_name().strip())
-        self.current_task.module = task.__dict__['_attributes']['action']
-        self.current_task.save()
+        self._current_task = self._current_play.runnertask_set.create(name=task.get_name().strip())
+        self._current_task.module = task.__dict__['_attributes']['action']
+        self._current_task.save()
 
     def v2_playbook_on_no_hosts_matched(self):
-        self.runner.message = 'No hosts matched'
-        self.runner.save()
+        self._runner.message = 'No hosts matched'
+        self._runner.save()
 
     def v2_playbook_on_stats(self, stats):
         print 'play stats: ' + str(stats)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self.__extract_result(result)
-        message = self.current_task.module + ' failed'
+        message = self._current_task.module + ' failed'
         if 'exception' in response:
             message = 'Exception raised'
-            response = [response]
-        elif self.current_task.module == 'shell' or self.current_task.module == 'script':
+        elif self._current_task.module == 'shell' or self._current_task.module == 'script':
             message = response['stdout'] + response['stderr']
         self.__save_result(host, 'failed', message, result)
 
     def v2_runner_on_ok(self, result):
         host, response = self.__extract_result(result)
-        message = self.current_task.module + ' successful'
+        message = self._current_task.module + ' successful'
         status = 'ok'
-        if self.current_task.module == 'setup':
+        if self._current_task.module == 'setup':
             facts = {'ansible_facts': response['ansible_facts']}
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
                 response['ansible_facts'] = 'saved to file'
                 message = 'Facts saved to ' + filename
-        elif self.current_task.module == 'command' or self.current_task.module == 'script':
+        elif self._current_task.module == 'command' or self._current_task.module == 'script':
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
@@ -97,7 +96,6 @@ class AdHocCallback(CallbackBase):
             message = response['msg']
         else:
             message = 'Host unreachable'
-            response = [response]
         self.__save_result(host, 'unreachable', message, result)
 
 

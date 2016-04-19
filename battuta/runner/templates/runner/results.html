@@ -25,9 +25,9 @@
         <div class="col-md-1" style="padding-right: 0">Run date:</div>
         <div class="col-md-11"><strong>{{ runner.created_on }}</strong></div>
     </div>
-    <div class="row">
+    <div class="row" id="message_div" style="display: none">
         <div class="col-md-12">
-            <strong id="runner_message">{% if runner.message %}{{ runner.message }}{% endif %}</strong>
+            <h6><strong id="runner_message"></strong></h6>
         </div>
     </div>
     <div id="result_container"></div>

@@ -28,10 +28,12 @@ class BaseView(View):
 
 
 class RunnerView(View):
+
     @staticmethod
-    def _run(playbook, form_data, runner):
+    def _run(form_data, runner):
+        print 4
         try:
-            p = Process(target=play_runner, args=(playbook, form_data, runner))
+            p = Process(target=play_runner, args=(form_data, runner))
             p.daemon = False
             p.start()
         except Exception as e:
@@ -42,70 +44,74 @@ class RunnerView(View):
 
     def post(self, request):
 
-        if request.POST['action'] == 'run_play':
-            playbook_cache = caches['battuta-playbooks']
-            adhoc_task = playbook_cache.get(request.POST['playbook'])[0]
+        if request.POST['action'] == 'run':
+            print 1
+            data = None
             form_data = dict(request.POST.iteritems())
-            form_data['username'] = request.user.userdata.ansible_username
-            form_data['name'] = adhoc_task['name']
-            form_data['hosts'] = adhoc_task['hosts']
 
-            # Set 'check' value
-            if form_data['check'] == 'true':
-                form_data['check'] = True
+            credential = request.user.userdata.default_cred
+            if 'credential' in form_data:
+                credential = get_object_or_404(Credential, pk=form_data['credential'])
+            form_data['username'] = credential.username
+            if 'remote_pass' not in form_data:
+                form_data['remote_pass'] = credential.password
+            if 'become_pass' not in form_data:
+                form_data['become_pass'] = credential.sudo_pass
+            if credential.sudo_user != '':
+                form_data['sudo_user'] = credential.sudo_user
+            if credential.rsa_key != '':
+                form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
+
+            # Execute playbook
+            if 'playbook' in form_data:
+
+                form_data['playbook_path'] = os.path.join(settings.DATA_DIR, 'playbooks', form_data['playbook'])
+                print form_data['playbook_path']
+                form_data['name'] = form_data['playbook']
+
+                # Set 'check' value
+                if form_data['check'] == 'true':
+                    form_data['check'] = True
+                else:
+                    form_data['check'] = False
+
+                # Set 'tags' value
+                if form_data['tags'] == '':
+                    form_data['tags'] = None
+
+            # Execute task
+            elif 'module' in form_data:
+                print 2
+                adhoc_form = AdHocTaskForm(form_data)
+                if adhoc_form.is_valid():
+                    form_data['check'] = None
+                    form_data['tags'] = None
+                    form_data['adhoc_task'] = {
+                        'name': form_data['name'],
+                        'hosts': form_data['hosts'],
+                        'gather_facts': 'no',
+                        'tasks': [{
+                            'action': {
+                                'module': form_data['module'],
+                                'args': form_data['arguments']
+                            }
+                        }]
+                    }
+                else:
+                    data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
             else:
-                form_data['check'] = False
+                raise Http404('Invalid action')
 
-            # Set 'tags' value
-            if form_data['tags'] == '':
-                form_data['tags'] = None
-
-            # Set 'become' value
-            if 'become' in adhoc_task:
-                form_data['become'] = adhoc_task['become']
-            else:
-                form_data['become'] = False
-
-            runner_form = RunnerForm(form_data)
-            runner = runner_form.save(commit=False)
-            runner.user = request.user
-            runner.status = 'created'
-            runner.save()
-            data = self._run(adhoc_task, form_data, runner)
-
-        # Execute AdHoc task
-        elif request.POST['action'] == 'run_adhoc':
-            runner_form = RunnerForm(request.POST)
-            adhoc_form = AdHocTaskForm(request.POST)
-            if adhoc_form.is_valid():
-                form_data = dict(request.POST.iteritems())
-                credential = request.user.userdata.default_cred
-                if 'credential' in form_data:
-                    credential = get_object_or_404(Credential, pk=form_data['credential'])
-                form_data['username'] = credential.username
-                if 'remote_pass' not in form_data:
-                    form_data['remote_pass'] = credential.password
-                if 'become_pass' not in form_data:
-                    form_data['become_pass'] = credential.sudo_pass
-                if credential.sudo_user != '':
-                    form_data['sudo_user'] = credential.sudo_user
-                form_data['rsa_key'] = ''
-                if credential.rsa_key != '':
-                    form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
-                form_data['check'] = None
-                form_data['tags'] = None
-                adhoc_task = {'name': request.POST['name'],
-                              'hosts': request.POST['hosts'],
-                              'gather_facts': 'no',
-                              'tasks': [{'action': {'module': request.POST['module'],
-                                                    'args': request.POST['arguments']}}]}
+            if data is None:
+                print 3
+                runner_form = RunnerForm(form_data)
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
                 runner.save()
-                data = self._run(adhoc_task, form_data, runner)
-            else:
-                data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
+                data = self._run(form_data, runner)
+
+
 
         # Kill task/play
         elif request.POST['action'] == 'kill':

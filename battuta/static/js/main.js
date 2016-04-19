@@ -133,15 +133,20 @@ function executePlay(postData, askPassword) {
             }
         });
     }
+    
     // Add username to password field label
     $('#exec_user').html(postData.executionUser);
+    
     // Check if passwords are needed
     if (askPassword.user || askPassword.sudo) {
+    
         // Clear password input fields
         passwordDialog.find('input').val('');
+    
         // Show needed password fields
         userPasswordGroup.toggleClass('hidden', (!askPassword.user));
         sudoPasswordGroup.toggleClass('hidden', (!askPassword.sudo));
+    
         // Open password dialog
         passwordDialog.dialog({
             modal: true,

@@ -191,7 +191,7 @@ $(document).ready(function () {
                 break;
             case 'Run':
                 var selectedCredential = $('option:selected', credentials).data();
-                postData.action = 'run_adhoc';
+                postData.action = 'run';
                 postData.name = 'AdHoc task - ' + currentModule.name;
                 postData.credential = credentials.val();
                 postData.executionUser = selectedCredential.username;
