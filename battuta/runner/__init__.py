@@ -10,7 +10,7 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
 import django.db
 
-from .callbacks import BattutaCallback, PlaybookCallback, TestCallback
+from .callbacks import BattutaCallback, TestCallback
 
 AnsibleOptions = namedtuple('Options', ['connection',
                                         'module_path',
@@ -90,9 +90,8 @@ def play_runner(form_data, runner):
                                     loader,
                                     options,
                                     passwords)
-            #pbex._tqm._stdout_callback = BattutaCallback(runner, form_data)
-            result = pbex.run()
-            print result
+            pbex._tqm._stdout_callback = BattutaCallback(runner, form_data)
+            pbex.run()
             runner.status = 'finished'
         except Exception as e:
             runner.status = 'failed'

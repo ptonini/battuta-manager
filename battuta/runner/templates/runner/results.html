@@ -3,7 +3,7 @@
 {% block header %}{% endblock %}
 {% block content %}
     <script src="{% static 'runner/results.js' %}"></script>
-    <h4>{{ runner.name }}</h4>
+    <h4><strong>{{ runner.name }}</strong></h4>
     <input id="runner_id" type="hidden" value="{{ runner.id }}">
     <div class="row">
         <div class="col-md-1" style="margin: 7px 0"><h5>Status:</h5></div>

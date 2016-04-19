@@ -53,7 +53,7 @@ function updateResult(intervalId) {
                             divCol11.clone().html('<strong>' + play.become + '</strong>')
                         ),
                         $('<br>'),
-                        $('<h5>').html('<strong>Tasks</strong>')
+                        $('<h5>').html('<strong>Tasks:</strong>')
 
                     );
                 }
@@ -130,10 +130,10 @@ function updateResult(intervalId) {
                                 }
                             });
                         }
+                        else {
+                            $(taskTableSelector).DataTable().ajax.reload()
+                        }
                     });
-                    var lastTask = play.tasks[play.tasks.length - 1];
-                    var lastTable = $('#task_' + lastTask.id + '_table').DataTable();
-                    lastTable.ajax.reload();
                 }
             });
             if (runner.message) {
