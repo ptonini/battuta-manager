@@ -9,7 +9,7 @@ from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
 
-from .callbacks import AdHocCallback, PlaybookCallback, TestCallback
+from .callbacks import BattutaCallback, PlaybookCallback, TestCallback
 
 AnsibleOptions = namedtuple('Options', ['connection',
                                         'module_path',
@@ -89,7 +89,7 @@ def play_runner(form_data, runner):
                                     loader,
                                     options,
                                     passwords)
-            pbex._tqm._stdout_callback = AdHocCallback(runner, form_data)
+            pbex._tqm._stdout_callback = BattutaCallback(runner, form_data)
             result = pbex.run()
             print result
             runner.status = 'finished'
@@ -108,7 +108,7 @@ def play_runner(form_data, runner):
                                    passwords=passwords,
                                    loader=loader,
                                    options=options,
-                                   stdout_callback=AdHocCallback(runner, form_data))
+                                   stdout_callback=BattutaCallback(runner, form_data))
             tqm.run(play)
         finally:
             if tqm is None:

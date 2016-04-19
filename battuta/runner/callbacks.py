@@ -16,9 +16,9 @@ except ImportError:
     global_display = Display()
 
 
-class AdHocCallback(CallbackBase):
+class BattutaCallback(CallbackBase):
     def __init__(self, runner, form_data):
-        super(AdHocCallback, self).__init__()
+        super(BattutaCallback, self).__init__()
         self._runner = runner
         self._form_data = form_data
         self._current_play = None
@@ -58,7 +58,7 @@ class AdHocCallback(CallbackBase):
         self._runner.save()
 
     def v2_playbook_on_stats(self, stats):
-        print 'play stats: ' + str(stats)
+        print 'play stats: ' + str(stats.__dict__)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self.__extract_result(result)
@@ -78,17 +78,17 @@ class AdHocCallback(CallbackBase):
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
-                response['ansible_facts'] = 'saved to file'
+                result._result['ansible_facts'] = 'saved to file'
                 message = 'Facts saved to ' + filename
         elif self._current_task.module == 'command' or self._current_task.module == 'script':
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
-        self.__save_result(host, status, message, result)
+        self.__save_result(host, status, message, response)
 
     def v2_runner_on_skipped(self, result):
         host, response = self.__extract_result(result)
-        self.__save_result(host, 'skipped', host + ' skipped', result)
+        self.__save_result(host, 'skipped', response['skip_reason'], result)
 
     def v2_runner_on_unreachable(self, result):
         host, response = self.__extract_result(result)
