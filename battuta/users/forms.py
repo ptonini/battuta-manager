@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import User, UserData, Credential
+from .models import User, UserData, Credentials
 
 
 class UserForm(forms.ModelForm):
@@ -17,5 +17,5 @@ class UserDataForm(forms.ModelForm):
 
 class CredentialsForm(forms.ModelForm):
     class Meta:
-        model = Credential
+        model = Credentials
         fields = ('title', 'is_shared', 'username', 'password', 'rsa_key', 'sudo_user', 'sudo_pass', 'ask_sudo_pass')

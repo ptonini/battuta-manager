@@ -8,6 +8,7 @@ from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
+import django.db
 
 from .callbacks import BattutaCallback, PlaybookCallback, TestCallback
 
@@ -89,7 +90,7 @@ def play_runner(form_data, runner):
                                     loader,
                                     options,
                                     passwords)
-            pbex._tqm._stdout_callback = BattutaCallback(runner, form_data)
+            #pbex._tqm._stdout_callback = BattutaCallback(runner, form_data)
             result = pbex.run()
             print result
             runner.status = 'finished'
@@ -97,6 +98,7 @@ def play_runner(form_data, runner):
             runner.status = 'failed'
             runner.message = type(e).__name__ + ': ' + e.__str__()
         finally:
+            django.db.close_old_connections()
             runner.save()
 
     elif 'adhoc_task' in form_data:
@@ -116,11 +118,13 @@ def play_runner(form_data, runner):
             else:
                 tqm.cleanup()
                 runner.status = 'finished'
+            django.db.close_old_connections()
             runner.save()
 
     else:
         runner.status = 'failed'
         runner.message = 'Invalid form_data'
+        django.db.close_old_connections()
         runner.save()
 
 

@@ -1,0 +1,41 @@
+---
+- name: Stop Zone
+  gather_facts: False
+  hosts: frotaweb:!znh
+  become: yes
+  
+  tasks:
+
+    - name: Stop m2m-adapter
+      service: name=m2m-adapter enabled=yes state=stopped
+      when: "'m2m-adapter' in group_names"
+
+    - name: Stop m2m-gwa-ws
+      service: name=tomcat enabled=yes state=stopped
+      when: "'m2m-gwa-ws' in group_names"
+
+    - name: Stop m2m-api
+      service: name=m2m-api enabled=yes state=stopped
+      when: "'m2m-api' in group_names"
+
+    - name: Stop m2m-websocket
+      service: name=m2m-websocket enabled=yes state=stopped
+      when: "'m2m-websocket' in group_names"
+
+    - pause: prompt="Please wait until all queues are drained"
+
+    - name: Stop m2m-worker
+      service: name=m2m-worker enabled=yes state=stopped
+      when: "'m2m-worker' in group_names"
+
+    - name: Stop m2m-worker-int
+      service: name=m2m-worker-int enabled=yes state=stopped
+      when: "'m2m-worker-int' in group_names"
+
+    - name: Stop m2m-worker-rep
+      service: name=m2m-worker-rep enabled=yes state=stopped
+      when: "'m2m-worker-rep' in group_names"
+
+    - name: Stop mongos
+      service: name=mongos enabled=yes state=stopped
+      when: "'app-mongos' in group_names"

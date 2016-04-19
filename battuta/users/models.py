@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class Credential(models.Model):
+class Credentials(models.Model):
     user = models.ForeignKey(User)
     title = models.CharField(max_length=32)
     is_shared = models.BooleanField(default=False)
@@ -24,7 +24,7 @@ class Credential(models.Model):
 class UserData(models.Model):
     user = models.OneToOneField(User, primary_key=True)
     timezone = models.CharField(max_length=32)
-    default_cred = models.ForeignKey(Credential, blank=True, null=True)
+    default_cred = models.ForeignKey(Credentials, blank=True, null=True)
 
     def __str__(self):
         return self.user

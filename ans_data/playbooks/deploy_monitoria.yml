@@ -1,0 +1,9 @@
+---
+- name: Deploy M2M Monitor
+  hosts: m2m-monitoria:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-monitoria
+    - { role: m2m-watchdog, mode: config }
+

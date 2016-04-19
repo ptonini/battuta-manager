@@ -1,0 +1,8 @@
+---
+- name: Deploy Worker Relatorio
+  hosts: m2m-worker-rep:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-worker-rep
+    - { role: m2m-watchdog, mode: config }

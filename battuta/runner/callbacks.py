@@ -1,5 +1,6 @@
 import os
 import json
+import django.db
 
 from ansible import constants as c
 from ansible.plugins.callback import CallbackBase
@@ -29,6 +30,7 @@ class BattutaCallback(CallbackBase):
         return result._host.get_name(), result._result
 
     def __save_result(self, host, status, message, result):
+        django.db.close_old_connections()
         runner_result, created = self._current_task.runnerresult_set.get_or_create(host=host)
         runner_result.status = status
         runner_result.message = message
@@ -36,6 +38,7 @@ class BattutaCallback(CallbackBase):
         runner_result.save()
 
     def v2_playbook_on_play_start(self, play):
+        django.db.close_old_connections()
         self._runner.status = 'running'
         become = False
         if play.__dict__['_attributes']['become']:
@@ -43,22 +46,25 @@ class BattutaCallback(CallbackBase):
         play_name = play.__dict__['_attributes']['name']
         if 'adhoc_task' in self._form_data:
             play_name = 'AdHoc task'
+
         self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
                                                                 become=become,
                                                                 name=play_name)
         self._runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
+        django.db.close_old_connections()
         self._current_task = self._current_play.runnertask_set.create(name=task.get_name().strip())
         self._current_task.module = task.__dict__['_attributes']['action']
         self._current_task.save()
 
     def v2_playbook_on_no_hosts_matched(self):
+        django.db.close_old_connections()
         self._runner.message = 'No hosts matched'
         self._runner.save()
 
     def v2_playbook_on_stats(self, stats):
-        print 'play stats: ' + str(stats.__dict__)
+        print pp.pprint(stats.__dict__)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self.__extract_result(result)
@@ -84,7 +90,7 @@ class BattutaCallback(CallbackBase):
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
-        self.__save_result(host, status, message, response)
+        self.__save_result(host, status, message, result)
 
     def v2_runner_on_skipped(self, result):
         host, response = self.__extract_result(result)

@@ -1,0 +1,16 @@
+---
+- name: Config MongoC
+  hosts: app-mongoc:!znh
+  become: yes
+  vars:
+      service:
+          name: mongoc
+          binary: mongod
+          pidfile: mongoc.pid
+          port: 27019
+          is_java: false
+          owner: mongodb
+  roles:
+    - common
+    - mongodb
+    - { role: m2m-watchdog, mode: config }

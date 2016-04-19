@@ -1,0 +1,8 @@
+---
+- name: Deploy Websocket
+  hosts: m2m-websocket:!znh
+  beccome: yes
+  roles:
+    - common
+    - m2m-websocket
+    - { role: m2m-watchdog, mode: config }

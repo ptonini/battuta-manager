@@ -1,0 +1,8 @@
+---
+- name: Deploy API
+  hosts: m2m-api:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-api
+    - { role: m2m-watchdog, mode: config }

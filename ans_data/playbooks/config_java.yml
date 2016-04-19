@@ -1,0 +1,8 @@
+---
+- name: Config Java
+  hosts: app-java:!znh
+  become: yes
+  roles:
+    - common
+    - java
+

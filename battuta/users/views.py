@@ -10,13 +10,13 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
 
-from .models import User, UserData, Credential
+from .models import User, UserData, Credentials
 from .forms import UserForm, UserDataForm, CredentialsForm
 
 
 def set_credentials(username):
     user = User.objects.get(username=username)
-    credential = Credential.objects.get_or_create(user=user, title='Default')[0]
+    credential = Credentials.objects.get_or_create(user=user, title='Default')[0]
     credential.username = user.username
     credential.save()
     user.userdata.default_cred = credential
@@ -124,7 +124,7 @@ class UserView(View):
                     user = user_form.save()
                     if kwargs['page'] == 'new':
                         user.set_password(form_data['password'])
-                        credential = Credential.objects.get_or_create(user=user, title='Default')[0]
+                        credential = Credentials.objects.get_or_create(user=user, title='Default')[0]
                         credential.username = user.username
                         credential.save()
                         user.userdata.default_cred = credential
@@ -182,7 +182,7 @@ class CredentialView(View):
         if request.user == page_user or request.user.is_superuser:
             if request.GET['action'] == 'list':
                 data = list()
-                for c in Credential.objects.filter(user=page_user):
+                for c in Credentials.objects.filter(user=page_user):
                     c_dict = model_to_dict(c)
                     c_dict['user_id'] = c_dict['user']
                     c_dict.pop('user', None)
@@ -191,7 +191,7 @@ class CredentialView(View):
                         c_dict['is_default'] = True
                     data.append(self._truncate_secure_data(c, c_dict))
                 if 'runner' in request.GET:
-                    for c in Credential.objects.filter(is_shared=True).exclude(user=page_user):
+                    for c in Credentials.objects.filter(is_shared=True).exclude(user=page_user):
                         c_dict = model_to_dict(c)
                         c_dict['title'] = c.title + ' (' + c.user.username + ')'
                         data.append(self._truncate_secure_data(c, c_dict))
@@ -208,9 +208,9 @@ class CredentialView(View):
             if request.POST['action'] == 'save':
                 form_data = dict(request.POST.iteritems())
                 if request.POST['id'] == '':
-                    cred = Credential(user=page_user)
+                    cred = Credentials(user=page_user)
                 else:
-                    cred = get_object_or_404(Credential, pk=form_data['id'])
+                    cred = get_object_or_404(Credentials, pk=form_data['id'])
                 if form_data['rsa_key'] == '<keep>':
                     form_data['rsa_key'] = cred.rsa_key
                 else:
@@ -232,7 +232,7 @@ class CredentialView(View):
                 else:
                     data = {'result': 'fail', 'msg': str(form.errors)}
             elif request.POST['action'] == 'delete':
-                cred = get_object_or_404(Credential, pk=request.POST['id'])
+                cred = get_object_or_404(Credentials, pk=request.POST['id'])
                 user_list = list()
                 for user_data in UserData.objects.filter(default_cred=cred):
                     user_list.append(user_data.user.username)

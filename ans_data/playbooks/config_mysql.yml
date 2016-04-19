@@ -1,0 +1,10 @@
+---
+- name: Config MySQL
+  hosts: app-mysql:!znh
+  become: yes
+  roles:
+    - common
+    - mysql
+    - { role: m2m-watchdog, mode: config }
+
+

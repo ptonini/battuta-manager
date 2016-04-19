@@ -1,0 +1,9 @@
+---
+- name: Deploy M2M Adapter
+  hosts: m2m-adapter:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-adapter
+    - { role: m2m-watchdog, mode: config }
+

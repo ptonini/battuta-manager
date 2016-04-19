@@ -15,7 +15,7 @@ from multiprocessing import Process
 
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from .models import AdHocTask, Runner, RunnerTask, PlaybookArgs
-from users.models import Credential
+from users.models import Credentials
 from . import play_runner
 
 date_format = '%Y-%m-%d %H:%M:%S'
@@ -51,7 +51,7 @@ class RunnerView(View):
 
             credential = request.user.userdata.default_cred
             if 'credential' in form_data:
-                credential = get_object_or_404(Credential, pk=form_data['credential'])
+                credential = get_object_or_404(Credentials, pk=form_data['credential'])
             form_data['username'] = credential.username
             if 'remote_pass' not in form_data:
                 form_data['remote_pass'] = credential.password

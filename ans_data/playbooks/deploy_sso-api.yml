@@ -1,0 +1,8 @@
+---
+- name: Deploy SSO API
+  hosts: m2m-sso-api:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-sso-api
+    - { role: m2m-watchdog, mode: config }

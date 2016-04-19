@@ -1,0 +1,10 @@
+---
+- name: Config Redis
+  hosts: app-redis:!znh
+  become: yes
+  roles:
+    - common
+    - redis
+    - { role: m2m-watchdog, mode: config }
+
+

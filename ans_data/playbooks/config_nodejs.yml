@@ -1,0 +1,8 @@
+---
+- name: Config NodeJS
+  hosts: app-nodejs:!znh
+  become: yes
+  roles:
+    - common
+    - nodejs
+

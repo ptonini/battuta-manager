@@ -1,0 +1,10 @@
+---
+- name: Config Nginx
+  hosts: app-nginx:!znh
+  become: yes
+  roles:
+    - common
+    - nginx
+    - { role: m2m-watchdog, mode: config }
+
+

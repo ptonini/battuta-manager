@@ -1,0 +1,7 @@
+---
+- name: Deploy M2M Watchdog
+  hosts: frotaweb:!znh
+  become: yes
+  roles:
+    - common
+    - { role: m2m-watchdog, mode: install}  

@@ -1,0 +1,17 @@
+---
+- name: Config MongoS
+  hosts: app-mongos:!znh
+  become: yes
+  vars:
+      service:
+          name: mongos
+          binary: mongos
+          pidfile: /var/run/mongos.pid
+          port: 27017
+          is_java: false
+          owner: mongodb
+  roles:
+    - common
+    - mongodb
+    - { role: m2m-watchdog, mode: config }
+

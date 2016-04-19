@@ -1,0 +1,7 @@
+---
+- name: Config GIT
+  hosts: m2m-frotaweb:!znh
+  become: yes
+  roles:
+    - common
+    - git

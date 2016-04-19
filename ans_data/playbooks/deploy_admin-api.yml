@@ -1,0 +1,8 @@
+---
+- name: Deploy Admin API
+  hosts: m2m-admin-api
+  become: yes
+  roles:
+    - common
+    - m2m-admin-api
+    - { role: m2m-watchdog, mode: config }

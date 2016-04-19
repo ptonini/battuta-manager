@@ -1,0 +1,19 @@
+---
+- name: Test playbook
+  gather_facts: False
+  hosts: all
+  become: no
+  
+  tasks:
+
+    - name: Check hostname
+      command: hostname
+
+    - name: Test filecopy
+      copy: content="Hello world"
+            dest=/tmp/playbook_test
+
+    - name: Delete temp file
+      file: path=/tmp/playbook_test
+            state=absent
+

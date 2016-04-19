@@ -1,0 +1,39 @@
+---
+- name: Start Zone
+  gather_facts: False
+  hosts: frotaweb:!znh
+  become: yes
+  
+  tasks:
+
+    - name: Start mongos
+      service: name=mongos enabled=yes state=started
+      when: "'app-mongos' in group_names"
+
+    - name: Start m2m-adapter
+      service: name=m2m-adapter enabled=yes state=started
+      when: "'m2m-adapter' in group_names"
+
+    - name: Start m2m-gwa-ws
+      service: name=tomcat enabled=yes state=started
+      when: "'m2m-gwa-ws' in group_names"
+
+    - name: Start m2m-api
+      service: name=m2m-api enabled=yes state=started
+      when: "'m2m-api' in group_names"
+
+    - name: Start m2m-websocket
+      service: name=m2m-websocket enabled=yes state=started
+      when: "'m2m-websocket' in group_names"
+
+    - name: Start m2m-worker
+      service: name=m2m-worker enabled=yes state=started
+      when: "'m2m-worker' in group_names"
+
+    - name: Start m2m-worker-int
+      service: name=m2m-worker-int enabled=yes state=started
+      when: "'m2m-worker-int' in group_names"
+
+    - name: Start m2m-worker-rep
+      service: name=m2m-worker-rep enabled=yes state=started
+      when: "'m2m-worker-rep' in group_names"

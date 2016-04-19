@@ -1,0 +1,27 @@
+---
+- name: Basic Settings
+  gather_facts: False
+  hosts: frotaweb:!znh
+  become: yes
+  
+  tasks:
+    - copy: src=../repo/etc/vim/vimrc
+            dest=/etc/vim/vimrc
+            owner=root
+            group=root
+            mode=0644
+
+    - name: Copy limits.conf
+      copy: src=../repo/etc/security/limits.conf
+            dest=/etc/security/limits.conf
+            owner=root
+            group=root
+            mode=0644
+      notify:
+        - Restart server
+
+    - name: Copy current user rsa.pub to server
+      authorized_key: user={{ ansible_ssh_user }}
+                      key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+                      state=present
+

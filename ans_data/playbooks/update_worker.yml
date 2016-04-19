@@ -1,0 +1,35 @@
+---
+- name: Update m2m-worker properties
+  hosts: m2m-worker:!znh
+
+  tasks:
+    - name: Copy config.properties file
+      copy: content=clientes={{ clientes }}
+            dest=/opt/m2m-worker/config.properties
+            owner=root
+            group=root
+            mode=0644
+      notify:
+        - Restart m2m-worker
+
+  handlers:
+    - name: Restart m2m-worker
+      service: name=m2m-worker state=restarted
+
+
+- name: Update m2m-worker-rep properties
+  hosts: m2m-worker-rep:!znh
+
+  tasks:
+    - name: Copy config.properties file
+      copy: content=clientes={{ clientes }}
+            dest=/opt/m2m-worker-rep/config.properties
+            owner=root
+            group=root
+            mode=0644
+      notify:
+        - Restart m2m-worker-rep
+
+  handlers:
+    - name: Restart m2m-worker-rep
+      service: name=m2m-worker-rep state=restarted

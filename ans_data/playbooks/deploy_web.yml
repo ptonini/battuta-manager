@@ -1,0 +1,8 @@
+---
+- name: Deploy M2M WebApp
+  gather_facts: False
+  hosts: m2m-web:!znh
+  become: yes
+  roles: 
+    - common
+    - m2m-web

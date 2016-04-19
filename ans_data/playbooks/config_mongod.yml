@@ -1,0 +1,15 @@
+---
+- name: Config MongoD
+  hosts: app-mongod:!znh
+  become: yes
+  vars:
+      service:
+          name: mongod
+          pidfile: /var/run/mongodb.pid
+          port: 27018
+          is_java: false
+          owner: mongodb
+  roles:
+    - common
+    - mongodb
+    - { role: m2m-watchdog, mode: config }

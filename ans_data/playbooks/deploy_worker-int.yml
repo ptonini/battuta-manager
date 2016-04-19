@@ -1,0 +1,8 @@
+---
+- name: Deploy Worker Integracao
+  hosts: m2m-worker-int:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-worker-int
+    - { role: m2m-watchdog, mode: config }
