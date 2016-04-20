@@ -2,7 +2,6 @@
 {% load staticfiles %}
 {% block content %}
     <script src="{% static 'runner/playbooks.js' %}"></script>
-    <input type="hidden" id="has_rsa" value="{% if user.userdata.rsa_key %}true{% else %}false{% endif %}">
     <h3>Playbooks</h3>
     <hr>
     <div class="row">

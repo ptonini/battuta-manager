@@ -34,7 +34,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'syntax'])
 
 
-def play_runner(form_data, runner):
+def play_runner(run_data, runner):
 
     runner.pid = os.getpid()
     runner.status = 'starting'
@@ -45,52 +45,52 @@ def play_runner(form_data, runner):
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
 
-    if 'subset' in form_data:
-        inventory.subset(form_data['subset'])
+    if 'subset' in run_data:
+        inventory.subset(run_data['subset'])
 
-    passwords = {'conn_pass': form_data['remote_pass'], 'become_pass': form_data['become_pass']}
+    passwords = {'conn_pass': run_data['remote_pass'], 'become_pass': run_data['become_pass']}
 
-    if 'become' not in form_data:
-        form_data['become'] = c.DEFAULT_BECOME
+    if 'become' not in run_data:
+        run_data['become'] = c.DEFAULT_BECOME
 
-    if 'rsa_key' not in form_data:
-        form_data['rsa_key'] = ''
+    if 'rsa_key' not in run_data:
+        run_data['rsa_key'] = ''
 
     become_user = c.DEFAULT_BECOME_USER
-    if 'sudo_user' in form_data:
-        become_user = form_data['sudo_user']
+    if 'sudo_user' in run_data:
+        become_user = run_data['sudo_user']
 
     # Create ansible options tuple
     options = AnsibleOptions(connection='paramiko',
                              module_path=c.DEFAULT_MODULE_PATH,
                              forks=c.DEFAULT_FORKS,
-                             remote_user=form_data['username'],
-                             private_key_file=form_data['rsa_key'],
+                             remote_user=run_data['username'],
+                             private_key_file=run_data['rsa_key'],
                              ssh_common_args=None,
                              ssh_extra_args=None,
                              sftp_extra_args=None,
                              scp_extra_args=None,
-                             become=form_data['become'],
+                             become=run_data['become'],
                              become_method=c.DEFAULT_BECOME_METHOD,
                              become_user=become_user,
                              verbosity=None,
-                             check=form_data['check'],
-                             tags=form_data['tags'],
+                             check=run_data['check'],
+                             tags=run_data['tags'],
                              skip_tags=None,
                              listhosts=None,
                              listtasks=None,
                              listtags=None,
                              syntax=None)
 
-    if 'playbook' in form_data:
+    if 'playbook' in run_data:
         try:
-            pbex = PlaybookExecutor([form_data['playbook_path']],
+            pbex = PlaybookExecutor([run_data['playbook_path']],
                                     inventory,
                                     variable_manager,
                                     loader,
                                     options,
                                     passwords)
-            pbex._tqm._stdout_callback = BattutaCallback(runner, form_data)
+            pbex._tqm._stdout_callback = BattutaCallback(runner, run_data)
             pbex.run()
             runner.status = 'finished'
         except Exception as e:
@@ -100,8 +100,8 @@ def play_runner(form_data, runner):
             django.db.close_old_connections()
             runner.save()
 
-    elif 'adhoc_task' in form_data:
-        play = Play().load(form_data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+    elif 'adhoc_task' in run_data:
+        play = Play().load(run_data['adhoc_task'], variable_manager=variable_manager, loader=loader)
         tqm = None
         try:
             tqm = TaskQueueManager(inventory=inventory,
@@ -109,7 +109,7 @@ def play_runner(form_data, runner):
                                    passwords=passwords,
                                    loader=loader,
                                    options=options,
-                                   stdout_callback=BattutaCallback(runner, form_data))
+                                   stdout_callback=BattutaCallback(runner, run_data))
             tqm.run(play)
         finally:
             if tqm is None:

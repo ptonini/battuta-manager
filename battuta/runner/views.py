@@ -1,4 +1,3 @@
-import ast
 import json
 import psutil
 import os
@@ -7,7 +6,6 @@ import yaml
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.core.cache import caches
 from django.conf import settings
 from django.forms import model_to_dict
 from pytz import timezone
@@ -30,10 +28,9 @@ class BaseView(View):
 class RunnerView(View):
 
     @staticmethod
-    def _run(form_data, runner):
-        print 4
+    def _run(run_data, runner):
         try:
-            p = Process(target=play_runner, args=(form_data, runner))
+            p = Process(target=play_runner, args=(run_data, runner))
             p.daemon = False
             p.start()
         except Exception as e:
@@ -45,55 +42,52 @@ class RunnerView(View):
     def post(self, request):
 
         if request.POST['action'] == 'run':
-            print 1
             data = None
-            form_data = dict(request.POST.iteritems())
+            run_data = dict(request.POST.iteritems())
 
             credential = request.user.userdata.default_cred
-            if 'credential' in form_data:
-                credential = get_object_or_404(Credentials, pk=form_data['credential'])
-            form_data['username'] = credential.username
-            if 'remote_pass' not in form_data:
-                form_data['remote_pass'] = credential.password
-            if 'become_pass' not in form_data:
-                form_data['become_pass'] = credential.sudo_pass
-            if credential.sudo_user != '':
-                form_data['sudo_user'] = credential.sudo_user
-            if credential.rsa_key != '':
-                form_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
+            if 'credential' in run_data:
+                credential = get_object_or_404(Credentials, pk=run_data['credential'])
+            run_data['username'] = credential.username
+            if 'remote_pass' not in run_data:
+                run_data['remote_pass'] = credential.password
+            if 'become_pass' not in run_data:
+                run_data['become_pass'] = credential.sudo_pass
+            if credential.sudo_user:
+                run_data['sudo_user'] = credential.sudo_user
+            if credential.rsa_key:
+                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
 
             # Execute playbook
-            if 'playbook' in form_data:
+            if 'playbook' in run_data:
 
-                form_data['playbook_path'] = os.path.join(settings.DATA_DIR, 'playbooks', form_data['playbook'])
-                print form_data['playbook_path']
-                form_data['name'] = form_data['playbook']
+                run_data['playbook_path'] = os.path.join(settings.DATA_DIR, 'playbooks', run_data['playbook'])
+                run_data['name'] = run_data['playbook']
 
                 # Set 'check' value
-                if form_data['check'] == 'true':
-                    form_data['check'] = True
+                if run_data['check'] == 'true':
+                    run_data['check'] = True
                 else:
-                    form_data['check'] = False
+                    run_data['check'] = False
 
                 # Set 'tags' value
-                if form_data['tags'] == '':
-                    form_data['tags'] = None
+                if run_data['tags'] == '':
+                    run_data['tags'] = None
 
             # Execute task
-            elif 'module' in form_data:
-                print 2
-                adhoc_form = AdHocTaskForm(form_data)
+            elif 'module' in run_data:
+                adhoc_form = AdHocTaskForm(run_data)
                 if adhoc_form.is_valid():
-                    form_data['check'] = None
-                    form_data['tags'] = None
-                    form_data['adhoc_task'] = {
-                        'name': form_data['name'],
-                        'hosts': form_data['hosts'],
+                    run_data['check'] = None
+                    run_data['tags'] = None
+                    run_data['adhoc_task'] = {
+                        'name': run_data['name'],
+                        'hosts': run_data['hosts'],
                         'gather_facts': 'no',
                         'tasks': [{
                             'action': {
-                                'module': form_data['module'],
-                                'args': form_data['arguments']
+                                'module': run_data['module'],
+                                'args': run_data['arguments']
                             }
                         }]
                     }
@@ -103,14 +97,12 @@ class RunnerView(View):
                 raise Http404('Invalid action')
 
             if data is None:
-                print 3
-                runner_form = RunnerForm(form_data)
+                runner_form = RunnerForm(run_data)
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
                 runner.save()
-                data = self._run(form_data, runner)
-
+                data = self._run(run_data, runner)
 
 
         # Kill task/play
@@ -176,36 +168,53 @@ class AdHocView(BaseView):
 
 
 class PlaybookView(BaseView):
+
     @staticmethod
-    def _build_playbook_cache(playbook_cache):
+    def load_playbook(f):
+        with open(os.path.join(settings.DATA_DIR, 'playbooks', f), 'r') as yaml_file:
+            try:
+                return yaml.load(yaml_file)
+            except yaml.YAMLError as e:
+                print type(e).__name__ + ': ' + e.__str__()
+                return None
+
+    @classmethod
+    def _build_playbook_list(cls):
+        playbook_list = list()
         playbook_dir = os.path.join(settings.DATA_DIR, 'playbooks')
         for root, dirs, files in os.walk(playbook_dir):
             for f in files:
                 if f.split('.')[-1] == 'yml':
-                    with open(os.path.join(root, f), 'r') as yaml_file:
-                        playbook = yaml.load(yaml_file)
-                        playbook_cache.set(f, playbook)
+                    playbook = cls.load_playbook(f)
+                    if playbook:
+                        playbook_list.append({f: playbook})
+        return playbook_list
 
     def get(self, request):
         if 'action' not in request.GET:
             self.context['user'] = request.user
             return render(request, 'runner/playbooks.html', self.context)
         else:
-            playbook_cache = caches['battuta-playbooks']
+
             if request.GET['action'] == 'get_list':
                 data = list()
-                self._build_playbook_cache(playbook_cache)
-                for key in playbook_cache.keys('*.yml'):
-                    playbook = playbook_cache.get(key)[0]
-                    data.append([playbook['name'], playbook['hosts'], key])
-            elif request.GET['action'] == 'get_one':
-                data = playbook_cache.get(request.GET['playbook_file'])
-            elif request.GET['action'] == 'get_args':
-                data = list()
-                for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']):
-                    data.append(model_to_dict(args))
+                for item in self._build_playbook_list():
+                    playbook_file, playbook = item.items()[0]
+                    data.append([playbook[0]['name'], playbook[0]['hosts'], playbook_file])
             else:
-                raise Http404('Invalid action')
+                playbook = self.load_playbook(request.GET['playbook_file'])
+                if request.GET['action'] == 'get_one':
+                    data = {'require_sudo': False}
+                    for play in playbook:
+                        if 'become' in play and play['become']:
+                            data['require_sudo'] = True
+                    data['playbook'] = playbook
+                elif request.GET['action'] == 'get_args':
+                    data = list()
+                    for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']):
+                        data.append(model_to_dict(args))
+                else:
+                    raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod

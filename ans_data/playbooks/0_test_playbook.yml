@@ -2,7 +2,7 @@
 - name: Test playbook
   gather_facts: False
   hosts: all
-  become: no
+  become: False
   
   tasks:
 

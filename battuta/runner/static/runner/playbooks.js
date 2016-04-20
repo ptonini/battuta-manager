@@ -25,9 +25,7 @@ function buildArgsSelectionBox(start_value) {
                 }
                 savedArguments.append($('<option>').val(args.id).data(args).append(display))
             });
-            savedArguments.change().append(
-                $('<option>').val('new').append('new')
-            );
+            savedArguments.change().append($('<option>').val('new').append('new'));
         }
     });
 }
@@ -38,7 +36,6 @@ $(document).ready(function () {
     var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
     var jsonBox = $('#json_box');
-    var currentPlaybook = $('#current_playbook');
     var savedArguments = $('#saved_arguments');
 
     // Initialize playbook dialog
@@ -100,7 +97,6 @@ $(document).ready(function () {
     playbookTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
         var playbookFile = $(this).closest('td').prev().html();
-        var playbookName = $(this).closest('td').prev().prev().prev().html();
         var action = $(this).attr('title');
         $.ajax({
             url: '/runner/playbooks/',
@@ -110,11 +106,11 @@ $(document).ready(function () {
                 action: 'get_one',
                 playbook_file: playbookFile
             },
-            success: function (playbook) {
+            success: function (data) {
                 if (action == 'Run') {
-                    $('#playbook_dialog_header').html(playbookName);
-                    $('#hosts').html(playbook[0].hosts);
-                    if (playbook[0].become) {
+                    $('#playbook_dialog_header').html(data.playbook[0].name);
+                    $('#hosts').html(data.playbook[0].hosts);
+                    if (data.require_sudo) {
                         $('#become').html('True')
                     }
                     playbookDialog.data('currentPlaybook', playbookFile);
@@ -122,7 +118,7 @@ $(document).ready(function () {
                     buildArgsSelectionBox();
                     }
                 else if (action == 'View') {
-                    jsonBox.JSONView(playbook);
+                    jsonBox.JSONView(data);
                     jsonBox.JSONView('collapse', 2);
                     jsonDialog.dialog('open');
                 }

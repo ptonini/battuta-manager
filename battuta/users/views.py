@@ -160,7 +160,7 @@ class UserView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class CredentialView(View):
+class CredentialsView(View):
 
     @staticmethod
     def _truncate_secure_data(c, c_dict):
@@ -237,7 +237,7 @@ class CredentialView(View):
                 for user_data in UserData.objects.filter(default_cred=cred):
                     user_list.append(user_data.user.username)
                 if len(user_list) > 0:
-                    data = {'result': 'fail', 'msg': 'Error: credential is default for ' + ', '.join(user_list)}
+                    data = {'result': 'fail', 'msg': 'Error: credentials are default for: ' + ', '.join(user_list)}
                 else:
                     try:
                         os.remove(os.path.join(settings.DATA_DIR, cred.rsa_key))

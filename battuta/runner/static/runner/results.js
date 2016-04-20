@@ -32,12 +32,18 @@ function updateResult(intervalId) {
             $.each(runner.plays, function (index, play) {
                 var separator = null;
                 var firstRow = null;
+                var lastRow = $('<br>');
+                var tableOffsetClass = null;
                 var playContainerId = 'play_' + play.id + '_container';
                 var playContainerSelector = '#' + playContainerId;
                 var playContainer = $(playContainerSelector);
                 if (play.name != 'AdHoc task') {
                     separator = $('<hr>').attr('class', 'medium');
-                    firstRow = divRow.clone().append(divCol12.clone().html('<h4>' + play.name + '</h4>'))
+                    firstRow = divRow.clone().append(divCol12.clone().html('<h4>' + play.name + '</h4>'));
+                    lastRow = divRow.clone().append(
+                        divCol12.clone().attr('style', 'margin-top: 10px').html('<strong>Tasks:</strong>')
+                    );
+                    tableOffsetClass = 'col-md-offset-1'
                 }
                 if ($(playContainerSelector).length == 0) {
                     playContainer = $('<div>').attr('id', playContainerId);
@@ -52,9 +58,7 @@ function updateResult(intervalId) {
                             divCol1.clone().html('Become:'),
                             divCol11.clone().html('<strong>' + play.become + '</strong>')
                         ),
-                        $('<br>'),
-                        $('<h5>').html('<strong>Tasks:</strong>')
-
+                        lastRow
                     );
                 }
                 if (play.tasks.length > 0) {
@@ -64,15 +68,15 @@ function updateResult(intervalId) {
                         if ($(taskTableSelector).length == 0) {
                             playContainer.append(
                                 divRow.clone().append(
-                                    divCol12.clone().append(
+                                    divCol11.clone().addClass(tableOffsetClass).append(
                                         $('<h6>').html('<strong>' + task.name + '</strong>'),
                                         $('<table>').addClass('table table-condensed table-hover table-striped')
                                             .attr('id', taskTableId).append(
                                             $('<thead>').append(
                                                 $('<tr>').append(
-                                                    $('<th>').attr('class', 'col-md-2').html('host'),
+                                                    $('<th>').attr('class', 'col-md-3').html('host'),
                                                     $('<th>').attr('class', 'col-md-2').html('status'),
-                                                    $('<th>').attr('class', 'col-md-7').html('message'),
+                                                    $('<th>').attr('class', 'col-md-6').html('message'),
                                                     $('<th>').attr('class', 'col-md-1')
                                                 )
                                             )
