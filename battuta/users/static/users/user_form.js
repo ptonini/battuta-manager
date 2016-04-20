@@ -13,14 +13,14 @@ function buildCredentialSelectionBox(start_value) {
         },
         success: function (data) {
             $.each(data, function (index, credential) {
-                var display = credential.title;
-                if (credential.is_default) {
+                var display = cred.title;
+                if (cred.is_default) {
                     display += ' (default)';
                     if (start_value == null) {
-                        start_value = credential.id
+                        start_value = cred.id
                     }
                 }
-                savedCredentials.append($('<option>').val(credential.id).data(credential).append(display))
+                savedCredentials.append($('<option>').val(cred.id).data(cred).append(display))
             });
             savedCredentials.val(start_value).change().append(
                 $('<option>').data('rsa_key', '').val('new').append('new')

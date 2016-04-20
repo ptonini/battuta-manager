@@ -38,13 +38,13 @@ $(document).ready(function () {
         },
         success: function (data) {
             var start_value = null;
-            $.each(data, function (index, credential) {
-                var display = credential.title;
-                if (credential.is_default) {
+            $.each(data, function (index, cred) {
+                var display = cred.title;
+                if (cred.is_default) {
                     display += ' (default)';
-                    start_value = credential.id
+                    start_value = cred.id
                 }
-                credentials.append($('<option>').val(credential.id).data(credential).append(display))
+                credentials.append($('<option>').val(cred.id).data(cred).append(display))
             });
             credentials.val(start_value)
         }
@@ -67,10 +67,6 @@ $(document).ready(function () {
             tableApi.rows().every( function (rowIndex) {
                 prettyBoolean(tableApi.row(rowIndex), 3)
             });
-            //if (app == 'inventory') {
-            //    var column = tableApi.column(0);
-            //    column.visible(false);
-            //}
         },
         columnDefs: [{
             targets: -1,
@@ -193,7 +189,7 @@ $(document).ready(function () {
                 var selectedCredential = $('option:selected', credentials).data();
                 postData.action = 'run';
                 postData.name = 'AdHoc task - ' + currentModule.name;
-                postData.credential = credentials.val();
+                postData.cred = credentials.val();
                 postData.executionUser = selectedCredential.username;
                 var askPassword = {
                     user: false,

@@ -45,18 +45,18 @@ class RunnerView(View):
             data = None
             run_data = dict(request.POST.iteritems())
 
-            credential = request.user.userdata.default_cred
-            if 'credential' in run_data:
-                credential = get_object_or_404(Credentials, pk=run_data['credential'])
-            run_data['username'] = credential.username
+            cred = request.user.userdata.default_cred
+            if 'cred' in run_data:
+                cred = get_object_or_404(Credentials, pk=run_data['cred'])
+            run_data['username'] = cred.username
             if 'remote_pass' not in run_data:
-                run_data['remote_pass'] = credential.password
+                run_data['remote_pass'] = cred.password
             if 'become_pass' not in run_data:
-                run_data['become_pass'] = credential.sudo_pass
-            if credential.sudo_user:
-                run_data['sudo_user'] = credential.sudo_user
-            if credential.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, credential.rsa_key)
+                run_data['become_pass'] = cred.sudo_pass
+            if cred.sudo_user:
+                run_data['sudo_user'] = cred.sudo_user
+            if cred.rsa_key:
+                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, cred.rsa_key)
 
             # Execute playbook
             if 'playbook' in run_data:
