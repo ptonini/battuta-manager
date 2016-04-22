@@ -115,10 +115,11 @@ def play_runner(run_data, runner):
                                     passwords)
             pbex._tqm._stdout_callback = BattutaCallback(runner, 'playbook')
             pbex.run()
-            runner.status = 'finished'
         except Exception as e:
             runner.status = 'failed'
             runner.message = type(e).__name__ + ': ' + e.__str__()
+        else:
+            runner.status = 'finished'
 
     elif 'adhoc_task' in run_data:
         play = Play().load(run_data['adhoc_task'], variable_manager=variable_manager, loader=loader)
