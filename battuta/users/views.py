@@ -10,16 +10,16 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
 
-from .models import User, UserData, Credentials
-from .forms import UserForm, UserDataForm, CredentialsForm
+from .models import User, UserData, Credential
+from .forms import UserForm, UserDataForm, CredentialForm
 
 
-def set_credentials(username):
+def set_default_cred(username):
     user = User.objects.get(username=username)
-    credential = Credentials.objects.get_or_create(user=user, title='Default')[0]
-    credential.username = user.username
-    credential.save()
-    user.userdata.default_cred = credential
+    cred = Credential.objects.get_or_create(user=user, title='Default')[0]
+    cred.username = user.username
+    cred.save()
+    user.userdata.default_cred = cred
     user.userdata.save()
 
 
@@ -31,7 +31,7 @@ class LoginView(View):
             if user:
                 if user.is_active:
                     login(request, user)
-                    set_credentials(request.POST['username'])
+                    set_default_cred(request.POST['username'])
                     data = {'result': 'ok'}
                 else:
                     data = {'result': 'fail', 'msg': 'Account disabled'}
@@ -124,10 +124,10 @@ class UserView(View):
                     user = user_form.save()
                     if kwargs['page'] == 'new':
                         user.set_password(form_data['password'])
-                        credential = Credentials.objects.get_or_create(user=user, title='Default')[0]
-                        credential.username = user.username
-                        credential.save()
-                        user.userdata.default_cred = credential
+                        cred = Credential.objects.get_or_create(user=user, title='Default')[0]
+                        cred.username = user.username
+                        cred.save()
+                        user.userdata.default_cred = cred
                     user.save()
                     userdata = userdata_form.save(commit=False)
                     userdata.user = user
@@ -160,7 +160,7 @@ class UserView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class CredentialsView(View):
+class CredentialView(View):
 
     @staticmethod
     def _truncate_secure_data(c, c_dict):
@@ -172,29 +172,29 @@ class CredentialsView(View):
             c_dict['sudo_pass'] = True
         else:
             c_dict['sudo_pass'] = False
-        if c.rsa_key != '':
-            c_dict['rsa_key'] = c.rsa_key.split('/')[-1]
         return c_dict
 
     def get(self, request):
-        page_user = get_object_or_404(User, pk=request.GET['user_id'])
-        set_credentials(page_user)
+        page_user = request.user
+        if 'user_id' in request.GET:
+            page_user = get_object_or_404(User, pk=request.GET['user_id'])
+            set_default_cred(page_user)
         if request.user == page_user or request.user.is_superuser:
             if request.GET['action'] == 'list':
                 data = list()
-                for c in Credentials.objects.filter(user=page_user):
-                    c_dict = model_to_dict(c)
-                    c_dict['user_id'] = c_dict['user']
-                    c_dict.pop('user', None)
-                    c_dict['is_default'] = False
-                    if c == page_user.userdata.default_cred:
-                        c_dict['is_default'] = True
-                    data.append(self._truncate_secure_data(c, c_dict))
+                for cred in Credential.objects.filter(user=page_user):
+                    cred_dict = model_to_dict(cred)
+                    cred_dict['user_id'] = cred_dict['user']
+                    cred_dict.pop('user', None)
+                    cred_dict['is_default'] = False
+                    if cred == page_user.userdata.default_cred:
+                        cred_dict['is_default'] = True
+                    data.append(self._truncate_secure_data(cred, cred_dict))
                 if 'runner' in request.GET:
-                    for c in Credentials.objects.filter(is_shared=True).exclude(user=page_user):
-                        c_dict = model_to_dict(c)
-                        c_dict['title'] = c.title + ' (' + c.user.username + ')'
-                        data.append(self._truncate_secure_data(c, c_dict))
+                    for cred in Credential.objects.filter(is_shared=True).exclude(user=page_user):
+                        cred_dict = model_to_dict(cred)
+                        cred_dict['title'] = cred.title + ' (' + cred.user.username + ')'
+                        data.append(self._truncate_secure_data(cred, cred_dict))
             else:
                 raise Http404('Invalid action')
         else:
@@ -205,42 +205,60 @@ class CredentialsView(View):
     def post(request):
         page_user = get_object_or_404(User, pk=request.POST['user_id'])
         if request.user == page_user or request.user.is_superuser:
+            ssh_path = os.path.join(settings.DATA_DIR, 'userdata', str(page_user.username), '.ssh')
             if request.POST['action'] == 'save':
                 form_data = dict(request.POST.iteritems())
-                if request.POST['id'] == '':
-                    cred = Credentials(user=page_user)
+                form_data['user'] = page_user.id
+                if form_data['id'] == 'undefined':
+                    cred = Credential(user=page_user)
                 else:
-                    cred = get_object_or_404(Credentials, pk=form_data['id'])
-                if form_data['rsa_key'] == '<keep>':
-                    form_data['rsa_key'] = cred.rsa_key
-                else:
-                    try:
-                        os.remove(os.path.join(settings.DATA_DIR, cred.rsa_key))
-                    except os.error:
-                        pass
-                if request.POST['password'] == '':
+                    cred = get_object_or_404(Credential, pk=form_data['id'])
+                if form_data['password'] == '':
                     form_data['password'] = cred.password
-                if request.POST['sudo_pass'] == '':
+                if form_data['sudo_pass'] == '':
                     form_data['sudo_pass'] = cred.sudo_pass
-                form = CredentialsForm(form_data or None, instance=cred)
-                if form.is_valid():
-                    cred = form.save(commit=True)
-                    if request.POST['is_default'] == 'true':
-                        page_user.userdata.default_cred = cred
-                        page_user.userdata.save()
-                    data = {'result': 'ok', 'cred_id': cred.id}
+                try:
+                    str(form_data['rsa_key'])
+                except UnicodeEncodeError:
+                    data = {'result': 'fail', 'msg': 'Non-ASCII characters in RSA key filename'}
                 else:
-                    data = {'result': 'fail', 'msg': str(form.errors)}
+                    duplicate = page_user.credential_set.filter(rsa_key=form_data['rsa_key']).exclude(id=cred.id)
+                    if form_data['rsa_key'] == '' or len(duplicate) == 0:
+                        current_key = cred.rsa_key
+                        form = CredentialForm(form_data or None, instance=cred)
+                        if form.is_valid():
+                            if form_data['rsa_key'] != current_key:
+                                try:
+                                    os.remove(os.path.join(ssh_path, current_key))
+                                except os.error:
+                                    pass
+                            if form_data['upload_rsa'] == 'true':
+                                for key, value in request.FILES.iteritems():
+                                    with open(os.path.join(ssh_path, str(value.name)), 'wb+') as f:
+                                        for chunk in value.chunks():
+                                            f.write(chunk)
+                            if form_data['is_default'] == 'true':
+                                page_user.userdata.default_cred = cred
+                                page_user.userdata.save()
+
+                            cred.save()
+                            data = {'result': 'ok', 'cred_id': cred.id}
+                        else:
+                            data = {'result': 'fail', 'msg': str(form.errors)}
+                    else:
+                        data = {'result': 'fail',
+                                'msg': '"' + form_data['rsa_key'] + '" is in use by another credential'}
+
             elif request.POST['action'] == 'delete':
-                cred = get_object_or_404(Credentials, pk=request.POST['id'])
+                cred = get_object_or_404(Credential, pk=request.POST['id'])
                 user_list = list()
                 for user_data in UserData.objects.filter(default_cred=cred):
                     user_list.append(user_data.user.username)
                 if len(user_list) > 0:
-                    data = {'result': 'fail', 'msg': 'Error: credentials are default for: ' + ', '.join(user_list)}
+                    data = {'result': 'fail', 'msg': 'Credential is default for ' + ', '.join(user_list)}
                 else:
                     try:
-                        os.remove(os.path.join(settings.DATA_DIR, cred.rsa_key))
+                        os.remove(os.path.join(ssh_path, cred.rsa_key))
                     except os.error:
                         pass
                     cred.delete()

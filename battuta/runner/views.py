@@ -13,7 +13,7 @@ from multiprocessing import Process
 
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from .models import AdHocTask, Runner, RunnerTask, PlaybookArgs
-from users.models import Credentials
+from users.models import Credential
 from . import play_runner
 
 date_format = '%Y-%m-%d %H:%M:%S'
@@ -47,39 +47,26 @@ class RunnerView(View):
 
             cred = request.user.userdata.default_cred
             if 'cred' in run_data:
-                cred = get_object_or_404(Credentials, pk=run_data['cred'])
+                cred = get_object_or_404(Credential, pk=run_data['cred'])
             run_data['username'] = cred.username
             if 'remote_pass' not in run_data:
                 run_data['remote_pass'] = cred.password
             if 'become_pass' not in run_data:
                 run_data['become_pass'] = cred.sudo_pass
             if cred.sudo_user:
-                run_data['sudo_user'] = cred.sudo_user
+                run_data['become_user'] = cred.sudo_user
             if cred.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, cred.rsa_key)
+                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username), '.ssh', cred.rsa_key)
 
             # Execute playbook
             if 'playbook' in run_data:
-
                 run_data['playbook_path'] = os.path.join(settings.DATA_DIR, 'playbooks', run_data['playbook'])
                 run_data['name'] = run_data['playbook']
-
-                # Set 'check' value
-                if run_data['check'] == 'true':
-                    run_data['check'] = True
-                else:
-                    run_data['check'] = False
-
-                # Set 'tags' value
-                if run_data['tags'] == '':
-                    run_data['tags'] = None
 
             # Execute task
             elif 'module' in run_data:
                 adhoc_form = AdHocTaskForm(run_data)
                 if adhoc_form.is_valid():
-                    run_data['check'] = None
-                    run_data['tags'] = None
                     run_data['adhoc_task'] = {
                         'name': run_data['name'],
                         'hosts': run_data['hosts'],
@@ -103,7 +90,6 @@ class RunnerView(View):
                 runner.status = 'created'
                 runner.save()
                 data = self._run(run_data, runner)
-
 
         # Kill task/play
         elif request.POST['action'] == 'kill':
@@ -147,10 +133,10 @@ class AdHocView(BaseView):
 
     @staticmethod
     def post(request):
-        if 'id' in request.POST and request.POST['id'] is not unicode(''):
+
+        adhoc = AdHocTask()
+        if 'id' in request.POST:
             adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
-        else:
-            adhoc = AdHocTask()
         form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
         if request.POST['action'] == 'save':

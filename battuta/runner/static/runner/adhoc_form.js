@@ -8,46 +8,36 @@ function resetAdHocForm() {
     $('#adhoc_form_label').html('Run command');
     $('#optional_fields').html('');
     $('#module_reference').hide();
+    $('#adhoc_form').removeData('adhocId');
 }
 
 $(document).ready(function () {
 
-    var app = $('#app').val();                      // Django app running the script
+    var app = 'runner';
+    if (window.location.href.split('/').indexOf('inventory') > -1) {
+        app = 'inventory';
+    }
+
     var adhocTable = $('#adhoc_table');             // Adhoc table container selector
     var alertDialog = $('#alert_dialog');           // Alert dialog selector
     var deleteDialog = $('#delete_dialog');         // Delete dialog selector
     var credentials = $('#credentials');
     var fieldsContainer = $('#optional_fields');
     var hosts = $('#hosts');
+    var adhocForm = $('#adhoc_form');
 
-    // Set hosts field value if running from inventory
+    // Lock hosts input if running from inventory
     if (app == 'inventory') {
         hosts.attr('disabled', 'disabled').val($('#header_node_name').html());
         $('#pattern_editor').prop('disabled', true)
     }
 
-    // Build credentials selection box
-    $.ajax({
-        url: '/users/credentials/',
-        type: 'GET',
-        dataType: 'json',
-        data: {
-            action: 'list',
-            runner: true,
-            user_id: $('#user_id').val()
-        },
-        success: function (data) {
-            var start_value = null;
-            $.each(data, function (index, cred) {
-                var display = cred.title;
-                if (cred.is_default) {
-                    display += ' (default)';
-                    start_value = cred.id
-                }
-                credentials.append($('<option>').val(cred.id).data(cred).append(display))
-            });
-            credentials.val(start_value)
-        }
+    // Build credentials
+    buildCredentialsSelectionBox(credentials);
+
+    // Build module menu
+    $.each(ansibleModuleList, function (index, value) {
+        $('#module').append($('<option>').attr('value', value).append(value))
     });
 
     // Build adhoc table
@@ -86,8 +76,8 @@ $(document).ready(function () {
     // Run/Edit/Delete saved adhoc command
     adhocTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
-        var adhocId = adhocTableObject.row($(this).parents('tr')).data()[4];
         if ($(this).attr('title') == 'Delete') {
+            var tableRow = adhocTableObject.row($(this).parents('tr'));
             deleteDialog.dialog('option', 'buttons', [
                 {
                     text: 'Delete',
@@ -99,7 +89,7 @@ $(document).ready(function () {
                             dataType: 'json',
                             data: {
                                 action: 'delete',
-                                id: adhocId
+                                id: tableRow.data()[4]
                             },
                             success: function () {
                                 adhocTableObject.ajax.reload()
@@ -118,31 +108,20 @@ $(document).ready(function () {
         }
         else {
             hosts.val(adhocTableObject.row($(this).parents('tr')).data()[0]);
-            $('#module').val(adhocTableObject.row($(this).parents('tr')).data()[1]).trigger('change');
+            $('#module').val(adhocTableObject.row($(this).parents('tr')).data()[1]).change();
             $('#arguments').val(adhocTableObject.row($(this).parents('tr')).data()[2]);
-            if (adhocTableObject.row($(this).parents('tr')).data()[3] == true) {
-                $('#sudo').addClass('checked_button')
-            }
-            else {
-                $('#sudo').removeClass('checked_button')
-            }
+            $('#sudo').toggleClass('checked_button', adhocTableObject.row($(this).parents('tr')).data()[3])
             if ($(this).attr('title') == 'Run') {
-                $('#adhoc_id').val('');
-                $('#run_command').focus().trigger('click');
+                $('#run_command').focus().click();
                 resetAdHocForm()
             }
             else if ($(this).attr('title') == 'Edit') {
-                $('#adhoc_id').val(adhocId);
+                adhocForm.data('adhocId', adhocTableObject.row($(this).parents('tr')).data()[4]);
                 $('#adhoc_form_label').html('Edit command');
                 $('#run_command').hide();
                 $('#cancel_edit').show();
             }
         }
-    });
-
-    // Build module menu
-    $.each(ansibleModuleList, function (index, value) {
-        $('#module').append($('<option>').attr('value', value).append(value))
     });
 
     // Build AdHoc form
@@ -152,11 +131,10 @@ $(document).ready(function () {
     });
 
     // Ad-Hoc form submit events
-    $('#adhoc_form').submit(function () {
+    adhocForm.submit(function () {
         event.preventDefault();
         var currentModule = new AnsibleModules($('#module').val());
         var become = $('#sudo').hasClass('checked_button');
-        var adhocIdSelector = $('#adhoc_id');
         var postData = {
             module: currentModule.name,
             hosts: hosts.val(),
@@ -165,7 +143,7 @@ $(document).ready(function () {
         switch ($(document.activeElement).html()) {
             case 'Save':
                 postData.action = 'save';
-                postData.id = adhocIdSelector.val();
+                postData.id = adhocForm.data('adhocId');
                 postData.arguments = currentModule.buildArguments();
                 $.ajax({
                     url: '/runner/adhoc/',
@@ -214,13 +192,12 @@ $(document).ready(function () {
                     postData.arguments = currentModule.buildArguments();
                     executePlay(postData, askPassword);
                 }
-                adhocIdSelector.val('');
                 break;
             case 'Cancel':
                 $('#cancel_edit').hide();
                 $('#run_command').show();
                 $('#adhoc_form_label').html('Run command');
-                adhocIdSelector.val('');
+                adhocForm.removeData('adhocId');
                 break;
             case 'sudo':
                 

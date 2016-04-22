@@ -18,10 +18,10 @@ except ImportError:
 
 
 class BattutaCallback(CallbackBase):
-    def __init__(self, runner, form_data):
+    def __init__(self, runner, type):
         super(BattutaCallback, self).__init__()
         self._runner = runner
-        self._form_data = form_data
+        self._type = type
         self._current_play = None
         self._current_task = None
 
@@ -44,7 +44,7 @@ class BattutaCallback(CallbackBase):
         if play.__dict__['_attributes']['become']:
             become = True
         play_name = play.__dict__['_attributes']['name']
-        if 'adhoc_task' in self._form_data:
+        if self._type == 'adhoc_task':
             play_name = 'AdHoc task'
 
         self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),

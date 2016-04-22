@@ -10,5 +10,5 @@ urlpatterns = [
     url(r'^view/$', login_required(views.UserView.as_view()), kwargs={'page': 'view'}, name='view'),
     url(r'^new/$', login_required(views.UserView.as_view()), kwargs={'page': 'new'}, name='new'),
     url(r'^list/$', login_required(views.UserView.as_view()), kwargs={'page': 'list'}, name='list'),
-    url(r'^credentials/$', login_required(views.CredentialsView.as_view()), name='credentials'),
+    url(r'^credentials/$', login_required(views.CredentialView.as_view()), name='credentials'),
 ]

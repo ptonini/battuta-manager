@@ -1,4 +1,4 @@
-function buildArgsSelectionBox(start_value) {
+function buildArgsSelectionBox() {
     var savedArguments = $('#saved_arguments');
     savedArguments.children('option').each(function(){
         $(this).remove()
@@ -37,6 +37,7 @@ $(document).ready(function () {
     var jsonDialog = $('#json_dialog');
     var jsonBox = $('#json_box');
     var savedArguments = $('#saved_arguments');
+    var argumentsForm = $('#arguments_form');
 
     // Initialize playbook dialog
     playbookDialog.dialog({
@@ -49,9 +50,8 @@ $(document).ready(function () {
         buttons: {
             Run: function (){
                 var become = false;
-                var askPassword = false;
-                if ($('#become').html() == 'True' || $('#has_rsa').val() == 'false') {
-                    askPassword = true
+                if ($('#become').html() == 'True') {
+                    
                 }
                 var postData = {
                     action: 'run',
@@ -108,17 +108,15 @@ $(document).ready(function () {
             },
             success: function (data) {
                 if (action == 'Run') {
-                    $('#playbook_dialog_header').html(data.playbook[0].name);
-                    $('#hosts').html(data.playbook[0].hosts);
-                    if (data.require_sudo) {
-                        $('#become').html('True')
-                    }
+                    $('#playbook_dialog_header').html(playbookFile);
+                    $('#become').toggleClass('hidden', !data.require_sudo);
+                    playbookDialog.data(data);
                     playbookDialog.data('currentPlaybook', playbookFile);
                     playbookDialog.dialog('open');
                     buildArgsSelectionBox();
-                    }
+                }
                 else if (action == 'View') {
-                    jsonBox.JSONView(data);
+                    jsonBox.JSONView(data.playbook);
                     jsonBox.JSONView('collapse', 2);
                     jsonDialog.dialog('open');
                 }
@@ -128,15 +126,14 @@ $(document).ready(function () {
 
     savedArguments.change(function () {
         var selectedOption = $('option:selected', this);
-        $('#args_id').val(selectedOption.data('id'));
+        argumentsForm.data('id', selectedOption.data('id'));
         $('#subset').val(selectedOption.data('subset'));
         $('#tags').val(selectedOption.data('tags'));
         $('#delete_args').removeClass('hidden');
     });
 
-    $('#arguments_form').submit(function (event) {
+    argumentsForm.submit(function (event) {
         event.preventDefault();
-        var argsId = $('#args_id').val();
         var subset = $('#subset').val();
         var tags = $('#tags').val();
         switch ($(document.activeElement).data('action')) {
@@ -152,7 +149,7 @@ $(document).ready(function () {
                         dataType: 'json',
                         data: {
                             action: 'save_args',
-                            args_id: argsId,
+                            args_id: argumentsForm.data('id'),
                             subset: subset,
                             tags: tags,
                             playbook: playbookDialog.data('currentPlaybook')
@@ -161,7 +158,7 @@ $(document).ready(function () {
                             if (data.result == 'ok') {
                                 buildArgsSelectionBox();
                                 savedArguments.val(data.args_id);
-                                $('#args_id').val(data.args_id);
+                                argumentsForm.removeData('id');
                                 $('#delete_args').removeClass('hidden');
                             }
                             else if (data.result == 'fail') {
@@ -180,12 +177,13 @@ $(document).ready(function () {
                     dataType: 'json',
                     data: {
                         action: 'del_args',
-                        args_id: argsId
+                        args_id: argumentsForm.data('id')
                     },
                     success: function (data) {
                         if (data.result == 'ok') {
                             buildArgsSelectionBox();
-                            $('#arguments_form').find('input').val('');
+                            argumentsForm.find('input').val('');
+                            argumentsForm.removeData('id');
                             $('#delete_args').addClass('hidden');
                         }
                         else if (data.result == 'fail') {

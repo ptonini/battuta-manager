@@ -204,8 +204,8 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
         url: '/users/',
         type: 'POST',
         data: postData,
-        cache: false,
         dataType: 'json',
+        cache: false,
         processData: false,
         contentType: false,
         success: function (data) {
@@ -214,6 +214,31 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
         complete: function () {
             fileInputContainer.prev().remove();
             fileInputContainer.show();
+        }
+    });
+}
+
+// Build credentials selection box
+function buildCredentialsSelectionBox(credentials) {
+    $.ajax({
+        url: '/users/credentials/',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            action: 'list',
+            runner: true
+        },
+        success: function (data) {
+            var defaultCred = null;
+            $.each(data, function (index, cred) {
+                var display = cred.title;
+                if (cred.is_default) {
+                    display += ' (default)';
+                    defaultCred = cred.id
+                }
+                credentials.append($('<option>').val(cred.id).data(cred).append(display))
+            });
+            credentials.val(defaultCred)
         }
     });
 }

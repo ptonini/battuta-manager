@@ -1,8 +1,6 @@
 {% load staticfiles %}
 <script src="{% static 'runner/adhoc_form.js' %}"></script>
 <script src="{% static 'runner/ansibleModules.js' %}"></script>
-<input type="hidden" id="app" value="{{ app }}">
-<input type="hidden" id="user_id" value="{{ user.id }}">
 <h5 id="adhoc_form_label">Run task</h5>
 <form id="adhoc_form" method="post" enctype="multipart/form-data">
     <div class="row">
@@ -20,7 +18,6 @@
             </div>
         </div>
         <div class="col-md-2">
-            <input type="hidden" id="adhoc_id" value="{{ adhoc_id }}">
             <div class="form-group">
                 <label for="module" class="requiredField">Select module</label>
                 <select class="select form-control input-sm" id="module">
@@ -45,7 +42,6 @@
             <button id="run_command" class="btn btn-default btn-xs">Run</button>
             <button id="save_command" class="btn btn-default btn-xs">Save</button>
             <button id="cancel_edit" class="btn btn-default btn-xs" style="display: none">Cancel</button>
-
         </div>
     </div>
 </form>

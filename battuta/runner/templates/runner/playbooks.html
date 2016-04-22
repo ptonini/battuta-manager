@@ -20,17 +20,11 @@
     </div>
     <div class="hidden">
         <div id="playbook_dialog" style="overflow: hidden">
-            <h5 id="playbook_dialog_header"></h5>
+            <h5>
+                <span id="playbook_dialog_header"></span>
+                <small id="become" style="line-height: 16px; float: right; color: #777">Require sudo</small>
+            </h5>
             <hr>
-            <div class="row" style="margin-bottom: 5px">
-                <div class="col-md-2">Hosts:</div>
-                <div class="col-md-10"><strong id="hosts"></strong></div>
-            </div>
-            <div class="row" style="margin-bottom: 5px">
-                <div class="col-md-2">Become:</div>
-                <div class="col-md-10"><strong id="become">False</strong></div>
-            </div>
-            <br>
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
@@ -40,7 +34,6 @@
                 </div>
             </div>
             <form id="arguments_form" method="post">
-                <input id="args_id" type="hidden">
                 <div class="row">
                     <div class="col-md-9">
                         <div class="form-group">

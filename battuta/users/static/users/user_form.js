@@ -1,6 +1,6 @@
-function buildCredentialSelectionBox(start_value) {
-    var savedCredentials = $('#saved_credentials');
-    savedCredentials.children('option').each(function(){
+function buildCredentialsSelector(start_value) {
+    var credentials = $('#credentials');
+    credentials.children('option').each(function(){
         $(this).remove()
     });
     $.ajax({
@@ -12,7 +12,7 @@ function buildCredentialSelectionBox(start_value) {
             user_id: $('#user_id').val()
         },
         success: function (data) {
-            $.each(data, function (index, credential) {
+            $.each(data, function (index, cred) {
                 var display = cred.title;
                 if (cred.is_default) {
                     display += ' (default)';
@@ -20,23 +20,20 @@ function buildCredentialSelectionBox(start_value) {
                         start_value = cred.id
                     }
                 }
-                savedCredentials.append($('<option>').val(cred.id).data(cred).append(display))
+                credentials.append($('<option>').val(cred.id).data(cred).append(display))
             });
-            savedCredentials.val(start_value).change().append(
-                $('<option>').data('rsa_key', '').val('new').append('new')
-            );
+            credentials.val(start_value).change().append($('<option>').val('new').append('new'));
         }
     });
 }
 
 function resetCredentialForm() {
-    $('#credential_form')
-        .data('upload_rsa', false)
-        .data('rsa_key', '<keep>')
-        .data('cred_id', '')
+    $('#credential_form').removeData()
+        .data({upload_rsa: false, rsa_key: ''})
         .find('input').val('').attr('placeholder', '');
     $('#cred_is_shared').removeClass('checked_button');
     $('#cred_is_default').removeClass('checked_button');
+    $('#cred_sudo_user').attr('placeholder', 'root');
     $('#delete_cred').addClass('hidden');
     $('#cred_rsakey').fileinput('reset');
 }
@@ -44,6 +41,7 @@ function resetCredentialForm() {
 $(document).ready(function () {
 
     var confirmChangesDialog = $('#confirm_changes_dialog');
+    var alertDialog = $('#alert_dialog');
     var timezones = $('#timezones');
     var userTimezone = $('#user_timezone');
     var page = $('#page');
@@ -51,34 +49,14 @@ $(document).ready(function () {
     var addPassword2 = $('#add_password2');
     var credRsaKey = $('#cred_rsakey');
     var credentialDialog = $('#credential_dialog');
-    var savedCredentials = $('#saved_credentials');
+    var credentials = $('#credentials');
     var credentialForm = $("#credential_form");
 
     // Build timezone selection box
     timezones.timezones();
 
     // Initialize delete dialog
-    confirmChangesDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        dialogClass: 'no_title',
-        buttons: {
-            Yes: function () {
-                credentialDialog.dialog('close');
-                confirmChangesDialog.dialog('close');
-                credentialForm.submit();
-            },
-            No: function () {
-                credentialDialog.dialog('close');
-                confirmChangesDialog.dialog('close');
-            },
-            Cancel: function () {
-                confirmChangesDialog.dialog('close');
-            }
-        }
-    });
+
 
     // Initialize credentials dialog
     credentialDialog.dialog({
@@ -91,7 +69,26 @@ $(document).ready(function () {
         buttons: {
             Done: function () {
                 if (credentialForm.data('changed')) {
-                    confirmChangesDialog.dialog('open')
+                    confirmChangesDialog.dialog({
+                        modal: true,
+                        show: true,
+                        hide: true,
+                        dialogClass: 'no_title',
+                        buttons: {
+                            Yes: function () {
+                                credentialDialog.dialog('close');
+                                confirmChangesDialog.dialog('close');
+                                credentialForm.submit();
+                            },
+                            No: function () {
+                                credentialDialog.dialog('close');
+                                confirmChangesDialog.dialog('close');
+                            },
+                            Cancel: function () {
+                                confirmChangesDialog.dialog('close');
+                            }
+                        }
+                    });
                 }
                 else {
                     credentialDialog.dialog('close');
@@ -131,11 +128,11 @@ $(document).ready(function () {
                             location.reload();
                         }
                         else if (page.val() == 'view') {
-                            confirmChangesDialog.html('<strong>User saved</strong>').dialog('open');
+                            alertDialog.html('<strong>User saved</strong>').dialog('open');
                         }
                     }
                     else if (data.result == 'fail') {
-                        confirmChangesDialog.html('<strong>Form submit error<strong><br><br>').append(data.msg).dialog('open');
+                        alertDialog.html('<strong>Form submit error<strong><br><br>').append(data.msg).dialog('open');
                     }
                 }
             });
@@ -148,7 +145,7 @@ $(document).ready(function () {
                 saveUser(postData)
             }
             else {
-                confirmChangesDialog.html('<strong>Passwords do not match</strong>').dialog('open')
+                alertDialog.html('<strong>Passwords do not match</strong>').dialog('open')
             }
         }
         else if (page.val() == 'view') {
@@ -177,17 +174,17 @@ $(document).ready(function () {
                     data: postData,
                     success: function (data) {
                         if (data.result == 'ok') {
-                            confirmChangesDialog.html('<strong>The password was changed</strong>');
+                            alertDialog.html('<strong>The password was changed</strong>');
                         }
                         else if (data.result == 'fail') {
-                            confirmChangesDialog.html('<strong>' + data.msg + '</strong>');
+                            alertDialog.html('<strong>' + data.msg + '</strong>');
                         }
-                        confirmChangesDialog.dialog('open')
+                        alertDialog.dialog('open')
                     }
                 });
             }
             else if (postData.new_password != $('#new_password2').val()) {
-                confirmChangesDialog.html('<strong>Passwords do not match</strong>').dialog('open');
+                alertDialog.html('<strong>Passwords do not match</strong>').dialog('open');
             }
         }
 
@@ -199,7 +196,7 @@ $(document).ready(function () {
         event.preventDefault();
         credentialDialog.dialog('open');
         resetCredentialForm();
-        buildCredentialSelectionBox()
+        buildCredentialsSelector()
     });
 
     // Initialize RSA key upload field
@@ -210,64 +207,69 @@ $(document).ready(function () {
         })
         .fileinput({
             showPreview: false,
+            showRemove: false,
             showCancel: false,
             showUpload: false,
             browseLabel: '',
             captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm',
-            removeClass: 'btn btn-default btn-sm'
+            browseClass: 'btn btn-default btn-sm'
         });
 
-    savedCredentials.change(function () {
+    credentials.change(function () {
         var selectedOption = $('option:selected', this);
         resetCredentialForm();
-        credentialForm.data('cred_id', selectedOption.data('id'));
-        $("#cred_title").val(selectedOption.data('title'));
-        $("#cred_username").val(selectedOption.data('username'));
-        $("#cred_sudo_user").val(selectedOption.data('sudo_user')).attr('placeholder', 'root');
-        $('#cred_is_shared').toggleClass('checked_button', selectedOption.data('is_shared'));
-        $('#cred_is_default').toggleClass('checked_button', selectedOption.data('is_default'));
-        $('#ask_sudo_pass').toggleClass('checked_button', selectedOption.data('ask_sudo_pass'));
-        credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
-        if (selectedOption.data('rsa_key')) {
-            credentialForm.data('rsa_key', '<keep>')
+        if (selectedOption.val() != 'new') {
+            credentialForm.data('cred_id', selectedOption.data('id'));
+            credentialForm.data('rsa_key', selectedOption.data('rsa_key'));
+            $("#cred_title").val(selectedOption.data('title'));
+            $("#cred_username").val(selectedOption.data('username'));
+            $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
+            $('#cred_is_shared').toggleClass('checked_button', selectedOption.data('is_shared'));
+            $('#cred_is_default').toggleClass('checked_button', selectedOption.data('is_default'));
+            $('#ask_sudo_pass').toggleClass('checked_button', selectedOption.data('ask_sudo_pass'));
+            credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
+            if (selectedOption.data('password')) {
+                $("#cred_pass").attr('placeholder', '********');
+            }
+            if (selectedOption.data('sudo_pass')) {
+                $("#cred_sudo_pass").attr('placeholder', '********');
+            }
+            if (selectedOption.html() != 'new') {
+                $('#delete_cred').removeClass('hidden');
+            }
+            credentialForm.off('change').data('changed', false).change(function () {
+                $(this).data('changed', true)
+            })
         }
-        if (selectedOption.data('password')) {
-            $("#cred_pass").attr('placeholder', '********');
-        }
-        if (selectedOption.data('sudo_pass')) {
-            $("#cred_sudo_pass").attr('placeholder', '********');
-        }
-        if (selectedOption.html() != 'new') {
-            $('#delete_cred').removeClass('hidden');
-        }
-        credentialForm.off('change').data('changed', false).change(function () {
-            $(this).data('changed', true)
-        })
     });
 
     // Credential form submit actions
     credentialForm.submit(function (event) {
         event.preventDefault();
-        function submitCredentials(postData) {
+
+        function submitCredentials(postData)
+        {
             $.ajax({
                 url: '/users/credentials/',
                 type: 'POST',
                 dataType: 'json',
                 data: postData,
+                cache: false,
+                processData: false,
+                contentType: false,
                 success: function (data) {
                     if (data.result == 'ok') {
-                        buildCredentialSelectionBox(data.cred_id);
+                        buildCredentialsSelector(data.cred_id);
                     }
                     else if (data.result == 'fail') {
-                        confirmChangesDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
                     }
                 }
             });
         }
-        var postData = {};
-        postData.id = credentialForm.data('cred_id');
-        postData.user_id = $('#user_id').val();
+        var postData = new FormData();
+        postData.append('id', credentialForm.data('cred_id'));
+        postData.append('user_id', $('#user_id').val());
         switch ($(document.activeElement).html()) {
             case 'Default':
             case 'Shared':
@@ -275,43 +277,39 @@ $(document).ready(function () {
                 $(document.activeElement).toggleClass('checked_button');
                 break;
             case 'Remove':
-                credentialForm.change().data({
-                    rsa_key_action: '<del>',
-                    upload_rsa: false
-                });
+                credentialForm.change()
+                    .data('upload_rsa', false)
+                    .data('rsa_key', '');
                 credRsaKey.fileinput('refresh', {initialCaption: ''});
                 credRsaKey.fileinput('reset');
                 break;
             case 'Delete':
                 // Define post action
-                postData.action = 'delete';
+                postData.append('action', 'delete');
                 // Submit delete form
                 submitCredentials(postData);
                 break;
             default:
                 // Define post variables
-                postData.action = 'save';
-                postData.title = $("#cred_title").val();
-                postData.username = $("#cred_username").val();
-                postData.sudo_user = $("#cred_sudo_user").val();
-                postData.password = $("#cred_pass").val();
-                postData.sudo_pass = $("#cred_sudo_pass").val();
-                postData.is_shared = $('#cred_is_shared').hasClass('checked_button');
-                postData.is_default = $('#cred_is_default').hasClass('checked_button');
-                postData.ask_sudo_pass = $('#ask_sudo_pass').hasClass('checked_button');
-                postData.rsa_key = credentialForm.data('rsa_key');
-                // Upload RSA key before submit if present
-                if (credentialForm.data('upload_rsa')) {
-                    function onUploadSuccess(data) {
-                        postData.rsa_key = data.filepaths[0];
-                        submitCredentials(postData)
-                    }
-                    uploadFiles(credRsaKey, 'rsakey', onUploadSuccess);
-                    credentialForm.data('upload_rsa', false)
+                console.log(credentialForm.data());
+                postData.append('action', 'save');
+                postData.append('title', $("#cred_title").val());
+                postData.append('username', $("#cred_username").val());
+                postData.append('sudo_user', $("#cred_sudo_user").val());
+                postData.append('password ', $("#cred_pass").val());
+                postData.append('sudo_pass', $("#cred_sudo_pass").val());
+                postData.append('is_shared', $('#cred_is_shared').hasClass('checked_button'));
+                postData.append('is_default', $('#cred_is_default').hasClass('checked_button'));
+                postData.append('ask_sudo_pass', $('#ask_sudo_pass').hasClass('checked_button'));
+                postData.append('upload_rsa', credentialForm.data('upload_rsa'));
+                postData.append('rsa_key', credentialForm.data('rsa_key'));
+                if (credRsaKey.data('files')){
+                    $.each(credRsaKey.data('files'), function (key, value) {
+                        postData.append(key, value);
+                        postData.append('rsa_key', value.name)
+                    });
                 }
-                else {
-                    submitCredentials(postData)
-                }
+                submitCredentials(postData);
                 break;
         }
     });
