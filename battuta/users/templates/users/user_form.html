@@ -1,12 +1,11 @@
 {% load staticfiles %}
 <script src="{% static 'users/user_form.js' %}"></script>
 <form id="user_form" method="post">
-    <input id="page" type="hidden" value="{{ page }}">
     <input id="user_id" type="hidden" value="{{ view_user.id }}">
-    <input id="user_timezone" type="hidden" >
+    <input id="user_timezone" type="hidden">
     <div class="row">
         {% if page == 'new' %}
-            <div class="col-md-6 col-sm-12">
+            <div class="col-md-3 col-sm-6">
                 <div class="form-group">
                     <label for="username" class="requiredField">Username</label>
                     <input class="form-control input-sm" id="username" type="text" value="">
@@ -103,7 +102,7 @@
 </div>
 <div class="hidden">
     <div id="credential_dialog" style="overflow: hidden">
-        <h5 class="text-center">Credentials</h5>
+        <h5>Credentials</h5>
         <hr>
         <div class="row">
             <div class="col-md-3">

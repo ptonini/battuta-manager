@@ -164,33 +164,25 @@ $(document).ready(function () {
                 });
                 break;
             case 'Run':
-                var selectedCredential = $('option:selected', credentials).data();
+                var cred = $('option:selected', credentials).data();
                 postData.action = 'run';
                 postData.name = 'AdHoc task - ' + currentModule.name;
                 postData.cred = credentials.val();
-                postData.executionUser = selectedCredential.username;
                 var askPassword = {
-                    user: false,
-                    sudo: false
+                    user: (!cred.password && !cred.rsa_key),
+                    sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
                 };
-                if (selectedCredential.password == false && selectedCredential.rsa_key == '') {
-                    askPassword.user = true
-                }
-                if (become && selectedCredential.sudo_pass == false && selectedCredential.ask_sudo_pass == true ) {
-                    askPassword.sudo = true
-
-                }
                 if (currentModule.uploadsFile) {
                     function successCallback(data) {
                         currentModule.filepath = data.filepaths[0];
                         postData.arguments = currentModule.buildArguments();
-                        executePlay(postData, askPassword);
+                        executeJob(postData, askPassword);
                     }
                     uploadFiles($('#file'), 'file', successCallback);
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
-                    executePlay(postData, askPassword);
+                    executeJob(postData, askPassword);
                 }
                 break;
             case 'Cancel':
@@ -200,7 +192,7 @@ $(document).ready(function () {
                 adhocForm.removeData('adhocId');
                 break;
             case 'sudo':
-                
+                $(document.activeElement).toggleClass('checked_button');
                 break;
         }
     });

@@ -1,11 +1,10 @@
 ---
-- name: Test playbook
+- name: 0 Test playbook
   gather_facts: False
   hosts: all
   become: False
   
   tasks:
-
     - name: Check hostname
       command: hostname
 
@@ -15,5 +14,20 @@
 
     - name: Delete temp file
       file: path=/tmp/playbook_test
+            state=absent
+
+    - name: Test with items
+      lineinfile: line="{{ item }}"
+                  create=yes
+                  dest=/tmp/test_2
+      with_items:
+          - "Hello, assholes"
+          - "Goodbye, assholes"
+
+    - name: Read file
+      command: cat /tmp/test_2
+
+    - name: Delete temp2
+      file: path=/tmp/test_2
             state=absent
 

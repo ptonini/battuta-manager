@@ -390,7 +390,7 @@ $(document).ready(function () {
     // Gather facts on node
     $('#gather_facts').click(function () {
         var postData = {
-            action: 'run_adhoc',
+            action: 'run',
             name: 'Gather facts',
             hosts: nodeName,
             module: 'setup',
@@ -399,11 +399,16 @@ $(document).ready(function () {
             arguments: '',
             become: false
         };
-        var askPassword = true;
-        if ($('#has_rsa').val() == 'true') {
-            askPassword = false
-        }
-        executePlay(postData, askPassword);
+        $.ajax({
+            url: '/users/credentials/',
+            type: 'GET',
+            dataType: 'json',
+            data: { action: 'default'},
+            success: function (cred) {
+                var askPassword = { user: (!cred.password && !cred.rsa_key), sudo: false};
+                executeJob(postData, askPassword);
+            }
+        });
     });
 
     // Show node facts
@@ -416,8 +421,7 @@ $(document).ready(function () {
                 action: 'facts'
             },
             success: function (data) {
-                jsonBox.JSONView(data);
-                jsonBox.JSONView('collapse', 2);
+                jsonBox.JSONView(data).JSONView('collapse', 2);
                 jsonDialog.dialog('open');
             }
         });

@@ -154,7 +154,6 @@ class UserView(View):
                     raise PermissionDenied
             else:
                 data = {'result': 'fail', 'msg': 'Invalid password'}
-
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
@@ -190,11 +189,20 @@ class CredentialView(View):
                     if cred == page_user.userdata.default_cred:
                         cred_dict['is_default'] = True
                     data.append(self._truncate_secure_data(cred, cred_dict))
-                if 'runner' in request.GET:
+                if request.GET['runner'] == 'true':
                     for cred in Credential.objects.filter(is_shared=True).exclude(user=page_user):
                         cred_dict = model_to_dict(cred)
                         cred_dict['title'] = cred.title + ' (' + cred.user.username + ')'
                         data.append(self._truncate_secure_data(cred, cred_dict))
+            elif request.GET['action'] == 'default':
+                cred = request.user.userdata.default_cred
+                cred_dict = model_to_dict(cred)
+                cred_dict['user_id'] = cred_dict['user']
+                cred_dict.pop('user', None)
+                cred_dict['is_default'] = False
+                if cred == page_user.userdata.default_cred:
+                    cred_dict['is_default'] = True
+                data = self._truncate_secure_data(cred, cred_dict)
             else:
                 raise Http404('Invalid action')
         else:
@@ -204,43 +212,65 @@ class CredentialView(View):
     @staticmethod
     def post(request):
         page_user = get_object_or_404(User, pk=request.POST['user_id'])
+
+        # Validate user
         if request.user == page_user or request.user.is_superuser:
             ssh_path = os.path.join(settings.DATA_DIR, 'userdata', str(page_user.username), '.ssh')
+
+            # Save/Update credential
             if request.POST['action'] == 'save':
                 form_data = dict(request.POST.iteritems())
                 form_data['user'] = page_user.id
+
+                # Build credential object
                 if form_data['id'] == 'undefined':
                     cred = Credential(user=page_user)
                 else:
                     cred = get_object_or_404(Credential, pk=form_data['id'])
+
+                # Set form data passwords
                 if form_data['password'] == '':
                     form_data['password'] = cred.password
                 if form_data['sudo_pass'] == '':
                     form_data['sudo_pass'] = cred.sudo_pass
+                else:
+                    form_data['ask_sudo_pass'] = False
+
+                # Check RSA key filename encoding
                 try:
                     str(form_data['rsa_key'])
                 except UnicodeEncodeError:
                     data = {'result': 'fail', 'msg': 'Non-ASCII characters in RSA key filename'}
                 else:
+
+                    # Check if RSA key is in use by another credential
                     duplicate = page_user.credential_set.filter(rsa_key=form_data['rsa_key']).exclude(id=cred.id)
                     if form_data['rsa_key'] == '' or len(duplicate) == 0:
                         current_key = cred.rsa_key
                         form = CredentialForm(form_data or None, instance=cred)
+
+                        # Validate form data
                         if form.is_valid():
+
+                            # Remove old RSA key if changed
                             if form_data['rsa_key'] != current_key:
                                 try:
                                     os.remove(os.path.join(ssh_path, current_key))
                                 except os.error:
                                     pass
+
+                            # Save new RSA key
                             if form_data['upload_rsa'] == 'true':
-                                for key, value in request.FILES.iteritems():
-                                    with open(os.path.join(ssh_path, str(value.name)), 'wb+') as f:
-                                        for chunk in value.chunks():
-                                            f.write(chunk)
+                                with open(os.path.join(ssh_path, form_data['rsa_key']), 'w+b') as f:
+                                    for chunk in request.FILES['0'].chunks():
+                                        f.write(chunk)
+
+                            # Set credential as default
                             if form_data['is_default'] == 'true':
                                 page_user.userdata.default_cred = cred
                                 page_user.userdata.save()
 
+                            # Save credential
                             cred.save()
                             data = {'result': 'ok', 'cred_id': cred.id}
                         else:
@@ -249,20 +279,31 @@ class CredentialView(View):
                         data = {'result': 'fail',
                                 'msg': '"' + form_data['rsa_key'] + '" is in use by another credential'}
 
+            # Delete credential
             elif request.POST['action'] == 'delete':
                 cred = get_object_or_404(Credential, pk=request.POST['id'])
+
+                # List users using this credential as default
                 user_list = list()
                 for user_data in UserData.objects.filter(default_cred=cred):
                     user_list.append(user_data.user.username)
+
+                # Return fail if credential is default for a user(s)
                 if len(user_list) > 0:
                     data = {'result': 'fail', 'msg': 'Credential is default for ' + ', '.join(user_list)}
+
+                # Remove RSA key from disk
                 else:
                     try:
                         os.remove(os.path.join(ssh_path, cred.rsa_key))
                     except os.error:
                         pass
+
+                    # Delete credential
                     cred.delete()
                     data = {'result': 'ok'}
+
+            # Raise error
             else:
                 raise Http404('Invalid action')
         else:

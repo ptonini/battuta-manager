@@ -1,6 +1,7 @@
 ---
 - name: Update m2m-worker properties
   hosts: m2m-worker:!znh
+  become: true
 
   tasks:
     - name: Copy config.properties file

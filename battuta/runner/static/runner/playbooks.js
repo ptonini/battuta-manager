@@ -1,6 +1,5 @@
 function buildArgsSelectionBox() {
-    var savedArguments = $('#saved_arguments');
-    savedArguments.children('option').each(function(){
+    $('#saved_arguments').children('option').each(function(){
         $(this).remove()
     });
     $.ajax({
@@ -9,7 +8,7 @@ function buildArgsSelectionBox() {
         dataType: 'json',
         data: {
             action: 'get_args',
-            playbook_file: $('#playbook_dialog').data('currentPlaybook')
+            playbook_file: $('#arguments_dialog').data('currentPlaybook')
         },
         success: function (data) {
             $.each(data, function (index, args) {
@@ -23,51 +22,60 @@ function buildArgsSelectionBox() {
                 if (args.tags != '') {
                     display += '--tags ' + args.tags
                 }
-                savedArguments.append($('<option>').val(args.id).data(args).append(display))
+                $('#saved_arguments').append($('<option>').val(args.id).data(args).append(display))
             });
-            savedArguments.change().append($('<option>').val('new').append('new'));
+            $('#saved_arguments').append($('<option>').val('new').append('new')).change();
         }
     });
 }
 
+function resetArgumentsForm() {
+    $('#arguments_form').removeData().find('input').val('');
+    $('#check').removeClass('checked_button');
+    $('#delete_args').addClass('hidden');
+}
+
 $(document).ready(function () {
+
     var playbookTable = $('#playbook_table');
-    var playbookDialog = $('#playbook_dialog');
+    var argumentsDialog = $('#arguments_dialog');
     var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
     var jsonBox = $('#json_box');
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
+    var credentials = $('#credentials');
 
-    // Initialize playbook dialog
-    playbookDialog.dialog({
+    // Initialize arguments dialog
+    argumentsDialog.dialog({
         autoOpen: false,
         modal: true,
         show: true,
         hide: true,
-        width: 420,
+        width: 480,
         dialogClass: 'no_title',
         buttons: {
             Run: function (){
-                var become = false;
-                if ($('#become').html() == 'True') {
-                    
-                }
+                var cred = $('option:selected', credentials).data();
+                var askPassword = {
+                    user: (!cred.password && !cred.rsa_key),
+                    sudo: (argumentsDialog.data('sudo') && !cred.sudo_pass && cred.ask_sudo_pass)
+                };
                 var postData = {
                     action: 'run',
-                    playbook: playbookDialog.data('currentPlaybook'),
+                    cred: cred.id,
+                    playbook: argumentsDialog.data('currentPlaybook'),
                     check: $('#check').hasClass('checked_button'),
                     subset: $('#subset').val(),
                     tags: $('#tags').val(),
-                    remote_pass: '',
-                    become_pass: ''
+                    skip_tags: $('#skip_tags').val()
                 };
-                playbookDialog.dialog('close');
-                executePlay(postData, askPassword);
+                argumentsDialog.dialog('close');
+                executeJob(postData, askPassword);
 
             },
             Cancel: function (){
-                playbookDialog.dialog('close');
+                argumentsDialog.dialog('close');
             }
         }
     });
@@ -108,11 +116,12 @@ $(document).ready(function () {
             },
             success: function (data) {
                 if (action == 'Run') {
-                    $('#playbook_dialog_header').html(playbookFile);
-                    $('#become').toggleClass('hidden', !data.require_sudo);
-                    playbookDialog.data(data);
-                    playbookDialog.data('currentPlaybook', playbookFile);
-                    playbookDialog.dialog('open');
+                    $('#arguments_dialog_header').html(playbookFile);
+                    $('#become').toggleClass('hidden', !data.sudo);
+                    buildCredentialsSelectionBox(credentials);
+                    argumentsDialog.data(data);
+                    argumentsDialog.data('currentPlaybook', playbookFile);
+                    argumentsDialog.dialog('open');
                     buildArgsSelectionBox();
                 }
                 else if (action == 'View') {
@@ -126,19 +135,23 @@ $(document).ready(function () {
 
     savedArguments.change(function () {
         var selectedOption = $('option:selected', this);
-        argumentsForm.data('id', selectedOption.data('id'));
-        $('#subset').val(selectedOption.data('subset'));
-        $('#tags').val(selectedOption.data('tags'));
-        $('#delete_args').removeClass('hidden');
+        resetArgumentsForm();
+        if (selectedOption.val() != 'new') {
+            $('#delete_args').removeClass('hidden');
+            argumentsForm.data('id', selectedOption.data('id'));
+            $('#subset').val(selectedOption.data('subset'));
+            $('#tags').val(selectedOption.data('tags'));
+        }
+
     });
 
     argumentsForm.submit(function (event) {
         event.preventDefault();
-        var subset = $('#subset').val();
-        var tags = $('#tags').val();
-        switch ($(document.activeElement).data('action')) {
-            case 'save':
-                if (subset == '' && tags == '' ) {
+        var subset = $('#subset');
+        var tags = $('#tags');
+        switch ($(document.activeElement).html()) {
+            case 'Save':
+                if (subset.val() == '' && tags.val() == '' ) {
                     alertDialog.html('<strong>Submit error<strong><br><br>All fields cannot be blank');
                     alertDialog.dialog('open')
                 }
@@ -150,9 +163,9 @@ $(document).ready(function () {
                         data: {
                             action: 'save_args',
                             args_id: argumentsForm.data('id'),
-                            subset: subset,
-                            tags: tags,
-                            playbook: playbookDialog.data('currentPlaybook')
+                            subset: subset.val(),
+                            tags: tags.val(),
+                            playbook: argumentsDialog.data('currentPlaybook')
                         },
                         success: function (data) {
                             if (data.result == 'ok') {
@@ -170,7 +183,7 @@ $(document).ready(function () {
                     })
                 }
                 break;
-            case 'delete':
+            case 'Delete':
                 $.ajax({
                     url: '/runner/playbooks/',
                     type: 'POST',
@@ -194,7 +207,7 @@ $(document).ready(function () {
                     }
                 });
                 break;
-            case 'check':
+            case 'Check':
                 $(document.activeElement).toggleClass('checked_button');
                 break;
         }

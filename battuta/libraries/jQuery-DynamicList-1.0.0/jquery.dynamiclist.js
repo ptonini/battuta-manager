@@ -127,7 +127,6 @@
                 })
                 .css({
                     'padding-bottom': opts.headerBottomPadding,
-                    'text-transform': 'capitalize'
                 });
             $(listDiv)
                 .attr({
@@ -144,9 +143,11 @@
             if (opts.showTitle) {
                 $(headerDiv).append(
                     $('<span>').css('font-size', opts.titleFontSize).append(
-                        $('<strong>').append(opts.listTitle).after(' ')
+                        $('<strong>').append(opts.listTitle.replace(/_/g, ' '))
                     ),
-                    $('<span>').attr('id', opts.listTitle + '_count').after(' '))
+                    $('<span>').attr('id', opts.listTitle + '_count'),
+                    $('<span>').css('margin-right', '5px')
+                )
             }
 
             if (opts.itemToggle) {
@@ -171,7 +172,7 @@
                                 $(this).toggleClass('toggle-on', addClass);
                             });
                         })
-                        .after(' ')
+                        .css('margin-right', '5px')
 
                     )
                     .append($('<button>')
@@ -186,6 +187,7 @@
                         })
                         .html($('<span>').html('I'))
                     )
+                    .append($('<span>').css('margin-right', '5px'))
             }
 
             if (opts.showAddButton) {

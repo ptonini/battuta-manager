@@ -1,32 +1,3 @@
-function buildCredentialsSelector(start_value) {
-    var credentials = $('#credentials');
-    credentials.children('option').each(function(){
-        $(this).remove()
-    });
-    $.ajax({
-        url: '/users/credentials/',
-        type: 'GET',
-        dataType: 'json',
-        data: {
-            action: 'list',
-            user_id: $('#user_id').val()
-        },
-        success: function (data) {
-            $.each(data, function (index, cred) {
-                var display = cred.title;
-                if (cred.is_default) {
-                    display += ' (default)';
-                    if (start_value == null) {
-                        start_value = cred.id
-                    }
-                }
-                credentials.append($('<option>').val(cred.id).data(cred).append(display))
-            });
-            credentials.val(start_value).change().append($('<option>').val('new').append('new'));
-        }
-    });
-}
-
 function resetCredentialForm() {
     $('#credential_form').removeData()
         .data({upload_rsa: false, rsa_key: ''})
@@ -36,27 +7,52 @@ function resetCredentialForm() {
     $('#cred_sudo_user').attr('placeholder', 'root');
     $('#delete_cred').addClass('hidden');
     $('#cred_rsakey').fileinput('reset');
+    $('#ask_sudo_pass').addClass('checked_button').prop('disabled', false);
 }
 
 $(document).ready(function () {
 
-    var confirmChangesDialog = $('#confirm_changes_dialog');
     var alertDialog = $('#alert_dialog');
     var timezones = $('#timezones');
     var userTimezone = $('#user_timezone');
-    var page = $('#page');
     var addPassword1 = $('#add_password1');
     var addPassword2 = $('#add_password2');
     var credRsaKey = $('#cred_rsakey');
     var credentialDialog = $('#credential_dialog');
+    var confirmChangesDialog = $('#confirm_changes_dialog')
     var credentials = $('#credentials');
     var credentialForm = $("#credential_form");
+
+    var page = 'view';
+    if (window.location.href.split('/').indexOf('new') > -1) {
+        page = 'new';
+    }
 
     // Build timezone selection box
     timezones.timezones();
 
-    // Initialize delete dialog
-
+    // Initialize confirm changes dialog
+    confirmChangesDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Yes: function () {
+                credentialDialog.dialog('close');
+                confirmChangesDialog.dialog('close');
+                credentialForm.submit();
+            },
+            No: function () {
+                credentialDialog.dialog('close');
+                confirmChangesDialog.dialog('close');
+            },
+            Cancel: function () {
+                confirmChangesDialog.dialog('close');
+            }
+        }
+    });
 
     // Initialize credentials dialog
     credentialDialog.dialog({
@@ -69,26 +65,7 @@ $(document).ready(function () {
         buttons: {
             Done: function () {
                 if (credentialForm.data('changed')) {
-                    confirmChangesDialog.dialog({
-                        modal: true,
-                        show: true,
-                        hide: true,
-                        dialogClass: 'no_title',
-                        buttons: {
-                            Yes: function () {
-                                credentialDialog.dialog('close');
-                                confirmChangesDialog.dialog('close');
-                                credentialForm.submit();
-                            },
-                            No: function () {
-                                credentialDialog.dialog('close');
-                                confirmChangesDialog.dialog('close');
-                            },
-                            Cancel: function () {
-                                confirmChangesDialog.dialog('close');
-                            }
-                        }
-                    });
+                    confirmChangesDialog.dialog('open')
                 }
                 else {
                     credentialDialog.dialog('close');
@@ -124,10 +101,10 @@ $(document).ready(function () {
                 data: postData,
                 success: function (data) {
                     if (data.result == 'ok') {
-                        if (page.val() == 'new') {
+                        if (page == 'new') {
                             location.reload();
                         }
-                        else if (page.val() == 'view') {
+                        else if (page == 'view') {
                             alertDialog.html('<strong>User saved</strong>').dialog('open');
                         }
                     }
@@ -138,7 +115,7 @@ $(document).ready(function () {
             });
         }
 
-        if (page.val() == 'new') {
+        if (page == 'new') {
             postData.username = $('#username').val();
             postData.password = addPassword1.val();
             if (postData.password == addPassword2.val()) {
@@ -148,7 +125,7 @@ $(document).ready(function () {
                 alertDialog.html('<strong>Passwords do not match</strong>').dialog('open')
             }
         }
-        else if (page.val() == 'view') {
+        else if (page == 'view') {
             saveUser(postData)
         }
         addPassword1.val('');
@@ -196,7 +173,7 @@ $(document).ready(function () {
         event.preventDefault();
         credentialDialog.dialog('open');
         resetCredentialForm();
-        buildCredentialsSelector()
+        buildCredentialsSelectionBox(credentials)
     });
 
     // Initialize RSA key upload field
@@ -219,6 +196,7 @@ $(document).ready(function () {
         var selectedOption = $('option:selected', this);
         resetCredentialForm();
         if (selectedOption.val() != 'new') {
+            $('#delete_cred').removeClass('hidden');
             credentialForm.data('cred_id', selectedOption.data('id'));
             credentialForm.data('rsa_key', selectedOption.data('rsa_key'));
             $("#cred_title").val(selectedOption.data('title'));
@@ -226,16 +204,15 @@ $(document).ready(function () {
             $("#cred_sudo_user").val(selectedOption.data('sudo_user'));
             $('#cred_is_shared').toggleClass('checked_button', selectedOption.data('is_shared'));
             $('#cred_is_default').toggleClass('checked_button', selectedOption.data('is_default'));
-            $('#ask_sudo_pass').toggleClass('checked_button', selectedOption.data('ask_sudo_pass'));
+            $('#ask_sudo_pass')
+                .toggleClass('checked_button', selectedOption.data('ask_sudo_pass'))
+                .prop('disabled', selectedOption.data('sudo_pass'));
             credRsaKey.fileinput('refresh', {initialCaption: selectedOption.data('rsa_key')});
             if (selectedOption.data('password')) {
                 $("#cred_pass").attr('placeholder', '********');
             }
             if (selectedOption.data('sudo_pass')) {
                 $("#cred_sudo_pass").attr('placeholder', '********');
-            }
-            if (selectedOption.html() != 'new') {
-                $('#delete_cred').removeClass('hidden');
             }
             credentialForm.off('change').data('changed', false).change(function () {
                 $(this).data('changed', true)
@@ -258,8 +235,9 @@ $(document).ready(function () {
                 processData: false,
                 contentType: false,
                 success: function (data) {
+                    console.log(data.cred_id);
                     if (data.result == 'ok') {
-                        buildCredentialsSelector(data.cred_id);
+                        buildCredentialsSelectionBox(credentials, data.cred_id);
                     }
                     else if (data.result == 'fail') {
                         alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
@@ -291,7 +269,6 @@ $(document).ready(function () {
                 break;
             default:
                 // Define post variables
-                console.log(credentialForm.data());
                 postData.append('action', 'save');
                 postData.append('title', $("#cred_title").val());
                 postData.append('username', $("#cred_username").val());

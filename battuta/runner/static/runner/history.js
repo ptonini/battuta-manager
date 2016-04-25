@@ -26,6 +26,9 @@ $(document).ready(function () {
                     case 'finished':
                         $(node).css('color', 'green');
                         break;
+                    case 'finished with errors':
+                        $(node).css('color', 'orange');
+                        break;
                     case 'failed':
                         $(node).css('color', 'red');
                         break;

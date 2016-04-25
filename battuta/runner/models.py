@@ -12,6 +12,7 @@ class AdHocTask(models.Model):
 class PlaybookArgs(models.Model):
     playbook = models.CharField(max_length=64)
     tags = models.CharField(max_length=64, blank=True, null=True)
+    skip_tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
 
     class Meta:
@@ -26,8 +27,11 @@ class Runner(models.Model):
     status = models.CharField(max_length=32)
     message = models.CharField(max_length=1024, blank=True, null=True)
     tags = models.CharField(max_length=64, blank=True, null=True)
+    skip_tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
+    show_skipped = models.BooleanField(default=True)
+    data = dict()
 
 
 class RunnerPlay(models.Model):

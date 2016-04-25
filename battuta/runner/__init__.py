@@ -1,4 +1,5 @@
 import os
+import django.db
 
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
@@ -8,12 +9,11 @@ from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
-import django.db
+from .callbacks import BattutaCallback, TestCallback
+
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-
-from .callbacks import BattutaCallback, TestCallback
 
 AnsibleOptions = namedtuple('Options', ['connection',
                                         'module_path',
@@ -37,7 +37,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'syntax'])
 
 
-def play_runner(run_data, runner):
+def play_runner(runner):
 
     runner.pid = os.getpid()
     runner.status = 'starting'
@@ -48,72 +48,78 @@ def play_runner(run_data, runner):
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
 
-    passwords = {'conn_pass': run_data['remote_pass'], 'become_pass': run_data['become_pass']}
+    passwords = {'conn_pass': runner.data['remote_pass'], 'become_pass': runner.data['become_pass']}
 
-    if 'subset' in run_data:
-        inventory.subset(run_data['subset'])
+    if 'subset' in runner.data:
+        inventory.subset(runner.data['subset'])
 
-    if 'connection' not in run_data:
-        run_data['connection'] = 'paramiko'
+    if 'show_skipped' not in runner.data:
+        runner.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
 
-    if 'module_path' not in run_data:
-        run_data['module_path'] = c.DEFAULT_MODULE_PATH
+    if 'connection' not in runner.data:
+        runner.data['connection'] = 'paramiko'
 
-    if 'forks' not in run_data:
-        run_data['forks'] = c.DEFAULT_FORKS
+    if 'module_path' not in runner.data:
+        runner.data['module_path'] = c.DEFAULT_MODULE_PATH
 
-    if 'rsa_key' not in run_data:
-        run_data['rsa_key'] = ''
+    if 'forks' not in runner.data:
+        runner.data['forks'] = c.DEFAULT_FORKS
 
-    if 'become' not in run_data:
-        run_data['become'] = c.DEFAULT_BECOME
+    if 'rsa_key' not in runner.data:
+        runner.data['rsa_key'] = ''
 
-    if 'become_user' not in run_data:
-        run_data['become_user'] = c.DEFAULT_BECOME_USER
+    if 'become' not in runner.data:
+        runner.data['become'] = c.DEFAULT_BECOME
 
-    if 'become_method' not in run_data:
-        run_data['become_method'] = c.DEFAULT_BECOME_METHOD
+    if 'become_user' not in runner.data:
+        runner.data['become_user'] = c.DEFAULT_BECOME_USER
 
-    if 'check' not in run_data:
-        run_data['check'] = None
+    if 'become_method' not in runner.data:
+        runner.data['become_method'] = c.DEFAULT_BECOME_METHOD
 
-    if 'tags' not in run_data:
-        run_data['tags'] = None
+    if 'check' not in runner.data or runner.data['check'] == 'false':
+        runner.data['check'] = False
+    elif runner.data['check'] == 'true':
+        runner.data['show_skipped'] = True
+        runner.data['check'] = True
 
-    if 'skip_tags' not in run_data:
-        run_data['skip_tags'] = None
+    if 'tags' not in runner.data or runner.data['tags'] == '':
+        runner.data['tags'] = None
+
+    if 'skip_tags' not in runner.data or runner.data['skip_tags'] == '':
+        runner.data['skip_tags'] = None
 
     # Create ansible options tuple
-    options = AnsibleOptions(connection=run_data['connection'],
-                             module_path=run_data['module_path'],
-                             forks=run_data['forks'],
-                             remote_user=run_data['username'],
-                             private_key_file=run_data['rsa_key'],
+    options = AnsibleOptions(connection=runner.data['connection'],
+                             module_path=runner.data['module_path'],
+                             forks=runner.data['forks'],
+                             remote_user=runner.data['username'],
+                             private_key_file=runner.data['rsa_key'],
                              ssh_common_args=None,
                              ssh_extra_args=None,
                              sftp_extra_args=None,
                              scp_extra_args=None,
-                             become=run_data['become'],
-                             become_method=run_data['become_method'],
-                             become_user=run_data['become_user'],
+                             become=runner.data['become'],
+                             become_method=runner.data['become_method'],
+                             become_user=runner.data['become_user'],
                              verbosity=None,
-                             check=run_data['check'],
-                             tags=run_data['tags'],
-                             skip_tags=run_data['skip_tags'],
+                             check=runner.data['check'],
+                             tags=runner.data['tags'],
+                             skip_tags=runner.data['skip_tags'],
                              listhosts=None,
                              listtasks=None,
                              listtags=None,
                              syntax=None)
 
-    if 'playbook' in run_data:
+    if 'playbook' in runner.data:
         try:
-            pbex = PlaybookExecutor([run_data['playbook_path']],
+            pbex = PlaybookExecutor([runner.data['playbook_path']],
                                     inventory,
                                     variable_manager,
                                     loader,
                                     options,
                                     passwords)
-            pbex._tqm._stdout_callback = BattutaCallback(runner, 'playbook')
+            pbex._tqm._stdout_callback = BattutaCallback(runner)
             pbex.run()
         except Exception as e:
             runner.status = 'failed'
@@ -121,14 +127,14 @@ def play_runner(run_data, runner):
         else:
             runner.status = 'finished'
 
-    elif 'adhoc_task' in run_data:
-        play = Play().load(run_data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+    elif 'adhoc_task' in runner.data:
+        play = Play().load(runner.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
         try:
             tqm = TaskQueueManager(inventory=inventory,
                                    variable_manager=variable_manager,
                                    passwords=passwords,
                                    loader=loader,
-                                   stdout_callback=BattutaCallback(runner, 'adhoc_task'),
+                                   stdout_callback=BattutaCallback(runner),
                                    options=options)
             tqm.run(play)
         except Exception as e:
@@ -141,6 +147,11 @@ def play_runner(run_data, runner):
         runner.status = 'failed'
         runner.message = 'Invalid form_data'
     django.db.close_old_connections()
+    for play in runner.runnerplay_set.all():
+        for task in play.runnertask_set.all():
+            for result in task.runnerresult_set.all():
+                if result.status in ['unreachable', 'failed', 'error']:
+                    runner.status = 'finished with errors'
     runner.save()
 
 

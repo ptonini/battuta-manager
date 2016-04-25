@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
 from django.forms import model_to_dict
+from django.core.cache import caches
 from pytz import timezone
 from multiprocessing import Process
 
@@ -17,6 +18,7 @@ from users.models import Credential
 from . import play_runner
 
 date_format = '%Y-%m-%d %H:%M:%S'
+runner_cache = caches['battuta-runner']
 
 
 class BaseView(View):
@@ -28,27 +30,20 @@ class BaseView(View):
 class RunnerView(View):
 
     @staticmethod
-    def _run(run_data, runner):
-        try:
-            p = Process(target=play_runner, args=(run_data, runner))
-            p.daemon = False
-            p.start()
-        except Exception as e:
-            runner.delete()
-            return {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
-        else:
-            return {'result': 'ok', 'runner_id': runner.id}
+    def post(request):
 
-    def post(self, request):
-
+        # Run job
         if request.POST['action'] == 'run':
             data = None
             run_data = dict(request.POST.iteritems())
 
-            cred = request.user.userdata.default_cred
             if 'cred' in run_data:
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
+            else:
+                cred = request.user.userdata.default_cred
+
             run_data['username'] = cred.username
+
             if 'remote_pass' not in run_data:
                 run_data['remote_pass'] = cred.password
             if 'become_pass' not in run_data:
@@ -56,7 +51,8 @@ class RunnerView(View):
             if cred.sudo_user:
                 run_data['become_user'] = cred.sudo_user
             if cred.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username), '.ssh', cred.rsa_key)
+                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username),
+                                                   '.ssh', cred.rsa_key)
 
             # Execute playbook
             if 'playbook' in run_data:
@@ -70,7 +66,7 @@ class RunnerView(View):
                     run_data['adhoc_task'] = {
                         'name': run_data['name'],
                         'hosts': run_data['hosts'],
-                        'gather_facts': 'no',
+                        'gather_facts': False,
                         'tasks': [{
                             'action': {
                                 'module': run_data['module'],
@@ -81,17 +77,25 @@ class RunnerView(View):
                 else:
                     data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
             else:
-                raise Http404('Invalid action')
+                raise Http404('Invalid form data')
 
             if data is None:
                 runner_form = RunnerForm(run_data)
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
+                runner.data = run_data
                 runner.save()
-                data = self._run(run_data, runner)
+                try:
+                    p = Process(target=play_runner, args=(runner,))
+                    p.start()
+                except Exception as e:
+                    runner.delete()
+                    data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+                else:
+                    data = {'result': 'ok', 'runner_id': runner.id}
 
-        # Kill task/play
+        # Kill job
         elif request.POST['action'] == 'kill':
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
             try:
@@ -190,10 +194,10 @@ class PlaybookView(BaseView):
             else:
                 playbook = self.load_playbook(request.GET['playbook_file'])
                 if request.GET['action'] == 'get_one':
-                    data = {'require_sudo': False}
+                    data = {'sudo': False}
                     for play in playbook:
                         if 'become' in play and play['become']:
-                            data['require_sudo'] = True
+                            data['sudo'] = True
                     data['playbook'] = playbook
                 elif request.GET['action'] == 'get_args':
                     data = list()
@@ -276,10 +280,14 @@ class ResultView(BaseView):
                 task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
                 data = list()
                 for result in task.runnerresult_set.all():
+                    try:
+                        response = json.loads(result.response)
+                    except ValueError:
+                        response = []
                     data.append([result.host,
                                  result.status,
                                  result.message,
-                                 json.loads(result.response)])
+                                 response])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")

@@ -1,6 +1,7 @@
 import json
 import os
 import csv
+import tempfile
 
 from django.conf import settings
 from django.http import HttpResponse, Http404
@@ -50,53 +51,53 @@ class InventoryView(View):
                             data.append([group.name, group.id])
                 else:
                     return Http404('Invalid node type')
-            elif request.GET['action'] == 'import':
-                source_file = os.path.join(settings.DATA_DIR, request.GET['importFile'])
-                added = 0
-                updated = 0
-                with open(source_file, 'r') as f:
-                    csv_file = csv.reader(f)
-                    header = next(csv_file)
-                    try:
-                        host_index = header.index('host')
-                    except ValueError:
-                        data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
-                    else:
-                        for line in csv_file:
-                            host, created = Host.objects.get_or_create(name=line[host_index])
-                            if created:
-                                added += 1
-                            else:
-                                updated += 1
-                            for index, item in enumerate(line):
-                                if index != host_index and item != '':
-                                    if header[index] == 'group':
-                                        group, created = Group.objects.get_or_create(name=item)
-                                        host.group_set.add(group)
-                                        host.save()
-                                    else:
-                                        var, created = Variable.objects.get_or_create(key=header[index], host=host)
-                                        var.value = item
-                                        var.save()
-                        data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
-                os.remove(source_file)
             else:
                 return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):
-        data = None
-        if request.POST['action'] == 'bulk_remove':
-            for node_id in request.POST.getlist('selection[]'):
-                if request.POST['type'] == 'host':
-                    node = get_object_or_404(Host, pk=node_id)
-                elif request.POST['type'] == 'group':
-                    node = get_object_or_404(Group, pk=node_id)
+        if request.POST['action'] == 'import':
+            if request.POST['type'] == 'csv':
+                csv_file = csv.reader(request.POST.getlist('import_data[]'))
+                header = next(csv_file)
+                try:
+                    host_index = header.index('host')
+                except ValueError:
+                    data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
                 else:
-                    return Http404('Invalid node type')
+                    added = 0
+                    updated = 0
+                    for line in csv_file:
+                        host, created = Host.objects.get_or_create(name=line[host_index])
+                        if created:
+                            added += 1
+                        else:
+                            updated += 1
+                        for index, item in enumerate(line):
+                            if index != host_index and item != '':
+                                if header[index] == 'group':
+                                    group, created = Group.objects.get_or_create(name=item)
+                                    host.group_set.add(group)
+                                    host.save()
+                                else:
+                                    var, created = Variable.objects.get_or_create(key=header[index], host=host)
+                                    var.value = item
+                                    var.save()
+                    data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
+            else:
+                data = {'result': 'failed', 'msg': 'Error: Invalid file type (.' + request.POST['type'] + ')'}
+        elif request.POST['action'] == 'bulk_remove':
+            if request.POST['type'] == 'host':
+                node_class = Host
+            elif request.POST['type'] == 'group':
+                node_class = Group
+            else:
+                raise Http404('Invalid node type')
+            for node_id in request.POST.getlist('selection[]'):
+                node = get_object_or_404(node_class, pk=node_id)
                 node.delete()
-                data = {'result': 'ok'}
+            data = {'result': 'ok'}
         else:
             return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
@@ -109,21 +110,18 @@ class NodesView(View):
     def build_node(node_type, node_id):
         # Build node object
         if node_type == 'host':
-            if node_id == '0':
-                node = Host()
-            else:
-                node = get_object_or_404(Host, pk=node_id)
-            node.form_class = HostForm
+            node_class = Host
+            node_form_class = HostForm
         elif node_type == 'group':
-            if node_id == '0':
-                node = Group()
-            else:
-                node = get_object_or_404(Group, pk=node_id)
-            node.form_class = GroupForm
+            node_class = Group
+            node_form_class = GroupForm
         else:
             raise Http404('Invalid node type')
-        # Build node ancestors list
-        if node_id != '0':
+
+        if node_id == '0':
+            node = node_class()
+        else:
+            node = get_object_or_404(node_class, pk=node_id)
             node.ancestors = list()
             parents = node.group_set.all()
             while len(parents) > 0:
@@ -134,6 +132,7 @@ class NodesView(View):
                         for group in parent.group_set.all():
                             step_list.append(group)
                 parents = step_list
+        node.form_class = node_form_class
         return node
 
     def get(self, request, node_id, node_type):

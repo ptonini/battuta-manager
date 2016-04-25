@@ -18,23 +18,22 @@ except ImportError:
 
 
 class BattutaCallback(CallbackBase):
-    def __init__(self, runner, type):
+    def __init__(self, runner):
         super(BattutaCallback, self).__init__()
         self._runner = runner
-        self._type = type
         self._current_play = None
         self._current_task = None
 
     @staticmethod
-    def __extract_result(result):
+    def _extract_result(result):
         return result._host.get_name(), result._result
 
-    def __save_result(self, host, status, message, result):
+    def _save_result(self, host, status, message, response):
         django.db.close_old_connections()
         runner_result, created = self._current_task.runnerresult_set.get_or_create(host=host)
         runner_result.status = status
         runner_result.message = message
-        runner_result.response = self._dump_results(result._result, keep_invocation=True)
+        runner_result.response = json.dumps(response)
         runner_result.save()
 
     def v2_playbook_on_play_start(self, play):
@@ -44,9 +43,8 @@ class BattutaCallback(CallbackBase):
         if play.__dict__['_attributes']['become']:
             become = True
         play_name = play.__dict__['_attributes']['name']
-        if self._type == 'adhoc_task':
+        if 'adhoc_task' in self._runner.data:
             play_name = 'AdHoc task'
-
         self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
                                                                 become=become,
                                                                 name=play_name)
@@ -63,46 +61,64 @@ class BattutaCallback(CallbackBase):
         self._runner.message = 'No hosts matched'
         self._runner.save()
 
+    def v2_playbook_on_handler_task_start(self, task):
+        pass
+
+    def v2_playbook_on_notify(self, result, handler):
+        pass
+
     def v2_playbook_on_stats(self, stats):
-        print pp.pprint(stats.__dict__)
+        pass
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
-        host, response = self.__extract_result(result)
-        message = self._current_task.module + ' failed'
+        host, response = self._extract_result(result)
+        message = None
+        if 'msg' in response:
+            message = response['msg']
         if 'exception' in response:
             message = 'Exception raised'
         elif self._current_task.module == 'shell' or self._current_task.module == 'script':
             message = response['stdout'] + response['stderr']
-        self.__save_result(host, 'failed', message, result)
+        self._save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):
-        host, response = self.__extract_result(result)
-        message = self._current_task.module + ' successful'
+        host, response = self._extract_result(result)
         status = 'ok'
+        message = None
+        if 'msg' in response:
+            message = response['msg']
+
         if self._current_task.module == 'setup':
             facts = {'ansible_facts': response['ansible_facts']}
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
-                result._result['ansible_facts'] = 'saved to file'
+                response['ansible_facts'] = 'saved to file'
                 message = 'Facts saved to ' + filename
         elif self._current_task.module == 'command' or self._current_task.module == 'script':
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
-        self.__save_result(host, status, message, result)
+        self._save_result(host, status, message, response)
 
     def v2_runner_on_skipped(self, result):
-        host, response = self.__extract_result(result)
-        self.__save_result(host, 'skipped', response['skip_reason'], result)
+        host, response = self._extract_result(result)
+        if self._runner.data['show_skipped']:
+            message = None
+            if 'skip_reason' in response:
+                message = response['skip_reason']
+            elif 'msg' in response:
+                message = response['msg']
+            self._save_result(host, 'skipped', message, response)
 
     def v2_runner_on_unreachable(self, result):
-        host, response = self.__extract_result(result)
+        host, response = self._extract_result(result)
+        message = None
         if 'msg' in response:
             message = response['msg']
-        else:
-            message = 'Host unreachable'
-        self.__save_result(host, 'unreachable', message, result)
+        self._save_result(host, 'unreachable', message, response)
+
+
 
 
 class TestCallback(CallbackBase):

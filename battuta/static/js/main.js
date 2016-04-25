@@ -1,8 +1,3 @@
-//
-String.prototype.isEmpty = function() {
-    return (this.length === 0 || !this.trim());
-};
-
 // Get cookie
 function getCookie(name) {
     var cookieValue = null;
@@ -72,9 +67,7 @@ $.extend($.fn.dataTable.defaults, {
                 }
                 while (cellWidth >= headerWidth);
                 $(rowCells[i]).wrapInner("<div></div>");
-                $(rowCells[i]).children("div").attr('data-toggle', 'tooltip');
-                $(rowCells[i]).children("div").attr('title', cellData);
-                $(rowCells[i]).children("div").html(truncatedData);
+                $(rowCells[i]).children("div").attr({'data-toggle': 'tooltip', title: cellData}).html(truncatedData);
             }
         }
     }
@@ -107,8 +100,8 @@ function popupCenter(url, title, w) {
     }
 }
 
-// Run Ad-Hoc command
-function executePlay(postData, askPassword) {
+// Run Ansible Job
+function executeJob(postData, askPassword) {
     var alertDialog = $('#alert_dialog');           // Alert dialog selector
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector
@@ -133,9 +126,6 @@ function executePlay(postData, askPassword) {
             }
         });
     }
-    
-    // Add username to password field label
-    $('#exec_user').html(postData.executionUser);
     
     // Check if passwords are needed
     if (askPassword.user || askPassword.sudo) {
@@ -219,26 +209,36 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
 }
 
 // Build credentials selection box
-function buildCredentialsSelectionBox(credentials) {
+function buildCredentialsSelectionBox(credentials, start_value) {
+    var runner = true;
+    if (window.location.href.split('/').indexOf('users') > -1) {
+        runner = false;
+    }
+    credentials.children('option').each(function(){
+        $(this).remove()
+    });
     $.ajax({
         url: '/users/credentials/',
         type: 'GET',
         dataType: 'json',
         data: {
             action: 'list',
-            runner: true
+            user_id: $('#user_id').val(),
+            runner: runner
         },
         success: function (data) {
-            var defaultCred = null;
             $.each(data, function (index, cred) {
                 var display = cred.title;
-                if (cred.is_default) {
+                if (cred.is_default && !start_value) {
                     display += ' (default)';
-                    defaultCred = cred.id
+                    start_value = cred.id
                 }
                 credentials.append($('<option>').val(cred.id).data(cred).append(display))
             });
-            credentials.val(defaultCred)
+            if (!runner) {
+                credentials.append($('<option>').val('new').append('new'))
+            }
+            credentials.val(start_value).change()
         }
     });
 }
@@ -249,13 +249,13 @@ $(document).ready(function () {
     var deleteDialog = $('#delete_dialog');
     var alertDialog = $('#alert_dialog');
     var importDialog = $('#import_dialog');
+    var importFile = $('#import_file');
     var selectDialog = $('#select_dialog');
     var nodeDialog = $('#node_dialog');
     var jsonDialog = $('#json_dialog');
     var nodeTypeDialog = $('#node_type_dialog');
     var nodeForm = $('#node_form');
     var patternContainer = $('#pattern_container');     // Ansible host pattern selector
-    var uploadFile = false;
 
     // Initialize delete dialog
     deleteDialog.dialog({
@@ -275,43 +275,6 @@ $(document).ready(function () {
         dialogClass: 'no_title',
         buttons: {
             Ok: function () {
-                $(this).dialog('close');
-            }
-        }
-    });
-
-    // Initialize import dialog
-    importDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        dialogClass: 'no_title',
-        buttons: {
-            Import: function () {
-                if (uploadFile) {
-                    function successCallback(data) {
-                        $.ajax({
-                            url: '/inventory/',
-                            type: 'get',
-                            data: {
-                                action: 'import',
-                                importFile: data.filepaths[0]
-                            },
-                            dataType: 'json',
-                            success: function (data) {
-                                if (data.result == 'ok') {
-                                    importDialog.dialog('close');
-                                }
-                                alertDialog.html('<strong>' + data.msg + '</strong>');
-                                alertDialog.dialog('open')
-                            }
-                        });
-                    }
-                    uploadFiles($('#import_file'), 'import', successCallback)
-                }
-            },
-            Cancel: function () {
                 $(this).dialog('close');
             }
         }
@@ -420,7 +383,8 @@ $(document).ready(function () {
         event.preventDefault();
         var nodeType = $(this).attr('data-type');
         selectDialog.DynamicList({
-            'listTitle': 'selection',
+            'listTitle': 'Select_' + nodeType,
+            'showTitle': true,
             "showListSeparator": true,
             'showFilter': true,
             'headerBottomPadding': 0,
@@ -472,24 +436,69 @@ $(document).ready(function () {
         selectDialog.dialog('open');
     });
 
-    // Open import dialog
+    // Initialize import dialog
+    importDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Import: function () {
+                if (importFile.data('files')) {
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        $.ajax({
+                            url: '/inventory/',
+                            type: 'POST',
+                            data: {
+                                action: 'import',
+                                type: this.fileName.split('.')[ this.fileName.split('.').length - 1],
+                                import_data: this.result.split(/[\r\n]+/g)
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.result == 'ok') {
+                                    importDialog.dialog('close');
+                                }
+                                alertDialog.html('<strong>' + data.msg + '</strong>');
+                                alertDialog.dialog('open');
+                                importFile.removeData('files').fileinput('reset');
+                            }
+                        });
+                    };
+                    reader.onerror = function () {
+                        alertDialog.html('<strong>' + 'FileReader.error' + '</strong>');
+                        alertDialog.dialog('open')
+                    };
+                    reader.fileName = importFile.data('files')[0].name;
+                    reader.readAsText(importFile.data('files')[0]);
+                }
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+
+    // Initialize import data field
+    importFile
+        .change(function (event) {
+            $(this).data('files', event.target.files);
+        })
+        .fileinput({
+            showPreview: false,
+            showRemove: false,
+            showCancel: false,
+            showUpload: false,
+            browseLabel: '',
+            captionClass: 'form-control input-sm',
+            browseClass: 'btn btn-default btn-sm'
+        });
+
+    // Open import data dialog
     $('#import_data').click(function () {
-        // Import data
-        $('#import_file').off().change(function (event) {
-                $(this).data('files', event.target.files);
-                uploadFile = true;
-            })
-            .fileinput({
-                showPreview: false,
-                showRemove: false,
-                showCancel: false,
-                showUpload: false,
-                browseLabel: '',
-                captionClass: 'form-control input-sm',
-                browseClass: 'btn btn-default btn-sm'
-            })
-            .fileinput('reset');
-        importDialog.dialog('open');
+        importDialog.dialog('open')
     });
 
     // Capture enter on password dialog
