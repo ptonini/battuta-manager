@@ -62,13 +62,15 @@ class BattutaCallback(CallbackBase):
         self._runner.save()
 
     def v2_playbook_on_handler_task_start(self, task):
-        pass
-
-    def v2_playbook_on_notify(self, result, handler):
-        pass
+        django.db.close_old_connections()
+        self._current_task = self._current_play.runnertask_set.create(name='Handler: ' + task.get_name().strip())
+        self._current_task.module = task.__dict__['_attributes']['action']
+        self._current_task.save()
 
     def v2_playbook_on_stats(self, stats):
-        pass
+        django.db.close_old_connections()
+        self._runner.stats = stats.__dict__
+        self._runner.save()
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self._extract_result(result)
@@ -117,8 +119,6 @@ class BattutaCallback(CallbackBase):
         if 'msg' in response:
             message = response['msg']
         self._save_result(host, 'unreachable', message, response)
-
-
 
 
 class TestCallback(CallbackBase):

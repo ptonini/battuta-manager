@@ -41,8 +41,8 @@
             'column-count': columnCount.toString(),
             'width': opts.listWidth,
             'height': itemsPerColumn * (parseFloat(listItems.css('line-height')) +
-            parseFloat(listItems.css('padding-top')) +
-            parseFloat(listItems.css('padding-bottom'))) + 'px'
+                                        parseFloat(listItems.css('padding-top')) +
+                                        parseFloat(listItems.css('padding-bottom'))) + 'px'
         });
     }
 
@@ -141,7 +141,7 @@
             }
 
             if (opts.showTitle) {
-                $(headerDiv).append(
+                $(headerDiv).css('color', '#777').append(
                     $('<span>').css('font-size', opts.titleFontSize).append(
                         $('<strong>').append(opts.listTitle.replace(/_/g, ' '))
                     ),

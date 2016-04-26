@@ -12,17 +12,20 @@ function buildArgsSelectionBox() {
         },
         success: function (data) {
             $.each(data, function (index, args) {
-                var display = '';
-                if (args.subset != '') {
-                    display = '--limit ' + args.subset;
+                var display = [];
+                if (args.subset) {
+                    display.push('--limit ' + args.subset);
                 }
-                if (args.subset != '' && args.tags != '') {
-                    display += ' '
+                if (args.tags) {
+                    display.push('--tags ' + args.tags)
                 }
-                if (args.tags != '') {
-                    display += '--tags ' + args.tags
+                if (args.skip_tags) {
+                    display.push('--skip_tags ' + args.skip_tags)
                 }
-                $('#saved_arguments').append($('<option>').val(args.id).data(args).append(display))
+                if (args.extra_vars) {
+                    display.push('--extra_vars ' + args.extra_vars)
+                }
+                $('#saved_arguments').append($('<option>').val(args.id).data(args).append(display.join(' ')))
             });
             $('#saved_arguments').append($('<option>').val('new').append('new')).change();
         }
@@ -141,6 +144,8 @@ $(document).ready(function () {
             argumentsForm.data('id', selectedOption.data('id'));
             $('#subset').val(selectedOption.data('subset'));
             $('#tags').val(selectedOption.data('tags'));
+            $('#skip_tags').val(selectedOption.data('skip_tags'));
+            $('#extra_vars').val(selectedOption.data('extra_vars'));
         }
 
     });
@@ -149,13 +154,11 @@ $(document).ready(function () {
         event.preventDefault();
         var subset = $('#subset');
         var tags = $('#tags');
+        var skip_tags = $('#skip_tags');
+        var extra_vars = $('#extra_vars');
         switch ($(document.activeElement).html()) {
             case 'Save':
-                if (subset.val() == '' && tags.val() == '' ) {
-                    alertDialog.html('<strong>Submit error<strong><br><br>All fields cannot be blank');
-                    alertDialog.dialog('open')
-                }
-                else {
+                if (!(!subset.val() && !tags.val() && !skip_tags.val() && !extra_vars.val())) {
                     $.ajax({
                         url: '/runner/playbooks/',
                         type: 'POST',
@@ -165,19 +168,18 @@ $(document).ready(function () {
                             args_id: argumentsForm.data('id'),
                             subset: subset.val(),
                             tags: tags.val(),
+                            skip_tags: skip_tags.val(),
+                            extra_vars: extra_vars.val(),
                             playbook: argumentsDialog.data('currentPlaybook')
                         },
                         success: function (data) {
                             if (data.result == 'ok') {
                                 buildArgsSelectionBox();
+                                resetArgumentsForm();
                                 savedArguments.val(data.args_id);
-                                argumentsForm.removeData('id');
-                                $('#delete_args').removeClass('hidden');
                             }
                             else if (data.result == 'fail') {
-                                alertDialog.html('<strong>Submit error<strong><br><br>');
-                                alertDialog.append(data.msg);
-                                alertDialog.dialog('open')
+                                alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
                             }
                         }
                     })
@@ -195,14 +197,10 @@ $(document).ready(function () {
                     success: function (data) {
                         if (data.result == 'ok') {
                             buildArgsSelectionBox();
-                            argumentsForm.find('input').val('');
-                            argumentsForm.removeData('id');
-                            $('#delete_args').addClass('hidden');
+                            resetArgumentsForm();
                         }
                         else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Submit error<strong><br><br>');
-                            alertDialog.append(data.msg);
-                            alertDialog.dialog('open')
+                            alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
                         }
                     }
                 });

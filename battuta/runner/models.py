@@ -14,9 +14,10 @@ class PlaybookArgs(models.Model):
     tags = models.CharField(max_length=64, blank=True, null=True)
     skip_tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
+    extra_vars = models.CharField(max_length=128, blank=True, null=True)
 
     class Meta:
-        unique_together = ('playbook', 'tags', 'subset')
+        unique_together = ('playbook', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
 class Runner(models.Model):
@@ -30,7 +31,7 @@ class Runner(models.Model):
     skip_tags = models.CharField(max_length=64, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
-    show_skipped = models.BooleanField(default=True)
+    stats = models.TextField(max_length=4096, blank=True, null=True)
     data = dict()
 
 
@@ -51,7 +52,7 @@ class RunnerResult(models.Model):
     runner_task = models.ForeignKey(RunnerTask)
     host = models.CharField(max_length=64)
     status = models.CharField(max_length=32)
-    message = models.CharField(max_length=32768, blank=True)
-    response = models.CharField(max_length=65536, blank=True)
+    message = models.TextField(max_length=32768, blank=True, null=True)
+    response = models.TextField(max_length=65536, blank=True, null=True)
 
 

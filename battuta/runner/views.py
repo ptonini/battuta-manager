@@ -2,6 +2,7 @@ import json
 import psutil
 import os
 import yaml
+import ast
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -267,6 +268,38 @@ class ResultView(BaseView):
         else:
             if request.GET['action'] == 'status':
                 data = model_to_dict(runner)
+                if runner.stats:
+                    stats = ast.literal_eval(runner.stats)
+                    data['stats_table'] = list()
+                    data.pop('stats', None)
+                    for key, value in stats['processed'].iteritems():
+                        row = [key]
+                        if key in stats['ok']:
+                            row.append(stats['ok'][key])
+                        else:
+                            row.append(0)
+
+                        if key in stats['changed']:
+                            row.append(stats['changed'][key])
+                        else:
+                            row.append(0)
+
+                        if key in stats['dark']:
+                            row.append(stats['dark'][key])
+                        else:
+                            row.append(0)
+
+                        if key in stats['failures']:
+                            row.append(stats['failures'][key])
+                        else:
+                            row.append(0)
+
+                        if key in stats['skipped']:
+                            row.append(stats['skipped'][key])
+                        else:
+                            row.append(0)
+                        data['stats_table'].append(row)
+
                 data['plays'] = list()
                 for play in runner.runnerplay_set.all():
                     play_dict = model_to_dict(play)
@@ -282,7 +315,7 @@ class ResultView(BaseView):
                 for result in task.runnerresult_set.all():
                     try:
                         response = json.loads(result.response)
-                    except ValueError:
+                    except:
                         response = []
                     data.append([result.host,
                                  result.status,

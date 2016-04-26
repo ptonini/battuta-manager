@@ -11,10 +11,8 @@
     - name: Test filecopy
       copy: content="Hello world"
             dest=/tmp/playbook_test
-
-    - name: Delete temp file
-      file: path=/tmp/playbook_test
-            state=absent
+      notify:
+        - Erase playbook_test
 
     - name: Test with items
       lineinfile: line="{{ item }}"
@@ -29,5 +27,11 @@
 
     - name: Delete temp2
       file: path=/tmp/test_2
+            state=absent
+
+
+  handlers:
+    - name: Erase playbook_test
+      file: path=/tmp/playbook_test
             state=absent
 

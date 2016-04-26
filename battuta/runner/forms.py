@@ -18,7 +18,7 @@ class AdHocTaskForm(forms.ModelForm):
 class PlaybookArgsForm(forms.ModelForm):
     class Meta:
         model = PlaybookArgs
-        fields = ['playbook', 'subset', 'tags', 'skip_tags']
+        fields = ['playbook', 'subset', 'tags', 'skip_tags', 'extra_vars']
 
 
 

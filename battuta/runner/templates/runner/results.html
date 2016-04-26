@@ -20,25 +20,29 @@
             <div class="col-md-8 text-right" style="margin: 7px 0">
                 <h5>
                     <button id="cancel_runner" class="btn btn-danger btn-xs" style="display: none;">Cancel</button>
-                    <button id="print_report" class="btn btn-default btn-xs" style="display: none;">Report</button>
+                    <button id="show_stats" class="btn btn-default btn-xs" style="display: none;">Stats</button>
                 </h5>
             </div>
         </div>
         <div class="row">
             <div class="col-md-1">User:</div>
             <div class="col-md-3"><strong>{{ runner.user }}</strong></div>
-            <div class="col-md-1 playbook_only">Subset:</div>
-            <div class="col-md-3 playbook_only"><strong>{{ runner.subset }}</strong></div>
-            <div class="col-md-1 playbook_only">Tags:</div>
-            <div class="col-md-3 playbook_only"><strong>{{ runner.tags }}</strong></div>
+            <div class="playbook_only">
+                <div class="col-md-1">Subset:</div>
+                <div class="col-md-3"><strong>{{ runner.subset }}</strong></div>
+                <div class="col-md-1">Tags:</div>
+                <div class="col-md-3"><strong>{{ runner.tags }}</strong></div>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-1" style="padding-right: 0">Run date:</div>
             <div class="col-md-3"><strong>{{ runner.created_on }}</strong></div>
-            <div class="col-md-1 playbook_only">Check:</div>
-            <div class="col-md-3 playbook_only"><strong>{{ runner.check }}</strong></div>
-            <div class="col-md-1 playbook_only" style="padding-right: 0">Skip tags:</div>
-            <div class="col-md-3 playbook_only"><strong>{{ runner.skip_tags }}</strong></div>
+            <div class="playbook_only">
+                <div class="col-md-1">Check:</div>
+                <div class="col-md-3"><strong>{{ runner.check }}</strong></div>
+                <div class="col-md-1" style="padding-right: 0">Skip tags:</div>
+                <div class="col-md-3"><strong>{{ runner.skip_tags }}</strong></div>
+            </div>
         </div>
         <div class="row" id="message_div" style="display: none">
             <div class="col-md-12">
@@ -47,5 +51,21 @@
         </div>
         <div id="result_container"></div>
     </div>
-
+    <div class="hidden">
+        <div id="stats_dialog" style="overflow-x: hidden;">
+            <h5>Statistics</h5>
+            <table id="stats_table" class="table table-condensed table-hover table-striped">
+                <thead>
+                <tr>
+                    <th class="col-md-3">host</th>
+                    <th class="col-md-1">ok</th>
+                    <th class="col-md-1">changed</th>
+                    <th class="col-md-1">dark</th>
+                    <th class="col-md-1">failures</th>
+                    <th class="col-md-1">skipped</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
 {% endblock %}

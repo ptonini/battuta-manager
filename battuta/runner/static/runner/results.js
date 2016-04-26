@@ -151,6 +151,18 @@ function updateResult(intervalId) {
                 if ($('#end_of_job').length == 0) {
                     $('div[id*="play_"]').last().after($('<hr>').attr({id: 'end_of_job', class: 'medium'}));
                 }
+                if (runner.stats_table) {
+                    var statsTable = $('#stats_table');
+                    $('#show_stats').show();
+                    if (!$.fn.DataTable.isDataTable(statsTable)) {
+                        statsTable.dataTable({
+                            data: runner.stats_table,
+                            paginate: false,
+                            searching: false
+                        });
+                    }
+
+                }
                 $('#running_gif').hide();
                 $('#cancel_runner').hide();
                 $('#print_report').show();
@@ -168,6 +180,24 @@ $(document).ready(function () {
 
     $('.playbook_only').hide();
 
+    // Initialize stats dialog
+    $('#stats_dialog').dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        width: '70%',
+        maxHeight: 520,
+        dialogClass: 'no_title',
+        buttons: {
+            Ok: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+    
+
+    
     // Refresh table until job is complete
     updateResult(0);
     var intervalId = setInterval(function () {
@@ -185,7 +215,12 @@ $(document).ready(function () {
         };
         doc.fromHTML($('#job_result').html(), 15, 15, {'elementHandlers': elementHandler });
         doc.output("dataurlnewwindow");
-    })
+    });
+
+    // Show statistics
+    $('#show_stats').click(function() {
+        $('#stats_dialog').dialog('open')
+    });
 
     // Cancel job
     $('#cancel_runner').click(function () {
