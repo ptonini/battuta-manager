@@ -186,7 +186,6 @@ class PlaybookView(BaseView):
             self.context['user'] = request.user
             return render(request, 'runner/playbooks.html', self.context)
         else:
-
             if request.GET['action'] == 'get_list':
                 data = list()
                 for item in self._build_playbook_list():
@@ -210,22 +209,28 @@ class PlaybookView(BaseView):
 
     @staticmethod
     def post(request):
+
+        # Save or create playbook arguments object
         if request.POST['action'] == 'save_args':
-            try:
-                args = PlaybookArgs.objects.get(playbook=request.POST['playbook'],
-                                                subset=request.POST['subset'],
-                                                tags=request.POST['tags'])
-            except PlaybookArgs.DoesNotExist:
-                args = PlaybookArgs()
+
+            # Create new playbook arguments object if no id is supplied
+            if 'id' in request.POST:
+                args = get_object_or_404(PlaybookArgs, pk=request.POST['id'])
+            else:
+                args = PlaybookArgs(playbook=request.POST['playbook'])
             form = PlaybookArgsForm(request.POST or None, instance=args)
+
+            # Validate form data and save object
             if form.is_valid():
                 form.save(commit=True)
-                data = {'result': 'ok', 'args_id': args.id}
+                data = {'result': 'ok', 'id': args.id}
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
+
+        # Delete playbook arguments
         elif request.POST['action'] == 'del_args':
             try:
-                args = PlaybookArgs(pk=request.POST['args_id'])
+                args = PlaybookArgs(pk=request.POST['id'])
                 args.delete()
                 data = {'result': 'ok'}
             except Exception as e:

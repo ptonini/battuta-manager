@@ -1,4 +1,4 @@
-function buildArgsSelectionBox() {
+function buildArgsSelectionBox(start_value) {
     $('#saved_arguments').children('option').each(function(){
         $(this).remove()
     });
@@ -75,7 +75,6 @@ $(document).ready(function () {
                 };
                 argumentsDialog.dialog('close');
                 executeJob(postData, askPassword);
-
             },
             Cancel: function (){
                 argumentsDialog.dialog('close');
@@ -165,7 +164,7 @@ $(document).ready(function () {
                         dataType: 'json',
                         data: {
                             action: 'save_args',
-                            args_id: argumentsForm.data('id'),
+                            id: argumentsForm.data('id'),
                             subset: subset.val(),
                             tags: tags.val(),
                             skip_tags: skip_tags.val(),
@@ -175,8 +174,7 @@ $(document).ready(function () {
                         success: function (data) {
                             if (data.result == 'ok') {
                                 buildArgsSelectionBox();
-                                resetArgumentsForm();
-                                savedArguments.val(data.args_id);
+                                savedArguments.val(data.id).change();
                             }
                             else if (data.result == 'fail') {
                                 alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
@@ -192,7 +190,7 @@ $(document).ready(function () {
                     dataType: 'json',
                     data: {
                         action: 'del_args',
-                        args_id: argumentsForm.data('id')
+                        id: argumentsForm.data('id')
                     },
                     success: function (data) {
                         if (data.result == 'ok') {
