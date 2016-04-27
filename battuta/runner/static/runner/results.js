@@ -1,11 +1,12 @@
 function updateResult(intervalId) {
 
     var runnerStatus = $('#runner_status');
+    var resultContainer = $('#result_container');
     var playbookOnly = $('.playbook_only');
 
     var divRow = $('<div>').attr('class', 'row');
-    var divCol1 = $('<div>').attr('class', 'col-md-1');
-    var divCol11 = $('<div>').attr('class', 'col-md-11');
+    var divCol1 = $('<div>').attr('class', 'col-md-1 col-xs-1');
+    var divCol11 = $('<div>').attr('class', 'col-md-11 col-xs-5');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
 
     $.ajax({
@@ -14,6 +15,7 @@ function updateResult(intervalId) {
         dataType: 'json',
         data: {action: 'status'},
         success: function (runner) {
+            resultContainer.data(runner);
             switch (runner.status) {
                 case 'running':
                     runnerStatus.css('color', 'blue');
@@ -49,14 +51,12 @@ function updateResult(intervalId) {
                 }
                 if ($(playContainerSelector).length == 0) {
                     playContainer = $('<div>').attr('id', playContainerId);
-                    $('#result_container').append(playContainer);
+                    resultContainer.append(playContainer);
                     playContainer.append(
                         separator, firstRow,
                         divRow.clone().append(
                             divCol1.clone().html('Hosts:'),
-                            divCol11.clone().html('<strong>' + play.hosts + '</strong>')
-                        ),
-                        divRow.clone().append(
+                            divCol11.clone().html('<strong>' + play.hosts + '</strong>'),
                             divCol1.clone().html('Become:'),
                             divCol11.clone().html('<strong>' + play.become + '</strong>')
                         ),
@@ -76,7 +76,8 @@ function updateResult(intervalId) {
                                 divRow.clone().append(
                                     divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
                                         taskTitle,
-                                        $('<table>').addClass('table table-condensed table-hover table-striped')
+                                        $('<table>')
+                                            .addClass('task_table table table-condensed table-hover table-striped')
                                             .attr('id', taskTableId).append(
                                                 $('<thead>').append(
                                                     $('<tr>').append(
@@ -121,10 +122,9 @@ function updateResult(intervalId) {
                                                 break;
                                         }
                                         $(node).children('td:nth-child(4)').html(
-                                            $('<strong>')
-                                                .html('{...}')
-                                                .attr('title', 'Details')
-                                                .css({'float': 'right', 'color': '#777'})
+                                            $('<strong>').html('{ }')
+                                                .attr({title: 'Details', class: 'html_only'})
+                                                .css({float: 'right', color: '#777'})
                                                 .click(function () {
                                                     $('#json_box').JSONView(row.data()[3]).JSONView('collapse', 2);
                                                     $('#json_dialog').dialog('open')
@@ -137,18 +137,14 @@ function updateResult(intervalId) {
                                 }
                             });
                         }
-                        else {
-                            $(taskTableSelector).DataTable().ajax.reload()
-                        }
                     });
                 }
             });
-            if (runner.message) {
-                $('#message_div').show();
-                $('#runner_message').html(runner.message)
-            }
+            $.each($('.task_table').slice(-2) , function(index, table) {
+                $(table).DataTable().ajax.reload()
+            });
             if (['finished', 'finished with errors', 'failed', 'canceled'].indexOf(runner.status) > -1) {
-                if ($('#end_of_job').length == 0) {
+                if ($('#end_of_job').length == 0 && runner.plays[0] && runner.plays[0].name != 'AdHoc task') {
                     $('div[id*="play_"]').last().after($('<hr>').attr({id: 'end_of_job', class: 'medium'}));
                 }
                 if (runner.stats_table) {
@@ -161,11 +157,12 @@ function updateResult(intervalId) {
                             searching: false
                         });
                     }
-
                 }
                 $('#running_gif').hide();
                 $('#cancel_runner').hide();
-                $('#print_report').show();
+                if (['finished', 'finished with errors'].indexOf(runner.status) > -1) {
+                    $('#print_report').show();
+                }
                 clearInterval(intervalId);
             }
             else if (['starting', 'running'].indexOf(runner.status) > -1) {
@@ -177,6 +174,9 @@ function updateResult(intervalId) {
 }
 
 $(document).ready(function () {
+
+    var runnerResult = $('#runner_result');
+    var resultContainer = $('#result_container');
 
     $('.playbook_only').hide();
 
@@ -196,25 +196,26 @@ $(document).ready(function () {
         }
     });
     
-
-    
     // Refresh table until job is complete
     updateResult(0);
     var intervalId = setInterval(function () {
         updateResult(intervalId)
     }, 1000);
 
-
     // Print report
     $('#print_report').click(function () {
-        var doc = new jsPDF();
-        var elementHandler = {
-            '#ignore_pdf': function (element, renderer) {
-                return true;
-            }
-        };
-        doc.fromHTML($('#job_result').html(), 15, 15, {'elementHandlers': elementHandler });
-        doc.output("dataurlnewwindow");
+        var htmlOnly = $('.html_only');
+        var statsDialogCopy = $('#stats_dialog').clone().attr({
+            id: 'temp_container',
+            style: 'border-color: transparent'
+        });
+        htmlOnly.hide();
+        runnerResult.append(statsDialogCopy).css('font-size', 'smaller');
+        window.print();
+        htmlOnly.show();
+        statsDialogCopy.remove();
+        runnerResult.css('font-size', 'small')
+
     });
 
     // Show statistics
@@ -228,7 +229,7 @@ $(document).ready(function () {
             url: '/runner/',
             type: 'POST',
             dataType: 'json',
-            data: {action: 'kill', runner_id: $('#runner_id').val()},
+            data: {action: 'kill', runner_id: resultContainer.data('id')},
             success: function (data) {
                 if (data.result == 'fail') {
                     $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
