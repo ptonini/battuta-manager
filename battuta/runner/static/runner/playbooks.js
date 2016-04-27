@@ -94,13 +94,14 @@ $(document).ready(function () {
         columnDefs: [{
             targets: -1,
             data: null,
-            defaultContent: '' +
-            '<span style="float: right">' +
-            '    <a href=# data-toggle="tooltip" title="Run">' +
-            '        <span class="glyphicon glyphicon-play-circle btn-incell"></span></a>' +
-            '    <a href=# data-toggle="tooltip" title="View">' +
-            '        <span class="glyphicon glyphicon-file btn-incell"></span></a>' +
-            '</span>'
+            defaultContent: $('<span>').css('float', 'right').append(
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
+                ),
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'View'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-file btn-incell')
+                )
+            ).prop('outerHTML')
         }]
     });
 
@@ -146,7 +147,6 @@ $(document).ready(function () {
             $('#skip_tags').val(selectedOption.data('skip_tags'));
             $('#extra_vars').val(selectedOption.data('extra_vars'));
         }
-
     });
 
     argumentsForm.submit(function (event) {

@@ -42,7 +42,8 @@ $(document).ready(function () {
                             'class': 'result',
                             'href' :'#',
                             'data-toggle': 'tooltip',
-                            'title': 'Result'}).append(
+                            'title': 'Result'
+                        }).append(
                             $('<span>').attr('class', 'glyphicon glyphicon-list')
                         )
                     )

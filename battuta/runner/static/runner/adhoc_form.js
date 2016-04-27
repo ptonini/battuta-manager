@@ -61,17 +61,20 @@ $(document).ready(function () {
         columnDefs: [{
             targets: -1,
             data: null,
-            defaultContent: '' +
-            '<span style="float: right">' +
-            '    <a href=# data-toggle="tooltip" title="Run">' +
-            '        <span class="glyphicon glyphicon-play-circle btn-incell"></span></a>' +
-            '    <a href=# data-toggle="tooltip" title="Edit">' +
-            '        <span class="glyphicon glyphicon-edit btn-incell"></span></a>' +
-            '    <a href=# data-toggle="tooltip" title="Delete">' +
-            '        <span class="glyphicon glyphicon-remove-circle btn-incell"></span></a>' +
-            '</span>'
+            defaultContent: $('<span>').css('float', 'right').append(
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
+                ),
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
+                ),
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+                )
+            ).prop('outerHTML')
         }]
     });
+
 
     // Run/Edit/Delete saved adhoc command
     adhocTable.children('tbody').on('click', 'a', function () {
