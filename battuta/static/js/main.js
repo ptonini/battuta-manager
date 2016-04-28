@@ -243,7 +243,40 @@ function buildCredentialsSelectionBox(credentials, start_value) {
     });
 }
 
+// Open Add Node dialog
+function openAddNodeDialog(nodeType, parentList) {
+    var alertDialog = $('#alert_dialog');
+    var nodeForm = $('#node_form');
+    var nodeDialog = $('#node_dialog');
+    $('#node_dialog_header').html('Add ' + nodeType);
+    nodeForm.off('submit').find('input').val('');
+    nodeForm.submit(function(event) {
+        event.preventDefault();
+        $.ajax({
+            url: '/inventory/' + nodeType + '/0/',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'save',
+                name: $('#node_name').val(),
+                description: $('#node_description').val()
+            },
+            success: function (data) {
+                if (data.result == 'ok') {
+                    parentList.DynamicList('load');
+                    nodeDialog.dialog('close');
+                }
+                else if (data.result == 'fail') {
+                    alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
+                }
+            }
+        });
+    });
+    nodeDialog.dialog('open')
+}
+
 $(document).ready(function () {
+
     localStorage.clear();
 
     var deleteDialog = $('#delete_dialog');
@@ -255,7 +288,7 @@ $(document).ready(function () {
     var jsonDialog = $('#json_dialog');
     var nodeTypeDialog = $('#node_type_dialog');
     var nodeForm = $('#node_form');
-    var patternContainer = $('#pattern_container');     // Ansible host pattern selector
+    var patternContainer = $('#pattern_container');
 
     // Initialize delete dialog
     deleteDialog.dialog({
@@ -345,6 +378,8 @@ $(document).ready(function () {
         }
     });
 
+
+
     // Login form
     $('#login_form').submit(function (event) {
         event.preventDefault();
@@ -381,9 +416,9 @@ $(document).ready(function () {
     // Open node select box
     $('.open_node').click(function (event) {
         event.preventDefault();
-        var nodeType = $(this).attr('data-type');
+        var nodeType = $(this).data('type');
         selectDialog.DynamicList({
-            'listTitle': 'Select_' + nodeType,
+            'listTitle': 'Open_' + nodeType,
             'showTitle': true,
             "showListSeparator": true,
             'showFilter': true,
@@ -403,34 +438,7 @@ $(document).ready(function () {
                 selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
             },
             'addButtonAction': function (addButton) {
-                $('#node_dialog_header').html('Add ' + nodeType);
-                $('#node_form').find('input').val('');
-                nodeForm.off('submit');
-                nodeForm.submit(function(event) {
-                    event.preventDefault();
-                    $.ajax({
-                        url: '/inventory/' + nodeType + '/0/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            action: 'save',
-                            name: $('#id_name').val(),
-                            description: $('#id_description').val()
-                        },
-                        success: function (data) {
-                            if (data.result == 'ok') {
-                                selectDialog.DynamicList('load');
-                                nodeDialog.dialog('close');
-                            }
-                            else if (data.result == 'fail') {
-                                alertDialog.html('<strong>Form submit error<br><br></strong>');
-                                alertDialog.append(data.msg);
-                                alertDialog.dialog('open');
-                            }
-                        }
-                    });
-                });
-                nodeDialog.dialog('open')
+                openAddNodeDialog(nodeType, selectDialog)
             }
         });
         selectDialog.dialog('open');
@@ -572,44 +580,7 @@ $(document).ready(function () {
                     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                 },
                 'addButtonAction': function (addButton) {
-                    $('#node_dialog_header').html('Add ' + nodeType);
-                    $('#id_name').val('');
-                    $('#id_description').val('');
-                    nodeDialog.dialog('option', 'buttons', [
-                        {
-                            text: 'Save',
-                            click: function () {
-                                $.ajax({
-                                    url: '/inventory/' + nodeType + '/0/',
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: {
-                                        action: 'save',
-                                        name: $('#id_name').val(),
-                                        description: $('#id_description').val()
-                                    },
-                                    success: function (data) {
-                                        if (data.result == 'OK') {
-                                            selectDialog.DynamicList('load');
-                                            nodeDialog.dialog('close');
-                                        }
-                                        else if (data.result == 'FAIL') {
-                                            alertDialog.html('<strong>Form submit error<br><br></strong>');
-                                            alertDialog.append(data.msg);
-                                            alertDialog.dialog('open');
-                                        }
-                                    }
-                                });
-                            }
-                        },
-                        {
-                            text: 'Cancel',
-                            click: function () {
-                                nodeDialog.dialog('close');
-                            }
-                        }
-                    ]);
-                    nodeDialog.dialog('open')
+                    openAddNodeDialog(nodeType, selectDialog)
                 }
             })
             .dialog('option', 'buttons', [

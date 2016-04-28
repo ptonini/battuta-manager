@@ -162,6 +162,7 @@ class NodesView(View):
     def post(self, request, node_id, node_type):
         node = self.build_node(node_type, node_id)
         if request.POST['action'] == 'save':
+            print request.POST
             form = node.form_class(request.POST or None, instance=node)
             if form.is_valid():
                 node = form.save(commit=True)

@@ -118,44 +118,7 @@ $(document).ready(function () {
                         ]);
                     },
                     'addButtonAction': function (addButton) {
-                        $('#node_dialog_header').html('Add ' + nodeType);
-                        $('#id_name').val('');
-                        $('#id_description').val('');
-                        nodeDialog.dialog('option', 'buttons', [
-                            {
-                                text: 'Save',
-                                click: function () {
-                                    $.ajax({
-                                        url: '/inventory/' + nodeType + '/0/',
-                                        type: 'POST',
-                                        dataType: 'json',
-                                        data: {
-                                            action: 'save',
-                                            name: $('#id_name').val(),
-                                            description: $('#id_description').val()
-                                        },
-                                        success: function (data) {
-                                            if (data.result == 'ok') {
-                                                selectDialog.DynamicList('load');
-                                                nodeDialog.dialog('close');
-                                            }
-                                            else if (data.result == 'fail') {
-                                                alertDialog.html('<strong>Form submit error<br><br></strong>');
-                                                alertDialog.append(data.msg);
-                                                alertDialog.dialog('open');
-                                            }
-                                        }
-                                    });
-                                }
-                            },
-                            {
-                                text: 'Cancel',
-                                click: function () {
-                                    nodeDialog.dialog('close');
-                                }
-                            }
-                        ]);
-                        nodeDialog.dialog('open')
+                        openAddNodeDialog(nodeType, selectDialog)
                     }
                 });
                 selectDialog.dialog('open');
