@@ -40,6 +40,7 @@ class RunnerPlay(models.Model):
     name = models.CharField(max_length=128)
     hosts = models.CharField(max_length=64)
     become = models.BooleanField()
+    gather_facts = models.BooleanField(default=False)
 
 
 class RunnerTask(models.Model):

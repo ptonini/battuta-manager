@@ -1,7 +1,7 @@
 ---
 - name: Deploy Websocket
   hosts: m2m-websocket:!znh
-  beccome: yes
+  become: yes
   roles:
     - common
     - m2m-websocket

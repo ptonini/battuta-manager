@@ -6,7 +6,7 @@
       service:
           name: mongoc
           binary: mongod
-          pidfile: mongoc.pid
+          pidfile: /var/run/mongoc.pid
           port: 27019
           is_java: false
           owner: mongodb

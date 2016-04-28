@@ -36,9 +36,15 @@ class BattutaCallback(CallbackBase):
         runner_result.response = json.dumps(response)
         runner_result.save()
 
+    def v2_playbook_on_no_hosts_matched(self):
+        django.db.close_old_connections()
+        self._runner.message = 'No hosts matched'
+        self._runner.save()
+
     def v2_playbook_on_play_start(self, play):
         django.db.close_old_connections()
         self._runner.status = 'running'
+        pp.pprint(play.__dict__)
         become = False
         if play.__dict__['_attributes']['become']:
             become = True
@@ -47,19 +53,19 @@ class BattutaCallback(CallbackBase):
             play_name = 'AdHoc task'
         self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
                                                                 become=become,
-                                                                name=play_name)
+                                                                name=play_name,
+                                                                gather_facts=play.__dict__['_attributes']['gather_facts'])
         self._runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         django.db.close_old_connections()
-        self._current_task = self._current_play.runnertask_set.create(name=task.get_name().strip())
-        self._current_task.module = task.__dict__['_attributes']['action']
+        module = task.__dict__['_attributes']['action']
+        name = task.get_name().strip()
+        if not self._current_task and self._current_play.gather_facts and module == 'setup':
+            name = 'Gather facts'
+        self._current_task = self._current_play.runnertask_set.create(name=name)
+        self._current_task.module = module
         self._current_task.save()
-
-    def v2_playbook_on_no_hosts_matched(self):
-        django.db.close_old_connections()
-        self._runner.message = 'No hosts matched'
-        self._runner.save()
 
     def v2_playbook_on_handler_task_start(self, task):
         django.db.close_old_connections()
@@ -95,8 +101,8 @@ class BattutaCallback(CallbackBase):
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
-                response['ansible_facts'] = 'saved to file'
-                message = 'Facts saved to ' + filename
+                response['ansible_facts'] = 'saved to disc'
+                message = 'Facts saved to disc'
         elif self._current_task.module == 'command' or self._current_task.module == 'script':
             message = response['stdout'] + response['stderr']
         elif response['changed']:
@@ -192,23 +198,6 @@ class TestCallback(CallbackBase):
     def v2_on_any(self, *args, **kwargs):
         self.on_any(args, kwargs)
 
-    def v2_runner_on_failed(self, result, ignore_errors=False):
-        host = result._host.get_name()
-        self.runner_on_failed(host, result._result, ignore_errors)
-
-    def v2_runner_on_ok(self, result):
-        host = result._host.get_name()
-        self.runner_on_ok(host, result._result)
-
-    def v2_runner_on_skipped(self, result):
-        if c.DISPLAY_SKIPPED_HOSTS:
-            host = result._host.get_name()
-            self.runner_on_skipped(host, self._get_item(getattr(result._result,'results',{})))
-
-    def v2_runner_on_unreachable(self, result):
-        host = result._host.get_name()
-        self.runner_on_unreachable(host, result._result)
-
     def v2_runner_on_no_hosts(self, task):
         self.runner_on_no_hosts()
 
@@ -239,19 +228,10 @@ class TestCallback(CallbackBase):
         host = result._host.get_name()
         self.playbook_on_notify(host, handler)
 
-    def v2_playbook_on_no_hosts_matched(self):
-        self.playbook_on_no_hosts_matched()
-
     def v2_playbook_on_no_hosts_remaining(self):
         self.playbook_on_no_hosts_remaining()
 
-    def v2_playbook_on_task_start(self, task, is_conditional):
-        self.playbook_on_task_start(task, is_conditional)
-
     def v2_playbook_on_cleanup_task_start(self, task):
-        pass #no v1 correspondance
-
-    def v2_playbook_on_handler_task_start(self, task):
         pass #no v1 correspondance
 
     def v2_playbook_on_vars_prompt(self, varname, private=True, prompt=None, encrypt=None, confirm=False, salt_size=None, salt=None, default=None):
@@ -267,12 +247,6 @@ class TestCallback(CallbackBase):
     def v2_playbook_on_not_import_for_host(self, result, missing_file):
         host = result._host.get_name()
         self.playbook_on_not_import_for_host(host, missing_file)
-
-    def v2_playbook_on_play_start(self, play):
-        self.playbook_on_play_start(play.name)
-
-    def v2_playbook_on_stats(self, stats):
-        self.playbook_on_stats(stats)
 
     def v2_on_file_diff(self, result):
         host = result._host.get_name()

@@ -1,6 +1,6 @@
 ---
 - name: 0 Test playbook
-  gather_facts: False
+  gather_facts: True
   hosts: all
   become: False
   
@@ -9,7 +9,7 @@
       command: hostname
 
     - name: Test filecopy
-      copy: content="Hello world"
+      copy: content="{{ ansible_hostname }}"
             dest=/tmp/playbook_test
       notify:
         - Erase playbook_test
@@ -28,7 +28,6 @@
     - name: Delete temp2
       file: path=/tmp/test_2
             state=absent
-
 
   handlers:
     - name: Erase playbook_test
