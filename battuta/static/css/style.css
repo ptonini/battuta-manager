@@ -55,6 +55,14 @@ h5 {
     color: #525252;
 }
 
+.report_field_left {
+    padding: 0 0 0 15px;
+}
+
+.report_field_right {
+    padding: 0 15px 0 0;
+}
+
 .btn-incell {
     font-size: 1.3em;
     padding: 0 3px;

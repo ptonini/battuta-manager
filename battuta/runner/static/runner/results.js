@@ -5,8 +5,9 @@ function updateResult(intervalId) {
     var playbookOnly = $('.playbook_only');
 
     var divRow = $('<div>').attr('class', 'row');
-    var divCol1 = $('<div>').attr('class', 'col-md-1 col-xs-1');
-    var divCol11 = $('<div>').attr('class', 'col-md-11 col-xs-5');
+    var divCol4 = $('<div>').attr('class', 'col-md-4 col-xs-6');
+    var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
+    var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
 
     $.ajax({
@@ -44,7 +45,7 @@ function updateResult(intervalId) {
                 var playContainer = $(playContainerSelector);
                 if (play.name != 'AdHoc task') {
                     playbookOnly.show();
-                    separator = $('<hr>').attr('class', 'medium');
+                    separator = $('<hr>').attr('class', 'medium html_only');
                     firstRow = divRow.clone().append(divCol12.clone().html('<h4>' + play.name + '</h4>'));
                     lastRow = divRow.clone().append(divCol12.clone().html('Tasks:'));
                     taskContainerPadding = taskContainerPadding + 20
@@ -55,10 +56,20 @@ function updateResult(intervalId) {
                     playContainer.append(
                         separator, firstRow,
                         divRow.clone().append(
-                            divCol1.clone().html('Hosts:'),
-                            divCol11.clone().html('<strong>' + play.hosts + '</strong>'),
-                            divCol1.clone().html('Become:'),
-                            divCol11.clone().html('<strong>' + play.become + '</strong>')
+                            divCol4.clone().append(
+                                divRow.clone().append(
+                                    divCol3.clone().html('Hosts:'),
+                                    divCol9.clone().html('<strong>' + play.hosts + '</strong>')
+                                )
+                            )
+                        ),
+                        divRow.clone().append(
+                            divCol4.clone().append(
+                                divRow.clone().append(
+                                    divCol3.clone().html('Become:'),
+                                    divCol9.clone().html('<strong>' + play.become + '</strong>')
+                                )
+                            )
                         ),
                         lastRow
                     );

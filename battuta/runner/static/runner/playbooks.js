@@ -1,5 +1,6 @@
 function buildArgsSelectionBox(start_value) {
-    $('#saved_arguments').children('option').each(function(){
+    var savedArguments = $('#saved_arguments');
+    savedArguments.children('option').each(function(){
         $(this).remove()
     });
     $.ajax({
@@ -25,17 +26,17 @@ function buildArgsSelectionBox(start_value) {
                 if (args.extra_vars) {
                     display.push('--extra_vars ' + args.extra_vars)
                 }
-                $('#saved_arguments').append($('<option>').val(args.id).data(args).append(display.join(' ')))
+                savedArguments.append($('<option>').val(args.id).data(args).append(display.join(' ')))
             });
-            $('#saved_arguments').append($('<option>').val('new').append('new')).change();
+            savedArguments.append($('<option>').val('new').append('new'));
+            if (start_value) {
+                savedArguments.val(start_value).change()
+            }
+            else {
+                savedArguments.change()
+            }
         }
     });
-}
-
-function resetArgumentsForm() {
-    $('#arguments_form').removeData().find('input').val('');
-    $('#check').removeClass('checked_button');
-    $('#delete_args').addClass('hidden');
 }
 
 $(document).ready(function () {
@@ -122,9 +123,7 @@ $(document).ready(function () {
                     $('#arguments_dialog_header').html(playbookFile);
                     $('#become').toggleClass('hidden', !data.sudo);
                     buildCredentialsSelectionBox(credentials);
-                    argumentsDialog.data(data);
-                    argumentsDialog.data('currentPlaybook', playbookFile);
-                    argumentsDialog.dialog('open');
+                    argumentsDialog.data(data).data('currentPlaybook', playbookFile).dialog('open');
                     buildArgsSelectionBox();
                 }
                 else if (action == 'View') {
@@ -138,9 +137,10 @@ $(document).ready(function () {
 
     savedArguments.change(function () {
         var selectedOption = $('option:selected', this);
-        resetArgumentsForm();
+        $('#arguments_form').removeData().find('input').val('');
+        $('#check').removeClass('checked_button');
+        $('#delete_args').toggleClass('hidden', (selectedOption.val() == 'new'));
         if (selectedOption.val() != 'new') {
-            $('#delete_args').removeClass('hidden');
             argumentsForm.data('id', selectedOption.data('id'));
             $('#subset').val(selectedOption.data('subset'));
             $('#tags').val(selectedOption.data('tags'));
@@ -173,8 +173,7 @@ $(document).ready(function () {
                         },
                         success: function (data) {
                             if (data.result == 'ok') {
-                                buildArgsSelectionBox();
-                                savedArguments.val(data.id).change();
+                                buildArgsSelectionBox(data.id);
                             }
                             else if (data.result == 'fail') {
                                 alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
@@ -195,7 +194,6 @@ $(document).ready(function () {
                     success: function (data) {
                         if (data.result == 'ok') {
                             buildArgsSelectionBox();
-                            resetArgumentsForm();
                         }
                         else if (data.result == 'fail') {
                             alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');

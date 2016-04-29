@@ -263,7 +263,9 @@ function openAddNodeDialog(nodeType, parentList) {
             },
             success: function (data) {
                 if (data.result == 'ok') {
-                    parentList.DynamicList('load');
+                    if (parentList) {
+                        parentList.DynamicList('load');
+                    }
                     nodeDialog.dialog('close');
                 }
                 else if (data.result == 'fail') {

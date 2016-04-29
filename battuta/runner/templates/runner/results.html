@@ -7,7 +7,7 @@
         <h4 style="margin-top: 20px"><strong>{{ runner.name }}</strong></h4>
         <div class="row html_only">
             <div class="col-md-1 col-xs-1" style="margin: 7px 0"><h5>Status:</h5></div>
-            <div class="col-md-8 col-xs-8" style="margin: 7px 0">
+            <div class="col-md-8 col-xs-8" style="margin: 7px 0; padding-left: 0">
                 <h5>
                     <strong id="runner_status" style="padding-right: 10px">{{ runner.status }}</strong>
                     <strong id="runner_message" style="color: red"></strong>
@@ -28,47 +28,51 @@
         <div class="row">
             <div class="col-md-4 col-xs-6">
                 <div class="row">
-                    <div class="col-md-4 col-xs-4">User:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.user }}</strong></div>
+                    <div class="col-md-3 col-xs-3 report_field_left">User:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.user }}</strong></div>
                 </div>
             </div>
-            <div class="col-md-4 col-xs-6">
+            <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
-                    <div class="col-md-4 col-xs-4">Subset:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.subset }}</strong></div>
+                    <div class="col-md-3 col-xs-3 report_field_left">Subset:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.subset }}</strong></div>
                 </div>
             </div>
-            <div class="col-md-4 col-xs-6">
+            <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
-                    <div class="col-md-4 col-xs-4">Tags:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.tags }}</strong></div>
+                    <div class="col-md-3 col-xs-3 report_field_left">Tags:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.tags }}</strong></div>
                 </div>
             </div>
-            <div class="col-md-4 col-md-push-8 col-xs-6">
+            <div class="col-md-4 col-md-push-8 col-xs-6 playbook_only">
                 <div class="row">
-                    <div class="col-md-4 col-xs-4">Skip tags:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.skip_tags }}</strong></div>
+                    <div class="col-md-3 col-xs-3 report_field_left">Skip tags:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.skip_tags }}</strong></div>
                 </div>
             </div>
-            <div class="col-md-4 col-xs-6">
+            <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
-                    <div class="col-md-4 col-xs-4">Extra vars:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.extra_vars }}</strong></div>
+                    <div class="col-md-3 col-xs-3 report_field_left">Extra vars:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.extra_vars }}</strong></div>
                 </div>
             </div>
-            <div class="col-md-4 col-md-pull-8 col-xs-6">
+            <div class="col-md-4 col-md-pull-8 col-xs-6 playbook_only">
                 <div class="row">
-                    <div class="col-md-4 col-xs-4">Check:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.check }}</strong></div>
-                </div>
-            </div>
-            <div class="col-md-4 col-xs-6">
-                <div class="row">
-                    <div class="col-md-4 col-xs-4">Run date:</div>
-                    <div class="col-md-8 col-xs-8"><strong>{{ runner.created_on }}</strong></div>
+                    <div class="col-md-3 col-xs-3 report_field_left">Check:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.check }}</strong></div>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-4 col-xs-6">
+                <div class="row">
+                    <div class="col-md-3 col-xs-3 report_field_left">Run date:</div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.created_on }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+
         <div id="result_container"></div>
     </div>
     <div id="stats_container" class="playbook_only" style="display: none;">
