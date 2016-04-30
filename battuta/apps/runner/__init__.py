@@ -4,6 +4,7 @@ import django.db
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
+from ansible.utils.vars import load_extra_vars
 from ansible.inventory import Inventory
 from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
@@ -31,6 +32,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'check',
                                         'tags',
                                         'skip_tags',
+                                        'extra_vars',
                                         'listhosts',
                                         'listtasks',
                                         'listtags',
@@ -39,19 +41,11 @@ AnsibleOptions = namedtuple('Options', ['connection',
 
 def play_runner(runner):
 
+
+
     runner.pid = os.getpid()
     runner.status = 'starting'
     runner.save()
-
-    variable_manager = VariableManager()
-    loader = DataLoader()
-    inventory = Inventory(loader=loader, variable_manager=variable_manager)
-    variable_manager.set_inventory(inventory)
-
-    passwords = {'conn_pass': runner.data['remote_pass'], 'become_pass': runner.data['become_pass']}
-
-    if 'subset' in runner.data:
-        inventory.subset(runner.data['subset'])
 
     if 'show_skipped' not in runner.data:
         runner.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
@@ -89,6 +83,9 @@ def play_runner(runner):
     if 'skip_tags' not in runner.data or runner.data['skip_tags'] == '':
         runner.data['skip_tags'] = None
 
+    if 'extra_vars' not in runner.data or runner.data['extra_vars'] == '':
+        runner.data['skip_tags'] = None
+
     # Create ansible options tuple
     options = AnsibleOptions(connection=runner.data['connection'],
                              module_path=runner.data['module_path'],
@@ -106,10 +103,21 @@ def play_runner(runner):
                              check=runner.data['check'],
                              tags=runner.data['tags'],
                              skip_tags=runner.data['skip_tags'],
+                             extra_vars=runner.data['extra_vars'],
                              listhosts=None,
                              listtasks=None,
                              listtags=None,
                              syntax=None)
+
+    variable_manager = VariableManager()
+    loader = DataLoader()
+    inventory = Inventory(loader=loader, variable_manager=variable_manager)
+    variable_manager.set_inventory(inventory)
+    variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
+    passwords = {'conn_pass': runner.data['remote_pass'], 'become_pass': runner.data['become_pass']}
+
+    if 'subset' in runner.data:
+        inventory.subset(runner.data['subset'])
 
     if 'playbook' in runner.data:
         try:

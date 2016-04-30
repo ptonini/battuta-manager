@@ -9,6 +9,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
+from constance import config
 
 from .models import User, UserData, Credential
 from .forms import UserForm, UserDataForm, CredentialForm
@@ -57,9 +58,9 @@ class UserView(View):
                 if request.user.id == int(request.GET['user_id']) or request.user.is_superuser:
                     view_user = get_object_or_404(User, pk=request.GET['user_id'])
                     tz = timezone(view_user.userdata.timezone)
-                    view_user.date_joined = view_user.date_joined.astimezone(tz).ctime()
+                    view_user.date_joined = view_user.date_joined.astimezone(tz).strftime(config.date_format)
                     if view_user.last_login is not None:
-                        view_user.last_login = view_user.last_login.astimezone(tz).ctime()
+                        view_user.last_login = view_user.last_login.astimezone(tz).strftime(config.date_format)
                     context['view_user'] = view_user
                     return render(request, "users/view.html", context)
                 else:
@@ -72,9 +73,9 @@ class UserView(View):
                 for user in User.objects.all():
                     tz = timezone(user.userdata.timezone)
                     if user.last_login is not None:
-                        user.last_login = user.last_login.astimezone(tz).ctime()
+                        user.last_login = user.last_login.astimezone(tz).strftime(config.date_format)
                     data.append([user.username,
-                                 user.date_joined.astimezone(tz).ctime(),
+                                 user.date_joined.astimezone(tz).strftime(config.date_format),
                                  user.last_login,
                                  user.is_superuser,
                                  user.id])

@@ -31,13 +31,12 @@ function AnsibleModules (name) {
 AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
     var name = this.name;
     fieldsContainer.html('');
-    var sudoButton = $('<div>').attr({class: 'text-right', style: 'margin-top: 22px'}).append(
-        $('<button>').html('Sudo').attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm'})
-            .off('click').click(function(event) {
-                event.preventDefault();
-                $(this).toggleClass('checked_button');
-            })
-    );
+    var sudoButton = $('<button>').html('Sudo')
+        .attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm'})
+        .off('click').click(function(event) {
+            event.preventDefault();
+            $(this).toggleClass('checked_button');
+        });
     var divRow = $('<div>').attr('class', 'row');
     var divCol1 = $('<div>').attr('class', 'col-md-1');
     var divCol4 = $('<div>').attr('class', 'col-md-4');
@@ -50,6 +49,13 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
             window.open('http://docs.ansible.com/ansible/'+ name + '_module.html')
         });
     switch (name) {
+        case 'ping':
+            fieldsContainer.append(
+                divRow.clone().append(
+                    divCol5.clone().attr('style', 'margin-bottom: 15px;').append(sudoButton)
+                )
+            );
+            break;
         case 'shell':
             fieldsContainer.append(
                 divRow.clone().append(
@@ -63,7 +69,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
                             })
                         )
                     ),
-                    divCol1.clone().append(sudoButton)
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 )
             );
             break;

@@ -9,17 +9,15 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
 from django.forms import model_to_dict
-from django.core.cache import caches
 from pytz import timezone
 from multiprocessing import Process
+from constance import config
 
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from .models import AdHocTask, Runner, RunnerTask, PlaybookArgs
-from users.models import Credential
 from . import play_runner
 
-date_format = '%Y-%m-%d %H:%M:%S'
-runner_cache = caches['battuta-runner']
+from apps.users.models import Credential
 
 
 class BaseView(View):
@@ -251,7 +249,7 @@ class HistoryView(BaseView):
                 data = list()
                 for runner in Runner.objects.all():
                     if runner.user == request.user or request.user.is_superuser == 1:
-                        data.append([runner.created_on.astimezone(tz).strftime(date_format),
+                        data.append([runner.created_on.astimezone(tz).strftime(config.date_format),
                                      runner.user.username,
                                      runner.name,
                                      runner.status,
@@ -266,7 +264,7 @@ class ResultView(BaseView):
         runner = get_object_or_404(Runner, pk=runner_id)
         if 'action' not in request.GET:
             tz = timezone(runner.user.userdata.timezone)
-            runner.created_on = runner.created_on.astimezone(tz).strftime(date_format)
+            runner.created_on = runner.created_on.astimezone(tz).strftime(config.date_format)
             self.context['user'] = request.user
             self.context['runner'] = runner
             return render(request, "runner/results.html", self.context)
@@ -319,13 +317,13 @@ class ResultView(BaseView):
                 data = list()
                 for result in task.runnerresult_set.all():
                     try:
-                        response = json.loads(result.response)
+                        result.response = json.loads(result.response)
                     except:
-                        response = []
+                        result.response = []
                     data.append([result.host,
                                  result.status,
                                  result.message,
-                                 response])
+                                 result.response])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")

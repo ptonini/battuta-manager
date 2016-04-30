@@ -4,7 +4,7 @@
     <facet type="django" name="Django">
       <configuration>
         <option name="rootFolder" value="$MODULE_DIR$" />
-        <option name="settingsModule" value="battuta/settings.py" />
+        <option name="settingsModule" value="main/settings.py" />
         <option name="manageScript" value="manage.py" />
         <option name="environment" value="&lt;map/&gt;" />
       </configuration>
@@ -20,10 +20,11 @@
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/users/templates/users" />
-        <option value="$MODULE_DIR$/runner/templates/runner" />
-        <option value="$MODULE_DIR$/inventory/templates/inventory" />
-        <option value="$MODULE_DIR$/templates" />
+        <option value="$MODULE_DIR$/apps/users/templates/users" />
+        <option value="$MODULE_DIR$/apps/runner/templates/runner" />
+        <option value="$MODULE_DIR$/apps/inventory/templates/inventory" />
+        <option value="$MODULE_DIR$/main/templates" />
+        <option value="$MODULE_DIR$/libs" />
       </list>
     </option>
   </component>
