@@ -54,12 +54,12 @@ class RunnerView(View):
                                                    '.ssh', cred.rsa_key)
 
             # Execute playbook
-            if 'playbook' in run_data:
+            if run_data['type'] == 'playbook':
                 run_data['playbook_path'] = os.path.join(settings.DATA_DIR, 'playbooks', run_data['playbook'])
                 run_data['name'] = run_data['playbook']
 
             # Execute task
-            elif 'module' in run_data:
+            elif run_data['type'] == 'adhoc':
                 adhoc_form = AdHocTaskForm(run_data)
                 if adhoc_form.is_valid():
                     run_data['adhoc_task'] = {
@@ -272,37 +272,7 @@ class ResultView(BaseView):
             if request.GET['action'] == 'status':
                 data = model_to_dict(runner)
                 if runner.stats:
-                    stats = ast.literal_eval(runner.stats)
-                    data['stats_table'] = list()
-                    data.pop('stats', None)
-                    for key, value in stats['processed'].iteritems():
-                        row = [key]
-                        if key in stats['ok']:
-                            row.append(stats['ok'][key])
-                        else:
-                            row.append(0)
-
-                        if key in stats['changed']:
-                            row.append(stats['changed'][key])
-                        else:
-                            row.append(0)
-
-                        if key in stats['dark']:
-                            row.append(stats['dark'][key])
-                        else:
-                            row.append(0)
-
-                        if key in stats['failures']:
-                            row.append(stats['failures'][key])
-                        else:
-                            row.append(0)
-
-                        if key in stats['skipped']:
-                            row.append(stats['skipped'][key])
-                        else:
-                            row.append(0)
-                        data['stats_table'].append(row)
-
+                    data['stats'] = ast.literal_eval(runner.stats)
                 data['plays'] = list()
                 for play in runner.runnerplay_set.all():
                     play_dict = model_to_dict(play)

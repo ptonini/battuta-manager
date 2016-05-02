@@ -44,25 +44,44 @@ class BattutaCallback(CallbackBase):
     def v2_playbook_on_play_start(self, play):
         django.db.close_old_connections()
         self._runner.status = 'running'
-        pp.pprint(play.__dict__)
+
+        # Set play become value
         become = False
         if play.__dict__['_attributes']['become']:
             become = True
-        play_name = play.__dict__['_attributes']['name']
-        if 'adhoc_task' in self._runner.data:
+
+        # Set play name
+        play_name = play.get_name().strip()
+        if self._runner.type == 'adhoc':
             play_name = 'AdHoc task'
+
+        # Set play gather facts value
+        gather_facts = False
+        if play.__dict__['_attributes']['gather_facts']:
+            gather_facts = play.__dict__['_attributes']['gather_facts']
+
+        # Create play model object
         self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
                                                                 become=become,
                                                                 name=play_name,
-                                                                gather_facts=play.__dict__['_attributes']['gather_facts'])
+                                                                gather_facts=gather_facts)
         self._runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         django.db.close_old_connections()
+
+        # Set task module
         module = task.__dict__['_attributes']['action']
-        name = task.get_name().strip()
-        if not self._current_task and self._current_play.gather_facts and module == 'setup':
+
+        # Set task name
+        if module == 'setup' and not self._current_task and self._current_play.gather_facts:
             name = 'Gather facts'
+        elif module == 'include':
+            name = 'Including ' + task.__dict__['_ds']['include']
+        else:
+            name = task.get_name().strip()
+
+        # Create task model object
         self._current_task = self._current_play.runnertask_set.create(name=name)
         self._current_task.module = module
         self._current_task.save()
@@ -75,7 +94,35 @@ class BattutaCallback(CallbackBase):
 
     def v2_playbook_on_stats(self, stats):
         django.db.close_old_connections()
-        self._runner.stats = stats.__dict__
+        stats_dict = stats.__dict__
+        self._runner.stats = list()
+        for key, value in stats_dict['processed'].iteritems():
+            row = [key]
+            if key in stats_dict['ok']:
+                row.append(stats_dict['ok'][key])
+            else:
+                row.append(0)
+
+            if key in stats_dict['changed']:
+                row.append(stats_dict['changed'][key])
+            else:
+                row.append(0)
+
+            if key in stats_dict['dark']:
+                row.append(stats_dict['dark'][key])
+            else:
+                row.append(0)
+
+            if key in stats_dict['failures']:
+                row.append(stats_dict['failures'][key])
+            else:
+                row.append(0)
+
+            if key in stats['skipped']:
+                row.append(stats['skipped'][key])
+            else:
+                row.append(0)
+            self._runner.stats.append(row)
         self._runner.save()
 
     def v2_runner_on_failed(self, result, ignore_errors=False):

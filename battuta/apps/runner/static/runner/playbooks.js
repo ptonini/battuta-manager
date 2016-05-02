@@ -67,6 +67,7 @@ $(document).ready(function () {
                 };
                 var postData = {
                     action: 'run',
+                    type: 'playbook',
                     cred: cred.id,
                     playbook: argumentsDialog.data('currentPlaybook'),
                     check: $('#check').hasClass('checked_button'),

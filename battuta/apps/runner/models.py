@@ -22,6 +22,7 @@ class PlaybookArgs(models.Model):
 
 class Runner(models.Model):
     user = models.ForeignKey(User)
+    type = models.CharField(max_length=8, choices=(('playbook', 'playbook'), ('adhoc', 'adhoc')))
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128)
     pid = models.IntegerField(blank=True, null=True)
@@ -29,6 +30,7 @@ class Runner(models.Model):
     message = models.CharField(max_length=1024, blank=True, null=True)
     tags = models.CharField(max_length=64, blank=True, null=True)
     skip_tags = models.CharField(max_length=64, blank=True, null=True)
+    extra_vars = models.CharField(max_length=128, blank=True, null=True)
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)

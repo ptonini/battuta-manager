@@ -1,5 +1,6 @@
 import os
 import django.db
+import pprint
 
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
@@ -10,10 +11,10 @@ from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
+
 from .callbacks import BattutaCallback, TestCallback
 
 
-import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 AnsibleOptions = namedtuple('Options', ['connection',
@@ -40,8 +41,6 @@ AnsibleOptions = namedtuple('Options', ['connection',
 
 
 def play_runner(runner):
-
-
 
     runner.pid = os.getpid()
     runner.status = 'starting'
@@ -84,7 +83,7 @@ def play_runner(runner):
         runner.data['skip_tags'] = None
 
     if 'extra_vars' not in runner.data or runner.data['extra_vars'] == '':
-        runner.data['skip_tags'] = None
+        runner.data['extra_vars'] = []
 
     # Create ansible options tuple
     options = AnsibleOptions(connection=runner.data['connection'],
@@ -153,7 +152,7 @@ def play_runner(runner):
             runner.status = 'finished'
     else:
         runner.status = 'failed'
-        runner.message = 'Invalid form_data'
+        runner.message = 'Invalid runner data'
     django.db.close_old_connections()
     for play in runner.runnerplay_set.all():
         for task in play.runnertask_set.all():

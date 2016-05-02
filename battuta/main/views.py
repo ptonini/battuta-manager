@@ -1,4 +1,3 @@
-import socket
 import json
 
 from django.shortcuts import render
@@ -15,8 +14,8 @@ class MainView(View):
         if 'action' not in request.GET:
             return render(request, "main.html", {'user': request.user})
         else:
-            data = dict()
             if request.user.is_authenticated:
+                data = dict()
                 if request.GET['action'] == 'config':
                     for key, value in settings.CONSTANCE_CONFIG.iteritems():
                         data[key] = config.__getattr__(key)

@@ -159,9 +159,7 @@ $(document).ready(function () {
                             resetAdHocForm()
                         }
                         else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Submit error<strong><br><br>');
-                            alertDialog.append(data.msg);
-                            alertDialog.dialog('open')
+                            alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
                        }
                     }
                 });
@@ -169,6 +167,7 @@ $(document).ready(function () {
             case 'Run':
                 var cred = $('option:selected', credentials).data();
                 postData.action = 'run';
+                postData.type = 'adhoc';
                 postData.name = 'AdHoc task - ' + currentModule.name;
                 postData.cred = credentials.val();
                 var askPassword = {

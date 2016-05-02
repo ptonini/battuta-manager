@@ -6,7 +6,7 @@ from .models import AdHocTask, PlaybookArgs, Runner
 class RunnerForm(forms.ModelForm):
     class Meta:
         model = Runner
-        fields = ['name', 'check', 'tags', 'skip_tags', 'subset']
+        fields = ['name', 'check', 'tags', 'skip_tags', 'subset', 'type', 'extra_vars']
 
 
 class AdHocTaskForm(forms.ModelForm):
@@ -19,6 +19,3 @@ class PlaybookArgsForm(forms.ModelForm):
     class Meta:
         model = PlaybookArgs
         fields = ['playbook', 'subset', 'tags', 'skip_tags', 'extra_vars']
-
-
-

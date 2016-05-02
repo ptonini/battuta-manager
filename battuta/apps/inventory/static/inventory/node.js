@@ -357,6 +357,7 @@ $(document).ready(function () {
     $('#gather_facts').click(function () {
         var postData = {
             action: 'run',
+            type: 'adhoc',
             name: 'Gather facts',
             hosts: nodeName,
             module: 'setup',
