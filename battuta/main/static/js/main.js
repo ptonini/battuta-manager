@@ -2,18 +2,6 @@ $(document).ready(function () {
 
     localStorage.clear();
 
-    $.ajax({
-        url: '/',
-        type: 'GET',
-        dataType: 'json',
-        data: {action: 'config'},
-        success: function (data) {
-            Object.keys(data).forEach(function (key, index) {
-                sessionStorage.setItem(key, data[key])
-            });
-        }
-    });
-
     var deleteDialog = $('#delete_dialog');
     var alertDialog = $('#alert_dialog');
     var importDialog = $('#import_dialog');
@@ -129,6 +117,9 @@ $(document).ready(function () {
             },
             success: function (data) {
                 if (data.result == 'ok') {
+                     Object.keys(data.config).forEach(function (key, index) {
+                        sessionStorage.setItem(key, data[key])
+                    });
                     window.open('/', '_self')
                 }
                 else if (data.result == 'fail') {

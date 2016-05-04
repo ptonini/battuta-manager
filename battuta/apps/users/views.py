@@ -33,7 +33,12 @@ class LoginView(View):
                 if user.is_active:
                     login(request, user)
                     set_default_cred(request.POST['username'])
-                    data = {'result': 'ok'}
+                    constance_config = dict()
+                    for key, value in settings.CONSTANCE_CONFIG.iteritems():
+                        constance_config[key] = config.__getattr__(key)
+                    constance_config['user_id'] = request.user.id
+                    constance_config['user_timezone'] = request.user.userdata.timezone
+                    data = {'result': 'ok', 'config': constance_config}
                 else:
                     data = {'result': 'fail', 'msg': 'Account disabled'}
             else:
