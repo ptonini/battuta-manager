@@ -17,7 +17,7 @@ from .forms import UserForm, UserDataForm, CredentialForm
 
 def set_default_cred(username):
     user = User.objects.get(username=username)
-    cred = Credential.objects.get_or_create(user=user, title='Default')[0]
+    cred, created = Credential.objects.get_or_create(user=user, title='Default')
     cred.username = user.username
     cred.save()
     user.userdata.default_cred = cred
@@ -68,7 +68,7 @@ class UserView(View):
             elif kwargs['page'] == 'list':
                 return render(request, "users/list.html", context)
         else:
-            if request.GET['action'] == 'get_users':
+            if request.GET['action'] == 'list':
                 data = list()
                 for user in User.objects.all():
                     tz = timezone(user.userdata.timezone)

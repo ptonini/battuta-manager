@@ -28,8 +28,7 @@ $(document).ready(function () {
         page = 'new';
     }
 
-    // Build timezone selection box
-    timezones.timezones();
+
 
     // Initialize confirm changes dialog
     confirmChangesDialog.dialog({
@@ -74,25 +73,18 @@ $(document).ready(function () {
         }
     });
 
-    // Set timezone
+    // Build timezone selection box
+    timezones.timezones();
     if (userTimezone.val() != '') {
         timezones.val(userTimezone.val());
     }
     else {
-        timezones.val('America/Sao_Paulo')
+        timezones.val(sessionStorage.default_timezone)
     }
 
     // Save user
     $('#user_form').submit(function (event) {
         event.preventDefault();
-        var postData = {
-            action: 'save',
-            user_id: $('#user_id').val(),
-            first_name: $('#first_name').val(),
-            last_name: $('#last_name').val(),
-            email: $('#email').val(),
-            timezone: $('#timezones').val()
-        };
         function saveUser(postData) {
             $.ajax({
                 url: '',
@@ -114,6 +106,14 @@ $(document).ready(function () {
                 }
             });
         }
+        var postData = {
+            action: 'save',
+            user_id: $('#user_id').val(),
+            first_name: $('#first_name').val(),
+            last_name: $('#last_name').val(),
+            email: $('#email').val(),
+            timezone: $('#timezones').val()
+        };
 
         if (page == 'new') {
             postData.username = $('#username').val();

@@ -20,6 +20,7 @@ class MainView(View):
                     for key, value in settings.CONSTANCE_CONFIG.iteritems():
                         data[key] = config.__getattr__(key)
                     data['user_id'] = request.user.id
+                    data['user_timezone'] = request.user.userdata.timezone
                 return HttpResponse(json.dumps(data), content_type="application/json")
             else:
                 raise PermissionDenied

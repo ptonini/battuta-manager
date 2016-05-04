@@ -7,11 +7,11 @@ $(document).ready(function () {
     var userTable = userTableSelector.DataTable({
         pageLength: 10,
         ajax: {
-            url: '/users/list/',
+            url: '',
             type: 'GET',
             dataSrc: '',
             data: {
-                action: 'get_users'
+                action: 'list'
             }
         },
         drawCallback: function () {
