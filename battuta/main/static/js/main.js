@@ -101,6 +101,20 @@ $(document).ready(function () {
         }
     });
 
+    // Load session data
+    if ($('#is_authenticated').val()) {
+        $.ajax({
+            url: '/',
+            type: 'GET',
+            dataType: 'json',
+            data: {action: 'config'},
+            success: function (data) {
+                Object.keys(data).forEach(function (key) {
+                    sessionStorage.setItem(key, data[key])
+                });
+            }
+        });
+    }
 
     // Login form
     $('#login_form').submit(function (event) {
@@ -117,9 +131,6 @@ $(document).ready(function () {
             },
             success: function (data) {
                 if (data.result == 'ok') {
-                     Object.keys(data.config).forEach(function (key, index) {
-                        sessionStorage.setItem(key, data[key])
-                    });
                     window.open('/', '_self')
                 }
                 else if (data.result == 'fail') {

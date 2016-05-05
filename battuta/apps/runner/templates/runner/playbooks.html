@@ -5,90 +5,95 @@
     <h3>Playbooks</h3>
     <hr>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-5">
             <table id="playbook_table" class="table table-condensed table-hover table-striped">
                 <thead>
                 <tr>
-                    <th class="col-md-4">name</th>
-                    <th class="col-md-3">hosts</th>
-                    <th class="col-md-3">file</th>
+                    <th class="col-md-10">name</th>
                     <th class="col-md-2">&nbsp;</th>
                 </tr>
                 </thead>
             </table>
         </div>
-    </div>
-    <div class="hidden">
-        <div id="arguments_dialog" style="overflow: hidden">
-            <h5>
-                <span id="arguments_dialog_header"></span>
-                <small id="become" style="line-height: 16px; float: right; color: #777">Require sudo</small>
-            </h5>
-            <hr>
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="saved_arguments" class="requiredField" style="font-size: 13px; padding: 6px 0">
-                        Saved arguments
-                    </label>
-                </div>
-                <div class="col-md-8">
-                    <select class="select form-control input-sm" id="saved_arguments"></select>
-                </div>
-            </div>
-            <br>
-            <form id="arguments_form" method="post">
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+            <hr class="visible-xs visible-sm medium">
+            <div id="arguments_box">
+                <h5>
+                    <span id="arguments_box_header">&nbsp;</span>
+                    <small id="become" class="hidden" style="line-height: 16px; float: right; color: #777">
+                        Require sudo
+                    </small>
+                </h5>
+                <hr>
                 <div class="row">
-                    <div class="col-md-9">
-                        <div class="form-group">
-                            <label for="subset" class="requiredField">Limit</label>
-                            <div class="input-group">
-                                <input class="form-control input-sm pattern-input" id="subset" type="text">
+                    <div class="col-md-4">
+                        <label for="saved_arguments" class="requiredField" style="font-size: 13px; padding: 6px 0">
+                            Saved arguments
+                        </label>
+                    </div>
+                    <div class="col-md-8">
+                        <select class="select form-control input-sm" id="saved_arguments"></select>
+                    </div>
+                </div>
+                <br>
+                <form id="arguments_form" method="post">
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="form-group">
+                                <label for="subset" class="requiredField">Limit</label>
+                                <div class="input-group">
+                                    <input class="form-control input-sm pattern-input" id="subset" type="text">
                                 <span class="input-group-btn">
                                     <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
                                         <span class="glyphicon glyphicon-edit"></span>
                                     </button>
                                 </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-right" style="margin-top: 22px">
+                            <button id="check" class="btn btn-default btn-sm" data-action="check">Check</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="tags" class="requiredField">Tags</label>
+                                <input class="form-control input-sm" id="tags"type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="skip_tags" class="requiredField">Skip tags</label>
+                                <input class="form-control input-sm" id="skip_tags" type="text">
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 text-right" style="margin-top: 22px">
-                        <button id="check" class="btn btn-default btn-sm" data-action="check">Check</button>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="extra_vars" class="requiredField">Extra vars</label>
+                                <input class="form-control input-sm" id="extra_vars" type="text">
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button id="save_args" class="btn btn-default btn-xs">Save</button>
+                            <button id="delete_args" class="btn btn-default btn-xs hidden">Delete</button>
+                        </div>
+                    </div>
+                </form>
+                <br>
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="tags" class="requiredField">Tags</label>
-                            <input class="form-control input-sm" id="tags"type="text">
-                        </div>
+                        <label for="credentials" class="requiredField">Select credentials</label>
+                        <select class="select form-control input-sm" id="credentials"></select>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="skip_tags" class="requiredField">Skip tags</label>
-                            <input class="form-control input-sm" id="skip_tags" type="text">
-                        </div>
+                    <div class="col-md-6 text-right" style="margin-top: 22px">
+                        <button id="run_playbook" class="btn btn-default btn-sm hidden">Run</button>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="extra_vars" class="requiredField">Extra vars</label>
-                            <input class="form-control input-sm" id="extra_vars" type="text">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <button id="save_args" class="btn btn-default btn-xs">Save</button>
-                        <button id="delete_args" class="btn btn-default btn-xs hidden">Delete</button>
-                    </div>
-                </div>
-            </form>
-            <br>
-            <div class="row">
-                <div class="col-md-6">
-                    <label for="credentials" class="requiredField">Select credentials</label>
-                    <select class="select form-control input-sm" id="credentials"></select>
                 </div>
             </div>
         </div>

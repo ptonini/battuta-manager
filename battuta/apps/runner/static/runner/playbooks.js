@@ -9,7 +9,7 @@ function buildArgsSelectionBox(start_value) {
         dataType: 'json',
         data: {
             action: 'get_args',
-            playbook_file: $('#arguments_dialog').data('currentPlaybook')
+            playbook_file: $('#arguments_box').data('currentPlaybook')
         },
         success: function (data) {
             $.each(data, function (index, args) {
@@ -28,6 +28,7 @@ function buildArgsSelectionBox(start_value) {
                 }
                 savedArguments.append($('<option>').val(args.id).data(args).append(display.join(' ')))
             });
+            console.log('aqui');
             savedArguments.append($('<option>').val('new').append('new'));
             if (start_value) {
                 savedArguments.val(start_value).change()
@@ -42,47 +43,16 @@ function buildArgsSelectionBox(start_value) {
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
-    var argumentsDialog = $('#arguments_dialog');
+    var argumentsBox = $('#arguments_box');
     var alertDialog = $('#alert_dialog');
     var jsonDialog = $('#json_dialog');
     var jsonBox = $('#json_box');
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
+    var runPlaybook = $('#run_playbook');
 
-    // Initialize arguments dialog
-    argumentsDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        width: 480,
-        dialogClass: 'no_title',
-        buttons: {
-            Run: function (){
-                var cred = $('option:selected', credentials).data();
-                var askPassword = {
-                    user: (!cred.password && !cred.rsa_key),
-                    sudo: (argumentsDialog.data('sudo') && !cred.sudo_pass && cred.ask_sudo_pass)
-                };
-                var postData = {
-                    action: 'run',
-                    type: 'playbook',
-                    cred: cred.id,
-                    playbook: argumentsDialog.data('currentPlaybook'),
-                    check: $('#check').hasClass('checked_button'),
-                    subset: $('#subset').val(),
-                    tags: $('#tags').val(),
-                    skip_tags: $('#skip_tags').val()
-                };
-                argumentsDialog.dialog('close');
-                executeJob(postData, askPassword);
-            },
-            Cancel: function (){
-                argumentsDialog.dialog('close');
-            }
-        }
-    });
+    buildCredentialsSelectionBox(credentials);
 
     // Build playbook table
     playbookTable.DataTable({
@@ -104,7 +74,17 @@ $(document).ready(function () {
                     $('<span>').attr('class', 'glyphicon glyphicon-file btn-incell')
                 )
             ).prop('outerHTML')
-        }]
+        }],
+        drawCallback: function () {
+            var tableApi = this.api();
+            tableApi.rows().every( function (rowIndex) {
+                var row = tableApi.row(rowIndex);
+                var node = row.node();
+                if (row.data()[1] == false) {
+                    $(node).css('color', 'red');
+                }
+            });
+        }
     });
 
     playbookTable.children('tbody').on('click', 'a', function () {
@@ -120,18 +100,25 @@ $(document).ready(function () {
                 playbook_file: playbookFile
             },
             success: function (data) {
-                if (action == 'Run') {
-                    $('#arguments_dialog_header').html(playbookFile);
-                    $('#become').toggleClass('hidden', !data.sudo);
-                    buildCredentialsSelectionBox(credentials);
-                    argumentsDialog.data(data).data('currentPlaybook', playbookFile).dialog('open');
-                    buildArgsSelectionBox();
+                if (data.result == 'ok') {
+                    if (action == 'Run') {
+                        window.location.href = '#arguments_box';
+                        $('#arguments_box_header').html(playbookFile);
+                        $('#become').toggleClass('hidden', !data.sudo);
+                        runPlaybook.removeClass('hidden');
+                        argumentsBox.data(data).data('currentPlaybook', playbookFile);
+                        buildArgsSelectionBox();
+
+                    }
+                    else if (action == 'View') {
+                        jsonBox.JSONView(data.playbook).JSONView('collapse', 2);
+                        jsonDialog.dialog('open');
+                    }
                 }
-                else if (action == 'View') {
-                    jsonBox.JSONView(data.playbook);
-                    jsonBox.JSONView('collapse', 2);
-                    jsonDialog.dialog('open');
+                else {
+                    alertDialog.html('<strong>Invalid YAML file<strong><br><br>').append(data.msg).dialog('open')
                 }
+
             }
         });
     });
@@ -170,7 +157,7 @@ $(document).ready(function () {
                             tags: tags.val(),
                             skip_tags: skip_tags.val(),
                             extra_vars: extra_vars.val(),
-                            playbook: argumentsDialog.data('currentPlaybook')
+                            playbook: argumentsBox.data('currentPlaybook')
                         },
                         success: function (data) {
                             if (data.result == 'ok') {
@@ -207,4 +194,26 @@ $(document).ready(function () {
                 break;
         }
     });
+
+    runPlaybook.click(function (event) {
+        event.preventDefault();
+        var cred = $('option:selected', credentials).data();
+        var askPassword = {
+            user: (!cred.password && !cred.rsa_key),
+            sudo: (argumentsBox.data('sudo') && !cred.sudo_pass && cred.ask_sudo_pass)
+        };
+        var postData = {
+            action: 'run',
+            type: 'playbook',
+            cred: cred.id,
+            playbook: argumentsBox.data('currentPlaybook'),
+            check: $('#check').hasClass('checked_button'),
+            subset: $('#subset').val(),
+            tags: $('#tags').val(),
+            skip_tags: $('#skip_tags').val(),
+            extra_vars: $('#extra_vars').val()
+        };
+        executeJob(postData, askPassword);
+    })
+
 });

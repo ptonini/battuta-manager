@@ -3,7 +3,7 @@
   gather_facts: True
   hosts: all
   become: True
-  
+
   tasks:
 
     - name: Test filecopy

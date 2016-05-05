@@ -13,8 +13,8 @@ from pytz import timezone
 from multiprocessing import Process
 from constance import config
 
+from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
-from .models import AdHocTask, Runner, RunnerTask, PlaybookArgs
 from . import play_runner
 
 from apps.users.models import Credential
@@ -162,22 +162,9 @@ class PlaybookView(BaseView):
     def load_playbook(f):
         with open(os.path.join(settings.DATA_DIR, 'playbooks', f), 'r') as yaml_file:
             try:
-                return yaml.load(yaml_file)
+                return yaml.load(yaml_file), True, None
             except yaml.YAMLError as e:
-                print type(e).__name__ + ': ' + e.__str__()
-                return None
-
-    @classmethod
-    def _build_playbook_list(cls):
-        playbook_list = list()
-        playbook_dir = os.path.join(settings.DATA_DIR, 'playbooks')
-        for root, dirs, files in os.walk(playbook_dir):
-            for f in files:
-                if f.split('.')[-1] == 'yml':
-                    playbook = cls.load_playbook(f)
-                    if playbook:
-                        playbook_list.append({f: playbook})
-        return playbook_list
+                return None, False, type(e).__name__ + ': ' + e.__str__()
 
     def get(self, request):
         if 'action' not in request.GET:
@@ -186,23 +173,30 @@ class PlaybookView(BaseView):
         else:
             if request.GET['action'] == 'get_list':
                 data = list()
-                for item in self._build_playbook_list():
-                    playbook_file, playbook = item.items()[0]
-                    data.append([playbook[0]['name'], playbook[0]['hosts'], playbook_file])
+                playbook_dir = os.path.join(settings.DATA_DIR, 'playbooks')
+                for root, dirs, files in os.walk(playbook_dir):
+                    for f in files:
+                        if f.split('.')[-1] == 'yml':
+                            playbook, is_valid, msg = self.load_playbook(f)
+                            data.append([f, is_valid])
             else:
-                playbook = self.load_playbook(request.GET['playbook_file'])
-                if request.GET['action'] == 'get_one':
-                    data = {'sudo': False}
-                    for play in playbook:
-                        if 'become' in play and play['become']:
-                            data['sudo'] = True
-                    data['playbook'] = playbook
-                elif request.GET['action'] == 'get_args':
-                    data = list()
-                    for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']):
-                        data.append(model_to_dict(args))
+                playbook, is_valid, msg = self.load_playbook(request.GET['playbook_file'])
+                if is_valid:
+                    if request.GET['action'] == 'get_one':
+                        data = {'sudo': False}
+                        for play in playbook:
+                            if 'become' in play and play['become']:
+                                data['sudo'] = True
+                        data['playbook'] = playbook
+                        data['result'] = 'ok'
+                    elif request.GET['action'] == 'get_args':
+                        data = list()
+                        for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']).values():
+                            data.append(args)
+                    else:
+                        raise Http404('Invalid action')
                 else:
-                    raise Http404('Invalid action')
+                    data = {'result': 'fail', 'msg': str(msg)}
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
@@ -248,7 +242,7 @@ class HistoryView(BaseView):
                 tz = timezone(request.user.userdata.timezone)
                 data = list()
                 for runner in Runner.objects.all():
-                    if runner.user == request.user or request.user.is_superuser == 1:
+                    if runner.user == request.user or request.user.is_superuser:
                         data.append([runner.created_on.astimezone(tz).strftime(config.date_format),
                                      runner.user.username,
                                      runner.name,
@@ -265,7 +259,6 @@ class ResultView(BaseView):
         if 'action' not in request.GET:
             tz = timezone(runner.user.userdata.timezone)
             runner.created_on = runner.created_on.astimezone(tz).strftime(config.date_format)
-            self.context['user'] = request.user
             self.context['runner'] = runner
             return render(request, "runner/results.html", self.context)
         else:
@@ -274,13 +267,11 @@ class ResultView(BaseView):
                 if runner.stats:
                     data['stats'] = ast.literal_eval(runner.stats)
                 data['plays'] = list()
-                for play in runner.runnerplay_set.all():
-                    play_dict = model_to_dict(play)
-                    play_dict['tasks'] = list()
-                    for task in play.runnertask_set.all():
-                        task_dict = model_to_dict(task)
-                        play_dict['tasks'].append(task_dict)
-                    data['plays'].append(play_dict)
+                for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
+                    play['tasks'] = list()
+                    for task in RunnerTask.objects.filter(runner_play_id=play['id']).values():
+                        play['tasks'].append(task)
+                    data['plays'].append(play)
 
             elif request.GET['action'] == 'task_results':
                 task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
@@ -288,7 +279,7 @@ class ResultView(BaseView):
                 for result in task.runnerresult_set.all():
                     try:
                         result.response = json.loads(result.response)
-                    except:
+                    except ValueError:
                         result.response = []
                     data.append([result.host,
                                  result.status,
