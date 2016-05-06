@@ -28,7 +28,6 @@ function buildArgsSelectionBox(start_value) {
                 }
                 savedArguments.append($('<option>').val(args.id).data(args).append(display.join(' ')))
             });
-            console.log('aqui');
             savedArguments.append($('<option>').val('new').append('new'));
             if (start_value) {
                 savedArguments.val(start_value).change()
@@ -45,12 +44,12 @@ $(document).ready(function () {
     var playbookTable = $('#playbook_table');
     var argumentsBox = $('#arguments_box');
     var alertDialog = $('#alert_dialog');
-    var jsonDialog = $('#json_dialog');
-    var jsonBox = $('#json_box');
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
     var runPlaybook = $('#run_playbook');
+    var playbookEditor = $('#playbook_editor');
+    var editor = ace.edit("playbook_editor");
 
     buildCredentialsSelectionBox(credentials);
 
@@ -70,8 +69,8 @@ $(document).ready(function () {
                 $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
                     $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
                 ),
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'View'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-file btn-incell')
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
                 )
             ).prop('outerHTML')
         }],
@@ -87,6 +86,7 @@ $(document).ready(function () {
         }
     });
 
+    // Playbook table button actions
     playbookTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
         var playbookFile = $(this).closest('td').prev().html();
@@ -102,27 +102,37 @@ $(document).ready(function () {
             success: function (data) {
                 if (data.result == 'ok') {
                     if (action == 'Run') {
+                        argumentsBox.data(data).data('currentPlaybook', playbookFile);
                         window.location.href = '#arguments_box';
                         $('#arguments_box_header').html(playbookFile);
                         $('#become').toggleClass('hidden', !data.sudo);
                         runPlaybook.removeClass('hidden');
-                        argumentsBox.data(data).data('currentPlaybook', playbookFile);
                         buildArgsSelectionBox();
 
                     }
-                    else if (action == 'View') {
-                        jsonBox.JSONView(data.playbook).JSONView('collapse', 2);
-                        jsonDialog.dialog('open');
+                    else if (action == 'Edit') {
+                        playbookEditor.data(data).data('currentPlaybook', playbookFile);
+                        editor.session.getUndoManager().reset();
+                        editor.setTheme("ace/theme/chrome");
+                        editor.getSession().setMode("ace/mode/yaml");
+                        editor.setValue(data.text);
+                        editor.selection.moveCursorFileStart();
+                        editor.renderer.setShowPrintMargin(false);
+                        editor.setHighlightActiveLine(false);
+                        $('#playbook_row').hide();
+                        $('#editor_row').show();
+                        $('#editor_row_header').html(playbookFile);
                     }
                 }
-                else {
-                    alertDialog.html('<strong>Invalid YAML file<strong><br><br>').append(data.msg).dialog('open')
+                else if (data.result == 'fail') {
+                    alertDialog.append(data.msg).dialog('open')
                 }
 
             }
         });
     });
 
+    // Load arguments
     savedArguments.change(function () {
         var selectedOption = $('option:selected', this);
         $('#arguments_form').removeData().find('input').val('');
@@ -137,6 +147,7 @@ $(document).ready(function () {
         }
     });
 
+    // Submit arguments form
     argumentsForm.submit(function (event) {
         event.preventDefault();
         var subset = $('#subset');
@@ -195,6 +206,45 @@ $(document).ready(function () {
         }
     });
 
+    // Cancel playbook edit
+    $('#cancel_edit').click(function () {
+        $('#playbook_row').show();
+        $('#editor_row').hide();
+    });
+
+    // Reload playbook from server
+    $('#reload_playbook').click(function () {
+        editor.setValue(playbookEditor.data('text'));
+        editor.selection.moveCursorFileStart();
+    });
+
+    // Save playbook
+    $('#save_playbook').click(function () {
+        console.log();
+        $.ajax({
+            url: '/runner/playbooks/',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'save',
+                playbook_file: $('#editor_row_header').html(),
+                text: editor.getValue()
+            },
+            success: function (data) {
+                if (data.result == 'ok') {
+                    $('#playbook_row').show();
+                    $('#editor_row').hide();
+                    playbookTable.DataTable().ajax.reload()
+                }
+                else if (data.result == 'fail') {
+                    alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                }
+
+            }
+        });
+    });
+
+    // Run playbook
     runPlaybook.click(function (event) {
         event.preventDefault();
         var cred = $('option:selected', credentials).data();
@@ -215,5 +265,4 @@ $(document).ready(function () {
         };
         executeJob(postData, askPassword);
     })
-
 });

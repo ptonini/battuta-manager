@@ -1,10 +1,11 @@
 {% extends 'main.html' %}
 {% load staticfiles %}
 {% block content %}
+    <script src="{% static 'Ace-1.2.3/ace.js' %}"></script>
     <script src="{% static 'runner/playbooks.js' %}"></script>
     <h3>Playbooks</h3>
     <hr>
-    <div class="row">
+    <div id="playbook_row" class="row">
         <div class="col-md-5">
             <table id="playbook_table" class="table table-condensed table-hover table-striped">
                 <thead>
@@ -96,6 +97,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <br>
+    <div id="editor_row" class="row" style="display: none">
+        <div class="col-md-3"><h5 id="editor_row_header"></h5><br></div>
+        <div class="col-md-8 text-right" style="margin: 7px 0">
+            <h5>
+                <button id="save_playbook" class="btn btn-default btn-xs">Save</button>
+                <button id="reload_playbook" class="btn btn-default btn-xs">Reload</button>
+                <button id="cancel_edit" class="btn btn-default btn-xs">Cancel</button>
+            </h5>
+        </div>
+        <div class="col-md-11">
+            <div id="playbook_editor"></div>
         </div>
     </div>
 {% endblock %}

@@ -87,6 +87,11 @@ h5 {
     padding: 20px;
 }
 
+#playbook_editor {
+    border: solid 1px lightgrey;
+    height: 600px;
+}
+
 #json_box {
     background-color: transparent;
     border: none;

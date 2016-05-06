@@ -161,10 +161,19 @@ class PlaybookView(BaseView):
     @staticmethod
     def load_playbook(f):
         with open(os.path.join(settings.DATA_DIR, 'playbooks', f), 'r') as yaml_file:
+            data = {'text': yaml_file.read()}
+            yaml_file.seek(0, 0)
             try:
-                return yaml.load(yaml_file), True, None
+                data['dict'] = yaml.load(yaml_file)
+                data['is_valid'] = True
+                data['sudo'] = False
+                for play in data['dict']:
+                    if 'become' in play and play['become']:
+                        data['sudo'] = True
             except yaml.YAMLError as e:
-                return None, False, type(e).__name__ + ': ' + e.__str__()
+                data['is_valid'] = False
+                data['msg'] = type(e).__name__ + ': ' + e.__str__()
+            return data
 
     def get(self, request):
         if 'action' not in request.GET:
@@ -177,17 +186,13 @@ class PlaybookView(BaseView):
                 for root, dirs, files in os.walk(playbook_dir):
                     for f in files:
                         if f.split('.')[-1] == 'yml':
-                            playbook, is_valid, msg = self.load_playbook(f)
-                            data.append([f, is_valid])
+                            playbook_data = self.load_playbook(f)
+                            data.append([f, playbook_data['is_valid']])
             else:
-                playbook, is_valid, msg = self.load_playbook(request.GET['playbook_file'])
-                if is_valid:
+                playbook_data = self.load_playbook(request.GET['playbook_file'])
+                if playbook_data['is_valid']:
                     if request.GET['action'] == 'get_one':
-                        data = {'sudo': False}
-                        for play in playbook:
-                            if 'become' in play and play['become']:
-                                data['sudo'] = True
-                        data['playbook'] = playbook
+                        data = playbook_data
                         data['result'] = 'ok'
                     elif request.GET['action'] == 'get_args':
                         data = list()
@@ -196,14 +201,20 @@ class PlaybookView(BaseView):
                     else:
                         raise Http404('Invalid action')
                 else:
-                    data = {'result': 'fail', 'msg': str(msg)}
+                    data = {'result': 'fail', 'msg': playbook_data['msg']}
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request):
 
+        # Save playbook
+        if request.POST['action'] == 'save':
+            filepath = os.path.join(settings.DATA_DIR, 'playbooks', request.POST['playbook_file'])
+            with open(filepath, 'r') as f:
+                data = None
+
         # Save or create playbook arguments object
-        if request.POST['action'] == 'save_args':
+        elif request.POST['action'] == 'save_args':
 
             # Create new playbook arguments object if no id is supplied
             if 'id' in request.POST:
@@ -226,7 +237,9 @@ class PlaybookView(BaseView):
                 args.delete()
                 data = {'result': 'ok'}
             except Exception as e:
-                data = {'result': 'failed', 'msg': e}
+                data = {'result': 'fail', 'msg': e}
+
+        # Raise exception
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type='application/json')
