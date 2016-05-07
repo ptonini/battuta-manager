@@ -1,6 +1,7 @@
 function updateResult(intervalId) {
 
     var runnerStatus = $('#runner_status');
+    var runnerMessage = $('#runner_message');
     var resultContainer = $('#result_container');
 
     var divRow = $('<div>').attr('class', 'row');
@@ -46,8 +47,10 @@ function updateResult(intervalId) {
                 );
                 if (runner.status == 'failed')
                     $('#runner_message').css('color', 'red');
-                clearInterval(intervalId);
-            }
+                    $('#running_gif').hide();
+                    $('#cancel_runner').hide();
+                    clearInterval(intervalId);
+                    }
             else {
                 $.each(runner.plays, function (index, play) {
                     var separator = null;
@@ -185,10 +188,11 @@ function updateResult(intervalId) {
                         });
                     }
                 });
-                if (['finished', 'finished with errors', 'failed', 'canceled'].indexOf(runner.status) > -1) {
-                    $('#running_gif').hide();
-                    $('#cancel_runner').hide();
+                if (['finished', 'finished with errors', 'canceled'].indexOf(runner.status) > -1) {
+                    console.log('aqui');
                     if (['finished', 'finished with errors'].indexOf(runner.status) > -1) {
+                        $('#running_gif').hide();
+                        $('#cancel_runner').hide();
                         $('#print_report').show();
                         if (runner.stats) {
                             var statsTable = $('#stats_table');

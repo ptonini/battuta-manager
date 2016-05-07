@@ -7,6 +7,7 @@
     <hr>
     <div id="playbook_row" class="row">
         <div class="col-md-5">
+            <h5>Playbook list</h5>
             <table id="playbook_table" class="table table-condensed table-hover table-striped">
                 <thead>
                 <tr>
@@ -15,6 +16,8 @@
                 </tr>
                 </thead>
             </table>
+            <br>
+            <button id="new_playbook" class="btn btn-default btn-xs">New playbook</button>
         </div>
         <div class="col-md-1"></div>
         <div class="col-md-5">
@@ -56,8 +59,6 @@
                         <div class="col-md-3 text-right" style="margin-top: 22px">
                             <button id="check" class="btn btn-default btn-sm" data-action="check">Check</button>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="tags" class="requiredField">Tags</label>
@@ -70,16 +71,12 @@
                                 <input class="form-control input-sm" id="skip_tags" type="text">
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="extra_vars" class="requiredField">Extra vars</label>
                                 <input class="form-control input-sm" id="extra_vars" type="text">
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-12">
                             <button id="save_args" class="btn btn-default btn-xs">Save</button>
                             <button id="delete_args" class="btn btn-default btn-xs hidden">Delete</button>
@@ -93,7 +90,7 @@
                         <select class="select form-control input-sm" id="credentials"></select>
                     </div>
                     <div class="col-md-6 text-right" style="margin-top: 22px">
-                        <button id="run_playbook" class="btn btn-default btn-sm hidden">Run</button>
+                        <button id="run_playbook" class="btn btn-default btn-sm">Run</button>
                     </div>
                 </div>
             </div>

@@ -162,9 +162,8 @@ class PlaybookView(BaseView):
     def load_playbook(f):
         with open(os.path.join(settings.DATA_DIR, 'playbooks', f), 'r') as yaml_file:
             data = {'text': yaml_file.read()}
-            yaml_file.seek(0, 0)
             try:
-                data['dict'] = yaml.load(yaml_file)
+                data['dict'] = yaml.load(data['text'])
                 data['is_valid'] = True
                 data['sudo'] = False
                 for play in data['dict']:
@@ -189,29 +188,26 @@ class PlaybookView(BaseView):
                             playbook_data = self.load_playbook(f)
                             data.append([f, playbook_data['is_valid']])
             else:
-                playbook_data = self.load_playbook(request.GET['playbook_file'])
-                if playbook_data['is_valid']:
-                    if request.GET['action'] == 'get_one':
-                        data = playbook_data
-                        data['result'] = 'ok'
-                    elif request.GET['action'] == 'get_args':
-                        data = list()
-                        for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']).values():
-                            data.append(args)
-                    else:
-                        raise Http404('Invalid action')
+                if request.GET['action'] == 'get_one':
+                    data = self.load_playbook(request.GET['playbook_file'])
+                    data['result'] = 'ok'
+                elif request.GET['action'] == 'get_args':
+                    data = list()
+                    for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']).values():
+                        data.append(args)
                 else:
-                    data = {'result': 'fail', 'msg': playbook_data['msg']}
+                    raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type='application/json')
 
-    @staticmethod
-    def post(request):
+    def post(self, request):
 
         # Save playbook
         if request.POST['action'] == 'save':
             filepath = os.path.join(settings.DATA_DIR, 'playbooks', request.POST['playbook_file'])
-            with open(filepath, 'r') as f:
-                data = None
+            with open(filepath, 'w') as f:
+                f.write(request.POST['text'])
+            data = self.load_playbook(request.POST['playbook_file'])
+            data['result'] = 'ok'
 
         # Save or create playbook arguments object
         elif request.POST['action'] == 'save_args':

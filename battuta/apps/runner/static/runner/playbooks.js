@@ -39,6 +39,16 @@ function buildArgsSelectionBox(start_value) {
     });
 }
 
+
+function loadPlaybookArgsForm(data, playbookFile) {
+    $('#arguments_box')
+        .data(data)
+        .data('currentPlaybook', playbookFile)
+        .find('*').prop('disabled', false);
+    $('#arguments_box_header').html(playbookFile);
+    $('#become').toggleClass('hidden', !data.sudo);
+    window.location.href = '#arguments_box';
+}
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
@@ -47,11 +57,18 @@ $(document).ready(function () {
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
-    var runPlaybook = $('#run_playbook');
     var playbookEditor = $('#playbook_editor');
+
     var editor = ace.edit("playbook_editor");
+    editor.setTheme("ace/theme/chrome");
+    editor.getSession().setMode("ace/mode/yaml");
+    editor.renderer.setShowPrintMargin(false);
+    editor.setHighlightActiveLine(false);
+    editor.setFontSize(13);
 
     buildCredentialsSelectionBox(credentials);
+
+    argumentsBox.find('*').prop('disabled', true);
 
     // Build playbook table
     playbookTable.DataTable({
@@ -100,32 +117,20 @@ $(document).ready(function () {
                 playbook_file: playbookFile
             },
             success: function (data) {
-                if (data.result == 'ok') {
-                    if (action == 'Run') {
-                        argumentsBox.data(data).data('currentPlaybook', playbookFile);
-                        window.location.href = '#arguments_box';
-                        $('#arguments_box_header').html(playbookFile);
-                        $('#become').toggleClass('hidden', !data.sudo);
-                        runPlaybook.removeClass('hidden');
-                        buildArgsSelectionBox();
-
-                    }
-                    else if (action == 'Edit') {
-                        playbookEditor.data(data).data('currentPlaybook', playbookFile);
+                if (!data.is_valid && action == 'Run') {
+                    alertDialog.html(data.msg).dialog('open')
+                }
+                else {
+                    loadPlaybookArgsForm(data, playbookFile);
+                    buildArgsSelectionBox();
+                    if (action == 'Edit') {
                         editor.session.getUndoManager().reset();
-                        editor.setTheme("ace/theme/chrome");
-                        editor.getSession().setMode("ace/mode/yaml");
                         editor.setValue(data.text);
                         editor.selection.moveCursorFileStart();
-                        editor.renderer.setShowPrintMargin(false);
-                        editor.setHighlightActiveLine(false);
                         $('#playbook_row').hide();
                         $('#editor_row').show();
                         $('#editor_row_header').html(playbookFile);
                     }
-                }
-                else if (data.result == 'fail') {
-                    alertDialog.append(data.msg).dialog('open')
                 }
 
             }
@@ -220,20 +225,23 @@ $(document).ready(function () {
 
     // Save playbook
     $('#save_playbook').click(function () {
-        console.log();
+        var playbookFile = $('#editor_row_header').html();
         $.ajax({
             url: '/runner/playbooks/',
             type: 'POST',
             dataType: 'json',
             data: {
                 action: 'save',
-                playbook_file: $('#editor_row_header').html(),
+                playbook_file: playbookFile,
                 text: editor.getValue()
             },
             success: function (data) {
                 if (data.result == 'ok') {
+                    loadPlaybookArgsForm(data, playbookFile);
+                    buildArgsSelectionBox();
                     $('#playbook_row').show();
                     $('#editor_row').hide();
+
                     playbookTable.DataTable().ajax.reload()
                 }
                 else if (data.result == 'fail') {
@@ -245,7 +253,7 @@ $(document).ready(function () {
     });
 
     // Run playbook
-    runPlaybook.click(function (event) {
+    $('#run_playbook').click(function (event) {
         event.preventDefault();
         var cred = $('option:selected', credentials).data();
         var askPassword = {
