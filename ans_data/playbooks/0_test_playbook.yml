@@ -1,13 +1,13 @@
 ---
 - name: 0 Test playbook
-  gather_facts: True
+  gather_facts: yes
   hosts: all
-  become: no
+  become: yes
 
   tasks:
 
     - name: Test filecopy
-      copy: content="{{ ansible_hostname }}"
+      copy: content="bunda"
             dest=/tmp/test1
       notify:
         - Erase test1
@@ -22,13 +22,13 @@
       notify:
           - Erase test2
 
-    - name: Start mongos
-      service: name=mongos
-               state=started
-      when: "'app-mongos' in group_names"
+#    - name: Start mongos
+#      service: name=mongos
+#               state=started
+#      when: "'app-mongos' in group_names"
 
-    - include: /opt/ans_data/install_vi.yml
-      when: "'app-mongos' in group_names"
+#    - include: /opt/ans_data/install_vi.yml
+#      when: "'app-mongos' in group_names"
 
   handlers:
 

@@ -43,12 +43,15 @@ class RunnerPlay(models.Model):
     hosts = models.CharField(max_length=64)
     become = models.BooleanField()
     gather_facts = models.BooleanField(default=False)
+    host_count = models.IntegerField(null=True)
+    failed_count = models.IntegerField(default=0)
 
 
 class RunnerTask(models.Model):
     runner_play = models.ForeignKey(RunnerPlay)
     name = models.CharField(max_length=128)
     module = models.CharField(max_length=64, blank=True, null=True)
+    host_count = models.IntegerField(null=True)
 
 
 class RunnerResult(models.Model):

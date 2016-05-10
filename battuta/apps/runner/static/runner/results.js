@@ -1,7 +1,6 @@
 function updateResult(intervalId) {
 
     var runnerStatus = $('#runner_status');
-    var runnerMessage = $('#runner_message');
     var resultContainer = $('#result_container');
 
     var divRow = $('<div>').attr('class', 'row');
@@ -45,12 +44,13 @@ function updateResult(intervalId) {
                     $('<hr>'),
                     $('<h5>').attr('id', 'runner_message').html(runner.message)
                 );
-                if (runner.status == 'failed')
+                if (runner.status == 'failed') {
                     $('#runner_message').css('color', 'red');
                     $('#running_gif').hide();
                     $('#cancel_runner').hide();
                     clearInterval(intervalId);
-                    }
+                }
+            }
             else {
                 $.each(runner.plays, function (index, play) {
                     var separator = null;
@@ -99,9 +99,7 @@ function updateResult(intervalId) {
 
                             if (task.module == 'include') {
                                 var includeTaskId = 'task_' + task.id;
-                                var includeTaskSelector = '#' + includeTaskId;
-
-                                if ($(includeTaskSelector).length == 0) {
+                                if ($('#' + includeTaskId).length == 0) {
                                     playContainer.append(
                                         divRow.clone().attr('id', includeTaskId).append(
                                             divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
@@ -110,9 +108,9 @@ function updateResult(intervalId) {
                                         )
                                     )
                                 }
-
                             }
                             else {
+                                sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count)
                                 var taskTableId = 'task_' + task.id + '_table';
                                 var taskTableSelector = '#' + taskTableId;
                                 if ($(taskTableSelector).length == 0) {
@@ -182,28 +180,35 @@ function updateResult(intervalId) {
                                             });
                                         }
                                     });
+                                    var intervalId = setInterval(function () {
+                                        var host_count = sessionStorage.getItem('task_' + task.id + '_host_count');
+                                        var row_count = $(taskTableSelector).find('tr').length - 1;
+                                        if ( host_count == row_count || host_count == 0) {
+                                            clearInterval(intervalId)
+                                        }
+                                        else if (host_count != 0){
+                                            $(taskTableSelector).DataTable().ajax.reload()
+                                        }
+                                    }, 1000)
+
                                 }
                             }
-
                         });
                     }
                 });
                 if (['finished', 'finished with errors', 'canceled'].indexOf(runner.status) > -1) {
-                    console.log('aqui');
-                    if (['finished', 'finished with errors'].indexOf(runner.status) > -1) {
-                        $('#running_gif').hide();
-                        $('#cancel_runner').hide();
-                        $('#print_report').show();
-                        if (runner.stats) {
-                            var statsTable = $('#stats_table');
-                            $('#show_stats').show();
-                            if (!$.fn.DataTable.isDataTable(statsTable)) {
-                                statsTable.dataTable({
-                                    data: runner.stats_table,
-                                    paginate: false,
-                                    searching: false
-                                });
-                            }
+                    $('#running_gif').hide();
+                    $('#cancel_runner').hide();
+                    $('#print_report').show();
+                    if (runner.stats) {
+                        var statsTable = $('#stats_table');
+                        $('#show_stats').show();
+                        if (!$.fn.DataTable.isDataTable(statsTable)) {
+                            statsTable.dataTable({
+                                data: runner.stats,
+                                paginate: false,
+                                searching: false
+                            });
                         }
                     }
                     clearInterval(intervalId);
@@ -211,9 +216,7 @@ function updateResult(intervalId) {
                 else {
                     $('#cancel_runner').show();
                     $('#running_gif').show();
-                    $.each($('.task_table').slice(-2) , function(index, table) {
-                        $(table).DataTable().ajax.reload()
-                    });
+
                 }
             }
 
@@ -244,20 +247,27 @@ $(document).ready(function () {
     
     // Refresh table until job is complete
     updateResult(0);
-    var intervalId = setInterval(function () {
-        updateResult(intervalId)
-    }, 1000);
+    if (['finished', 'finished with errors', 'canceled'].indexOf($('#runner_status').html()) == -1) {
+        var intervalId = setInterval(function () {
+            updateResult(intervalId)
+        }, 1000);
+    }
+
 
     // Print report
     $('#print_report').click(function () {
         var htmlOnly = $('.html_only');
+        var reportOnly = $('.report_only');
         var statsDialogCopy = $('#stats_dialog').clone().attr({
             id: 'temp_container',
             style: 'border-color: transparent'
         });
         htmlOnly.hide();
-        runnerResult.append(statsDialogCopy).css('font-size', 'smaller');
+        reportOnly.show();
+        runnerResult.css('font-size', 'smaller');
+        $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
         window.print();
+        reportOnly.hide();
         htmlOnly.show();
         statsDialogCopy.remove();
         runnerResult.css('font-size', 'small')

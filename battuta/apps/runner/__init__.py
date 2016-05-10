@@ -84,6 +84,8 @@ def play_runner(runner):
 
     if 'extra_vars' not in runner.data or runner.data['extra_vars'] == '':
         runner.data['extra_vars'] = []
+    else:
+        runner.data['extra_vars'] = runner.data['extra_vars'].split(' ')
 
     # Create ansible options tuple
     options = AnsibleOptions(connection=runner.data['connection'],
@@ -155,10 +157,8 @@ def play_runner(runner):
         runner.message = 'Invalid runner data'
     django.db.close_old_connections()
     for play in runner.runnerplay_set.all():
-        for task in play.runnertask_set.all():
-            for result in task.runnerresult_set.all():
-                if result.status in ['unreachable', 'failed', 'error']:
-                    runner.status = 'finished with errors'
+        if play.failed_count > 0:
+            runner.status = 'finished with errors'
     runner.save()
 
 

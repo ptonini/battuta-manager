@@ -58,7 +58,7 @@
             <div class="col-md-4 col-md-pull-8 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Check:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.check }}</strong></div>
+                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.check|lower }}</strong></div>
                 </div>
             </div>
         </div>
@@ -70,10 +70,10 @@
                 </div>
             </div>
         </div>
-
-
+        <hr class="report_only">
         <div id="result_container"></div>
-    </div>
+        <div id="status_report" class="playbook_only"></div>
+    </>
     <div id="stats_container" class="playbook_only" style="display: none;">
         <div id="stats_dialog" style="overflow-x: hidden;">
             <h5>Statistics</h5>

@@ -2,7 +2,6 @@ import os
 import json
 import django.db
 
-from ansible import constants as c
 from ansible.plugins.callback import CallbackBase
 from django.conf import settings
 
@@ -23,6 +22,7 @@ class BattutaCallback(CallbackBase):
         self._runner = runner
         self._current_play = None
         self._current_task = None
+        self._inventory = None
 
     @staticmethod
     def _extract_result(result):
@@ -44,6 +44,10 @@ class BattutaCallback(CallbackBase):
     def v2_playbook_on_play_start(self, play):
         django.db.close_old_connections()
         self._runner.status = 'running'
+        self._inventory = play._variable_manager._inventory
+
+        # Count hosts in play
+        host_count = len(self._inventory.get_hosts(play.__dict__['_ds']['hosts']))
 
         # Set play become value
         become = False
@@ -64,7 +68,8 @@ class BattutaCallback(CallbackBase):
         self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
                                                                 become=become,
                                                                 name=play_name,
-                                                                gather_facts=gather_facts)
+                                                                gather_facts=gather_facts,
+                                                                host_count=host_count)
         self._runner.save()
 
     def v2_playbook_on_task_start(self, task, is_conditional):
@@ -75,14 +80,18 @@ class BattutaCallback(CallbackBase):
 
         # Set task name
         if module == 'setup' and not self._current_task and self._current_play.gather_facts:
+            host_count = self._current_play.host_count
             name = 'Gather facts'
         elif module == 'include':
+            host_count = None
             name = 'Including ' + task.__dict__['_ds']['include']
         else:
+            host_count = self._current_play.host_count - self._current_play.failed_count
             name = task.get_name().strip()
 
         # Create task model object
         self._current_task = self._current_play.runnertask_set.create(name=name)
+        self._current_task.host_count = host_count
         self._current_task.module = module
         self._current_task.save()
 
@@ -90,6 +99,7 @@ class BattutaCallback(CallbackBase):
         django.db.close_old_connections()
         self._current_task = self._current_play.runnertask_set.create(name='Handler: ' + task.get_name().strip())
         self._current_task.module = task.__dict__['_attributes']['action']
+        self._current_task.host_count = len(task._variable_manager._inventory._restriction) - self._current_play.failed_count
         self._current_task.save()
 
     def v2_playbook_on_stats(self, stats):
@@ -118,8 +128,8 @@ class BattutaCallback(CallbackBase):
             else:
                 row.append(0)
 
-            if key in stats['skipped']:
-                row.append(stats['skipped'][key])
+            if key in stats_dict['skipped']:
+                row.append(stats_dict['skipped'][key])
             else:
                 row.append(0)
             self._runner.stats.append(row)
@@ -127,6 +137,9 @@ class BattutaCallback(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self._extract_result(result)
+        django.db.close_old_connections()
+        self._current_play.failed_count += 1
+        self._current_play.save()
         message = None
         if 'msg' in response:
             message = response['msg']
@@ -165,9 +178,16 @@ class BattutaCallback(CallbackBase):
             elif 'msg' in response:
                 message = response['msg']
             self._save_result(host, 'skipped', message, response)
+        else:
+            django.db.close_old_connections()
+            self._current_task.host_count -= 1
+            self._current_task.save()
 
     def v2_runner_on_unreachable(self, result):
         host, response = self._extract_result(result)
+        django.db.close_old_connections()
+        self._current_play.failed_count += 1
+        self._current_play.save()
         message = None
         if 'msg' in response:
             message = response['msg']

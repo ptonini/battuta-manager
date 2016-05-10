@@ -92,6 +92,15 @@ h5 {
     height: 600px;
 }
 
+.pattern_editor_row {
+    width: 95%;
+    margin: 10px 0
+}
+
+.pattern_editor_row div:first-of-type{
+    text-align: right;
+}
+
 #json_box {
     background-color: transparent;
     border: none;
@@ -101,14 +110,7 @@ h5 {
     margin: 0 10px;
 }
 
-.pattern_editor_row {
-    width: 95%;
-    margin: 10px 0
-}
 
-.pattern_editor_row div:first-of-type{
-    text-align: right;
-}
 
 .table tbody > tr > td {
     vertical-align: middle;

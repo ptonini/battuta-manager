@@ -13,20 +13,20 @@ function buildArgsSelectionBox(start_value) {
         },
         success: function (data) {
             $.each(data, function (index, args) {
-                var display = [];
+                var optionLabel = [];
                 if (args.subset) {
-                    display.push('--limit ' + args.subset);
+                    optionLabel.push('--limit ' + args.subset);
                 }
                 if (args.tags) {
-                    display.push('--tags ' + args.tags)
+                    optionLabel.push('--tags ' + args.tags)
                 }
                 if (args.skip_tags) {
-                    display.push('--skip_tags ' + args.skip_tags)
+                    optionLabel.push('--skip_tags ' + args.skip_tags)
                 }
                 if (args.extra_vars) {
-                    display.push('--extra_vars ' + args.extra_vars)
+                    optionLabel.push('--extra_vars "' + args.extra_vars + '"')
                 }
-                savedArguments.append($('<option>').val(args.id).data(args).append(display.join(' ')))
+                savedArguments.append($('<option>').val(args.id).data(args).append(optionLabel.join(' ')))
             });
             savedArguments.append($('<option>').val('new').append('new'));
             if (start_value) {
@@ -39,7 +39,6 @@ function buildArgsSelectionBox(start_value) {
     });
 }
 
-
 function loadPlaybookArgsForm(data, playbookFile) {
     $('#arguments_box')
         .data(data)
@@ -49,25 +48,60 @@ function loadPlaybookArgsForm(data, playbookFile) {
     $('#become').toggleClass('hidden', !data.sudo);
     window.location.href = '#arguments_box';
 }
+
+function clearPlaybookArgsForm() {
+    $('#arguments_box').removeData().find('*').prop('disabled', true);
+    $('#saved_arguments').val('');
+    $('#arguments_form').find('*').val('');
+    $('#arguments_box_header').html('&nbsp;');
+}
+
+function loadPlaybookEditor (text, filename) {
+
+    var editor = ace.edit("playbook_editor");
+
+    // Load playbook data
+    $('#playbook_editor').data({
+        'text': text,
+        'filename': filename
+    });
+    editor.setValue(text);
+    editor.session.getUndoManager().reset();
+    editor.selection.moveCursorFileStart();
+    $('#playbook_row').hide();
+    $('#editor_row').show();
+    if (filename == 'new') {
+        $('#playbook_name').attr('placeholder', 'New playbook').val('');
+    }
+    else {
+        $('#playbook_name').removeAttr('placeholder').val(filename);
+    }
+}
+
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
     var argumentsBox = $('#arguments_box');
     var alertDialog = $('#alert_dialog');
+    var deleteDialog = $('#delete_dialog');
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
     var playbookEditor = $('#playbook_editor');
 
+    // Initialize code editor
     var editor = ace.edit("playbook_editor");
     editor.setTheme("ace/theme/chrome");
     editor.getSession().setMode("ace/mode/yaml");
     editor.renderer.setShowPrintMargin(false);
     editor.setHighlightActiveLine(false);
     editor.setFontSize(13);
+    editor.$blockScrolling = Infinity;
 
+    // Build credentials selector box
     buildCredentialsSelectionBox(credentials);
 
+    // Disable arguments box fields
     argumentsBox.find('*').prop('disabled', true);
 
     // Build playbook table
@@ -88,6 +122,12 @@ $(document).ready(function () {
                 ),
                 $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
                     $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
+                ),
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell')
+                ),
+                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'}).append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
                 )
             ).prop('outerHTML')
         }],
@@ -106,35 +146,74 @@ $(document).ready(function () {
     // Playbook table button actions
     playbookTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
-        var playbookFile = $(this).closest('td').prev().html();
-        var action = $(this).attr('title');
-        $.ajax({
-            url: '/runner/playbooks/',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                action: 'get_one',
-                playbook_file: playbookFile
-            },
-            success: function (data) {
-                if (!data.is_valid && action == 'Run') {
-                    alertDialog.html(data.msg).dialog('open')
+        function submitRequest (type, postData, successCallback) {
+            $.ajax({
+                url: '',
+                type: type,
+                data: postData,
+                dataType: 'json',
+                success: function (data) {
+                    successCallback(data)
                 }
-                else {
+            })
+        }
+        var playbookFile = $(this).closest('td').prev().html();
+        var type = 'GET';
+        var postData = {action: 'get_one', playbook_file: playbookFile};
+        var successCallback = null;
+        switch ($(this).attr('title')) {
+            case 'Run':
+                successCallback = function (data) {
+                    if (data.is_valid) {
+                        loadPlaybookArgsForm(data, playbookFile);
+                        buildArgsSelectionBox();
+                    }
+                    else {
+                        alertDialog.html(data.msg).dialog('open')
+                    }
+                };
+                submitRequest(type, postData, successCallback);
+                break;
+            case 'Edit':
+                successCallback = function (data) {
                     loadPlaybookArgsForm(data, playbookFile);
                     buildArgsSelectionBox();
-                    if (action == 'Edit') {
-                        editor.session.getUndoManager().reset();
-                        editor.setValue(data.text);
-                        editor.selection.moveCursorFileStart();
-                        $('#playbook_row').hide();
-                        $('#editor_row').show();
-                        $('#editor_row_header').html(playbookFile);
+                    loadPlaybookEditor (data.text, playbookFile)
+                };
+                submitRequest(type, postData, successCallback);
+                break;
+            case 'Clone':
+                successCallback = function (data) {
+                    loadPlaybookEditor (data.text, 'new')
+                };
+                submitRequest(type, postData, successCallback);
+                break;
+            case 'Remove':
+                type = 'POST';
+                postData = {action: 'delete', playbook_file: playbookFile};
+                successCallback = function () {
+                    if (argumentsBox.data('currentPlaybook') == playbookFile) {
+                        clearPlaybookArgsForm()
                     }
-                }
-
-            }
-        });
+                    playbookTable.DataTable().ajax.reload()
+                };
+                deleteDialog.dialog('option', 'buttons', [
+                    {
+                        text: 'Delete',
+                        click: function () {
+                            submitRequest(type, postData, successCallback);
+                            $(this).dialog('close');
+                        }
+                    },
+                    {
+                        text: 'Cancel',
+                        click: function () {
+                            $(this).dialog('close');
+                        }
+                    }
+                ]).dialog('open');
+                break;
+        }
     });
 
     // Load arguments
@@ -225,33 +304,50 @@ $(document).ready(function () {
 
     // Save playbook
     $('#save_playbook').click(function () {
-        var playbookFile = $('#editor_row_header').html();
+        var newFilename = $('#playbook_name').val();
+        if (newFilename) {
+            if (newFilename.split('.')[newFilename.split('.').length - 1] != 'yml') {
+                newFilename += '.yml'
+            }
+            $.ajax({
+                url: '/runner/playbooks/',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'save',
+                    old_filename: playbookEditor.data('filename'),
+                    new_filename: newFilename,
+                    text: editor.getValue()
+                },
+                success: function (data) {
+                    if (data.result == 'ok') {
+                        loadPlaybookArgsForm(data, newFilename);
+                        buildArgsSelectionBox();
+                        $('#playbook_row').show();
+                        $('#editor_row').hide();
+                        playbookTable.DataTable().ajax.reload()
+                    }
+                    else if (data.result == 'fail') {
+                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                    }
+
+                }
+            });
+        }
+    });
+
+    // New playbook
+    $('#new_playbook').click(function () {
         $.ajax({
-            url: '/runner/playbooks/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'save',
-                playbook_file: playbookFile,
-                text: editor.getValue()
-            },
+            url: '/static/runner/playbook_template.yml',
+            type: 'GET',
+            dataType: 'text',
             success: function (data) {
-                if (data.result == 'ok') {
-                    loadPlaybookArgsForm(data, playbookFile);
-                    buildArgsSelectionBox();
-                    $('#playbook_row').show();
-                    $('#editor_row').hide();
-
-                    playbookTable.DataTable().ajax.reload()
-                }
-                else if (data.result == 'fail') {
-                    alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                }
-
+                loadPlaybookEditor (data, 'new')
             }
         });
     });
-
+    
     // Run playbook
     $('#run_playbook').click(function (event) {
         event.preventDefault();

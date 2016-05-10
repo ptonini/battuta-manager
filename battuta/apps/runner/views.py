@@ -115,6 +115,7 @@ class RunnerView(View):
                 runner.save()
         else:
             raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
@@ -203,11 +204,36 @@ class PlaybookView(BaseView):
 
         # Save playbook
         if request.POST['action'] == 'save':
-            filepath = os.path.join(settings.DATA_DIR, 'playbooks', request.POST['playbook_file'])
+
+            # Remove old playbook and modify existing arguments if necessary
+            if request.POST['new_filename'] != request.POST['old_filename']:
+                try:
+                    os.remove(os.path.join(settings.DATA_DIR, 'playbooks', request.POST['old_filename']))
+                except os.error:
+                    pass
+                for args in PlaybookArgs.objects.filter(playbook=request.POST['old_filename']):
+                    args.playbook = request.POST['new_filename']
+                    args.save()
+
+            # Build playbook filepath
+            filepath = os.path.join(settings.DATA_DIR, 'playbooks', request.POST['new_filename'])
+
+            # Save playbook to file
             with open(filepath, 'w') as f:
                 f.write(request.POST['text'])
-            data = self.load_playbook(request.POST['playbook_file'])
+
+            # Load saved playbook data
+            data = self.load_playbook(request.POST['new_filename'])
             data['result'] = 'ok'
+
+        elif request.POST['action'] == 'delete':
+            try:
+                os.remove(os.path.join(settings.DATA_DIR, 'playbooks', request.POST['playbook_file']))
+            except os.error:
+                pass
+            for args in PlaybookArgs.objects.filter(playbook=request.POST['playbook_file']):
+                args.delete()
+            data = {'result': 'ok'}
 
         # Save or create playbook arguments object
         elif request.POST['action'] == 'save_args':
