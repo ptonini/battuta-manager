@@ -128,9 +128,7 @@
                     'class': 'dynamic-list-header',
                     'id': opts.listTitle
                 })
-                .css({
-                    'padding-bottom': opts.headerBottomPadding,
-                });
+                .css('padding-bottom', opts.headerBottomPadding);
             $(listDiv)
                 .attr({
                     'class': 'list-group dynamic-list',
