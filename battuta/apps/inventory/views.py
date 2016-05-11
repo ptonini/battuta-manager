@@ -1,7 +1,6 @@
 import json
 import os
 import csv
-import tempfile
 
 from django.conf import settings
 from django.http import HttpResponse, Http404
@@ -15,29 +14,35 @@ from .forms import HostForm, GroupForm, VariableForm
 class InventoryView(View):
 
     @staticmethod
-    def _export_to_dict():
+    def to_dict():
         groups = Group.objects.order_by('name')
-        dict_inventory = {'_meta': {'hostvars': {}}}
+        inventory = {'_meta': {'hostvars': {}}}
         for host in Host.objects.order_by('name'):
-            dict_inventory['_meta']['hostvars'][host.name] = {}
-            for var in host.variable_set.all():
-                dict_inventory['_meta']['hostvars'][host.name][var.key] = var.value
+            if len(host.variable_set.all()) > 0:
+                inventory['_meta']['hostvars'][host.name] = {}
+                for var in host.variable_set.all():
+                    inventory['_meta']['hostvars'][host.name][var.key] = var.value
         for group in groups:
-            dict_inventory[group.name] = dict()
-            dict_inventory[group.name]['hosts'] = list()
-            dict_inventory[group.name]['vars'] = dict()
-            dict_inventory[group.name]['children'] = list()
-            for host in group.members.all():
-                dict_inventory[group.name]['hosts'].append(host.name)
-            for var in group.variable_set.all():
-                dict_inventory[group.name]['vars'][var.key] = var.value
-            for child in group.children.all():
-                dict_inventory[group.name]['children'].append(child.name)
-        return dict_inventory
+            inventory[group.name] = dict()
+
+            if len(group.members.all()) > 0:
+                inventory[group.name]['hosts'] = list()
+                for host in group.members.all():
+                    inventory[group.name]['hosts'].append(host.name)
+            if len(group.variable_set.all()):
+                inventory[group.name]['vars'] = dict()
+                for var in group.variable_set.all():
+                    inventory[group.name]['vars'][var.key] = var.value
+            if len(group.children.all()) > 0:
+                inventory[group.name]['children'] = list()
+                for child in group.children.all():
+                    inventory[group.name]['children'].append(child.name)
+
+        return inventory
 
     def get(self, request):
         if 'action' not in request.GET:
-            data = self._export_to_dict()
+            data = self.to_dict()
         else:
             if request.GET['action'] == 'search':
                 data = list()
@@ -103,8 +108,16 @@ class InventoryView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+class SelectView(View):
+
+    @staticmethod
+    def get(request, node_type):
+        return render(request, 'inventory/select.html')
+
+
 class NodesView(View):
     context = dict()
+
 
     @staticmethod
     def build_node(node_type, node_id):
@@ -139,7 +152,6 @@ class NodesView(View):
         node = self.build_node(node_type, node_id)
         if 'action' not in request.GET:
             self.context['node'] = node
-            self.context['user'] = request.user
             return render(request, 'inventory/node.html', self.context)
         else:
             if request.GET['action'] == 'facts':

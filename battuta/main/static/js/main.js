@@ -149,37 +149,6 @@ $(document).ready(function () {
        }
     });
 
-    // Open node box
-    $('.open_node').click(function (event) {
-        event.preventDefault();
-        var nodeType = $(this).data('type');
-        selectDialog.DynamicList({
-            'listTitle': 'Open_' + nodeType,
-            'showTitle': true,
-            "showListSeparator": true,
-            'showFilter': true,
-            'headerBottomPadding': 0,
-            'showAddButton': true,
-            'maxHeight': 400,
-            'addButtonClass': 'open_node_form',
-            'addButtonTitle': 'Add ' + nodeType,
-            'ajaxUrl': '/inventory/?action=search&type=' + nodeType + '&pattern=',
-            'formatItem': function (listItem) {
-                $(listItem).click(function () {
-                    window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
-                });
-            },
-            'loadCallback': function (listContainer) {
-                var currentList = listContainer.find('div.dynamic-list');
-                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-            },
-            'addButtonAction': function (addButton) {
-                openAddNodeDialog(nodeType, selectDialog)
-            }
-        });
-        selectDialog.dialog('open');
-    });
-
     // Initialize import dialog
     importDialog.dialog({
         autoOpen: false,

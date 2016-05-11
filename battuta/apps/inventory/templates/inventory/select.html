@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block content %}
+    <script src="{% static 'inventory/select.js' %}"></script>
+    <div>
+        <br>
+        <h5>
+            <span id="node_list_title"></span>
+            <span style="float: right">
+                <button id="add_node" class="btn btn-default btn-xs"></button>
+            </span>
+        </h5>
+        <div id="node_list"></div>
+        <hr>
+    </div>
+{% endblock %}

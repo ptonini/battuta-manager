@@ -110,7 +110,7 @@ function updateResult(intervalId) {
                                 }
                             }
                             else {
-                                sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count)
+                                sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
                                 var taskTableId = 'task_' + task.id + '_table';
                                 var taskTableSelector = '#' + taskTableId;
                                 if ($(taskTableSelector).length == 0) {
@@ -181,16 +181,16 @@ function updateResult(intervalId) {
                                         }
                                     });
                                     var intervalId = setInterval(function () {
-                                        var host_count = sessionStorage.getItem('task_' + task.id + '_host_count');
-                                        var row_count = $(taskTableSelector).find('tr').length - 1;
-                                        if ( host_count == row_count || host_count == 0) {
+                                        var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
+                                        var rowCount = $(taskTableSelector).find('tr').length - 1;
+                                        console.log(taskTableId, hostCount, rowCount);
+                                        if (hostCount == rowCount) {
                                             clearInterval(intervalId)
                                         }
-                                        else if (host_count != 0){
+                                        else if (hostCount != 0){
                                             $(taskTableSelector).DataTable().ajax.reload()
                                         }
                                     }, 1000)
-
                                 }
                             }
                         });
@@ -253,7 +253,6 @@ $(document).ready(function () {
         }, 1000);
     }
 
-
     // Print report
     $('#print_report').click(function () {
         var htmlOnly = $('.html_only');
@@ -270,8 +269,7 @@ $(document).ready(function () {
         reportOnly.hide();
         htmlOnly.show();
         statsDialogCopy.remove();
-        runnerResult.css('font-size', 'small')
-
+        runnerResult.css('font-size', 'small');
     });
 
     // Show statistics

@@ -74,7 +74,10 @@
                         'class': 'list-group-item dynamic-item',
                         'data-value': value[0],
                         'data-id': value[1]
-                    }).css({'vertical-align': 'middle'})
+                    }).css({
+                        'vertical-align': 'middle',
+                        'line-height': '19px'
+                    })
                 );
             });
         }
@@ -234,7 +237,7 @@
                                         $(this).addClass('hidden')
                                     }
                                 });
-                                _formatList(listDiv, opts)
+                                _formatList($(listDiv), opts)
                             })
                     )
                 )
@@ -256,6 +259,7 @@
                 _load(listContainer, $(listDiv), opts)
             }
         }
+            
         else {
             listDiv = listContainer.find('div.dynamic-list');
             opts = $.extend({}, $.fn.DynamicList.defaults, listContainer.data());
