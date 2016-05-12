@@ -147,8 +147,6 @@ $(document).ready(function () {
         }]
     });
 
-
-
     // Edit or delete variable
     variableTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
@@ -338,7 +336,7 @@ $(document).ready(function () {
                             action: 'delete'
                         },
                         success: function () {
-                            window.open('/', '_self')
+                            window.open('/inventory/select/' + $('#header_node_type').html(), '_self')
                         }
                     });
                 }

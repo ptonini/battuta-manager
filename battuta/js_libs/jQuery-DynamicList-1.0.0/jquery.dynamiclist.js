@@ -47,8 +47,29 @@
     }
 
     function _formatItems(listDiv, opts) {
-        listDiv.children('.dynamic-item').each(function () {
+        var span = document.createElement('span');
+        $(span).css('visibility', 'hidden').attr('id', 'temp_span');
+        listDiv.append($(span)).children('.dynamic-item').each(function () {
             opts.formatItem(this);
+            if (opts.truncateItemText) {
+                var itemText = $(this).html();
+                var tempSpan = $('#temp_span');
+                tempSpan.html(itemText);
+                var textWidth = tempSpan.actual('width', {includeMargin: true});
+                var columnWidth = $(this).actual('width', {includeMargin: true});
+                console.log(textWidth, columnWidth);
+                if (itemText && textWidth > columnWidth) {
+                    var viewableText = String(itemText);
+                    do {
+                        viewableText = viewableText.slice(0, -5) + '...';
+                        tempSpan.html(viewableText);
+                        textWidth = parseInt(tempSpan.width());
+                    }
+                    while (textWidth >= columnWidth);
+                    $(this).attr('data-toggle','tooltip').attr('title', itemText).html(viewableText);
+                }
+            }
+
             if (opts.itemToggle) {
                 $(this).off('click').click(function () {
                     $(this).toggleClass('toggle-on');
@@ -59,6 +80,7 @@
                 $(this).css('cursor', opts.onHoverCursor)
             }
         });
+
     }
 
     function _loadFromArray(listContainer, listDiv, opts) {
@@ -76,7 +98,7 @@
                         'data-id': value[1]
                     }).css({
                         'vertical-align': 'middle',
-                        'line-height': '19px'
+                        'line-height': opts.itemLineHeight + 'px'
                     })
                 );
             });
@@ -154,18 +176,17 @@
             if (opts.itemToggle) {
                 $(headerDiv)
                     .append($('<button>')
-                        .attr({ class: 'btn btn-default btn-xs', title: 'Select all'})
-                        .append($('<span>').html('A'))
+                        .attr('class', 'btn btn-default btn-xs').html('Select all')
                         .click( function () {
                             event.preventDefault();
                             var addClass;
-                            switch ($(this).attr('title')) {
+                            switch ($(this).html()) {
                                 case 'Select all':
-                                    $(this).attr('title', 'Select none').html($('<span>').html('N'));
+                                    $(this).html('Select none');
                                     addClass = true;
                                     break;
                                 case 'Select none':
-                                    $(this).attr('title', 'Select all').html($('<span>').html('A'));
+                                    $(this).html('Select all');
                                     addClass = false;
                                     break;
                             }
@@ -177,16 +198,13 @@
 
                     )
                     .append($('<button>')
-                        .attr({
-                            title: 'Invert selection',
-                            class: 'btn btn-default btn-xs'
-                        })
+                        .attr('class', 'btn btn-default btn-xs')
                         .click(function() {
                             $(listDiv).children('div.dynamic-item').each(function () {
                                 $(this).toggleClass('toggle-on');
                             });
                         })
-                        .html($('<span>').html('I'))
+                        .html('Invert selection')
                     )
                     .append($('<span>').css('margin-right', '5px'))
             }
@@ -309,6 +327,8 @@
         itemToggle: false,
         itemWidth: 25,
         listWidth: 0,
+        truncateItemText: false,
+        itemLineHeight: 19,
         minColumns: 3,
         maxColumns: 6,
         breakPoint: 9,

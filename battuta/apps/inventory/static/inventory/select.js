@@ -14,7 +14,7 @@ $(document).ready(function () {
 
     $('#node_list').DynamicList({
         minColumns: 1,
-        maxColumns: 5,
+        maxColumns: 6,
         breakPoint: 4,
         showListSeparator: true,
         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
