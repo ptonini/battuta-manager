@@ -52,6 +52,7 @@ function loadPlaybookArgsForm(data, playbookFile) {
 function clearPlaybookArgsForm() {
     $('#arguments_box').removeData().find('*').prop('disabled', true);
     $('#saved_arguments').val('');
+    $('#become').addClass('hidden');
     $('#arguments_form').find('*').val('');
     $('#arguments_box_header').html('&nbsp;');
 }
@@ -61,21 +62,20 @@ function loadPlaybookEditor (text, filename) {
     var editor = ace.edit("playbook_editor");
 
     // Load playbook data
-    $('#playbook_editor').data({
-        'text': text,
-        'filename': filename
-    });
     editor.setValue(text);
     editor.session.getUndoManager().reset();
     editor.selection.moveCursorFileStart();
-    $('#playbook_row').hide();
-    $('#editor_row').show();
     if (filename == 'new') {
         $('#playbook_name').attr('placeholder', 'New playbook').val('');
     }
     else {
         $('#playbook_name').removeAttr('placeholder').val(filename);
     }
+    $('#playbook_editor')
+        .data({'text': text, 'filename': filename})
+        .css('height', window.innerHeight * 0.7);
+    $('div.ui-dialog-buttonpane').css('border-top', 'none');
+    $('#editor_dialog').dialog('open');
 }
 
 $(document).ready(function () {
@@ -88,7 +88,24 @@ $(document).ready(function () {
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
     var playbookEditor = $('#playbook_editor');
+    var editorDialog = $('#editor_dialog');
 
+    // Initialize editor dialog
+    editorDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        width: 900,
+        dialogClass: 'no_title',
+        buttons: {
+            Cancel: function () {
+                $(this).dialog('close');
+                $('div.ui-dialog-buttonpane').css('border-top', '');
+            }
+        }
+    });
+    
     // Initialize code editor
     var editor = ace.edit("playbook_editor");
     editor.setTheme("ace/theme/chrome");
@@ -289,13 +306,7 @@ $(document).ready(function () {
                 break;
         }
     });
-
-    // Cancel playbook edit
-    $('#cancel_edit').click(function () {
-        $('#playbook_row').show();
-        $('#editor_row').hide();
-    });
-
+    
     // Reload playbook from server
     $('#reload_playbook').click(function () {
         editor.setValue(playbookEditor.data('text'));
@@ -323,8 +334,7 @@ $(document).ready(function () {
                     if (data.result == 'ok') {
                         loadPlaybookArgsForm(data, newFilename);
                         buildArgsSelectionBox();
-                        $('#playbook_row').show();
-                        $('#editor_row').hide();
+                        editorDialog.dialog('close');
                         playbookTable.DataTable().ajax.reload()
                     }
                     else if (data.result == 'fail') {
@@ -368,5 +378,11 @@ $(document).ready(function () {
             extra_vars: $('#extra_vars').val()
         };
         executeJob(postData, askPassword);
-    })
+    });
+
+    // Run playbook
+    $('#cancel_run').click(function (event) {
+        event.preventDefault();
+        clearPlaybookArgsForm()
+    });
 });

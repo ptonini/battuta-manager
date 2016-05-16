@@ -10,18 +10,24 @@ from django.views.generic import View
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
+# Create built-in group 'all' if not exists
+Group.objects.get_or_create(name='all')
+
 
 class InventoryView(View):
 
     @staticmethod
     def to_dict():
         groups = Group.objects.order_by('name')
-        inventory = {'_meta': {'hostvars': {}}}
+        inventory = {'_meta': {'hostvars': dict()}}
+
         for host in Host.objects.order_by('name'):
+
             if len(host.variable_set.all()) > 0:
-                inventory['_meta']['hostvars'][host.name] = {}
+                inventory['_meta']['hostvars'][host.name] = dict()
                 for var in host.variable_set.all():
                     inventory['_meta']['hostvars'][host.name][var.key] = var.value
+
         for group in groups:
             inventory[group.name] = dict()
 
@@ -29,14 +35,18 @@ class InventoryView(View):
                 inventory[group.name]['hosts'] = list()
                 for host in group.members.all():
                     inventory[group.name]['hosts'].append(host.name)
-            if len(group.variable_set.all()):
-                inventory[group.name]['vars'] = dict()
-                for var in group.variable_set.all():
-                    inventory[group.name]['vars'][var.key] = var.value
+
             if len(group.children.all()) > 0:
                 inventory[group.name]['children'] = list()
                 for child in group.children.all():
                     inventory[group.name]['children'].append(child.name)
+
+            if len(group.variable_set.all()) > 0:
+                inventory[group.name]['vars'] = dict()
+                for var in group.variable_set.all():
+                    inventory[group.name]['vars'][var.key] = var.value
+            elif group.name == 'all':
+                inventory['all']['vars'] = dict()
 
         return inventory
 
@@ -109,7 +119,6 @@ class InventoryView(View):
 
 
 class SelectView(View):
-
     @staticmethod
     def get(request, node_type):
         return render(request, 'inventory/select.html')
@@ -117,7 +126,6 @@ class SelectView(View):
 
 class NodesView(View):
     context = dict()
-
 
     @staticmethod
     def build_node(node_type, node_id):

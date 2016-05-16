@@ -32,7 +32,7 @@
     <meta name="author" content="">
     <title>Battuta</title>
 </head>
-<body>
+<body style="height: 100%">
 {% block header %}
     <header class="navbar navbar-default navbar-top">
         <div class="container">
@@ -122,9 +122,9 @@
         </div>
     </header>
 {% endblock %}
-<section class="container">
-    <div class="row">
-        <div class="col-md-12 main">
+<section class="container" style="height: 100%">
+    <div class="row" style="height: 100%">
+        <div class="col-md-12 main" style="height: 100%">
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -150,7 +150,7 @@
     <div id="alert_dialog"></div>
     <div id="node_dialog">
         <h5 id="node_dialog_header"></h5>
-        <hr>
+        <br>
         <form id="node_form" method="post">
             <div class="form-group">
                 <label for="node_name" class="requiredField">Name</label>
@@ -207,9 +207,7 @@
         <div class="row pattern_editor_row">
             <div class="col-md-2">exclude:</div>
             <div class="col-md-2">
-                <button class="btn btn-default btn-xs select_nodes" data-type="group">Groups
-                </button
-                >
+                <button class="btn btn-default btn-xs select_nodes" data-type="group">Groups</button>
             </div>
             <div class="col-md-4">
                 <button class="btn btn-default btn-xs select_nodes" data-type="host">Hosts</button>
@@ -223,7 +221,7 @@
         <h5></h5>
         <br>
         <button class="btn btn-default btn-sm select_type" data-type="host">Hosts</button>
-        &nbsp&nbsp&nbsp&nbsp
+        &nbsp;&nbsp;&nbsp;&nbsp;
         <button class="btn btn-default btn-sm select_type" data-type="group">Groups</button>
     </div>
 </div>

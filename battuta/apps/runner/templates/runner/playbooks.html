@@ -5,9 +5,15 @@
     <script src="{% static 'runner/playbooks.js' %}"></script>
     <h3>Playbooks</h3>
     <hr>
-    <div id="playbook_row" class="row">
+    <div class="row">
         <div class="col-md-6">
-            <h5>Playbook list</h5>
+            <h5>
+                <span>Playbook list</span>
+                <span style="float: right">
+                    <button id="new_playbook" class="btn btn-default btn-xs">New playbook</button>
+                </span>
+            </h5>
+            <br>
             <table id="playbook_table" class="table table-condensed table-hover table-striped">
                 <thead>
                 <tr>
@@ -16,8 +22,6 @@
                 </tr>
                 </thead>
             </table>
-            <br>
-            <button id="new_playbook" class="btn btn-default btn-xs">New playbook</button>
         </div>
         <div class="col-md-1"></div>
         <div class="col-md-5">
@@ -29,7 +33,7 @@
                         Require sudo
                     </small>
                 </h5>
-                <hr>
+                <br>
                 <div class="row">
                     <div class="col-md-4">
                         <label for="saved_arguments" class="requiredField" style="font-size: 13px; padding: 6px 0">
@@ -91,30 +95,29 @@
                     </div>
                     <div class="col-md-6 text-right" style="margin-top: 22px">
                         <button id="run_playbook" class="btn btn-default btn-sm">Run</button>
+                        <button id="cancel_run" class="btn btn-default btn-sm">Cancel</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="editor_row" class="row" style="display: none">
-        <div class="col-md-12">
-            <h4>Edit playbook</h4>
-        </div>
-        <div class="col-md-4">
-            <h5>
-                <label for="playbook_name" class="requiredField sr-only">Playbook name</label>
-                <input class="form-control input-sm" id="playbook_name" type="text">
-            </h5>
-        </div>
-        <div class="col-md-7 text-right" style="margin: 7px 0">
-            <h5>
-                <button id="save_playbook" class="btn btn-default btn-xs">Save</button>
-                <button id="reload_playbook" class="btn btn-default btn-xs">Reload</button>
-                <button id="cancel_edit" class="btn btn-default btn-xs">Cancel</button>
-            </h5>
-        </div>
-        <div class="col-md-11">
-            <div id="playbook_editor"></div>
+    <div class="hidden">
+        <div id="editor_dialog">
+            <div class="col-md-4">
+                <h5>
+                    <label for="playbook_name" class="requiredField sr-only">Playbook name</label>
+                    <input class="form-control input-sm" id="playbook_name" type="text">
+                </h5>
+            </div>
+            <div class="col-md-8 text-right" style="margin: 7px 0">
+                <h5>
+                    <button id="save_playbook" class="btn btn-default btn-xs">Save</button>
+                    <button id="reload_playbook" class="btn btn-default btn-xs">Reload</button>
+                </h5>
+            </div>
+            <div class="col-md-12">
+                <div id="playbook_editor" style="border: solid 1px lightgrey"></div>
+            </div>
         </div>
     </div>
 {% endblock %}

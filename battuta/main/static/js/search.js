@@ -7,6 +7,7 @@ function searchEntities(entityType, resultContainer, searchPattern) {
         'showTitle': true,
         "showTopSeparator": true,
         'hideIfEmpty': true,
+        'checkered': true,
         'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
         'formatItem': function (listItem) {
             $(listItem).click(function () {

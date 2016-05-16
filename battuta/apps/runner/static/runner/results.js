@@ -1,4 +1,4 @@
-function updateResult(intervalId) {
+function updateResult(intervalId, stoppedStates) {
 
     var runnerStatus = $('#runner_status');
     var resultContainer = $('#result_container');
@@ -8,6 +8,7 @@ function updateResult(intervalId) {
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
     var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
+
 
     $.ajax({
         url: '',
@@ -41,14 +42,10 @@ function updateResult(intervalId) {
 
             if (runner.message) {
                 resultContainer.empty().append(
-                    $('<hr>'),
                     $('<h5>').attr('id', 'runner_message').html(runner.message)
                 );
                 if (runner.status == 'failed') {
                     $('#runner_message').css('color', 'red');
-                    $('#running_gif').hide();
-                    $('#cancel_runner').hide();
-                    clearInterval(intervalId);
                 }
             }
             else {
@@ -75,13 +72,7 @@ function updateResult(intervalId) {
                                 divCol4.clone().append(
                                     divRow.clone().append(
                                         divCol3.clone().html('Hosts:'),
-                                        divCol9.clone().html('<strong>' + play.hosts + '</strong>')
-                                    )
-                                )
-                            ),
-                            divRow.clone().append(
-                                divCol4.clone().append(
-                                    divRow.clone().append(
+                                        divCol9.clone().html('<strong>' + play.hosts + '</strong>'),
                                         divCol3.clone().html('Become:'),
                                         divCol9.clone().html('<strong>' + play.become + '</strong>')
                                     )
@@ -94,7 +85,11 @@ function updateResult(intervalId) {
                         $.each(play.tasks, function (index, task) {
                             var taskTitle = null;
                             if (play.name != 'AdHoc task') {
-                                taskTitle = $('<h6>').html('<strong>' + task.name + '</strong>')
+                                taskTitle = $('<h6>').append(
+                                    $('<strong>').html(task.name).append(
+                                        $('<span>').attr('id', 'task_' + task.id + '_count')
+                                    )
+                                )
                             }
 
                             if (task.module == 'include') {
@@ -134,9 +129,11 @@ function updateResult(intervalId) {
                                             )
                                         )
                                     );
+                                    $('#task_' + task.id + '_count').html(' (' + task.host_count + ')');
                                     $(taskTableSelector).DataTable({
                                         paginate: false,
                                         searching: false,
+                                        info: false,
                                         ajax: {
                                             url: '',
                                             type: 'GET',
@@ -180,44 +177,47 @@ function updateResult(intervalId) {
                                             });
                                         }
                                     });
-                                    var intervalId = setInterval(function () {
-                                        var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
-                                        var rowCount = $(taskTableSelector).find('tr').length - 1;
-                                        console.log(taskTableId, hostCount, rowCount);
-                                        if (hostCount == rowCount) {
-                                            clearInterval(intervalId)
-                                        }
-                                        else if (hostCount != 0){
-                                            $(taskTableSelector).DataTable().ajax.reload()
-                                        }
-                                    }, 1000)
+                                    if (stoppedStates.indexOf(runner.status) == -1) {
+                                        var intervalId = setInterval(function () {
+                                            var taskTable = $(taskTableSelector).DataTable();
+                                            var currentStatus = $('#runner_status').html();
+                                            taskTable.ajax.reload();
+                                            var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
+                                            $('#task_' + task.id + '_count').html(' (' + hostCount + ')');
+                                            var rowCount = taskTable.rows().count();
+                                            if (stoppedStates.indexOf(currentStatus) > -1 || hostCount == rowCount) {
+                                                clearInterval(intervalId)
+                                            }
+                                        }, 1000)
+                                    }
+
                                 }
                             }
                         });
                     }
                 });
-                if (['finished', 'finished with errors', 'canceled'].indexOf(runner.status) > -1) {
-                    $('#running_gif').hide();
-                    $('#cancel_runner').hide();
-                    $('#print_report').show();
-                    if (runner.stats) {
-                        var statsTable = $('#stats_table');
-                        $('#show_stats').show();
-                        if (!$.fn.DataTable.isDataTable(statsTable)) {
-                            statsTable.dataTable({
-                                data: runner.stats,
-                                paginate: false,
-                                searching: false
-                            });
-                        }
-                    }
-                    clearInterval(intervalId);
-                }
-                else {
-                    $('#cancel_runner').show();
-                    $('#running_gif').show();
 
+            }
+            if (stoppedStates.indexOf(runner.status) > -1) {
+                $('#running_gif').hide();
+                $('#cancel_runner').hide();
+                $('#print_report').show();
+                if (runner.stats) {
+                    var statsTable = $('#stats_table');
+                    $('#show_stats').show();
+                    if (!$.fn.DataTable.isDataTable(statsTable)) {
+                        statsTable.dataTable({
+                            data: runner.stats,
+                            paginate: false,
+                            searching: false
+                        });
+                    }
                 }
+                clearInterval(intervalId);
+            }
+            else {
+                $('#cancel_runner').show();
+                $('#running_gif').show();
             }
 
         }
@@ -228,6 +228,8 @@ $(document).ready(function () {
 
     var runnerResult = $('#runner_result');
     var resultContainer = $('#result_container');
+
+    var stoppedStates = ['finished', 'finished with errors', 'canceled', 'failed'];
 
     // Initialize stats dialog
     $('#stats_dialog').dialog({
@@ -246,10 +248,10 @@ $(document).ready(function () {
     });
     
     // Refresh table until job is complete
-    updateResult(0);
-    if (['finished', 'finished with errors', 'canceled'].indexOf($('#runner_status').html()) == -1) {
+    updateResult(0, stoppedStates);
+    if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
         var intervalId = setInterval(function () {
-            updateResult(intervalId)
+            updateResult(intervalId, stoppedStates)
         }, 1000);
     }
 

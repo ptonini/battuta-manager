@@ -16,7 +16,7 @@ $(document).ready(function () {
         minColumns: 1,
         maxColumns: 6,
         breakPoint: 4,
-        showListSeparator: true,
+        checkered: true,
         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
         formatItem: function (listItem) {
             $(listItem).click(function () {
