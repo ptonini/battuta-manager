@@ -34,7 +34,6 @@ class Runner(models.Model):
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)
-    data = dict()
 
 
 class RunnerPlay(models.Model):

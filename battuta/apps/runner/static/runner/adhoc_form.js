@@ -75,7 +75,6 @@ $(document).ready(function () {
         }]
     });
 
-
     // Run/Edit/Delete saved adhoc command
     adhocTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
@@ -129,8 +128,8 @@ $(document).ready(function () {
 
     // Build AdHoc form
     $('#module').change(function() {
-            var currentModule = new AnsibleModules(this.value);
-            currentModule.buildFormFields(fieldsContainer)
+        var currentModule = new AnsibleModules(this.value);
+        currentModule.buildFormFields(fieldsContainer)
     });
 
     // Ad-Hoc form submit events
@@ -164,7 +163,16 @@ $(document).ready(function () {
                     }
                 });
                 break;
-            case 'Run':
+            case 'Cancel':
+                $('#cancel_edit').hide();
+                $('#run_command').show();
+                $('#adhoc_form_label').html('Run command');
+                adhocForm.removeData('adhocId');
+                break;
+            case 'sudo':
+                $(document.activeElement).toggleClass('checked_button');
+                break;
+            default:
                 var cred = $('option:selected', credentials).data();
                 postData.action = 'run';
                 postData.type = 'adhoc';
@@ -186,15 +194,6 @@ $(document).ready(function () {
                     postData.arguments = currentModule.buildArguments();
                     executeJob(postData, askPassword);
                 }
-                break;
-            case 'Cancel':
-                $('#cancel_edit').hide();
-                $('#run_command').show();
-                $('#adhoc_form_label').html('Run command');
-                adhocForm.removeData('adhocId');
-                break;
-            case 'sudo':
-                $(document.activeElement).toggleClass('checked_button');
                 break;
         }
     });

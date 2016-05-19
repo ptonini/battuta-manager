@@ -46,7 +46,7 @@ function loadPlaybookArgsForm(data, playbookFile) {
         .find('*').prop('disabled', false);
     $('#arguments_box_header').html(playbookFile);
     $('#become').toggleClass('hidden', !data.sudo);
-    window.location.href = '#arguments_box';
+    window.location.href = '#';
 }
 
 function clearPlaybookArgsForm() {
@@ -57,7 +57,7 @@ function clearPlaybookArgsForm() {
     $('#arguments_box_header').html('&nbsp;');
 }
 
-function loadPlaybookEditor (text, filename) {
+function loadPlaybookEditor(text, filename) {
 
     var editor = ace.edit("playbook_editor");
 
@@ -65,11 +65,11 @@ function loadPlaybookEditor (text, filename) {
     editor.setValue(text);
     editor.session.getUndoManager().reset();
     editor.selection.moveCursorFileStart();
-    if (filename == 'new') {
-        $('#playbook_name').attr('placeholder', 'New playbook').val('');
+    if (filename) {
+        $('#playbook_name').removeAttr('placeholder').val(filename);
     }
     else {
-        $('#playbook_name').removeAttr('placeholder').val(filename);
+        $('#playbook_name').attr('placeholder', 'New playbook').val('');
     }
     $('#playbook_editor')
         .data({'text': text, 'filename': filename})
@@ -90,22 +90,6 @@ $(document).ready(function () {
     var playbookEditor = $('#playbook_editor');
     var editorDialog = $('#editor_dialog');
 
-    // Initialize editor dialog
-    editorDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        width: 900,
-        dialogClass: 'no_title',
-        buttons: {
-            Cancel: function () {
-                $(this).dialog('close');
-                $('div.ui-dialog-buttonpane').css('border-top', '');
-            }
-        }
-    });
-    
     // Initialize code editor
     var editor = ace.edit("playbook_editor");
     editor.setTheme("ace/theme/chrome");
@@ -115,6 +99,22 @@ $(document).ready(function () {
     editor.setFontSize(13);
     editor.$blockScrolling = Infinity;
 
+    // Initialize editor dialog
+    editorDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        width: 900,
+        dialogClass: 'no_title',
+        buttons: {
+            Done: function () {
+                $(this).dialog('close');
+                $('div.ui-dialog-buttonpane').css('border-top', '');
+            }
+        }
+    });
+    
     // Build credentials selector box
     buildCredentialsSelectionBox(credentials);
 
@@ -193,15 +193,13 @@ $(document).ready(function () {
                 break;
             case 'Edit':
                 successCallback = function (data) {
-                    loadPlaybookArgsForm(data, playbookFile);
-                    buildArgsSelectionBox();
                     loadPlaybookEditor (data.text, playbookFile)
                 };
                 submitRequest(type, postData, successCallback);
                 break;
             case 'Clone':
                 successCallback = function (data) {
-                    loadPlaybookEditor (data.text, 'new')
+                    loadPlaybookEditor(data.text)
                 };
                 submitRequest(type, postData, successCallback);
                 break;
@@ -353,7 +351,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                loadPlaybookEditor (data, 'new')
+                loadPlaybookEditor (data)
             }
         });
     });

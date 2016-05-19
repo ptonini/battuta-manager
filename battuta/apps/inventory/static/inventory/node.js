@@ -14,14 +14,113 @@ function alterRelation(relation, selection, action, successFunction) {
     });
 }
 
+function formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi) {
+    var id = $(listItem).data('id');
+    var name = $(listItem).data('value');
+    $(listItem).html('').append(
+        $('<span>').append(name).click( function () {
+            window.open('/inventory/' + nodeType + '/' + id, '_self')
+        }),
+        $('<span>')
+            .attr({
+                'style': 'float: right',
+                'class': 'glyphicon glyphicon-remove-circle btn-incell',
+                'data-toggle': 'tooltip',
+                'title': 'Remove'})
+            .click(function () {
+                alterRelation(relation, [id], 'remove', function () {
+                    inheritedVariablesTableApi.ajax.reload();
+                    $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
+                })
+            })
+    )
+}
+
+function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj) {
+    $(listItem).click(function () {
+        var sourceValue = $(this).data('value');
+        var sourceId =  $(this).data('id');
+        $.ajax({
+            url: '',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                action: 'copy_vars',
+                source_id: sourceId,
+                type: node
+            },
+            success: function () {
+                selectDialog.dialog('close');
+                variableTableObj.ajax.reload();
+                $('#alert_dialog').html('<strong>Variables copied from ' + sourceValue + '</strong>').dialog('open');
+            }
+        });
+    });
+}
+
+function addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi) {
+    var currentList = listContainer.find('div.dynamic-list');
+    selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+    selectDialog.dialog('option', 'buttons', [
+        {
+            text: 'Add',
+            click: function () {
+                alterRelation(relation, selectDialog.DynamicList('getSelected', 'id'), 'add', function () {
+                    inheritedVariablesTableApi.ajax.reload();
+                    $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
+                });
+                $(this).dialog('close');
+            }
+        },
+        {
+            text: 'Cancel',
+            click: function () {
+                $('.filter_box').val('');
+                $(this).dialog('close');
+            }
+        }
+    ]);
+}
+
+function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVariablesTableApi) {
+    selectDialog.DynamicList({
+        listTitle: 'selection',
+        showCount: true,
+        showListSeparator: true,
+        showFilter: true,
+        headerBottomPadding: 0,
+        showAddButton: true,
+        addButtonClass: 'open_node_form',
+        addButtonTitle: 'Add ' + nodeType,
+        maxHeight: 400,
+        checkered: true,
+        itemToggle: true,
+        ajaxUrl: relation + '/?list=non_related',
+        loadCallback: function (listContainer) {
+            addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi)
+        },
+        addButtonAction: function (addButton) {
+            openAddNodeDialog(nodeType, selectDialog)
+        }
+    });
+    selectDialog.dialog('open');
+}
+
+function clearVariableForm () {
+    $('#cancel_var_edit').hide();
+    $('#variable_form').find('input').val('');
+    $('#key').focus();
+    $('#var_form_label').children('strong').html('Add variable');
+}
+
 $(document).ready(function () {
 
     var nodeName = $('#header_node_name').html();
     var variableTable = $('#variable_table');
     var relationDivs = $('.relation_div');
+    var selectDialog = $('#select_dialog');
     var alertDialog = $('#alert_dialog');
     var deleteDialog = $('#delete_dialog');
-    var selectDialog = $('#select_dialog');
     var nodeDialog = $('#node_dialog');
     var nodeForm = $('#node_form');
     var nodeTypeDialog = $('#node_type_dialog');
@@ -44,90 +143,28 @@ $(document).ready(function () {
             nodeType = 'host'
         }
         $(this).DynamicList({
-            'listTitle': relation,
-            "showTopSeparator": true,
-            'showTitle': true,
-            'showCount': true,
-            'showAddButton': true,
-            'addButtonClass': 'add_relation',
-            'addButtonTitle': 'Add relationship',
-            'checkered': true,
-            'minColumns': 1,
-            'maxColumns': 5,
-            'breakPoint': 5,
-            'ajaxUrl': relation + '/?list=related',
-            'formatItem': function (listItem) {
-                var id = $(listItem).data('id');
-                var name = $(listItem).data('value');
-                $(listItem).html('').append(
-                    $('<span>').append(name).click( function () {
-                        window.open('/inventory/' + nodeType + '/' + id, '_self')
-                    }),
-                    $('<span>')
-                        .attr({
-                            'style': 'float: right',
-                            'class': 'glyphicon glyphicon-remove-circle btn-incell',
-                            'data-toggle': 'tooltip',
-                            'title': 'Remove'})
-                        .click(function () {
-                            alterRelation(relation, [id], 'remove', function () {
-                                inheritedVariablesTable.ajax.reload();
-                                $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
-                            })
-                        })
-                )
+            listTitle: relation,
+            showTitle: true,
+            showCount: true,
+            showAddButton: true,
+            addButtonClass: 'add_relation',
+            addButtonTitle: 'Add relationship',
+            checkered: true,
+            minColumns: 1,
+            maxColumns: 5,
+            breakPoint: 5,
+            ajaxUrl: relation + '/?list=related',
+            formatItem: function (listItem) {
+                formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi)
             },
-            'addButtonAction': function (addButton) {
-                selectDialog.DynamicList({
-                    'listTitle': 'selection',
-                    'showCount': true,
-                    "showListSeparator": true,
-                    'showFilter': true,
-                    'headerBottomPadding': 0,
-                    'showAddButton': true,
-                    'addButtonClass': 'open_node_form',
-                    'addButtonTitle': 'Add ' + nodeType,
-                    'maxHeight': 400,
-                    'itemToggle': true,
-                    'ajaxUrl': relation + '/?list=non_related',
-                    'loadCallback': function (listContainer) {
-                        var currentList = listContainer.find('div.dynamic-list');
-                        selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                        selectDialog.dialog('option', 'buttons', [
-                            {
-                                text: 'Add',
-                                click: function () {
-                                    var selection = [];
-                                    $(currentList).children('div.toggle-on:not(".hidden")').each(function () {
-                                        selection.push($(this).data('id'));
-                                    });
-                                    alterRelation(relation, selection, 'add', function () {
-                                        inheritedVariablesTable.ajax.reload();
-                                        $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
-                                    });
-                                    $(this).dialog('close');
-                                }
-                            },
-                            {
-                                text: 'Cancel',
-                                click: function () {
-                                    $('.filter_box').val('');
-                                    $(this).dialog('close');
-                                }
-                            }
-                        ]);
-                    },
-                    'addButtonAction': function (addButton) {
-                        openAddNodeDialog(nodeType, selectDialog)
-                    }
-                });
-                selectDialog.dialog('open');
+            addButtonAction: function (addButton) {
+                addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVariablesTableApi)
             }
         });
     });
 
     // Build variables table
-    var variableTableObj = variableTable.DataTable({
+    var variableTableApi = variableTable.DataTable({
         ajax: {
             url: 'variable/list/',
             type: 'GET',
@@ -150,13 +187,12 @@ $(document).ready(function () {
     // Edit or delete variable
     variableTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
-        var var_id = variableTableObj.row($(this).parents('tr')).data()[2];
+        var var_id = variableTableApi.row($(this).parents('tr')).data()[2];
         if ($(this).attr('title') == 'Edit') {
             cancelVarEdit.show();
             $('#var_form_label').children('strong').html('Edit variable');
-            $('#key').val(variableTableObj.row($(this).parents('tr')).data()[0]);
-            $('#value').val(variableTableObj.row($(this).parents('tr')).data()[1]);
-            $('#variable_id').val(variableTableObj.row($(this).parents('tr')).data()[2]);
+            $('#key').val(variableTableApi.row($(this).parents('tr')).data()[0]);
+            $('#value').val(variableTableApi.row($(this).parents('tr')).data()[1]).focus();
         }
         else if ($(this).attr('title')  == 'Delete') {
             deleteDialog.dialog('option', 'buttons', [
@@ -172,7 +208,7 @@ $(document).ready(function () {
                                 id: var_id
                             },
                             success: function () {
-                                variableTableObj.ajax.reload()
+                                variableTableApi.ajax.reload()
                             }
                         });
                     }
@@ -191,12 +227,6 @@ $(document).ready(function () {
     // Submit variable form
     $('#variable_form').submit(function (event) {
         event.preventDefault();
-        function clearVariableForm () {
-            cancelVarEdit.hide();
-            $('#variable_form').find('input').val('');
-            $('#key').focus();
-            $('#var_form_label').children('strong').html('Add variable');
-        }
         switch ($(document.activeElement).html()) {
             case 'Cancel':
                 clearVariableForm();
@@ -207,35 +237,17 @@ $(document).ready(function () {
                     var node = $(this).attr('data-type');
                     nodeTypeDialog.dialog('close');
                     selectDialog.DynamicList({
-                        'listTitle': 'copy_from_node',
-                        "showListSeparator": true,
-                        'showFilter': true,
-                        'headerBottomPadding': 0,
-                        'maxHeight': 400,
-                        'ajaxUrl': '/inventory/?action=search&type=' + node + '&pattern=',
-                        'formatItem': function (listItem) {
-                            $(listItem).click(function () {
-                                var sourceValue = $(this).data('value');
-                                var sourceId =  $(this).data('id');
-                                $.ajax({
-                                    url: '',
-                                    type: 'GET',
-                                    dataType: 'json',
-                                    data: {
-                                        action: 'copy_vars',
-                                        source_id: sourceId,
-                                        type: node
-                                    },
-                                    success: function () {
-                                        selectDialog.dialog('close');
-                                        variableTableObj.ajax.reload();
-                                        alertDialog.html('<strong>Variables copied from ' + sourceValue + '</strong>');
-                                        alertDialog.dialog('open');
-                                    }
-                                });
-                            });
+                        listTitle: 'copy_from_node',
+                        showListSeparator: true,
+                        showFilter: true,
+                        headerBottomPadding: 0,
+                        maxHeight: 400,
+                        checkered: true,
+                        ajaxUrl: '/inventory/?action=search&type=' + node + '&pattern=',
+                        formatItem: function (listItem) {
+                            formatCopyVariablesListItem(listItem, selectDialog, variableTableApi)
                         },
-                        'loadCallback': function (listContainer) {
+                        loadCallback: function (listContainer) {
                             var currentList = listContainer.find('div.dynamic-list');
                             selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                         }
@@ -257,13 +269,14 @@ $(document).ready(function () {
                     },
                     success: function (data) {
                         if (data.result == 'ok') {
-                            variableTableObj.ajax.reload();
+                            variableTableApi.ajax.reload();
                             clearVariableForm();
                         }
                         else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Form submit error<br><br></strong>');
-                            alertDialog.append(data.msg);
-                            alertDialog.dialog('open');
+                            alertDialog
+                                .html('<strong>Form submit error<br><br></strong>')
+                                .append(data.msg)
+                                .dialog('open');
                         }
                     }
                 });
@@ -272,7 +285,7 @@ $(document).ready(function () {
     });
 
     // Build inherited variables table
-    var inheritedVariablesTable = $('#inh_var_table').DataTable({
+    var inheritedVariablesTableApi = $('#inh_var_table').DataTable({
         ajax: {
             url: 'variable/list_inh/',
             type: 'GET',

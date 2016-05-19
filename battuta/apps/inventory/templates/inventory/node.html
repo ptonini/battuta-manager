@@ -18,10 +18,11 @@
             <div class="row">
                 <div class="col-md-12">
                     <h4>Relationships</h4>
+                    <br>
                     {% for relation in node.relations %}
                         <div class="relation_div" data-relation="{{ relation }}"></div>
+                        <hr>
                     {% endfor %}
-                    <hr>
                 </div>
             </div>
         </div>
@@ -29,7 +30,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <h4>Variables</h4>
-                    <hr>
+                    <br>
                     <h5>{{ node.type|title }} variables</h5>
                     <table id="variable_table" class="table table-condensed table-hover table-striped">
                         <thead>
@@ -81,8 +82,7 @@
         <div id="adhoc_tab" class="tab-pane fade">
             <div class="row">
                 <div class="col-md-12">
-                    <h4>Ad-Hoc tasks</h4>
-                    <hr>
+                    <h4 style="margin-bottom: 20px">Ad-Hoc tasks</h4>
                     {% include 'runner/adhoc_form.html' %}
                 </div>
             </div>
@@ -90,21 +90,18 @@
         <div id="details_tab" class="tab-pane fade">
             <div class="row">
                 <div class="col-md-12">
-                    <h4>{{ node.type|title }} details</h4><hr>
+                    <h4>{{ node.type|title }} details</h4>
+                    <br>
                     <label>Description</label>
                     <div id="node_description_box">{{ node.description }}</div>
                     <br>
-                    <a href="#" id="edit_node" data-toggle="tooltip" title="Edit {{ node.type }}">
-                        <span class="glyphicon glyphicon-edit glyph_button"></span>
-                    </a>
-                    <a href="#" id="delete_node" data-toggle="tooltip" title="Delete">
-                        <span class="glyphicon glyphicon-remove-circle glyph_button"></span>
-                    </a>
+                    <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
+                    <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
                     <br><br>
                     {% if node.type == 'host' %}
-                        <a class="btn btn-default btn-xs" id="open_facts">View facts</a>
+                        <button class="btn btn-default btn-xs" id="open_facts">View facts</button>
                     {% endif %}
-                    <a class="btn btn-default btn-xs" id="gather_facts">Gather facts</a>
+                    <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
                     <hr>
                 </div>
             </div>

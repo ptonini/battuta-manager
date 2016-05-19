@@ -83,7 +83,7 @@ class RunnerView(View):
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
-                runner.data = run_data
+                setattr(runner, 'data', run_data)
                 runner.save()
                 try:
                     p = Process(target=play_runner, args=(runner,))

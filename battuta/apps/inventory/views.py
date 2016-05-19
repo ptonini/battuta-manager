@@ -83,21 +83,21 @@ class InventoryView(View):
                 else:
                     added = 0
                     updated = 0
-                    for line in csv_file:
-                        host, created = Host.objects.get_or_create(name=line[host_index])
+                    for row in csv_file:
+                        host, created = Host.objects.get_or_create(name=row[host_index])
                         if created:
                             added += 1
                         else:
                             updated += 1
-                        for index, item in enumerate(line):
-                            if index != host_index and item != '':
+                        for index, cell in enumerate(row):
+                            if index != host_index and cell:
                                 if header[index] == 'group':
-                                    group, created = Group.objects.get_or_create(name=item)
+                                    group, created = Group.objects.get_or_create(name=cell)
                                     host.group_set.add(group)
                                     host.save()
                                 else:
                                     var, created = Variable.objects.get_or_create(key=header[index], host=host)
-                                    var.value = item
+                                    var.value = cell
                                     var.save()
                     data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
             else:
@@ -129,7 +129,8 @@ class NodesView(View):
 
     @staticmethod
     def build_node(node_type, node_id):
-        # Build node object
+
+        # Get classes based on node type
         if node_type == 'host':
             node_class = Host
             node_form_class = HostForm
@@ -139,11 +140,12 @@ class NodesView(View):
         else:
             raise Http404('Invalid node type')
 
+        # Build node object
         if node_id == '0':
             node = node_class()
         else:
             node = get_object_or_404(node_class, pk=node_id)
-            node.ancestors = list()
+            setattr(node, 'ancestors', list())
             parents = node.group_set.all()
             while len(parents) > 0:
                 step_list = list()
@@ -153,7 +155,7 @@ class NodesView(View):
                         for group in parent.group_set.all():
                             step_list.append(group)
                 parents = step_list
-        node.form_class = node_form_class
+        setattr(node, 'form_class', node_form_class)
         return node
 
     def get(self, request, node_id, node_type):

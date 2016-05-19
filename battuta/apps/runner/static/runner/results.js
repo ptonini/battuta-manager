@@ -1,3 +1,54 @@
+function updateTaskTable(task, taskTableApi, intervalId) {
+    taskTableApi.ajax.reload();
+    var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
+    if (['failed', 'canceled'].indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
+        clearInterval(intervalId)
+    }
+}
+
+function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
+    var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
+    $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
+    taskTableApi.rows().every(function (rowIndex) {
+        var row = taskTableApi.row(rowIndex);
+        var node = row.node();
+        switch (row.data()[1]) {
+            case 'unreachable':
+                $(node).css('color', 'gray');
+                break;
+            case 'changed':
+                $(node).css('color', 'orange');
+                break;
+            case 'ok':
+                $(node).css('color', 'green');
+                break;
+            case 'error':
+            case 'failed':
+                $(node).css('color', 'red');
+                break;
+        }
+        $(node).children('td:nth-child(4)').html(
+            $('<strong>').html('{ }')
+                .attr({title: 'Details', class: 'html_only'})
+                .css({float: 'right', color: '#777'})
+                .click(function () {
+                    $('#json_box')
+                        .JSONView(row.data()[3])
+                        .JSONView('collapse', 2);
+                    $('#json_dialog').dialog('open')
+                })
+                .hover(function () {
+                    $(this).css('cursor', 'pointer')
+                })
+        );
+    });
+    if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
+        $('html, body').animate({
+            scrollTop: ($('#result_container').find('tr').last().offset().top)
+        }, 0);
+    }
+}
+
 function updateResult(intervalId, stoppedStates) {
 
     var runnerStatus = $('#runner_status');
@@ -8,7 +59,16 @@ function updateResult(intervalId, stoppedStates) {
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
     var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
-
+    var taskTable =  $('<table>').addClass('table table-condensed table-hover table-striped').append(
+        $('<thead>').append(
+            $('<tr>').append(
+                $('<th>').attr('class', 'col-md-3').html('host'),
+                $('<th>').attr('class', 'col-md-2').html('status'),
+                $('<th>').attr('class', 'col-md-6').html('message'),
+                $('<th>').attr('class', 'col-md-1')
+            )
+        )
+     );
 
     $.ajax({
         url: '',
@@ -42,14 +102,16 @@ function updateResult(intervalId, stoppedStates) {
 
             if (runner.message) {
                 resultContainer.empty().append(
-                    $('<h5>').attr('id', 'runner_message').html(runner.message)
+                    $('<h5>').attr('id', 'runner_message').html('<br>' + runner.message)
                 );
                 if (runner.status == 'failed') {
                     $('#runner_message').css('color', 'red');
                 }
             }
+
             else {
                 $.each(runner.plays, function (index, play) {
+
                     var separator = null;
                     var firstRow = null;
                     var lastRow = $('<br>');
@@ -57,12 +119,14 @@ function updateResult(intervalId, stoppedStates) {
                     var playContainerId = 'play_' + play.id + '_container';
                     var playContainerSelector = '#' + playContainerId;
                     var playContainer = $(playContainerSelector);
+
                     if (runner.type == 'playbook') {
                         separator = $('<hr>').attr('class', 'medium html_only');
                         firstRow = divRow.clone().append(divCol12.clone().html('<h4>' + play.name + '</h4>'));
                         lastRow = divRow.clone().append(divCol12.clone().html('Tasks:'));
                         taskContainerPadding = taskContainerPadding + 20
                     }
+
                     if ($(playContainerSelector).length == 0) {
                         playContainer = $('<div>').attr('id', playContainerId);
                         resultContainer.append(playContainer);
@@ -81,56 +145,36 @@ function updateResult(intervalId, stoppedStates) {
                             lastRow
                         );
                     }
+
                     if (play.tasks.length > 0) {
                         $.each(play.tasks, function (index, task) {
+                            sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
                             var taskTitle = null;
                             if (play.name != 'AdHoc task') {
                                 taskTitle = $('<h6>').append(
-                                    $('<strong>').html(task.name).append(
-                                        $('<span>').attr('id', 'task_' + task.id + '_count')
-                                    )
+                                    $('<strong>').html(task.name),
+                                    $('<span>').attr('id', 'task_' + task.id + '_count')//.css('float', 'right')
                                 )
                             }
 
-                            if (task.module == 'include') {
-                                var includeTaskId = 'task_' + task.id;
-                                if ($('#' + includeTaskId).length == 0) {
-                                    playContainer.append(
-                                        divRow.clone().attr('id', includeTaskId).append(
-                                            divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
-                                                taskTitle
-                                            )
+                            var taskRowId = 'task_' + task.id;
+                            var taskRowIdSelector = '#' + taskRowId;
+                            if ($(taskRowIdSelector).length == 0) {
+                                playContainer.append(
+                                    divRow.clone().attr('id', taskRowId).append(
+                                        divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
+                                            taskTitle
                                         )
                                     )
-                                }
-                            }
-                            else {
-                                sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
-                                var taskTableId = 'task_' + task.id + '_table';
-                                var taskTableSelector = '#' + taskTableId;
-                                if ($(taskTableSelector).length == 0) {
-                                    playContainer.append(
-                                        divRow.clone().append(
-                                            divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
-                                                taskTitle,
-                                                $('<table>')
-                                                    .addClass('task_table table table-condensed table-hover table-striped')
-                                                    .attr('id', taskTableId).append(
-                                                    $('<thead>').append(
-                                                        $('<tr>').append(
-                                                            $('<th>').attr('class', 'col-md-3').html('host'),
-                                                            $('<th>').attr('class', 'col-md-2').html('status'),
-                                                            $('<th>').attr('class', 'col-md-6').html('message'),
-                                                            $('<th>').attr('class', 'col-md-1')
-                                                        )
-                                                    )
-                                                ),
-                                                $('<hr>')
-                                            )
+                                );
+                                if (task.module != 'include') {
+                                    var taskTableId = 'task_' + task.id + '_table';
+                                    $(taskRowIdSelector).append(
+                                        divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
+                                            taskTitle, taskTable.clone().attr('id', taskTableId), $('<br>')
                                         )
                                     );
-                                    $('#task_' + task.id + '_count').html(' (' + task.host_count + ')');
-                                    $(taskTableSelector).DataTable({
+                                    var taskTableApi = $('#' + taskTableId).DataTable({
                                         paginate: false,
                                         searching: false,
                                         info: false,
@@ -141,56 +185,17 @@ function updateResult(intervalId, stoppedStates) {
                                             data: {action: 'task_results', task_id: task.id}
                                         },
                                         drawCallback: function () {
-                                            var tableApi = this.api();
-                                            tableApi.rows().every(function (rowIndex) {
-                                                var row = tableApi.row(rowIndex);
-                                                var node = row.node();
-                                                switch (row.data()[1]) {
-                                                    case 'unreachable':
-                                                        $(node).css('color', 'gray');
-                                                        break;
-                                                    case 'changed':
-                                                        $(node).css('color', 'orange');
-                                                        break;
-                                                    case 'ok':
-                                                        $(node).css('color', 'green');
-                                                        break;
-                                                    case 'error':
-                                                    case 'failed':
-                                                        $(node).css('color', 'red');
-                                                        break;
-                                                }
-                                                $(node).children('td:nth-child(4)').html(
-                                                    $('<strong>').html('{ }')
-                                                        .attr({title: 'Details', class: 'html_only'})
-                                                        .css({float: 'right', color: '#777'})
-                                                        .click(function () {
-                                                            $('#json_box')
-                                                                .JSONView(row.data()[3])
-                                                                .JSONView('collapse', 2);
-                                                            $('#json_dialog').dialog('open')
-                                                        })
-                                                        .hover(function () {
-                                                            $(this).css('cursor', 'pointer')
-                                                        })
-                                                );
-                                            });
+                                            taskTableDrawCallBack(this.api(), stoppedStates, task)
                                         }
                                     });
                                     if (stoppedStates.indexOf(runner.status) == -1) {
-                                        var intervalId = setInterval(function () {
-                                            var taskTable = $(taskTableSelector).DataTable();
-                                            var currentStatus = $('#runner_status').html();
-                                            taskTable.ajax.reload();
-                                            var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
-                                            $('#task_' + task.id + '_count').html(' (' + hostCount + ')');
-                                            var rowCount = taskTable.rows().count();
-                                            if (stoppedStates.indexOf(currentStatus) > -1 || hostCount == rowCount) {
-                                                clearInterval(intervalId)
-                                            }
+                                        var intervalId = setInterval(function() {
+                                            updateTaskTable(task, taskTableApi, intervalId)
                                         }, 1000)
                                     }
-
+                                }
+                                else {
+                                    $(taskRowIdSelector).after($('<br>'))
                                 }
                             }
                         });
@@ -214,6 +219,10 @@ function updateResult(intervalId, stoppedStates) {
                     }
                 }
                 clearInterval(intervalId);
+                setTimeout(function() {
+                    window.location.href = '#';
+                }, 3000)
+
             }
             else {
                 $('#cancel_runner').show();
@@ -251,7 +260,7 @@ $(document).ready(function () {
     updateResult(0, stoppedStates);
     if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
         var intervalId = setInterval(function () {
-            updateResult(intervalId, stoppedStates)
+            updateResult(intervalId, stoppedStates);
         }, 1000);
     }
 

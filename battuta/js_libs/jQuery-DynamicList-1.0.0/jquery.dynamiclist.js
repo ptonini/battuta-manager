@@ -48,16 +48,17 @@
 
     function _formatItems(listDiv, opts) {
         var span = document.createElement('span');
-        $(span).css('visibility', 'hidden').attr('id', 'temp_span');
-        listDiv.append($(span)).children('.dynamic-item').each(function () {
+        $(span).css({visibility: 'hidden'}).attr('id', 'temp_span');
+        $('body').append($(span));
+        listDiv.children('.dynamic-item').each(function () {
             opts.formatItem(this);
+            
             if (opts.truncateItemText) {
                 var itemText = $(this).html();
                 var tempSpan = $('#temp_span');
                 tempSpan.html(itemText);
-                var textWidth = tempSpan.actual('width', {includeMargin: true});
-                var columnWidth = $(this).actual('width', {includeMargin: true});
-                console.log(textWidth, columnWidth);
+                var textWidth = tempSpan.actual('width', {includeMargin: false});
+                var columnWidth = $(this).width();
                 if (itemText && textWidth > columnWidth) {
                     var viewableText = String(itemText);
                     do {
@@ -76,10 +77,12 @@
                     $('.ui-button-text:contains("Add")').parent('button').focus()
                 });
             }
+            
             if (opts.onHoverCursor) {
                 $(this).css('cursor', opts.onHoverCursor)
             }
         });
+        $(span).remove()
 
     }
 
@@ -210,8 +213,9 @@
             }
 
             if (opts.showAddButton) {
-                $(headerDiv).append(
-                    $('<a>')
+                var addButton = null;
+                if (opts.addButtonType == 'icon') {
+                    addButton = $('<a>')
                         .attr({
                             'href': '#',
                             'data-toggle': 'tooltip',
@@ -220,10 +224,15 @@
                         })
                         .append('<span class="glyphicon glyphicon-plus btn-sm"></span>')
                         .after(' ')
-                        .click(function () {
-                            event.preventDefault();
-                            opts.addButtonAction(this)
-                        })
+                }
+                else if (opts.addButtonType == 'button') {
+                    addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
+                }
+                $(headerDiv).append(
+                    addButton.click(function () {
+                        event.preventDefault();
+                        opts.addButtonAction(this)
+                    })
                 )
             }
 
@@ -260,7 +269,7 @@
             }
 
             if (opts.showListSeparator) {
-                $(headerDiv).append($('<hr>'))
+                $(headerDiv).append($('<br><br>'))
             }
 
             if (opts.checkered) {
@@ -315,9 +324,10 @@
         showTopSeparator: false,
         addButtonClass: null,
         addButtonTitle: null,
+        addButtonType: 'icon',
         titleFontSize: '14px',
         headerBottomPadding: '10px',
-        showListSeparator: false,
+        showListSeparator: true,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',
         maxHeight: null,

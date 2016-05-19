@@ -109,11 +109,13 @@ h5 {
     margin: 0 10px;
 }
 
-
-
 .table tbody > tr > td {
     vertical-align: middle;
     border-top: none !important;
+}
+
+.table tbody > tr:last-child {
+    border-bottom: 1px solid lightgrey;
 }
 
 .input-sm_label {
