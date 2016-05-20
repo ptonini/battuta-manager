@@ -97,7 +97,7 @@ class BattutaCallback(CallbackBase):
 
     def v2_playbook_on_handler_task_start(self, task):
         django.db.close_old_connections()
-        self._current_task = self._current_play.runnertask_set.create(name='Handler: ' + task.get_name().strip())
+        self._current_task = self._current_play.runnertask_set.create(name='Handler - ' + task.get_name().strip())
         self._current_task.module = task.__dict__['_attributes']['action']
         self._current_task.host_count = len(self._inventory._restriction) - self._current_play.failed_count
         self._current_task.save()

@@ -1,11 +1,16 @@
+// Update function for task table
 function updateTaskTable(task, taskTableApi, intervalId) {
     taskTableApi.ajax.reload();
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
-    if (['failed', 'canceled'].indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
+
+    // Stops loop if job is defunct or if task host count matches table length
+    var failedStates = ['failed', 'canceled'];
+    if (failedStates.indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
         clearInterval(intervalId)
     }
 }
 
+// Draw callback function for task table
 function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
     $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
@@ -45,15 +50,17 @@ function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
     if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
         $('html, body').animate({
             scrollTop: ($('#result_container').find('tr').last().offset().top)
-        }, 0);
+        }, 500);
     }
 }
 
-function updateResult(intervalId, stoppedStates) {
+// Load job results from database and build tables
+function loadResults(intervalId, stoppedStates) {
 
     var runnerStatus = $('#runner_status');
     var resultContainer = $('#result_container');
 
+    // Create html reusable elements
     var divRow = $('<div>').attr('class', 'row');
     var divCol4 = $('<div>').attr('class', 'col-md-4 col-xs-6');
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
@@ -70,6 +77,7 @@ function updateResult(intervalId, stoppedStates) {
         )
      );
 
+    // Get status data from server
     $.ajax({
         url: '',
         type: 'GET',
@@ -77,6 +85,8 @@ function updateResult(intervalId, stoppedStates) {
         data: {action: 'status'},
         success: function (runner) {
             resultContainer.data(runner);
+
+            // Set font color for status display
             switch (runner.status) {
                 case 'running':
                     runnerStatus.css('color', 'blue');
@@ -96,10 +106,12 @@ function updateResult(intervalId, stoppedStates) {
             }
             runnerStatus.html(runner.status);
 
+            // Hide playbook only html elements
             if (runner.type == 'adhoc') {
                 $('.playbook_only').hide()
             }
 
+            // Display error message if exists
             if (runner.message) {
                 resultContainer.empty().append(
                     $('<h5>').attr('id', 'runner_message').html('<br>' + runner.message)
@@ -109,6 +121,7 @@ function updateResult(intervalId, stoppedStates) {
                 }
             }
 
+            // Build Play tables
             else {
                 $.each(runner.plays, function (index, play) {
 
@@ -116,64 +129,75 @@ function updateResult(intervalId, stoppedStates) {
                     var firstRow = null;
                     var lastRow = $('<br>');
                     var taskContainerPadding =  parseInt($('div.col-md-12').css('padding-left').replace(/\D/g,''));
-                    var playContainerId = 'play_' + play.id + '_container';
-                    var playContainerSelector = '#' + playContainerId;
-                    var playContainer = $(playContainerSelector);
 
+                    // Set playbook only elements
                     if (runner.type == 'playbook') {
                         separator = $('<hr>').attr('class', 'medium html_only');
-                        firstRow = divRow.clone().append(divCol12.clone().html('<h4>' + play.name + '</h4>'));
-                        lastRow = divRow.clone().append(divCol12.clone().html('Tasks:'));
+                        firstRow = divCol12.clone().html('<h4>' + play.name + '</h4>');
+                        lastRow = divCol12.clone().html('Tasks:');
                         taskContainerPadding = taskContainerPadding + 20
                     }
 
-                    if ($(playContainerSelector).length == 0) {
-                        playContainer = $('<div>').attr('id', playContainerId);
+                    // Build Play container and header
+                    var playContainerId = 'play_' + play.id + '_container';
+                    if ($('#' + playContainerId).length == 0) {
+                        var playContainer = $('<div>').attr('id', playContainerId);
                         resultContainer.append(playContainer);
                         playContainer.append(
-                            separator, firstRow,
-                            divRow.clone().append(
-                                divCol4.clone().append(
+                            separator, divRow.clone().append(
+                                firstRow, divCol4.clone().append(
                                     divRow.clone().append(
                                         divCol3.clone().html('Hosts:'),
                                         divCol9.clone().html('<strong>' + play.hosts + '</strong>'),
                                         divCol3.clone().html('Become:'),
                                         divCol9.clone().html('<strong>' + play.become + '</strong>')
                                     )
-                                )
-                            ),
-                            lastRow
+                                ), lastRow
+                            )
                         );
                     }
 
+                    // Build tasks section
                     if (play.tasks.length > 0) {
                         $.each(play.tasks, function (index, task) {
+
+                            // Save task host count to session storage
                             sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
+
+                            // Set task title
                             var taskTitle = null;
                             if (play.name != 'AdHoc task') {
                                 taskTitle = $('<h6>').append(
                                     $('<strong>').html(task.name),
-                                    $('<span>').attr('id', 'task_' + task.id + '_count')//.css('float', 'right')
+                                    $('<span>').attr('id', 'task_' + task.id + '_count')
                                 )
                             }
 
+                            // Create task row if not exists
                             var taskRowId = 'task_' + task.id;
-                            var taskRowIdSelector = '#' + taskRowId;
-                            if ($(taskRowIdSelector).length == 0) {
+                            if ($('#' + taskRowId).length == 0) {
+                                var taskRow = divRow.clone().attr('id', taskRowId);
                                 playContainer.append(
-                                    divRow.clone().attr('id', taskRowId).append(
+                                    taskRow.append(
                                         divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
                                             taskTitle
                                         )
                                     )
                                 );
-                                if (task.module != 'include') {
+
+                                // Create task table if is not an include task
+                                if (task.module == 'include'){
+                                    taskRow.after($('<br>'))
+                                }
+                                else  {
                                     var taskTableId = 'task_' + task.id + '_table';
-                                    $(taskRowIdSelector).append(
+                                    taskRow.append(
                                         divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
                                             taskTitle, taskTable.clone().attr('id', taskTableId), $('<br>')
                                         )
                                     );
+
+                                    // Initialize and load dynamic table
                                     var taskTableApi = $('#' + taskTableId).DataTable({
                                         paginate: false,
                                         searching: false,
@@ -188,14 +212,13 @@ function updateResult(intervalId, stoppedStates) {
                                             taskTableDrawCallBack(this.api(), stoppedStates, task)
                                         }
                                     });
+
+                                    // If job is running creates update loop
                                     if (stoppedStates.indexOf(runner.status) == -1) {
                                         var intervalId = setInterval(function() {
                                             updateTaskTable(task, taskTableApi, intervalId)
                                         }, 1000)
                                     }
-                                }
-                                else {
-                                    $(taskRowIdSelector).after($('<br>'))
                                 }
                             }
                         });
@@ -257,10 +280,10 @@ $(document).ready(function () {
     });
     
     // Refresh table until job is complete
-    updateResult(0, stoppedStates);
+    loadResults(0, stoppedStates);
     if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
         var intervalId = setInterval(function () {
-            updateResult(intervalId, stoppedStates);
+            loadResults(intervalId, stoppedStates);
         }, 1000);
     }
 
