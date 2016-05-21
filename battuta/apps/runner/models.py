@@ -58,6 +58,6 @@ class RunnerResult(models.Model):
     host = models.CharField(max_length=64)
     status = models.CharField(max_length=32)
     message = models.TextField(max_length=32768, blank=True, null=True)
-    response = models.TextField(max_length=65536, blank=True, null=True)
+    response = models.TextField(max_length=65536, default='{}')
 
 

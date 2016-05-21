@@ -36,13 +36,12 @@ class RunnerView(View):
             data = None
             run_data = dict(request.POST.iteritems())
 
+            # Add credentials to run data
             if 'cred' in run_data:
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
             else:
                 cred = request.user.userdata.default_cred
-
             run_data['username'] = cred.username
-
             if 'remote_pass' not in run_data:
                 run_data['remote_pass'] = cred.password
             if 'become_pass' not in run_data:
@@ -312,14 +311,10 @@ class ResultView(BaseView):
                 task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
                 data = list()
                 for result in task.runnerresult_set.all():
-                    try:
-                        result.response = json.loads(result.response)
-                    except ValueError:
-                        result.response = []
                     data.append([result.host,
                                  result.status,
                                  result.message,
-                                 result.response])
+                                 json.loads(result.response)])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")

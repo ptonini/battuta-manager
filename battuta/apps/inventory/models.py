@@ -2,9 +2,8 @@ from django.db import models
 
 
 class Host(models.Model):
-    name = models.CharField(max_length=32, blank=False, unique=True)
+    name = models.CharField(max_length=64, blank=False, unique=True)
     description = models.TextField(max_length=256, blank=True)
-    form_class = None
     type = 'host'
     relations = ['Parents']
 
@@ -13,11 +12,10 @@ class Host(models.Model):
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=32, blank=False, unique=True)
+    name = models.CharField(max_length=64, blank=False, unique=True)
     description = models.TextField(max_length=256, blank=True)
     children = models.ManyToManyField('self', blank=True, symmetrical=False)
     members = models.ManyToManyField('Host', blank=True)
-    form_class = None
     type = 'group'
     relations = ['Parents', 'Children', 'Members']
 

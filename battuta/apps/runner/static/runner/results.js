@@ -50,7 +50,7 @@ function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
     if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
         $('html, body').animate({
             scrollTop: ($('#result_container').find('tr').last().offset().top)
-        }, 500);
+        }, 0);
     }
 }
 
