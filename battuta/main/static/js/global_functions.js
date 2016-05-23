@@ -37,8 +37,6 @@ $(document).ajaxError(function (event, xhr) {
     else {
         $('body').html(xhr.responseText);
     }
-    console.log(xhr.status);
-    console.log(xhr.responseText);
 });
 
 // Set DataTables defaults
@@ -48,29 +46,32 @@ $.extend($.fn.dataTable.defaults, {
     language: {'emptyTable': ' '},
     pageLength: 5,
     lengthMenu: [5, 10, 25, 50, 100],
-    fnCreatedRow: function( nRow, aData, iDataIndex) {
-        var rowCells = $(nRow).children('td');
-        var headerCells = this.find("th");
-        var getLength = $('#get_length');
-        var cellData, truncatedData, cellWidth, headerWidth;
-        for(var i = 0; i < rowCells.length; i++) {
-            getLength.html(aData[i]);
-            cellWidth = $(getLength).actual('width', { includeMargin : true });
-            headerWidth = $(headerCells[i]).actual('width', { includeMargin : true });
-            if (cellWidth > headerWidth && aData[i] != '' && aData[i] != null) {
-                cellData = aData[i];
-                truncatedData = String(aData[i]);
+    fnCreatedRow: function( row, data, dataIndex) {
+        var tempSpan = $('<span>').css({visibility: 'hidden'}).attr('id', 'temp_span');
+        $('body').append(tempSpan);
+        var cells = $(row).children('td');
+        var headers = this.find('th');
+        for(var i = 0; i < cells.length; i++) {
+            tempSpan.html(data[i]);
+            var cellWidth = tempSpan.actual('width', { includeMargin : true });
+            var headerWidth = $(headers[i]).actual('width', { includeMargin : true });
+            if (data[i] && cellWidth > headerWidth) {
+                var cellText = data[i];
+                var truncatedText = String(data[i]);
                 do {
-                    truncatedData = truncatedData.slice(0, -5) + '...';
-                    getLength.html(truncatedData);
-                    cellWidth = parseInt(getLength.width());
+                    truncatedText = truncatedText.slice(0, -5) + '...';
+                    tempSpan.html(truncatedText);
+                    cellWidth = parseInt(tempSpan.width());
                 }
                 while (cellWidth >= headerWidth);
-                $(rowCells[i]).wrapInner("<div></div>");
-                $(rowCells[i]).children("div").attr({'data-toggle': 'tooltip', title: cellData}).html(truncatedData);
+                $(cells[i]).wrapInner("<div></div>");
+                $(cells[i]).children("div").attr({'data-toggle': 'tooltip', title: cellText}).html(truncatedText);
             }
         }
+        tempSpan.remove()
     }
+    
+    
 });
 
 // Open popup window
@@ -276,3 +277,18 @@ function openAddNodeDialog(nodeType, parentList) {
     });
     nodeDialog.dialog('open')
 }
+
+function updateConfig() {
+    $.ajax({
+        url: '/',
+        type: 'GET',
+        dataType: 'json',
+        data: {action: 'config'},
+        success: function (data) {
+            Object.keys(data).forEach(function (key) {
+                sessionStorage.setItem(key, data[key])
+            });
+        }
+    });
+}
+

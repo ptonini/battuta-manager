@@ -1,15 +1,15 @@
 function searchEntities(entityType, resultContainer, searchPattern) {
     resultContainer.DynamicList({
-        'listTitle': entityType + 's:',
-        'minColumns': 1,
-        'maxColumns': 6,
-        'breakPoint': 4,
-        'showTitle': true,
-        "showTopSeparator": true,
-        'hideIfEmpty': true,
-        'checkered': true,
-        'ajaxUrl': '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
-        'formatItem': function (listItem) {
+        listTitle: entityType + 's:',
+        showTitle: true,
+        showTopSeparator: true,
+        hideIfEmpty: true,
+        checkered: true,
+        minColumns: sessionStorage.getItem('open_node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('open_node_list_break_point'),
+        ajaxUrl: '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
+        formatItem: function (listItem) {
             $(listItem).click(function () {
                 window.open('/inventory/' + entityType + '/' + $(this).data('id'), '_self')
             });

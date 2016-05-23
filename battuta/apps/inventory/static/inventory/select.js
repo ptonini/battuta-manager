@@ -13,9 +13,9 @@ $(document).ready(function () {
     });
 
     $('#node_list').DynamicList({
-        minColumns: 1,
-        maxColumns: 6,
-        breakPoint: 4,
+        minColumns: sessionStorage.getItem('open_node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('open_node_list_break_point'),
         checkered: true,
         showFilter: true,
         showAddButton: true,

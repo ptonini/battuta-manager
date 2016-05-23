@@ -8,7 +8,7 @@ header {
 }
 
 footer {
-    height: 45px;
+    height: 25px;
 }
 
 label {
@@ -109,12 +109,12 @@ h5 {
     margin: 0 10px;
 }
 
-.table tbody > tr > td {
+.table.dataTable tbody > tr > td {
     vertical-align: middle;
     border-top: none !important;
 }
 
-.table tbody > tr:last-child {
+.table.dataTable tbody > tr:last-child {
     border-bottom: 1px solid lightgrey;
 }
 
@@ -137,7 +137,7 @@ table.dataTable thead .sorting_desc_disabled:after{
 .checked_button,
 .checked_button:focus,
 .checked_button:hover {
-    background-color: darkgray;
+    background-color: gray;
     color: white;
 }
 

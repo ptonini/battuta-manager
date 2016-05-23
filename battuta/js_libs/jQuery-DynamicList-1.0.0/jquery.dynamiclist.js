@@ -47,15 +47,12 @@
     }
 
     function _formatItems(listDiv, opts) {
-        var span = document.createElement('span');
-        $(span).css({visibility: 'hidden'}).attr('id', 'temp_span');
-        $('body').append($(span));
+        var tempSpan = $('<span>').css({visibility: 'hidden'}).attr('id', 'temp_span');
+        $('body').append(tempSpan);
         listDiv.children('.dynamic-item').each(function () {
             opts.formatItem(this);
-            
             if (opts.truncateItemText) {
                 var itemText = $(this).html();
-                var tempSpan = $('#temp_span');
                 tempSpan.html(itemText);
                 var textWidth = tempSpan.actual('width', {includeMargin: false});
                 var columnWidth = $(this).width();
@@ -82,7 +79,7 @@
                 $(this).css('cursor', opts.onHoverCursor)
             }
         });
-        $(span).remove()
+        tempSpan.remove()
 
     }
 

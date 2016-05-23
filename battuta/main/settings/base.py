@@ -24,6 +24,7 @@ INSTALLED_APPS = (
     'apps.inventory',
     'apps.users',
     'apps.runner',
+    'apps.preferences'
 )
 
 MIDDLEWARE_CLASSES = (

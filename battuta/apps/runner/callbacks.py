@@ -8,6 +8,7 @@ from django.conf import settings
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
+# from __main__ import display as global_display
 
 try:
     from __main__ import display as global_display
@@ -97,6 +98,7 @@ class BattutaCallback(CallbackBase):
 
     def v2_playbook_on_handler_task_start(self, task):
         django.db.close_old_connections()
+        print pp.pprint(task._variable_manager.__dict__)
         self._current_task = self._current_play.runnertask_set.create(name='Handler - ' + task.get_name().strip())
         self._current_task.module = task.__dict__['_attributes']['action']
         self._current_task.host_count = len(self._inventory._restriction) - self._current_play.failed_count

@@ -1,6 +1,6 @@
 // Update function for task table
 function updateTaskTable(task, taskTableApi, intervalId) {
-    taskTableApi.ajax.reload();
+    taskTableApi.ajax.reload(null, false);
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
 
     // Stops loop if job is defunct or if task host count matches table length
@@ -47,10 +47,10 @@ function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
                 })
         );
     });
-    if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
+    if (stoppedStates.indexOf($('#runner_status').html()) == -1 && sessionStorage.getItem('auto_scroll')) {
         $('html, body').animate({
-            scrollTop: ($('#result_container').find('tr').last().offset().top)
-        }, 0);
+            scrollTop: ($('#result_container').find('tbody').find('tr').last().offset().top)
+        }, 500);
     }
 }
 
@@ -132,7 +132,7 @@ function loadResults(intervalId, stoppedStates) {
 
                     // Set playbook only elements
                     if (runner.type == 'playbook') {
-                        separator = $('<hr>').attr('class', 'medium html_only');
+                        separator = $('<hr>');
                         firstRow = divCol12.clone().html('<h4>' + play.name + '</h4>');
                         lastRow = divCol12.clone().html('Tasks:');
                         taskContainerPadding = taskContainerPadding + 20
@@ -140,8 +140,10 @@ function loadResults(intervalId, stoppedStates) {
 
                     // Build Play container and header
                     var playContainerId = 'play_' + play.id + '_container';
-                    if ($('#' + playContainerId).length == 0) {
-                        var playContainer = $('<div>').attr('id', playContainerId);
+                    var playContainerSelector = '#' + playContainerId;
+                    var playContainer = null;
+                    if ($(playContainerSelector).length == 0) {
+                        playContainer = $('<div>').attr('id', playContainerId);
                         resultContainer.append(playContainer);
                         playContainer.append(
                             separator, divRow.clone().append(
@@ -155,6 +157,9 @@ function loadResults(intervalId, stoppedStates) {
                                 ), lastRow
                             )
                         );
+                    }
+                    else {
+                        playContainer = $(playContainerSelector)
                     }
 
                     // Build tasks section
@@ -228,6 +233,7 @@ function loadResults(intervalId, stoppedStates) {
             }
             if (stoppedStates.indexOf(runner.status) > -1) {
                 $('#running_gif').hide();
+                $('#auto_scroll').hide();
                 $('#cancel_runner').hide();
                 $('#print_report').show();
                 if (runner.stats) {
@@ -242,12 +248,15 @@ function loadResults(intervalId, stoppedStates) {
                     }
                 }
                 clearInterval(intervalId);
-                setTimeout(function() {
-                    window.location.href = '#';
-                }, 3000)
+                if (sessionStorage.getItem('auto_scroll')) {
+                    setTimeout(function() {
+                        $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
+                    }, 3000)
+                }
 
             }
             else {
+                $('#auto_scroll').show();
                 $('#cancel_runner').show();
                 $('#running_gif').show();
             }
@@ -260,8 +269,13 @@ $(document).ready(function () {
 
     var runnerResult = $('#runner_result');
     var resultContainer = $('#result_container');
+    var autoScroll = $('#auto_scroll');
+    var body = $('body');
 
     var stoppedStates = ['finished', 'finished with errors', 'canceled', 'failed'];
+
+    body.css('padding-top', '105px');
+    sessionStorage.removeItem('auto_scroll');
 
     // Initialize stats dialog
     $('#stats_dialog').dialog({
@@ -274,7 +288,7 @@ $(document).ready(function () {
         dialogClass: 'no_title',
         buttons: {
             Ok: function () {
-                $(this).dialog('close');
+                $(this).dialog('close'); 
             }
         }
     });
@@ -282,10 +296,24 @@ $(document).ready(function () {
     // Refresh table until job is complete
     loadResults(0, stoppedStates);
     if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
+        autoScroll.addClass('checked_button');
+        sessionStorage.setItem('auto_scroll', true);
         var intervalId = setInterval(function () {
             loadResults(intervalId, stoppedStates);
         }, 1000);
     }
+
+    // Enable/disable auto scroll
+    autoScroll.click(function() {
+        autoScroll.toggleClass('checked_button');
+        if (autoScroll.hasClass('checked_button')) {
+            sessionStorage.setItem('auto_scroll', autoScroll.hasClass('checked_button'))
+        }
+        else {
+            sessionStorage.removeItem('auto_scroll')
+        }
+
+    });
 
     // Print report
     $('#print_report').click(function () {
@@ -297,9 +325,11 @@ $(document).ready(function () {
         });
         htmlOnly.hide();
         reportOnly.show();
+        body.css('padding-top', '0px');
         runnerResult.css('font-size', 'smaller');
         $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
         window.print();
+        body.css('padding-top', '105px');
         reportOnly.hide();
         htmlOnly.show();
         statsDialogCopy.remove();

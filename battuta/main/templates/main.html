@@ -32,7 +32,7 @@
     <meta name="author" content="">
     <title>Battuta</title>
 </head>
-<body style="height: 100%">
+<body>
 {% block header %}
     <header class="navbar navbar-default navbar-top">
         <div class="container">
@@ -73,8 +73,8 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="#" data-toggle="tooltip" title="Settings">
-                            <span class="glyphicon glyphicon-cog hidden"></span>
+                        <a href="{% url 'preferences:preferences' %}" data-toggle="tooltip" title="Preferences">
+                            <span class="glyphicon glyphicon-cog"></span>
                         </a>
                     </li>
                     <li>
@@ -134,7 +134,6 @@
         {% block footer %}{% endblock %}
     </div>
 </footer>
-<span style="visibility: hidden" id="get_length"></span>
 <div class="hidden">
     <div id="import_dialog">
         <h5>Select inventory file</h5>
@@ -150,11 +149,10 @@
     <div id="alert_dialog"></div>
     <div id="node_dialog">
         <h5 id="node_dialog_header"></h5>
-        <br>
         <form id="node_form" method="post">
             <div class="form-group">
                 <label for="node_name" class="requiredField">Name</label>
-                <input class="textinput textInput form-control input-sm" id="node_name" type="text">
+                <input class="form-control input-sm" id="node_name" type="text">
             </div>
             <div class="form-group">
                 <label for="node_description" class="requiredField">Description</label>

@@ -1,0 +1,64 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block content %}
+    <script src="{% static 'preferences/preferences.js' %}"></script>
+    <h3>Preferences</h3>
+    <form id="preferences_container"></form>
+    <div class="row">
+        <div class="col-md-1"><button id="add_item" class="btn btn-default btn-xs">Add item</button></div>
+        <div class="col-md-1"><button id="add_item_group" class="btn btn-default btn-xs">Add item group</button></div>
+    </div>
+    <hr>
+    <div class="hidden">
+        <div id="item_dialog" style="overflow: hidden">
+            <h5 id="item_dialog_header">Add item</h5>
+            <form id="item_form" method="post">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="item_name" class="requiredField">Name</label>
+                            <input class="form-control input-sm" id="item_name" type="text">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="item_description" class="requiredField">Description</label>
+                            <textarea class="form-control input-sm" id="item_description"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="item_data_type" class="requiredField">Data type</label>
+                            <input class="form-control input-sm" id="item_data_type" type="text">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="item_group" class="requiredField">Item group</label>
+                            <input class="form-control input-sm" id="item_group" type="text">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="item_group_dialog" style="overflow: hidden">
+            <h5 id="item_group_dialog_header">Add item group</h5>
+            <form id="item_group_form" method="post">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="item_group_name" class="requiredField">Name</label>
+                            <input class="form-control input-sm" id="item_group_name" type="text">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="item_group_description" class="requiredField">Description</label>
+                            <textarea class="form-control input-sm" id="item_group_description"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -78,6 +78,18 @@ function loadPlaybookEditor(text, filename) {
     $('#editor_dialog').dialog('open');
 }
 
+function submitRequest (type, postData, successCallback) {
+    $.ajax({
+        url: '',
+        type: type,
+        data: postData,
+        dataType: 'json',
+        success: function (data) {
+            successCallback(data)
+        }
+    })
+}
+
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
@@ -108,7 +120,38 @@ $(document).ready(function () {
         width: 900,
         dialogClass: 'no_title',
         buttons: {
-            Done: function () {
+            Save: function () {
+                var newFilename = $('#playbook_name').val();
+                if (newFilename) {
+                    if (newFilename.split('.')[newFilename.split('.').length - 1] != 'yml') {
+                        newFilename += '.yml'
+                    }
+                    $.ajax({
+                        url: '/runner/playbooks/',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'save',
+                            old_filename: playbookEditor.data('filename'),
+                            new_filename: newFilename,
+                            text: editor.getValue()
+                        },
+                        success: function (data) {
+                            if (data.result == 'ok') {
+                                loadPlaybookArgsForm(data, newFilename);
+                                buildArgsSelectionBox();
+                                editorDialog.dialog('close');
+                                playbookTable.DataTable().ajax.reload()
+                            }
+                            else if (data.result == 'fail') {
+                                alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                            }
+
+                        }
+                    });
+                }
+            },
+            Cancel: function () {
                 $(this).dialog('close');
                 $('div.ui-dialog-buttonpane').css('border-top', '');
             }
@@ -163,17 +206,6 @@ $(document).ready(function () {
     // Playbook table button actions
     playbookTable.children('tbody').on('click', 'a', function () {
         event.preventDefault();
-        function submitRequest (type, postData, successCallback) {
-            $.ajax({
-                url: '',
-                type: type,
-                data: postData,
-                dataType: 'json',
-                success: function (data) {
-                    successCallback(data)
-                }
-            })
-        }
         var playbookFile = $(this).closest('td').prev().html();
         var type = 'GET';
         var postData = {action: 'get_one', playbook_file: playbookFile};
@@ -309,39 +341,6 @@ $(document).ready(function () {
     $('#reload_playbook').click(function () {
         editor.setValue(playbookEditor.data('text'));
         editor.selection.moveCursorFileStart();
-    });
-
-    // Save playbook
-    $('#save_playbook').click(function () {
-        var newFilename = $('#playbook_name').val();
-        if (newFilename) {
-            if (newFilename.split('.')[newFilename.split('.').length - 1] != 'yml') {
-                newFilename += '.yml'
-            }
-            $.ajax({
-                url: '/runner/playbooks/',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action: 'save',
-                    old_filename: playbookEditor.data('filename'),
-                    new_filename: newFilename,
-                    text: editor.getValue()
-                },
-                success: function (data) {
-                    if (data.result == 'ok') {
-                        loadPlaybookArgsForm(data, newFilename);
-                        buildArgsSelectionBox();
-                        editorDialog.dialog('close');
-                        playbookTable.DataTable().ajax.reload()
-                    }
-                    else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                    }
-
-                }
-            });
-        }
     });
 
     // New playbook

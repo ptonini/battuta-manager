@@ -95,6 +95,9 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
         maxHeight: 400,
         checkered: true,
         itemToggle: true,
+        minColumns: sessionStorage.getItem('select_dialog_min_columns'),
+        maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
+        breakPoint: sessionStorage.getItem('select_dialog_break_point'),
         ajaxUrl: relation + '/?list=non_related',
         loadCallback: function (listContainer) {
             addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi)
@@ -142,6 +145,7 @@ $(document).ready(function () {
         if (relation == 'Members') {
             nodeType = 'host'
         }
+        console.log(sessionStorage.getItem('relation_list_max_columns'));
         $(this).DynamicList({
             listTitle: relation,
             showTitle: true,
@@ -150,9 +154,9 @@ $(document).ready(function () {
             addButtonClass: 'add_relation',
             addButtonTitle: 'Add relationship',
             checkered: true,
-            minColumns: 1,
-            maxColumns: 5,
-            breakPoint: 5,
+            minColumns: sessionStorage.getItem('relation_list_min_columns'),
+            maxColumns: sessionStorage.getItem('relation_list_max_columns'),
+            breakPoint: sessionStorage.getItem('relation_list_break_point'),
             ajaxUrl: relation + '/?list=related',
             formatItem: function (listItem) {
                 formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi)
@@ -243,6 +247,9 @@ $(document).ready(function () {
                         headerBottomPadding: 0,
                         maxHeight: 400,
                         checkered: true,
+                        minColumns: sessionStorage.getItem('select_dialog_min_columns'),
+                        maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
+                        breakPoint: sessionStorage.getItem('select_dialog_break_point'),
                         ajaxUrl: '/inventory/?action=search&type=' + node + '&pattern=',
                         formatItem: function (listItem) {
                             formatCopyVariablesListItem(listItem, selectDialog, variableTableApi)

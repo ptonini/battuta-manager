@@ -101,19 +101,9 @@ $(document).ready(function () {
         }
     });
 
-    // Load session data
+    // Load config data into sessionStorage
     if ($('#is_authenticated').val()) {
-        $.ajax({
-            url: '/',
-            type: 'GET',
-            dataType: 'json',
-            data: {action: 'config'},
-            success: function (data) {
-                Object.keys(data).forEach(function (key) {
-                    sessionStorage.setItem(key, data[key])
-                });
-            }
-        });
+        updateConfig()
     }
 
     // Login form
@@ -270,17 +260,20 @@ $(document).ready(function () {
         }
         selectDialog
             .DynamicList({
-                'listTitle': 'selection',
-                "showListSeparator": true,
-                'showFilter': true,
-                'headerBottomPadding': 0,
-                'showAddButton': true,
-                'addButtonClass': 'open_node_form',
-                'addButtonTitle': 'Add ' + nodeType,
-                'maxHeight': 400,
-                'itemToggle': true,
-                'ajaxUrl': '/inventory/?action=search&type=' + nodeType + '&pattern=',
-                'loadCallback': function (listContainer) {
+                listTitle: 'selection',
+                showListSeparator: true,
+                showFilter: true,
+                headerBottomPadding: 0,
+                showAddButton: true,
+                addButtonClass: 'open_node_form',
+                addButtonTitle: 'Add ' + nodeType,
+                maxHeight: 400,
+                itemToggle: true,
+                minColumns: sessionStorage.getItem('select_dialog_min_columns'),
+                maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
+                breakPoint: sessionStorage.getItem('select_dialog_break_point'),
+                ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
+                loadCallback: function (listContainer) {
                     var currentList = listContainer.find('div.dynamic-list');
                     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                 },
@@ -321,14 +314,17 @@ $(document).ready(function () {
             nodeTypeDialog.dialog('close');
             selectDialog
                 .DynamicList({
-                    'listTitle': 'remove_node',
-                    "showListSeparator": true,
-                    'showFilter': true,
-                    'headerBottomPadding': 0,
-                    'itemToggle': true,
-                    'maxHeight': 400,
-                    'ajaxUrl': '/inventory/?action=search&type=' + nodeType + '&pattern=',
-                    'loadCallback': function (listContainer) {
+                    listTitle: 'remove_node',
+                    showListSeparator: true,
+                    showFilter: true,
+                    headerBottomPadding: 0,
+                    itemToggle: true,
+                    maxHeight: 400,
+                    minColumns: sessionStorage.getItem('select_dialog_min_columns'),
+                    maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
+                    breakPoint: sessionStorage.getItem('select_dialog_break_point'),
+                    ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
+                    loadCallback: function (listContainer) {
                         var currentList = listContainer.find('div.dynamic-list');
                         selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                     }

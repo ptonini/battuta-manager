@@ -1,5 +1,15 @@
 CONSTANCE_CONFIG = {
-    'hostname': ('localhost', 'Battuta host'),
-    'date_format': ('%Y-%m-%d %H:%M:%S', 'Date format'),
-    'default_timezone': ('America/Sao_Paulo', 'Default timezone'),
+    'hostname': ('localhost', 'Battuta host', str),
+    'date_format': ('%Y-%m-%d %H:%M:%S', 'Date format', str),
+    'default_timezone': ('America/Sao_Paulo', 'Default timezone', str),
+    'relation_list_min_columns': (1, 'Minimum columns for relation list', int),
+    'relation_list_max_columns': (5, 'Maximum columns for relation list', int),
+    'relation_list_break_point': (5, 'Relation list column break point', int),
+    'select_dialog_min_columns': (3, 'Minimum columns for select dialog', int),
+    'select_dialog_max_columns': (6, 'Maximum columns for select Dialog', int),
+    'select_dialog_break_point': (9, 'Select dialog column break point', int),
+    'open_node_list_min_columns': (1, 'Minimum columns for open node list', int),
+    'open_node_list_max_columns': (6, 'Maximum columns for open node list', int),
+    'open_node_List_max_columns': (6, 'Maximum columns for open node list', int),
+    'open_node_list_break_point': (4, 'Open node list column break point', int),
 }

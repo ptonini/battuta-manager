@@ -1,6 +1,6 @@
 ---
 - name: Start Zone
-  gather_facts: False
+  gather_facts: no
   hosts: frotaweb:!znh
   become: yes
   

@@ -1,26 +1,26 @@
 ---
 - name: 0 Test playbook
-  gather_facts: yes
+  gather_facts: no
   hosts: all
   become: yes
 
   tasks:
 
-    - name: Test filecopy
-      copy: content="bunda"
-            dest=/tmp/test1
+    - name: Delete test file
+      file: path=/home/m2m.cloud/pedro.tonini/test_file
+            state=absent
       notify:
-        - Erase test1
+        - Create test file
 
-    - name: Test with items
-      lineinfile: line="{{ item }}"
-                  create=yes
-                  dest=/tmp/test2
-      with_items:
-          - "Hello, assholes"
-          - "Goodbye, assholes"
-      notify:
-          - Erase test2
+#    - name: Test with items
+#      lineinfile: line="{{ item }}"
+#                  create=yes
+#                  dest=/tmp/test2
+#      with_items:
+#          - "Hello, assholes"
+#          - "Goodbye, assholes"
+#      notify:
+#          - Erase test2
 
 #    - name: Start mongos
 #      service: name=mongos
@@ -28,14 +28,14 @@
 #      when: "'app-mongos' in group_names"
 
 #    - include: /opt/ans_data/install_vi.yml
-#      when: "'app-mongos' in group_names"
+#      when: "'app-mongos' in group_names" bunda
 
   handlers:
 
-    - name: Erase test1
-      file: path=/tmp/test1
-            state=absent
+    - name: Create test file
+      copy: dest=/home/m2m.cloud/pedro.tonini/test_file
+            content='battuta test file'
 
-    - name: Erase test2
-      file: path=/tmp/test2
-            state=absent
+#    - name: Erase test2
+#      file: path=/tmp/test2
+#            state=absent
