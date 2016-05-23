@@ -3,11 +3,11 @@ function buildPreferencesForm() {
     var preferencesContainer = $('#preferences_container');
     
     var divRow = $('<div>').attr('class', 'row');
-    var divFormGroup = $('<div>').attr('class', 'form-group')
-    var divCol4 = $('<div>').attr('class', 'col-md-4 col-xs-6');
+    var divFormGroup = $('<div>').attr('class', 'form-group');
+    var divCol2 = $('<div>').attr('class', 'col-md-1 col-xs-2 report_field_right');
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
-    var divCol9 = $('<div>').attr('class', 'col-md-2 col-xs-2 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
+    var inputField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
     
     $.ajax({
         url: '',
@@ -26,14 +26,12 @@ function buildPreferencesForm() {
                 $.each(data[key]['items'], function(index, item) {
                     preferencesContainer.append(
                         divRow.clone().append(
-                            divCol3.clone().append($('<label>').attr('for', item.name).html(item.name)),
-                            divCol9.clone().append(
+                            divCol3.clone().append(
+                                $('<label>').attr('for', item.name).html(item.name)
+                            ),
+                            divCol2.clone().append(
                                 divFormGroup.clone().append(
-                                    $('<input>').attr({
-                                        id: item.name,
-                                        type: 'text',
-                                        class: 'form-control input-sm'
-                                    })
+                                    inputField.clone().attr('id', item.name)
                                 )
                             )
                         )
