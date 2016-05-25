@@ -31,29 +31,36 @@ class PreferencesView(View):
     @staticmethod
     def post(request):
 
-        if request.POST['action'] == 'save_item_or_group':
+        if 'type' in request.POST:
+
             if request.POST['type'] == 'item':
-                preference_object_class = Item
-                form_class = ItemForm
+                item_or_group_class = Item
+                item_or_group_form_class = ItemForm
             elif request.POST['type'] == 'item_group':
-                preference_object_class = ItemGroup
-                form_class = ItemGroupForm
+                item_or_group_class = ItemGroup
+                item_or_group_form_class = ItemGroupForm
             else:
                 raise Http404('Invalid type')
 
             if request.POST['id'] == '':
-                preference_object = preference_object_class()
+                item_or_group = item_or_group_class()
             else:
-                preference_object = get_object_or_404(preference_object_class(), pk=request.POST['id'])
-            post_data = dict(request.POST.iteritems())
-            form = form_class(post_data or None, instance=preference_object)
-            if form.is_valid():
-                form.save(commit=True)
+                item_or_group = get_object_or_404(item_or_group_class, pk=request.POST['id'])
+
+            if request.POST['action'] == 'save_item_or_group':
+                form = item_or_group_form_class(request.POST or None, instance=item_or_group)
+                if form.is_valid():
+                    form.save(commit=True)
+                    data = {'result': 'ok'}
+                else:
+                    data = {'result': 'fail', 'msg': str(form.errors)}
+            elif request.POST['action'] == 'delete_item_or_group':
+                item_or_group.delete()
                 data = {'result': 'ok'}
             else:
-                data = {'result': 'fail', 'msg': str(form.errors)}
+                raise Http404('Invalid action')
         else:
-            raise Http404('Invalid action')
+            data = None
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 

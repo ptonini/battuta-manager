@@ -36,13 +36,12 @@
                 opts.listWidth = '100%'
             }
         }
+
         // Adjust list
         listDiv.css({
             'column-count': columnCount.toString(),
             'width': opts.listWidth,
-            'height': itemsPerColumn * (parseFloat(listItems.css('line-height')) +
-                                        parseFloat(listItems.css('padding-top')) +
-                                        parseFloat(listItems.css('padding-bottom'))) + 'px'
+            'height': itemsPerColumn * listItems.outerHeight() + 'px'
         });
     }
 
@@ -74,13 +73,12 @@
                     $('.ui-button-text:contains("Add")').parent('button').focus()
                 });
             }
-            
+
             if (opts.onHoverCursor) {
                 $(this).css('cursor', opts.onHoverCursor)
             }
         });
         tempSpan.remove()
-
     }
 
     function _loadFromArray(listContainer, listDiv, opts) {
@@ -98,7 +96,8 @@
                         'data-id': value[1]
                     }).css({
                         'vertical-align': 'middle',
-                        'line-height': opts.itemLineHeight + 'px'
+                        'line-height': opts.itemLineHeight + 'px',
+                        'padding': '0 5px'
                     })
                 );
             });
@@ -150,7 +149,7 @@
                     'class': 'dynamic-list-header',
                     'id': opts.listTitle
                 })
-                .css('padding-bottom', opts.headerBottomPadding);
+                .css('margin-bottom', opts.headerBottomPadding);
             $(listDiv)
                 .attr({
                     'class': 'list-group dynamic-list',
@@ -265,10 +264,6 @@
                 )
             }
 
-            if (opts.showListSeparator) {
-                $(headerDiv).append($('<br><br>'))
-            }
-
             if (opts.checkered) {
                 $(listDiv).addClass('checkered')
             }
@@ -324,7 +319,7 @@
         addButtonType: 'icon',
         titleFontSize: '14px',
         headerBottomPadding: '10px',
-        showListSeparator: true,
+        showListSeparator: false,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',
         maxHeight: null,
@@ -335,7 +330,7 @@
         itemWidth: 25,
         listWidth: 0,
         truncateItemText: false,
-        itemLineHeight: 19,
+        itemLineHeight: 30,
         minColumns: 3,
         maxColumns: 6,
         breakPoint: 9,

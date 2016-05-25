@@ -2,9 +2,23 @@
 {% load staticfiles %}
 {% block content %}
     <script src="{% static 'preferences/preferences.js' %}"></script>
-    <h3>Preferences</h3>
+    <div class="row">
+        <div class="col-md-10"><h3>Preferences</h3></div>
+        <div class="col-md-1 text-right" style="margin-top: 20px">
+            <button class="btn btn-default btn-sm">Reload</button>
+        </div>
+        <div class="col-md-1 text-right" style="margin-top: 20px">
+            <button class="btn btn-default btn-sm">Save</button>
+        </div>
+    </div>
+
     <br>
     <form id="preferences_container"></form>
+    <div class="row">
+        <div class="col-md-1 text-right">
+            <button class="btn btn-default btn-sm">Manage preferences</button>
+        </div>
+    </div>
     <div class="row edit_mode" style="display: none">
         <div class="col-md-1">
             <button class="btn btn-default btn-xs open_item_dialog" data-action="add_item">Add item</button>
@@ -33,7 +47,12 @@
                     <div class="col-md-6 item_only">
                         <div class="form-group">
                             <label for="item_data_type" class="requiredField">Data type</label>
-                            <select class="select form-control input-sm" id="item_data_type"></select>
+                            <select class="select form-control input-sm" id="item_data_type">
+                                <option value="str">String</option>
+                                <option value="int">Integer</option>
+                                <option value="float">Float</option>
+                                <option value="bool">Boolean</option>
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-6 item_only">

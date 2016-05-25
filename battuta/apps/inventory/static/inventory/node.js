@@ -21,18 +21,23 @@ function formatRelationListItem(listItem, nodeType, relation, inheritedVariables
         $('<span>').append(name).click( function () {
             window.open('/inventory/' + nodeType + '/' + id, '_self')
         }),
-        $('<span>')
-            .attr({
-                'style': 'float: right',
-                'class': 'glyphicon glyphicon-remove-circle btn-incell',
-                'data-toggle': 'tooltip',
-                'title': 'Remove'})
-            .click(function () {
-                alterRelation(relation, [id], 'remove', function () {
-                    inheritedVariablesTableApi.ajax.reload();
-                    $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
+        $('<span>').attr('style', 'float: right; vertical-align: middle').append(
+            $('<a>')
+                .attr({'data-toggle': 'tooltip', 'title': 'Remove'})
+                .append(
+                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle').css({
+                        'vertical-align': 'middle',
+                        'font-size': '1.3em',
+                        'padding-bottom': '3px'
+                    })
+                )
+                .click(function () {
+                    alterRelation(relation, [id], 'remove', function () {
+                        inheritedVariablesTableApi.ajax.reload();
+                        $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
+                    })
                 })
-            })
+        )
     )
 }
 
@@ -86,9 +91,8 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
     selectDialog.DynamicList({
         listTitle: 'selection',
         showCount: true,
-        showListSeparator: true,
         showFilter: true,
-        headerBottomPadding: 0,
+        headerBottomPadding: 15,
         showAddButton: true,
         addButtonClass: 'open_node_form',
         addButtonTitle: 'Add ' + nodeType,
@@ -145,7 +149,6 @@ $(document).ready(function () {
         if (relation == 'Members') {
             nodeType = 'host'
         }
-        console.log(sessionStorage.getItem('relation_list_max_columns'));
         $(this).DynamicList({
             listTitle: relation,
             showTitle: true,

@@ -19,6 +19,7 @@ $(document).ready(function () {
         checkered: true,
         showFilter: true,
         showAddButton: true,
+        headerBottomPadding: 20,
         addButtonType: 'button',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
