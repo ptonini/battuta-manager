@@ -60,6 +60,10 @@ class PreferencesView(View):
             else:
                 raise Http404('Invalid action')
         else:
+            if request.POST['action'] == 'save_items':
+                pass
+                #for item in request.POST['item_values']
+
             data = None
         return HttpResponse(json.dumps(data), content_type="application/json")
 

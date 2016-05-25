@@ -4,27 +4,20 @@
     <script src="{% static 'preferences/preferences.js' %}"></script>
     <div class="row">
         <div class="col-md-10"><h3>Preferences</h3></div>
-        <div class="col-md-1 text-right" style="margin-top: 20px">
-            <button class="btn btn-default btn-sm">Reload</button>
-        </div>
-        <div class="col-md-1 text-right" style="margin-top: 20px">
-            <button class="btn btn-default btn-sm">Save</button>
+        <div class="col-md-2 text-right" style="margin-top: 20px">
+            <button id="reload_prefs" class="btn btn-default btn-sm">Reload</button>
+            <button id="save_prefs" class="btn btn-default btn-sm">Save</button>
         </div>
     </div>
-
     <br>
-    <form id="preferences_container"></form>
+    <div id="preferences_container"></div>
     <div class="row">
-        <div class="col-md-1 text-right">
-            <button class="btn btn-default btn-sm">Manage preferences</button>
+        <div class="col-md-2">
+            <button id="manage_prefs" class="btn btn-default btn-sm">Manage preferences</button>
         </div>
-    </div>
-    <div class="row edit_mode" style="display: none">
-        <div class="col-md-1">
-            <button class="btn btn-default btn-xs open_item_dialog" data-action="add_item">Add item</button>
-        </div>
-        <div class="col-md-1">
-            <button class="btn btn-default btn-xs open_item_dialog" data-action="add_item_group">Add item group</button>
+       <div class="col-md-10 edit_mode" style="display: none">
+            <button class="btn btn-default btn-sm open_item_dialog" data-action="add_item_group">Add item group</button>
+            <button class="btn btn-default btn-sm open_item_dialog" data-action="add_item">Add item</button>
         </div>
     </div>
     <div class="hidden">

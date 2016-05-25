@@ -86,7 +86,7 @@ function buildPreferencesContainer() {
                             ),
                             $('<div>').addClass(columnClass).append(
                                 divFormGroup.clone().append(
-                                    itemField.attr('id', itemId).val(item.value)
+                                    itemField.attr('id', itemId).data('id', item.id).val(item.value)
                                 )
                             ),
                             divCol2.clone().addClass('edit_mode').css('display', 'none').append(
@@ -181,7 +181,6 @@ function buildPreferencesContainer() {
                                         else if (data.result == 'fail') {
                                             $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
                                         }
-
                                     }
                                 });
                             }
@@ -248,6 +247,35 @@ $(document).ready(function () {
 
             }
         });
+    });
+
+    $('#manage_prefs').click(function() {
+        $('.edit_mode').toggle()
+    });
+
+    $('#reload_prefs').click(function() {
+        buildPreferencesContainer();
+    });
+
+    $('#save_prefs').click(function() {
+        var itemValues = {};
+        $('#preferences_container').find('input,select').each(function() {
+            itemValues[$(this).data('id')] = $(this).val()
+        });
+        console.log(itemValues);
+        $.ajax({
+            url: '',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'save_items',
+                item_values: itemValues
+            },
+            success: function (data) {
+                buildPreferencesContainer();
+            }
+        })
+
     })
 
 });
