@@ -9,10 +9,11 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
-from constance import config
 
 from .models import User, UserData, Credential
 from .forms import UserForm, UserDataForm, CredentialForm
+
+from apps.preferences.functions import get_preferences
 
 
 def set_default_cred(username):
@@ -33,12 +34,7 @@ class LoginView(View):
                 if user.is_active:
                     login(request, user)
                     set_default_cred(request.POST['username'])
-                    constance_config = dict()
-                    for key, value in settings.CONSTANCE_CONFIG.iteritems():
-                        constance_config[key] = config.__getattr__(key)
-                    constance_config['user_id'] = request.user.id
-                    constance_config['user_timezone'] = request.user.userdata.timezone
-                    data = {'result': 'ok', 'config': constance_config}
+                    data = {'result': 'ok'}
                 else:
                     data = {'result': 'fail', 'msg': 'Account disabled'}
             else:
@@ -56,6 +52,7 @@ class UserView(View):
     @staticmethod
     def get(request, **kwargs):
         context = dict()
+        prefs = get_preferences()
         if 'action' not in request.GET:
             if kwargs['page'] == 'new':
                 return render(request, "users/new.html", context)
@@ -63,9 +60,9 @@ class UserView(View):
                 if request.user.id == int(request.GET['user_id']) or request.user.is_superuser:
                     view_user = get_object_or_404(User, pk=request.GET['user_id'])
                     tz = timezone(view_user.userdata.timezone)
-                    view_user.date_joined = view_user.date_joined.astimezone(tz).strftime(config.date_format)
+                    view_user.date_joined = view_user.date_joined.astimezone(tz).strftime(prefs['date_format'])
                     if view_user.last_login is not None:
-                        view_user.last_login = view_user.last_login.astimezone(tz).strftime(config.date_format)
+                        view_user.last_login = view_user.last_login.astimezone(tz).strftime(prefs['date_format'])
                     context['view_user'] = view_user
                     return render(request, "users/view.html", context)
                 else:
@@ -78,9 +75,9 @@ class UserView(View):
                 for user in User.objects.all():
                     tz = timezone(user.userdata.timezone)
                     if user.last_login is not None:
-                        user.last_login = user.last_login.astimezone(tz).strftime(config.date_format)
+                        user.last_login = user.last_login.astimezone(tz).strftime(prefs['date_format'])
                     data.append([user.username,
-                                 user.date_joined.astimezone(tz).strftime(config.date_format),
+                                 user.date_joined.astimezone(tz).strftime(prefs['date_format']),
                                  user.last_login,
                                  user.is_superuser,
                                  user.id])

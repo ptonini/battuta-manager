@@ -22,6 +22,9 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
+# Create built-in group 'all' if not exists
+Group.objects.get_or_create(name='all')
+
 
 class Variable(models.Model):
     key = models.CharField(max_length=32, blank=False)

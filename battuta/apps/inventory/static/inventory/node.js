@@ -102,6 +102,7 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
         minColumns: sessionStorage.getItem('select_dialog_min_columns'),
         maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
         breakPoint: sessionStorage.getItem('select_dialog_break_point'),
+        maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
         ajaxUrl: relation + '/?list=non_related',
         loadCallback: function (listContainer) {
             addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi)
@@ -160,6 +161,7 @@ $(document).ready(function () {
             minColumns: sessionStorage.getItem('relation_list_min_columns'),
             maxColumns: sessionStorage.getItem('relation_list_max_columns'),
             breakPoint: sessionStorage.getItem('relation_list_break_point'),
+            maxColumnWidth: sessionStorage.getItem('relation_list_max_column_width'),
             ajaxUrl: relation + '/?list=related',
             formatItem: function (listItem) {
                 formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi)
@@ -253,6 +255,7 @@ $(document).ready(function () {
                         minColumns: sessionStorage.getItem('select_dialog_min_columns'),
                         maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
                         breakPoint: sessionStorage.getItem('select_dialog_break_point'),
+                        maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
                         ajaxUrl: '/inventory/?action=search&type=' + node + '&pattern=',
                         formatItem: function (listItem) {
                             formatCopyVariablesListItem(listItem, selectDialog, variableTableApi)

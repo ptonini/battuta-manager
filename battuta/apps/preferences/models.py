@@ -12,8 +12,7 @@ class Item(models.Model):
     DATA_TYPES = (
         ('str', 'String'),
         ('int', 'Integer'),
-        ('float', 'Floating point'),
-        ('bool', 'Boolean')
+        ('number', 'Number')
     )
     name = models.CharField(max_length=64, blank=False, unique=True)
     description = models.CharField(max_length=256, blank=True)

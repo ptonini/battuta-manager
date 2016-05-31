@@ -29,6 +29,10 @@ hr.medium {
     background-color: #777;
 }
 
+h4 {
+    margin-bottom: 20px;
+}
+
 a,
 .glyphicon,
 .pagination > li > a,

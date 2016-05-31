@@ -61,10 +61,10 @@ class PreferencesView(View):
                 raise Http404('Invalid action')
         else:
             if request.POST['action'] == 'save_items':
-                pass
-                #for item in request.POST['item_values']
+                for key, value in json.loads(request.POST['item_values']).iteritems():
+                    item = get_object_or_404(Item, pk=key)
+                    item.value = value
+                    item.save()
 
             data = None
         return HttpResponse(json.dumps(data), content_type="application/json")
-
-

@@ -16,6 +16,7 @@ $(document).ready(function () {
         minColumns: sessionStorage.getItem('open_node_list_min_columns'),
         maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
         breakPoint: sessionStorage.getItem('open_node_list_break_point'),
+        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         checkered: true,
         showFilter: true,
         showAddButton: true,

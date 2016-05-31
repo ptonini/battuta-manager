@@ -1,3 +1,25 @@
+function validateItemDataType(dataType, value) {
+    var result = [true, null];
+    switch (dataType) {
+        case 'str':
+            if (typeof value !== 'string') {
+                result = [false, 'Value must be a string']
+            }
+            break;
+        case 'bool':
+            if (typeof value !== 'boolean') {
+                result = [false, 'Value must be a boolean']
+            }
+            break;
+        case 'number':
+            if (isNaN(value)) {
+                result = [false, 'Value must be an  number']
+            }
+            break;
+    }
+    return result
+}
+
 function buildPreferencesContainer() {
 
     var preferencesContainer = $('#preferences_container');
@@ -51,8 +73,7 @@ function buildPreferencesContainer() {
                                 .addClass('remove_item_or_group')
                                 .data({type: 'item_group', id: item_group.id})
                         )
-                    ),
-                    $('<br>')
+                    )
                 );
 
                 $.each(item_group['items'], function(index, item) {
@@ -69,8 +90,7 @@ function buildPreferencesContainer() {
                             itemField = booleanField.clone();
                             columnClass = 'col-md-1';
                             break;
-                        case 'int':
-                        case 'float':
+                        case 'number':
                             itemField = inputField.clone();
                             columnClass = 'col-md-1';
                             break;
@@ -86,7 +106,9 @@ function buildPreferencesContainer() {
                             ),
                             $('<div>').addClass(columnClass).append(
                                 divFormGroup.clone().append(
-                                    itemField.attr('id', itemId).data('id', item.id).val(item.value)
+                                    itemField.attr('id', itemId)
+                                        .data({id: item.id, data_type: item.data_type})
+                                        .val(item.value)
                                 )
                             ),
                             divCol2.clone().addClass('edit_mode').css('display', 'none').append(
@@ -260,16 +282,21 @@ $(document).ready(function () {
     $('#save_prefs').click(function() {
         var itemValues = {};
         $('#preferences_container').find('input,select').each(function() {
-            itemValues[$(this).data('id')] = $(this).val()
+            var result = validateItemDataType($(this).data('data_type'), $(this).val());
+            if (result[0]) {
+                itemValues[$(this).data('id')] = $(this).val()
+            }
+            else {
+                console.log($(this).data('id'), result[1])
+            }
         });
-        console.log(itemValues);
         $.ajax({
             url: '',
             type: 'POST',
             dataType: 'json',
             data: {
                 action: 'save_items',
-                item_values: itemValues
+                item_values: JSON.stringify(itemValues)
             },
             success: function (data) {
                 buildPreferencesContainer();

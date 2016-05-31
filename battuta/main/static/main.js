@@ -103,7 +103,7 @@ $(document).ready(function () {
 
     // Load config data into sessionStorage
     if ($('#is_authenticated').val()) {
-        updateConfig()
+        getPreferences()
     }
 
     // Login form
@@ -271,6 +271,7 @@ $(document).ready(function () {
                 minColumns: sessionStorage.getItem('select_dialog_min_columns'),
                 maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
                 breakPoint: sessionStorage.getItem('select_dialog_break_point'),
+                maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
                 ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
                 loadCallback: function (listContainer) {
                     var currentList = listContainer.find('div.dynamic-list');
@@ -321,6 +322,7 @@ $(document).ready(function () {
                     minColumns: sessionStorage.getItem('select_dialog_min_columns'),
                     maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
                     breakPoint: sessionStorage.getItem('select_dialog_break_point'),
+                    maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
                     ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
                     loadCallback: function (listContainer) {
                         var currentList = listContainer.find('div.dynamic-list');

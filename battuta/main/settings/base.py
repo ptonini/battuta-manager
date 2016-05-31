@@ -1,6 +1,5 @@
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-from constance_config import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -19,8 +18,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'constance.backends.database',
-    'constance',
     'apps.inventory',
     'apps.users',
     'apps.runner',
@@ -79,7 +76,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (os.path.join(BASE_DIR, '../main/static'), os.path.join(BASE_DIR, '../js_libs'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, '../main/static'), os.path.join(BASE_DIR, '../libraries'),)
 
 LOGIN_URL = '/'
 
@@ -87,7 +84,4 @@ LOGIN_URL = '/'
 DATA_DIR = '/opt/ans_data'
 FACTS_DIR = '/opt/ans_data/facts/'
 UPLOAD_DIR = '/opt/ans_data/uploads/'
-
-CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
-CONSTANCE_DATABASE_CACHE_BACKEND = 'default'
 

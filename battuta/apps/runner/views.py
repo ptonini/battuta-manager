@@ -11,18 +11,19 @@ from django.conf import settings
 from django.forms import model_to_dict
 from pytz import timezone
 from multiprocessing import Process
-from constance import config
 
 from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from . import play_runner
 
 from apps.users.models import Credential
+from apps.preferences.functions import get_preferences
 
 
 class BaseView(View):
     def __init__(self):
         super(BaseView, self).__init__()
+        self.prefs = get_preferences()
         self.context = dict()
 
 
@@ -277,7 +278,7 @@ class HistoryView(BaseView):
                 data = list()
                 for runner in Runner.objects.all():
                     if runner.user == request.user or request.user.is_superuser:
-                        data.append([runner.created_on.astimezone(tz).strftime(config.date_format),
+                        data.append([runner.created_on.astimezone(tz).strftime(self.prefs['date_format']),
                                      runner.user.username,
                                      runner.name,
                                      runner.status,
@@ -292,7 +293,7 @@ class ResultView(BaseView):
         runner = get_object_or_404(Runner, pk=runner_id)
         if 'action' not in request.GET:
             tz = timezone(runner.user.userdata.timezone)
-            runner.created_on = runner.created_on.astimezone(tz).strftime(config.date_format)
+            runner.created_on = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
             self.context['runner'] = runner
             return render(request, "runner/results.html", self.context)
         else:

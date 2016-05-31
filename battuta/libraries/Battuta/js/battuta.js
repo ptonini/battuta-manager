@@ -278,12 +278,12 @@ function openAddNodeDialog(nodeType, parentList) {
     nodeDialog.dialog('open')
 }
 
-function updateConfig() {
+function getPreferences() {
     $.ajax({
         url: '/',
         type: 'GET',
         dataType: 'json',
-        data: {action: 'config'},
+        data: {action: 'preferences'},
         success: function (data) {
             Object.keys(data).forEach(function (key) {
                 sessionStorage.setItem(key, data[key])

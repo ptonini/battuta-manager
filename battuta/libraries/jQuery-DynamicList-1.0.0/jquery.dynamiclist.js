@@ -28,7 +28,7 @@
             listDiv.show();
         }
         else {
-            var width = columnCount * opts.itemWidth;
+            var width = columnCount * opts.maxColumnWidth;
             if (width < 100) {
                 opts.listWidth = width + '%'
             }
@@ -327,7 +327,7 @@
         buildNow: true,
         checkered: false,
         itemToggle: false,
-        itemWidth: 25,
+        maxColumnWidth: 100,
         listWidth: 0,
         truncateItemText: false,
         itemLineHeight: 30,
