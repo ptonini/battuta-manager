@@ -94,8 +94,11 @@
                     <br>
                     <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
                     <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
-                    <br><br>
+
                     {% if node.type == 'host' %}
+                        <br><br>
+                        <div id="facts_container"></div>
+                        <br>
                         <button class="btn btn-default btn-xs" id="open_facts">View facts</button>
                     {% endif %}
                     <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>

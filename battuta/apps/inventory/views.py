@@ -165,9 +165,9 @@ class NodesView(View):
                 facts_file = os.path.join(settings.FACTS_DIR, node.name)
                 if os.path.isfile(facts_file):
                     with open(facts_file, "r") as f:
-                        data = f.read()
+                        data = {'result': 'ok', 'facts': json.loads(f.read())}
                 else:
-                    data = ['Facts file not found']
+                    data = {'result': 'failed'}
             elif request.GET['action'] == 'copy_vars':
                 source = self.build_node(request.GET['type'], request.GET['source_id'])
                 for var in source.variable_set.all():

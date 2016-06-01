@@ -36,7 +36,8 @@ function buildPreferencesContainer() {
 
     var divRow = $('<div>').attr('class', 'row');
     var divFormGroup = $('<div>').attr('class', 'form-group');
-    var divCol2 = $('<div>').attr('class', 'col-md-3 col-xs-3');
+    var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3');
+    var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9');
     var alterButton = $('<button>').attr('class', 'btn btn-default btn-sm');
     var inputField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
     var booleanField = $('<select>').attr({class: 'select form-control input-sm'}).append(
@@ -55,13 +56,13 @@ function buildPreferencesContainer() {
             $.each(data, function (index, item_group) {
                 preferencesContainer.append(
                     divRow.clone().append(
-                        divCol2.clone().append(
+                        divCol3.clone().append(
                             $('<h4>')
                                 .data('toggle', 'tooltip')
                                 .attr('title', item_group.description)
                                 .html(item_group.name)
                         ),
-                        divCol2.clone().addClass('edit_mode').css('display', 'none').append(
+                        divCol3.clone().addClass('edit_mode').css('display', 'none').append(
                             alterButton.clone()
                                 .html('Edit')
                                 .addClass('open_item_dialog')
@@ -98,7 +99,7 @@ function buildPreferencesContainer() {
                     
                     preferencesContainer.append(
                         divRow.clone().append(
-                            divCol2.clone().append(
+                            divCol3.clone().append(
                                 fieldLabel.clone().html(item.name + ':').attr({
                                     for: itemId,
                                     title: item.description
@@ -109,9 +110,10 @@ function buildPreferencesContainer() {
                                     itemField.attr('id', itemId)
                                         .data({id: item.id, data_type: item.data_type})
                                         .val(item.value)
+
                                 )
                             ),
-                            divCol2.clone().addClass('edit_mode').css('display', 'none').append(
+                            divCol3.clone().addClass('edit_mode').css('display', 'none').append(
                                 alterButton.clone()
                                     .html('Edit')
                                     .attr('id', 'edit_item_' + item.id)
@@ -266,13 +268,13 @@ $(document).ready(function () {
                 else if (data.result == 'fail') {
                     $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
                 }
-
             }
         });
     });
 
     $('#manage_prefs').click(function() {
-        $('.edit_mode').toggle()
+        $('.edit_mode').toggle();
+        $('.warning_container').html('')
     });
 
     $('#reload_prefs').click(function() {
@@ -287,7 +289,7 @@ $(document).ready(function () {
                 itemValues[$(this).data('id')] = $(this).val()
             }
             else {
-                console.log($(this).data('id'), result[1])
+                $('#item_' + $(this).data('id') + '_warning').html(result[1])
             }
         });
         $.ajax({
@@ -298,7 +300,7 @@ $(document).ready(function () {
                 action: 'save_items',
                 item_values: JSON.stringify(itemValues)
             },
-            success: function (data) {
+            success: function () {
                 buildPreferencesContainer();
             }
         })

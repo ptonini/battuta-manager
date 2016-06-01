@@ -121,6 +121,63 @@ function clearVariableForm () {
     $('#var_form_label').children('strong').html('Add variable');
 }
 
+function getFacts(successCallback) {
+    $.ajax({
+        url: '',
+        type: 'GET',
+        dataType: 'json',
+        data: {action: 'facts'},
+        success: function (data) {
+            successCallback(data);
+        }
+    });
+}
+
+function loadFacts(data) {
+    var divRow = $('<div>').attr('class', 'row');
+    var divCol4 = $('<div>').attr('class', 'col-md-4 col-xs-6');
+    var divCol6L = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_left');
+    var divCol6R = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_right');
+    var divCol12 = $('<div>').attr('class', 'col-md-12');
+
+    if (data.result == 'ok') {
+        var facts = data.facts.ansible_facts;
+        $('#facts_container').empty().append(
+            divRow.clone().append(
+                divCol4.clone().append(
+                    divRow.clone().append(
+                        divCol6L.clone().append('Full hostname:'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_fqdn + '</strong>'),
+                        divCol6L.clone().append('Default IPv4 address:'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_default_ipv4.address + '</strong>'),
+                        divCol6L.clone().append('Cores:'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '</strong>'),
+                        divCol6L.clone().append('RAM Memory:'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_memtotal_mb + 'MB</strong>'),
+                        divCol6L.clone().append('OS Family:'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_os_family + '</strong>'),
+                        divCol6L.clone().append('OS Distribution:'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_distribution + '</strong>')
+                    )
+                )
+            ),
+            $('<br>'),
+            divRow.clone().append(divCol12.html('Facts gathered in ' + facts.ansible_date_time.date))
+        )
+    }
+}
+
+function openNodeFactsDialog(data) {
+    if (data.result == 'ok') {
+        console.log(data.facts);
+        $('#json_box').JSONView(data.facts).JSONView('collapse', 2);
+        $('#json_dialog').dialog('open');
+    }
+    else {
+        $('#alert_dialog').dialog('open').html('<strong>Facts file not found</strong>')
+    }
+}
+
 $(document).ready(function () {
 
     var nodeName = $('#header_node_name').html();
@@ -133,8 +190,6 @@ $(document).ready(function () {
     var nodeForm = $('#node_form');
     var nodeTypeDialog = $('#node_type_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
-    var jsonBox = $('#json_box');
-    var jsonDialog = $('#json_dialog');
 
     // Format page to 'all' group
     if (nodeName == 'all') {
@@ -402,20 +457,12 @@ $(document).ready(function () {
         });
     });
 
-    // Show node facts
+    // Open node facts dialog
     $('#open_facts').click(function (){
-        $.ajax({
-            url: '',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                action: 'facts'
-            },
-            success: function (data) {
-                jsonBox.JSONView(data).JSONView('collapse', 2);
-                jsonDialog.dialog('open');
-            }
-        });
+        getFacts(openNodeFactsDialog)
     });
+
+    //Load facts
+    getFacts(loadFacts);
 
 });
