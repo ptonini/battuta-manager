@@ -141,8 +141,11 @@ function loadFacts(data) {
     var divCol12 = $('<div>').attr('class', 'col-md-12');
 
     if (data.result == 'ok') {
+        var factsContainer = $('#facts_container');
         var facts = data.facts.ansible_facts;
-        $('#facts_container').empty().append(
+        var prettyMemory = Number(facts.ansible_memtotal_mb).toLocaleString();
+        var distribution = facts.ansible_distribution + ' ' + facts.ansible_distribution_version;
+        factsContainer.empty().append(
             divRow.clone().append(
                 divCol4.clone().append(
                     divRow.clone().append(
@@ -153,11 +156,11 @@ function loadFacts(data) {
                         divCol6L.clone().append('Cores:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '</strong>'),
                         divCol6L.clone().append('RAM Memory:'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_memtotal_mb + 'MB</strong>'),
+                        divCol6R.clone().append('<strong>' + prettyMemory + 'MB</strong>'),
                         divCol6L.clone().append('OS Family:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_os_family + '</strong>'),
                         divCol6L.clone().append('OS Distribution:'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_distribution + '</strong>')
+                        divCol6R.clone().append('<strong>' + distribution + '</strong>')
                     )
                 )
             ),

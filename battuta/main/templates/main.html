@@ -72,11 +72,13 @@
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="{% url 'preferences:preferences' %}" data-toggle="tooltip" title="Preferences">
-                            <span class="glyphicon glyphicon-cog"></span>
-                        </a>
-                    </li>
+                    {% if user.is_superuser %}
+                        <li>
+                            <a href="{% url 'preferences:preferences' %}" data-toggle="tooltip" title="Preferences">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </a>
+                        </li>
+                    {% endif %}
                     <li>
                         <form id="search_form" action="{% url 'search' %}" class="navbar-form" method="get">
                             <div class="input-group">
