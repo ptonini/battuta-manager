@@ -1,6 +1,7 @@
 import os
 import json
 import django.db
+import MySQLdb
 
 from ansible.plugins.callback import CallbackBase
 from django.conf import settings
@@ -20,6 +21,8 @@ except ImportError:
 class BattutaCallback(CallbackBase):
     def __init__(self, runner):
         super(BattutaCallback, self).__init__()
+        self._db = MySQLdb.connect(settings.DATABASES['default']['HOST'], settings.DATABASES['default']['USER'],
+                                   settings.DATABASES['default']['PASSWORD'], settings.DATABASES['default']['NAME'])
         self._runner = runner
         self._current_play = None
         self._current_task = None
@@ -43,12 +46,17 @@ class BattutaCallback(CallbackBase):
         self._runner.save()
 
     def v2_playbook_on_play_start(self, play):
-        django.db.close_old_connections()
-        self._runner.status = 'running'
+        with self._db as cursor:
+            cursor.execute('UPDATE runner_runner SET status="running" WHERE id=' + str(self._runner.id))
+
+        # Set inventory object
         self._inventory = play._variable_manager._inventory
 
         # Count hosts in play
         host_count = len(self._inventory.get_hosts(play.__dict__['_ds']['hosts']))
+
+        # Get host pattern
+        hosts = ', '.join(play.__dict__['_attributes']['hosts'])
 
         # Set play become value
         become = False
@@ -65,36 +73,42 @@ class BattutaCallback(CallbackBase):
         if play.__dict__['_attributes']['gather_facts']:
             gather_facts = play.__dict__['_attributes']['gather_facts']
 
-        # Create play model object
-        self._current_play = self._runner.runnerplay_set.create(hosts=', '.join(play.__dict__['_attributes']['hosts']),
-                                                                become=become,
-                                                                name=play_name,
-                                                                gather_facts=gather_facts,
-                                                                host_count=host_count)
-        self._runner.save()
+        # Save play to database
+        with self._db as cursor:
+            cursor.execute('INSERT INTO runner_runnerplay VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+                           (None, play_name, hosts, become, gather_facts, self._runner.id, 0, host_count))
+            self._current_play = cursor.lastrowid
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        django.db.close_old_connections()
+
+        with self._db as cursor:
+            cursor.execute('SELECT * FROM runner_runnerplay WHERE id=' + str(self._current_play))
+            row = cursor.fetchone()
+            if row[4] == 0:
+                gather_facts = False
+            else:
+                gather_facts = True
+            play_failed_count = row[6]
+            play_host_count = row[7]
 
         # Set task module
         module = task.__dict__['_attributes']['action']
 
         # Set task name
-        if module == 'setup' and not self._current_task and self._current_play.gather_facts:
-            host_count = self._current_play.host_count
-            name = 'Gather facts'
+        if module == 'setup' and not self._current_task and gather_facts:
+            task_host_count = play_host_count
+            task_name = 'Gather facts'
         elif module == 'include':
-            host_count = None
-            name = 'Including ' + task.__dict__['_ds']['include']
+            task_host_count = None
+            task_name = 'Including ' + task.__dict__['_ds']['include']
         else:
-            host_count = self._current_play.host_count - self._current_play.failed_count
-            name = task.get_name().strip()
+            task_host_count = play_host_count - play_failed_count
+            task_name = task.get_name().strip()
 
-        # Create task model object
-        self._current_task = self._current_play.runnertask_set.create(name=name)
-        self._current_task.host_count = host_count
-        self._current_task.module = module
-        self._current_task.save()
+        with self._db as cursor:
+            cursor.execute('INSERT INTO runner_runnertask VALUES (%s, %s, %s, %s, %s)',
+                           (None, task_name, module, self._current_play,  task_host_count))
+            self._current_task = cursor.lastrowid
 
     def v2_playbook_on_handler_task_start(self, task):
         django.db.close_old_connections()

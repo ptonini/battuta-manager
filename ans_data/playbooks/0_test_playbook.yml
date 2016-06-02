@@ -1,6 +1,6 @@
 ---
 - name: 0 Test playbook
-  gather_facts: no
+  gather_facts: yes
   hosts: all
   become: yes
 
