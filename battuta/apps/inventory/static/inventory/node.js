@@ -257,6 +257,7 @@ $(document).ready(function () {
         var var_id = variableTableApi.row($(this).parents('tr')).data()[2];
         if ($(this).attr('title') == 'Edit') {
             cancelVarEdit.show();
+            $('#variable_form').data('id', var_id);
             $('#var_form_label').children('strong').html('Edit variable');
             $('#key').val(variableTableApi.row($(this).parents('tr')).data()[0]);
             $('#value').val(variableTableApi.row($(this).parents('tr')).data()[1]).focus();
@@ -334,7 +335,7 @@ $(document).ready(function () {
                     type: 'POST',
                     dataType: 'json',
                     data: {
-                        id: $('#variable_id').val(),
+                        id: $('#variable_form').data('id'),
                         key: $('#key').val(),
                         value: $('#value').val()
                     },
