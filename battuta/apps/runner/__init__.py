@@ -14,7 +14,6 @@ from ansible import constants as c
 
 from .callbacks import BattutaCallback, TestCallback
 
-
 pp = pprint.PrettyPrinter(indent=4)
 
 AnsibleOptions = namedtuple('Options', ['connection',
@@ -116,8 +115,6 @@ def play_runner(runner):
     variable_manager.set_inventory(inventory)
     variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
     passwords = {'conn_pass': runner.data['remote_pass'], 'become_pass': runner.data['become_pass']}
-
-    # print inventory.get_hosts(runner.data['subset'])
 
     if 'subset' in runner.data:
         inventory.subset(runner.data['subset'])

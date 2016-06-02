@@ -7,10 +7,10 @@ from django.forms import model_to_dict
 
 from models import Item, ItemGroup
 from forms import ItemForm, ItemGroupForm
-# Create your views here.
 
 
 class PreferencesView(View):
+
     @staticmethod
     def get(request):
         if 'action' not in request.GET:
