@@ -16,7 +16,7 @@ DATABASES = {
         'PASSWORD': 'battuta',
         'HOST': 'localhost',
         'PORT': '',
-        'CONN_MAX_AGE': 1
+        'CONN_MAX_AGE': None
     }
 }
 

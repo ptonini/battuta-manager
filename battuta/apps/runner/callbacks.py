@@ -1,6 +1,7 @@
 import os
 import json
 import django.db
+import MySQLdb
 
 from ansible.plugins.callback import CallbackBase
 from django.conf import settings
@@ -20,6 +21,9 @@ except ImportError:
 class BattutaCallback(CallbackBase):
     def __init__(self, runner):
         super(BattutaCallback, self).__init__()
+        db_settings = settings.DATABASE['default']
+        db = MySQLdb.connect(db_settings['HOST'], db_settings['USER'], db_settings['PASS'], db_settings['NAME'])
+        self._cursor = db.cursor()
         self._runner = runner
         self._current_play = None
         self._current_task = None
