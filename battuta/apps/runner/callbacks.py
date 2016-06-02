@@ -162,7 +162,7 @@ class BattutaCallback(CallbackBase):
 
         with self._db as cursor:
             print str(stats)
-            cursor.execute('UPDATE runner_runner SET stats="' + str(stats) + '" WHERE id=' + str(self._runner.id))
+            cursor.execute('UPDATE runner_runner SET stats="running" WHERE id=' + str(self._runner.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self._extract_result(result)
