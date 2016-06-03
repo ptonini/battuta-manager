@@ -21,8 +21,9 @@ except ImportError:
 class BattutaCallback(CallbackBase):
     def __init__(self, runner):
         super(BattutaCallback, self).__init__()
-        self._db = MySQLdb.connect(settings.DATABASES['default']['HOST'], settings.DATABASES['default']['USER'],
-                                   settings.DATABASES['default']['PASSWORD'], settings.DATABASES['default']['NAME'])
+        self._db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'], settings.DATABASES['default']['USER'],
+                                        settings.DATABASES['default']['PASSWORD'], settings.DATABASES['default']['NAME'])
+        self._db_conn.autocommit(True)
         self._runner = runner
         self._current_play = None
         self._current_task = None
@@ -46,7 +47,7 @@ class BattutaCallback(CallbackBase):
         self._runner.save()
 
     def v2_playbook_on_play_start(self, play):
-        with self._db as cursor:
+        with self._db_conn as cursor:
             cursor.execute('UPDATE runner_runner SET status="running" WHERE id=' + str(self._runner.id))
 
         # Set inventory object
@@ -74,23 +75,26 @@ class BattutaCallback(CallbackBase):
             gather_facts = play.__dict__['_attributes']['gather_facts']
 
         # Save play to database
-        with self._db as cursor:
-            cursor.execute('INSERT INTO runner_runnerplay VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
-                           (None, play_name, hosts, become, gather_facts, self._runner.id, 0, host_count))
+        with self._db_conn as cursor:
+            cursor.execute('INSERT INTO runner_runnerplay '
+                           '(runner_id,name,hosts,become,gather_facts,host_count,failed_count)'
+                           'VALUES (%s, %s, %s, %s, %s, %s, %s)',
+                           (self._runner.id, play_name, hosts, become, gather_facts, host_count, 0))
             self._current_play = cursor.lastrowid
 
     def v2_playbook_on_task_start(self, task, is_conditional):
 
         # Get current play data
-        with self._db as cursor:
-            cursor.execute('SELECT * FROM runner_runnerplay WHERE id=' + str(self._current_play))
+        with self._db_conn as cursor:
+            cursor.execute('SELECT gather_facts,host_count,failed_count '
+                           'FROM runner_runnerplay WHERE id=' + str(self._current_play))
             row = cursor.fetchone()
-            if row[4] == 0:
+            if row[0] == 0:
                 gather_facts = False
             else:
                 gather_facts = True
-            play_failed_count = row[6]
-            play_host_count = row[7]
+            play_host_count = row[1]
+            play_failed_count = row[2]
 
         # Set task module
         task_module = task.__dict__['_attributes']['action']
@@ -106,15 +110,16 @@ class BattutaCallback(CallbackBase):
             task_host_count = play_host_count - play_failed_count
             task_name = task.get_name().strip()
 
-        with self._db as cursor:
-            cursor.execute('INSERT INTO runner_runnertask VALUES (%s, %s, %s, %s, %s)',
-                           (None, task_name, task_module, self._current_play,  task_host_count))
+        with self._db_conn as cursor:
+            cursor.execute('INSERT INTO runner_runnertask (runner_play_id,name,module,host_count) '
+                           'VALUES (%s, %s, %s, %s) ',
+                           (self._current_play, task_name, task_module, task_host_count))
             self._current_task = cursor.lastrowid
 
     def v2_playbook_on_handler_task_start(self, task):
 
         # Get current play failed hosts count
-        with self._db as cursor:
+        with self._db_conn as cursor:
             cursor.execute('SELECT failed_count FROM runner_runnerplay WHERE id=' + str(self._current_play))
             row = cursor.fetchone()
             play_failed_count = row[0]
@@ -123,9 +128,11 @@ class BattutaCallback(CallbackBase):
         handler_module = task.__dict__['_attributes']['action']
         handler_host_count = len(self._inventory._restriction) - play_failed_count
 
-        with self._db as cursor:
-            cursor.execute('INSERT INTO runner_runnertask VALUES (%s, %s, %s, %s, %s)',
-                           (None, handler_name, handler_module, self._current_play,  handler_host_count))
+        with self._db_conn:
+            cursor = self._db_conn.cursor()
+            cursor.execute('INSERT INTO runner_runnertask (runner_play_id,name,module,host_count) '
+                           'VALUES (%s, %s, %s, %s) ',
+                           (self._current_play, handler_name, handler_module, handler_host_count))
             self._current_task = cursor.lastrowid
 
     def v2_playbook_on_stats(self, stats):
@@ -160,9 +167,12 @@ class BattutaCallback(CallbackBase):
                 row.append(0)
             stats.append(row)
 
-        with self._db as cursor:
-            print str(stats)
-            cursor.execute('UPDATE runner_runner SET stats="running" WHERE id=' + str(self._runner.id))
+        #with self._db_conn as cursor:
+        cursor = self._db_conn.cursor()
+        sql_query = ('UPDATE runner_runner SET message="bunda" WHERE id=' + str(self._runner.id))
+        print sql_query
+        cursor.execute(sql_query)
+        self._db_conn.commit()
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self._extract_result(result)
