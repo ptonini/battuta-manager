@@ -7,28 +7,28 @@
   tasks:
 
     - name: Delete test file
-      file: path=/home/m2m.cloud/pedro.tonini/test_file
+      file: path=/tmp/test_file
             state=absent
       notify:
         - Create test file
 
-#    - name: Test with items
-#      lineinfile: line="{{ item }}"
-#                  create=yes
-#                  dest=/tmp/test2
-#      with_items:
-#          - "Hello, assholes"
-#          - "Goodbye, assholes"
-#      notify:
-#          - Erase test2
+    - name: Test with items
+      lineinfile: line="{{ item }}"
+                  create=yes
+                  dest=/tmp/test2
+      with_items:
+          - "Hello, assholes"
+          - "Goodbye, assholes"
+      notify:
+          - Erase test2
 
-#    - name: Start mongos
-#      service: name=mongos
-#               state=started
-#      when: "'app-mongos' in group_names"
+    - name: Start mongos
+      service: name=mongos
+               state=started
+      when: "'app-mongos' in group_names"
 
 #    - include: /opt/ans_data/install_vi.yml
-#      when: "'app-mongos' in group_names" bunda
+#      when: "'app-mongos' in group_names"
 
   handlers:
 
@@ -36,6 +36,6 @@
       copy: dest=/home/m2m.cloud/pedro.tonini/test_file
             content='battuta test file'
 
-#    - name: Erase test2
-#      file: path=/tmp/test2
-#            state=absent
+    - name: Erase test2
+      file: path=/tmp/test2
+            state=absent

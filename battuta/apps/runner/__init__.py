@@ -1,6 +1,6 @@
 import os
-import django.db
 import pprint
+import MySQLdb
 
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
@@ -11,6 +11,7 @@ from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
+from django.conf import settings
 
 from .callbacks import BattutaCallback, TestCallback
 
@@ -41,9 +42,14 @@ AnsibleOptions = namedtuple('Options', ['connection',
 
 def play_runner(runner):
 
-    runner.pid = os.getpid()
-    runner.status = 'starting'
-    runner.save()
+    db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'],
+                              settings.DATABASES['default']['USER'],
+                              settings.DATABASES['default']['PASSWORD'],
+                              settings.DATABASES['default']['NAME'])
+    db_conn.autocommit(True)
+
+    with db_conn as cursor:
+        cursor.execute('UPDATE runner_runner SET status="starting", pid=%s WHERE id=%s', (os.getpid(), runner.id,))
 
     if 'show_skipped' not in runner.data:
         runner.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
@@ -119,6 +125,8 @@ def play_runner(runner):
     if 'subset' in runner.data:
         inventory.subset(runner.data['subset'])
 
+    message = None
+
     if 'playbook' in runner.data:
         try:
             pbex = PlaybookExecutor([runner.data['playbook_path']],
@@ -127,13 +135,13 @@ def play_runner(runner):
                                     loader,
                                     options,
                                     passwords)
-            pbex._tqm._stdout_callback = BattutaCallback(runner)
+            pbex._tqm._stdout_callback = BattutaCallback(runner, db_conn)
             pbex.run()
         except Exception as e:
-            runner.status = 'failed'
-            runner.message = type(e).__name__ + ': ' + e.__str__()
+            status = 'failed'
+            message = type(e).__name__ + ': ' + e.__str__()
         else:
-            runner.status = 'finished'
+            status = 'finished'
 
     elif 'adhoc_task' in runner.data:
         play = Play().load(runner.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
@@ -142,23 +150,28 @@ def play_runner(runner):
                                    variable_manager=variable_manager,
                                    passwords=passwords,
                                    loader=loader,
-                                   stdout_callback=BattutaCallback(runner),
+                                   stdout_callback=BattutaCallback(runner, db_conn),
                                    options=options)
             tqm.run(play)
         except Exception as e:
-            runner.status = 'failed'
-            runner.message = type(e).__name__ + ': ' + e.__str__()
+            status = 'failed'
+            message = type(e).__name__ + ': ' + e.__str__()
         else:
             tqm.cleanup()
-            runner.status = 'finished'
+            status = 'finished'
     else:
-        runner.status = 'failed'
-        runner.message = 'Invalid runner data'
-    django.db.close_old_connections()
-    for play in runner.runnerplay_set.all():
-        if play.failed_count > 0:
-            runner.status = 'finished with errors'
-    runner.save()
+        status = 'failed'
+        message = 'Invalid runner data'
+
+    with db_conn as cursor:
+        cursor.execute('SELECT failed_count FROM runner_runnerplay WHERE runner_id=%s', (runner.id,))
+        for row in cursor.fetchall():
+            if row[0] != 0:
+                status = 'finished with errors'
+
+    with db_conn as cursor:
+        cursor.execute('UPDATE runner_runner SET status=%s, message=%s WHERE id=%s', (status, message, runner.id))
+
 
 
 

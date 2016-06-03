@@ -1,7 +1,5 @@
 import os
 import json
-import django.db
-import MySQLdb
 
 from ansible.plugins.callback import CallbackBase
 from django.conf import settings
@@ -19,36 +17,58 @@ except ImportError:
 
 
 class BattutaCallback(CallbackBase):
-    def __init__(self, runner):
+    def __init__(self, runner, db_conn):
         super(BattutaCallback, self).__init__()
-        self._db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'], settings.DATABASES['default']['USER'],
-                                        settings.DATABASES['default']['PASSWORD'], settings.DATABASES['default']['NAME'])
-        self._db_conn.autocommit(True)
+        self._db_conn = db_conn
         self._runner = runner
-        self._current_play = None
-        self._current_task = None
+        self._current_play_id = None
+        self._current_task_id = None
+        self._current_task_module = None
         self._inventory = None
 
     @staticmethod
     def _extract_result(result):
         return result._host.get_name(), result._result
 
+    def _get_current_play_failed_count(self):
+        with self._db_conn as cursor:
+            cursor.execute('SELECT failed_count FROM runner_runnerplay WHERE id=%s', (self._current_play_id,))
+            row = cursor.fetchone()
+            return row[0]
+
+    def _increase_current_play_failed_count(self):
+        failed_count = self._get_current_play_failed_count() + 1
+        with self._db_conn as cursor:
+            cursor.execute('UPDATE runner_runnerplay SET failed_count=%s WHERE id=%s',
+                           (failed_count, self._current_play_id))
+
+    def _get_current_task_host_count(self):
+        with self._db_conn as cursor:
+            cursor.execute('SELECT host_count FROM runner_runnertask WHERE id=%s', (self._current_task_id,))
+            row = cursor.fetchone()
+            return row[0]
+
     def _save_result(self, host, status, message, response):
-        django.db.close_old_connections()
-        runner_result, created = self._current_task.runnerresult_set.get_or_create(host=host)
-        runner_result.status = status
-        runner_result.message = message
-        runner_result.response = json.dumps(response)
-        runner_result.save()
+
+        with self._db_conn as cursor:
+            cursor.execute('SELECT id FROM runner_runnerresult WHERE runner_task_id=%s AND host=%s',
+                           (self._current_task_id, host))
+            if cursor.rowcount == 0:
+                cursor.execute('INSERT INTO runner_runnerresult (host,status,message,response, runner_task_id) '
+                               'VALUES (%s, %s, %s, %s, %s)',
+                               (host, status, message, json.dumps(response), self._current_task_id))
+            else:
+                row = cursor.fetchone()
+                cursor.execute('UPDATE runner_runnerresult SET host=%s, status=%s, message=%s, response=%s '
+                               'WHERE id=%s', (host, status, message, json.dumps(response), row[0]))
 
     def v2_playbook_on_no_hosts_matched(self):
-        django.db.close_old_connections()
-        self._runner.message = 'No hosts matched'
-        self._runner.save()
+        with self._db_conn as cursor:
+            cursor.execute('UPDATE runner_runner SET message="No hosts matched" WHERE id=%s', (self._runner.id,))
 
     def v2_playbook_on_play_start(self, play):
         with self._db_conn as cursor:
-            cursor.execute('UPDATE runner_runner SET status="running" WHERE id=' + str(self._runner.id))
+            cursor.execute('UPDATE runner_runner SET status="running" WHERE id=%s', (self._runner.id,))
 
         # Set inventory object
         self._inventory = play._variable_manager._inventory
@@ -80,14 +100,14 @@ class BattutaCallback(CallbackBase):
                            '(runner_id,name,hosts,become,gather_facts,host_count,failed_count)'
                            'VALUES (%s, %s, %s, %s, %s, %s, %s)',
                            (self._runner.id, play_name, hosts, become, gather_facts, host_count, 0))
-            self._current_play = cursor.lastrowid
+            self._current_play_id = cursor.lastrowid
 
     def v2_playbook_on_task_start(self, task, is_conditional):
 
         # Get current play data
         with self._db_conn as cursor:
             cursor.execute('SELECT gather_facts,host_count,failed_count '
-                           'FROM runner_runnerplay WHERE id=' + str(self._current_play))
+                           'FROM runner_runnerplay WHERE id=%s', (self._current_play_id,))
             row = cursor.fetchone()
             if row[0] == 0:
                 gather_facts = False
@@ -97,13 +117,13 @@ class BattutaCallback(CallbackBase):
             play_failed_count = row[2]
 
         # Set task module
-        task_module = task.__dict__['_attributes']['action']
+        self._current_task_module = task.__dict__['_attributes']['action']
 
         # Set task name
-        if task_module == 'setup' and not self._current_task and gather_facts:
+        if self._current_task_module == 'setup' and not self._current_task_id and gather_facts:
             task_host_count = play_host_count
             task_name = 'Gather facts'
-        elif task_module == 'include':
+        elif self._current_task_module == 'include':
             task_host_count = None
             task_name = 'Including ' + task.__dict__['_ds']['include']
         else:
@@ -113,32 +133,26 @@ class BattutaCallback(CallbackBase):
         with self._db_conn as cursor:
             cursor.execute('INSERT INTO runner_runnertask (runner_play_id,name,module,host_count) '
                            'VALUES (%s, %s, %s, %s) ',
-                           (self._current_play, task_name, task_module, task_host_count))
-            self._current_task = cursor.lastrowid
+                           (self._current_play_id, task_name, self._current_task_module, task_host_count))
+            self._current_task_id = cursor.lastrowid
 
     def v2_playbook_on_handler_task_start(self, task):
 
         # Get current play failed hosts count
-        with self._db_conn as cursor:
-            cursor.execute('SELECT failed_count FROM runner_runnerplay WHERE id=' + str(self._current_play))
-            row = cursor.fetchone()
-            play_failed_count = row[0]
-
         handler_name = 'Handler - ' + task.get_name().strip()
-        handler_module = task.__dict__['_attributes']['action']
-        handler_host_count = len(self._inventory._restriction) - play_failed_count
+        self._current_task_module = task.__dict__['_attributes']['action']
+        handler_host_count = len(self._inventory._restriction) - self._get_current_play_failed_count()
 
         with self._db_conn:
             cursor = self._db_conn.cursor()
             cursor.execute('INSERT INTO runner_runnertask (runner_play_id,name,module,host_count) '
                            'VALUES (%s, %s, %s, %s) ',
-                           (self._current_play, handler_name, handler_module, handler_host_count))
-            self._current_task = cursor.lastrowid
+                           (self._current_play_id, handler_name, self._current_task_module, handler_host_count))
+            self._current_task_id = cursor.lastrowid
 
-    def v2_playbook_on_stats(self, stats):
-        django.db.close_old_connections()
-        stats_dict = stats.__dict__
-        stats = list()
+    def v2_playbook_on_stats(self, stats_list):
+        stats_dict = stats_list.__dict__
+        stats_list = list()
         for key, value in stats_dict['processed'].iteritems():
             row = [key]
             if key in stats_dict['ok']:
@@ -165,26 +179,20 @@ class BattutaCallback(CallbackBase):
                 row.append(stats_dict['skipped'][key])
             else:
                 row.append(0)
-            stats.append(row)
+            stats_list.append(row)
 
-        #with self._db_conn as cursor:
-        cursor = self._db_conn.cursor()
-        sql_query = ('UPDATE runner_runner SET message="bunda" WHERE id=' + str(self._runner.id))
-        print sql_query
-        cursor.execute(sql_query)
-        self._db_conn.commit()
+        with self._db_conn as cursor:
+            cursor.execute('UPDATE runner_runner SET stats=%s WHERE id=%s', (str(stats_list), self._runner.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         host, response = self._extract_result(result)
-        django.db.close_old_connections()
-        self._current_play.failed_count += 1
-        self._current_play.save()
+        self._increase_current_play_failed_count()
         message = None
         if 'msg' in response:
             message = response['msg']
         if 'exception' in response:
             message = 'Exception raised'
-        elif self._current_task.module == 'shell' or self._current_task.module == 'script':
+        elif self._current_task_module == 'shell' or self._current_task_module == 'script':
             message = response['stdout'] + response['stderr']
         self._save_result(host, 'failed', message, response)
 
@@ -195,14 +203,14 @@ class BattutaCallback(CallbackBase):
         if 'msg' in response:
             message = response['msg']
 
-        if self._current_task.module == 'setup':
+        if self._current_task_module == 'setup':
             facts = {'ansible_facts': response['ansible_facts']}
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
                 response['ansible_facts'] = 'saved to disc'
                 message = 'Facts saved to disc'
-        elif self._current_task.module == 'command' or self._current_task.module == 'script':
+        elif self._current_task_module == 'command' or self._current_task_module == 'script':
             message = response['stdout'] + response['stderr']
         elif response['changed']:
             status = 'changed'
@@ -218,15 +226,14 @@ class BattutaCallback(CallbackBase):
                 message = response['msg']
             self._save_result(host, 'skipped', message, response)
         else:
-            django.db.close_old_connections()
-            self._current_task.host_count -= 1
-            self._current_task.save()
+            host_count = self._get_current_task_host_count() - 1
+            with self._db_conn as cursor:
+                cursor.execute('UPDATE runner_runnertask SET host_count=%s WHERE id=%s',
+                               (host_count, self._current_task_id))
 
     def v2_runner_on_unreachable(self, result):
         host, response = self._extract_result(result)
-        django.db.close_old_connections()
-        self._current_play.failed_count += 1
-        self._current_play.save()
+        self._increase_current_play_failed_count()
         message = None
         if 'msg' in response:
             message = response['msg']
