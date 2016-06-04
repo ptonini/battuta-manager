@@ -33,7 +33,7 @@
   handlers:
 
     - name: Create test file
-      copy: dest=/home/m2m.cloud/pedro.tonini/test_file
+      copy: dest=/tmp/test_file
             content='battuta test file'
 
     - name: Erase test2

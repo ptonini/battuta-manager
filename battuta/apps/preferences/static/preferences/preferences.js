@@ -273,6 +273,7 @@ $(document).ready(function () {
     });
 
     $('#manage_prefs').click(function() {
+        $(this).toggleClass('checked_button');
         $('.edit_mode').toggle();
         $('.warning_container').html('')
     });

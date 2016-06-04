@@ -1,11 +1,11 @@
 // Update function for task table
-function updateTaskTable(task, taskTableApi, intervalId) {
+function updateTaskTable(task, taskTableApi, intervalId, stoppedStates) {
     taskTableApi.ajax.reload(null, false);
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
 
     // Stops loop if job is defunct or if task host count matches table length
-    var failedStates = ['failed', 'canceled'];
-    if (failedStates.indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
+    if (stoppedStates.indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
+        console.log($('#runner_status').html());
         clearInterval(intervalId)
     }
 }
@@ -221,7 +221,7 @@ function loadResults(intervalId, stoppedStates) {
                                     // If job is running creates update loop
                                     if (stoppedStates.indexOf(runner.status) == -1) {
                                         var intervalId = setInterval(function() {
-                                            updateTaskTable(task, taskTableApi, intervalId)
+                                            updateTaskTable(task, taskTableApi, intervalId, stoppedStates)
                                         }, 1000)
                                     }
                                 }

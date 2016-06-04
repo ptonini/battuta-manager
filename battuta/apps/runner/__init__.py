@@ -13,7 +13,7 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
 from django.conf import settings
 
-from .callbacks import BattutaCallback, TestCallback
+from .callbacks import BattutaCallback
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -49,7 +49,7 @@ def play_runner(runner):
     db_conn.autocommit(True)
 
     with db_conn as cursor:
-        cursor.execute('UPDATE runner_runner SET status="starting", pid=%s WHERE id=%s', (os.getpid(), runner.id,))
+        cursor.execute('UPDATE runner_runner SET status="starting", pid=%s WHERE id=%s', (os.getpid(), runner.id))
 
     if 'show_skipped' not in runner.data:
         runner.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
@@ -168,9 +168,10 @@ def play_runner(runner):
         for row in cursor.fetchall():
             if row[0] != 0:
                 status = 'finished with errors'
-
-    with db_conn as cursor:
+                break
         cursor.execute('UPDATE runner_runner SET status=%s, message=%s WHERE id=%s', (status, message, runner.id))
+
+
 
 
 
