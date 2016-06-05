@@ -141,16 +141,15 @@
 
         if (typeof options === 'object') {
             opts = $.extend({}, $.fn.DynamicList.defaults, options);
-            var headerDiv = document.createElement("div");
-            var listDiv = document.createElement("div");
+            document.createElement("div");
 
-            $(headerDiv)
+            var headerDiv = $('<div>')
                 .attr({
                     'class': 'dynamic-list-header',
                     'id': opts.listTitle
                 })
                 .css('margin-bottom', opts.headerBottomPadding);
-            $(listDiv)
+            var listDiv = $('<div>')
                 .attr({
                     'class': 'list-group dynamic-list',
                     'id': opts.listTitle + '_list'
@@ -163,7 +162,7 @@
             }
 
             if (opts.showTitle) {
-                $(headerDiv).css('color', '#777').append(
+                headerDiv.css('color', '#777').append(
                     $('<span>').css('font-size', opts.titleFontSize).append(
                         $('<strong>').append(opts.listTitle.replace(/_/g, ' '))
                     ),
@@ -173,7 +172,7 @@
             }
 
             if (opts.itemToggle) {
-                $(headerDiv)
+                headerDiv
                     .append($('<button>')
                         .attr('class', 'btn btn-default btn-xs').html('Select all')
                         .click( function () {
@@ -189,7 +188,7 @@
                                     addClass = false;
                                     break;
                             }
-                            $(listDiv).children('div.dynamic-item').each(function () {
+                            listDiv.children('div.dynamic-item').each(function () {
                                 $(this).toggleClass('toggle-on', addClass);
                             });
                         })
@@ -224,7 +223,7 @@
                 else if (opts.addButtonType == 'button') {
                     addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
                 }
-                $(headerDiv).append(
+                headerDiv.append(
                     addButton.click(function () {
                         event.preventDefault();
                         opts.addButtonAction(this)
@@ -233,13 +232,13 @@
             }
 
             if (!opts.itemToggle && !opts.showAddButton && opts.showFilter) {
-                $(headerDiv).append(
+                headerDiv.append(
                     $('<span>').attr({'class': 'glyphicon', 'style': 'color: transparent'})
                 )
             }
 
             if (opts.showFilter) {
-                $(headerDiv).append(
+                headerDiv.append(
                     $('<span>').attr('class', 'pull-right').append(
                         $('<input>')
                             .attr({
@@ -249,7 +248,7 @@
                             })
                             .keyup(function () {
                                 var pattern = $(this).val();
-                                $(listDiv).children('div.dynamic-item').each(function () {
+                                listDiv.children('div.dynamic-item').each(function () {
                                     var value = $(this).html();
                                     if (value.indexOf(pattern) >= 0) {
                                         $(this).removeClass('hidden');
@@ -258,22 +257,22 @@
                                         $(this).addClass('hidden')
                                     }
                                 });
-                                _formatList($(listDiv), opts)
+                                _formatList(listDiv, opts)
                             })
                     )
                 )
             }
 
             if (opts.checkered) {
-                $(listDiv).addClass('checkered')
+                listDiv.addClass('checkered')
             }
 
             if (opts.maxHeight) {
-                $(listDiv).wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
+                listDiv.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
             }
 
             if (opts.buildNow) {
-                _load(listContainer, $(listDiv), opts)
+                _load(listContainer, listDiv, opts)
             }
         }
             

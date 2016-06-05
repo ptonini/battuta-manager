@@ -14,7 +14,7 @@ from multiprocessing import Process
 
 from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
-from . import play_runner
+from .functions import play_runner
 
 from apps.users.models import Credential
 from apps.preferences.functions import get_preferences

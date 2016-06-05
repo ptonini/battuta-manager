@@ -71,8 +71,8 @@ class InventoryView(View):
     def post(request):
         if request.POST['action'] == 'import':
             if request.POST['type'] == 'csv':
-                csv_file = csv.reader(request.POST.getlist('import_data[]'))
-                header = next(csv_file)
+                csv_data = csv.reader(request.POST.getlist('import_data[]'))
+                header = next(csv_data)
                 try:
                     host_index = header.index('host')
                 except ValueError:
@@ -80,7 +80,7 @@ class InventoryView(View):
                 else:
                     added = 0
                     updated = 0
-                    for row in csv_file:
+                    for row in csv_data:
                         host, created = Host.objects.get_or_create(name=row[host_index])
                         if created:
                             added += 1

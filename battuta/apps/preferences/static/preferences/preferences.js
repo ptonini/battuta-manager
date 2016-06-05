@@ -37,7 +37,6 @@ function buildPreferencesContainer() {
     var divRow = $('<div>').attr('class', 'row');
     var divFormGroup = $('<div>').attr('class', 'form-group');
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3');
-    var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9');
     var alterButton = $('<button>').attr('class', 'btn btn-default btn-sm');
     var inputField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
     var booleanField = $('<select>').attr({class: 'select form-control input-sm'}).append(
@@ -72,7 +71,13 @@ function buildPreferencesContainer() {
                             alterButton.clone()
                                 .html('Remove')
                                 .addClass('remove_item_or_group')
-                                .data({type: 'item_group', id: item_group.id})
+                                .data({type: 'item_group', id: item_group.id}),
+                            $('<span>').html('&nbsp;'),
+                            alterButton.clone()
+                                .html('Add item')
+                                .addClass('open_item_dialog')
+                                .data('action', 'add_item')
+                                .data('toGroup', item_group.id)
                         )
                     )
                 );
@@ -150,7 +155,7 @@ function buildPreferencesContainer() {
                         itemOrGroupForm.data('id', '').data('type', 'item');
                         itemOrGroupDialog.dialog('option', 'width', 400);
                         itemDataType.val('int');
-                        itemGroup.val(1);
+                        itemGroup.val($(this).data('toGroup')).prop('disabled', true);
                         break;
                     case 'edit_item':
                         itemOrGroupDialogTitle = 'Edit item';
@@ -159,7 +164,7 @@ function buildPreferencesContainer() {
                         itemOrGroupName.val($(this).data('name'));
                         itemOrGroupDescription.val($(this).data('description'));
                         itemDataType.val($(this).data('data_type'));
-                        itemGroup.val($(this).data('item_group_id'));
+                        itemGroup.val($(this).data('item_group_id')).prop('disabled', false);
                         itemOrGroupDialog.dialog('option', 'width', 400);
                         break;
                     case 'add_item_group':
@@ -218,8 +223,12 @@ function buildPreferencesContainer() {
                     ])
                     .dialog('open');
             });
+
+            $('#manage_prefs').removeClass('checked_button');
+            $('.edit_mode').hide();
         }
     });
+
 }
 
 $(document).ready(function () {
