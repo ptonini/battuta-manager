@@ -5,8 +5,7 @@
 (function ($) {
 
     function _formatList(listDiv, opts) {
-        var listItems = listDiv.find('.dynamic-item:not(".hidden")');
-        var listLength = listItems.length;
+        var listLength = listDiv.find('.dynamic-item:not(".hidden")').length;
         if (opts.showCount) {
             $('#' + opts.listTitle + '_count').html(' (' + listLength + ')')
         }
@@ -41,7 +40,7 @@
         listDiv.css({
             'column-count': columnCount.toString(),
             'width': opts.listWidth,
-            'height': itemsPerColumn * listItems.outerHeight() + 'px'
+            'height': itemsPerColumn * opts.itemLineHeight + 'px'
         });
     }
 
@@ -102,8 +101,8 @@
                 );
             });
         }
-        _formatList(listDiv, opts);
         _formatItems(listDiv, opts);
+        _formatList(listDiv, opts);
         opts.loadCallback(listContainer);
         listContainer.data(opts);
     }
@@ -141,24 +140,17 @@
 
         if (typeof options === 'object') {
             opts = $.extend({}, $.fn.DynamicList.defaults, options);
-            document.createElement("div");
 
             var headerDiv = $('<div>')
-                .attr({
-                    'class': 'dynamic-list-header',
-                    'id': opts.listTitle
-                })
+                .attr({'class': 'dynamic-list-header', 'id': opts.listTitle})
                 .css('margin-bottom', opts.headerBottomPadding);
-            var listDiv = $('<div>')
-                .attr({
-                    'class': 'list-group dynamic-list',
-                    'id': opts.listTitle + '_list'
-                });
+
+            var listDiv = $('<div>').attr({'class': 'list-group dynamic-list', 'id': opts.listTitle + '_list'});
 
             listContainer.empty().addClass('dynamic-list-group').append(headerDiv, listDiv);
 
             if (opts.showTopSeparator) {
-                $(headerDiv).append($('<hr>'))
+                headerDiv.append($('<hr>'))
             }
 
             if (opts.showTitle) {
@@ -300,6 +292,7 @@
                     throw '- invalid option';
             }
         }
+
         return this;
     };
 
@@ -307,7 +300,7 @@
         formatItem: function (listItem) { $(listItem).html($(listItem).data('value')) },
         loadCallback: function (listContainer) {},
         addButtonAction: function (addButton) {},
-        listTitle: Math.random().toString(36).substring(2, 7),
+        listTitle: Math.random().toString(36).substring(2, 10),
         showTitle: false,
         showCount: false,
         showSelectAll: false,

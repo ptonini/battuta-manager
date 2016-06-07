@@ -44,7 +44,7 @@ class BattutaCallback(CallbackBase):
         sql_query = 'UPDATE runner_runnerplay SET failed_count=%s WHERE id=%s'
         self._run_query_on_db('update', sql_query, (failed_count, self._current_play_id))
 
-    def _on_task_start(self, task, is_handler):
+    def _on_task_start(self, task, is_handler=False):
 
         # Get current play data
         sql_query = 'SELECT gather_facts,host_count,failed_count FROM runner_runnerplay WHERE id=%s'
@@ -86,7 +86,7 @@ class BattutaCallback(CallbackBase):
             sql_query = 'UPDATE runner_runnerresult SET host=%s, status=%s, message=%s, response=%s WHERE id=%s'
             self._run_query_on_db('update', sql_query, (host, status, message, json.dumps(response), result_id))
         else:
-            sql_query = 'INSERT INTO runner_runnerresult (host,status,message,response, runner_task_id) ' \
+            sql_query = 'INSERT INTO runner_runnerresult (host,status,message,response,runner_task_id) ' \
                         'VALUES (%s, %s, %s, %s, %s)'
             var_tuple = (host, status, message, json.dumps(response), self._current_task_id)
             self._run_query_on_db('insert', sql_query, var_tuple)
@@ -130,10 +130,10 @@ class BattutaCallback(CallbackBase):
         self._current_play_id = self._run_query_on_db('insert', sql_query, var_tuple)
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self._on_task_start(task, False)
+        self._on_task_start(task)
 
     def v2_playbook_on_handler_task_start(self, task):
-        self._on_task_start(task, True)
+        self._on_task_start(task, is_handler=True)
 
     def v2_playbook_on_stats(self, stats_list):
         stats_dict = stats_list.__dict__
