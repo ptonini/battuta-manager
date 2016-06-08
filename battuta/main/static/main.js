@@ -262,7 +262,6 @@ $(document).ready(function () {
             .DynamicList({
                 listTitle: 'selection',
                 showFilter: true,
-                headerBottomPadding: 15,
                 showAddButton: true,
                 addButtonClass: 'open_node_form',
                 addButtonTitle: 'Add ' + nodeType,
@@ -316,7 +315,6 @@ $(document).ready(function () {
                 .DynamicList({
                     listTitle: 'remove_node',
                     showFilter: true,
-                    headerBottomPadding: 15,
                     itemToggle: true,
                     maxHeight: 400,
                     minColumns: sessionStorage.getItem('select_dialog_min_columns'),

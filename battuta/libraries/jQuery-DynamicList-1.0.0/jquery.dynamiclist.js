@@ -48,11 +48,12 @@
         var tempSpan = $('<span>').css({visibility: 'hidden'}).attr('id', 'temp_span');
         $('body').append(tempSpan);
         listDiv.children('.dynamic-item').each(function () {
-            opts.formatItem(this);
+            
             if (opts.truncateItemText) {
                 var itemText = $(this).html();
                 tempSpan.html(itemText);
-                var textWidth = tempSpan.actual('width', {includeMargin: false});
+                // var textWidth = tempSpan.actual('width', {includeMargin: false});
+                var textWidth = tempSpan.width();
                 var columnWidth = $(this).width();
                 if (itemText && textWidth > columnWidth) {
                     var viewableText = String(itemText);
@@ -65,7 +66,7 @@
                     $(this).attr('data-toggle','tooltip').attr('title', itemText).html(viewableText);
                 }
             }
-
+            
             if (opts.itemToggle) {
                 $(this).off('click').click(function () {
                     $(this).toggleClass('toggle-on');
@@ -76,6 +77,9 @@
             if (opts.onHoverCursor) {
                 $(this).css('cursor', opts.onHoverCursor)
             }
+
+            opts.formatItem(this);
+
         });
         tempSpan.remove()
     }
@@ -312,7 +316,7 @@
         itemToggle: false,
         maxColumnWidth: 100,
         listWidth: 0,
-        truncateItemText: false,
+        truncateItemText: true,
         itemLineHeight: 30,
         minColumns: 3,
         maxColumns: 6,

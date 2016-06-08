@@ -41,7 +41,7 @@ function formatRelationListItem(listItem, nodeType, relation, inheritedVariables
     )
 }
 
-function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj) {
+function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj, nodeType) {
     $(listItem).click(function () {
         var sourceValue = $(this).data('value');
         var sourceId =  $(this).data('id');
@@ -52,7 +52,7 @@ function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj) {
             data: {
                 action: 'copy_vars',
                 source_id: sourceId,
-                type: node
+                type: nodeType
             },
             success: function () {
                 selectDialog.dialog('close');
@@ -92,7 +92,6 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
         listTitle: 'selection',
         showCount: true,
         showFilter: true,
-        headerBottomPadding: 15,
         showAddButton: true,
         addButtonClass: 'open_node_form',
         addButtonTitle: 'Add ' + nodeType,
@@ -172,7 +171,6 @@ function loadFacts(data) {
 
 function openNodeFactsDialog(data) {
     if (data.result == 'ok') {
-        console.log(data.facts);
         $('#json_box').JSONView(data.facts).JSONView('collapse', 2);
         $('#json_dialog').dialog('open');
     }
@@ -302,7 +300,7 @@ $(document).ready(function () {
             case 'Copy from node':
                 clearVariableForm();
                 $('.select_type').off('click').click(function () {
-                    var node = $(this).attr('data-type');
+                    var nodeType = $(this).attr('data-type');
                     nodeTypeDialog.dialog('close');
                     selectDialog.DynamicList({
                         listTitle: 'copy_from_node',
@@ -314,9 +312,9 @@ $(document).ready(function () {
                         maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
                         breakPoint: sessionStorage.getItem('select_dialog_break_point'),
                         maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
-                        ajaxUrl: '/inventory/?action=search&type=' + node + '&pattern=',
+                        ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
                         formatItem: function (listItem) {
-                            formatCopyVariablesListItem(listItem, selectDialog, variableTableApi)
+                            formatCopyVariablesListItem(listItem, selectDialog, variableTableApi, nodeType)
                         },
                         loadCallback: function (listContainer) {
                             var currentList = listContainer.find('div.dynamic-list');
