@@ -308,7 +308,6 @@ $(document).ready(function () {
                         listTitle: 'copy_from_node',
                         showListSeparator: true,
                         showFilter: true,
-                        headerBottomPadding: 0,
                         maxHeight: 400,
                         checkered: true,
                         minColumns: sessionStorage.getItem('select_dialog_min_columns'),

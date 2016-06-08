@@ -89,15 +89,11 @@
             listDiv.empty();
             $.each(opts.dataArray, function (index, value) {
                 listDiv.append(
-                    $('<div>').html(value[0]).attr({
-                        'class': 'list-group-item dynamic-item',
-                        'data-value': value[0],
-                        'data-id': value[1]
-                    }).css({
-                        'vertical-align': 'middle',
-                        'line-height': opts.itemLineHeight + 'px',
-                        'padding': '0 5px'
-                    })
+                    $('<div>')
+                        .html(value[0])
+                        .attr('class', 'list-group-item dynamic-item')
+                        .data({value: value[0], id: value[1]})
+                        .css({'vertical-align': 'middle', 'line-height': opts.itemLineHeight + 'px', padding: '0 5px'})
                 );
             });
         }
@@ -143,7 +139,7 @@
 
             var headerDiv = $('<div>')
                 .attr({'class': 'dynamic-list-header', 'id': opts.listTitle})
-                .css('margin-bottom', opts.headerBottomPadding);
+                .css({'margin-bottom': opts.headerBottomPadding, height: opts.headerHeight});
 
             var listDiv = $('<div>').attr({'class': 'list-group dynamic-list', 'id': opts.listTitle + '_list'});
 
@@ -190,7 +186,7 @@
                     .append($('<button>')
                         .attr('class', 'btn btn-default btn-xs')
                         .click(function() {
-                            $(listDiv).children('div.dynamic-item').each(function () {
+                            listDiv.children('div.dynamic-item').each(function () {
                                 $(this).toggleClass('toggle-on');
                             });
                         })
@@ -223,15 +219,9 @@
                 )
             }
 
-            if (!opts.itemToggle && !opts.showAddButton && opts.showFilter) {
-                headerDiv.append(
-                    $('<span>').attr({'class': 'glyphicon', 'style': 'color: transparent'})
-                )
-            }
-
             if (opts.showFilter) {
                 headerDiv.append(
-                    $('<span>').attr('class', 'pull-right').append(
+                    $('<div>').attr('class', 'pull-right').append(
                         $('<input>')
                             .attr({
                                 'class': 'form-control input-sm',
@@ -310,6 +300,7 @@
         addButtonTitle: null,
         addButtonType: 'icon',
         titleFontSize: '14px',
+        headerHeight: '30px',
         headerBottomPadding: '10px',
         showListSeparator: false,
         hideIfEmpty: false,

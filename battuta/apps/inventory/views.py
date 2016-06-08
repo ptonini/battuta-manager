@@ -223,10 +223,10 @@ class VariablesView(View):
 
     @staticmethod
     def post(request, node_type, node_id, action):
-        if request.POST['id'] == '':
-            variable = Variable()
-        else:
+        if 'id' in request.POST:
             variable = get_object_or_404(Variable, pk=request.POST['id'])
+        else:
+            variable = Variable()
         if action == 'save':
             post_data = dict(request.POST.iteritems())
             post_data[node_type] = node_id
