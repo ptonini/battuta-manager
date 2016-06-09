@@ -274,7 +274,7 @@ $(document).ready(function () {
 
     var stoppedStates = ['finished', 'finished with errors', 'canceled', 'failed'];
 
-    body.css('padding-top', '105px');
+    body.css('padding-top', '50px');
     sessionStorage.removeItem('auto_scroll');
 
     // Initialize stats dialog
@@ -329,7 +329,7 @@ $(document).ready(function () {
         runnerResult.css('font-size', 'smaller');
         $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
         window.print();
-        body.css('padding-top', '105px');
+        body.css('padding-top', '50px');
         reportOnly.hide();
         htmlOnly.show();
         statsDialogCopy.remove();

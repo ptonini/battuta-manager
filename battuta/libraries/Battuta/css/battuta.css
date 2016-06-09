@@ -29,8 +29,12 @@ hr.medium {
     background-color: #777;
 }
 
-h4 {
+h4.tab_title {
     margin-bottom: 20px;
+}
+
+h4.result_header {
+    margin-top: 20px;
 }
 
 a,
