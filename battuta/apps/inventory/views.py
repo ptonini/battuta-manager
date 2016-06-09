@@ -38,12 +38,9 @@ class InventoryView(View):
                 for child in group.children.all():
                     inventory[group.name]['children'].append(child.name)
 
-            if len(group.variable_set.all()) > 0:
-                inventory[group.name]['vars'] = dict()
-                for var in group.variable_set.all():
-                    inventory[group.name]['vars'][var.key] = var.value
-            elif group.name == 'all':
-                inventory['all']['vars'] = dict()
+            inventory[group.name]['vars'] = dict()
+            for var in group.variable_set.all():
+                inventory[group.name]['vars'][var.key] = var.value
 
         return inventory
 
