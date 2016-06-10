@@ -218,7 +218,7 @@ $(document).ready(function () {
                         buildArgsSelectionBox();
                     }
                     else {
-                        alertDialog.html(data.msg).dialog('open')
+                        alertDialog.html($('<pre>').html(data.msg)).dialog('open')
                     }
                 };
                 submitRequest(type, postData, successCallback);

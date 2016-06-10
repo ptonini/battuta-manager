@@ -28,6 +28,7 @@ $(document).ready(function () {
         modal: true,
         show: true,
         hide: true,
+        width: 'auto',
         dialogClass: 'no_title',
         buttons: {
             Ok: function () {

@@ -114,7 +114,8 @@ function loadResults(intervalId, stoppedStates) {
             // Display error message if exists
             if (runner.message) {
                 resultContainer.empty().append(
-                    $('<h5>').attr('id', 'runner_message').html('<br>' + runner.message)
+                    $('<br>'),
+                    $('<pre>').attr('id', 'runner_message').html(runner.message)
                 );
                 if (runner.status == 'failed') {
                     $('#runner_message').css('color', 'red');
