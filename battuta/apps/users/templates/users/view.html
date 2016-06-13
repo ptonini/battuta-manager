@@ -4,11 +4,11 @@
     <br>
     <div class="row">
         <div class="col-md-1 col-sm-2"><strong>Joined in:</strong></div>
-        <div class="col-md-5 col-sm-11">{{ view_user.date_joined }}</div>
+        <div class="col-md-5 col-sm-10">{{ view_user.date_joined }}</div>
     </div>
     <div class="row">
         <div class="col-md-1 col-sm-2"><strong>Last login:</strong></div>
-        <div class="col-md-5 col-sm-11">{{ view_user.last_login }}</div>
+        <div class="col-md-5 col-sm-10">{{ view_user.last_login }}</div>
     </div>
     <br>
     {% include 'users/user_form.html' with page='view' %}

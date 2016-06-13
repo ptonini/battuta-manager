@@ -5,13 +5,12 @@ function updateTaskTable(task, taskTableApi, intervalId, stoppedStates) {
 
     // Stops loop if job is defunct or if task host count matches table length
     if (stoppedStates.indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
-        console.log($('#runner_status').html());
         clearInterval(intervalId)
     }
 }
 
 // Draw callback function for task table
-function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
+function taskTableDrawCallBack(taskTableApi, task) {
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
     $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
     taskTableApi.rows().every(function (rowIndex) {
@@ -47,11 +46,6 @@ function taskTableDrawCallBack(taskTableApi, stoppedStates, task) {
                 })
         );
     });
-    if (stoppedStates.indexOf($('#runner_status').html()) == -1 && sessionStorage.getItem('auto_scroll')) {
-        $('html, body').animate({
-            scrollTop: ($('#result_container').find('tbody').find('tr').last().offset().top)
-        }, 500);
-    }
 }
 
 // Load job results from database and build tables
@@ -301,6 +295,11 @@ $(document).ready(function () {
         sessionStorage.setItem('auto_scroll', true);
         var intervalId = setInterval(function () {
             loadResults(intervalId, stoppedStates);
+            if (stoppedStates.indexOf($('#runner_status').html()) == -1 && sessionStorage.getItem('auto_scroll')) {
+                $('html, body').animate({
+                    scrollTop: ($('#result_container').find('tbody').find('tr').last().offset().top)
+                }, 500);
+            }
         }, 1000);
     }
 

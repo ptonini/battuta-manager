@@ -141,7 +141,7 @@ $(document).ready(function () {
                                 loadPlaybookArgsForm(data, newFilename);
                                 buildArgsSelectionBox();
                                 editorDialog.dialog('close');
-                                playbookTable.DataTable().ajax.reload()
+                                playbookTable.DataTable().ajax.reload(null, false)
                             }
                             else if (data.result == 'fail') {
                                 alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
@@ -360,7 +360,7 @@ $(document).ready(function () {
         event.preventDefault();
         var cred = $('option:selected', credentials).data();
         var askPassword = {
-            user: (!cred.password && !cred.rsa_key),
+            user: (!cred.password && cred.ask_pass && !cred.rsa_key),
             sudo: (argumentsBox.data('sudo') && !cred.sudo_pass && cred.ask_sudo_pass)
         };
         var postData = {
@@ -374,7 +374,7 @@ $(document).ready(function () {
             skip_tags: $('#skip_tags').val(),
             extra_vars: $('#extra_vars').val()
         };
-        executeJob(postData, askPassword);
+        runAnsibleJob(postData, askPassword);
     });
 
     // Run playbook

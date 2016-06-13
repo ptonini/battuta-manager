@@ -102,7 +102,7 @@ function popupCenter(url, title, w) {
 }
 
 // Run Ansible Job
-function executeJob(postData, askPassword) {
+function runAnsibleJob(postData, askPassword) {
     var alertDialog = $('#alert_dialog');           // Alert dialog selector
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector

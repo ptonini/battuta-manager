@@ -116,6 +116,7 @@ class UserView(View):
                 else:
                     with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
                         for chunk in value.chunks():
+
                             f.write(chunk)
             data = {'result': 'ok', 'filepaths': uploaded_files}
 
@@ -165,16 +166,15 @@ class UserView(View):
 class CredentialView(View):
 
     @staticmethod
-    def _truncate_secure_data(c, c_dict):
-        if c.password != '':
-            c_dict['password'] = True
-        else:
-            c_dict['password'] = False
-        if c.sudo_pass != '':
-            c_dict['sudo_pass'] = True
-        else:
-            c_dict['sudo_pass'] = False
-        return c_dict
+    def _truncate_secure_data(cred):
+        prefs = get_preferences()
+        if cred['password']:
+            cred['password'] = prefs['password_placeholder']
+
+        if cred['sudo_pass']:
+            cred['sudo_pass'] = prefs['password_placeholder']
+
+        return cred
 
     def get(self, request):
         page_user = request.user
@@ -184,28 +184,26 @@ class CredentialView(View):
         if request.user == page_user or request.user.is_superuser:
             if request.GET['action'] == 'list':
                 data = list()
-                for cred in Credential.objects.filter(user=page_user):
-                    cred_dict = model_to_dict(cred)
-                    cred_dict['user_id'] = cred_dict['user']
-                    cred_dict.pop('user', None)
-                    cred_dict['is_default'] = False
-                    if cred == page_user.userdata.default_cred:
-                        cred_dict['is_default'] = True
-                    data.append(self._truncate_secure_data(cred, cred_dict))
+                for cred in Credential.objects.filter(user=page_user).values():
+                    if cred['id'] == page_user.userdata.default_cred.id:
+                        cred['is_default'] = True
+                    else:
+                        cred['is_default'] = False
+                    data.append(self._truncate_secure_data(cred))
+
                 if request.GET['runner'] == 'true':
-                    for cred in Credential.objects.filter(is_shared=True).exclude(user=page_user):
-                        cred_dict = model_to_dict(cred)
-                        cred_dict['title'] = cred.title + ' (' + cred.user.username + ')'
-                        data.append(self._truncate_secure_data(cred, cred_dict))
+                    for cred in Credential.objects.filter(is_shared=True).exclude(user=page_user).values():
+                        cred['title'] += ' (' + cred.user.username + ')'
+                        data.append(self._truncate_secure_data(cred))
             elif request.GET['action'] == 'default':
-                cred = request.user.userdata.default_cred
-                cred_dict = model_to_dict(cred)
-                cred_dict['user_id'] = cred_dict['user']
-                cred_dict.pop('user', None)
-                cred_dict['is_default'] = False
+                cred = model_to_dict(request.user.userdata.default_cred)
+                cred['user_id'] = cred['user']
+                cred.pop('user', None)
                 if cred == page_user.userdata.default_cred:
-                    cred_dict['is_default'] = True
-                data = self._truncate_secure_data(cred, cred_dict)
+                    cred['is_default'] = True
+                else:
+                    cred['is_default'] = False
+                data = self._truncate_secure_data(cred)
             else:
                 raise Http404('Invalid action')
         else:
@@ -215,6 +213,7 @@ class CredentialView(View):
     @staticmethod
     def post(request):
         page_user = get_object_or_404(User, pk=request.POST['user_id'])
+        prefs = get_preferences()
 
         # Validate user
         if request.user == page_user or request.user.is_superuser:
@@ -232,11 +231,16 @@ class CredentialView(View):
                     cred = get_object_or_404(Credential, pk=form_data['id'])
 
                 # Set form data passwords
-                if form_data['password'] == '':
+                if form_data['password'] == prefs['password_placeholder']:
                     form_data['password'] = cred.password
-                if form_data['sudo_pass'] == '':
+
+                if form_data['sudo_pass'] == prefs['password_placeholder']:
                     form_data['sudo_pass'] = cred.sudo_pass
-                else:
+
+                if form_data['password']:
+                    form_data['ask_pass'] = False
+
+                if form_data['sudo_pass']:
                     form_data['ask_sudo_pass'] = False
 
                 # Check RSA key filename encoding
@@ -263,7 +267,7 @@ class CredentialView(View):
                                     pass
 
                             # Save new RSA key
-                            if form_data['upload_rsa'] == 'true':
+                            if request.FILES:
                                 with open(os.path.join(ssh_path, form_data['rsa_key']), 'w+b') as f:
                                     for chunk in request.FILES['0'].chunks():
                                         f.write(chunk)
@@ -294,9 +298,9 @@ class CredentialView(View):
                 # Return fail if credential is default for a user(s)
                 if len(user_list) > 0:
                     data = {'result': 'fail', 'msg': 'Credential is default for ' + ', '.join(user_list)}
-
-                # Remove RSA key from disk
                 else:
+
+                    # Remove RSA key from disk
                     try:
                         os.remove(os.path.join(ssh_path, cred.rsa_key))
                     except os.error:

@@ -145,8 +145,7 @@ table.dataTable thead .sorting_desc_disabled:after{
 .checked_button,
 .checked_button:focus,
 .checked_button:hover {
-    background-color: gray;
-    color: white;
+    background-color: #cdcdcd;
 }
 
 .ui-button-text {

@@ -79,8 +79,9 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, '../main/static'), os.path.join(BASE_
 
 LOGIN_URL = '/'
 
-
+MEDIA_ROOT = '/opt/ans_data/'
 DATA_DIR = '/opt/ans_data'
 FACTS_DIR = '/opt/ans_data/facts/'
 UPLOAD_DIR = '/opt/ans_data/uploads/'
+
 

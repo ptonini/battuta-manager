@@ -179,20 +179,20 @@ $(document).ready(function () {
                 postData.name = 'AdHoc task - ' + currentModule.name;
                 postData.cred = credentials.val();
                 var askPassword = {
-                    user: (!cred.password && !cred.rsa_key),
+                    user: (!cred.password && cred.ask_pass && !cred.rsa_key),
                     sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
                 };
                 if (currentModule.uploadsFile) {
                     function successCallback(data) {
                         currentModule.filepath = data.filepaths[0];
                         postData.arguments = currentModule.buildArguments();
-                        executeJob(postData, askPassword);
+                        runAnsibleJob(postData, askPassword);
                     }
                     uploadFiles($('#file'), 'file', successCallback);
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
-                    executeJob(postData, askPassword);
+                    runAnsibleJob(postData, askPassword);
                 }
                 break;
         }
