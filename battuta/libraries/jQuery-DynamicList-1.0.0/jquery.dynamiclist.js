@@ -150,7 +150,7 @@
             listContainer.empty().addClass('dynamic-list-group').append(headerDiv, listDiv);
 
             if (opts.showTopSeparator) {
-                headerDiv.append($('<hr>'))
+                headerDiv.before($('<hr>'))
             }
 
             if (opts.showTitle) {
@@ -257,6 +257,10 @@
                 listDiv.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
             }
 
+            if (opts.showBottomSeparator) {
+                listDiv.after($('<hr>'))
+            }
+
             if (opts.buildNow) {
                 _load(listContainer, listDiv, opts)
             }
@@ -300,6 +304,7 @@
         showSelectAll: false,
         showAddButton: false,
         showTopSeparator: false,
+        showBottomSeparator: false,
         addButtonClass: null,
         addButtonTitle: null,
         addButtonType: 'icon',

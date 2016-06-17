@@ -2,7 +2,7 @@ function searchEntities(entityType, resultContainer, searchPattern) {
     resultContainer.DynamicList({
         listTitle: entityType + 's:',
         showTitle: true,
-        showTopSeparator: true,
+        showBottomSeparator: true,
         hideIfEmpty: true,
         checkered: true,
         minColumns: sessionStorage.getItem('open_node_list_min_columns'),

@@ -42,7 +42,7 @@ $(document).ready(function () {
 
     // Build adhoc table
     var adhocTableObject = adhocTable.DataTable({
-        pageLength: 10,
+        pageLength: 50,
         ajax: {
             url: '/runner/adhoc/',
             type: 'GET',
