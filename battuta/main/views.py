@@ -12,7 +12,7 @@ class MainView(View):
     @staticmethod
     def get(request):
         if 'action' not in request.GET:
-            return render(request, "main.html", {'user': request.user})
+            return render(request, 'main/main.html', {'user': request.user})
         else:
             if request.user.is_authenticated():
                 if request.GET['action'] == 'preferences':
@@ -21,7 +21,7 @@ class MainView(View):
                     data['user_timezone'] = request.user.userdata.timezone
                 else:
                     raise Http404('Invalid action')
-                return HttpResponse(json.dumps(data), content_type="application/json")
+                return HttpResponse(json.dumps(data), content_type='application/json')
             else:
                 raise PermissionDenied
 
@@ -30,7 +30,7 @@ class SearchView(View):
     @staticmethod
     def get(request):
         if request.GET['search_pattern'] == '':
-            return render(request, 'main.html', {'user': request.user})
+            return render(request, 'main/main.html', {'user': request.user})
         else:
-            return render(request, 'search.html', {'search_pattern': request.GET['search_pattern']})
+            return render(request, 'main/search.html', {'search_pattern': request.GET['search_pattern']})
 

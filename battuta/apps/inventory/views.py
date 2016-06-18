@@ -70,9 +70,20 @@ class InventoryView(View):
                                      facts['ansible_processor_count'],
                                      facts['ansible_memtotal_mb'],
                                      facts['ansible_mounts'][0]['size_total'],
-                                     facts['ansible_date_time']['date']])
+                                     facts['ansible_date_time']['date'],
+                                     host.id])
                     else:
                         data.append([host.name, '', '', '', '', ''])
+            elif request.GET['action'] == 'group_table':
+                data = list()
+                for group in Group.objects.all():
+                    data.append([group.name,
+                                 len(group.members.all()),
+                                 len(group.group_set.all()),
+                                 len(group.children.all()),
+                                 len(group.variable_set.all()),
+                                 '',
+                                 group.id])
             else:
                 return Http404('Invalid action')
 
@@ -129,13 +140,7 @@ class InventoryView(View):
 class SelectView(View):
     @staticmethod
     def get(request, node_type):
-        return render(request, 'inventory/select.html')
-
-
-class HostTableView(View):
-    @staticmethod
-    def get(request):
-        return render(request, 'inventory/host_table.html')
+        return render(request, 'inventory/select.html', {'node_type': node_type})
 
 
 class NodesView(View):
@@ -206,7 +211,6 @@ class NodesView(View):
     def post(self, request, node_id, node_type):
         node = self.build_node(node_type, node_id)
         if request.POST['action'] == 'save':
-            print request.POST
             form = node.form_class(request.POST or None, instance=node)
             if form.is_valid():
                 node = form.save(commit=True)

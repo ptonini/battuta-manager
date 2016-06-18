@@ -277,8 +277,10 @@ $(document).ready(function () {
                     var currentList = listContainer.find('div.dynamic-list');
                     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                 },
-                'addButtonAction': function (addButton) {
-                    openAddNodeDialog(nodeType, selectDialog)
+                addButtonAction: function (addButton) {
+                    openAddNodeDialog(nodeType, function () {
+                        selectDialog.DynamicList('load')
+                    })
                 }
             })
             .dialog('option', 'buttons', [

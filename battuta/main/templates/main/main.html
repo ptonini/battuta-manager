@@ -21,7 +21,7 @@
     <script src="{% static 'bootstrap-fileinput-4.2.7/js/fileinput.min.js' %}"></script>
     <script src="{% static 'jQuery-DynamicList-1.0.0/jquery.dynamiclist.js' %}"></script>
     <script src="{% static 'Battuta/js/battuta.js' %}"></script>
-    <script src="{% static 'main.js' %}"></script>
+    <script src="{% static 'main/main.js' %}"></script>
     <meta charset="utf-8">
     <meta http-equiv='cache-control' content='no-cache'>
     <meta http-equiv='expires' content='0'>
@@ -48,7 +48,6 @@
                             <li class="divider"></li>
                             <li><a href=# id="import_data">Import</a></li>
                             <li><a href=# id="bulk_remove">Remove</a></li>
-                            <li><a href={% url 'inventory:host_table'%}>Host table</a></li>
                         </ul>
                     </li>
                     <li class="dropdown">

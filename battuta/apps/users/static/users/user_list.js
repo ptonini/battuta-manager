@@ -14,24 +14,19 @@ $(document).ready(function () {
                 action: 'list'
             }
         },
-        drawCallback: function () {
-            var tableApi = this.api();
-            tableApi.rows().every(function (rowIndex) {
-                prettyBoolean(tableApi.row(rowIndex), 3)
-            });
-        },
-        columnDefs: [{
-            targets: -1,
-            data: null,
-            defaultContent: $('<span>').css('float', 'right').append(
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
-                ),
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+        rowCallback: function (row, data, index) {
+            prettyBoolean($(row).find('td:eq(3)'), data[3]);
+            $(row).find('td:eq(4)').html(
+                $('<span>').css('float', 'right').append(
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
+                    ),
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+                    )
                 )
-            ).prop('outerHTML')
-        }]
+            )
+        },
     });
 
     // Edit/Delete user command

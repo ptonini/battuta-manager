@@ -166,13 +166,13 @@ function executeJob(postData, askPassword) {
     }
 }
 
-// Convert boolean value to glyphicon in tables
-function prettyBoolean (row, cellIndex) {
-    if (row.data()[cellIndex]) {
-        $(row.node()).children('td:eq(' + cellIndex + ')').html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
+// Convert boolean value to glyphicon
+function prettyBoolean (element, value) {
+    if (value) {
+        element.html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
     }
     else {
-        $(row.node()).children('td:eq(' + cellIndex + ')').html('');
+        element.html('');
     }
 }
 
@@ -244,13 +244,13 @@ function buildCredentialsSelectionBox(credentials, start_value) {
 }
 
 // Open Add Node dialog
-function openAddNodeDialog(nodeType, parentList) {
+function openAddNodeDialog(nodeType, addNodeCallback) {
     var alertDialog = $('#alert_dialog');
     var nodeForm = $('#node_form');
     var nodeDialog = $('#node_dialog');
     $('#node_dialog_header').html('Add ' + nodeType);
-    nodeForm.off('submit').find('input').val('');
-    nodeForm.submit(function(event) {
+    nodeForm.find('input').val('');
+    nodeForm.off('submit').submit(function(event) {
         event.preventDefault();
         $.ajax({
             url: '/inventory/' + nodeType + '/0/',
@@ -263,9 +263,7 @@ function openAddNodeDialog(nodeType, parentList) {
             },
             success: function (data) {
                 if (data.result == 'ok') {
-                    if (parentList) {
-                        parentList.DynamicList('load');
-                    }
+                    addNodeCallback();
                     nodeDialog.dialog('close');
                 }
                 else if (data.result == 'fail') {

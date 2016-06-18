@@ -12,7 +12,8 @@ div.dynamic-list {
 }
 
 div.dynamic-list div.dynamic-item {
-    padding: 5px;
+    padding: 0 5px;
+    vertical-align: middle;
     margin-bottom: 0;
     border: none;
     color: #777;
@@ -24,9 +25,9 @@ div.dynamic-list div.dynamic-item:first-child {
 }
 
 div.dynamic-list div.dynamic-item:last-child {
-    border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
-}
+    border-bottom-right-radius: 0;
+    }
 
 div.dynamic-list div.dynamic-item:hover,
 div.dynamic-list div.dynamic-item .glyphicon:hover {

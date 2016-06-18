@@ -1,4 +1,3 @@
-// Post relationships alterations
 function alterRelation(relation, selection, action, successFunction) {
     $.ajax({
         url: relation + '/',
@@ -107,7 +106,9 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
             addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi)
         },
         addButtonAction: function (addButton) {
-            openAddNodeDialog(nodeType, selectDialog)
+            openAddNodeDialog(nodeType, function () {
+                selectDialog.DynamicList('load')
+            })
         }
     });
     selectDialog.dialog('open');
@@ -238,18 +239,18 @@ $(document).ready(function () {
             type: 'GET',
             dataSrc: ''
         },
-        columnDefs: [{
-            targets: -1,
-            data: null,
-            defaultContent: $('<span>').css('float', 'right').append(
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
-                ),
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+        rowCallback: function (row, data, index) {
+            $(row).find('td:eq(2)').html(
+                $('<span>').css('float', 'right').append(
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
+                    ),
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+                    )
                 )
-            ).prop('outerHTML')
-        }]
+            )
+        }
     });
 
     // Edit or delete variable
@@ -363,13 +364,11 @@ $(document).ready(function () {
             type: 'GET',
             dataSrc: ''
         },
-        columnDefs: [{
-            targets: -1,
-            data: null,
-            render: function (data) {
-                return '<a href="/inventory/group/' + data[3] + '">' + data[2] + '</a>';
-            }
-        }]
+        rowCallback: function (row, data, index) {
+            $(row).find('td:eq(2)').html(
+                $('<a>').attr('href', '/inventory/group/' + data[3] + '/').html(data[2])
+            )
+        }
     });
 
     // Edit node

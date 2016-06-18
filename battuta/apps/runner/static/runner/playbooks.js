@@ -173,33 +173,26 @@ $(document).ready(function () {
             dataSrc: '',
             data: {action: 'get_list'}
         },
-        columnDefs: [{
-            targets: -1,
-            data: null,
-            defaultContent: $('<span>').css('float', 'right').append(
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
-                ),
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
-                ),
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell')
-                ),
-                $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'}).append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+        rowCallback: function (row, data, index) {
+            if (data[1] == false) {
+                $(row).css('color', 'red');
+            }
+            $(row).find('td:eq(1)').html(
+                $('<span>').css('float', 'right').append(
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
+                    ),
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
+                    ),
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell')
+                    ),
+                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'}).append(
+                        $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
+                    )
                 )
-            ).prop('outerHTML')
-        }],
-        drawCallback: function () {
-            var tableApi = this.api();
-            tableApi.rows().every( function (rowIndex) {
-                var row = tableApi.row(rowIndex);
-                var node = row.node();
-                if (row.data()[1] == false) {
-                    $(node).css('color', 'red');
-                }
-            });
+            )
         }
     });
 

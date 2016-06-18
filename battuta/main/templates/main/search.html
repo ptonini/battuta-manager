@@ -1,7 +1,7 @@
-{% extends 'main.html' %}
+{% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'search.js' %}"></script>
+    <script src="{% static 'main/search.js' %}"></script>
     <div id="search_results">
         <br>
         <h4>Search results for '<span>{{ search_pattern }}</span>':</h4>

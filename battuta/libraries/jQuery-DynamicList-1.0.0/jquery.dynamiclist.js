@@ -52,7 +52,6 @@
             if (opts.truncateItemText) {
                 var itemText = $(this).html();
                 tempSpan.html(itemText);
-                // var textWidth = tempSpan.actual('width', {includeMargin: false});
                 var textWidth = tempSpan.width();
                 var columnWidth = $(this).width();
                 if (itemText && textWidth > columnWidth) {
@@ -70,16 +69,13 @@
             if (opts.itemToggle) {
                 $(this).off('click').click(function () {
                     $(this).toggleClass('toggle-on');
-                    $('.ui-button-text:contains("Add")').parent('button').focus()
                 });
             }
 
             if (opts.onHoverCursor) {
                 $(this).css('cursor', opts.onHoverCursor)
             }
-
             opts.formatItem(this);
-
         });
         tempSpan.remove()
     }
@@ -97,7 +93,7 @@
                         .html(value[0])
                         .attr('class', 'list-group-item dynamic-item')
                         .data({value: value[0], id: value[1]})
-                        .css({'vertical-align': 'middle', 'line-height': opts.itemLineHeight + 'px', padding: '0 5px'})
+                        .css('line-height', opts.itemLineHeight + 'px')
                 );
             });
         }
@@ -195,8 +191,8 @@
                             });
                         })
                         .html('Invert selection')
-                    )
-                    .append($('<span>').css('margin-right', '5px'))
+                    ).css('margin-right', '5px')
+                    .append($('<span>'))
             }
 
             if (opts.showAddButton) {
@@ -225,26 +221,27 @@
 
             if (opts.showFilter) {
                 headerDiv.append(
-                    $('<div>').attr('class', 'pull-right').append(
-                        $('<input>')
-                            .attr({
-                                'class': 'form-control input-sm',
-                                'type': 'text',
-                                'placeholder': 'filter'
-                            })
-                            .keyup(function () {
-                                var pattern = $(this).val();
-                                listDiv.children('div.dynamic-item').each(function () {
-                                    var value = $(this).html();
-                                    if (value.indexOf(pattern) >= 0) {
-                                        $(this).removeClass('hidden');
-                                    }
-                                    else {
-                                        $(this).addClass('hidden')
-                                    }
-                                });
-                                _formatList(listDiv, opts)
-                            })
+                    $('<div>').attr('class', 'pull-right form-inline').append(
+                        $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
+                            'Search:',
+                            $('<input>')
+                                .attr({class: 'form-control input-sm', type: 'search'})
+                                .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
+                                .keyup(function () {
+                                    var pattern = $(this).val();
+                                    listDiv.children('div.dynamic-item').each(function () {
+                                        var value = $(this).html();
+                                        if (value.indexOf(pattern) >= 0) {
+                                            $(this).removeClass('hidden');
+                                        }
+                                        else {
+                                            $(this).addClass('hidden')
+                                        }
+                                    });
+                                    _formatList(listDiv, opts)
+                                })
+                        )
+
                     )
                 )
             }
@@ -290,7 +287,6 @@
                     throw '- invalid option';
             }
         }
-
         return this;
     };
 

@@ -9,43 +9,43 @@ function updateTaskTable(task, taskTableApi, intervalId, stoppedStates) {
     }
 }
 
+function taskTableRowCallback(row, data) {
+    switch (data[1]) {
+        case 'unreachable':
+            $(row).css('color', 'gray');
+            break;
+        case 'changed':
+            $(row).css('color', 'orange');
+            break;
+        case 'ok':
+            $(row).css('color', 'green');
+            break;
+        case 'error':
+        case 'failed':
+            $(row).css('color', 'red');
+            break;
+    }
+    $(row).find('td:eq(3)').html(
+        $('<strong>').html('{ }')
+            .attr({title: 'Details', class: 'html_only'})
+            .css({float: 'right', color: '#777'})
+            .click(function () {
+                $('#json_box')
+                    .JSONView(data[3])
+                    .JSONView('collapse', 2);
+                $('#json_dialog').dialog('open')
+            })
+            .hover(function () {
+                $(this).css('cursor', 'pointer')
+            })
+    )
+}
+
+
 // Draw callback function for task table
 function taskTableDrawCallBack(taskTableApi, task) {
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
     $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
-    taskTableApi.rows().every(function (rowIndex) {
-        var row = taskTableApi.row(rowIndex);
-        var node = row.node();
-        switch (row.data()[1]) {
-            case 'unreachable':
-                $(node).css('color', 'gray');
-                break;
-            case 'changed':
-                $(node).css('color', 'orange');
-                break;
-            case 'ok':
-                $(node).css('color', 'green');
-                break;
-            case 'error':
-            case 'failed':
-                $(node).css('color', 'red');
-                break;
-        }
-        $(node).children('td:nth-child(4)').html(
-            $('<strong>').html('{ }')
-                .attr({title: 'Details', class: 'html_only'})
-                .css({float: 'right', color: '#777'})
-                .click(function () {
-                    $('#json_box')
-                        .JSONView(row.data()[3])
-                        .JSONView('collapse', 2);
-                    $('#json_dialog').dialog('open')
-                })
-                .hover(function () {
-                    $(this).css('cursor', 'pointer')
-                })
-        );
-    });
 }
 
 // Load job results from database and build tables
@@ -79,7 +79,6 @@ function loadResults(intervalId, stoppedStates) {
         data: {action: 'status'},
         success: function (runner) {
             resultContainer.data(runner);
-
             // Set font color for status display
             switch (runner.status) {
                 case 'running':
@@ -208,10 +207,13 @@ function loadResults(intervalId, stoppedStates) {
                                             dataSrc: '',
                                             data: {action: 'task_results', task_id: task.id}
                                         },
+                                        rowCallback: function(row, data, index) {
+                                            taskTableRowCallback(row, data)
+                                        },
                                         drawCallback: function () {
-                                            taskTableDrawCallBack(this.api(), stoppedStates, task)
+                                            taskTableDrawCallBack(this.api(), task)
                                         }
-                                    });
+                                    }); 
 
                                     // If job is running creates update loop
                                     if (stoppedStates.indexOf(runner.status) == -1) {
