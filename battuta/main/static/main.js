@@ -376,5 +376,7 @@ $(document).ready(function () {
         nodeTypeDialog.children('h5').html('Select node type');
         nodeTypeDialog.dialog('open');
     });
+
+
     
 });

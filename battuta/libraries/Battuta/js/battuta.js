@@ -40,6 +40,7 @@ $(document).ajaxError(function (event, xhr) {
 });
 
 // Set DataTables defaults
+$.fn.dataTableExt.sErrMode = 'throw';
 $.extend($.fn.dataTable.defaults, {
     stateSave: true,
     autoWidth: false,
@@ -100,7 +101,7 @@ function popupCenter(url, title, w) {
 }
 
 // Run Ansible Job
-function runAnsibleJob(postData, askPassword) {
+function executeJob(postData, askPassword) {
     var alertDialog = $('#alert_dialog');           // Alert dialog selector
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector
@@ -286,6 +287,30 @@ function getPreferences() {
             Object.keys(data).forEach(function (key) {
                 sessionStorage.setItem(key, data[key])
             });
+        }
+    });
+}
+
+function gatherFacts(nodeName) {
+    var postData = {
+        action: 'run',
+        type: 'adhoc',
+        name: 'Gather facts',
+        hosts: nodeName,
+        module: 'setup',
+        remote_pass: '',
+        become_pass: '',
+        arguments: '',
+        become: false
+    };
+    $.ajax({
+        url: '/users/credentials/',
+        type: 'GET',
+        dataType: 'json',
+        data: { action: 'default'},
+        success: function (cred) {
+            var askPassword = { user: (!cred.password && cred.ask_pass && !cred.rsa_key), sudo: false};
+            executeJob(postData, askPassword);
         }
     });
 }

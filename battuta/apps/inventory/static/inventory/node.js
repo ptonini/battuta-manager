@@ -141,8 +141,9 @@ function loadFacts(data) {
 
     if (data.result == 'ok') {
         var factsContainer = $('#facts_container');
-        var facts = data.facts.ansible_facts;
+        var facts = data.facts;
         var prettyMemory = Number(facts.ansible_memtotal_mb).toLocaleString();
+        var prettyHdSize = Math.ceil(Number(facts.ansible_mounts['0'].size_total) / (1024 * 1024 * 1024));
         var distribution = facts.ansible_distribution + ' ' + facts.ansible_distribution_version;
         factsContainer.empty().append(
             divRow.clone().append(
@@ -154,6 +155,8 @@ function loadFacts(data) {
                         divCol6R.clone().append('<strong>' + facts.ansible_default_ipv4.address + '</strong>'),
                         divCol6L.clone().append('Cores:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '</strong>'),
+                        divCol6L.clone().append('Hard disk:'),
+                        divCol6R.clone().append('<strong>' + prettyHdSize + 'GB</strong>'),
                         divCol6L.clone().append('RAM Memory:'),
                         divCol6R.clone().append('<strong>' + prettyMemory + 'MB</strong>'),
                         divCol6L.clone().append('OS Family:'),
@@ -435,27 +438,7 @@ $(document).ready(function () {
 
     // Gather facts on node
     $('#gather_facts').click(function () {
-        var postData = {
-            action: 'run',
-            type: 'adhoc',
-            name: 'Gather facts',
-            hosts: nodeName,
-            module: 'setup',
-            remote_pass: '',
-            become_pass: '',
-            arguments: '',
-            become: false
-        };
-        $.ajax({
-            url: '/users/credentials/',
-            type: 'GET',
-            dataType: 'json',
-            data: { action: 'default'},
-            success: function (cred) {
-                var askPassword = { user: (!cred.password && cred.ask_pass && !cred.rsa_key), sudo: false};
-                runAnsibleJob(postData, askPassword);
-            }
-        });
+        gatherFacts(nodeName);
     });
 
     // Open node facts dialog

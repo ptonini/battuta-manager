@@ -186,13 +186,13 @@ $(document).ready(function () {
                     function successCallback(data) {
                         currentModule.filepath = data.filepaths[0];
                         postData.arguments = currentModule.buildArguments();
-                        runAnsibleJob(postData, askPassword);
+                        executeJob(postData, askPassword);
                     }
                     uploadFiles($('#file'), 'file', successCallback);
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
-                    runAnsibleJob(postData, askPassword);
+                    executeJob(postData, askPassword);
                 }
                 break;
         }

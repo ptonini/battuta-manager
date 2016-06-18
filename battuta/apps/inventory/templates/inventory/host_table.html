@@ -1,0 +1,31 @@
+{% extends 'main.html' %}
+{% load staticfiles %}
+{% block content %}
+    <script src="{% static 'inventory/host_table.js' %}"></script>
+    <div>
+        <div class="row">
+            <div class="col-md-10"><h3>Host table</h3></div>
+            <div class="col-md-2" style="margin-top: 20px; text-align: right">
+                <button id="update_facts" class="btn btn-default btn-xs">Update facts</button>
+                <button id="download_table" class="btn btn-default btn-xs">Download</button>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-12">
+                <table id="host_table1" class="table table-condensed table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th class="col-md-3">Host</th>
+                        <th class="col-md-2">Address</th>
+                        <th class="col-md-1">Cores</th>
+                        <th class="col-md-1">Memory</th>
+                        <th class="col-md-4">Disc</th>
+                        <th class="col-md-1">Date</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

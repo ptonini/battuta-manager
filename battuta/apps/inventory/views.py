@@ -60,8 +60,22 @@ class InventoryView(View):
                             data.append([group.name, group.id])
                 else:
                     return Http404('Invalid node type')
+            elif request.GET['action'] == 'host_table':
+                data = list()
+                for host in Host.objects.all():
+                    facts = NodesView.get_facts(host.name)
+                    if facts:
+                        data.append([host.name,
+                                     facts['ansible_default_ipv4']['address'],
+                                     facts['ansible_processor_count'],
+                                     facts['ansible_memtotal_mb'],
+                                     facts['ansible_mounts'][0]['size_total'],
+                                     facts['ansible_date_time']['date']])
+                    else:
+                        data.append([host.name, '', '', '', '', ''])
             else:
                 return Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
@@ -118,6 +132,12 @@ class SelectView(View):
         return render(request, 'inventory/select.html')
 
 
+class HostTableView(View):
+    @staticmethod
+    def get(request):
+        return render(request, 'inventory/host_table.html')
+
+
 class NodesView(View):
     context = dict()
 
@@ -152,6 +172,15 @@ class NodesView(View):
         setattr(node, 'form_class', node_form_class)
         return node
 
+    @staticmethod
+    def get_facts(host_name):
+        facts_file = os.path.join(settings.FACTS_DIR, host_name)
+        if os.path.isfile(facts_file):
+            with open(facts_file, "r") as f:
+                return json.loads(f.read())['ansible_facts']
+        else:
+            return None
+
     def get(self, request, node_id, node_type):
         node = self.build_node(node_type, node_id)
         if 'action' not in request.GET:
@@ -159,10 +188,9 @@ class NodesView(View):
             return render(request, 'inventory/node.html', self.context)
         else:
             if request.GET['action'] == 'facts':
-                facts_file = os.path.join(settings.FACTS_DIR, node.name)
-                if os.path.isfile(facts_file):
-                    with open(facts_file, "r") as f:
-                        data = {'result': 'ok', 'facts': json.loads(f.read())}
+                facts = self.get_facts(node.name)
+                if facts:
+                    data = {'result': 'ok', 'facts': facts}
                 else:
                     data = {'result': 'failed'}
             elif request.GET['action'] == 'copy_vars':

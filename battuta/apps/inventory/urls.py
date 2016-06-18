@@ -6,6 +6,9 @@ from . import views
 urlpatterns = [
     url(r'^$', views.InventoryView.as_view(), name='inventory'),
 
+    url(r'^host_table/$',
+        login_required(views.HostTableView.as_view()), name='host_table'),
+
     url(r'^select/(?P<node_type>\w+)/$',
         login_required(views.SelectView.as_view()), name='select'),
 
