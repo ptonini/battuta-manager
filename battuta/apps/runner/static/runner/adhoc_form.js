@@ -1,5 +1,12 @@
+function loadAdHocForm(data) {
+    $('#hosts').val(data[0]);
+    $('#module').val(data[1]).change();
+    $('#arguments').val(data[2]);
+    $('#sudo').toggleClass('checked_button', data[3]);
+}
+
 function resetAdHocForm() {
-    if ($('#app').val() == 'runner') {
+    if (window.location.href.split('/').indexOf('inventory') == -1) {
         $('#hosts').val('');
     }
     $('#module').val('');
@@ -56,68 +63,58 @@ $(document).ready(function () {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
             $(row).find('td:eq(4)').html(
                 $('<span>').css('float', 'right').append(
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
-                    ),
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
-                    ),
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
-                    )
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell'))
+                        .click(function() {
+                            loadAdHocForm(data);
+                            $('#run_command').focus().click();
+                            resetAdHocForm()
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                        .click(function() {
+                            loadAdHocForm(data);
+                            adhocForm.data('adhocId', data[4]);
+                            $('#adhoc_form_label').html('Edit command');
+                            $('#run_command').hide();
+                            $('#cancel_edit').show();
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .click(function() {
+                            deleteDialog.dialog('option', 'buttons', [
+                                {
+                                    text: 'Delete',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                        $.ajax({
+                                            url: '/runner/adhoc/',
+                                            type: 'POST',
+                                            dataType: 'json',
+                                            data: {
+                                                action: 'delete',
+                                                id: data[4]
+                                            },
+                                            success: function () {
+                                                adhocTableObject.ajax.reload()
+                                            }
+                                        });
+                                    }
+                                },
+                                {
+                                    text: 'Cancel',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                    }
+                                }
+                            ]);
+                            deleteDialog.dialog('open');
+                        })
                 )
             )
-        },
-    });
-
-    // Run/Edit/Delete saved adhoc command
-    adhocTable.children('tbody').on('click', 'a', function () {
-        event.preventDefault();
-        if ($(this).attr('title') == 'Delete') {
-            var tableRow = adhocTableObject.row($(this).parents('tr'));
-            deleteDialog.dialog('option', 'buttons', [
-                {
-                    text: 'Delete',
-                    click: function () {
-                        $(this).dialog('close');
-                        $.ajax({
-                            url: '/runner/adhoc/',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                action: 'delete',
-                                id: tableRow.data()[4]
-                            },
-                            success: function () {
-                                adhocTableObject.ajax.reload()
-                            }
-                        });
-                    }
-                },
-                {
-                    text: 'Cancel',
-                    click: function () {
-                        $(this).dialog('close');
-                    }
-                }
-            ]);
-            deleteDialog.dialog('open');
-        }
-        else {
-            hosts.val(adhocTableObject.row($(this).parents('tr')).data()[0]);
-            $('#module').val(adhocTableObject.row($(this).parents('tr')).data()[1]).change();
-            $('#arguments').val(adhocTableObject.row($(this).parents('tr')).data()[2]);
-            $('#sudo').toggleClass('checked_button', adhocTableObject.row($(this).parents('tr')).data()[3])
-            if ($(this).attr('title') == 'Run') {
-                $('#run_command').focus().click();
-                resetAdHocForm()
-            }
-            else if ($(this).attr('title') == 'Edit') {
-                adhocForm.data('adhocId', adhocTableObject.row($(this).parents('tr')).data()[4]);
-                $('#adhoc_form_label').html('Edit command');
-                $('#run_command').hide();
-                $('#cancel_edit').show();
-            }
         }
     });
 

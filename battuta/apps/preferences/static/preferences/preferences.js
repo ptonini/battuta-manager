@@ -288,6 +288,7 @@ $(document).ready(function () {
     });
 
     $('#reload_prefs').click(function() {
+        $('#alert_dialog').html('<strong>Preferences reloaded</strong>').dialog('open');
         buildPreferencesContainer();
     });
 
@@ -311,6 +312,8 @@ $(document).ready(function () {
                 item_values: JSON.stringify(itemValues)
             },
             success: function () {
+                $('#alert_dialog').html('<strong>Preferences saved</strong>').dialog('open');
+                getPreferences();
                 buildPreferencesContainer();
             }
         })

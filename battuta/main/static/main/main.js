@@ -241,9 +241,9 @@ $(document).ready(function () {
     // Select nodes
     $('.select_nodes').click(function () {
         var nodeType = $(this).data('type');
-        var op = $(this).closest('div.row').children('div:first').html();
+        var op = $(this).data('op');
         var separator;
-        if (op == 'Select:') {
+        if (op == 'sel') {
             separator = ':';
         }
         else {
@@ -252,10 +252,10 @@ $(document).ready(function () {
                 alertDialog.dialog('open');
                 return
             }
-            if (op == 'and:') {
+            if (op == 'and') {
                 separator = ':&'
             }
-            else if (op == 'but not:') {
+            else if (op == 'exc:') {
                 separator = ':!'
             }
         }
@@ -308,77 +308,5 @@ $(document).ready(function () {
             ])
             .dialog('open');
     });
-
-    // Bulk remove nodes
-    $('#bulk_remove').click(function ()  {
-        $('.select_type').off('click').click(function () {
-            var nodeType = $(this).data('type');
-            nodeTypeDialog.dialog('close');
-            selectDialog
-                .DynamicList({
-                    listTitle: 'remove_node',
-                    showFilter: true,
-                    itemToggle: true,
-                    maxHeight: 400,
-                    minColumns: sessionStorage.getItem('select_dialog_min_columns'),
-                    maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
-                    breakPoint: sessionStorage.getItem('select_dialog_break_point'),
-                    maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
-                    ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
-                    loadCallback: function (listContainer) {
-                        var currentList = listContainer.find('div.dynamic-list');
-                        selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                    }
-                })
-                .dialog('option', 'buttons', [
-                    {
-                        text: 'Delete',
-                        click: function () {
-                            deleteDialog
-                                .dialog('option', 'buttons', [
-                                    {
-                                        text: 'Confirm',
-                                        click: function () {
-                                            $.ajax({
-                                                url: '/inventory/',
-                                                type: 'POST',
-                                                dataType: 'json',
-                                                data: {
-                                                    action: 'bulk_remove',
-                                                    selection: selectDialog.DynamicList('getSelected', 'id'),
-                                                    type: nodeType
-                                                },
-                                                success: function () {
-                                                    selectDialog.dialog('close');
-                                                    deleteDialog.dialog('close');
-                                                }
-                                            });
-
-                                        }
-                                    },
-                                    {
-                                        text: 'Cancel',
-                                        click: function () {
-                                            deleteDialog.dialog('close');
-                                        }
-                                    }
-                                ])
-                                .dialog('open');
-                        }
-                    },
-                    {
-                        text: 'Cancel',
-                        click: function () {
-                            selectDialog.dialog('close');
-                        }
-                    }
-                ])
-                .dialog('open');
-        });
-        nodeTypeDialog.children('h5').html('Select node type');
-        nodeTypeDialog.dialog('open');
-    });
-
-
-    
+        
 });

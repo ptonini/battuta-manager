@@ -9,18 +9,24 @@
         </div>
         <div class="col-md-6" style="text-align: right">
             <h3>
-                <button id="add_node" class="btn btn-default btn-sm" style="display: none;">Add {{ node_type }}</button>
+                <button id="add_node" class="btn btn-default btn-xs" style="display: none;">Add {{ node_type }}</button>
             </h3>
         </div>
         <div class="col-md-12">
-            <ul id="select_tabs" class="nav nav-tabs">
+            <ul id="select_{{ node_type }}_tabs" class="nav nav-tabs select_tabs">
                 <li class="active"><a data-toggle="tab" href="#list_tab">List</a></li>
-                <li><a data-toggle="tab" href="#node_table_tab">Table</a></li>
+                <li><a data-toggle="tab" href="#node_table_tab">Details</a></li>
             </ul>
             <div class="tab-content">
                 <div id="list_tab" class="tab-pane fade in active">
                     <br>
                     <div id="node_list"></div>
+                    <div style="margin-top: 20px">
+                        <button id="delete_mode" class="btn btn-default btn-xs">Delete mode</button>
+                        <span id="delete_button" style="float: right; display: none;">
+                            <button id="delete_nodes" class="btn btn-default btn-xs">Delete</button>
+                        </span>
+                    </div>
                 </div>
                 <div id="node_table_tab" class="tab-pane fade">
                     <br>
@@ -28,16 +34,16 @@
                         <div class="col-md-12">
                             <table id="node_table" class="table table-condensed table-hover table-striped">
                                 <thead>
-                                <tr id="node_table_header">
-
-                                </tr>
+                                <tr id="node_table_header"></tr>
                                 </thead>
                             </table>
                         </div>
-                        <div class="col-md-2" style="margin-top: 20px;">
-                            <button id="update_facts" class="btn btn-default btn-xs">Update facts</button>
-                            <button id="download_table" class="btn btn-default btn-xs">Download</button>
-                        </div>
+                        {% if node_type == 'host' %}
+                            <div class="col-md-12" style="margin-top: 20px">
+                                <button id="update_facts" class="btn btn-default btn-xs">Update facts</button>
+                                <button id="download_table" class="btn btn-default btn-xs">Download</button>
+                            </div>
+                        {% endif %}
                     </div>
 
                 </div>

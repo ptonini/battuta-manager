@@ -73,7 +73,7 @@ class InventoryView(View):
                                      facts['ansible_date_time']['date'],
                                      host.id])
                     else:
-                        data.append([host.name, '', '', '', '', ''])
+                        data.append([host.name, '', '', '', '', '', host.id])
             elif request.GET['action'] == 'group_table':
                 data = list()
                 for group in Group.objects.all():

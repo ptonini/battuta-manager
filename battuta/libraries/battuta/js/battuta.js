@@ -45,7 +45,7 @@ $.extend($.fn.dataTable.defaults, {
     stateSave: true,
     autoWidth: false,
     language: {'emptyTable': ' '},
-    pageLength: 5,
+    pageLength: 10,
     lengthMenu: [5, 10, 25, 50, 100],
     fnCreatedRow: function( row, data, dataIndex) {
         var tempSpan = $('<span>').css({visibility: 'hidden'}).attr('id', 'temp_span');
@@ -311,5 +311,19 @@ function gatherFacts(nodeName) {
             executeJob(postData, askPassword);
         }
     });
+}
+
+function rememberSelectedTab(tabId) {
+    
+    var keyName = tabId + '_activeTab';
+    
+    $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+        sessionStorage.setItem(keyName, $(e.target).attr('href'));
+    });
+
+    var activeTab = sessionStorage.getItem(keyName);
+    if(activeTab){
+        $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
+    }
 }
 

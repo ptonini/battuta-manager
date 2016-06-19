@@ -154,8 +154,7 @@
                     $('<span>').css('font-size', opts.titleFontSize).append(
                         $('<strong>').append(opts.listTitle.replace(/_/g, ' '))
                     ),
-                    $('<span>').attr('id', opts.listTitle + '_count'),
-                    $('<span>').css('margin-right', '5px')
+                    $('<span>').attr('id', opts.listTitle + '_count')
                 )
             }
 
@@ -180,8 +179,6 @@
                                 $(this).toggleClass('toggle-on', addClass);
                             });
                         })
-                        .css('margin-right', '5px')
-
                     )
                     .append($('<button>')
                         .attr('class', 'btn btn-default btn-xs')
@@ -191,8 +188,7 @@
                             });
                         })
                         .html('Invert selection')
-                    ).css('margin-right', '5px')
-                    .append($('<span>'))
+                    )
             }
 
             if (opts.showAddButton) {

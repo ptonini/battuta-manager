@@ -122,6 +122,11 @@ h5 {
     margin: 0 10px;
 }
 
+#pattern_dialog div.col-md-2,
+#pattern_dialog div.col-md-8 {
+    margin: 5px 0;
+}
+
 .table.dataTable tbody > tr > td {
     vertical-align: middle;
     border-top: none !important;

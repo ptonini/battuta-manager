@@ -143,7 +143,7 @@ function loadFacts(data) {
     if (data.result == 'ok') {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
-        var prettyMemory = Number(facts.ansible_memtotal_mb).toLocaleString();
+        var prettyMemory = Math.ceil(Number(facts.ansible_memtotal_mb) / 1024);
         var prettyHdSize = Math.ceil(Number(facts.ansible_mounts['0'].size_total) / (1024 * 1024 * 1024));
         var distribution = facts.ansible_distribution + ' ' + facts.ansible_distribution_version;
         factsContainer.empty().append(
@@ -157,9 +157,9 @@ function loadFacts(data) {
                         divCol6L.clone().append('Cores:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '</strong>'),
                         divCol6L.clone().append('Hard disk:'),
-                        divCol6R.clone().append('<strong>' + prettyHdSize + 'GB</strong>'),
+                        divCol6R.clone().append('<strong>' + prettyHdSize + '&nbsp;GB</strong>'),
                         divCol6L.clone().append('RAM Memory:'),
-                        divCol6R.clone().append('<strong>' + prettyMemory + 'MB</strong>'),
+                        divCol6R.clone().append('<strong>' + prettyMemory + '&nbsp;GB</strong>'),
                         divCol6L.clone().append('OS Family:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_os_family + '</strong>'),
                         divCol6L.clone().append('OS Distribution:'),
@@ -185,9 +185,10 @@ function openNodeFactsDialog(data) {
 
 $(document).ready(function () {
 
+    rememberSelectedTab($('ul.node_tabs').attr('id'));
+
     var nodeName = $('#header_node_name').html();
     var variableTable = $('#variable_table');
-    var relationDivs = $('.relation_div');
     var selectDialog = $('#select_dialog');
     var alertDialog = $('#alert_dialog');
     var deleteDialog = $('#delete_dialog');
@@ -204,7 +205,7 @@ $(document).ready(function () {
     }
 
     // Build relationship lists
-    relationDivs.each(function () {
+    $('.relation_div').each(function () {
         var relation = $(this).attr('data-relation');
         var nodeType = 'group';
         if (relation == 'Members') {
@@ -242,55 +243,49 @@ $(document).ready(function () {
         rowCallback: function (row, data, index) {
             $(row).find('td:eq(2)').html(
                 $('<span>').css('float', 'right').append(
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
-                    ),
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
-                    )
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                        .click(function() {
+                            cancelVarEdit.show();
+                            $('#variable_form').data('id', data[2]);
+                            $('#var_form_label').children('strong').html('Edit variable');
+                            $('#key').val(data[0]);
+                            $('#value').val(data[1]).focus();
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .click(function() {
+                            deleteDialog.dialog('option', 'buttons', [
+                                {
+                                    text: 'Delete',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                        $.ajax({
+                                            url: 'variable/del/',
+                                            type: 'POST',
+                                            dataType: 'json',
+                                            data: {
+                                                id: data[2]
+                                            },
+                                            success: function () {
+                                                variableTableApi.ajax.reload()
+                                            }
+                                        });
+                                    }
+                                },
+                                {
+                                    text: 'Cancel',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                    }
+                                }
+                            ]);
+                            deleteDialog.dialog('open');
+                        })
                 )
             )
-        }
-    });
-
-    // Edit or delete variable
-    variableTable.children('tbody').on('click', 'a', function () {
-        event.preventDefault();
-        var var_id = variableTableApi.row($(this).parents('tr')).data()[2];
-        if ($(this).attr('title') == 'Edit') {
-            cancelVarEdit.show();
-            $('#variable_form').data('id', var_id);
-            $('#var_form_label').children('strong').html('Edit variable');
-            $('#key').val(variableTableApi.row($(this).parents('tr')).data()[0]);
-            $('#value').val(variableTableApi.row($(this).parents('tr')).data()[1]).focus();
-        }
-        else if ($(this).attr('title')  == 'Delete') {
-            deleteDialog.dialog('option', 'buttons', [
-                {
-                    text: 'Delete',
-                    click: function () {
-                        $(this).dialog('close');
-                        $.ajax({
-                            url: 'variable/del/',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                id: var_id
-                            },
-                            success: function () {
-                                variableTableApi.ajax.reload()
-                            }
-                        });
-                    }
-                },
-                {
-                    text: 'Cancel',
-                    click: function () {
-                        $(this).dialog('close');
-                    }
-                }
-            ]);
-            deleteDialog.dialog('open');
         }
     });
 
@@ -365,9 +360,11 @@ $(document).ready(function () {
             dataSrc: ''
         },
         rowCallback: function (row, data, index) {
-            $(row).find('td:eq(2)').html(
-                $('<a>').attr('href', '/inventory/group/' + data[3] + '/').html(data[2])
-            )
+            $(row).find('td:eq(2)')
+                .css('cursor', 'pointer')
+                .click(function () {
+                    window.open('/inventory/group/' + data[3], '_self')
+                });
         }
     });
 

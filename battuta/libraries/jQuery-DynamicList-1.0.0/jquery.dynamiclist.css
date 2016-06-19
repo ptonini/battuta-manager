@@ -3,7 +3,7 @@ div.checkered div:nth-child(odd) {
 }
 
 div.dynamic-list-header button {
-    margin-left: 5px;
+    margin-right: 5px;
     min-width: 25px;
 }
 

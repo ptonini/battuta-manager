@@ -3,33 +3,11 @@ function addNodeCallback() {
 }
 
 $(document).ready(function () {
+    
+    rememberSelectedTab($('ul.select_tabs').attr('id'));
 
+    var nodeList = $('#node_list')
     var nodeType = $('#node_type').val();
-
-    $('#add_node').show().click(function (event) {
-        event.preventDefault();
-        openAddNodeDialog(nodeType, addNodeCallback)
-    });
-
-    $('#node_list').DynamicList({
-        minColumns: sessionStorage.getItem('open_node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('open_node_list_break_point'),
-        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
-        checkered: true,
-        showFilter: true,
-        headerBottomPadding: 20,
-        addButtonType: 'button',
-        addButtonClass: 'btn btn-default btn-xs',
-        addButtonTitle: 'Add ' + nodeType,
-        truncateItemText: true,
-        ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
-        formatItem: function (listItem) {
-            $(listItem).click(function () {
-                window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
-            });
-        }
-    });
 
     if (nodeType =='host') {
         $('#node_table_header').append(
@@ -52,8 +30,45 @@ $(document).ready(function () {
         )
     }
 
+    var defaultListOptions = {
+        minColumns: sessionStorage.getItem('open_node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('open_node_list_break_point'),
+        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+        checkered: true,
+        showFilter: true,
+        headerBottomPadding: 20,
+        truncateItemText: true,
+        ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern='
+    };
+
+    var nodeSelectListOptions = {
+        showAddButton: true,
+        addButtonType: 'button',
+        addButtonClass: 'btn btn-default btn-xs',
+        addButtonTitle: 'Add ' + nodeType,
+        formatItem: function (listItem) {
+            $(listItem).click(function () {
+                window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
+            });
+        },
+        addButtonAction: function () {
+            openAddNodeDialog(nodeType, addNodeCallback)
+        }
+    };
+    
+    $.extend(nodeSelectListOptions, defaultListOptions, nodeSelectListOptions);
+
+    var nodeDeleteListOptions = {
+        itemToggle: true
+    };
+
+    $.extend(nodeDeleteListOptions, defaultListOptions, nodeDeleteListOptions);
+
+    nodeList.DynamicList(nodeSelectListOptions);
+
     // Build host table
-    var nodeTableApi = $('#node_table').DataTable({
+    $('#node_table').DataTable({
         paging: false,
         ajax: {
             url: '/inventory/',
@@ -61,6 +76,7 @@ $(document).ready(function () {
             dataSrc: '',
             data: {action: nodeType +'_table'}
         },
+        dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
         rowCallback: function (row, data, index) {
             $(row).find('td:eq(0)')
@@ -68,8 +84,61 @@ $(document).ready(function () {
                 .click(function () {
                     window.open('/inventory/' + nodeType + '/' + data[6], '_self')
                 });
+        },
+        drawCallback: function () {
+            $('div.toolbar').css('float', 'left').html(
+                $('<buttom>')
+                    .attr({id: 'add_node', class: 'btn btn-default btn-xs'})
+                    .html('Add '+ nodeType)
+                    .click(function (event) {
+                        event.preventDefault();
+                        openAddNodeDialog(nodeType, addNodeCallback)
+                    })
+            );
         }
+    });
 
+    $('#delete_mode').click(function() {
+        $(this).toggleClass('checked_button');
+        if ($(this).hasClass('checked_button')) {
+            nodeList.DynamicList(nodeDeleteListOptions);
+        }
+        else{
+            nodeList.DynamicList(nodeSelectListOptions);
+        }
+        $('#delete_button').toggle();
+    });
+
+    $('#delete_nodes').click(function() {
+        $('#delete_dialog')
+            .dialog('option', 'buttons', [
+                {
+                    text: 'Confirm',
+                    click: function () {
+                        $.ajax({
+                            url: '/inventory/',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                action: 'bulk_remove',
+                                selection: $('#node_list').DynamicList('getSelected', 'id'),
+                                type: nodeType
+                            },
+                            success: function () {
+                                location.reload();
+                            }
+                        });
+
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    click: function () {
+                        $(this).dialog('close');
+                    }
+                }
+            ])
+            .dialog('open');
     });
 
     // Download host table
