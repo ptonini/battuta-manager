@@ -6,10 +6,10 @@ $(document).ready(function () {
     
     rememberSelectedTab($('ul.select_tabs').attr('id'));
 
-    var nodeList = $('#node_list')
+    var nodeList = $('#node_list');
     var nodeType = $('#node_type').val();
 
-    if (nodeType =='host') {
+    if (nodeType == 'host') {
         $('#node_table_header').append(
             $('<th>').addClass('col-md-3').html('Host'),
             $('<th>').addClass('col-md-2').html('Address'),
@@ -56,13 +56,12 @@ $(document).ready(function () {
             openAddNodeDialog(nodeType, addNodeCallback)
         }
     };
-    
-    $.extend(nodeSelectListOptions, defaultListOptions, nodeSelectListOptions);
 
     var nodeDeleteListOptions = {
         itemToggle: true
     };
 
+    $.extend(nodeSelectListOptions, defaultListOptions, nodeSelectListOptions);
     $.extend(nodeDeleteListOptions, defaultListOptions, nodeDeleteListOptions);
 
     nodeList.DynamicList(nodeSelectListOptions);
@@ -100,13 +99,13 @@ $(document).ready(function () {
 
     $('#delete_mode').click(function() {
         $(this).toggleClass('checked_button');
+        $('#delete_button').toggle();
         if ($(this).hasClass('checked_button')) {
             nodeList.DynamicList(nodeDeleteListOptions);
         }
         else{
             nodeList.DynamicList(nodeSelectListOptions);
         }
-        $('#delete_button').toggle();
     });
 
     $('#delete_nodes').click(function() {

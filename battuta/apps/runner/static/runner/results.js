@@ -28,19 +28,13 @@ function taskTableRowCallback(row, data) {
     $(row).find('td:eq(3)').html(
         $('<strong>').html('{ }')
             .attr({title: 'Details', class: 'html_only'})
-            .css({float: 'right', color: '#777'})
+            .css({float: 'right', color: '#777', cursor: 'pointer'})
             .click(function () {
-                $('#json_box')
-                    .JSONView(data[3])
-                    .JSONView('collapse', 2);
+                $('#json_box').JSONView(data[3]).JSONView('collapse', 2);
                 $('#json_dialog').dialog('open')
-            })
-            .hover(function () {
-                $(this).css('cursor', 'pointer')
             })
     )
 }
-
 
 // Draw callback function for task table
 function taskTableDrawCallBack(taskTableApi, task) {

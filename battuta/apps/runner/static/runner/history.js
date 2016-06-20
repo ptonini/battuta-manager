@@ -34,13 +34,10 @@ $(document).ready(function () {
                 $('<span>').attr('style', 'float: right').append(
                     $('<a>')
                         .attr({'href' :'#', 'data-toggle': 'tooltip', 'title': 'Result'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-list'))
                         .click(function (event) {
                             popupCenter('/runner/result/' + data[4] + '/', data[4], 1000);
                         })
-                        .append(
-                            $('<span>').attr('class', 'glyphicon glyphicon-list')
-                        )
-
                 )
             )
         }

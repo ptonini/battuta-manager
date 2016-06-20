@@ -82,6 +82,13 @@ $(document).ready(function () {
                             $('#cancel_edit').show();
                         }),
                     $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
+                        .click(function() {
+                            adhocForm.removeData('adhocId');
+                            loadAdHocForm(data);
+                        }),
+                    $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {

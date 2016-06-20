@@ -190,10 +190,10 @@ class CredentialView(View):
                     else:
                         cred['is_default'] = False
                     data.append(self._truncate_secure_data(cred))
-
                 if request.GET['runner'] == 'true':
                     for cred in Credential.objects.filter(is_shared=True).exclude(user=page_user).values():
-                        cred['title'] += ' (' + cred.user.username + ')'
+                        cred_owner = get_object_or_404(User, id=cred['user_id'])
+                        cred['title'] += ' (' + cred_owner.username + ')'
                         data.append(self._truncate_secure_data(cred))
             elif request.GET['action'] == 'default':
                 cred = model_to_dict(request.user.userdata.default_cred)

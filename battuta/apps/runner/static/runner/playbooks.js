@@ -174,38 +174,15 @@ $(document).ready(function () {
             data: {action: 'get_list'}
         },
         rowCallback: function (row, data, index) {
+            var playbookFile = data[0];
+            var type = 'GET';
+            var postData = {action: 'get_one', playbook_file: playbookFile};
+
             if (data[1] == false) {
                 $(row).css('color', 'red');
             }
-            $(row).find('td:eq(1)').html(
-                $('<span>').css('float', 'right').append(
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell')
-                    ),
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')
-                    ),
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell')
-                    ),
-                    $('<a>').attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'}).append(
-                        $('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell')
-                    )
-                )
-            )
-        }
-    });
-
-    // Playbook table button actions
-    playbookTable.children('tbody').on('click', 'a', function () {
-        event.preventDefault();
-        var playbookFile = $(this).closest('td').prev().html();
-        var type = 'GET';
-        var postData = {action: 'get_one', playbook_file: playbookFile};
-        var successCallback = null;
-        switch ($(this).attr('title')) {
-            case 'Run':
-                successCallback = function (data) {
+            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
+                var successCallback = function (data) {
                     if (data.is_valid) {
                         loadPlaybookArgsForm(data, playbookFile);
                         buildArgsSelectionBox();
@@ -215,44 +192,58 @@ $(document).ready(function () {
                     }
                 };
                 submitRequest(type, postData, successCallback);
-                break;
-            case 'Edit':
-                successCallback = function (data) {
-                    loadPlaybookEditor (data.text, playbookFile)
-                };
-                submitRequest(type, postData, successCallback);
-                break;
-            case 'Clone':
-                successCallback = function (data) {
-                    loadPlaybookEditor(data.text)
-                };
-                submitRequest(type, postData, successCallback);
-                break;
-            case 'Remove':
-                type = 'POST';
-                postData = {action: 'delete', playbook_file: playbookFile};
-                successCallback = function () {
-                    if (argumentsBox.data('currentPlaybook') == playbookFile) {
-                        clearPlaybookArgsForm()
-                    }
-                    playbookTable.DataTable().ajax.reload()
-                };
-                deleteDialog.dialog('option', 'buttons', [
-                    {
-                        text: 'Delete',
-                        click: function () {
+            });
+
+            $(row).find('td:eq(1)').html(
+                $('<span>').css('float', 'right').append(
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                        .click(function () {
+                            var successCallback = function (data) {
+                                loadPlaybookEditor (data.text, playbookFile)
+                            };
                             submitRequest(type, postData, successCallback);
-                            $(this).dialog('close');
-                        }
-                    },
-                    {
-                        text: 'Cancel',
-                        click: function () {
-                            $(this).dialog('close');
-                        }
-                    }
-                ]).dialog('open');
-                break;
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
+                        .click(function () {
+                            var successCallback = function (data) {
+                                loadPlaybookEditor(data.text)
+                            };
+                            submitRequest(type, postData, successCallback);
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .click(function() {
+                            type = 'POST';
+                            postData = {action: 'delete', playbook_file: playbookFile};
+                            var successCallback = function () {
+                                if (argumentsBox.data('currentPlaybook') == playbookFile) {
+                                    clearPlaybookArgsForm()
+                                }
+                                playbookTable.DataTable().ajax.reload()
+                            };
+                            deleteDialog.dialog('option', 'buttons', [
+                                {
+                                    text: 'Delete',
+                                    click: function () {
+                                        submitRequest(type, postData, successCallback);
+                                        $(this).dialog('close');
+                                    }
+                                },
+                                {
+                                    text: 'Cancel',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                    }
+                                }
+                            ]).dialog('open');
+                        })
+                )
+            )
         }
     });
 

@@ -63,7 +63,7 @@ class InventoryView(View):
             elif request.GET['action'] == 'host_table':
                 data = list()
                 for host in Host.objects.all():
-                    facts = NodesView.get_facts(host.name)
+                    facts = NodeDetailsView.get_facts(host.name)
                     if facts:
                         data.append([host.name,
                                      facts['ansible_default_ipv4']['address'],
@@ -137,13 +137,14 @@ class InventoryView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class SelectView(View):
+class ListNodesView(View):
     @staticmethod
-    def get(request, node_type):
-        return render(request, 'inventory/select.html', {'node_type': node_type})
+    def get(request, node_type_plural):
+        context = {'node_type': node_type_plural[:-1], 'node_type_plural': node_type_plural}
+        return render(request, 'inventory/list_nodes.html', context)
 
 
-class NodesView(View):
+class NodeDetailsView(View):
     context = dict()
 
     @staticmethod
@@ -190,7 +191,7 @@ class NodesView(View):
         node = self.build_node(node_type, node_id)
         if 'action' not in request.GET:
             self.context['node'] = node
-            return render(request, 'inventory/node.html', self.context)
+            return render(request, 'inventory/node_details.html', self.context)
         else:
             if request.GET['action'] == 'facts':
                 facts = self.get_facts(node.name)
@@ -233,7 +234,7 @@ class VariablesView(View):
 
     @staticmethod
     def get(request, node_type, node_id, action):
-        node = NodesView.build_node(node_type, node_id)
+        node = NodeDetailsView.build_node(node_type, node_id)
         data = list()
         if action == 'list':
             for var in node.variable_set.all():
@@ -291,7 +292,7 @@ class RelationsView(View):
         return related_set, related_class
 
     def get(self, request, node_type, node_id, relation):
-        node = NodesView.build_node(node_type, node_id)
+        node = NodeDetailsView.build_node(node_type, node_id)
         related_set, related_class = self.set_relations(node, relation)
         data = list()
         if request.GET['list'] == 'related':

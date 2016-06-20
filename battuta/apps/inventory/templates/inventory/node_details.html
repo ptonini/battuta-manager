@@ -1,7 +1,7 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'inventory/node.js' %}"></script>
+    <script src="{% static 'inventory/node_details.js' %}"></script>
     <h3>
         <small><span id="header_node_type">{{ node.type }}</span></small>
         <span id="header_node_name">{{ node.name }}</span>
@@ -103,8 +103,5 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="hidden">
-
     </div>
 {% endblock %}

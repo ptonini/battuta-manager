@@ -1,11 +1,11 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'inventory/select.js' %}"></script>
+    <script src="{% static 'inventory/list_nodes.js' %}"></script>
     <input id="node_type" type="hidden" value="{{ node_type }}">
     <div class="row">
         <div class="col-md-6">
-            <h3>{{ node_type|capfirst }}s</h3>
+            <h3>{{ node_type_plural|capfirst }}</h3>
         </div>
         <div class="col-md-6" style="text-align: right">
             <h3>

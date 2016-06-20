@@ -1,7 +1,7 @@
 {% load staticfiles %}
 <script src="{% static 'users/user_form.js' %}"></script>
 <div class="row">
-    <div class="col-md-6 col-sm-12">
+    <div class="col-md-6 col-sm-12 col-xs-12">
         <form id="user_form" method="post">
             <input id="user_id" type="hidden" value="{{ view_user.id }}">
             <input id="user_timezone" type="hidden" value="{{ view_user.userdata.timezone }}">
@@ -19,13 +19,15 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="first_name" class="requiredField">First name</label>
-                        <input class="form-control input-sm" id="first_name" type="text" value="{{ view_user.first_name }}">
+                        <input class="form-control input-sm" id="first_name"
+                               type="text" value="{{ view_user.first_name }}">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="last_name" class="requiredField">Last name</label>
-                        <input class="form-control input-sm" id="last_name" type="text" value="{{ view_user.last_name }}">
+                        <input class="form-control input-sm" id="last_name"
+                               type="text" value="{{ view_user.last_name }}">
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -69,7 +71,9 @@
                     <div class="col-md-12"><hr></div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="current_password" class="requiredField">Current password ({{ request.user }})</label>
+                            <label for="current_password" class="requiredField">
+                                Current password ({{ request.user }})
+                            </label>
                             <input class="form-control input-sm" id="current_password" type="password">
                         </div>
                     </div>

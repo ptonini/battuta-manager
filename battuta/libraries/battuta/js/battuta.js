@@ -85,13 +85,13 @@ function popupCenter(url, title, w) {
     var height = window.innerHeight
         ? window.innerHeight : document.documentElement.clientHeight
         ? document.documentElement.clientHeight : screen.height;
-    var h = height - 50;
+    var h = height - 100;
     var left = ((width / 2) - (w / 2)) + dualScreenLeft;
     var top = ((height / 2) - (h / 2)) + dualScreenTop;
     var newWindow = window.open(
         url,
         title,
-        'scrollbars=yes,  width=' + w + ', top=' + top + ', left=' + left
+        'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left
     );
 
     // Puts focus on the newWindow
@@ -210,10 +210,9 @@ function uploadFiles(fileInput, type, onUploadSuccess) {
 
 // Build credentials selection box
 function buildCredentialsSelectionBox(credentials, start_value) {
-    var runner = true;
-    if (window.location.href.split('/').indexOf('users') > -1) {
-        runner = false;
-    }
+    
+    var runner = !(window.location.href.split('/').indexOf('users') > -1)
+    
     credentials.children('option').each(function(){
         $(this).remove()
     });
@@ -322,8 +321,9 @@ function rememberSelectedTab(tabId) {
     });
 
     var activeTab = sessionStorage.getItem(keyName);
-    if(activeTab){
+    if (activeTab) {
         $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
     }
+
 }
 
