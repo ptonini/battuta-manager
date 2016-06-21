@@ -1,7 +1,5 @@
 $(document).ready(function () {
 
-    localStorage.clear();
-
     var deleteDialog = $('#delete_dialog');
     var alertDialog = $('#alert_dialog');
     var importDialog = $('#import_dialog');
@@ -268,10 +266,10 @@ $(document).ready(function () {
                 addButtonTitle: 'Add ' + nodeType,
                 maxHeight: 400,
                 itemToggle: true,
-                minColumns: sessionStorage.getItem('select_dialog_min_columns'),
-                maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
-                breakPoint: sessionStorage.getItem('select_dialog_break_point'),
-                maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
+                minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
+                maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
+                breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
+                maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
                 ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
                 loadCallback: function (listContainer) {
                     var currentList = listContainer.find('div.dynamic-list');

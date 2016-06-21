@@ -95,12 +95,11 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
         addButtonClass: 'open_node_form',
         addButtonTitle: 'Add ' + nodeType,
         maxHeight: 400,
-        checkered: true,
         itemToggle: true,
-        minColumns: sessionStorage.getItem('select_dialog_min_columns'),
-        maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
-        breakPoint: sessionStorage.getItem('select_dialog_break_point'),
-        maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
+        minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
+        maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
+        breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
+        maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
         ajaxUrl: relation + '/?list=non_related',
         loadCallback: function (listContainer) {
             addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi)
@@ -199,14 +198,13 @@ $(document).ready(function () {
 
     // Format page to 'all' group
     if (nodeName == 'all') {
-        $("#node_tabs").remove();
-        $('#relationships_tab').removeClass('in active');
         $('#variables_tab').addClass('in active');
+        $('.node_tabs').find('a[href!="#variables_tab"]').parent().remove()
     }
 
     // Build relationship lists
     $('.relation_div').each(function () {
-        var relation = $(this).attr('data-relation');
+        var relation = $(this).data('relation');
         var nodeType = 'group';
         if (relation == 'Members') {
             nodeType = 'host'
@@ -306,11 +304,10 @@ $(document).ready(function () {
                         showListSeparator: true,
                         showFilter: true,
                         maxHeight: 400,
-                        checkered: true,
-                        minColumns: sessionStorage.getItem('select_dialog_min_columns'),
-                        maxColumns: sessionStorage.getItem('select_dialog_max_columns'),
-                        breakPoint: sessionStorage.getItem('select_dialog_break_point'),
-                        maxColumnWidth: sessionStorage.getItem('select_dialog_max_column_width'),
+                        minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
+                        maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
+                        breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
+                        maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
                         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
                         formatItem: function (listItem) {
                             formatCopyVariablesListItem(listItem, selectDialog, variableTableApi, nodeType)

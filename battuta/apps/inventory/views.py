@@ -48,20 +48,18 @@ class InventoryView(View):
         if 'action' not in request.GET:
             data = self.to_dict()
         else:
+            data = list()
             if request.GET['action'] == 'search':
-                data = list()
                 if request.GET['type'] == 'host':
-                    for host in Host.objects.order_by('name'):
-                        if host.name.find(request.GET['pattern']) > -1:
-                            data.append([host.name, host.id])
+                    node_class = Host
                 elif request.GET['type'] == 'group':
-                    for group in Group.objects.order_by('name'):
-                        if group.name.find(request.GET['pattern']) > -1:
-                            data.append([group.name, group.id])
+                    node_class = Group
                 else:
                     return Http404('Invalid node type')
+                for node in node_class.objects.order_by('name'):
+                    if node.name.find(request.GET['pattern']) > -1:
+                        data.append([node.name, node.id])
             elif request.GET['action'] == 'host_table':
-                data = list()
                 for host in Host.objects.all():
                     facts = NodeDetailsView.get_facts(host.name)
                     if facts:
@@ -75,14 +73,13 @@ class InventoryView(View):
                     else:
                         data.append([host.name, '', '', '', '', '', host.id])
             elif request.GET['action'] == 'group_table':
-                data = list()
                 for group in Group.objects.all():
                     data.append([group.name,
+                                 group.description,
                                  len(group.members.all()),
                                  len(group.group_set.all()),
                                  len(group.children.all()),
                                  len(group.variable_set.all()),
-                                 '',
                                  group.id])
             else:
                 return Http404('Invalid action')

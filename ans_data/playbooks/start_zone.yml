@@ -1,6 +1,6 @@
 ---
 - name: Start Zone
-  gather_facts: no
+  gather_facts: False
   hosts: frotaweb:!znh
   become: yes
   
@@ -14,10 +14,6 @@
       service: name=m2m-adapter enabled=yes state=started
       when: "'m2m-adapter' in group_names"
 
-    - name: Start m2m-gwa-ws
-      service: name=tomcat enabled=yes state=started
-      when: "'m2m-gwa-ws' in group_names"
-
     - name: Start m2m-api
       service: name=m2m-api enabled=yes state=started
       when: "'m2m-api' in group_names"
@@ -29,6 +25,10 @@
     - name: Start m2m-worker
       service: name=m2m-worker enabled=yes state=started
       when: "'m2m-worker' in group_names"
+
+    - name: Start m2m-worker-sin
+      service: name=m2m-worker-sin enabled=yes state=started
+      when: "'m2m-worker-sin' in group_names"
 
     - name: Start m2m-worker-int
       service: name=m2m-worker-int enabled=yes state=started

@@ -1,5 +1,6 @@
 function addNodeCallback() {
-    location.reload();
+    $('#node_list').DynamicList('load');
+    $('#node_table').DataTable().ajax.reload()
 }
 
 $(document).ready(function () {
@@ -21,24 +22,23 @@ $(document).ready(function () {
     }
     else if (nodeType == 'group') {
         $('#node_table_header').append(
-            $('<th>').addClass('col-md-3').html('Group'),
+            $('<th>').addClass('col-md-2').html('Group'),
+            $('<th>').addClass('col-md-5').html('Description'),
             $('<th>').addClass('col-md-1').html('Members'),
             $('<th>').addClass('col-md-1').html('Parents'),
             $('<th>').addClass('col-md-1').html('Children'),
-            $('<th>').addClass('col-md-4').html('Variables'),
-            $('<th>').addClass('col-md-1').html('')
+            $('<th>').addClass('col-md-1').html('Variables')
         )
     }
 
     var defaultListOptions = {
-        minColumns: sessionStorage.getItem('open_node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('open_node_list_break_point'),
+        minColumns: sessionStorage.getItem('node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('node_list_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         checkered: true,
         showFilter: true,
         headerBottomPadding: 20,
-        truncateItemText: true,
         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern='
     };
 

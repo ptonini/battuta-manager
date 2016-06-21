@@ -7,14 +7,34 @@
         <span id="header_node_name">{{ node.name }}</span>
     </h3>
     <ul id="{{ node.type }}_{{ node.id }}_tabs" class="nav nav-tabs node_tabs">
-        <li class="active"><a data-toggle="tab" href="#relationships_tab">Relationships</a></li>
+        <li class="active"><a data-toggle="tab" href="#info_tab">Info</a></li>
+        <li><a data-toggle="tab" href="#relationships_tab">Relationships</a></li>
         <li><a data-toggle="tab" href="#variables_tab">Variables</a></li>
         <li><a data-toggle="tab" href="#adhoc_tab">Ad-Hoc</a></li>
-        <li><a data-toggle="tab" href="#details_tab">Details</a></li>
-    </ul>
+        </ul>
     <br>
     <div class="tab-content">
-        <div id="relationships_tab" class="tab-pane fade in active">
+        <div id="info_tab" class="tab-pane fade in active">
+            <div class="row">
+                <div class="col-md-12">
+                    <label>Description</label>
+                    <div id="node_description_box">{{ node.description }}</div>
+                    <br>
+                    <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
+                    <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
+
+                    {% if node.type == 'host' %}
+                        <br><br>
+                        <div id="facts_container"></div>
+                        <br>
+                        <button class="btn btn-default btn-xs" id="open_facts">View facts</button>
+                    {% endif %}
+                    <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
+                    <hr>
+                </div>
+            </div>
+        </div>
+        <div id="relationships_tab" class="tab-pane fade">
             <div class="row">
                 <div class="col-md-12">
                     {% for relation in node.relations %}
@@ -80,26 +100,6 @@
                 <div class="col-md-12">
 
                     {% include 'runner/adhoc_form.html' %}
-                </div>
-            </div>
-        </div>
-        <div id="details_tab" class="tab-pane fade">
-            <div class="row">
-                <div class="col-md-12">
-                    <label>Description</label>
-                    <div id="node_description_box">{{ node.description }}</div>
-                    <br>
-                    <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
-                    <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
-
-                    {% if node.type == 'host' %}
-                        <br><br>
-                        <div id="facts_container"></div>
-                        <br>
-                        <button class="btn btn-default btn-xs" id="open_facts">View facts</button>
-                    {% endif %}
-                    <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
-                    <hr>
                 </div>
             </div>
         </div>

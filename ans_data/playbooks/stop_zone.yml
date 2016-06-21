@@ -28,6 +28,10 @@
       service: name=m2m-worker enabled=yes state=stopped
       when: "'m2m-worker' in group_names"
 
+    - name: Stop m2m-worker-sin
+      service: name=m2m-worker-sin enabled=yes state=stopped
+      when: "'m2m-worker-sin' in group_names"
+
     - name: Stop m2m-worker-int
       service: name=m2m-worker-int enabled=yes state=stopped
       when: "'m2m-worker-int' in group_names"

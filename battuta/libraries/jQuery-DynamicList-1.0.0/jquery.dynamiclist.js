@@ -45,7 +45,7 @@
     }
 
     function _formatItems(listDiv, opts) {
-        var tempSpan = $('<span>').css({visibility: 'hidden'}).attr('id', 'temp_span');
+        var tempSpan = $('<span>').css({visibility: 'hidden'});
         $('body').append(tempSpan);
         listDiv.children('.dynamic-item').each(function () {
             
@@ -195,12 +195,8 @@
                 var addButton = null;
                 if (opts.addButtonType == 'icon') {
                     addButton = $('<a>')
-                        .attr({
-                            'href': '#',
-                            'data-toggle': 'tooltip',
-                            'title': opts.addButtonTitle,
-                            'class': opts.addButtonClass
-                        })
+                        .data('toggle', 'tooltip')
+                        .attr({href: '#', title: opts.addButtonTitle, class: opts.addButtonClass})
                         .append('<span class="glyphicon glyphicon-plus btn-sm"></span>')
                         .after(' ')
                 }
@@ -313,7 +309,7 @@
         itemToggle: false,
         maxColumnWidth: 100,
         listWidth: 0,
-        truncateItemText: true,
+        truncateItemText: false,
         itemLineHeight: 30,
         minColumns: 3,
         maxColumns: 6,

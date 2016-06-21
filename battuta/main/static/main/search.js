@@ -5,9 +5,9 @@ function searchEntities(entityType, resultContainer, searchPattern) {
         showBottomSeparator: true,
         hideIfEmpty: true,
         checkered: true,
-        minColumns: sessionStorage.getItem('open_node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('open_node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('open_node_list_break_point'),
+        minColumns: sessionStorage.getItem('node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('node_list_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         ajaxUrl: '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
         formatItem: function (listItem) {
