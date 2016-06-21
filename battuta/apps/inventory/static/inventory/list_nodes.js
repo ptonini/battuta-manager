@@ -15,8 +15,8 @@ $(document).ready(function () {
             $('<th>').addClass('col-md-3').html('Host'),
             $('<th>').addClass('col-md-2').html('Address'),
             $('<th>').addClass('col-md-1').html('Cores'),
-            $('<th>').addClass('col-md-1').html('Memory'),
-            $('<th>').addClass('col-md-4').html('Disc'),
+            $('<th>').addClass('col-md-1').html('Mem (GB)'),
+            $('<th>').addClass('col-md-4').html('Disc (GB)'),
             $('<th>').addClass('col-md-1').html('Date')
         )
     }
@@ -83,6 +83,15 @@ $(document).ready(function () {
                 .click(function () {
                     window.open('/inventory/' + nodeType + '/' + data[6], '_self')
                 });
+
+            if (nodeType == 'host') {
+                if (data[3]) {
+                    $(row).find('td:eq(3)').html(Math.ceil(Number(data[3]) / 1024));
+                }
+                if (data[4]) {
+                    $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / (1024 * 1024 * 1024)))
+                }
+            }
         },
         drawCallback: function () {
             $('div.toolbar').css('float', 'left').html(

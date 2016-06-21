@@ -142,7 +142,6 @@ function loadFacts(data) {
     if (data.result == 'ok') {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
-        var prettyMemory = Math.ceil(Number(facts.ansible_memtotal_mb) / 1024);
         var prettyHdSize = Math.ceil(Number(facts.ansible_mounts['0'].size_total) / (1024 * 1024 * 1024));
         var distribution = facts.ansible_distribution + ' ' + facts.ansible_distribution_version;
         factsContainer.empty().append(
@@ -155,10 +154,10 @@ function loadFacts(data) {
                         divCol6R.clone().append('<strong>' + facts.ansible_default_ipv4.address + '</strong>'),
                         divCol6L.clone().append('Cores:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '</strong>'),
-                        divCol6L.clone().append('Hard disk:'),
-                        divCol6R.clone().append('<strong>' + prettyHdSize + '&nbsp;GB</strong>'),
-                        divCol6L.clone().append('RAM Memory:'),
-                        divCol6R.clone().append('<strong>' + prettyMemory + '&nbsp;GB</strong>'),
+                        divCol6L.clone().append('Hard disk (GB):'),
+                        divCol6R.clone().append('<strong>' + prettyHdSize + '<small>GB</small></strong>'),
+                        divCol6L.clone().append('RAM Memory (MB):'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_memtotal_mb + '</strong>'),
                         divCol6L.clone().append('OS Family:'),
                         divCol6R.clone().append('<strong>' + facts.ansible_os_family + '</strong>'),
                         divCol6L.clone().append('OS Distribution:'),

@@ -116,7 +116,6 @@ class UserView(View):
                 else:
                     with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
                         for chunk in value.chunks():
-
                             f.write(chunk)
             data = {'result': 'ok', 'filepaths': uploaded_files}
 
