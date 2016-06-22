@@ -11,7 +11,7 @@ function searchEntities(entityType, resultContainer, searchPattern) {
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         ajaxUrl: '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
         formatItem: function (listItem) {
-            $(listItem).click(function () {
+            listItem.click(function () {
                 window.open('/inventory/' + entityType + '/' + $(this).data('id'), '_self')
             });
         }

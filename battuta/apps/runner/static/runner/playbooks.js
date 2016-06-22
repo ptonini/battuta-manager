@@ -95,7 +95,6 @@ $(document).ready(function () {
     var playbookTable = $('#playbook_table');
     var argumentsBox = $('#arguments_box');
     var alertDialog = $('#alert_dialog');
-    var deleteDialog = $('#delete_dialog');
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
@@ -226,21 +225,23 @@ $(document).ready(function () {
                                 }
                                 playbookTable.DataTable().ajax.reload()
                             };
-                            deleteDialog.dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        submitRequest(type, postData, successCallback);
-                                        $(this).dialog('close');
+                            $('#delete_dialog')
+                                .dialog('option', 'buttons', [
+                                    {
+                                        text: 'Delete',
+                                        click: function () {
+                                            submitRequest(type, postData, successCallback);
+                                            $(this).dialog('close');
+                                        }
+                                    },
+                                    {
+                                        text: 'Cancel',
+                                        click: function () {
+                                            $(this).dialog('close');
+                                        }
                                     }
-                                },
-                                {
-                                    text: 'Cancel',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                    }
-                                }
-                            ]).dialog('open');
+                                ])
+                                .dialog('open');
                         })
                 )
             )
@@ -358,7 +359,7 @@ $(document).ready(function () {
             skip_tags: $('#skip_tags').val(),
             extra_vars: $('#extra_vars').val()
         };
-        executeJob(postData, askPassword);
+        executeJob(postData, askPassword, cred.username);
     });
 
     // Run playbook

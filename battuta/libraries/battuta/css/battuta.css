@@ -202,3 +202,9 @@ div.dataTables_length,
 div.dataTables_filter {
     height: 25px;
 }
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}

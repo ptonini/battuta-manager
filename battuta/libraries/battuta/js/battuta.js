@@ -100,51 +100,50 @@ function popupCenter(url, title, w) {
     }
 }
 
+
+function postAnsibleJob(postData) {
+    $.ajax({
+        url: '/runner/',
+        type: 'POST',
+        dataType: 'json',
+        data: postData,
+        success: function (data) {
+            if ( data.result == 'ok' ) {
+                popupCenter('/runner/result/' + data.runner_id + '/', data.runner_id, 1000);
+            }
+            else {
+                $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+            }
+        }
+    });
+}
+
 // Run Ansible Job
-function executeJob(postData, askPassword) {
-    var alertDialog = $('#alert_dialog');           // Alert dialog selector
+function executeJob(postData, askPassword, username) {
+    
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector
     var sudoPassword = $('#sudo_password');         // Sudo password field selector
     var userPasswordGroup = $('.user_pass_group');  // User pass field and label selector
     var sudoPasswordGroup = $('.sudo_pass_group');  // Sudo pass field and label selector
-    function postCommand(postData) {
-        $.ajax({
-            url: '/runner/',
-            type: 'POST',
-            dataType: 'json',
-            data: postData,
-            success: function (data) {
-                if ( data.result == 'ok' ) {
-                    popupCenter('/runner/result/' + data.runner_id + '/', data.runner_id, 1000);
-                }
-                else {
-                    alertDialog.html('<strong>Submit error<strong><br><br>');
-                    alertDialog.append(data.msg);
-                    alertDialog.dialog('open')
-                }
-            }
-        });
-    }
+    
     
     // Check if passwords are needed
     if (askPassword.user || askPassword.sudo) {
     
         // Clear password input fields
         passwordDialog.find('input').val('');
+        $('#exec_user').html(username);
     
         // Show needed password fields
         userPasswordGroup.toggleClass('hidden', (!askPassword.user));
         sudoPasswordGroup.toggleClass('hidden', (!askPassword.sudo));
     
         // Open password dialog
-        passwordDialog.dialog({
-            modal: true,
-            show: true,
-            hide: true,
-            dialogClass: 'no_title',
-            buttons: {
-                Run: function () {
+        passwordDialog.dialog('option', 'buttons', [
+            {
+                text: 'Run',
+                click: function () {
                     $(this).dialog('close');
                     postData.remote_pass = userPassword.val();
                     if (sudoPassword.val() != '') {
@@ -153,16 +152,21 @@ function executeJob(postData, askPassword) {
                     else {
                         postData.become_pass = userPassword.val();
                     }
-                    postCommand(postData)
-                },
-                Cancel: function () {
+                    postAnsibleJob(postData)
+                }
+            },
+            {
+                text: 'Cancel',
+                click: function () {
                     $(this).dialog('close');
                 }
             }
-        });
+        ]);
+        passwordDialog.dialog('open');
+
     }
     else {
-        postCommand(postData);
+        postAnsibleJob(postData);
     }
 }
 

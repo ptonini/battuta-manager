@@ -14,9 +14,9 @@ function alterRelation(relation, selection, action, successFunction) {
 }
 
 function formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi) {
-    var id = $(listItem).data('id');
-    var name = $(listItem).data('value');
-    $(listItem).html('').append(
+    var id = listItem.data('id');
+    var name = listItem.data('value');
+    listItem.html('').append(
         $('<span>').append(name).click( function () {
             window.open('/inventory/' + nodeType + '/' + id, '_self')
         }),
@@ -41,7 +41,7 @@ function formatRelationListItem(listItem, nodeType, relation, inheritedVariables
 }
 
 function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj, nodeType) {
-    $(listItem).click(function () {
+    listItem.click(function () {
         var sourceValue = $(this).data('value');
         var sourceId =  $(this).data('id');
         $.ajax({
@@ -254,7 +254,8 @@ $(document).ready(function () {
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {
-                            deleteDialog.dialog('option', 'buttons', [
+                            deleteDialog
+                                .dialog('option', 'buttons', [
                                 {
                                     text: 'Delete',
                                     click: function () {
@@ -278,8 +279,8 @@ $(document).ready(function () {
                                         $(this).dialog('close');
                                     }
                                 }
-                            ]);
-                            deleteDialog.dialog('open');
+                            ])
+                                .dialog('open');
                         })
                 )
             )
@@ -400,7 +401,8 @@ $(document).ready(function () {
     // Delete node
     $('#delete_node').click(function () {
         event.preventDefault();
-        deleteDialog.dialog('option', 'buttons', [
+        deleteDialog
+            .dialog('option', 'buttons', [
             {
                 text: 'Delete',
                 click: function () {
@@ -424,8 +426,8 @@ $(document).ready(function () {
                     $(this).dialog('close');
                 }
             }
-        ]);
-        deleteDialog.dialog('open');
+        ])
+            .dialog('open');
     });
 
     // Gather facts on node

@@ -1,10 +1,7 @@
 $(document).ready(function () {
 
-    var userTable = $('#user_table');
-    var deleteDialog = $('#delete_dialog');
-
     // Build entity adhoc table
-    var userTableApi = userTable.DataTable({
+    $('#user_table').DataTable({
         pageLength: 10,
         ajax: {
             url: '',
@@ -25,7 +22,8 @@ $(document).ready(function () {
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {
-                            deleteDialog.dialog('option', 'buttons', [
+                            $('#delete_dialog')
+                                .dialog('option', 'buttons', [
                                 {
                                     text: 'Delete',
                                     click: function () {
@@ -50,8 +48,8 @@ $(document).ready(function () {
                                         $(this).dialog('close');
                                     }
                                 }
-                            ]);
-                            deleteDialog.dialog('open');
+                            ])
+                                .dialog('open');
                         })
 
                 )

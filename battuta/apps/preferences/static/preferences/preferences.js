@@ -188,7 +188,7 @@ function buildPreferencesContainer() {
             $('.remove_item_or_group').off().click(function(event) {
                 event.preventDefault();
                 var removeButton = $(this);
-                $('#delete_dialog')
+                deleteDialog
                     .dialog('option', 'buttons', [
                         {
                             text: 'Confirm',
@@ -217,7 +217,7 @@ function buildPreferencesContainer() {
                         {
                             text: 'Cancel',
                             click: function () {
-                                deleteDialog.dialog('close');
+                                $(this).dialog('close');
                             }
                         }
                     ])

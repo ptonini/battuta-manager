@@ -27,7 +27,6 @@ $(document).ready(function () {
 
     var adhocTable = $('#adhoc_table');             // Adhoc table container selector
     var alertDialog = $('#alert_dialog');           // Alert dialog selector
-    var deleteDialog = $('#delete_dialog');         // Delete dialog selector
     var credentials = $('#credentials');
     var fieldsContainer = $('#optional_fields');
     var hosts = $('#hosts');
@@ -92,7 +91,8 @@ $(document).ready(function () {
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {
-                            deleteDialog.dialog('option', 'buttons', [
+                            $('#delete_dialog')
+                                .dialog('option', 'buttons', [
                                 {
                                     text: 'Delete',
                                     click: function () {
@@ -117,8 +117,8 @@ $(document).ready(function () {
                                         $(this).dialog('close');
                                     }
                                 }
-                            ]);
-                            deleteDialog.dialog('open');
+                            ])
+                                .dialog('open');
                         })
                 )
             )
@@ -191,7 +191,7 @@ $(document).ready(function () {
                 }
                 else {
                     postData.arguments = currentModule.buildArguments();
-                    executeJob(postData, askPassword);
+                    executeJob(postData, askPassword, cred.username);
                 }
                 break;
         }

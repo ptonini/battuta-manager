@@ -75,7 +75,7 @@
             if (opts.onHoverCursor) {
                 $(this).css('cursor', opts.onHoverCursor)
             }
-            opts.formatItem(this);
+            opts.formatItem($(this));
         });
         tempSpan.remove()
     }
@@ -283,7 +283,7 @@
     };
 
     $.fn.DynamicList.defaults = {
-        formatItem: function (listItem) { $(listItem).html($(listItem).data('value')) },
+        formatItem: function (listItem) {},
         loadCallback: function (listContainer) {},
         addButtonAction: function (addButton) {},
         listTitle: Math.random().toString(36).substring(2, 10),

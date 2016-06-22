@@ -48,7 +48,7 @@ $(document).ready(function () {
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
         formatItem: function (listItem) {
-            $(listItem).click(function () {
+            listItem.click(function () {
                 window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
             });
         },
@@ -57,9 +57,7 @@ $(document).ready(function () {
         }
     };
 
-    var nodeDeleteListOptions = {
-        itemToggle: true
-    };
+    var nodeDeleteListOptions = {itemToggle: true};
 
     $.extend(nodeSelectListOptions, defaultListOptions, nodeSelectListOptions);
     $.extend(nodeDeleteListOptions, defaultListOptions, nodeDeleteListOptions);
