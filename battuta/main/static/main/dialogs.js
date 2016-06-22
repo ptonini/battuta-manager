@@ -12,29 +12,27 @@ $(document).ready(function() {
     $('#delete_dialog').dialog(defaultOptions);
 
     // Initialize alert dialog
-    var alertDialogOptions = {
+    $('#alert_dialog').dialog($.extend({}, defaultOptions, {
         width: 'auto',
         buttons: {
             Ok: function () {
                 $(this).dialog('close');
             }
         }
-    };
-    $('#alert_dialog').dialog($.extend({}, defaultOptions, alertDialogOptions));
+    }));
 
     // Initialize select dialog
-    var selectDialogOptions = {
+    $('#select_dialog').dialog($.extend({}, defaultOptions, {
         buttons: {
             Cancel: function () {
                 $('.filter_box').val('');
                 $(this).dialog('close');
             }
         }
-    };
-    $('#select_dialog').dialog($.extend({}, defaultOptions, selectDialogOptions));
+    }));
 
     // Initialize node dialog
-    var nodeDialogOptions = {
+    $('#node_dialog').dialog($.extend({}, defaultOptions, {
         buttons: {
             Save: function (){
                 $('#node_form').submit()
@@ -43,11 +41,10 @@ $(document).ready(function() {
                 $(this).dialog('close');
             }
         }
-    };
-    $('#node_dialog').dialog($.extend({}, defaultOptions, nodeDialogOptions));
+    }));
 
-    // Initialize result dialog
-    var jsonDialogOptions = {
+    // Initialize json dialog
+    $('#json_dialog').dialog($.extend({}, defaultOptions, {
         width: 'auto',
         maxHeight: 480,
         buttons: {
@@ -56,25 +53,23 @@ $(document).ready(function() {
                 $(this).dialog('close');
             }
         }
-    };
-    $('#json_dialog').dialog($.extend({}, defaultOptions, jsonDialogOptions));
+    }));
 
     // Initialize node type dialog
-    var nodeTypeDialogOptions = {
+    $('#node_type_dialog').dialog($.extend({}, defaultOptions, {
         buttons: {
             Cancel: function () {
                 $('.filter_box').val('');
                 $(this).dialog('close');
             }
         }
-    };
-    $('#node_type_dialog').dialog($.extend({}, defaultOptions, nodeTypeDialogOptions));
+    }));
 
     // Initialize password dialog
     $('#password_dialog').dialog(defaultOptions);
 
     // Initialize pattern dialog
-    var patternDialogOptions = {
+    $('#pattern_dialog').dialog($.extend({}, defaultOptions, {
         width: 520,
         buttons: {
             Use: function () {
@@ -89,11 +84,10 @@ $(document).ready(function() {
                 $(this).dialog('close');
             }
         }
-    };
-    $('#pattern_dialog').dialog($.extend({}, defaultOptions, patternDialogOptions));
+    }));
     
     // Initialize import dialog
-    var importDialogOptions = {
+    $('#import_dialog').dialog($.extend({}, defaultOptions, {
         buttons: {
             Import: function () {
                 var importFile = $('#import_file');
@@ -129,7 +123,6 @@ $(document).ready(function() {
                 $(this).dialog('close');
             }
         }
-    };
-    $('#import_dialog').dialog($.extend({}, defaultOptions, importDialogOptions));
+    }));
     
 });

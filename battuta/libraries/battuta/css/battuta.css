@@ -122,6 +122,10 @@ h5 {
     margin: 0 10px;
 }
 
+#alert_dialog {
+    min-width: 150px;
+}
+
 #pattern_dialog div.col-md-2,
 #pattern_dialog div.col-md-8 {
     margin: 5px 0;
@@ -201,10 +205,4 @@ div.dataTables_filter input.input-sm {
 div.dataTables_length,
 div.dataTables_filter {
     height: 25px;
-}
-
-.tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted black;
 }

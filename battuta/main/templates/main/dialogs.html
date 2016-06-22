@@ -1,17 +1,8 @@
 {% load staticfiles %}
 <script src="{% static 'main/dialogs.js' %}"></script>
-<div id="import_dialog">
-    <h5>Select inventory file</h5>
-    <br>
-    <form id="import_form">
-        <div class="form-group">
-            <label for="import_file" class="requiredField sr-only">Select file</label>
-            <input class="input-file" type="file" id="import_file">
-        </div>
-    </form>
-</div>
 <div id="delete_dialog" class="text-center"><strong>This action cannot be undone</strong></div>
 <div id="alert_dialog"></div>
+<div id="select_dialog"></div>
 <div id="node_dialog">
     <h5 id="node_dialog_header"></h5>
     <form id="node_form" method="post">
@@ -25,9 +16,15 @@
         </div>
     </form>
 </div>
-<div id="select_dialog"></div>
 <div id="json_dialog">
     <pre id="json_box"></pre>
+</div>
+<div id="node_type_dialog" class="text-center">
+    <h5></h5>
+    <br>
+    <button class="btn btn-default btn-sm select_type" data-type="host">Hosts</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button class="btn btn-default btn-sm select_type" data-type="group">Groups</button>
 </div>
 <div id="password_dialog" style="margin: 10px">
     <label for="user_password" class="user_pass_group">Password for user <span id="exec_user"></span></label>
@@ -76,10 +73,13 @@
     <br>
     <pre id="pattern_container" class="text-left hidden"></pre>
 </div>
-<div id="node_type_dialog" class="text-center">
-    <h5></h5>
+<div id="import_dialog">
+    <h5>Select inventory file</h5>
     <br>
-    <button class="btn btn-default btn-sm select_type" data-type="host">Hosts</button>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <button class="btn btn-default btn-sm select_type" data-type="group">Groups</button>
+    <form id="import_form">
+        <div class="form-group">
+            <label for="import_file" class="requiredField sr-only">Select file</label>
+            <input class="input-file" type="file" id="import_file">
+        </div>
+    </form>
 </div>
