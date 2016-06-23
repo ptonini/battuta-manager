@@ -186,8 +186,7 @@
                 }
                 headerDiv.append(
                     addButton.click(function () {
-                        event.preventDefault();
-                        opts.addButtonAction(this)
+                        opts.addButtonAction($(this))
                     })
                 )
             }

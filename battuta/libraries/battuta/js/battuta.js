@@ -47,29 +47,10 @@ $.extend($.fn.dataTable.defaults, {
     language: {'emptyTable': ' '},
     pageLength: 10,
     lengthMenu: [5, 10, 25, 50, 100],
-    fnCreatedRow: function( row, data, dataIndex) {
-        var tempSpan = $('<span>').css({visibility: 'hidden'}).attr('id', 'temp_span');
-        $('body').append(tempSpan);
-        var cells = $(row).children('td');
-        var headers = this.find('th');
-        for(var i = 0; i < cells.length; i++) {
-            tempSpan.html(data[i]);
-            var cellWidth = tempSpan.actual('width', { includeMargin : true });
-            var headerWidth = $(headers[i]).actual('width', { includeMargin : true });
-            if (data[i] && cellWidth > headerWidth) {
-                var cellText = data[i];
-                var truncatedText = String(data[i]);
-                do {
-                    truncatedText = truncatedText.slice(0, -5) + '...';
-                    tempSpan.html(truncatedText);
-                    cellWidth = parseInt(tempSpan.width());
-                }
-                while (cellWidth >= headerWidth);
-                $(cells[i]).wrapInner("<div></div>");
-                $(cells[i]).children("div").attr({'data-toggle': 'tooltip', title: cellText}).html(truncatedText);
-            }
-        }
-        tempSpan.remove()
+    createdRow: function (row) {
+        $(row).children('td').each(function () {
+            $(this).addClass('truncate-text').attr({'data-toggle': 'tooltip', title: $(this).html()})
+        })
     }
 });
 
