@@ -16,7 +16,7 @@ function alterRelation(relation, selection, action, successFunction) {
 function formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi) {
     var id = listItem.data('id');
     var name = listItem.data('value');
-    listItem.html('').append(
+    listItem.removeClass('truncate-text').html('').append(
         $('<span>').append(name).click( function () {
             window.open('/inventory/' + nodeType + '/' + id, '_self')
         }),
@@ -24,10 +24,9 @@ function formatRelationListItem(listItem, nodeType, relation, inheritedVariables
             $('<a>')
                 .attr({'data-toggle': 'tooltip', 'title': 'Remove'})
                 .append(
-                    $('<span>').attr('class', 'glyphicon glyphicon-remove-circle').css({
-                        'vertical-align': 'middle',
-                        'font-size': '1.3em',
-                        'padding-bottom': '3px'
+                    $('<span>')
+                        .attr('class', 'glyphicon glyphicon-remove-circle')
+                        .css({'vertical-align': 'middle', 'font-size': '1.3em', 'padding-bottom': '3px'
                     })
                 )
                 .click(function () {
@@ -415,7 +414,7 @@ $(document).ready(function () {
                             action: 'delete'
                         },
                         success: function () {
-                            window.open('/inventory/select/' + $('#header_node_type').html(), '_self')
+                            window.open('/inventory/list/' + $('#header_node_type').html() + 's', '_self')
                         }
                     });
                 }

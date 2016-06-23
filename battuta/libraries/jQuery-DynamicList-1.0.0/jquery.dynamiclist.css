@@ -43,3 +43,9 @@ div.dynamic-list div.toggle-on:hover {
     background: #BABABA;
     color: #FFFFFF;
 }
+
+.truncate-text {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}

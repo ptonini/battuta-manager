@@ -45,27 +45,8 @@
     }
 
     function _formatItems(listDiv, opts) {
-        var tempSpan = $('<span>').css({visibility: 'hidden'});
-        $('body').append(tempSpan);
         listDiv.children('.dynamic-item').each(function () {
-            
-            if (opts.truncateItemText) {
-                var itemText = $(this).html();
-                tempSpan.html(itemText);
-                var textWidth = tempSpan.width();
-                var columnWidth = $(this).width();
-                if (itemText && textWidth > columnWidth) {
-                    var viewableText = String(itemText);
-                    do {
-                        viewableText = viewableText.slice(0, -5) + '...';
-                        tempSpan.html(viewableText);
-                        textWidth = parseInt(tempSpan.width());
-                    }
-                    while (textWidth >= columnWidth);
-                    $(this).attr('data-toggle','tooltip').attr('title', itemText).html(viewableText);
-                }
-            }
-            
+
             if (opts.itemToggle) {
                 $(this).off('click').click(function () {
                     $(this).toggleClass('toggle-on');
@@ -77,7 +58,6 @@
             }
             opts.formatItem($(this));
         });
-        tempSpan.remove()
     }
 
     function _loadFromArray(listContainer, listDiv, opts) {
@@ -91,7 +71,8 @@
                 listDiv.append(
                     $('<div>')
                         .html(value[0])
-                        .attr('class', 'list-group-item dynamic-item')
+                        .attr('title', value[0])
+                        .addClass('list-group-item dynamic-item')
                         .data({value: value[0], id: value[1]})
                         .css('line-height', opts.itemLineHeight + 'px')
                 );
