@@ -64,6 +64,7 @@ class InventoryView(View):
                     facts = NodeDetailsView.get_facts(host.name)
                     if facts:
                         data.append([host.name,
+                                     host.description,
                                      facts['ansible_default_ipv4']['address'],
                                      facts['ansible_processor_count'],
                                      facts['ansible_memtotal_mb'],
@@ -71,7 +72,7 @@ class InventoryView(View):
                                      facts['ansible_date_time']['date'],
                                      host.id])
                     else:
-                        data.append([host.name, '', '', '', '', '', host.id])
+                        data.append([host.name, '', '', '', '', '', '', host.id])
             elif request.GET['action'] == 'group_table':
                 for group in Group.objects.all():
                     data.append([group.name,

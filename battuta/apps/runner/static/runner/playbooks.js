@@ -359,7 +359,7 @@ $(document).ready(function () {
             skip_tags: $('#skip_tags').val(),
             extra_vars: $('#extra_vars').val()
         };
-        executeJob(postData, askPassword, cred.username);
+        executeAnsibleJob(postData, askPassword, cred.username);
     });
 
     // Run playbook

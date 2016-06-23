@@ -81,9 +81,19 @@ h5 {
     padding: 0 3px;
 }
 
-.glyph_button {
-    font-size: 1.3em;
-    padding: 0 6px;
+.pattern_editor_row {
+    width: 95%;
+    margin: 10px 0
+}
+
+.truncate-text {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.pattern_editor_row div:first-of-type{
+    text-align: right;
 }
 
 #node_description_box {
@@ -102,15 +112,6 @@ h5 {
 
 #playbook_editor {
     border: solid 1px lightgrey;
-}
-
-.pattern_editor_row {
-    width: 95%;
-    margin: 10px 0
-}
-
-.pattern_editor_row div:first-of-type{
-    text-align: right;
 }
 
 #json_box {
@@ -135,10 +136,6 @@ h5 {
     table-layout: fixed;
 }
 
-.dt-index {
-    column-width: auto !important;
-}
-
 .table.dataTable tbody > tr > td {
     vertical-align: middle;
     border-top: none !important;
@@ -148,12 +145,6 @@ h5 {
 
 .table.dataTable tbody > tr:last-child {
     border-bottom: 1px solid lightgrey;
-}
-
-.input-sm_label {
-    text-align: center;
-    vertical-align: middle;
-    line-height: 30px;
 }
 
 .no_close .ui-dialog-titlebar-close,
@@ -185,17 +176,6 @@ table.dataTable thead .sorting_desc_disabled:after{
 
 .ui-dialog {
     position: fixed;
-}
-
-.errorlist {
-    text-align: left;
-    padding-left: 20px;
- }
-
-.truncate-text {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
 }
 
 .pagination>li>a,

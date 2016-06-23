@@ -12,11 +12,12 @@ $(document).ready(function () {
 
     if (nodeType == 'host') {
         $('#node_table_header').append(
-            $('<th>').addClass('col-md-3').html('Host'),
+            $('<th>').addClass('col-md-2').html('Host'),
+            $('<th>').addClass('col-md-4').html('Description'),
             $('<th>').addClass('col-md-2').html('Address'),
             $('<th>').addClass('col-md-1').html('Cores'),
             $('<th>').addClass('col-md-1').html('Mem (GB)'),
-            $('<th>').addClass('col-md-4').html('Disc (GB)'),
+            $('<th>').addClass('col-md-1').html('Disc (GB)'),
             $('<th>').addClass('col-md-1').html('Date')
         )
     }
@@ -57,12 +58,7 @@ $(document).ready(function () {
         }
     };
 
-    var nodeDeleteListOptions = {itemToggle: true};
-
-    $.extend(nodeSelectListOptions, defaultListOptions, nodeSelectListOptions);
-    $.extend(nodeDeleteListOptions, defaultListOptions, nodeDeleteListOptions);
-
-    nodeList.DynamicList(nodeSelectListOptions);
+    nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
 
     // Build host table
     $('#node_table').DataTable({
@@ -75,19 +71,19 @@ $(document).ready(function () {
         },
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
-                    window.open('/inventory/' + nodeType + '/' + data[6], '_self')
+                    window.open('/inventory/' + nodeType + '/' + data[data.length - 1], '_self')
                 });
 
             if (nodeType == 'host') {
-                if (data[3]) {
-                    $(row).find('td:eq(3)').html(Math.ceil(Number(data[3]) / 1024));
-                }
                 if (data[4]) {
-                    $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / (1024 * 1024 * 1024)))
+                    $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / 1024));
+                }
+                if (data[5]) {
+                    $(row).find('td:eq(5)').html(Math.ceil(Number(data[5]) / (1024 * 1024 * 1024)))
                 }
             }
         },
@@ -108,10 +104,10 @@ $(document).ready(function () {
         $(this).toggleClass('checked_button');
         $('#delete_button').toggle();
         if ($(this).hasClass('checked_button')) {
-            nodeList.DynamicList(nodeDeleteListOptions);
+            nodeList.DynamicList($.extend({}, defaultListOptions, {itemToggle: true}));
         }
         else{
-            nodeList.DynamicList(nodeSelectListOptions);
+            nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
         }
     });
 

@@ -81,7 +81,7 @@ function popupCenter(url, title, w) {
     }
 }
 
-
+// Post Ansible Job
 function postAnsibleJob(postData) {
     $.ajax({
         url: '/runner/',
@@ -100,7 +100,7 @@ function postAnsibleJob(postData) {
 }
 
 // Run Ansible Job
-function executeJob(postData, askPassword, username) {
+function executeAnsibleJob(postData, askPassword, username) {
     
     var passwordDialog = $('#password_dialog');     // Password dialog selector
     var userPassword = $('#user_password');         // User password field selector
@@ -292,7 +292,7 @@ function gatherFacts(nodeName) {
         data: { action: 'default'},
         success: function (cred) {
             var askPassword = { user: (!cred.password && cred.ask_pass && !cred.rsa_key), sudo: false};
-            executeJob(postData, askPassword);
+            executeAnsibleJob(postData, askPassword, cred.username);
         }
     });
 }
