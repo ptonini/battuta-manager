@@ -17,6 +17,7 @@
                 break;
             }
         }
+
         if (listLength % columnCount != 0) {
             itemsPerColumn++;
         }
