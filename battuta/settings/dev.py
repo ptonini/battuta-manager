@@ -1,6 +1,6 @@
 from base import *
 
-WSGI_APPLICATION = 'main.wsgi.application'
+WSGI_APPLICATION = 'settings.wsgi.application'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
