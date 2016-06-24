@@ -1,5 +1,6 @@
 .idea
 .vagrant
+*.pyc
 *.iml
 ans_data/userdata/*
 ans_data/facts/*
