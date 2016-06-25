@@ -309,6 +309,8 @@ function rememberSelectedTab(tabId) {
     if (activeTab) {
         $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
     }
-
 }
 
+function capitalize(s) {
+    return s[0].toUpperCase() + s.slice(1);
+}

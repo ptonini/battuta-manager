@@ -17,19 +17,20 @@
         <div id="info_tab" class="tab-pane fade in active">
             <div class="row">
                 <div class="col-md-12">
-                    <label>Description</label>
-                    <div id="node_description_box">{{ node.description }}</div>
-                    <br>
+                    <h4 id="node_description_header" style="margin-bottom: 30px"
+                        >{{ node.description|default:"<small>No description available</small>" }}</h4>
                     <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
                     <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
-
-                    {% if node.type == 'host' %}
-                        <br><br>
-                        <div id="facts_container"></div>
-                        <br>
-                        <button class="btn btn-default btn-xs" id="open_facts">View facts</button>
-                    {% endif %}
                     <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
+                    <hr>
+                    {% if node.type == 'host' %}
+                        <h4 style="margin-bottom: 20px">Host facts</h4>
+                        <div id="facts_container" style="margin: 10px"></div>
+                        <button class="btn btn-default btn-xs" id="open_facts">View facts</button>
+                    {% elif node.type == 'group' %}
+                        <h4 style="margin-bottom: 20px">Descendants</h4>
+                        <div id="descendants_container" style="margin: 10px"></div>
+                    {% endif %}
                     <hr>
                 </div>
             </div>

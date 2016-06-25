@@ -1,4 +1,4 @@
-function alterRelation(relation, selection, action, successFunction) {
+function alterRelation(relation, selection, action) {
     $.ajax({
         url: relation + '/',
         type: 'POST',
@@ -8,12 +8,14 @@ function alterRelation(relation, selection, action, successFunction) {
             action: action
         },
         success: function () {
-            successFunction()
+            buildDescendantsList();
+            $('#inh_var_table').DataTable().ajax.reload();
+            $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
         }
     });
 }
 
-function formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi) {
+function formatRelationListItem(listItem, nodeType, relation) {
     var id = listItem.data('id');
     var name = listItem.data('value');
     listItem.removeClass('truncate-text').html('').append(
@@ -30,10 +32,7 @@ function formatRelationListItem(listItem, nodeType, relation, inheritedVariables
                     })
                 )
                 .click(function () {
-                    alterRelation(relation, [id], 'remove', function () {
-                        inheritedVariablesTableApi.ajax.reload();
-                        $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
-                    })
+                    alterRelation(relation, [id], 'remove')
                 })
         )
     )
@@ -61,17 +60,14 @@ function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj, n
     });
 }
 
-function addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi) {
+function addRelationsListLoadCallback(listContainer, selectDialog, relation) {
     var currentList = listContainer.find('div.dynamic-list');
     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
     selectDialog.dialog('option', 'buttons', [
         {
             text: 'Add',
             click: function () {
-                alterRelation(relation, selectDialog.DynamicList('getSelected', 'id'), 'add', function () {
-                    inheritedVariablesTableApi.ajax.reload();
-                    $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
-                });
+                alterRelation(relation, selectDialog.DynamicList('getSelected', 'id'), 'add');
                 $(this).dialog('close');
             }
         },
@@ -88,7 +84,6 @@ function addRelationsListLoadCallback(listContainer, selectDialog, relation, inh
 function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVariablesTableApi) {
     selectDialog.DynamicList({
         listTitle: 'selection',
-        showCount: true,
         showFilter: true,
         showAddButton: true,
         addButtonClass: 'open_node_form',
@@ -103,7 +98,7 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
         loadCallback: function (listContainer) {
             addRelationsListLoadCallback(listContainer, selectDialog, relation, inheritedVariablesTableApi)
         },
-        addButtonAction: function (addButton) {
+        addButtonAction: function () {
             openAddNodeDialog(nodeType, function () {
                 selectDialog.DynamicList('load')
             })
@@ -180,17 +175,63 @@ function openNodeFactsDialog(data) {
     }
 }
 
+function buildDescendantsList() {
+    $.ajax({
+        url: '',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            action: 'descendants'
+        },
+        success: function (data) {
+
+            var listOptions = {
+                dataSource: 'array',
+                showTitle: true,
+                hideIfEmpty: true,
+                checkered: true,
+                showCount: true,
+                headerBottomMargin: '0',
+                listContainerBottomMargin: '20px',
+                minColumns: sessionStorage.getItem('node_list_min_columns'),
+                maxColumns: sessionStorage.getItem('node_list_max_columns'),
+                breakPoint: sessionStorage.getItem('node_list_break_point'),
+                maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+                formatItem: function (listItem) {
+                    var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
+                    listItem.click(function () {
+                        window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
+                    });
+                }
+            };
+            $('#descendants_container').empty().append(
+                $('<div>')
+                    .attr('id', 'descendant_groups')
+                    .data('nodeType', 'group')
+                    .DynamicList($.extend({}, listOptions, {listTitle: 'Groups', dataArray: data.groups})),
+                $('<div>')
+                    .attr('id', 'descendant_hosts')
+                    .data('nodeType', 'host')
+                    .DynamicList($.extend({}, listOptions, {listTitle: 'Hosts', dataArray: data.hosts}))
+            )
+
+        }
+    });
+}
+
 $(document).ready(function () {
 
     rememberSelectedTab($('ul.node_tabs').attr('id'));
 
     var nodeName = $('#header_node_name').html();
+    var nodeType = $('#header_node_type').html();
     var variableTable = $('#variable_table');
     var selectDialog = $('#select_dialog');
     var alertDialog = $('#alert_dialog');
     var deleteDialog = $('#delete_dialog');
     var nodeDialog = $('#node_dialog');
     var nodeForm = $('#node_form');
+    var nodeDescriptionHeader = $('#node_description_header');
     var nodeTypeDialog = $('#node_type_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
 
@@ -198,6 +239,13 @@ $(document).ready(function () {
     if (nodeName == 'all') {
         $('#variables_tab').addClass('in active');
         $('.node_tabs').find('a[href!="#variables_tab"]').parent().remove()
+    }
+
+    if (nodeType == 'group') {
+        buildDescendantsList();
+    }
+    else if (nodeType == 'host'){
+        getFacts(loadFacts);
     }
 
     // Build relationship lists
@@ -221,10 +269,10 @@ $(document).ready(function () {
             maxColumnWidth: sessionStorage.getItem('relation_list_max_column_width'),
             ajaxUrl: relation + '/?list=related',
             formatItem: function (listItem) {
-                formatRelationListItem(listItem, nodeType, relation, inheritedVariablesTableApi)
+                formatRelationListItem(listItem, nodeType, relation)
             },
-            addButtonAction: function (addButton) {
-                addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVariablesTableApi)
+            addButtonAction: function () {
+                addRelationsButtonAction(selectDialog, nodeType, relation)
             }
         });
     });
@@ -236,7 +284,7 @@ $(document).ready(function () {
             type: 'GET',
             dataSrc: ''
         },
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             $(row).find('td:eq(2)').html(
                 $('<span>').css('float', 'right').append(
                     $('<a>')
@@ -349,13 +397,13 @@ $(document).ready(function () {
     });
 
     // Build inherited variables table
-    var inheritedVariablesTableApi = $('#inh_var_table').DataTable({
+    $('#inh_var_table').DataTable({
         ajax: {
             url: 'variable/list_inh/',
             type: 'GET',
             dataSrc: ''
         },
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             $(row).find('td:eq(2)')
                 .css('cursor', 'pointer')
                 .click(function () {
@@ -369,7 +417,9 @@ $(document).ready(function () {
         event.preventDefault();
         $('#node_dialog_header').html('Edit ' + nodeName);
         $('#node_name').val($('#header_node_name').html());
-        $('#node_description').val($('#node_description_box').html());
+        if ( nodeDescriptionHeader.children('small').length == 0 ) {
+            $('#node_description').val(nodeDescriptionHeader.html());
+        }
         nodeForm.off('submit').submit(function(event) {
             event.preventDefault();
             $.ajax({
@@ -384,7 +434,12 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.result == 'ok') {
                         $('#header_node_name').html(data.name);
-                        $('#node_description_box').html(data.description);
+                        if (data.description) {
+                            nodeDescriptionHeader.html(data.description);
+                        }
+                        else {
+                            nodeDescriptionHeader.html('<small>No description available</small>');
+                        }
                         nodeForm.find('input, textarea').val('').html('');
                         nodeDialog.dialog('close');
                     }
@@ -439,7 +494,5 @@ $(document).ready(function () {
         getFacts(openNodeFactsDialog)
     });
 
-    //Load facts
-    getFacts(loadFacts);
 
 });

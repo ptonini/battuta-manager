@@ -7,7 +7,9 @@
     function _formatList(listDiv, opts) {
         var listLength = listDiv.find('.dynamic-item:not(".hidden")').length;
         if (opts.showCount) {
-            $('#' + opts.listTitle + '_count').html(' (' + listLength + ')')
+            setTimeout(function() {
+                $('#' + opts.listTitle + '_count').html(' (' + listLength + ')')
+            }, 0)
         }
 
         for (var i = opts.minColumns; i <= opts.maxColumns; i++) {
@@ -99,7 +101,7 @@
     }
 
     function _load(listContainer, listDiv, opts) {
-        switch (opts.dataSource) {
+                    switch (opts.dataSource) {
             case 'ajax':
                 _loadFromAjax(listContainer, listDiv, opts);
                 break;
@@ -121,11 +123,15 @@
 
             var headerDiv = $('<div>')
                 .attr({'class': 'dynamic-list-header', 'id': opts.listTitle})
-                .css({'margin-bottom': opts.headerBottomPadding, height: opts.headerHeight});
+                .css({'margin-bottom': opts.headerBottomMargin, height: opts.headerHeight});
 
             var listDiv = $('<div>').attr({'class': 'list-group dynamic-list', 'id': opts.listTitle + '_list'});
 
-            listContainer.empty().addClass('dynamic-list-group').append(headerDiv, listDiv);
+            listContainer
+                .empty()
+                .css('margin-bottom', opts.listContainerBottomMargin)
+                .addClass('dynamic-list-group')
+                .append(headerDiv, listDiv);
 
             if (opts.showTopSeparator) {
                 headerDiv.before($('<hr>'))
@@ -279,7 +285,8 @@
         addButtonType: 'icon',
         titleFontSize: '14px',
         headerHeight: '30px',
-        headerBottomPadding: '10px',
+        headerBottomMargin: '10px',
+        listContainerBottomMargin: 0,
         showListSeparator: false,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',

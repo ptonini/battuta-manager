@@ -163,18 +163,44 @@ class NodeDetailsView(View):
             node = node_class()
         else:
             node = get_object_or_404(node_class, pk=node_id)
-            setattr(node, 'ancestors', list())
-            parents = node.group_set.all()
-            while len(parents) > 0:
-                step_list = list()
-                for parent in parents:
-                    if parent.id not in node.ancestors:
-                        node.ancestors.append(parent.id)
-                        for group in parent.group_set.all():
-                            step_list.append(group)
-                parents = step_list
+
         setattr(node, 'form_class', node_form_class)
         return node
+
+    @staticmethod
+    def get_node_ancestors(node):
+        ancestors = set()
+        parents = node.group_set.all()
+        while len(parents) > 0:
+            step_list = set()
+            for parent in parents:
+                ancestors.add(parent)
+                for group in parent.group_set.all():
+                    step_list.add(group)
+            parents = step_list
+        return ancestors
+
+    @staticmethod
+    def get_node_descendants(node):
+        groups = set()
+        hosts = set()
+        if node.type == 'group':
+            children = node.children.all()
+            while len(children) > 0:
+                step_list = set()
+                for child in children:
+                    groups.add(child)
+                    for node in child.children.all():
+                        step_list.add(node)
+                children = step_list
+
+            for host in node.members.all():
+                hosts.add(host)
+
+            for group in groups:
+                for host in group.members.all():
+                    hosts.add(host)
+        return groups, hosts
 
     @staticmethod
     def get_facts(host_name):
@@ -197,6 +223,14 @@ class NodeDetailsView(View):
                     data = {'result': 'ok', 'facts': facts}
                 else:
                     data = {'result': 'failed'}
+            elif request.GET['action'] == 'descendants':
+                data = {'result': 'ok', 'hosts': list(), 'groups': list()}
+                groups, hosts = self.get_node_descendants(node)
+                for group in groups:
+                    data['groups'].append([group.name, group.id])
+                for host in hosts:
+                    data['hosts'].append([host.name, host.id])
+
             elif request.GET['action'] == 'copy_vars':
                 source = self.build_node(request.GET['type'], request.GET['source_id'])
                 for var in source.variable_set.all():
@@ -238,8 +272,7 @@ class VariablesView(View):
             for var in node.variable_set.all():
                 data.append([var.key, var.value, var.id])
         elif action == 'list_inh':
-            for ancestor_id in node.ancestors:
-                ancestor = Group.objects.get(pk=ancestor_id)
+            for ancestor in NodeDetailsView.get_node_ancestors(node):
                 for var in ancestor.variable_set.all():
                     data.append([var.key, var.value, var.group.name, var.group.id])
             group_all = Group.objects.get(name='all')

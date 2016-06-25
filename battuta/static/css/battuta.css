@@ -96,15 +96,6 @@ h5 {
     text-align: right;
 }
 
-#node_description_box {
-    width: 400px;
-    height: 80px;
-    border: solid 1px #d3d3d3;
-    padding: 10px;
-    color: #525252;
-    border-radius: 5px;
-}
-
 #alert_dialog,
 #delete_dialog {
     padding: 20px;

@@ -1,10 +1,11 @@
 function searchEntities(entityType, resultContainer, searchPattern) {
     resultContainer.DynamicList({
-        listTitle: entityType + 's:',
+        listTitle: capitalize(entityType) + 's',
         showTitle: true,
-        showBottomSeparator: true,
         hideIfEmpty: true,
         checkered: true,
+        headerBottomMargin: '0',
+        listContainerBottomMargin: '20px',
         minColumns: sessionStorage.getItem('node_list_min_columns'),
         maxColumns: sessionStorage.getItem('node_list_max_columns'),
         breakPoint: sessionStorage.getItem('node_list_break_point'),
