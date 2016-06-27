@@ -183,15 +183,13 @@ function loadResults(intervalId, stoppedStates) {
                                 else  {
                                     var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
 
-                                    taskColumn.append(
-                                        currentTaskTable
-                                    );
-                                    currentTaskTable.children('caption').html(
-                                         $('<span>').append(
-                                             $('<strong>').html(task.name),
-                                             $('<span>').attr('id', 'task_' + task.id + '_count')
-                                         )
+                                    taskColumn.append(currentTaskTable);
+
+                                    currentTaskTable.children('caption').append(
+                                         $('<strong>').html(task.name),
+                                         $('<span>').attr('id', 'task_' + task.id + '_count')
                                      );
+
                                     // Initialize and load dynamic table
                                     var taskTableApi = currentTaskTable.DataTable({
                                         paginate: false,
