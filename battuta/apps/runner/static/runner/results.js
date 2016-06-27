@@ -55,14 +55,15 @@ function loadResults(intervalId, stoppedStates) {
     var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
     var taskTable =  $('<table>').addClass('table table-condensed table-hover table-striped').append(
-        $('<thead>').append(
-            $('<tr>').append(
-                $('<th>').attr('class', 'col-md-3').html('host'),
-                $('<th>').attr('class', 'col-md-2').html('status'),
-                $('<th>').attr('class', 'col-md-6').html('message'),
-                $('<th>').attr('class', 'col-md-1')
+            $('<caption>'),
+            $('<thead>').append(
+                $('<tr>').append(
+                    $('<th>').attr('class', 'col-md-3').html('host'),
+                    $('<th>').attr('class', 'col-md-2').html('status'),
+                    $('<th>').attr('class', 'col-md-6').html('message'),
+                    $('<th>').attr('class', 'col-md-1')
+                )
             )
-        )
      );
 
     // Get status data from server
@@ -114,15 +115,15 @@ function loadResults(intervalId, stoppedStates) {
                 $.each(runner.plays, function (index, play) {
 
                     var separator = null;
-                    var firstRow = null;
-                    var lastRow = $('<br>');
+                    var firsLine = null;
+                    var lastLine = $('<br>');
                     var taskContainerPadding =  parseInt($('div.col-md-12').css('padding-left').replace(/\D/g,''));
 
                     // Set playbook only elements
                     if (runner.type == 'playbook') {
                         separator = $('<hr>');
-                        firstRow = divCol12.clone().html('<h4>' + play.name + '</h4>');
-                        lastRow = divCol12.clone().html('Tasks:');
+                        firsLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
+                        lastLine = divCol12.clone().html('Tasks:');
                         taskContainerPadding = taskContainerPadding + 20
                     }
 
@@ -134,15 +135,18 @@ function loadResults(intervalId, stoppedStates) {
                         playContainer = $('<div>').attr('id', playContainerId);
                         resultContainer.append(playContainer);
                         playContainer.append(
-                            separator, divRow.clone().append(
-                                firstRow, divCol4.clone().append(
+                            separator,
+                            divRow.attr('id', 'play_' + play.id + '_header').clone().append(
+                                firsLine,
+                                divCol4.clone().append(
                                     divRow.clone().append(
                                         divCol3.clone().html('Hosts:'),
                                         divCol9.clone().html('<strong>' + play.hosts + '</strong>'),
                                         divCol3.clone().html('Become:'),
                                         divCol9.clone().html('<strong>' + play.become + '</strong>')
                                     )
-                                ), lastRow
+                                ),
+                                lastLine
                             )
                         );
                     }
@@ -152,46 +156,44 @@ function loadResults(intervalId, stoppedStates) {
 
                     // Build tasks section
                     if (play.tasks.length > 0) {
+                        var playResultsRow = divRow.clone().attr('id', 'play_' + play.id + '_results');
+                        playContainer.append(playResultsRow);
+
                         $.each(play.tasks, function (index, task) {
 
                             // Save task host count to session storage
                             sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
 
-                            // Set task title
-                            var taskTitle = null;
-                            if (play.name != 'AdHoc task') {
-                                taskTitle = $('<h6>').append(
-                                    $('<strong>').html(task.name),
-                                    $('<span>').attr('id', 'task_' + task.id + '_count')
-                                )
+                            if ( play.name == 'AdHoc task') {
+                                task.name = 'Adhoc task: ' + task.name
                             }
 
-                            // Create task row if not exists
-                            var taskRowId = 'task_' + task.id;
-                            if ($('#' + taskRowId).length == 0) {
-                                var taskRow = divRow.clone().attr('id', taskRowId);
-                                playContainer.append(
-                                    taskRow.append(
-                                        divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
-                                            taskTitle
-                                        )
-                                    )
-                                );
+                            // Create task column if not exists
+                            var taskColumnId = 'task_' + task.id;
+                            if ($('#' + taskColumnId).length == 0) {
+                                var taskColumn = divCol12.clone()
+                                    .css('padding', '0 ' + taskContainerPadding + 'px')
+                                    .attr('id', taskColumnId);
+                                playResultsRow.append(taskColumn);
 
                                 // Create task table if is not an include task
                                 if (task.module == 'include'){
-                                    taskRow.after($('<br>'))
+                                    taskColumn.css('margin-top', '15px').html('<strong>' + task.name + '</strong>')
                                 }
                                 else  {
-                                    var taskTableId = 'task_' + task.id + '_table';
-                                    taskRow.append(
-                                        divCol12.clone().css('padding', '0 ' + taskContainerPadding + 'px').append(
-                                            taskTitle, taskTable.clone().attr('id', taskTableId), $('<br>')
-                                        )
-                                    );
+                                    var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
 
+                                    taskColumn.append(
+                                        currentTaskTable
+                                    );
+                                    currentTaskTable.children('caption').html(
+                                         $('<span>').append(
+                                             $('<strong>').html(task.name),
+                                             $('<span>').attr('id', 'task_' + task.id + '_count')
+                                         )
+                                     );
                                     // Initialize and load dynamic table
-                                    var taskTableApi = $('#' + taskTableId).DataTable({
+                                    var taskTableApi = currentTaskTable.DataTable({
                                         paginate: false,
                                         searching: false,
                                         info: false,
@@ -201,7 +203,7 @@ function loadResults(intervalId, stoppedStates) {
                                             dataSrc: '',
                                             data: {action: 'task_results', task_id: task.id}
                                         },
-                                        rowCallback: function(row, data, index) {
+                                        rowCallback: function(row, data) {
                                             taskTableRowCallback(row, data)
                                         },
                                         drawCallback: function () {
