@@ -13,7 +13,7 @@ $(document).ready(function () {
         },
         "order": [[0, "desc"]],
         rowCallback: function (row, data, index) {
-            switch (data[3]) {
+            switch (data[4]) {
                 case 'running':
                     $(row).css('color', 'blue');
                     break;
@@ -30,13 +30,13 @@ $(document).ready(function () {
                     $(row).css('color', 'gray');
                     break;
             }
-            $(row).find('td:eq(4)').html(
+            $(row).find('td:eq(5)').html(
                 $('<span>').attr('style', 'float: right').append(
                     $('<a>')
                         .attr({'href' :'#', 'data-toggle': 'tooltip', 'title': 'Result'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-list'))
                         .click(function (event) {
-                            popupCenter('/runner/result/' + data[4] + '/', data[4], 1000);
+                            popupCenter('/runner/result/' + data[5] + '/', data[5], 1000);
                         })
                 )
             )

@@ -278,9 +278,18 @@ class HistoryView(BaseView):
                 data = list()
                 for runner in Runner.objects.all():
                     if runner.user == request.user or request.user.is_superuser:
+                        if runner.type == 'playbook':
+                            target = runner.subset
+                        else:
+                            play = runner.runnerplay_set.first()
+                            if play:
+                                target = play.hosts
+                            else:
+                                target = None
                         data.append([runner.created_on.astimezone(tz).strftime(self.prefs['date_format']),
                                      runner.user.username,
                                      runner.name,
+                                     target,
                                      runner.status,
                                      runner.id])
             else:

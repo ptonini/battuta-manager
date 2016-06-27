@@ -43,7 +43,6 @@ function taskTableDrawCallBack(taskTableApi, task) {
     $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
 }
 
-
 function buildResultTables(runner, intervalId, stoppedStates) {
 
     var runnerStatus = $('#runner_status');
@@ -56,7 +55,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
     var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
     var taskTable =  $('<table>').addClass('table table-condensed table-hover table-striped').append(
-        $('<caption>'),
+        $('<caption>').css('color', '#333'),
         $('<thead>').append(
             $('<tr>').append(
                 $('<th>').attr('class', 'col-md-3').html('host'),
@@ -97,8 +96,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
     // Display error message if exists
     if (runner.message) {
         resultContainer.empty().append(
-            $('<br>'),
-            $('<pre>').attr('id', 'runner_message').html(runner.message)
+            $('<pre>').css('margin-top', '20px').attr('id', 'runner_message').html(runner.message)
         );
         if (runner.status == 'failed') {
             $('#runner_message').css('color', 'red');
@@ -110,15 +108,15 @@ function buildResultTables(runner, intervalId, stoppedStates) {
         $.each(runner.plays, function (index, play) {
 
             var separator = null;
-            var firsLine = null;
-            var lastLine = $('<br>');
+            var headerFirstLine = null;
+            var headerLastLine = $('<br>');
             var taskContainerPadding =  parseInt($('div.col-md-12').css('padding-left').replace(/\D/g,''));
 
             // Set playbook only elements
             if (runner.type == 'playbook') {
                 separator = $('<hr>');
-                firsLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
-                lastLine = divCol12.clone().html('Tasks:');
+                headerFirstLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
+                headerLastLine = divCol12.clone().html('Tasks:');
                 taskContainerPadding = taskContainerPadding + 20
             }
 
@@ -132,7 +130,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                 playContainer.append(
                     separator,
                     divRow.attr('id', 'play_' + play.id + '_header').clone().append(
-                        firsLine,
+                        headerFirstLine,
                         divCol4.clone().append(
                             divRow.clone().append(
                                 divCol3.clone().html('Hosts:'),
@@ -141,7 +139,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                                 divCol9.clone().html('<strong>' + play.become + '</strong>')
                             )
                         ),
-                        lastLine
+                        headerLastLine
                     )
                 );
             }
@@ -159,6 +157,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                     // Save task host count to session storage
                     sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
 
+                    // Set task name
                     if ( play.name == 'AdHoc task') {
                         task.name = 'Adhoc task: ' + task.name
                     }
