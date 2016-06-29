@@ -62,7 +62,7 @@ class BattutaCallback(CallbackBase):
         # Set task name
         if is_handler:
             task_host_count = len(self._inventory._restriction) - self._get_current_play_failed_count()
-            task_name = 'Handler - ' + task.get_name().strip()
+            task_name = '[Handler] ' + task.get_name().strip()
         elif self._current_task_module == 'setup' and not self._current_task_id and gather_facts:
             task_host_count = play_host_count
             task_name = 'Gather facts'

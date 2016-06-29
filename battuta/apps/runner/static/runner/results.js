@@ -1,10 +1,23 @@
 // Update function for task table
-function updateTaskTable(task, taskTableApi, intervalId, stoppedStates) {
-    taskTableApi.ajax.reload(null, false);
+function updateTaskTable(task, taskColumn, currentTaskTable, intervalId, stoppedStates) {
+
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
+    var rowCount = currentTaskTable.DataTable().rows().count();
+
+    // Update table
+    if (hostCount > 0) {
+        currentTaskTable.show().DataTable().ajax.reload(null, false);
+    }
+
+    // Stops loop if host count is 0
+    else if (hostCount == 0) {
+        currentTaskTable.hide();
+        taskColumn.addClass('html_only');
+        clearInterval(intervalId)
+    }
 
     // Stops loop if job is defunct or if task host count matches table length
-    if (stoppedStates.indexOf($('#runner_status').html()) > -1 || hostCount == taskTableApi.rows().count()) {
+    else if (stoppedStates.indexOf($('#runner_status').html()) > -1 || hostCount == rowCount) {
         clearInterval(intervalId)
     }
 }
@@ -55,7 +68,6 @@ function buildResultTables(runner, intervalId, stoppedStates) {
     var divCol9 = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
     var taskTable =  $('<table>').addClass('table table-condensed table-hover table-striped').append(
-        $('<caption>').css('color', '#333'),
         $('<thead>').append(
             $('<tr>').append(
                 $('<th>').attr('class', 'col-md-3').html('host'),
@@ -107,29 +119,30 @@ function buildResultTables(runner, intervalId, stoppedStates) {
     else {
         $.each(runner.plays, function (index, play) {
 
-            var separator = null;
-            var headerFirstLine = null;
-            var headerLastLine = $('<br>');
             var taskContainerPadding =  parseInt($('div.col-md-12').css('padding-left').replace(/\D/g,''));
 
             // Set playbook only elements
             if (runner.type == 'playbook') {
-                separator = $('<hr>');
-                headerFirstLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
-                headerLastLine = divCol12.clone().html('Tasks:');
-                taskContainerPadding = taskContainerPadding + 20
+                var separator = $('<hr>');
+                var headerFirstLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
+                var headerLastLine = divCol12.clone().html('Tasks:');
+                taskContainerPadding = taskContainerPadding + 10
+            }
+            else {
+                separator = null;
+                headerFirstLine = null;
+                headerLastLine = $('<br>');
             }
 
             // Build Play container and header
             var playContainerId = 'play_' + play.id + '_container';
             var playContainerSelector = '#' + playContainerId;
-            var playContainer = null;
             if ($(playContainerSelector).length == 0) {
-                playContainer = $('<div>').attr('id', playContainerId);
+                var playContainer = $('<div>').attr('id', playContainerId);
                 resultContainer.append(playContainer);
                 playContainer.append(
                     separator,
-                    divRow.attr('id', 'play_' + play.id + '_header').clone().append(
+                    divRow.clone().attr('id', 'play_' + play.id + '_header').append(
                         headerFirstLine,
                         divCol4.clone().append(
                             divRow.clone().append(
@@ -157,10 +170,20 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                     // Save task host count to session storage
                     sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
 
-                    // Set task name
+                    // Set task title
                     if ( play.name == 'AdHoc task') {
-                        task.name = 'Adhoc task: ' + task.name
+                        task.name = 'Task: <strong>' + task.name + '</strong>';
+                        var headerTopMargin = '5px'
                     }
+                    else {
+                        task.name = '<strong>' + task.name + '</strong>';
+                        headerTopMargin = '15px'
+                    }
+
+                    var tableHeader = $('<div>').css('margin-top', headerTopMargin).append(
+                        $('<span>').html(task.name),
+                        $('<span>').attr('id', 'task_' + task.id + '_count')
+                    );
 
                     // Create task column if not exists
                     var taskColumnId = 'task_' + task.id;
@@ -172,20 +195,15 @@ function buildResultTables(runner, intervalId, stoppedStates) {
 
                         // Create task table if is not an include task
                         if (task.module == 'include'){
-                            taskColumn.css('margin-top', '15px').html('<strong>' + task.name + '</strong>')
+                            taskColumn.html(tableHeader.addClass('html_only'))
                         }
                         else  {
                             var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
 
-                            taskColumn.append(currentTaskTable);
-
-                            currentTaskTable.children('caption').append(
-                                $('<strong>').html(task.name),
-                                $('<span>').attr('id', 'task_' + task.id + '_count')
-                            );
+                            taskColumn.append(tableHeader, currentTaskTable);
 
                             // Initialize and load dynamic table
-                            var taskTableApi = currentTaskTable.DataTable({
+                            currentTaskTable.DataTable({
                                 paginate: false,
                                 searching: false,
                                 info: false,
@@ -203,10 +221,15 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                                 }
                             });
 
+                            if (task.host_count == 0) {
+                                taskColumn.addClass('html_only');
+                                currentTaskTable.hide()
+                            }
+
                             // If job is running creates update loop
                             if (stoppedStates.indexOf(runner.status) == -1) {
                                 var intervalId = setInterval(function() {
-                                    updateTaskTable(task, taskTableApi, intervalId, stoppedStates)
+                                    updateTaskTable(task, taskColumn, currentTaskTable, intervalId, stoppedStates)
                                 }, 1000)
                             }
                         }
@@ -332,8 +355,10 @@ $(document).ready(function () {
         body.css('padding-top', '0px');
         runnerResult.css('font-size', 'smaller');
         $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
+        $('div').children()
         window.print();
         body.css('padding-top', '50px');
+
         reportOnly.hide();
         htmlOnly.show();
         statsDialogCopy.remove();

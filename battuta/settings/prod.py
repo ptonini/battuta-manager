@@ -5,6 +5,8 @@ WSGI_APPLICATION = 'settings.wsgi.application'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+ALLOWED_HOSTS = ['battuta.m2mcontrol.com.br']
+
 # Database
 DATABASES = {
     'default': {
