@@ -60,7 +60,6 @@ function clearPlaybookArgsForm() {
 function loadPlaybookEditor(text, filename) {
 
     var editor = ace.edit("playbook_editor");
-    var playbookEditor = $('#playbook_editor')
 
     // Load playbook data
     editor.setValue(text);
@@ -73,7 +72,7 @@ function loadPlaybookEditor(text, filename) {
         $('#playbook_name').attr('placeholder', 'New playbook').val('');
         filename = '/invalid_name'
     }
-    playbookEditor.data({'text': text, 'filename': filename}).css('height', window.innerHeight * 0.7);
+    $('#playbook_editor').data({'text': text, 'filename': filename}).css('height', window.innerHeight * 0.7);
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
     $('#editor_dialog').dialog('open');
 }
