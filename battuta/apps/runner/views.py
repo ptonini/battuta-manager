@@ -43,12 +43,19 @@ class RunnerView(View):
             else:
                 cred = request.user.userdata.default_cred
             run_data['username'] = cred.username
+
             if 'remote_pass' not in run_data:
                 run_data['remote_pass'] = cred.password
+
             if 'become_pass' not in run_data:
-                run_data['become_pass'] = cred.sudo_pass
+                if cred.sudo_pass:
+                    run_data['become_pass'] = cred.sudo_pass
+                else:
+                    run_data['become_pass'] = cred.password
+
             if cred.sudo_user:
                 run_data['become_user'] = cred.sudo_user
+
             if cred.rsa_key:
                 run_data['rsa_key'] = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username),
                                                    '.ssh', cred.rsa_key)

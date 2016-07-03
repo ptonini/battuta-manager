@@ -3,9 +3,15 @@
   gather_facts: no
   hosts: all
   become: yes
+  
+  vars:
+      var_file: /opt/ans_data/variables.yml
+      play_file: /opt/ans_data/install_vi.yml
 
   tasks:
 
+    - include_vars: '{{ var_file }}'
+ 
     - name: Delete test file
       file: path=/tmp/test_file
             state=absent
@@ -27,8 +33,8 @@
                state=started
       when: "'app-mongos' in group_names"
 
-#    - include: /opt/ans_data/install_vi.yml
-#      when: "'app-mongos' in group_names"
+    - include: '{{ play_file }}'
+      when: "'app-mongos' in group_names"
 
   handlers:
 

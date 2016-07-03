@@ -144,7 +144,6 @@ $(document).ready(function () {
                             else if (data.result == 'fail') {
                                 alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
                             }
-
                         }
                     });
                 }

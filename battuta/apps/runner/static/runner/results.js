@@ -1,24 +1,23 @@
 // Update function for task table
-function updateTaskTable(task, taskColumn, currentTaskTable, intervalId, stoppedStates) {
+function updateTaskTable(task, taskColumn, currentTaskTable, intervalId, isStopped) {
 
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
     var rowCount = currentTaskTable.DataTable().rows().count();
 
-    // Update table
-    if (hostCount > 0) {
-        currentTaskTable.show().DataTable().ajax.reload(null, false);
-    }
+    console.log(task.id, hostCount, rowCount, isStopped);
 
-    // Stops loop if host count is 0
-    else if (hostCount == 0) {
+    if (hostCount == 0) {
         currentTaskTable.hide();
         taskColumn.addClass('html_only');
         clearInterval(intervalId)
     }
 
-    // Stops loop if job is defunct or if task host count matches table length
-    else if (stoppedStates.indexOf($('#runner_status').html()) > -1 || hostCount == rowCount) {
+    else if (hostCount == rowCount) {
         clearInterval(intervalId)
+    }
+
+    else {
+        currentTaskTable.show().DataTable().ajax.reload(null, false)
     }
 }
 
@@ -79,6 +78,8 @@ function buildResultTables(runner, intervalId, stoppedStates) {
     );
 
     resultContainer.data(runner);
+
+    var isStopped = (stoppedStates.indexOf(runner.status) > -1);
 
     // Set font color for status display
     switch (runner.status) {
@@ -227,9 +228,9 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                             }
 
                             // If job is running creates update loop
-                            if (stoppedStates.indexOf(runner.status) == -1) {
+                            if (!isStopped) {
                                 var intervalId = setInterval(function() {
-                                    updateTaskTable(task, taskColumn, currentTaskTable, intervalId, stoppedStates)
+                                    updateTaskTable(task, taskColumn, currentTaskTable, intervalId, isStopped)
                                 }, 1000)
                             }
                         }
@@ -240,7 +241,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
 
     }
 
-    if (stoppedStates.indexOf(runner.status) > -1) {
+    if (isStopped) {
         $('#running_gif').hide();
         $('#auto_scroll').hide();
         $('#cancel_runner').hide();
@@ -260,7 +261,7 @@ function buildResultTables(runner, intervalId, stoppedStates) {
         if (sessionStorage.getItem('auto_scroll')) {
             setTimeout(function() {
                 $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
-            }, 3000)
+            }, 2000)
         }
 
     }
@@ -355,7 +356,7 @@ $(document).ready(function () {
         body.css('padding-top', '0px');
         runnerResult.css('font-size', 'smaller');
         $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
-        $('div').children()
+        $('div').children();
         window.print();
         body.css('padding-top', '50px');
 

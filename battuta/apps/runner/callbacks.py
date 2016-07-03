@@ -67,7 +67,7 @@ class BattutaCallback(CallbackBase):
             task_host_count = play_host_count
             task_name = 'Gather facts'
         elif self._current_task_module == 'include':
-            task_host_count = None
+            task_host_count = 0
             task_name = 'Including ' + task.__dict__['_ds']['include']
         else:
             task_host_count = play_host_count - play_failed_count

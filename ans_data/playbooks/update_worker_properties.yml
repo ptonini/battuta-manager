@@ -1,0 +1,30 @@
+---
+- name: Update m2m-worker properties
+  gather_facts: no
+  hosts: m2m-worker:m2m-worker-rep:m2m-worker-sin!znh
+  become: yes
+
+  tasks:
+    - name: Copy config.properties file
+      copy: content=clientes={{ clientes }}
+            dest=/opt/{{ item }}/config.properties
+            owner=root
+            group=root
+            mode=0644
+      when: "'{{ item }}' in group_names"
+      notify:
+        - Restart {{ item }}
+      with_items:
+        - m2m-worker
+        - m2m-worker-rep
+        - m2m-worker-sin
+
+  handlers:
+    - name: Restart m2m-worker
+      service: name=m2m-worker state=restarted
+
+    - name: Restart m2m-worker-rep
+      service: name=m2m-worker-rep state=restarted
+
+    - name: Restart m2m-worker-sin
+      service: name=m2m-worker-sin state=restarted

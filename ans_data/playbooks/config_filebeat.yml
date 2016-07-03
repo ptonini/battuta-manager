@@ -1,0 +1,6 @@
+---
+- name: Config Filebeat
+  hosts: datacenter-aws
+  become: yes
+  roles:
+    - filebeat

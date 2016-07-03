@@ -1,0 +1,7 @@
+---
+- name: Deploy M2M Adapter WS
+  hosts: m2m-adapter-ws:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-adapter-ws

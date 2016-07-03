@@ -1,0 +1,20 @@
+---
+- name: Set hosts and hostname
+  gather_facts: no
+  hosts: datacenter-aws
+  become: yes
+  
+  tasks:
+    - name: Copy hosts file
+      template: src=../files/hosts.j2
+                dest=/etc/hosts
+                owner=root
+                group=root
+                mode=0644
+
+    - name: Set hostname
+      copy: content={{ inventory_hostname }}
+            dest=/etc/hostname
+            owner=root
+            group=root
+            mode=0644

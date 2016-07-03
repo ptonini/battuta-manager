@@ -1,0 +1,8 @@
+---
+- name: Config Apache Tomcat
+  hosts: app-tomcat:!znh
+  become: yes
+  roles:
+    - common
+    - tomcat
+#    - { role: m2m-watchdog, mode: config }

@@ -1,0 +1,8 @@
+---
+- name: Deploy Worker
+  hosts: m2m-worker-sin:!znh
+  become: yes
+  roles:
+    - common
+    - m2m-worker-sin
+    - { role: m2m-watchdog, mode: config }
