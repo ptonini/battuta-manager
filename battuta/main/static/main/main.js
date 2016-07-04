@@ -125,7 +125,7 @@ $(document).ready(function () {
                     var currentList = listContainer.find('div.dynamic-list');
                     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                 },
-                addButtonAction: function (addButton) {
+                addButtonAction: function () {
                     openAddNodeDialog(nodeType, function () {
                         selectDialog.DynamicList('load')
                     })
