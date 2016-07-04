@@ -1,16 +1,11 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'inventory/list_nodes.js' %}"></script>
+    <script src="{% static 'inventory/nodes.js' %}"></script>
     <input id="node_type" type="hidden" value="{{ node_type }}">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <h3>{{ node_type_plural|capfirst }}</h3>
-        </div>
-        <div class="col-md-6" style="text-align: right">
-            <h3>
-                <button id="add_node" class="btn btn-default btn-xs" style="display: none;">Add {{ node_type }}</button>
-            </h3>
         </div>
         <div class="col-md-12">
             <ul id="select_{{ node_type }}_tabs" class="nav nav-tabs select_tabs">

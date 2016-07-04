@@ -239,23 +239,28 @@ function buildResultTables(runner, intervalId) {
     }
 
     if (runner.is_running){
+        // Show running elements
         $('#auto_scroll').show();
         $('#cancel_runner').show();
         $('#running_gif').show();
 
+        // Scroll down page to last table row
         var lastRow = resultContainer.find('tbody').find('tr').last();
-
         if (lastRow.length > 0 && sessionStorage.getItem('auto_scroll')) {
-            $('html, body').animate({
-                scrollTop: (lastRow.offset().top)
-            }, 500);
+            $('html, body').animate({scrollTop: (lastRow.offset().top)}, 500);
         }
     }
     else  {
+        // End loop
+        clearInterval(intervalId);
+        
+        // Hide running elements
         $('#running_gif').hide();
         $('#auto_scroll').hide();
         $('#cancel_runner').hide();
         $('#print_report').show();
+        
+        // Build statistics table
         if (runner.stats) {
             var statsTable = $('#stats_table');
             $('#show_stats').show();
@@ -267,13 +272,13 @@ function buildResultTables(runner, intervalId) {
                 });
             }
         }
-        clearInterval(intervalId);
+        
+        // Auto scroll to top of page
         if (sessionStorage.getItem('auto_scroll')) {
             setTimeout(function() {
                 $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
             }, 2000)
         }
-
     }
 
 }

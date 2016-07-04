@@ -38,22 +38,22 @@ function formatRelationListItem(listItem, nodeType, relation) {
     )
 }
 
-function formatCopyVariablesListItem(listItem, selectDialog, variableTableObj, nodeType) {
+function formatCopyVariablesListItem(listItem, selectDialog, variableTableApi, nodeType) {
     listItem.click(function () {
         var sourceValue = $(this).data('value');
         var sourceId =  $(this).data('id');
         $.ajax({
-            url: '',
-            type: 'GET',
+            url: 'vars/',
+            type: 'POST',
             dataType: 'json',
             data: {
-                action: 'copy_vars',
+                action: 'copy',
                 source_id: sourceId,
                 type: nodeType
             },
             success: function () {
                 selectDialog.dialog('close');
-                variableTableObj.ajax.reload();
+                variableTableApi.ajax.reload();
                 $('#alert_dialog').html('<strong>Variables copied from ' + sourceValue + '</strong>').dialog('open');
             }
         });
@@ -107,7 +107,7 @@ function addRelationsButtonAction(selectDialog, nodeType, relation, inheritedVar
     selectDialog.dialog('open');
 }
 
-function clearVariableForm () {
+function clearVariableForm() {
     $('#cancel_var_edit').hide();
     $('#variable_form').find('input').val('');
     $('#key').focus();
@@ -280,9 +280,10 @@ $(document).ready(function () {
     // Build variables table
     var variableTableApi = variableTable.DataTable({
         ajax: {
-            url: 'variable/list/',
+            url: 'vars/',
             type: 'GET',
-            dataSrc: ''
+            dataSrc: '',
+            data: {action: 'list'}
         },
         rowCallback: function (row, data) {
             $(row).find('td:eq(2)').html(
@@ -308,12 +309,10 @@ $(document).ready(function () {
                                     click: function () {
                                         $(this).dialog('close');
                                         $.ajax({
-                                            url: 'variable/del/',
+                                            url: 'vars/',
                                             type: 'POST',
                                             dataType: 'json',
-                                            data: {
-                                                id: data[2]
-                                            },
+                                            data: {action: 'del', id: data[2]},
                                             success: function () {
                                                 variableTableApi.ajax.reload()
                                             }
@@ -366,15 +365,15 @@ $(document).ready(function () {
                     });
                     selectDialog.dialog('open');
                 });
-                nodeTypeDialog.children('h5').html('Select source type');
-                nodeTypeDialog.dialog('open');
+                nodeTypeDialog.dialog('open').children('h5').html('Select source type');
                 break;
             default:
                 $.ajax({
-                    url: 'variable/save/',
+                    url: 'vars/',
                     type: 'POST',
                     dataType: 'json',
                     data: {
+                        action: 'save',
                         id: $('#variable_form').data('id'),
                         key: $('#key').val(),
                         value: $('#value').val()
@@ -399,9 +398,10 @@ $(document).ready(function () {
     // Build inherited variables table
     $('#inh_var_table').DataTable({
         ajax: {
-            url: 'variable/list_inh/',
+            url: 'vars/',
             type: 'GET',
-            dataSrc: ''
+            dataSrc: '',
+            data: {action: 'list_inh'}
         },
         rowCallback: function (row, data) {
             $(row).find('td:eq(2)')
@@ -469,7 +469,7 @@ $(document).ready(function () {
                             action: 'delete'
                         },
                         success: function () {
-                            window.open('/inventory/list/' + $('#header_node_type').html() + 's', '_self')
+                            window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
                         }
                     });
                 }
