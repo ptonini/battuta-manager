@@ -307,6 +307,13 @@ class HistoryView(BaseView):
 class ResultView(BaseView):
     def get(self, request, runner_id):
         runner = get_object_or_404(Runner, pk=runner_id)
+
+        # Determine is runner is still running
+        if runner.status in runner.stopped_states:
+            setattr(runner, 'is_running', False)
+        else:
+            setattr(runner, 'is_running', True)
+
         if 'action' not in request.GET:
             tz = timezone(runner.user.userdata.timezone)
             runner.created_on = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
@@ -314,9 +321,16 @@ class ResultView(BaseView):
             return render(request, "runner/results.html", self.context)
         else:
             if request.GET['action'] == 'status':
+
+                # Convert runner object to dict
                 data = model_to_dict(runner)
+                data['is_running'] = runner.is_running
+
+                # Convert status string to dict
                 if runner.stats:
                     data['stats'] = ast.literal_eval(runner.stats)
+
+                # Add plays to runner data
                 data['plays'] = list()
                 for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
                     play['tasks'] = list()

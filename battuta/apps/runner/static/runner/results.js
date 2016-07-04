@@ -1,23 +1,22 @@
 // Update function for task table
-function updateTaskTable(task, taskColumn, currentTaskTable, intervalId, isStopped) {
+function updateTaskTable(task, taskColumn, currentTaskTable, intervalId) {
+
+    currentTaskTable.show().DataTable().ajax.reload(null, false);
 
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
     var rowCount = currentTaskTable.DataTable().rows().count();
+    var runner = $('#result_container').data();
 
-    console.log(task.id, hostCount, rowCount, isStopped);
-
+    // Hide task tables if host count is 0
     if (hostCount == 0) {
         currentTaskTable.hide();
         taskColumn.addClass('html_only');
         clearInterval(intervalId)
     }
 
-    else if (hostCount == rowCount) {
+    // Stop loop if all hosts are in table
+    else if (!runner.is_running || hostCount == rowCount) {
         clearInterval(intervalId)
-    }
-
-    else {
-        currentTaskTable.show().DataTable().ajax.reload(null, false)
     }
 }
 
@@ -55,7 +54,7 @@ function taskTableDrawCallBack(taskTableApi, task) {
     $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
 }
 
-function buildResultTables(runner, intervalId, stoppedStates) {
+function buildResultTables(runner, intervalId) {
 
     var runnerStatus = $('#runner_status');
     var resultContainer = $('#result_container');
@@ -79,8 +78,6 @@ function buildResultTables(runner, intervalId, stoppedStates) {
 
     resultContainer.data(runner);
 
-    var isStopped = (stoppedStates.indexOf(runner.status) > -1);
-
     // Set font color for status display
     switch (runner.status) {
         case 'running':
@@ -99,7 +96,8 @@ function buildResultTables(runner, intervalId, stoppedStates) {
             runnerStatus.css('color', 'gray');
             break;
     }
-    runnerStatus.html(runner.status);
+
+    runnerStatus.html(runner.status).attr('data-is_running', runner.is_running);
 
     // Hide playbook only html elements
     if (runner.type == 'adhoc') {
@@ -228,9 +226,9 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                             }
 
                             // If job is running creates update loop
-                            if (!isStopped) {
+                            if (runner.is_running) {
                                 var intervalId = setInterval(function() {
-                                    updateTaskTable(task, taskColumn, currentTaskTable, intervalId, isStopped)
+                                    updateTaskTable(task, taskColumn, currentTaskTable, intervalId)
                                 }, 1000)
                             }
                         }
@@ -238,10 +236,22 @@ function buildResultTables(runner, intervalId, stoppedStates) {
                 });
             }
         });
-
     }
 
-    if (isStopped) {
+    if (runner.is_running){
+        $('#auto_scroll').show();
+        $('#cancel_runner').show();
+        $('#running_gif').show();
+
+        var lastRow = resultContainer.find('tbody').find('tr').last();
+
+        if (lastRow.length > 0 && sessionStorage.getItem('auto_scroll')) {
+            $('html, body').animate({
+                scrollTop: (lastRow.offset().top)
+            }, 500);
+        }
+    }
+    else  {
         $('#running_gif').hide();
         $('#auto_scroll').hide();
         $('#cancel_runner').hide();
@@ -265,16 +275,11 @@ function buildResultTables(runner, intervalId, stoppedStates) {
         }
 
     }
-    else {
-        $('#auto_scroll').show();
-        $('#cancel_runner').show();
-        $('#running_gif').show();
-    }
 
 }
 
 // Load job results from database and build tables
-function loadResults(intervalId, stoppedStates) {
+function loadResults(intervalId) {
 
     // Get status data from server
     $.ajax({
@@ -283,7 +288,7 @@ function loadResults(intervalId, stoppedStates) {
         dataType: 'json',
         data: {action: 'status'},
         success: function (runner) {
-            buildResultTables(runner, intervalId, stoppedStates)
+            buildResultTables(runner, intervalId)
         }
     })
 }
@@ -294,8 +299,6 @@ $(document).ready(function () {
     var resultContainer = $('#result_container');
     var autoScroll = $('#auto_scroll');
     var body = $('body');
-
-    var stoppedStates = ['finished', 'finished with errors', 'canceled', 'failed'];
 
     body.css('padding-top', '50px');
     sessionStorage.removeItem('auto_scroll');
@@ -317,18 +320,15 @@ $(document).ready(function () {
     });
     
     // Refresh table until job is complete
-    loadResults(0, stoppedStates);
-    if (stoppedStates.indexOf($('#runner_status').html()) == -1) {
+    if ($('#runner_status').attr('data-is_running') == 'true') {
         autoScroll.addClass('checked_button');
         sessionStorage.setItem('auto_scroll', true);
         var intervalId = setInterval(function () {
-            loadResults(intervalId, stoppedStates);
-            if (stoppedStates.indexOf($('#runner_status').html()) == -1 && sessionStorage.getItem('auto_scroll')) {
-                $('html, body').animate({
-                    scrollTop: ($('#result_container').find('tbody').find('tr').last().offset().top)
-                }, 500);
-            }
+            loadResults(intervalId);
         }, 1000);
+    }
+    else {
+        loadResults(0);
     }
 
     // Enable/disable auto scroll

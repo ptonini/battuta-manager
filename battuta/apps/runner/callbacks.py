@@ -49,17 +49,15 @@ class BattutaCallback(CallbackBase):
         # Get current play data
         sql_query = 'SELECT gather_facts,host_count,failed_count FROM runner_runnerplay WHERE id=%s'
         row = self._run_query_on_db('single_row', sql_query, (self._current_play_id,))
-        if row[0] == 0:
-            gather_facts = False
-        else:
-            gather_facts = True
+
+        gather_facts = row[0]
         play_host_count = row[1]
         play_failed_count = row[2]
 
         # Set task module
         self._current_task_module = task.__dict__['_attributes']['action']
 
-        # Set task name
+        # Set task name and host count based on module
         if is_handler:
             task_host_count = len(self._inventory._restriction) - self._get_current_play_failed_count()
             task_name = '[Handler] ' + task.get_name().strip()
@@ -73,11 +71,18 @@ class BattutaCallback(CallbackBase):
             task_host_count = play_host_count - play_failed_count
             task_name = task.get_name().strip()
 
-        sql_query = 'INSERT INTO runner_runnertask (runner_play_id,name,module,host_count) VALUES (%s, %s, %s, %s)'
-        var_tuple = (self._current_play_id, task_name, self._current_task_module, task_host_count)
+        if task.__dict__['_attributes']['run_once']:
+            task_host_count = 1
+
+        sql_query = 'INSERT INTO runner_runnertask (runner_play_id,name,module,host_count,is_handler) ' \
+                    'VALUES (%s, %s, %s, %s, %s)'
+        var_tuple = (self._current_play_id, task_name, self._current_task_module, task_host_count, is_handler)
         self._current_task_id = self._run_query_on_db('insert', sql_query, var_tuple)
 
     def _save_result(self, host, status, message, response):
+
+        if 'check_results' in response:
+            response['check_results'] = 'truncated'
 
         sql_query = 'SELECT id FROM runner_runnerresult WHERE runner_task_id=%s AND host=%s'
         result_id = self._run_query_on_db('single_value', sql_query, (self._current_task_id, host))

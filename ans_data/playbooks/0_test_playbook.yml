@@ -10,7 +10,10 @@
 
   tasks:
 
-    - include_vars: '{{ var_file }}'
+    #- include_vars: '{{ var_file }}'
+ 
+    #- include: '{{ play_file }}'
+    #  when: "'app-mongos' in group_names"
  
     - name: Delete test file
       file: path=/tmp/test_file
@@ -18,23 +21,32 @@
       notify:
         - Create test file
 
-    - name: Test with items
-      lineinfile: line="{{ item }}"
-                  create=yes
-                  dest=/tmp/test2
-      with_items:
-          - "Hello, assholes"
-          - "Goodbye, assholes"
-      notify:
-          - Erase test2
+    #- name: Test with items
+    #  lineinfile: line="{{ item }}"
+    #              create=yes
+    #              dest=/tmp/test2
+    #  with_items:
+    #      - "Hello, assholes"
+    #      - "Goodbye, assholes"
+    #  notify:
+    #      - Erase test2
 
-    - name: Start mongos
-      service: name=mongos
-               state=started
-      when: "'app-mongos' in group_names"
 
-    - include: '{{ play_file }}'
-      when: "'app-mongos' in group_names"
+    #- name: Create temp angular folder
+    #  file: path=/tmp/angular
+    #        state=directory
+    #        mode=0755
+    
+    #- name: Extract angular archive
+    #  unarchive: src=/opt/ans_data/angularjs.tar.gz
+    #             dest=/tmp/angular
+    #             directory_mode=0755
+    #             mode=0644
+
+    #- name: Start mongos
+    #  service: name=mongos
+    #           state=started
+    #  when: "'app-mongos' in group_names"
 
   handlers:
 

@@ -34,6 +34,7 @@ class Runner(models.Model):
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)
+    stopped_states = ['finished', 'finished with errors', 'canceled', 'failed']
 
 
 class RunnerPlay(models.Model):
@@ -51,6 +52,7 @@ class RunnerTask(models.Model):
     name = models.CharField(max_length=128)
     module = models.CharField(max_length=64, blank=True, null=True)
     host_count = models.IntegerField(null=True)
+    is_handler = models.BooleanField()
 
 
 class RunnerResult(models.Model):
