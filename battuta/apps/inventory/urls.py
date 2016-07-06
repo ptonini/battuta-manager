@@ -6,6 +6,8 @@ from . import views
 urlpatterns = [
     url(r'^$', views.InventoryView.as_view(), name='inventory'),
 
+    url(r'^import/$', views.ImportExportView.as_view(), name='import_export'),
+
     url(r'^(?P<node_type_plural>\w+)/$', login_required(views.NodesView.as_view()), name='nodes'),
 
     url(r'^(?P<node_type>\w+)/(?P<node_id>[0-9]+)/$',

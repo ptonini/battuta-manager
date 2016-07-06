@@ -13,6 +13,7 @@ class BattutaCallback(CallbackBase):
         super(BattutaCallback, self).__init__()
         self._db_conn = db_conn
         self._runner = runner
+        self._current_play_vars = None
         self._current_play_id = None
         self._current_task_id = None
         self._current_task_module = None
@@ -58,18 +59,18 @@ class BattutaCallback(CallbackBase):
         self._current_task_module = task.__dict__['_attributes']['action']
 
         # Set task name and host count based on module
-        if is_handler:
-            task_host_count = len(self._inventory._restriction) - self._get_current_play_failed_count()
-            task_name = '[Handler] ' + task.get_name().strip()
-        elif self._current_task_module == 'setup' and not self._current_task_id and gather_facts:
+        if self._current_task_module == 'setup' and not self._current_task_id and gather_facts:
             task_host_count = play_host_count
             task_name = 'Gather facts'
         elif self._current_task_module == 'include':
             task_host_count = 0
-            task_name = 'Including ' + task.__dict__['_ds']['include']
+            task_name = task.get_name().strip()
         else:
             task_host_count = play_host_count - play_failed_count
             task_name = task.get_name().strip()
+
+        if is_handler:
+            task_name = '[Handler] ' + task_name
 
         if task.__dict__['_attributes']['run_once']:
             task_host_count = 1
@@ -101,6 +102,8 @@ class BattutaCallback(CallbackBase):
         self._run_query_on_db('update', sql_query, (self._runner.id,))
 
     def v2_playbook_on_play_start(self, play):
+
+
         sql_query = 'UPDATE runner_runner SET status="running" WHERE id=%s'
         self._run_query_on_db('update', sql_query, (self._runner.id,))
 

@@ -14,39 +14,33 @@ from .forms import HostForm, GroupForm, VariableForm
 class InventoryView(View):
 
     @staticmethod
-    def to_dict():
-        groups = Group.objects.order_by('name')
-        inventory = {'_meta': {'hostvars': dict()}}
-
-        for host in Host.objects.order_by('name'):
-
-            if len(host.variable_set.all()) > 0:
-                inventory['_meta']['hostvars'][host.name] = dict()
-                for var in host.variable_set.all():
-                    inventory['_meta']['hostvars'][host.name][var.key] = var.value
-
-        for group in groups:
-            inventory[group.name] = dict()
-
-            if len(group.members.all()) > 0:
-                inventory[group.name]['hosts'] = list()
-                for host in group.members.all():
-                    inventory[group.name]['hosts'].append(host.name)
-
-            if len(group.children.all()) > 0:
-                inventory[group.name]['children'] = list()
-                for child in group.children.all():
-                    inventory[group.name]['children'].append(child.name)
-
-            inventory[group.name]['vars'] = dict()
-            for var in group.variable_set.all():
-                inventory[group.name]['vars'][var.key] = var.value
-
-        return inventory
-
-    def get(self, request):
+    def get(request):
         if 'action' not in request.GET:
-            data = self.to_dict()
+            data = {'_meta': {'hostvars': dict()}}
+
+            for host in Host.objects.order_by('name'):
+
+                if len(host.variable_set.all()) > 0:
+                    data['_meta']['hostvars'][host.name] = dict()
+                    for var in host.variable_set.all():
+                        data['_meta']['hostvars'][host.name][var.key] = var.value
+
+            for group in Group.objects.order_by('name'):
+                data[group.name] = dict()
+
+                if len(group.members.all()) > 0:
+                    data[group.name]['hosts'] = list()
+                    for host in group.members.all():
+                        data[group.name]['hosts'].append(host.name)
+
+                if len(group.children.all()) > 0:
+                    data[group.name]['children'] = list()
+                    for child in group.children.all():
+                        data[group.name]['children'].append(child.name)
+
+                data[group.name]['vars'] = dict()
+                for var in group.variable_set.all():
+                    data[group.name]['vars'][var.key] = var.value
         else:
             data = list()
             if request.GET['action'] == 'search':
@@ -59,32 +53,17 @@ class InventoryView(View):
                 for node in node_class.objects.order_by('name'):
                     if node.name.find(request.GET['pattern']) > -1:
                         data.append([node.name, node.id])
-            elif request.GET['action'] == 'host_table':
-                for host in Host.objects.all():
-                    facts = NodeDetailsView.get_facts(host.name)
-                    if facts:
-                        data.append([host.name,
-                                     host.description,
-                                     facts['ansible_default_ipv4']['address'],
-                                     facts['ansible_processor_count'],
-                                     facts['ansible_memtotal_mb'],
-                                     facts['ansible_mounts'][0]['size_total'],
-                                     facts['ansible_date_time']['date'],
-                                     host.id])
-                    else:
-                        data.append([host.name, '', '', '', '', '', '', host.id])
-            elif request.GET['action'] == 'group_table':
-                for group in Group.objects.all():
-                    data.append([group.name,
-                                 group.description,
-                                 len(group.members.all()),
-                                 len(group.group_set.all()),
-                                 len(group.children.all()),
-                                 len(group.variable_set.all()),
-                                 group.id])
             else:
                 return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+class ImportExportView(View):
+
+    @staticmethod
+    def get(request):
+        if 'action' not in request.GET:
+            return render(request, 'inventory/import_export.html')
 
     @staticmethod
     def post(request):
@@ -118,10 +97,56 @@ class InventoryView(View):
                     data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
             else:
                 data = {'result': 'failed', 'msg': 'Error: Invalid file type (.' + request.POST['type'] + ')'}
-        elif request.POST['action'] == 'bulk_remove':
-            if request.POST['type'] == 'host':
+
+        else:
+            return Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+class NodesView(View):
+
+    @staticmethod
+    def get(request, node_type_plural):
+        node_type = node_type_plural[:-1]
+        if 'action' not in request.GET:
+            context = {'node_type': node_type, 'node_type_plural': node_type_plural}
+            return render(request, 'inventory/nodes.html', context)
+        else:
+            data = list()
+            if request.GET['action'] == 'host_table':
+                for host in Host.objects.all():
+                    facts = NodeDetailsView.get_facts(host.name)
+                    if facts:
+                        data.append([host.name,
+                                     host.description,
+                                     facts['ansible_default_ipv4']['address'],
+                                     facts['ansible_processor_count'],
+                                     facts['ansible_memtotal_mb'],
+                                     facts['ansible_mounts'][0]['size_total'],
+                                     facts['ansible_date_time']['date'],
+                                     host.id])
+                    else:
+                        data.append([host.name, '', '', '', '', '', '', host.id])
+            elif request.GET['action'] == 'group_table':
+                for group in Group.objects.all():
+                    data.append([group.name,
+                                 group.description,
+                                 len(group.members.all()),
+                                 len(group.group_set.all()),
+                                 len(group.children.all()),
+                                 len(group.variable_set.all()),
+                                 group.id])
+            else:
+                return Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+    @staticmethod
+    def post(request, node_type_plural):
+        node_type = node_type_plural[:-1]
+        if request.POST['action'] == 'delete':
+            if node_type == 'host':
                 node_class = Host
-            elif request.POST['type'] == 'group':
+            elif node_type == 'group':
                 node_class = Group
             else:
                 raise Http404('Invalid node type')
@@ -132,13 +157,6 @@ class InventoryView(View):
         else:
             return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
-
-
-class NodesView(View):
-    @staticmethod
-    def get(request, node_type_plural):
-        context = {'node_type': node_type_plural[:-1], 'node_type_plural': node_type_plural}
-        return render(request, 'inventory/nodes.html', context)
 
 
 class NodeDetailsView(View):

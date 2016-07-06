@@ -1,6 +1,5 @@
 $(document).ready(function () {
-
-
+    
     var globalResizeTimer = null;
 
     $(window).resize(function() {
@@ -51,21 +50,6 @@ $(document).ready(function () {
            event.preventDefault()
        }
     });
-
-    // Initialize import data field
-    $('#import_file')
-        .change(function (event) {
-            $(this).data('files', event.target.files);
-        })
-        .fileinput({
-            showPreview: false,
-            showRemove: false,
-            showCancel: false,
-            showUpload: false,
-            browseLabel: '',
-            captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm'
-        });
 
     // Open import data dialog
     $('#import_data').click(function () {

@@ -64,7 +64,7 @@ $(document).ready(function () {
     $('#node_table').DataTable({
         paging: false,
         ajax: {
-            url: '/inventory/',
+            url: '',
             type: 'GET',
             dataSrc: '',
             data: {action: nodeType +'_table'}
@@ -118,13 +118,12 @@ $(document).ready(function () {
                     text: 'Confirm',
                     click: function () {
                         $.ajax({
-                            url: '/inventory/',
+                            url: '',
                             type: 'POST',
                             dataType: 'json',
                             data: {
-                                action: 'bulk_remove',
-                                selection: $('#node_list').DynamicList('getSelected', 'id'),
-                                type: nodeType
+                                action: 'delete',
+                                selection: $('#node_list').DynamicList('getSelected', 'id')
                             },
                             success: function () {
                                 location.reload();

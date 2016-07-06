@@ -12,14 +12,15 @@
 
     #- include_vars: '{{ var_file }}'
  
-    #- include: '{{ play_file }}'
-    #  when: "'app-mongos' in group_names"
+    - name: include test
+      include: '{{ play_file }}'
+      
  
-    - name: Delete test file
-      file: path=/tmp/test_file
-            state=absent
-      notify:
-        - Create test file
+    #- name: Delete test file
+    #  file: path=/tmp/test_file
+    #        state=absent
+    #  notify:
+    #    - Create test file
 
     #- name: Test with items
     #  lineinfile: line="{{ item }}"
