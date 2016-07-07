@@ -341,12 +341,11 @@ $(document).ready(function () {
     autoScroll.click(function() {
         autoScroll.toggleClass('checked_button');
         if (autoScroll.hasClass('checked_button')) {
-            sessionStorage.setItem('auto_scroll', autoScroll.hasClass('checked_button'))
+            sessionStorage.setItem('auto_scroll', true)
         }
         else {
             sessionStorage.removeItem('auto_scroll')
         }
-
     });
 
     // Print report
