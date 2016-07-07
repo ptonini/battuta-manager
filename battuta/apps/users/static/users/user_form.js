@@ -273,11 +273,9 @@ $(document).ready(function () {
                 postData.append('ask_pass', $('#ask_pass').hasClass('checked_button'));
                 postData.append('ask_sudo_pass', $('#ask_sudo_pass').hasClass('checked_button'));
                 postData.append('rsa_key', credentialForm.data('rsa_key'));
-                if (credRsaKey.data('files')) {
-                    $.each(credRsaKey.data('files'), function (key, value) {
-                        postData.append(key, value);
-                        postData.append('rsa_key', value.name)
-                    });
+                if (credRsaKey.data('files')[0]) {
+                    postData.append('rsa_key_file', credRsaKey.data('files')[0]);
+                    postData.append('rsa_key', value.name)
                 }
                 submitCredentials(postData);
                 break;

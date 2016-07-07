@@ -221,9 +221,19 @@ function buildDescendantsList() {
 
 $(document).ready(function () {
 
-    rememberSelectedTab($('ul.node_tabs').attr('id'));
-
     var nodeName = $('#header_node_name').html();
+
+    // Format page to 'all' group
+    if (nodeName == 'all') {
+        $('.node_tabs').remove();
+        $('#info_tab').removeClass('in active');
+        $('#variables_tab').addClass('in active')
+    }
+    else {
+        rememberSelectedTab($('ul.node_tabs').attr('id'));
+    }
+
+
     var nodeType = $('#header_node_type').html();
     var variableTable = $('#variable_table');
     var selectDialog = $('#select_dialog');
@@ -234,13 +244,7 @@ $(document).ready(function () {
     var nodeDescriptionHeader = $('#node_description_header');
     var nodeTypeDialog = $('#node_type_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
-
-    // Format page to 'all' group
-    if (nodeName == 'all') {
-        $('#variables_tab').addClass('in active');
-        $('.node_tabs').find('a[href!="#variables_tab"]').parent().remove()
-    }
-
+    
     if (nodeType == 'group') {
         buildDescendantsList();
     }
@@ -392,7 +396,6 @@ $(document).ready(function () {
                     }
                 });
         }
-
     });
 
     // Build inherited variables table
@@ -493,6 +496,5 @@ $(document).ready(function () {
     $('#open_facts').click(function (){
         getFacts(openNodeFactsDialog)
     });
-
-
+    
 });

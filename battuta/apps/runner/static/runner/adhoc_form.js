@@ -20,11 +20,6 @@ function resetAdHocForm() {
 
 $(document).ready(function () {
 
-    var app = 'runner';
-    if (window.location.href.split('/').indexOf('inventory') > -1) {
-        app = 'inventory';
-    }
-
     var adhocTable = $('#adhoc_table');             // Adhoc table container selector
     var alertDialog = $('#alert_dialog');           // Alert dialog selector
     var credentials = $('#credentials');
@@ -32,8 +27,7 @@ $(document).ready(function () {
     var hosts = $('#hosts');
     var adhocForm = $('#adhoc_form');
 
-    // Lock hosts input if running from inventory
-    if (app == 'inventory') {
+    if (window.location.href.split('/').indexOf('inventory') > -1) {
         hosts.attr('disabled', 'disabled').val($('#header_node_name').html());
         $('#pattern_editor').prop('disabled', true)
     }
@@ -58,7 +52,7 @@ $(document).ready(function () {
                 action: 'list'
             }
         },
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
             $(row).find('td:eq(4)').html(
                 $('<span>').css('float', 'right').append(
@@ -181,18 +175,8 @@ $(document).ready(function () {
                     user: (!cred.password && cred.ask_pass && !cred.rsa_key),
                     sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
                 };
-                if (currentModule.uploadsFile) {
-                    function successCallback(data) {
-                        currentModule.filepath = data.filepaths[0];
-                        postData.arguments = currentModule.buildArguments();
-                        executeAnsibleJob(postData, askPassword);
-                    }
-                    uploadFiles($('#file'), 'file', successCallback);
-                }
-                else {
-                    postData.arguments = currentModule.buildArguments();
-                    executeAnsibleJob(postData, askPassword, cred.username);
-                }
+                postData.arguments = currentModule.buildArguments();
+                executeAnsibleJob(postData, askPassword, cred.username);
                 break;
         }
     });

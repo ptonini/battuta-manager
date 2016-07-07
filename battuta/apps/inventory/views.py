@@ -1,6 +1,7 @@
 import json
 import os
 import csv
+import tempfile
 
 from django.conf import settings
 from django.http import HttpResponse, Http404
@@ -16,9 +17,12 @@ class InventoryView(View):
     @staticmethod
     def get(request):
         if 'action' not in request.GET:
-            data = {'_meta': {'hostvars': dict()}}
+            data = {'_meta': {'hostvars': dict(), 'hostdescs': dict()}}
 
             for host in Host.objects.order_by('name'):
+
+                if host.description:
+                    data['_meta']['hostdescs'][host.name] = host.description
 
                 if len(host.variable_set.all()) > 0:
                     data['_meta']['hostvars'][host.name] = dict()
@@ -27,6 +31,9 @@ class InventoryView(View):
 
             for group in Group.objects.order_by('name'):
                 data[group.name] = dict()
+
+                if group.description:
+                    data[group.name]['description'] = group.description
 
                 if len(group.members.all()) > 0:
                     data[group.name]['hosts'] = list()
@@ -68,35 +75,70 @@ class ImportExportView(View):
     @staticmethod
     def post(request):
         if request.POST['action'] == 'import':
-            if request.POST['type'] == 'csv':
-                csv_data = csv.reader(request.POST.getlist('import_data[]'))
-                header = next(csv_data)
-                try:
-                    host_index = header.index('host')
-                except ValueError:
-                    data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
-                else:
-                    added = 0
-                    updated = 0
-                    for row in csv_data:
-                        host, created = Host.objects.get_or_create(name=row[host_index])
-                        if created:
-                            added += 1
-                        else:
-                            updated += 1
-                        for index, cell in enumerate(row):
-                            if index != host_index and cell:
-                                if header[index] == 'group':
-                                    group, created = Group.objects.get_or_create(name=cell)
-                                    host.group_set.add(group)
-                                    host.save()
-                                else:
-                                    var, created = Variable.objects.get_or_create(key=header[index], host=host)
-                                    var.value = cell
+            with tempfile.TemporaryFile() as temp:
+                for chunk in request.FILES['file']:
+                    temp.write(chunk)
+                temp.seek(0, 0)
+                added = 0
+                updated = 0
+                if request.POST['type'] == 'csv':
+                    csv_data = csv.reader(temp)
+                    header = next(csv_data)
+                    try:
+                        host_index = header.index('host')
+                    except ValueError:
+                        data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
+                    else:
+                        for row in csv_data:
+                            host, created = Host.objects.get_or_create(name=row[host_index])
+                            if created:
+                                added += 1
+                            else:
+                                updated += 1
+                            for index, cell in enumerate(row):
+                                if index != host_index and cell:
+                                    if header[index] == 'group':
+                                        group, created = Group.objects.get_or_create(name=cell)
+                                        host.group_set.add(group)
+                                        host.save()
+                                    else:
+                                        var, created = Variable.objects.get_or_create(key=header[index], host=host)
+                                        var.value = cell
+                                        var.save()
+                        data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
+
+                elif request.POST['type'] == 'json':
+                    try:
+                        json_data = json.load(temp)
+                    except ValueError:
+                        data = {'result': 'failed', 'msg': 'Error: File does not contain valid JSON'}
+                    else:
+                        for host_name, vars in json_data['_meta']['hostvars'].iteritems():
+                            host, created = Host.objects.get_or_create(name=host_name)
+                            for key, value in vars.iteritems():
+                                var, created = Variable.objects.get_or_create(key=key, host=host)
+                                var.value = value
+                                var.save()
+                        json_data.pop('_meta', None)
+                        for group_name, group_dict in json_data.iteritems():
+                            group, created = Group.objects.get_or_create(name=group_name)
+                            if 'children' in group_dict:
+                                for child_name in group_dict['children']:
+                                    child, created = Group.objects.get_or_create(name=child_name)
+                                    group.children.add(child)
+                            if 'hosts' in group_dict:
+                                for host_name in group_dict['hosts']:
+                                    host, created = Host.objects.get_or_create(name=host_name)
+                                    group.members.add(host)
+                            if 'vars' in group_dict:
+                                for key, value in group_dict['vars'].iteritems():
+                                    var, created = Variable.objects.get_or_create(key=key, group=group)
+                                    var.value = value
                                     var.save()
-                    data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
-            else:
-                data = {'result': 'failed', 'msg': 'Error: Invalid file type (.' + request.POST['type'] + ')'}
+                            group.save()
+                        data = {'result': 'ok', 'msg': 'Import was successful'}
+                else:
+                    data = {'result': 'failed', 'msg': 'Error: Invalid file type (.' + request.POST['type'] + ')'}
 
         else:
             return Http404('Invalid action')

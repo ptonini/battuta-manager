@@ -98,28 +98,7 @@ class UserView(View):
         else:
             user = request.user
 
-        if request.POST['action'] == 'upload':
-            relative_path = os.path.join('userdata', str(request.user.username))
-            if request.POST['type'] == 'rsakey':
-                relative_path = os.path.join(relative_path, '.ssh')
-            full_path = os.path.join(settings.DATA_DIR, relative_path)
-            try:
-                os.makedirs(full_path)
-            except os.error:
-                pass
-            uploaded_files = list()
-            for key, value in request.FILES.iteritems():
-                try:
-                    uploaded_files.append(os.path.join(relative_path, str(value.name)))
-                except UnicodeEncodeError:
-                    raise Http404('Error: non-ASCII characters in filename')
-                else:
-                    with open(os.path.join(full_path, str(value.name)), 'wb+') as f:
-                        for chunk in value.chunks():
-                            f.write(chunk)
-            data = {'result': 'ok', 'filepaths': uploaded_files}
-
-        elif request.POST['action'] == 'save':
+        if request.POST['action'] == 'save':
             if request.user.id == user.id or request.user.is_superuser:
                 user_form = UserForm(form_data or None, instance=user)
                 userdata_form = UserDataForm(form_data or None, instance=user.userdata)
@@ -268,7 +247,7 @@ class CredentialView(View):
                             # Save new RSA key
                             if request.FILES:
                                 with open(os.path.join(ssh_path, form_data['rsa_key']), 'w+b') as f:
-                                    for chunk in request.FILES['0'].chunks():
+                                    for chunk in request.FILES['rsa_key_file'].chunks():
                                         f.write(chunk)
 
                             # Set credential as default

@@ -161,38 +161,6 @@ function prettyBoolean (element, value) {
     }
 }
 
-// Uploads files to user data folder
-function uploadFiles(fileInput, type, onUploadSuccess) {
-    var postData = new FormData();
-    var fileInputContainer = fileInput.closest('.file-input');
-    postData.append('action', 'upload');
-    postData.append('type', type);
-    $.each(fileInput.data('files'), function (key, value) {
-        postData.append(key, value);
-    });
-    $('<div>')
-        .css('height', '30px')
-        .append($('<img src="/static/images/waiting-small.gif">'))
-        .insertBefore(fileInputContainer);
-    fileInputContainer.hide();
-    $.ajax({
-        url: '/users/',
-        type: 'POST',
-        data: postData,
-        dataType: 'json',
-        cache: false,
-        processData: false,
-        contentType: false,
-        success: function (data) {
-            onUploadSuccess(data)
-        },
-        complete: function () {
-            fileInputContainer.prev().remove();
-            fileInputContainer.show();
-        }
-    });
-}
-
 // Build credentials selection box
 function buildCredentialsSelectionBox(credentials, start_value) {
     

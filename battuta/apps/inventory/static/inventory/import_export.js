@@ -21,32 +21,48 @@ $(document).ready(function () {
 
     $('#import_form').submit(function(event) {
         event.preventDefault();
+        var sourceType = $('input[type="radio"][name="import_file_type"]:checked').val();
+        
         if (importFile.data('files')) {
-            var reader = new FileReader();
-            reader.onload = function() {
+            var postData = new FormData();
+            postData.append('action', 'import');
+            postData.append('type', sourceType);
+            postData.append('file', importFile.data('files')[0]);
+            $.ajax({
+                url: '',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
+                }
+            });
+        }
+    });
+
+    $('#export_form').submit(function(event) {
+        event.preventDefault();
+        switch ($('input[type="radio"][name="export_file_type"]:checked').val()) {
+            case 'json':
                 $.ajax({
                     url: '/inventory/',
-                    type: 'POST',
-                    data: {
-                        action: 'import',
-                        type: this.fileName.split('.')[ this.fileName.split('.').length - 1],
-                        import_data: this.result.split(/[\r\n]+/g)
-                    },
+                    type: 'GET',
                     dataType: 'json',
                     success: function (data) {
-                        if (data.result == 'ok') {
-                            $('#import_dialog').dialog('close');
-                        }
-                        $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
-                        $('#import_file').removeData('files').fileinput('reset');
+                        var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
+                        var link = document.createElement('a');
+                        link.setAttribute('href', jsonString);
+                        link.setAttribute('download', 'inventory.json');
+                        document.body.appendChild(link);
+                        link.click();
                     }
                 });
-            };
-            reader.onerror = function () {
-                $('#alert_dialog').html('<strong>' + 'FileReader.error' + '</strong>').dialog('open')
-            };
-            reader.fileName = importFile.data('files')[0].name;
-            reader.readAsText(importFile.data('files')[0]);
+                break;
+            case 'zip':
+                break
         }
     })
 });

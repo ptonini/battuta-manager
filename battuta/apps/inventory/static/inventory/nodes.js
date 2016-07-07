@@ -145,7 +145,7 @@ $(document).ready(function () {
     // Download host table
     $('#download_table').click(function () {
         $.ajax({
-            url: '/inventory/',
+            url: '',
             type: 'GET',
             dataType: 'json',
             data: {action: 'host_table'},

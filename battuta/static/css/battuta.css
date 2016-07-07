@@ -15,28 +15,6 @@ footer {
     height: 25px;
 }
 
-hr.thick {
-    border-style: none;
-    height: 3px;
-    color: #777;
-    background-color: #777;
-}
-
-hr.medium {
-    border-style: none;
-    height: 2px;
-    color: #777;
-    background-color: #777;
-}
-
-h4.tab_title {
-    margin-bottom: 20px;
-}
-
-h4.result_header {
-    margin-top: 20px;
-}
-
 a,
 label,
 .glyphicon,
@@ -82,14 +60,14 @@ h5 {
     margin: 10px 0
 }
 
+.pattern_editor_row div:first-of-type{
+    text-align: right;
+}
+
 .truncate-text {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-}
-
-.pattern_editor_row div:first-of-type{
-    text-align: right;
 }
 
 #alert_dialog,
