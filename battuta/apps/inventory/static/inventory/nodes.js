@@ -10,6 +10,8 @@ $(document).ready(function () {
     var nodeList = $('#node_list');
     var nodeType = $('#node_type').val();
 
+    document.title = 'Battuta - ' + capitalize(nodeType) + 's';
+
     if (nodeType == 'host') {
         $('#node_table_header').append(
             $('<th>').addClass('col-md-2').html('Host'),

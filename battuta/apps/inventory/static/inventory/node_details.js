@@ -220,20 +220,8 @@ function buildDescendantsList() {
 }
 
 $(document).ready(function () {
-
+    
     var nodeName = $('#header_node_name').html();
-
-    // Format page to 'all' group
-    if (nodeName == 'all') {
-        $('.node_tabs').remove();
-        $('#info_tab').removeClass('in active');
-        $('#variables_tab').addClass('in active')
-    }
-    else {
-        rememberSelectedTab($('ul.node_tabs').attr('id'));
-    }
-
-
     var nodeType = $('#header_node_type').html();
     var variableTable = $('#variable_table');
     var selectDialog = $('#select_dialog');
@@ -244,6 +232,19 @@ $(document).ready(function () {
     var nodeDescriptionHeader = $('#node_description_header');
     var nodeTypeDialog = $('#node_type_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
+
+    document.title = 'Battuta - ' + nodeName;
+
+    // Format page to 'all' group
+    if (nodeName == 'all') {
+        $('.node_tabs').remove();
+        $('#info_tab').removeClass('in active');
+        $('#variables_tab').addClass('in active')
+    }
+    else {
+        rememberSelectedTab($('ul.node_tabs').attr('id'));
+    }
+    
     
     if (nodeType == 'group') {
         buildDescendantsList();

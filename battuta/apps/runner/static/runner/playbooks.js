@@ -100,6 +100,8 @@ $(document).ready(function () {
     var playbookEditor = $('#playbook_editor');
     var editorDialog = $('#editor_dialog');
 
+    document.title = 'Battuta - Playbooks';
+    
     // Initialize code editor
     var editor = ace.edit("playbook_editor");
     editor.setTheme("ace/theme/chrome");

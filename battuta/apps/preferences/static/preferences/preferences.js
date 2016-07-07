@@ -236,6 +236,8 @@ $(document).ready(function () {
     var itemOrGroupForm = $('#item_or_group_form');
     var itemOrGroupDialog = $('#item_or_group_dialog');
 
+    document.title = 'Battuta - Preferences';
+    
     buildPreferencesContainer();
 
     itemOrGroupDialog.dialog({

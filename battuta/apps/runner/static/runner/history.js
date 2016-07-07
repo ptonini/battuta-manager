@@ -1,5 +1,7 @@
 $(document).ready(function () {
 
+    document.title = 'Battuta - Job History';
+    
     // Build entity adhoc table
     $('#runner_table').DataTable({
         pageLength: 10,

@@ -293,6 +293,7 @@ function loadResults(intervalId) {
         dataType: 'json',
         data: {action: 'status'},
         success: function (runner) {
+            document.title = runner.name;
             buildResultTables(runner, intervalId)
         }
     })

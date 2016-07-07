@@ -4,6 +4,8 @@ $(document).ready(function () {
 
     var importFile = $('#import_file');
 
+    document.title = 'Battuta - Import/Export';
+    
     // Initialize import data field
     importFile
         .change(function (event) {
