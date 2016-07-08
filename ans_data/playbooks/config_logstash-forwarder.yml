@@ -1,7 +1,0 @@
----
-- name: Config Logstash Forwarder
-  hosts: frotaweb:!znh
-  become: yes
-  roles:
-    - common
-    - logstash-forwarder
