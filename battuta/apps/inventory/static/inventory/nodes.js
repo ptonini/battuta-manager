@@ -1,4 +1,4 @@
-function addNodeCallback() {
+function reloadNodes() {
     $('#node_list').DynamicList('load');
     $('#node_table').DataTable().ajax.reload()
 }
@@ -9,6 +9,7 @@ $(document).ready(function () {
 
     var nodeList = $('#node_list');
     var nodeType = $('#node_type').val();
+    var deleteDialog = $('#delete_dialog');
 
     document.title = 'Battuta - ' + capitalize(nodeType) + 's';
 
@@ -56,7 +57,7 @@ $(document).ready(function () {
             });
         },
         addButtonAction: function () {
-            openAddNodeDialog(nodeType, addNodeCallback)
+            openAddNodeDialog(nodeType, reloadNodes)
         }
     };
 
@@ -96,7 +97,7 @@ $(document).ready(function () {
                     .html('Add '+ nodeType)
                     .click(function (event) {
                         event.preventDefault();
-                        openAddNodeDialog(nodeType, addNodeCallback)
+                        openAddNodeDialog(nodeType, reloadNodes)
                     })
             );
         }
@@ -114,7 +115,7 @@ $(document).ready(function () {
     });
 
     $('#delete_nodes').click(function() {
-        $('#delete_dialog')
+        deleteDialog
             .dialog('option', 'buttons', [
                 {
                     text: 'Confirm',
@@ -128,7 +129,8 @@ $(document).ready(function () {
                                 selection: $('#node_list').DynamicList('getSelected', 'id')
                             },
                             success: function () {
-                                location.reload();
+                                reloadNodes();
+                                deleteDialog.dialog('close');
                             }
                         });
 

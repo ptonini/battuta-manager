@@ -42,9 +42,16 @@ $(document).ready(function () {
     var credentials = $('#credentials');
     var credentialForm = $("#credential_form");
 
-    var page = 'view';
-    if (window.location.href.split('/').indexOf('new') > -1) {
-        page = 'new';
+
+
+    
+    if (window.location.href.split('/').indexOf('new') == -1) {
+        page = 'view';
+        document.title = 'Battuta - ' + $('h3').html();
+    }
+    else{
+        var page = 'new';
+        document.title = 'Battuta - New user';
     }
 
     // Initialize confirm changes dialog

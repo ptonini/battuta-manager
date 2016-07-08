@@ -21,19 +21,16 @@ class InventoryView(View):
 
             for host in Host.objects.order_by('name'):
 
-                if host.description:
-                    data['_meta']['hostdescs'][host.name] = host.description
-
-                if len(host.variable_set.all()) > 0:
+                if len(host.variable_set.all()) > 0 or host.description:
                     data['_meta']['hostvars'][host.name] = dict()
+
+                    if host.description:
+                        data['_meta']['hostvars'][host.name]['_description'] = host.description
                     for var in host.variable_set.all():
                         data['_meta']['hostvars'][host.name][var.key] = var.value
 
             for group in Group.objects.order_by('name'):
                 data[group.name] = dict()
-
-                if group.description:
-                    data[group.name]['description'] = group.description
 
                 if len(group.members.all()) > 0:
                     data[group.name]['hosts'] = list()
@@ -46,6 +43,8 @@ class InventoryView(View):
                         data[group.name]['children'].append(child.name)
 
                 data[group.name]['vars'] = dict()
+                if group.description:
+                    data[group.name]['vars']['_description'] = group.description
                 for var in group.variable_set.all():
                     data[group.name]['vars'][var.key] = var.value
         else:
@@ -113,12 +112,15 @@ class ImportExportView(View):
                     except ValueError:
                         data = {'result': 'failed', 'msg': 'Error: File does not contain valid JSON'}
                     else:
-                        for host_name, vars in json_data['_meta']['hostvars'].iteritems():
+                        for host_name, variables in json_data['_meta']['hostvars'].iteritems():
                             host, created = Host.objects.get_or_create(name=host_name)
-                            for key, value in vars.iteritems():
-                                var, created = Variable.objects.get_or_create(key=key, host=host)
-                                var.value = value
-                                var.save()
+                            for key, value in variables.iteritems():
+                                if key == '_description':
+                                    host.description = value
+                                else:
+                                    var, created = Variable.objects.get_or_create(key=key, host=host)
+                                    var.value = value
+                                    var.save()
                         json_data.pop('_meta', None)
                         for group_name, group_dict in json_data.iteritems():
                             group, created = Group.objects.get_or_create(name=group_name)
@@ -132,9 +134,12 @@ class ImportExportView(View):
                                     group.members.add(host)
                             if 'vars' in group_dict:
                                 for key, value in group_dict['vars'].iteritems():
-                                    var, created = Variable.objects.get_or_create(key=key, group=group)
-                                    var.value = value
-                                    var.save()
+                                    if key == '_description':
+                                        group.description = value
+                                    else:
+                                        var, created = Variable.objects.get_or_create(key=key, group=group)
+                                        var.value = value
+                                        var.save()
                             group.save()
                         data = {'result': 'ok', 'msg': 'Import was successful'}
                 else:
@@ -194,7 +199,10 @@ class NodesView(View):
                 raise Http404('Invalid node type')
             for node_id in request.POST.getlist('selection[]'):
                 node = get_object_or_404(node_class, pk=node_id)
-                node.delete()
+                if node_type == 'group' and node.name == 'all':
+                    pass
+                else:
+                    node.delete()
             data = {'result': 'ok'}
         else:
             return Http404('Invalid action')
@@ -307,7 +315,10 @@ class NodeDetailsView(View):
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'delete':
-            node.delete()
+            if node_type == 'group' and node.name == 'all':
+                pass
+            else:
+                node.delete()
             data = {'result': 'ok'}
         else:
             raise Http404('Invalid action')

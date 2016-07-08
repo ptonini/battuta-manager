@@ -17,6 +17,8 @@ class BattutaCallback(CallbackBase):
         self._current_play_id = None
         self._current_task_id = None
         self._current_task_module = None
+        self._current_task_run_once = None
+        self._current_task_delegate_to = None
         self._inventory = None
 
     @staticmethod
@@ -70,10 +72,18 @@ class BattutaCallback(CallbackBase):
             task_name = task.get_name().strip()
 
         if is_handler:
-            task_name = '[Handler] ' + task_name
+            task_name = '[handler] ' + task_name
 
         if task.__dict__['_attributes']['run_once']:
+            self._current_task_run_once = True
             task_host_count = 1
+        else:
+            self._current_task_run_once = False
+
+        if task.__dict__['_attributes']['delegate_to']:
+            self._current_task_delegate_to = task.__dict__['_attributes']['delegate_to']
+        else:
+            self._current_task_delegate_to = None
 
         sql_query = 'INSERT INTO runner_runnertask (runner_play_id,name,module,host_count,is_handler) ' \
                     'VALUES (%s, %s, %s, %s, %s)'
@@ -84,6 +94,12 @@ class BattutaCallback(CallbackBase):
 
         if 'check_results' in response:
             response['check_results'] = 'truncated'
+
+        if self._current_task_delegate_to:
+            host = host + ' => ' + self._current_task_delegate_to
+
+        if self._current_task_run_once and self._current_task_delegate_to:
+            host = self._current_task_delegate_to
 
         sql_query = 'SELECT id FROM runner_runnerresult WHERE runner_task_id=%s AND host=%s'
         result_id = self._run_query_on_db('single_value', sql_query, (self._current_task_id, host))

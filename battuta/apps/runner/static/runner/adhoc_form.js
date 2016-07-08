@@ -169,7 +169,7 @@ $(document).ready(function () {
                 var cred = $('option:selected', credentials).data();
                 postData.action = 'run';
                 postData.type = 'adhoc';
-                postData.name = 'AdHoc task - ' + currentModule.name;
+                postData.name = '[adhoc task] ' + currentModule.name;
                 postData.cred = credentials.val();
                 var askPassword = {
                     user: (!cred.password && cred.ask_pass && !cred.rsa_key),

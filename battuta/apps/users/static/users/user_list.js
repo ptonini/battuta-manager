@@ -1,5 +1,7 @@
 $(document).ready(function () {
 
+    document.title = 'Battuta - List users';
+
     // Build entity adhoc table
     $('#user_table').DataTable({
         pageLength: 10,
