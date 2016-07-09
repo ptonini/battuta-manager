@@ -7,7 +7,7 @@ function validateItemDataType(dataType, value) {
             }
             break;
         case 'bool':
-            if (typeof value !== 'boolean') {
+            if (['yes', 'no'].indexOf(value) == -1) {
                 result = [false, 'Value must be a boolean']
             }
             break;
@@ -39,9 +39,9 @@ function buildPreferencesContainer() {
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3');
     var alterButton = $('<button>').attr('class', 'btn btn-default btn-sm');
     var inputField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
-    var booleanField = $('<select>').attr({class: 'select form-control input-sm'}).append(
-        $('<option>').val(true).html('True'),
-        $('<option>').val(false).html('False')
+    var booleanField = $('<select>').addClass('select form-control input-sm').append(
+        $('<option>').val('yes').html('yes'),
+        $('<option>').val('no').html('no')
     );
     var fieldLabel = $('<label>').css({'font-size': '13px', padding: '6px 0'}).data('toggle', 'tooltip');
     

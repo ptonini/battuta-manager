@@ -75,7 +75,7 @@ $(document).ready(function () {
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
         rowCallback: function (row, data) {
-            $(row).find('td:eq(0)')
+            $(row)
                 .css('cursor', 'pointer')
                 .click(function () {
                     window.open('/inventory/' + nodeType + '/' + data[data.length - 1], '_self')
@@ -168,7 +168,9 @@ $(document).ready(function () {
     });
 
     $('#update_facts').click(function () {
-        gatherFacts('all');
+        gatherFacts('all', function() {
+            $('#node_table').DataTable().ajax.reload()
+        });
     })
  
 });

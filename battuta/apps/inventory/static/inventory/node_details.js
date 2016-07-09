@@ -180,9 +180,7 @@ function buildDescendantsList() {
         url: '',
         type: 'GET',
         dataType: 'json',
-        data: {
-            action: 'descendants'
-        },
+        data: {action: 'descendants'        },
         success: function (data) {
 
             var listOptions = {
@@ -490,7 +488,9 @@ $(document).ready(function () {
 
     // Gather facts on node
     $('#gather_facts').click(function () {
-        gatherFacts(nodeName);
+        gatherFacts(nodeName, function() {
+            getFacts(loadFacts)
+        });
     });
 
     // Open node facts dialog

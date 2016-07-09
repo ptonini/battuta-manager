@@ -90,7 +90,9 @@ class RunnerView(View):
                 runner = runner_form.save(commit=False)
                 runner.user = request.user
                 runner.status = 'created'
+                runner.is_running = True
                 setattr(runner, 'data', run_data)
+                setattr(runner, 'prefs', get_preferences())
                 runner.save()
                 try:
                     p = Process(target=play_runner, args=(runner,))
@@ -107,7 +109,6 @@ class RunnerView(View):
             try:
                 process = psutil.Process(runner.pid)
             except psutil.NoSuchProcess:
-                runner.status = 'canceled'
                 data = {'result': 'fail', 'msg': 'Job is defunct'}
             except psutil.Error as e:
                 data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(runner.pid)}
@@ -116,9 +117,10 @@ class RunnerView(View):
                 for child in process.children(recursive=True):
                     child.kill()
                 process.kill()
-                runner.status = 'canceled'
                 data = {'result': 'ok', 'runner_id': runner.id}
             finally:
+                runner.status = 'canceled'
+                runner.is_running = False
                 runner.save()
         else:
             raise Http404('Invalid action')
@@ -285,7 +287,7 @@ class HistoryView(BaseView):
                 data = list()
                 for runner in Runner.objects.all():
                     if runner.user == request.user or request.user.is_superuser:
-                        if runner.type == 'playbook':
+                        if runner.subset:
                             target = runner.subset
                         else:
                             play = runner.runnerplay_set.first()
@@ -293,6 +295,7 @@ class HistoryView(BaseView):
                                 target = play.hosts
                             else:
                                 target = None
+
                         data.append([runner.created_on.astimezone(tz).strftime(self.prefs['date_format']),
                                      runner.user.username,
                                      runner.name,
@@ -308,12 +311,6 @@ class ResultView(BaseView):
     def get(self, request, runner_id):
         runner = get_object_or_404(Runner, pk=runner_id)
 
-        # Determine is runner is still running
-        if runner.status in runner.stopped_states:
-            setattr(runner, 'is_running', False)
-        else:
-            setattr(runner, 'is_running', True)
-
         if 'action' not in request.GET:
             tz = timezone(runner.user.userdata.timezone)
             runner.created_on = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
@@ -324,7 +321,6 @@ class ResultView(BaseView):
 
                 # Convert runner object to dict
                 data = model_to_dict(runner)
-                data['is_running'] = runner.is_running
 
                 # Convert status string to dict
                 if runner.stats:

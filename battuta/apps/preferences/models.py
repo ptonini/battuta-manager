@@ -11,8 +11,8 @@ class ItemGroup(models.Model):
 class Item(models.Model):
     DATA_TYPES = (
         ('str', 'String'),
-        ('int', 'Integer'),
-        ('number', 'Number')
+        ('number', 'Number'),
+        ('bool', 'Boolean')
     )
     name = models.CharField(max_length=64, blank=False, unique=True)
     description = models.CharField(max_length=256, blank=True)

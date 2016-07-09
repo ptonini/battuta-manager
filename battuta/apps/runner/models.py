@@ -22,6 +22,7 @@ class PlaybookArgs(models.Model):
 
 class Runner(models.Model):
     user = models.ForeignKey(User)
+    is_running = models.BooleanField(default=False)
     type = models.CharField(max_length=8, choices=(('playbook', 'playbook'), ('adhoc', 'adhoc')))
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128)
@@ -34,7 +35,6 @@ class Runner(models.Model):
     subset = models.CharField(max_length=64, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)
-    stopped_states = ['finished', 'finished with errors', 'canceled', 'failed']
 
 
 class RunnerPlay(models.Model):

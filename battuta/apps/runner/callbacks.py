@@ -28,6 +28,7 @@ class BattutaCallback(CallbackBase):
     def _run_query_on_db(self, action, sql_query, var_tuple):
         with self._db_conn as cursor:
             cursor.execute(sql_query, var_tuple)
+            self._db_conn.commit()
             if cursor.rowcount > 0:
                 if action == 'single_value':
                     return cursor.fetchone()[0]
@@ -50,29 +51,20 @@ class BattutaCallback(CallbackBase):
     def _on_task_start(self, task, is_handler=False):
 
         # Get current play data
-        sql_query = 'SELECT gather_facts,host_count,failed_count FROM runner_runnerplay WHERE id=%s'
+        sql_query = 'SELECT host_count,failed_count FROM runner_runnerplay WHERE id=%s'
         row = self._run_query_on_db('single_row', sql_query, (self._current_play_id,))
 
-        gather_facts = row[0]
-        play_host_count = row[1]
-        play_failed_count = row[2]
+        play_host_count = row[0]
+        play_failed_count = row[1]
 
         # Set task module
         self._current_task_module = task.__dict__['_attributes']['action']
 
-        # Set task name and host count based on module
-        if self._current_task_module == 'setup' and not self._current_task_id and gather_facts:
-            task_host_count = play_host_count
-            task_name = 'Gather facts'
-        elif self._current_task_module == 'include':
+        # Set task host count based on module and options
+        if self._current_task_module == 'include':
             task_host_count = 0
-            task_name = task.get_name().strip()
         else:
             task_host_count = play_host_count - play_failed_count
-            task_name = task.get_name().strip()
-
-        if is_handler:
-            task_name = '[handler] ' + task_name
 
         if task.__dict__['_attributes']['run_once']:
             self._current_task_run_once = True
@@ -80,6 +72,13 @@ class BattutaCallback(CallbackBase):
         else:
             self._current_task_run_once = False
 
+        # Set task name
+        if is_handler:
+            task_name = '[handler] ' + task.get_name().strip()
+        else:
+            task_name = task.get_name().strip()
+
+        # Check is is a delegates task
         if task.__dict__['_attributes']['delegate_to']:
             self._current_task_delegate_to = task.__dict__['_attributes']['delegate_to']
         else:
@@ -92,11 +91,13 @@ class BattutaCallback(CallbackBase):
 
     def _save_result(self, host, status, message, response):
 
-        if 'check_results' in response:
-            response['check_results'] = 'truncated'
+        if self._runner.prefs['truncate_responses']:
+            for key in self._runner.prefs['truncated_keys'].split(','):
+                if key in response:
+                    response[key] = self._runner.prefs['truncate_msg']
 
         if self._current_task_delegate_to:
-            host = host + ' => ' + self._current_task_delegate_to
+            host = host + ' -> ' + self._current_task_delegate_to
 
         if self._current_task_run_once and self._current_task_delegate_to:
             host = self._current_task_delegate_to
@@ -118,8 +119,6 @@ class BattutaCallback(CallbackBase):
         self._run_query_on_db('update', sql_query, (self._runner.id,))
 
     def v2_playbook_on_play_start(self, play):
-
-
         sql_query = 'UPDATE runner_runner SET status="running" WHERE id=%s'
         self._run_query_on_db('update', sql_query, (self._runner.id,))
 
@@ -213,13 +212,11 @@ class BattutaCallback(CallbackBase):
         if 'msg' in response:
             message = response['msg']
 
-        if self._current_task_module == 'setup':
+        if self._current_task_module == 'setup' and self._runner.name == 'gather facts':
             facts = {'ansible_facts': response['ansible_facts']}
             filename = (os.path.join(settings.FACTS_DIR, host))
             with open(filename, "w") as f:
                 f.write(json.dumps(facts, indent=4))
-                response['ansible_facts'] = 'saved to disc'
-                message = 'Facts saved to disc'
         elif self._current_task_module == 'command' or self._current_task_module == 'script':
             message = response['stdout'] + response['stderr']
 

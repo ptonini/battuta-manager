@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    document.title = 'Battuta - Job History';
+    document.title = 'Battuta - Runner history';
     
     // Build entity adhoc table
     $('#runner_table').DataTable({
@@ -14,7 +14,7 @@ $(document).ready(function () {
             }
         },
         "order": [[0, "desc"]],
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             switch (data[4]) {
                 case 'running':
                     $(row).css('color', 'blue');
@@ -32,16 +32,11 @@ $(document).ready(function () {
                     $(row).css('color', 'gray');
                     break;
             }
-            $(row).find('td:eq(5)').html(
-                $('<span>').attr('style', 'float: right').append(
-                    $('<a>')
-                        .attr({'href' :'#', 'data-toggle': 'tooltip', 'title': 'Result'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-list'))
-                        .click(function (event) {
-                            popupCenter('/runner/result/' + data[5] + '/', data[5], 1000);
-                        })
-                )
-            )
+            $(row)
+                .css('cursor','pointer')
+                .click(function () {
+                    popupCenter('/runner/result/' + data[5] + '/', data[5], 1000);
+                })
         }
     });
 });

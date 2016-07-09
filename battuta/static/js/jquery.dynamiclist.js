@@ -101,7 +101,7 @@
     }
 
     function _load(listContainer, listDiv, opts) {
-                    switch (opts.dataSource) {
+        switch (opts.dataSource) {
             case 'ajax':
                 _loadFromAjax(listContainer, listDiv, opts);
                 break;

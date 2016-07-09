@@ -10,10 +10,10 @@
 
   tasks:
 
-    - name: Teste delegate_to + run_once
-      delegate_to: localhost
-      run_once: no
-      command: ifconfig
+    #- name: Teste delegate_to + run_once
+    #  delegate_to: localhost
+    #  run_once: no
+    #  command: ifconfig
     
     #- include_vars: '{{ var_file }}'
  

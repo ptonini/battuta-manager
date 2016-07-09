@@ -169,7 +169,8 @@ def play_runner(runner):
             if row[0] != 0:
                 status = 'finished with errors'
                 break
-        cursor.execute('UPDATE runner_runner SET status=%s, message=%s WHERE id=%s', (status, message, runner.id))
+        cursor.execute('UPDATE runner_runner SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
+                       (status, message, runner.id))
 
 
 

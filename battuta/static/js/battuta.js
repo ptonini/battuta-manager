@@ -90,6 +90,9 @@ function postAnsibleJob(postData) {
         data: postData,
         success: function (data) {
             if ( data.result == 'ok' ) {
+                if (postData.runner_key) {
+                    sessionStorage.setItem(postData.runner_key, data.runner_id)
+                }
                 popupCenter('/runner/result/' + data.runner_id + '/', data.runner_id, 1000);
             }
             else {
@@ -241,17 +244,19 @@ function getPreferences() {
     });
 }
 
-function gatherFacts(nodeName) {
+function gatherFacts(nodeName, finishCallback) {
+    var runner_key = 'runner_' + Math.random().toString(36).substring(2, 10);
     var postData = {
         action: 'run',
         type: 'adhoc',
-        name: 'Gather facts',
+        name: 'gather facts',
         hosts: nodeName,
         module: 'setup',
         remote_pass: '',
         become_pass: '',
         arguments: '',
-        become: false
+        become: false,
+        runner_key: runner_key
     };
     $.ajax({
         url: '/users/credentials/',
@@ -263,6 +268,23 @@ function gatherFacts(nodeName) {
             executeAnsibleJob(postData, askPassword, cred.username);
         }
     });
+    var intervalId = setInterval(function() {
+        var runner_id = sessionStorage.getItem(runner_key);
+        if (runner_id) {
+            $.ajax({
+                url: '/runner/result/' + runner_id + '/',
+                type: 'GET',
+                dataType: 'json',
+                data: {action: 'status'},
+                success: function (runner) {
+                    if (!runner.is_running) {
+                        finishCallback();
+                        clearInterval(intervalId)
+                    }
+                }
+            })
+        }
+    }, 1000)
 }
 
 function rememberSelectedTab(tabId) {
