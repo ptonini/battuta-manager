@@ -42,18 +42,6 @@ $(document).ready(function () {
     var credentials = $('#credentials');
     var credentialForm = $("#credential_form");
 
-
-
-    
-    if (window.location.href.split('/').indexOf('new') == -1) {
-        page = 'view';
-        document.title = 'Battuta - ' + $('h3').html();
-    }
-    else{
-        var page = 'new';
-        document.title = 'Battuta - New user';
-    }
-
     // Initialize confirm changes dialog
     confirmChangesDialog.dialog({
         autoOpen: false,
@@ -96,6 +84,17 @@ $(document).ready(function () {
             }
         }
     });
+
+    if (window.location.href.split('/').indexOf('new') == -1) {
+        page = 'view';
+        document.title = 'Battuta - ' + $('h3').html();
+    }
+    else{
+        var page = 'new';
+        document.title = 'Battuta - New user';
+    }
+
+
 
     // Build timezone selection box
     timezones.timezones();
@@ -281,8 +280,9 @@ $(document).ready(function () {
                 postData.append('ask_sudo_pass', $('#ask_sudo_pass').hasClass('checked_button'));
                 postData.append('rsa_key', credentialForm.data('rsa_key'));
                 if (credRsaKey.data('files')) {
+                    console.log(credRsaKey.data('files')[0]);
                     postData.append('rsa_key_file', credRsaKey.data('files')[0]);
-                    postData.append('rsa_key', value.name)
+                    postData.append('rsa_key', credRsaKey.data('files')[0].name)
                 }
                 submitCredentials(postData);
                 break;

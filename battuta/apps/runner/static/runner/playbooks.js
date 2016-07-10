@@ -39,12 +39,12 @@ function buildArgsSelectionBox(start_value) {
     });
 }
 
-function loadPlaybookArgsForm(data, playbookFile) {
+function loadPlaybookArgsForm(data) {
     $('#arguments_box')
         .data(data)
-        .data('currentPlaybook', playbookFile)
+        .data('currentPlaybook', data.filename)
         .find('*').prop('disabled', false);
-    $('#arguments_box_header').html(playbookFile);
+    $('#arguments_box_header').html(data.filename);
     $('#become').toggleClass('hidden', !data.sudo);
     window.location.href = '#';
 }
@@ -77,7 +77,7 @@ function loadPlaybookEditor(text, filename) {
     $('#editor_dialog').dialog('open');
 }
 
-function submitRequest (type, postData, successCallback) {
+function submitRequest(type, postData, successCallback) {
     $.ajax({
         url: '',
         type: type,
@@ -88,6 +88,16 @@ function submitRequest (type, postData, successCallback) {
         }
     })
 }
+
+var loadPlaybook = function(data) {
+    if (data.is_valid) {
+        loadPlaybookArgsForm(data);
+        buildArgsSelectionBox();
+    }
+    else {
+        $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('open')
+    }
+};
 
 $(document).ready(function () {
 
@@ -172,7 +182,7 @@ $(document).ready(function () {
             dataSrc: '',
             data: {action: 'get_list'}
         },
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             var playbookFile = data[0];
             var type = 'GET';
             var postData = {action: 'get_one', playbook_file: playbookFile};
@@ -180,71 +190,64 @@ $(document).ready(function () {
             if (data[1] == false) {
                 $(row).css('color', 'red');
             }
-            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
-                var successCallback = function (data) {
-                    if (data.is_valid) {
-                        loadPlaybookArgsForm(data, playbookFile);
-                        buildArgsSelectionBox();
-                    }
-                    else {
-                        alertDialog.html($('<pre>').html(data.msg)).dialog('open')
-                    }
-                };
-                submitRequest(type, postData, successCallback);
-            });
-
-            $(row).find('td:eq(1)').html(
-                $('<span>').css('float', 'right').append(
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
-                        .click(function () {
-                            var successCallback = function (data) {
-                                loadPlaybookEditor (data.text, playbookFile)
-                            };
-                            submitRequest(type, postData, successCallback);
-                        }),
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
-                        .click(function () {
-                            var successCallback = function (data) {
-                                loadPlaybookEditor(data.text)
-                            };
-                            submitRequest(type, postData, successCallback);
-                        }),
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
-                        .click(function() {
-                            type = 'POST';
-                            postData = {action: 'delete', playbook_file: playbookFile};
-                            var successCallback = function () {
-                                if (argumentsBox.data('currentPlaybook') == playbookFile) {
-                                    clearPlaybookArgsForm()
-                                }
-                                playbookTable.DataTable().ajax.reload()
-                            };
-                            $('#delete_dialog')
-                                .dialog('option', 'buttons', [
-                                    {
-                                        text: 'Delete',
-                                        click: function () {
-                                            submitRequest(type, postData, successCallback);
-                                            $(this).dialog('close');
-                                        }
-                                    },
-                                    {
-                                        text: 'Cancel',
-                                        click: function () {
-                                            $(this).dialog('close');
-                                        }
+            $(row).find('td:eq(0)')
+                .css('cursor', 'pointer')
+                .html(playbookFile)
+                .append(
+                    $('<span>').css('float', 'right').append(
+                        $('<a>')
+                            .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                            .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                            .click(function () {
+                                var successCallback = function (data) {
+                                    loadPlaybookEditor (data.text, playbookFile)
+                                };
+                                submitRequest(type, postData, successCallback);
+                            }),
+                        $('<a>')
+                            .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
+                            .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
+                            .click(function () {
+                                var successCallback = function (data) {
+                                    loadPlaybookEditor(data.text)
+                                };
+                                submitRequest(type, postData, successCallback);
+                            }),
+                        $('<a>')
+                            .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
+                            .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                            .click(function() {
+                                type = 'POST';
+                                postData = {action: 'delete', playbook_file: playbookFile};
+                                var successCallback = function () {
+                                    if (argumentsBox.data('currentPlaybook') == playbookFile) {
+                                        clearPlaybookArgsForm()
                                     }
-                                ])
-                                .dialog('open');
-                        })
+                                    playbookTable.DataTable().ajax.reload()
+                                };
+                                $('#delete_dialog')
+                                    .dialog('option', 'buttons', [
+                                        {
+                                            text: 'Delete',
+                                            click: function () {
+                                                submitRequest(type, postData, successCallback);
+                                                $(this).dialog('close');
+                                            }
+                                        },
+                                        {
+                                            text: 'Cancel',
+                                            click: function () {
+                                                $(this).dialog('close');
+                                            }
+                                        }
+                                    ])
+                                    .dialog('open');
+                            })
+                    )
                 )
-            )
+                .click(function() {
+                    submitRequest(type, postData, loadPlaybook);
+                });
         }
     });
 

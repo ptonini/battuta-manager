@@ -21,7 +21,6 @@
                         >{{ node.description|default:"<small>No description available</small>" }}</h4>
                     <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
                     <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
-                    <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
                     <hr>
                     {% if node.type == 'host' %}
                         <h4 style="margin-bottom: 20px">Host facts</h4>
@@ -31,6 +30,7 @@
                         <h4 style="margin-bottom: 20px">Descendants</h4>
                         <div id="descendants_container" style="margin: 10px"></div>
                     {% endif %}
+                    <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
                     <hr>
                 </div>
             </div>

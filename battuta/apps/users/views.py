@@ -215,7 +215,7 @@ class CredentialView(View):
                 if form_data['sudo_pass'] == prefs['password_placeholder']:
                     form_data['sudo_pass'] = cred.sudo_pass
 
-                if form_data['password']:
+                if form_data['password'] or form_data['rsa_key']:
                     form_data['ask_pass'] = False
 
                 if form_data['sudo_pass']:

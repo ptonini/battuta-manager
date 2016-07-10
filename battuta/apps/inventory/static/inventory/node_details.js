@@ -406,7 +406,7 @@ $(document).ready(function () {
             data: {action: 'list_inh'}
         },
         rowCallback: function (row, data) {
-            $(row).find('td:eq(2)')
+            $(row)
                 .css('cursor', 'pointer')
                 .click(function () {
                     window.open('/inventory/group/' + data[3], '_self')

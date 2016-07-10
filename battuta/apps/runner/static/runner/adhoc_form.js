@@ -54,7 +54,7 @@ $(document).ready(function () {
         },
         rowCallback: function (row, data) {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
-            $(row).find('td:eq(4)').html(
+            $(row).find('td:eq(3)').append(
                 $('<span>').css('float', 'right').append(
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'})
@@ -157,10 +157,7 @@ $(document).ready(function () {
                 });
                 break;
             case 'Cancel':
-                $('#cancel_edit').hide();
-                $('#run_command').show();
-                $('#adhoc_form_label').html('Run command');
-                adhocForm.removeData('adhocId');
+                resetAdHocForm();
                 break;
             case 'sudo':
                 $(document.activeElement).toggleClass('checked_button');

@@ -8,7 +8,7 @@ function validateItemDataType(dataType, value) {
             break;
         case 'bool':
             if (['yes', 'no'].indexOf(value) == -1) {
-                result = [false, 'Value must be a boolean']
+                result = [false, 'Value must be yes/no']
             }
             break;
         case 'number':
@@ -115,21 +115,25 @@ function buildPreferencesContainer() {
                                     itemField.attr('id', itemId)
                                         .data({id: item.id, data_type: item.data_type})
                                         .val(item.value)
-
                                 )
                             ),
-                            divCol3.clone().addClass('edit_mode').css('display', 'none').append(
-                                alterButton.clone()
-                                    .html('Edit')
-                                    .attr('id', 'edit_item_' + item.id)
-                                    .addClass('open_item_dialog')
-                                    .data(item)
-                                    .data('action', 'edit_item'),
-                                $('<span>').html('&nbsp;'),
-                                alterButton.clone()
-                                    .addClass('remove_item_or_group')
-                                    .html('Remove')
-                                    .data({type: 'item', id: item.id})
+                            divCol3.clone().append(
+                                fieldLabel.clone()
+                                    .css('color', 'red')
+                                    .attr({id: 'item_' + item.id + '_warning', class: 'warning_span'}),
+                                $('<span>').addClass('edit_mode').css('display', 'none').append(
+                                    alterButton.clone()
+                                        .html('Edit')
+                                        .attr('id', 'edit_item_' + item.id)
+                                        .addClass('open_item_dialog')
+                                        .data(item)
+                                        .data('action', 'edit_item'),
+                                    $('<span>').html('&nbsp;'),
+                                    alterButton.clone()
+                                        .addClass('remove_item_or_group')
+                                        .html('Remove')
+                                        .data({type: 'item', id: item.id})
+                                )
                             )
                         )
                     )
@@ -285,6 +289,7 @@ $(document).ready(function () {
 
     $('#manage_prefs').click(function() {
         $(this).toggleClass('checked_button');
+        $('.warning_span').html('');
         $('.edit_mode').toggle();
         $('.warning_container').html('')
     });
@@ -296,29 +301,33 @@ $(document).ready(function () {
 
     $('#save_prefs').click(function() {
         var itemValues = {};
+        var noError = true;
         $('#preferences_container').find('input,select').each(function() {
             var result = validateItemDataType($(this).data('data_type'), $(this).val());
             if (result[0]) {
                 itemValues[$(this).data('id')] = $(this).val()
             }
             else {
-                $('#item_' + $(this).data('id') + '_warning').html(result[1])
-            }
+                $('#item_' + $(this).data('id') + '_warning').html(result[1]);
+                noError = false;
+                }
         });
-        $.ajax({
-            url: '',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'save_items',
-                item_values: JSON.stringify(itemValues)
-            },
-            success: function () {
-                $('#alert_dialog').html('<strong>Preferences saved</strong>').dialog('open');
-                getPreferences();
-                buildPreferencesContainer();
-            }
-        })
+        if (noError) {
+            $.ajax({
+                url: '',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'save_items',
+                    item_values: JSON.stringify(itemValues)
+                },
+                success: function () {
+                    $('#alert_dialog').html('<strong>Preferences saved</strong>').dialog('open');
+                    getPreferences();
+                    buildPreferencesContainer();
+                }
+            })
+        }
 
     })
 

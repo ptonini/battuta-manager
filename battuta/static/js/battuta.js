@@ -147,7 +147,6 @@ function executeAnsibleJob(postData, askPassword, username) {
             }
         ]);
         passwordDialog.dialog('open');
-
     }
     else {
         postAnsibleJob(postData);
@@ -167,7 +166,7 @@ function prettyBoolean (element, value) {
 // Build credentials selection box
 function buildCredentialsSelectionBox(credentials, start_value) {
     
-    var runner = !(window.location.href.split('/').indexOf('users') > -1)
+    var runner = !(window.location.href.split('/').indexOf('users') > -1);
     
     credentials.children('option').each(function(){
         $(this).remove()

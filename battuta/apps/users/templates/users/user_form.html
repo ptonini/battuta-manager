@@ -102,86 +102,88 @@
         </div>
     </div>
 </div>
-
-<div id="credential_dialog" style="overflow: hidden">
-    <h4>Credentials</h4>
-    <div class="row">
-        <div class="col-md-3">
-            <label for="credentials" class="requiredField" style="font-size: 13px; padding: 6px 0">
-                Saved credentials
-            </label>
-        </div>
-        <div class="col-md-9">
-            <select class="select form-control input-sm" id="credentials"></select>
-        </div>
-    </div>
-    <br>
-    <form id="credential_form" method="post" autocomplete="off">
+<div class="hidden">
+    <div id="credential_dialog" style="overflow: hidden">
+        <h4>Credentials</h4>
         <div class="row">
-            <div class="col-md-8">
-                <div class="form-group">
-                    <label for="cred_title" class="requiredField">Title</label>
-                    <input class="form-control input-sm" id="cred_title" type="text">
+            <div class="col-md-3">
+                <label for="credentials" class="requiredField" style="font-size: 13px; padding: 6px 0">
+                    Saved credentials
+                </label>
+            </div>
+            <div class="col-md-9">
+                <select class="select form-control input-sm" id="credentials"></select>
+            </div>
+        </div>
+        <br>
+        <form id="credential_form" method="post" autocomplete="off">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="cred_title" class="requiredField">Title</label>
+                        <input class="form-control input-sm" id="cred_title" type="text">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-2 text-right" style="margin-top: 22px">
-                <button id="cred_is_shared" class="btn btn-default btn-sm">Shared</button>
-            </div>
-            <div class="col-md-2 text-right" style="margin-top: 22px">
-                <button id="cred_is_default" class="btn btn-default btn-sm">Default</button>
-            </div>
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="cred_is_shared" class="btn btn-default btn-sm">Shared</button>
+                </div>
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="cred_is_default" class="btn btn-default btn-sm">Default</button>
+                </div>
 
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="cred_username" class="requiredField">Username</label>
-                    <input class="form-control input-sm" id="cred_username" type="text" autocomplete="off">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_username" class="requiredField">Username</label>
+                        <input class="form-control input-sm" id="cred_username" type="text" autocomplete="off">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="cred_pass" class="requiredField">Password</label>
-                    <div class="input-group">
-                        <input class="form-control input-sm" id="cred_pass" type="password" autocomplete="off">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_pass" class="requiredField">Password</label>
+                        <div class="input-group">
+                            <input class="form-control input-sm" id="cred_pass" type="password" autocomplete="off">
                         <span class="input-group-btn">
                             <button id="ask_pass" class="btn btn-default btn-sm">Ask</button>
                         </span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-10">
-                <div class="form-group">
-                    <label for="cred_rsakey" class="requiredField">RSA Key</label>
-                    <input class="input-file" type="file" id="cred_rsakey">
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <label for="cred_rsakey" class="requiredField">RSA Key</label>
+                        <input class="input-file" type="file" id="cred_rsakey">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-2 text-right" style="margin-top: 22px">
-                <button id="remove_rsa" class="btn btn-default btn-sm">Remove</button>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="cred_sudo_user" class="requiredField">SUDO Username</label>
-                    <input class="form-control input-sm" id="cred_sudo_user" type="text" autocomplete="off">
+                <div class="col-md-2 text-right" style="margin-top: 22px">
+                    <button id="remove_rsa" class="btn btn-default btn-sm">Remove</button>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="cred_sudo_pass" class=" requiredField">SUDO Password</label>
-                    <div class="input-group">
-                        <input class="form-control input-sm" id="cred_sudo_pass" type="password" autocomplete="off">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_sudo_user" class="requiredField">SUDO Username</label>
+                        <input class="form-control input-sm" id="cred_sudo_user" type="text" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="cred_sudo_pass" class=" requiredField">SUDO Password</label>
+                        <div class="input-group">
+                            <input class="form-control input-sm" id="cred_sudo_pass" type="password" autocomplete="off">
                         <span class="input-group-btn">
                             <button id="ask_sudo_pass" class="btn btn-default btn-sm">Ask</button>
                         </span>
+                        </div>
                     </div>
                 </div>
+                <div class="col-md-12">
+                    <button id="save_cred" class="btn btn-default btn-xs">Save</button>
+                    <button id="delete_cred" class="btn btn-default btn-xs hidden">Delete</button>
+                </div>
             </div>
-            <div class="col-md-12">
-                <button id="save_cred" class="btn btn-default btn-xs">Save</button>
-                <button id="delete_cred" class="btn btn-default btn-xs hidden">Delete</button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
+    <div id="confirm_changes_dialog" class="text-center" style="min-height: 74px; padding: 20px">
+        <strong>You have unsaved changes<br>Save now?</strong>
+    </div>
 </div>
-<div id="confirm_changes_dialog" class="text-center" style="min-height: 74px; padding: 20px">
-    <strong>You have unsaved changes<br>Save now?</strong>
-</div>
+
 

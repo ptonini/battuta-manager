@@ -13,7 +13,6 @@ class BattutaCallback(CallbackBase):
         super(BattutaCallback, self).__init__()
         self._db_conn = db_conn
         self._runner = runner
-        self._current_play_vars = None
         self._current_play_id = None
         self._current_task_id = None
         self._current_task_module = None

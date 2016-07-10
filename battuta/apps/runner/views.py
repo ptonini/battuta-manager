@@ -173,6 +173,7 @@ class PlaybookView(BaseView):
         with open(os.path.join(settings.DATA_DIR, 'playbooks', f), 'r') as yaml_file:
             data = {'text': yaml_file.read()}
             try:
+                data['filename'] = f
                 data['dict'] = yaml.load(data['text'])
                 data['is_valid'] = True
                 data['sudo'] = False
