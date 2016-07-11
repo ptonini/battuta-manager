@@ -289,18 +289,15 @@ $(document).ready(function () {
             data: {action: 'list'}
         },
         rowCallback: function (row, data) {
+            $(row).find('td:lt(2)').css('cursor', 'pointer').click(function() {
+                cancelVarEdit.show();
+                $('#variable_form').data('id', data[2]);
+                $('#var_form_label').children('strong').html('Edit variable');
+                $('#key').val(data[0]);
+                $('#value').val(data[1]).focus();
+            });
             $(row).find('td:eq(2)').html(
                 $('<span>').css('float', 'right').append(
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
-                        .click(function() {
-                            cancelVarEdit.show();
-                            $('#variable_form').data('id', data[2]);
-                            $('#var_form_label').children('strong').html('Edit variable');
-                            $('#key').val(data[0]);
-                            $('#value').val(data[1]).focus();
-                        }),
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))

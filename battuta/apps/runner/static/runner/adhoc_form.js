@@ -54,66 +54,63 @@ $(document).ready(function () {
         },
         rowCallback: function (row, data) {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
-            $(row).find('td:eq(3)').append(
-                $('<span>').css('float', 'right').append(
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Run'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-play-circle btn-incell'))
-                        .click(function() {
-                            loadAdHocForm(data);
-                            $('#run_command').focus().click();
-                            resetAdHocForm()
-                        }),
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
-                        .click(function() {
-                            loadAdHocForm(data);
-                            adhocForm.data('adhocId', data[4]);
-                            $('#adhoc_form_label').html('Edit command');
-                            $('#run_command').hide();
-                            $('#cancel_edit').show();
-                        }),
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
-                        .click(function() {
-                            adhocForm.removeData('adhocId');
-                            loadAdHocForm(data);
-                        }),
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
-                        .click(function() {
-                            $('#delete_dialog')
-                                .dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                        $.ajax({
-                                            url: '/runner/adhoc/',
-                                            type: 'POST',
-                                            dataType: 'json',
-                                            data: {
-                                                action: 'delete',
-                                                id: data[4]
-                                            },
-                                            success: function () {
-                                                adhocTableObject.ajax.reload()
-                                            }
-                                        });
-                                    }
-                                },
-                                {
-                                    text: 'Cancel',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                    }
+            $(row).find('td:lt(4)').css('cursor', 'pointer').click(function() {
+                loadAdHocForm(data);
+                $('#run_command').focus().click();
+                resetAdHocForm()
+            });
+            $(row).find('td:eq(4)').removeAttr('data-toggle').removeAttr('title').html(
+            $('<span>').css('float', 'right').append(
+                $('<a>')
+                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                    .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                    .click(function() {
+                        loadAdHocForm(data);
+                        adhocForm.data('adhocId', data[4]);
+                        $('#adhoc_form_label').html('Edit command');
+                        $('#run_command').hide();
+                        $('#cancel_edit').show();
+                    }),
+                $('<a>')
+                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
+                    .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
+                    .click(function() {
+                        adhocForm.removeData('adhocId');
+                        loadAdHocForm(data);
+                    }),
+                $('<a>')
+                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
+                    .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                    .click(function() {
+                        $('#delete_dialog')
+                            .dialog('option', 'buttons', [
+                            {
+                                text: 'Delete',
+                                click: function () {
+                                    $(this).dialog('close');
+                                    $.ajax({
+                                        url: '/runner/adhoc/',
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        data: {
+                                            action: 'delete',
+                                            id: data[4]
+                                        },
+                                        success: function () {
+                                            adhocTableObject.ajax.reload()
+                                        }
+                                    });
                                 }
-                            ])
-                                .dialog('open');
-                        })
+                            },
+                            {
+                                text: 'Cancel',
+                                click: function () {
+                                    $(this).dialog('close');
+                                }
+                            }
+                        ])
+                            .dialog('open');
+                    })
                 )
             )
         }

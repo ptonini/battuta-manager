@@ -14,11 +14,11 @@ $(document).ready(function () {
             }
         },
         rowCallback: function (row, data) {
-            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
+            $(row).find('td:lt(4)').css('cursor', 'pointer').click(function() {
                 window.open('/users/view/?user_id=' + data[4], '_self')
             });
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
-            $(row).find('td:eq(4)').html(
+            $(row).find('td:eq(4)').removeAttr('data-toggle').removeAttr('title').html(
                 $('<span>').css('float', 'right').append(
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})

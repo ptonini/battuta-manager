@@ -17,13 +17,13 @@ class InventoryView(View):
     @staticmethod
     def get(request):
         if 'action' not in request.GET:
-            data = {'_meta': {'hostvars': dict(), 'hostdescs': dict()}}
+            data = {'_meta': {'hostvars': dict()}}
 
             for host in Host.objects.order_by('name'):
 
                 if len(host.variable_set.all()) > 0 or host.description:
-                    data['_meta']['hostvars'][host.name] = dict()
 
+                    data['_meta']['hostvars'][host.name] = dict()
                     if host.description:
                         data['_meta']['hostvars'][host.name]['_description'] = host.description
                     for var in host.variable_set.all():

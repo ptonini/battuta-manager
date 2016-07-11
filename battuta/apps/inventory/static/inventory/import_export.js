@@ -60,6 +60,7 @@ $(document).ready(function () {
                         link.setAttribute('download', 'inventory.json');
                         document.body.appendChild(link);
                         link.click();
+                        link.remove()
                     }
                 });
                 break;
