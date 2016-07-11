@@ -13,7 +13,7 @@ $(document).ready(function () {
                 action: 'list'
             }
         },
-        rowCallback: function (row, data, index) {
+        rowCallback: function (row, data) {
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
                 window.open('/users/view/?user_id=' + data[4], '_self')
             });

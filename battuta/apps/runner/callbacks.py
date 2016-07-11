@@ -27,7 +27,6 @@ class BattutaCallback(CallbackBase):
     def _run_query_on_db(self, action, sql_query, var_tuple):
         with self._db_conn as cursor:
             cursor.execute(sql_query, var_tuple)
-            self._db_conn.commit()
             if cursor.rowcount > 0:
                 if action == 'single_value':
                     return cursor.fetchone()[0]
@@ -50,21 +49,23 @@ class BattutaCallback(CallbackBase):
     def _on_task_start(self, task, is_handler=False):
 
         # Get current play data
-        sql_query = 'SELECT host_count,failed_count FROM runner_runnerplay WHERE id=%s'
+        sql_query = 'SELECT host_count,failed_count,gather_facts FROM runner_runnerplay WHERE id=%s'
         row = self._run_query_on_db('single_row', sql_query, (self._current_play_id,))
 
         play_host_count = row[0]
         play_failed_count = row[1]
+        gather_facts = row[2]
 
         # Set task module
         self._current_task_module = task.__dict__['_attributes']['action']
 
-        # Set task host count based on module and options
+        # Set task host count based on module
         if self._current_task_module == 'include':
             task_host_count = 0
         else:
             task_host_count = play_host_count - play_failed_count
 
+        # Set task host count to one if run_once is enabled
         if task.__dict__['_attributes']['run_once']:
             self._current_task_run_once = True
             task_host_count = 1
@@ -74,10 +75,12 @@ class BattutaCallback(CallbackBase):
         # Set task name
         if is_handler:
             task_name = '[handler] ' + task.get_name().strip()
+        elif self._current_task_module == 'setup' and gather_facts and not self._current_task_id:
+            task_name = 'Gather facts'
         else:
             task_name = task.get_name().strip()
 
-        # Check is is a delegates task
+        # Check if is a delegates task
         if task.__dict__['_attributes']['delegate_to']:
             self._current_task_delegate_to = task.__dict__['_attributes']['delegate_to']
         else:
@@ -113,10 +116,6 @@ class BattutaCallback(CallbackBase):
             var_tuple = (host, status, message, json.dumps(response), self._current_task_id)
             self._run_query_on_db('insert', sql_query, var_tuple)
 
-    def v2_playbook_on_no_hosts_matched(self):
-        sql_query = 'UPDATE runner_runner SET message="No hosts matched" WHERE id=%s'
-        self._run_query_on_db('update', sql_query, (self._runner.id,))
-
     def v2_playbook_on_play_start(self, play):
         sql_query = 'UPDATE runner_runner SET status="running" WHERE id=%s'
         self._run_query_on_db('update', sql_query, (self._runner.id,))
@@ -150,6 +149,7 @@ class BattutaCallback(CallbackBase):
                     'VALUES (%s, %s, %s, %s, %s, %s, %s)'
         var_tuple = (self._runner.id, play_name, hosts, become, gather_facts, host_count, 0)
         self._current_play_id = self._run_query_on_db('insert', sql_query, var_tuple)
+        self._current_task_id = None
 
     def v2_playbook_on_task_start(self, task, is_conditional):
         self._on_task_start(task)

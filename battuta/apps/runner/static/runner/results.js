@@ -13,9 +13,11 @@ function updateTaskTable(task, taskColumn, currentTaskTable, intervalId) {
         taskColumn.addClass('hidden-print');
         clearInterval(intervalId)
     }
-
     // Stop loop if all hosts are in table
-    else if (!runner.is_running || hostCount == rowCount) {
+    else if (hostCount == rowCount) {
+        clearInterval(intervalId)
+    }
+    else if (task.is_handler && !runner.is_running) {
         clearInterval(intervalId)
     }
 }
@@ -48,9 +50,17 @@ function taskTableRowCallback(row, data) {
 // Draw callback function for task table
 function taskTableDrawCallBack(taskTableApi, task) {
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
-    $('#task_' + task.id + '_count').html('&nbsp;&nbsp;(' + taskTableApi.rows().count() + ' of ' + hostCount + ')');
+    var rowCount = taskTableApi.rows().count();
+    var taskCounter = $('#task_' + task.id + '_count');
+    if (task.is_handler) {
+        taskCounter.html('&nbsp;&nbsp;(' + rowCount + ')');
+    }
+    else {
+        taskCounter.html('&nbsp;&nbsp;(' + rowCount + ' of ' + hostCount + ')');
+    }
 }
 
+// Build result tables
 function buildResultTables(runner, intervalId) {
 
     var runnerStatus = $('#runner_status');
@@ -103,11 +113,8 @@ function buildResultTables(runner, intervalId) {
     // Display error message if exists
     if (runner.message) {
         resultContainer.empty().append(
-            $('<pre>').css('margin-top', '20px').attr('id', 'runner_message').html(runner.message)
+            $('<pre>').css('margin-top', '20px').css('color', 'red').html(runner.message)
         );
-        if (runner.status == 'failed') {
-            $('#runner_message').css('color', 'red');
-        }
     }
 
     // Build Play tables
@@ -156,81 +163,87 @@ function buildResultTables(runner, intervalId) {
             }
 
             // Build tasks section
-            if (play.tasks.length > 0) {
-                var playResultsRow = divRow.clone().attr('id', 'play_' + play.id + '_results');
-                playContainer.append(playResultsRow);
+            if (play.host_count == 0) {
+                playContainer.append($('<pre>').css('margin-top', '20px').html('No hosts matched'))
+            }
+            else {
+                if (play.tasks.length > 0) {
+                    var playResultsRow = divRow.clone().attr('id', 'play_' + play.id + '_results');
+                    playContainer.append(playResultsRow);
 
-                $.each(play.tasks, function (index, task) {
+                    $.each(play.tasks, function (index, task) {
 
-                    // Save task host count to session storage
-                    sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
+                        // Save task host count to session storage
+                        sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
 
-                    // Set task title
-                    if ( play.name == 'AdHoc task') {
-                        task.name = 'Task: <strong>' + task.name + '</strong>';
-                        var headerTopMargin = '5px'
-                    }
-                    else {
-                        task.name = '<strong>' + task.name + '</strong>';
-                        headerTopMargin = '15px'
-                    }
-
-                    //  Create task header
-                    var tableHeader = $('<div>').css('margin-top', headerTopMargin).append(
-                        $('<span>').html(task.name),
-                        $('<span>').attr('id', 'task_' + task.id + '_count')
-                    );
-
-                    // Create task column if not exists
-                    var taskColumnId = 'task_' + task.id;
-                    if ($('#' + taskColumnId).length == 0) {
-                        var taskColumn = divCol12.clone()
-                            .css('padding', '0 ' + taskContainerPadding + 'px')
-                            .attr('id', taskColumnId);
-                        playResultsRow.append(taskColumn);
-
-                        // Create task table if is not an include task
-                        if (task.module == 'include'){
-                            taskColumn.html(tableHeader.addClass('hidden-print'))
+                        // Set task title
+                        if ( play.name == 'AdHoc task') {
+                            task.name = 'Task: <strong>' + task.name + '</strong>';
+                            var headerTopMargin = '5px'
                         }
-                        else  {
-                            var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
+                        else {
+                            task.name = '<strong>' + task.name + '</strong>';
+                            headerTopMargin = '15px'
+                        }
 
-                            taskColumn.append(tableHeader, currentTaskTable);
+                        //  Create task header
+                        var tableHeader = $('<div>').css('margin-top', headerTopMargin).append(
+                            $('<span>').html(task.name),
+                            $('<span>').attr('id', 'task_' + task.id + '_count')
+                        );
 
-                            // Initialize and load dynamic table
-                            currentTaskTable.DataTable({
-                                paginate: false,
-                                searching: false,
-                                info: false,
-                                ajax: {
-                                    url: '',
-                                    type: 'GET',
-                                    dataSrc: '',
-                                    data: {action: 'task_results', task_id: task.id}
-                                },
-                                rowCallback: function(row, data) {
-                                    taskTableRowCallback(row, data)
-                                },
-                                drawCallback: function () {
-                                    taskTableDrawCallBack(this.api(), task)
+                        // Create task column if not exists
+                        var taskColumnId = 'task_' + task.id;
+                        if ($('#' + taskColumnId).length == 0) {
+                            var taskColumn = divCol12.clone()
+                                .css('padding', '0 ' + taskContainerPadding + 'px')
+                                .attr('id', taskColumnId);
+                            playResultsRow.append(taskColumn);
+
+                            // Create task table if is not an include task
+                            if (task.module == 'include'){
+                                taskColumn.html(tableHeader.addClass('hidden-print'))
+                            }
+                            else  {
+                                var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
+
+                                taskColumn.append(tableHeader, currentTaskTable);
+
+                                // Initialize and load dynamic table
+                                currentTaskTable.DataTable({
+                                    paginate: false,
+                                    searching: false,
+                                    info: false,
+                                    ajax: {
+                                        url: '',
+                                        type: 'GET',
+                                        dataSrc: '',
+                                        data: {action: 'task_results', task_id: task.id}
+                                    },
+                                    rowCallback: function(row, data) {
+                                        taskTableRowCallback(row, data)
+                                    },
+                                    drawCallback: function () {
+                                        taskTableDrawCallBack(this.api(), task)
+                                    }
+                                });
+
+                                // Hide task table if host count is 0
+                                if (task.host_count == 0) {
+                                    taskColumn.addClass('hidden-print');
+                                    currentTaskTable.hide()
                                 }
-                            });
 
-                            if (task.host_count == 0) {
-                                taskColumn.addClass('hidden-print');
-                                currentTaskTable.hide()
-                            }
-
-                            // If job is running creates update loop
-                            if (runner.is_running) {
-                                var intervalId = setInterval(function() {
-                                    updateTaskTable(task, taskColumn, currentTaskTable, intervalId)
-                                }, 1000)
+                                // If job is running creates update loop
+                                if (runner.is_running) {
+                                    var intervalId = setInterval(function() {
+                                        updateTaskTable(task, taskColumn, currentTaskTable, intervalId)
+                                    }, 1000)
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
@@ -280,10 +293,8 @@ function buildResultTables(runner, intervalId) {
 
 }
 
-// Load job results from database and build tables
+// Load job results from database
 function loadResults(intervalId) {
-
-    // Get status data from server
     $.ajax({
         url: '',
         type: 'GET',
@@ -346,17 +357,30 @@ $(document).ready(function () {
 
     // Print report
     $('#print_report').click(function () {
+        var pageTitle = $(document).find("title").text();
+        var reportTitle = pageTitle.replace('.yml', '');
         var statsDialogCopy = $('#stats_dialog').clone().attr({
             id: 'temp_container',
             style: 'border-color: transparent'
         });
+
+        // Update results
+        loadResults(0);
+
+        // Adjust windows for printing
+        document.title = reportTitle;
         runnerResult.css('font-size', 'smaller');
         $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
         body.css('padding-top', '0px');
+
+        // Open print window
         window.print();
+
+        // Restore windows settings
         body.css('padding-top', '50px');
         statsDialogCopy.remove();
         runnerResult.css('font-size', 'small');
+        document.title = pageTitle;
     });
 
     // Show statistics
@@ -380,7 +404,6 @@ $(document).ready(function () {
                 }
             })
         }
-
     });
 
 });

@@ -155,6 +155,7 @@ function executeAnsibleJob(postData, askPassword, username) {
 
 // Convert boolean value to glyphicon
 function prettyBoolean (element, value) {
+    element.removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');
     if (value) {
         element.html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
     }
