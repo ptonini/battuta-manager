@@ -11,7 +11,8 @@ from forms import ItemForm, ItemGroupForm
 
 class PreferencesView(View):
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if 'action' not in request.GET:
             return render(request, 'preferences/preferences.html')
         else:
@@ -53,9 +54,15 @@ class PreferencesView(View):
                                 data[i]['items'].append(db_item)
 
                     except ValueError:
+                        items = list()
+                        for item in db_item_group.item_set.values():
+                            item.pop('id', None)
+                            item.pop('item_group_id', None)
+                            items.append(item)
+
                         data.append({'name': db_item_group.name,
                                      'description': db_item_group.description,
-                                     'items': db_item_group.item_set.values()})
+                                     'items': items})
 
             else:
                 raise Http404('Invalid action')
