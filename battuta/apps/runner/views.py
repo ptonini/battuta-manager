@@ -57,12 +57,12 @@ class RunnerView(View):
                 run_data['become_user'] = cred.sudo_user
 
             if cred.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.DATA_DIR, 'userdata', str(request.user.username),
+                run_data['rsa_key'] = os.path.join(settings.USERDATA_DIR, str(request.user.username),
                                                    '.ssh', cred.rsa_key)
 
             # Execute playbook
             if run_data['type'] == 'playbook':
-                run_data['playbook_path'] = os.path.join(settings.DATA_DIR, 'playbooks', run_data['playbook'])
+                run_data['playbook_path'] = os.path.join(settings.PLAYBOOK_DIR, run_data['playbook'])
                 run_data['name'] = run_data['playbook']
 
             # Execute task
@@ -170,7 +170,7 @@ class PlaybookView(BaseView):
 
     @staticmethod
     def load_playbook(f):
-        with open(os.path.join(settings.DATA_DIR, 'playbooks', f), 'r') as yaml_file:
+        with open(os.path.join(settings.PLAYBOOK_DIR, f), 'r') as yaml_file:
             data = {'text': yaml_file.read()}
             try:
                 data['filename'] = f
@@ -192,8 +192,7 @@ class PlaybookView(BaseView):
         else:
             if request.GET['action'] == 'get_list':
                 data = list()
-                playbook_dir = os.path.join(settings.DATA_DIR, 'playbooks')
-                for root, dirs, files in os.walk(playbook_dir):
+                for root, dirs, files in os.walk(settings.PLAYBOOK_DIR):
                     for f in files:
                         if f.split('.')[-1] == 'yml':
                             playbook_data = self.load_playbook(f)
@@ -218,7 +217,7 @@ class PlaybookView(BaseView):
             # Remove old playbook and modify existing arguments if necessary
             if request.POST['new_filename'] != request.POST['old_filename']:
                 try:
-                    os.remove(os.path.join(settings.DATA_DIR, 'playbooks', request.POST['old_filename']))
+                    os.remove(os.path.join(settings.PLAYBOOK_DIR, request.POST['old_filename']))
                 except os.error:
                     pass
                 for args in PlaybookArgs.objects.filter(playbook=request.POST['old_filename']):
@@ -226,7 +225,7 @@ class PlaybookView(BaseView):
                     args.save()
 
             # Build playbook filepath
-            filepath = os.path.join(settings.DATA_DIR, 'playbooks', request.POST['new_filename'])
+            filepath = os.path.join(settings.PLAYBOOK_DIR, request.POST['new_filename'])
 
             # Save playbook to file
             with open(filepath, 'w') as f:
@@ -238,7 +237,7 @@ class PlaybookView(BaseView):
 
         elif request.POST['action'] == 'delete':
             try:
-                os.remove(os.path.join(settings.DATA_DIR, 'playbooks', request.POST['playbook_file']))
+                os.remove(os.path.join(settings.PLAYBOOK_DIR, request.POST['playbook_file']))
             except os.error:
                 pass
             for args in PlaybookArgs.objects.filter(playbook=request.POST['playbook_file']):
