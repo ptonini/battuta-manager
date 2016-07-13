@@ -5,55 +5,16 @@
     <div class="row">
         <div class="col-md-10"><h3>Preferences</h3></div>
         <div class="col-md-2 text-right" style="margin-top: 20px">
-            <button id="reload_prefs" class="btn btn-default btn-sm">Reload</button>
-            <button id="save_prefs" class="btn btn-default btn-sm">Save</button>
+            <button class="btn btn-default btn-sm reload_prefs">Reload</button>
+            <button class="btn btn-default btn-sm save_prefs">Save</button>
         </div>
     </div>
     <br>
     <div id="preferences_container"></div>
     <div class="row">
-        <div class="col-md-2">
-            <button id="manage_prefs" class="btn btn-default btn-sm">Manage preferences</button>
-        </div>
-       <div class="col-md-10 edit_mode" style="display: none">
-            <button class="btn btn-default btn-sm open_item_dialog" data-action="add_item_group">Add item group</button>
-        </div>
-    </div>
-    <div class="hidden">
-        <div id="item_or_group_dialog" style="overflow: hidden">
-            <h5 id="item_or_group_dialog_header"></h5>
-            <form id="item_or_group_form" method="post">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="item_or_group_name" class="requiredField">Name</label>
-                            <input class="form-control input-sm" id="item_or_group_name" type="text">
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="item_or_group_description" class="requiredField">Description</label>
-                            <textarea class="form-control input-sm" id="item_or_group_description"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-md-6 item_only">
-                        <div class="form-group">
-                            <label for="item_data_type" class="requiredField">Data type</label>
-                            <select class="select form-control input-sm" id="item_data_type">
-                                <option value="str">String</option>
-                                <option value="number">Number</option>
-                                <option value="bool">Boolean</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6 item_only">
-                        <div class="form-group">
-                            <label for="item_group" class="requiredField">Item group</label>
-                            <select class="select form-control input-sm" id="item_group"></select>
-                        </div>
-                    </div>
-                </div>
-            </form>
+        <div class="col-md-12 text-right">
+            <button class="btn btn-default btn-sm reload_prefs">Reload</button>
+            <button class="btn btn-default btn-sm save_prefs">Save</button>
         </div>
     </div>
 {% endblock %}

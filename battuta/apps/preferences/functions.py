@@ -1,5 +1,4 @@
-from django.conf import settings
-
+from . import DefaultPreferences
 from models import Item
 
 
@@ -14,14 +13,20 @@ def convert_to_boolean(data_type, value):
 
 
 def get_preferences():
-    prefs = dict()
 
-    for item_group in settings.DEFAULT_PREFERENCES:
-        for item in item_group['items']:
-            prefs[item['name']] = convert_to_boolean(item['data_type'], item['value'])
+    default_prefs = DefaultPreferences()
+
+    prefs = default_prefs.get_all()
 
     for item in Item.objects.all():
-        prefs[item.name] = convert_to_boolean(item.data_type, item.value)
+        prefs[item.name] = item.value
+
+    for name, value in prefs.iteritems():
+        if name in default_prefs.boolean_items():
+            if value == 'yes':
+                prefs[name] = True
+            elif value == 'no':
+                prefs[name] = False
 
     return prefs
 
