@@ -66,7 +66,7 @@ function buildPreferencesContainer(data) {
                     columnClass = 'col-md-3';
                     break;
                 case 'bool':
-                    itemField = booleanField.clone();
+                    itemField = booleanField.clone().css('padding', '5px 4px');
                     columnClass = 'col-md-1';
                     break;
                 case 'number':

@@ -18,8 +18,8 @@ def get_preferences():
 
     prefs = default_prefs.get_all()
 
-    for item in Item.objects.all():
-        prefs[item.name] = item.value
+    #for item in Item.objects.all():
+    #    prefs[item.name] = item.value
 
     for name, value in prefs.iteritems():
         if name in default_prefs.boolean_items():
