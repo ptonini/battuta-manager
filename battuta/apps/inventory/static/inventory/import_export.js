@@ -24,7 +24,6 @@ $(document).ready(function () {
     $('#import_form').submit(function(event) {
         event.preventDefault();
         var sourceType = $('input[type="radio"][name="import_file_type"]:checked').val();
-        
         if (importFile.data('files')) {
             var postData = new FormData();
             postData.append('action', 'import');
@@ -39,7 +38,21 @@ $(document).ready(function () {
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
+                    if (data.result == 'ok') {
+                        var message = $('<div>').append(
+                            $('<div>').html('<strong>Import successful:</strong>').css('margin', '5px 0'),
+                            $('<ul>').append(
+                                $('<li>').html('Hosts added: ' + data.added_hosts),
+                                $('<li>').html('Groups added: ' + data.added_groups),
+                                $('<li>').html('Variables added: ' + data.added_vars)
+                            )
+                        );
+                        $('#alert_dialog').html(message).dialog('open');
+                    }
+                    else {
+                        $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
+                    }
+
                 }
             });
         }
@@ -59,8 +72,10 @@ $(document).ready(function () {
                         link.setAttribute('href', jsonString);
                         link.setAttribute('download', 'inventory.json');
                         document.body.appendChild(link);
+                        var link2 = $('<a>').attr('href', jsonString).attr('download', 'inventory.json');
+                        $(document.body).append(link2);
                         link.click();
-                        link.remove()
+                        link2.click()
                     }
                 });
                 break;

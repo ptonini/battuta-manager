@@ -7,7 +7,7 @@
   
   vars:
       var_file: /opt/ans_data/variables.yml
-      play_file: /opt/ans_data/install_vi.yml
+       play_file: /opt/ans_data/install_vi.yml
 
   tasks:
 

@@ -95,7 +95,7 @@ var loadPlaybook = function(data) {
         buildArgsSelectionBox();
     }
     else {
-        $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('open')
+        $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
     }
 };
 

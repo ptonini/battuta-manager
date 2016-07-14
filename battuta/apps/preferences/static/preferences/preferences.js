@@ -25,7 +25,6 @@ function loadPreferences() {
         url: '',
         type: 'GET',
         dataType: 'json',
-
         data: {action: 'preferences'},
         success: function(data) {
             buildPreferencesContainer(data)
@@ -98,6 +97,38 @@ function buildPreferencesContainer(data) {
     })
 }
 
+function savePreferences() {
+    var itemValues = {};
+    var noError = true;
+    $('#preferences_container').find('input,select').each(function() {
+        var result = validateItemDataType($(this).data('data_type'), $(this).val());
+        if (result[0]) {
+            itemValues[$(this).data('name')] = $(this).val()
+        }
+        else {
+            $($(this).data('name') + '_warning').html(result[1]);
+            noError = false;
+        }
+    });
+    if (noError) {
+        $.ajax({
+            url: '',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'save',
+                item_values: JSON.stringify(itemValues)
+            },
+            success: function () {
+                var message = $('<div>').css('text-align', 'center').html($('<strong>').html('Preferences saved'));
+                $('#alert_dialog').html(message).dialog('open');
+                getPreferences();
+                loadPreferences();
+            }
+        })
+    }
+}
+
 $(document).ready(function () {
 
     document.title = 'Battuta - Preferences';
@@ -105,47 +136,20 @@ $(document).ready(function () {
     loadPreferences();
 
     $('.reload_prefs').click(function() {
-        $('#alert_dialog').html('<strong>Preferences reloaded</strong>').dialog('open');
+        var message = $('<div>').css('text-align', 'center').html($('<strong>').html('Preferences reloaded'));
+        $('#alert_dialog').html(message).dialog('open');
         loadPreferences();
     });
 
     $('.save_prefs').click(function() {
-        var itemValues = {};
-        var noError = true;
-        $('#preferences_container').find('input,select').each(function() {
-            var result = validateItemDataType($(this).data('data_type'), $(this).val());
-            if (result[0]) {
-                itemValues[$(this).data('name')] = $(this).val()
-            }
-            else {
-                $($(this).data('name') + '_warning').html(result[1]);
-                noError = false;
-            }
-        });
-        if (noError) {
-            $.ajax({
-                url: '',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action: 'save',
-                    item_values: JSON.stringify(itemValues)
-                },
-                success: function () {
-                    $('#alert_dialog').html('<strong>Preferences saved</strong>').dialog('open');
-                    getPreferences();
-                    loadPreferences();
-                }
-            })
-        }
-
+        savePreferences()
     });
 
     $('#restore_defaults').click(function() {
         $.each($('#preferences_container').data('defaultValues'), function (index, item) {
             $('#item_' + item[0] ).val(item[1])
         });
-        $('#top_save_button').click()
+        savePreferences()
     })
 
 });

@@ -120,7 +120,10 @@ $(document).ready(function () {
                             location.reload();
                         }
                         else if (page == 'view') {
-                            alertDialog.html('<strong>User saved</strong>').dialog('open');
+                            var message = $('<div>')
+                                .css('text-align', 'center')
+                                .html($('<strong>').html('User saved'));
+                            alertDialog.html(message).dialog('open');
                         }
                     }
                     else if (data.result == 'fail') {

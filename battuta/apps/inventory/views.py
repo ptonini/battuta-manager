@@ -71,60 +71,76 @@ class ImportExportView(View):
                 for chunk in request.FILES['file']:
                     temp.write(chunk)
                 temp.seek(0, 0)
-                added = 0
-                updated = 0
+                data = dict()
+                data['added_hosts'] = 0
+                data['added_groups'] = 0
+                data['added_vars'] = 0
                 if request.POST['type'] == 'csv':
                     csv_data = csv.reader(temp)
                     header = next(csv_data)
                     try:
                         host_index = header.index('host')
                     except ValueError:
-                        data = {'result': 'failed', 'msg': 'Error: could not find hosts column'}
+                        data['result'] = 'failed'
+                        data['msg'] = 'Error: could not find hosts column'
                     else:
                         for row in csv_data:
                             host, created = Host.objects.get_or_create(name=row[host_index])
                             if created:
-                                added += 1
-                            else:
-                                updated += 1
+                                data['added_hosts'] += 1
                             for index, cell in enumerate(row):
                                 if index != host_index and cell:
                                     if header[index] == 'group':
                                         group, created = Group.objects.get_or_create(name=cell)
+                                        if created:
+                                            data['added_groups'] += 1
                                         host.group_set.add(group)
                                         host.save()
                                     else:
                                         var, created = Variable.objects.get_or_create(key=header[index], host=host)
+                                        if created:
+                                            data['added_vars'] += 1
                                         var.value = cell
                                         var.save()
-                        data = {'result': 'ok', 'msg': str(added) + ' hosts added<br>' + str(updated) + ' hosts updated'}
+                        data['result'] = 'ok'
 
                 elif request.POST['type'] == 'json':
                     try:
                         json_data = json.load(temp)
                     except ValueError:
-                        data = {'result': 'failed', 'msg': 'Error: File does not contain valid JSON'}
+                        data['result'] = 'failed'
+                        data['msg'] = 'Error: File does not contain valid JSON'
                     else:
                         for host_name, variables in json_data['_meta']['hostvars'].iteritems():
                             host, created = Host.objects.get_or_create(name=host_name)
+                            if created:
+                                data['added_hosts'] += 1
                             for key, value in variables.iteritems():
                                 if key == '_description':
                                     host.description = value
                                 else:
                                     var, created = Variable.objects.get_or_create(key=key, host=host)
+                                    if created:
+                                        data['added_vars'] += 1
                                     var.value = value
                                     var.save()
                             host.save()
                         json_data.pop('_meta', None)
                         for group_name, group_dict in json_data.iteritems():
                             group, created = Group.objects.get_or_create(name=group_name)
+                            if created:
+                                data['added_groups'] += 1
                             if 'children' in group_dict:
                                 for child_name in group_dict['children']:
                                     child, created = Group.objects.get_or_create(name=child_name)
+                                    if created:
+                                        data['added_groups'] += 1
                                     group.children.add(child)
                             if 'hosts' in group_dict:
                                 for host_name in group_dict['hosts']:
                                     host, created = Host.objects.get_or_create(name=host_name)
+                                    if created:
+                                        data['added_hosts'] += 1
                                     group.members.add(host)
                             if 'vars' in group_dict:
                                 for key, value in group_dict['vars'].iteritems():
@@ -132,12 +148,15 @@ class ImportExportView(View):
                                         group.description = value
                                     else:
                                         var, created = Variable.objects.get_or_create(key=key, group=group)
+                                        if created:
+                                            data['added_vars'] += 1
                                         var.value = value
                                         var.save()
                             group.save()
-                        data = {'result': 'ok', 'msg': 'Import was successful'}
+                        data['result'] = 'ok'
                 else:
-                    data = {'result': 'failed', 'msg': 'Error: Invalid file type (.' + request.POST['type'] + ')'}
+                    data['result'] = 'failed'
+                    data['msg'] = 'Error: Invalid file type (.' + request.POST['type'] + ')'
 
         else:
             return Http404('Invalid action')

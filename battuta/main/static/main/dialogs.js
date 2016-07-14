@@ -13,7 +13,7 @@ $(document).ready(function() {
 
     // Initialize alert dialog
     $('#alert_dialog').dialog($.extend({}, defaultOptions, {
-        width: 'auto',
+        minWidth: 160,
         buttons: {
             Ok: function () {
                 $(this).dialog('close');

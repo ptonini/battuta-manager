@@ -25,15 +25,15 @@ function formatRelationListItem(listItem, nodeType, relation) {
         $('<span>').attr('style', 'float: right; vertical-align: middle').append(
             $('<a>')
                 .attr({'data-toggle': 'tooltip', 'title': 'Remove'})
+                .click(function () {
+                    alterRelation(relation, [id], 'remove')
+                })
                 .append(
                     $('<span>')
                         .attr('class', 'glyphicon glyphicon-remove-circle')
                         .css({'vertical-align': 'middle', 'font-size': '1.3em', 'padding-bottom': '3px'
                     })
                 )
-                .click(function () {
-                    alterRelation(relation, [id], 'remove')
-                })
         )
     )
 }
