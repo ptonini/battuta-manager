@@ -21,32 +21,25 @@ class InventoryView(View):
 
             for host in Host.objects.order_by('name'):
 
-                if len(host.variable_set.all()) > 0 or host.description:
+                if host.variable_set.all().exists() or host.description:
 
-                    data['_meta']['hostvars'][host.name] = dict()
+                    data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
                     if host.description:
                         data['_meta']['hostvars'][host.name]['_description'] = host.description
-                    for var in host.variable_set.all():
-                        data['_meta']['hostvars'][host.name][var.key] = var.value
 
             for group in Group.objects.order_by('name'):
                 data[group.name] = dict()
 
-                if len(group.members.all()) > 0:
-                    data[group.name]['hosts'] = list()
-                    for host in group.members.all():
-                        data[group.name]['hosts'].append(host.name)
+                if group.members.all().exists():
+                    data[group.name]['hosts'] = [host.name for host in group.members.all()]
 
-                if len(group.children.all()) > 0:
-                    data[group.name]['children'] = list()
-                    for child in group.children.all():
-                        data[group.name]['children'].append(child.name)
+                if group.children.all().exists():
+                    data[group.name]['children'] = [child.name for child in group.children.all()]
 
-                data[group.name]['vars'] = dict()
+                data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
                 if group.description:
                     data[group.name]['vars']['_description'] = group.description
-                for var in group.variable_set.all():
-                    data[group.name]['vars'][var.key] = var.value
+
         else:
             data = list()
             if request.GET['action'] == 'search':
@@ -291,12 +284,12 @@ class NodeDetailsView(View):
                 else:
                     data = {'result': 'failed'}
             elif request.GET['action'] == 'descendants':
-                data = {'result': 'ok', 'hosts': list(), 'groups': list()}
+                data = {'result': 'ok'}
+
                 groups, hosts = self.get_node_descendants(node)
-                for group in groups:
-                    data['groups'].append([group.name, group.id])
-                for host in hosts:
-                    data['hosts'].append([host.name, host.id])
+                data['groups'] = [[group.name, group.id] for group in groups]
+                data['groups'] = [[host.name, host.id] for host in hosts]
+
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")
@@ -332,14 +325,18 @@ class VariablesView(View):
         node = NodeDetailsView.build_node(node_type, node_id)
         data = list()
         if 'action' in request.GET:
+
             if request.GET['action'] == 'list':
-                for var in node.variable_set.all():
-                    data.append([var.key, var.value, var.id])
+
+                data = [[var.key, var.value, var.id] for var in node.variable_set.all()]
+
             elif request.GET['action'] == 'list_inh':
+
                 for ancestor in NodeDetailsView.get_node_ancestors(node):
                     for var in ancestor.variable_set.all():
                         data.append([var.key, var.value, var.group.name, var.group.id])
                 group_all = Group.objects.get(name='all')
+
                 for var in group_all.variable_set.all():
                     data.append([var.key, var.value, 'all', var.group.id])
             else:

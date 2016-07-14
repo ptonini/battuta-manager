@@ -6,6 +6,7 @@ from django.http import HttpResponse, Http404
 from django.conf import settings
 
 from models import Item
+from . import DefaultPreferences
 
 
 class PreferencesView(View):
@@ -16,13 +17,9 @@ class PreferencesView(View):
             return render(request, 'preferences/preferences.html')
         else:
             if request.GET['action'] == 'preferences':
-                data = list(settings.DEFAULT_PREFERENCES)
-                for i, item_group in enumerate(data):
-                    for j, item in enumerate(item_group['items']):
-                        try:
-                            data[i]['items'][j]['value'] = Item.objects.get(name=item['name']).value
-                        except Item.DoesNotExist:
-                            pass
+                data = dict()
+                data['default'] = settings.DEFAULT_PREFERENCES
+                data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")
@@ -32,9 +29,12 @@ class PreferencesView(View):
         if 'action' in request.POST:
             if request.POST['action'] == 'save':
                 for key, value in json.loads(request.POST['item_values']).iteritems():
-                    item, created = Item.objects.get_or_create(name=key)
-                    item.value = value
-                    item.save()
+                    if value == DefaultPreferences().get_value(key):
+                        Item.objects.filter(name=key).delete()
+                    else:
+                        item, created = Item.objects.get_or_create(name=key)
+                        item.value = value
+                        item.save()
                 data = {'result': 'ok'}
             else:
                 raise Http404('Invalid action')

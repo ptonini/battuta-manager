@@ -329,9 +329,7 @@ class ResultView(BaseView):
                 # Add plays to runner data
                 data['plays'] = list()
                 for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
-                    play['tasks'] = list()
-                    for task in RunnerTask.objects.filter(runner_play_id=play['id']).values():
-                        play['tasks'].append(task)
+                    play['tasks'] = [task for task in RunnerTask.objects.filter(runner_play_id=play['id']).values()]
                     data['plays'].append(play)
 
             elif request.GET['action'] == 'task_results':

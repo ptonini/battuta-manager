@@ -269,9 +269,7 @@ class CredentialView(View):
                 cred = get_object_or_404(Credential, pk=request.POST['id'])
 
                 # List users using this credential as default
-                user_list = list()
-                for user_data in UserData.objects.filter(default_cred=cred):
-                    user_list.append(user_data.user.username)
+                user_list = [user_data.user.username for user_data in UserData.objects.filter(default_cred=cred)]
 
                 # Return fail if credential is default for a user(s)
                 if len(user_list) > 0:

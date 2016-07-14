@@ -25,6 +25,7 @@ function loadPreferences() {
         url: '',
         type: 'GET',
         dataType: 'json',
+
         data: {action: 'preferences'},
         success: function(data) {
             buildPreferencesContainer(data)
@@ -36,7 +37,6 @@ function buildPreferencesContainer(data) {
 
     var preferencesContainer = $('#preferences_container');
     var divRow = $('<div>').attr('class', 'row');
-    var divFormGroup = $('<div>').attr('class', 'form-group');
     var divCol3 = $('<div>').attr('class', 'col-md-3 col-xs-3');
     var inputField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
     var booleanField = $('<select>').addClass('select form-control input-sm').append(
@@ -44,9 +44,10 @@ function buildPreferencesContainer(data) {
         $('<option>').val('no').html('no')
     );
     var fieldLabel = $('<label>').css({'font-size': '13px', padding: '6px 0'}).data('toggle', 'tooltip');
+    var defaultValues = [];
 
     preferencesContainer.empty();
-    $.each(data, function (index, item_group) {
+    $.each(data['default'], function (index, item_group) {
         preferencesContainer.append(
             divRow.clone().append(
                 divCol3.clone().append(
@@ -56,14 +57,12 @@ function buildPreferencesContainer(data) {
         );
 
         $.each(item_group['items'], function(index, item) {
-
-            var itemId = 'item_' + item.id;
-            var itemField = null;
-            var columnClass = null;
+            defaultValues.push([item.name, item.value]);
+            var itemId = 'item_' + item.name;
             switch (item.data_type) {
                 case 'str':
-                    itemField = inputField.clone();
-                    columnClass = 'col-md-3';
+                    var itemField = inputField.clone();
+                    var columnClass = 'col-md-3';
                     break;
                 case 'bool':
                     itemField = booleanField.clone().css('padding', '5px 4px');
@@ -81,16 +80,10 @@ function buildPreferencesContainer(data) {
                         fieldLabel.clone().html(item.name + ':').attr({for: itemId, title: item.description})
                     ),
                     $('<div>').addClass(columnClass).append(
-                        divFormGroup.clone().append(
-                            itemField.attr('id', itemId)
-                                .data({name: item.name, data_type: item.data_type})
-                                .val(item.value)
-                        )
+                        itemField.attr('id', itemId).data({name: item.name, data_type: item.data_type}).val(item.value)
                     ),
                     divCol3.clone().append(
-                        fieldLabel.clone()
-                            .css('color', 'red')
-                            .attr({id: item.name + '_warning', class: 'warning_span'})
+                        fieldLabel.clone().css('color', 'red').attr({id: item.name + '_warning', class: 'warning_span'})
                     )
                 )
             )
@@ -98,6 +91,11 @@ function buildPreferencesContainer(data) {
         preferencesContainer.append($('<hr>'));
     });
 
+    preferencesContainer.data('defaultValues', defaultValues);
+
+    $.each(data['stored'], function (index, item) {
+        $('#item_' + item[0] ).val(item[1])
+    })
 }
 
 $(document).ready(function () {
@@ -141,6 +139,13 @@ $(document).ready(function () {
             })
         }
 
+    });
+
+    $('#restore_defaults').click(function() {
+        $.each($('#preferences_container').data('defaultValues'), function (index, item) {
+            $('#item_' + item[0] ).val(item[1])
+        });
+        $('#top_save_button').click()
     })
 
 });
