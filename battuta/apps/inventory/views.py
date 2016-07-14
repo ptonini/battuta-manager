@@ -114,6 +114,7 @@ class ImportExportView(View):
                                     var, created = Variable.objects.get_or_create(key=key, host=host)
                                     var.value = value
                                     var.save()
+                            host.save()
                         json_data.pop('_meta', None)
                         for group_name, group_dict in json_data.iteritems():
                             group, created = Group.objects.get_or_create(name=group_name)
