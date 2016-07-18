@@ -71,10 +71,8 @@ class ImportExportView(View):
                 for chunk in request.FILES['file']:
                     temp.write(chunk)
                 temp.seek(0, 0)
-                data = dict()
-                data['added_hosts'] = 0
-                data['added_groups'] = 0
-                data['added_vars'] = 0
+                data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
+
                 if request.POST['type'] == 'csv':
                     csv_data = csv.reader(temp)
                     header = next(csv_data)

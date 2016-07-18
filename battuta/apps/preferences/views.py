@@ -3,10 +3,9 @@ import json
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, Http404
-from django.conf import settings
 
 from models import Item
-from . import DefaultPreferences
+from . import DefaultPrefs
 
 
 class PreferencesView(View):
@@ -18,7 +17,7 @@ class PreferencesView(View):
         else:
             if request.GET['action'] == 'preferences':
                 data = dict()
-                data['default'] = settings.DEFAULT_PREFERENCES
+                data['default'] = DefaultPrefs().get_schema()
                 data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
             else:
                 raise Http404('Invalid action')
@@ -29,7 +28,7 @@ class PreferencesView(View):
         if 'action' in request.POST:
             if request.POST['action'] == 'save':
                 for key, value in json.loads(request.POST['item_values']).iteritems():
-                    if value == DefaultPreferences().get_value(key):
+                    if value == DefaultPrefs().get_value(key):
                         Item.objects.filter(name=key).delete()
                     else:
                         item, created = Item.objects.get_or_create(name=key)

@@ -71,7 +71,8 @@ h5 {
 }
 
 #alert_dialog,
-#delete_dialog {
+#delete_dialog,
+#restore_dialog{
     padding: 20px;
 }
 
@@ -86,10 +87,6 @@ h5 {
     overflow-y: auto;
     width: 660px;
     margin: 0 10px;
-}
-
-#alert_dialog {
-    min-width: 150px;
 }
 
 #pattern_dialog div.col-md-2,

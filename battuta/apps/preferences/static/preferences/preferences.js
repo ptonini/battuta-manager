@@ -64,7 +64,7 @@ function buildPreferencesContainer(data) {
                     var columnClass = 'col-md-3';
                     break;
                 case 'bool':
-                    itemField = booleanField.clone().css('padding', '5px 4px');
+                    itemField = booleanField.clone();
                     columnClass = 'col-md-1';
                     break;
                 case 'number':
@@ -82,7 +82,7 @@ function buildPreferencesContainer(data) {
                         itemField.attr('id', itemId).data({name: item.name, data_type: item.data_type}).val(item.value)
                     ),
                     divCol3.clone().append(
-                        fieldLabel.clone().css('color', 'red').attr({id: item.name + '_warning', class: 'warning_span'})
+                        fieldLabel.clone().css('color', 'red').attr('id', item.name + '_warning')
                     )
                 )
             )
@@ -106,7 +106,7 @@ function savePreferences() {
             itemValues[$(this).data('name')] = $(this).val()
         }
         else {
-            $($(this).data('name') + '_warning').html(result[1]);
+            $('#' + $(this).data('name') + '_warning').html(result[1]);
             noError = false;
         }
     });
@@ -120,8 +120,7 @@ function savePreferences() {
                 item_values: JSON.stringify(itemValues)
             },
             success: function () {
-                var message = $('<div>').css('text-align', 'center').html($('<strong>').html('Preferences saved'));
-                $('#alert_dialog').html(message).dialog('open');
+                $('#alert_dialog').html('<strong>Preferences saved</strong>').dialog('open');
                 getPreferences();
                 loadPreferences();
             }
@@ -131,13 +130,35 @@ function savePreferences() {
 
 $(document).ready(function () {
 
+    var restoreDialog = $('#restore_dialog');
+    var alertDialog = $('#alert_dialog').css('text-align', 'center');
+
     document.title = 'Battuta - Preferences';
 
     loadPreferences();
-
+    
+    restoreDialog.dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        dialogClass: 'no_title',
+        buttons: {
+            Ok: function () {
+                $(this).dialog('close');
+                $.each($('#preferences_container').data('defaultValues'), function (index, item) {
+                    $('#item_' + item[0] ).val(item[1])
+                });
+                savePreferences()
+            },
+            Cancel: function () {
+                $(this).dialog('close');
+            }
+        }
+    });
+    
     $('.reload_prefs').click(function() {
-        var message = $('<div>').css('text-align', 'center').html($('<strong>').html('Preferences reloaded'));
-        $('#alert_dialog').html(message).dialog('open');
+        alertDialog.html('<strong>Preferences reloaded</strong>').dialog('open');
         loadPreferences();
     });
 
@@ -146,10 +167,7 @@ $(document).ready(function () {
     });
 
     $('#restore_defaults').click(function() {
-        $.each($('#preferences_container').data('defaultValues'), function (index, item) {
-            $('#item_' + item[0] ).val(item[1])
-        });
-        savePreferences()
+        restoreDialog.dialog('open')
     })
 
 });

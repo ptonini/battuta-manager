@@ -129,20 +129,19 @@ class BattutaCallback(CallbackBase):
         # Get host pattern
         hosts = ', '.join(play.__dict__['_attributes']['hosts'])
 
-        # Set play become value
-        become = False
-        if play.__dict__['_attributes']['become']:
-            become = True
-
-        # Set play name
-        play_name = play.get_name().strip()
-        if self._runner.type == 'adhoc':
-            play_name = 'AdHoc task'
-
-        # Set play gather facts value
         gather_facts = False
-        if play.__dict__['_attributes']['gather_facts']:
-            gather_facts = play.__dict__['_attributes']['gather_facts']
+        become = False
+
+        if self._runner.type == 'playbook':
+            play_name = play.get_name().strip()
+            if play.__dict__['_attributes']['become']:
+                become = True
+            if play.__dict__['_attributes']['gather_facts']:
+                gather_facts = play.__dict__['_attributes']['gather_facts']
+        elif self._runner.type == 'adhoc':
+            play_name = 'AdHoc task'
+            if self._runner.data['become']:
+                become = True
 
         # Save play to database
         sql_query = 'INSERT INTO runner_runnerplay (runner_id,name,hosts,become,gather_facts,host_count,failed_count) '\
@@ -197,10 +196,10 @@ class BattutaCallback(CallbackBase):
         message = None
         if 'msg' in response:
             message = response['msg']
-        if 'exception' in response:
-            message = 'Exception raised'
-        elif self._current_task_module == 'shell' or self._current_task_module == 'script':
+        if self._current_task_module == 'command' or self._current_task_module == 'script':
             message = response['stdout'] + response['stderr']
+        elif 'exception' in response:
+            message = 'Exception raised'
         self._save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):

@@ -47,10 +47,13 @@ $(document).ready(function () {
                                 $('<li>').html('Variables added: ' + data.added_vars)
                             )
                         );
-                        $('#alert_dialog').html(message).dialog('open');
+                        $('#alert_dialog').css('text-align', 'left').html(message).dialog('open');
                     }
                     else {
-                        $('#alert_dialog').html('<strong>' + data.msg + '</strong>').dialog('open');
+                        $('#alert_dialog')
+                            .css('text-align', 'center')
+                            .html('<strong>' + data.msg + '</strong>')
+                            .dialog('open');
                     }
 
                 }

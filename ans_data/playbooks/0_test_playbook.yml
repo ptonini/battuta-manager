@@ -3,11 +3,11 @@
   gather_facts: yes
   hosts: all
   become: yes
-  serial: 3
+  #serial: 3
   
   vars:
       var_file: /opt/ans_data/variables.yml
-       play_file: /opt/ans_data/install_vi.yml
+      play_file: /opt/ans_data/install_vi.yml
 
   tasks:
 

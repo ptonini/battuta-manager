@@ -23,7 +23,11 @@ function submitCredentials(postData) {
                 buildCredentialsSelectionBox($('#credentials'), data.cred_id);
             }
             else if (data.result == 'fail') {
-                $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                $('#alert_dialog')
+                    .css('text-align', 'left')
+                    .html('<strong>Submit error<strong><br><br>')
+                    .append(data.msg)
+                    .dialog('open')
             }
         }
     });
@@ -41,6 +45,7 @@ $(document).ready(function () {
     var confirmChangesDialog = $('#confirm_changes_dialog');
     var credentials = $('#credentials');
     var credentialForm = $("#credential_form");
+
 
     // Initialize confirm changes dialog
     confirmChangesDialog.dialog({
@@ -120,14 +125,14 @@ $(document).ready(function () {
                             location.reload();
                         }
                         else if (page == 'view') {
-                            var message = $('<div>')
-                                .css('text-align', 'center')
-                                .html($('<strong>').html('User saved'));
-                            alertDialog.html(message).dialog('open');
+                            alertDialog.css('text-align', 'center').html('<strong>User saved</strong>').dialog('open');
                         }
                     }
                     else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Form submit error<strong><br><br>').append(data.msg).dialog('open');
+                        alertDialog.css('text-align', 'left')
+                            .html('<strong>Form submit error<strong><br><br>')
+                            .append(data.msg)
+                            .dialog('open');
                     }
                 }
             });
@@ -148,7 +153,7 @@ $(document).ready(function () {
                 saveUser(postData)
             }
             else {
-                alertDialog.html('<strong>Passwords do not match</strong>').dialog('open')
+                alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
             }
         }
         else if (page == 'view') {
@@ -177,17 +182,17 @@ $(document).ready(function () {
                     data: postData,
                     success: function (data) {
                         if (data.result == 'ok') {
-                            alertDialog.html('<strong>The password was changed</strong>');
+                            var message = '<strong>The password was changed</strong>';
                         }
                         else if (data.result == 'fail') {
-                            alertDialog.html('<strong>' + data.msg + '</strong>');
+                            message = '<strong>' + data.msg + '</strong>';
                         }
-                        alertDialog.dialog('open')
+                        alertDialog.css('text-align', 'center').html(message).dialog('open')
                     }
                 });
             }
             else if (postData.new_password != $('#new_password2').val()) {
-                alertDialog.html('<strong>Passwords do not match</strong>').dialog('open');
+                alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
             }
         }
 

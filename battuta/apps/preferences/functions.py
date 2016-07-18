@@ -1,4 +1,4 @@
-from . import DefaultPreferences
+from . import DefaultPrefs
 from models import Item
 
 
@@ -14,9 +14,9 @@ def convert_to_boolean(data_type, value):
 
 def get_preferences():
 
-    default_prefs = DefaultPreferences()
+    default_prefs = DefaultPrefs()
 
-    prefs = default_prefs.get_all()
+    prefs = default_prefs.get_items()
 
     for item in Item.objects.all():
         prefs[item.name] = item.value
