@@ -82,12 +82,8 @@ $(document).ready(function () {
                 });
 
             if (nodeType == 'host') {
-                if (data[4]) {
-                    $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / 1024));
-                }
-                if (data[5]) {
-                    $(row).find('td:eq(5)').html(Math.ceil(Number(data[5]) / (1024 * 1024 * 1024)))
-                }
+                if (data[4]) $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / 1024));
+                if (data[5]) $(row).find('td:eq(5)').html(Math.ceil(Number(data[5]) / (1024 * 1024 * 1024)))
             }
         },
         drawCallback: function () {
@@ -109,9 +105,7 @@ $(document).ready(function () {
         if ($(this).hasClass('checked_button')) {
             nodeList.DynamicList($.extend({}, defaultListOptions, {itemToggle: true}));
         }
-        else{
-            nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
-        }
+        else nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
     });
 
     $('#delete_nodes').click(function() {
@@ -154,8 +148,9 @@ $(document).ready(function () {
             dataType: 'json',
             data: {action: 'host_table'},
             success: function (data) {
-                var csvContent = 'data:text/csv;charset=utf-8,Host, Address, Cores, Memory, Disc, Date, id\n';
-                data.forEach(function(infoArray, index){
+                var csvContent = 'data:text/csv;charset=utf-8,' +
+                    'Host, Description, Address, Cores, Memory, Disc, Date, id\n';
+                data.forEach(function(infoArray){
                     csvContent += infoArray.join(',') + '\n';
                 });
                 var link = document.createElement('a');

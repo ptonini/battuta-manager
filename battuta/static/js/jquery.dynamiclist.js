@@ -15,28 +15,18 @@
         for (var i = opts.minColumns; i <= opts.maxColumns; i++) {
             var columnCount = i;
             var itemsPerColumn = parseInt(listLength / i);
-            if (itemsPerColumn <= opts.breakPoint) {
-                break;
-            }
+            if (itemsPerColumn <= opts.breakPoint) break;
         }
 
-        if (listLength % columnCount != 0) {
-            itemsPerColumn++;
-        }
+        if (listLength % columnCount != 0) itemsPerColumn++;
 
         // Set list width
         listDiv.show();
-        if (columnCount == 0) {
-            listDiv.show();
-        }
+        if (columnCount == 0) listDiv.show();
         else {
             var width = columnCount * opts.maxColumnWidth;
-            if (width < 100) {
-                opts.listWidth = width + '%'
-            }
-            else {
-                opts.listWidth = '100%'
-            }
+            if (width < 100) opts.listWidth = width + '%';
+            else opts.listWidth = '100%'
         }
 
         // Adjust list
@@ -56,17 +46,14 @@
                 });
             }
 
-            if (opts.onHoverCursor) {
-                $(this).css('cursor', opts.onHoverCursor)
-            }
+            if (opts.onHoverCursor) $(this).css('cursor', opts.onHoverCursor);
+
             opts.formatItem($(this));
         });
     }
 
     function _loadFromArray(listContainer, listDiv, opts) {
-        if (opts.dataArray == 0 && opts.hideIfEmpty) {
-            listContainer.hide()
-        }
+        if (opts.dataArray == 0 && opts.hideIfEmpty) listContainer.hide();
         else {
             listContainer.show();
             listDiv.empty();
@@ -133,9 +120,7 @@
                 .addClass('dynamic-list-group')
                 .append(headerDiv, listDiv);
 
-            if (opts.showTopSeparator) {
-                headerDiv.before($('<hr>'))
-            }
+            if (opts.showTopSeparator) headerDiv.before($('<hr>'));
 
             if (opts.showTitle) {
                 headerDiv.css('color', '#777').append(
@@ -210,36 +195,23 @@
                                     var pattern = $(this).val();
                                     listDiv.children('div.dynamic-item').each(function () {
                                         var value = $(this).html();
-                                        if (value.indexOf(pattern) >= 0) {
-                                            $(this).removeClass('hidden');
-                                        }
-                                        else {
-                                            $(this).addClass('hidden')
-                                        }
+                                        if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
+                                        else $(this).addClass('hidden');
                                     });
                                     _formatList(listDiv, opts)
                                 })
                         )
-
                     )
                 )
             }
 
-            if (opts.checkered) {
-                listDiv.addClass('checkered')
-            }
+            if (opts.checkered) listDiv.addClass('checkered');
 
-            if (opts.maxHeight) {
-                listDiv.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
-            }
+            if (opts.maxHeight) listDiv.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
 
-            if (opts.showBottomSeparator) {
-                listDiv.after($('<hr>'))
-            }
+            if (opts.showBottomSeparator)  listDiv.after($('<hr>'));
 
-            if (opts.buildNow) {
-                _load(listContainer, listDiv, opts)
-            }
+            if (opts.buildNow) _load(listContainer, listDiv, opts);
         }
             
         else {
@@ -248,9 +220,7 @@
             var selection = [];
             switch (arguments[0]) {
                 case 'load':
-                    if (Array.isArray(arguments[1])) {
-                        opts.dataArray = arguments[1]
-                    }
+                    if (Array.isArray(arguments[1])) opts.dataArray = arguments[1];
                     _load(listContainer, listDiv, opts);
                     break;
                 case 'format':

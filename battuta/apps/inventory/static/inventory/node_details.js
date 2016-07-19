@@ -31,8 +31,7 @@ function formatRelationListItem(listItem, nodeType, relation) {
                 .append(
                     $('<span>')
                         .attr('class', 'glyphicon glyphicon-remove-circle')
-                        .css({'vertical-align': 'middle', 'font-size': '1.3em', 'padding-bottom': '3px'
-                    })
+                        .css({'vertical-align': 'middle', 'font-size': '1.3em', 'padding-bottom': '3px'})
                 )
         )
     )
@@ -170,9 +169,7 @@ function openNodeFactsDialog(data) {
         $('#json_box').JSONView(data.facts).JSONView('collapse', 2);
         $('#json_dialog').dialog('open');
     }
-    else {
-        $('#alert_dialog').dialog('open').html('<strong>Facts file not found</strong>')
-    }
+    else $('#alert_dialog').dialog('open').html('<strong>Facts file not found</strong>');
 }
 
 function buildDescendantsList() {
@@ -239,17 +236,10 @@ $(document).ready(function () {
         $('#info_tab').removeClass('in active');
         $('#variables_tab').addClass('in active')
     }
-    else {
-        rememberSelectedTab($('ul.node_tabs').attr('id'));
-    }
-    
-    
-    if (nodeType == 'group') {
-        buildDescendantsList();
-    }
-    else if (nodeType == 'host'){
-        getFacts(loadFacts);
-    }
+    else rememberSelectedTab($('ul.node_tabs').attr('id'));
+
+    if (nodeType == 'group') buildDescendantsList();
+    else if (nodeType == 'host') getFacts(loadFacts);
 
     // Build relationship lists
     $('.relation_div').each(function () {
@@ -433,12 +423,8 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.result == 'ok') {
                         $('#header_node_name').html(data.name);
-                        if (data.description) {
-                            nodeDescriptionHeader.html(data.description);
-                        }
-                        else {
-                            nodeDescriptionHeader.html('<small>No description available</small>');
-                        }
+                        if (data.description) nodeDescriptionHeader.html(data.description);
+                        else nodeDescriptionHeader.html('<small>No description available</small>');
                         nodeForm.find('input, textarea').val('').html('');
                         nodeDialog.dialog('close');
                     }

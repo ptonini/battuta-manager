@@ -75,10 +75,8 @@ $(document).ready(function () {
                         link.setAttribute('href', jsonString);
                         link.setAttribute('download', 'inventory.json');
                         document.body.appendChild(link);
-                        var link2 = $('<a>').attr('href', jsonString).attr('download', 'inventory.json');
-                        $(document.body).append(link2);
                         link.click();
-                        link2.click()
+                        link.remove();
                     }
                 });
                 break;

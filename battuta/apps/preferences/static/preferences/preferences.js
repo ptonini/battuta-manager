@@ -2,19 +2,13 @@ function validateItemDataType(dataType, value) {
     var result = [true, null];
     switch (dataType) {
         case 'str':
-            if (typeof value !== 'string') {
-                result = [false, 'Value must be a string']
-            }
+            if (typeof value !== 'string') result = [false, 'Value must be a string'];
             break;
         case 'bool':
-            if (['yes', 'no'].indexOf(value) == -1) {
-                result = [false, 'Value must be yes/no']
-            }
+            if (['yes', 'no'].indexOf(value) == -1) result = [false, 'Value must be yes/no'];
             break;
         case 'number':
-            if (isNaN(value)) {
-                result = [false, 'Value must be an  number']
-            }
+            if (isNaN(value)) result = [false, 'Value must be an  number'];
             break;
     }
     return result
@@ -102,9 +96,7 @@ function savePreferences() {
     var noError = true;
     $('#preferences_container').find('input,select').each(function() {
         var result = validateItemDataType($(this).data('data_type'), $(this).val());
-        if (result[0]) {
-            itemValues[$(this).data('name')] = $(this).val()
-        }
+        if (result[0]) itemValues[$(this).data('name')] = $(this).val()
         else {
             $('#' + $(this).data('name') + '_warning').html(result[1]);
             noError = false;

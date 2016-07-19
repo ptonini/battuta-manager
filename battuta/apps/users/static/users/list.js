@@ -26,34 +26,33 @@ $(document).ready(function () {
                         .click(function() {
                             $('#delete_dialog')
                                 .dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                        $.ajax({
-                                            url: '/users/view/',
-                                            type: 'POST',
-                                            dataType: 'json',
-                                            data: {
-                                                action: 'delete',
-                                                user_id: data[4]
-                                            },
-                                            success: function () {
-                                                userTableApi.ajax.reload()
-                                            }
-                                        });
+                                    {
+                                        text: 'Delete',
+                                        click: function () {
+                                            $(this).dialog('close');
+                                            $.ajax({
+                                                url: '/users/view/',
+                                                type: 'POST',
+                                                dataType: 'json',
+                                                data: {
+                                                    action: 'delete',
+                                                    user_id: data[4]
+                                                },
+                                                success: function () {
+                                                    userTableApi.ajax.reload()
+                                                }
+                                            });
+                                        }
+                                    },
+                                    {
+                                        text: 'Cancel',
+                                        click: function () {
+                                            $(this).dialog('close');
+                                        }
                                     }
-                                },
-                                {
-                                    text: 'Cancel',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                    }
-                                }
-                            ])
+                                ])
                                 .dialog('open');
                         })
-
                 )
             )
         }

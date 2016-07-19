@@ -106,9 +106,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
 AnsibleModules.prototype.buildArguments = function () {
     var filepath = this.filepath;
     var arguments = $('#arguments').val();
-    if (arguments == null) {
-        arguments = ''
-    }
+    if (!arguments) arguments = '';
     switch (this.name) {
         case 'script':
             return filepath + ' ' + arguments;

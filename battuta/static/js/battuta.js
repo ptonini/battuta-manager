@@ -31,12 +31,8 @@ $.ajaxSetup({
 
 // Set AJAX default error handling
 $(document).ajaxError(function (event, xhr) {
-    if (xhr.status == 500) {
-        $('body').html($('pre').html(xhr.responseText));
-    }
-    else {
-        $('body').html(xhr.responseText);
-    }
+    if (xhr.status == 500) $('body').html($('pre').html(xhr.responseText));
+    else $('body').html(xhr.responseText);
 });
 
 // Set DataTables defaults
@@ -90,14 +86,10 @@ function postAnsibleJob(postData) {
         data: postData,
         success: function (data) {
             if ( data.result == 'ok' ) {
-                if (postData.runner_key) {
-                    sessionStorage.setItem(postData.runner_key, data.runner_id)
-                }
+                if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
                 popupCenter('/runner/result/' + data.runner_id + '/', data.runner_id, 1000);
             }
-            else {
-                $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-            }
+            else $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
         }
     });
 }
@@ -130,12 +122,8 @@ function executeAnsibleJob(postData, askPassword, username) {
                 click: function () {
                     $(this).dialog('close');
                     postData.remote_pass = userPassword.val();
-                    if (sudoPassword.val() != '') {
-                        postData.become_pass = sudoPassword.val();
-                    }
-                    else {
-                        postData.become_pass = userPassword.val();
-                    }
+                    if (sudoPassword.val()) postData.become_pass = sudoPassword.val();
+                    else postData.become_pass = userPassword.val();
                     postAnsibleJob(postData)
                 }
             },
@@ -156,12 +144,8 @@ function executeAnsibleJob(postData, askPassword, username) {
 // Convert boolean value to glyphicon
 function prettyBoolean (element, value) {
     element.removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');
-    if (value) {
-        element.html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
-    }
-    else {
-        element.html('');
-    }
+    if (value) element.html($('<span>').attr('class', 'glyphicon glyphicon-ok'));
+    else element.html('');
 }
 
 // Build credentials selection box
@@ -190,9 +174,7 @@ function buildCredentialsSelectionBox(credentials, start_value) {
                 }
                 credentials.append($('<option>').val(cred.id).data(cred).append(display))
             });
-            if (!runner) {
-                credentials.append($('<option>').val('new').append('new'))
-            }
+            if (!runner) credentials.append($('<option>').val('new').append('new'))
             credentials.val(start_value).change()
         }
     });
@@ -291,14 +273,12 @@ function rememberSelectedTab(tabId) {
     
     var keyName = tabId + '_activeTab';
     
-    $('a[data-toggle="tab"]').on('show.bs.tab', function(e) {
-        sessionStorage.setItem(keyName, $(e.target).attr('href'));
+    $('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
+        sessionStorage.setItem(keyName, $(event.target).attr('href'));
     });
 
     var activeTab = sessionStorage.getItem(keyName);
-    if (activeTab) {
-        $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
-    }
+    if (activeTab) $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
 }
 
 function capitalize(s) {

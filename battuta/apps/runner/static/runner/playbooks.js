@@ -14,27 +14,15 @@ function buildArgsSelectionBox(start_value) {
         success: function (data) {
             $.each(data, function (index, args) {
                 var optionLabel = [];
-                if (args.subset) {
-                    optionLabel.push('--limit ' + args.subset);
-                }
-                if (args.tags) {
-                    optionLabel.push('--tags ' + args.tags)
-                }
-                if (args.skip_tags) {
-                    optionLabel.push('--skip_tags ' + args.skip_tags)
-                }
-                if (args.extra_vars) {
-                    optionLabel.push('--extra_vars "' + args.extra_vars + '"')
-                }
+                if (args.subset) optionLabel.push('--limit ' + args.subset);
+                if (args.tags) optionLabel.push('--tags ' + args.tags);
+                if (args.skip_tags) optionLabel.push('--skip_tags ' + args.skip_tags);
+                if (args.extra_vars) optionLabel.push('--extra_vars "' + args.extra_vars + '"');
                 savedArguments.append($('<option>').val(args.id).data(args).append(optionLabel.join(' ')))
             });
             savedArguments.append($('<option>').val('new').append('new'));
-            if (start_value) {
-                savedArguments.val(start_value).change()
-            }
-            else {
-                savedArguments.change()
-            }
+            if (start_value) savedArguments.val(start_value).change();
+            else savedArguments.change();
         }
     });
 }
@@ -65,9 +53,7 @@ function loadPlaybookEditor(text, filename) {
     editor.setValue(text);
     editor.session.getUndoManager().reset();
     editor.selection.moveCursorFileStart();
-    if (filename) {
-        $('#playbook_name').removeAttr('placeholder').val(filename);
-    }
+    if (filename) $('#playbook_name').removeAttr('placeholder').val(filename);
     else {
         $('#playbook_name').attr('placeholder', 'New playbook').val('');
         filename = '/invalid_name'
@@ -94,9 +80,7 @@ var loadPlaybook = function(data) {
         loadPlaybookArgsForm(data);
         buildArgsSelectionBox();
     }
-    else {
-        $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
-    }
+    else $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
 };
 
 $(document).ready(function () {
@@ -133,9 +117,7 @@ $(document).ready(function () {
             Save: function () {
                 var newFilename = $('#playbook_name').val();
                 if (newFilename) {
-                    if (newFilename.split('.')[newFilename.split('.').length - 1] != 'yml') {
-                        newFilename += '.yml'
-                    }
+                    if (newFilename.split('.')[newFilename.split('.').length - 1] != 'yml') newFilename += '.yml';
                     $.ajax({
                         url: '/runner/playbooks/',
                         type: 'POST',
@@ -187,9 +169,8 @@ $(document).ready(function () {
             var type = 'GET';
             var postData = {action: 'get_one', playbook_file: playbookFile};
 
-            if (data[1] == false) {
-                $(row).css('color', 'red');
-            }
+            if (!data[1]) $(row).css('color', 'red');
+
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
                 submitRequest(type, postData, loadPlaybook);
             });
@@ -288,11 +269,12 @@ $(document).ready(function () {
                             playbook: argumentsBox.data('currentPlaybook')
                         },
                         success: function (data) {
-                            if (data.result == 'ok') {
-                                buildArgsSelectionBox(data.id);
-                            }
+                            if (data.result == 'ok') buildArgsSelectionBox(data.id);
                             else if (data.result == 'fail') {
-                                alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
+                                alertDialog
+                                    .html('<strong>Submit error<strong><br><br>')
+                                    .append(data.msg)
+                                    .dialog('open');
                             }
                         }
                     })
@@ -308,9 +290,7 @@ $(document).ready(function () {
                         id: argumentsForm.data('id')
                     },
                     success: function (data) {
-                        if (data.result == 'ok') {
-                            buildArgsSelectionBox();
-                        }
+                        if (data.result == 'ok') buildArgsSelectionBox();
                         else if (data.result == 'fail') {
                             alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
                         }

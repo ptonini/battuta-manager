@@ -19,9 +19,7 @@ function submitCredentials(postData) {
         processData: false,
         contentType: false,
         success: function (data) {
-            if (data.result == 'ok') {
-                buildCredentialsSelectionBox($('#credentials'), data.cred_id);
-            }
+            if (data.result == 'ok') buildCredentialsSelectionBox($('#credentials'), data.cred_id);
             else if (data.result == 'fail') {
                 $('#alert_dialog')
                     .css('text-align', 'left')
@@ -103,12 +101,8 @@ $(document).ready(function () {
 
     // Build timezone selection box
     timezones.timezones();
-    if (userTimezone.val() != '') {
-        timezones.val(userTimezone.val());
-    }
-    else {
-        timezones.val(sessionStorage.getItem('default_timezone'))
-    }
+    if (userTimezone.val() != '') timezones.val(userTimezone.val());
+    else timezones.val(sessionStorage.getItem('default_timezone'));
 
     // Save user
     $('#user_form').submit(function (event) {
@@ -121,9 +115,7 @@ $(document).ready(function () {
                 data: postData,
                 success: function (data) {
                     if (data.result == 'ok') {
-                        if (page == 'new') {
-                            location.reload();
-                        }
+                        if (page == 'new') location.reload();
                         else if (page == 'view') {
                             alertDialog.css('text-align', 'center').html('<strong>User saved</strong>').dialog('open');
                         }
@@ -149,16 +141,10 @@ $(document).ready(function () {
         if (page == 'new') {
             postData.username = $('#username').val();
             postData.password = addPassword1.val();
-            if (postData.password == addPassword2.val()) {
-                saveUser(postData)
-            }
-            else {
-                alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
-            }
+            if (postData.password == addPassword2.val()) saveUser(postData);
+            else alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
         }
-        else if (page == 'view') {
-            saveUser(postData)
-        }
+        else if (page == 'view') saveUser(postData);
         addPassword1.val('');
         addPassword2.val('');
     });
@@ -195,7 +181,6 @@ $(document).ready(function () {
                 alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
             }
         }
-
         $(this).find('input').val('')
     });
 

@@ -6,9 +6,7 @@ function loadAdHocForm(data) {
 }
 
 function resetAdHocForm() {
-    if (window.location.href.split('/').indexOf('inventory') == -1) {
-        $('#hosts').val('');
-    }
+    if (window.location.href.split('/').indexOf('inventory') == -1) $('#hosts').val('');
     $('#module').val('');
     $('#cancel_edit').hide();
     $('#run_command').show();

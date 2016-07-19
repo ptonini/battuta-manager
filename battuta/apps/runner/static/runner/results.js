@@ -106,9 +106,7 @@ function buildResultTables(runner, intervalId) {
     runnerStatus.html(runner.status).attr('data-is_running', runner.is_running);
 
     // Hide playbook only html elements
-    if (runner.type == 'adhoc') {
-        $('.playbook_only').hide()
-    }
+    if (runner.type == 'adhoc') $('.playbook_only').hide();
 
     // Display error message if exists
     if (runner.message) {
@@ -158,9 +156,7 @@ function buildResultTables(runner, intervalId) {
                     )
                 );
             }
-            else {
-                playContainer = $(playContainerSelector)
-            }
+            else playContainer = $(playContainerSelector);
 
             // Build tasks section
             if (play.host_count == 0) {
@@ -201,9 +197,7 @@ function buildResultTables(runner, intervalId) {
                             playResultsRow.append(taskColumn);
 
                             // Create task table if is not an include task
-                            if (task.module == 'include'){
-                                taskColumn.html(tableHeader.addClass('hidden-print'))
-                            }
+                            if (task.module == 'include') taskColumn.html(tableHeader.addClass('hidden-print'));
                             else  {
                                 var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
 
@@ -275,11 +269,7 @@ function buildResultTables(runner, intervalId) {
             var statsTable = $('#stats_table');
             $('#show_stats').show();
             if (!$.fn.DataTable.isDataTable(statsTable)) {
-                statsTable.dataTable({
-                    data: runner.stats,
-                    paginate: false,
-                    searching: false
-                });
+                statsTable.dataTable({data: runner.stats, paginate: false, searching: false});
             }
         }
         
@@ -340,19 +330,13 @@ $(document).ready(function () {
             loadResults(intervalId);
         }, 1000);
     }
-    else {
-        loadResults(0);
-    }
+    else loadResults(0);
 
     // Enable/disable auto scroll
     autoScroll.click(function() {
         autoScroll.toggleClass('checked_button');
-        if (autoScroll.hasClass('checked_button')) {
-            sessionStorage.setItem('auto_scroll', true)
-        }
-        else {
-            sessionStorage.removeItem('auto_scroll')
-        }
+        if (autoScroll.hasClass('checked_button')) sessionStorage.setItem('auto_scroll', true);
+        else sessionStorage.removeItem('auto_scroll');
     });
 
     // Print report
