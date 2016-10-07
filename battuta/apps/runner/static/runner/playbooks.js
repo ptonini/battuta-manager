@@ -1,8 +1,6 @@
 function buildArgsSelectionBox(start_value) {
     var savedArguments = $('#saved_arguments');
-    savedArguments.children('option').each(function(){
-        $(this).remove()
-    });
+    savedArguments.empty();
     $.ajax({
         url: '/runner/playbooks/',
         type: 'GET',

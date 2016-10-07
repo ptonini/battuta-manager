@@ -341,14 +341,14 @@ class VariablesView(View):
     @staticmethod
     def get(request, node_type, node_id):
         node = NodeDetailsView.build_node(node_type, node_id)
-        data = list()
+        #data = list()
         if 'action' in request.GET:
 
             if request.GET['action'] == 'list':
 
-                data = [[var.key, var.value, var.id] for var in node.variable_set.all()]
+                data = [[var.key, var.value, '', var.id] for var in node.variable_set.all()]
 
-            elif request.GET['action'] == 'list_inh':
+            #elif request.GET['action'] == 'list_inh':
 
                 for ancestor in NodeDetailsView.get_node_ancestors(node):
                     for var in ancestor.variable_set.all():

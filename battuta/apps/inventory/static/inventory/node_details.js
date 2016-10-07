@@ -279,47 +279,58 @@ $(document).ready(function () {
             data: {action: 'list'}
         },
         rowCallback: function (row, data) {
-            $(row).find('td:lt(2)').css('cursor', 'pointer').click(function() {
-                cancelVarEdit.show();
-                $('#variable_form').data('id', data[2]);
-                $('#var_form_label').children('strong').html('Edit variable');
-                $('#key').val(data[0]);
-                $('#value').val(data[1]).focus();
-            });
-            $(row).find('td:eq(2)').html(
-                $('<span>').css('float', 'right').append(
-                    $('<a>')
-                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
-                        .click(function() {
-                            deleteDialog
-                                .dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                        $.ajax({
-                                            url: 'vars/',
-                                            type: 'POST',
-                                            dataType: 'json',
-                                            data: {action: 'del', id: data[2]},
-                                            success: function () {
-                                                variableTableApi.ajax.reload()
+            if ( data[2] == '' ) {
+                $(row).find('td:lt(2)').css('cursor', 'pointer').click(function() {
+                    cancelVarEdit.show();
+                    $('#variable_form').data('id', data[2]);
+                    $('#var_form_label').children('strong').html('Edit variable');
+                    $('#key').val(data[0]);
+                    $('#value').val(data[1]).focus();
+                });
+                $(row).find('td:eq(3)').html(
+                    $('<span>').css('float', 'right').append(
+                        $('<a>')
+                            .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
+                            .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                            .click(function() {
+                                deleteDialog
+                                    .dialog('option', 'buttons', [
+                                        {
+                                            text: 'Delete',
+                                            click: function () {
+                                                $(this).dialog('close');
+                                                $.ajax({
+                                                    url: 'vars/',
+                                                    type: 'POST',
+                                                    dataType: 'json',
+                                                    data: {action: 'del', id: data[3]},
+                                                    success: function () {
+                                                        variableTableApi.ajax.reload()
+                                                    }
+                                                });
                                             }
-                                        });
-                                    }
-                                },
-                                {
-                                    text: 'Cancel',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                    }
-                                }
-                            ])
-                                .dialog('open');
-                        })
+                                        },
+                                        {
+                                            text: 'Cancel',
+                                            click: function () {
+                                                $(this).dialog('close');
+                                            }
+                                        }
+                                    ])
+                                    .dialog('open');
+                            })
+                    )
                 )
-            )
+            }
+            else {
+                $(row)
+                    .css('cursor', 'pointer')
+                    .click(function () {
+                        window.open('/inventory/group/' + data[3], '_self')
+                    });
+                $(row).find('td:eq(3)').html('');
+            }
+
         }
     });
 
@@ -385,7 +396,7 @@ $(document).ready(function () {
     });
 
     // Build inherited variables table
-    $('#inh_var_table').DataTable({
+/*    $('#inh_var_table').DataTable({
         ajax: {
             url: 'vars/',
             type: 'GET',
@@ -399,7 +410,7 @@ $(document).ready(function () {
                     window.open('/inventory/group/' + data[3], '_self')
                 });
         }
-    });
+    });*/
 
     // Edit node
     $('#edit_node').click(function () {

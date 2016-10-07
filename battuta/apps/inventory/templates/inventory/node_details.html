@@ -53,7 +53,8 @@
                         <thead>
                         <tr>
                             <th class="col-md-3">key</th>
-                            <th class="col-md-8">value</th>
+                            <th class="col-md-7">value</th>
+                            <th class="col-md-1">owner</th>
                             <th class="col-md-1">&nbsp;</th>
                         </tr>
                         </thead>
@@ -79,7 +80,7 @@
                                     class="btn btn-default btn-xs">Copy from node</button>
                         </span>
                     </form>
-                    {% if node.name != 'all' %}
+{% comment %}                    {% if node.name != 'all' %}
                         <hr>
                         <h5>Inherited variables</h5>
                         <table id="inh_var_table" class="table table-condensed table-hover table-striped">
@@ -91,7 +92,7 @@
                             </tr>
                             </thead>
                         </table>
-                    {% endif %}
+                    {% endif %}{% endcomment %}
                     <hr>
                 </div>
             </div>
