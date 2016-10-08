@@ -341,26 +341,17 @@ class VariablesView(View):
     @staticmethod
     def get(request, node_type, node_id):
         node = NodeDetailsView.build_node(node_type, node_id)
-        #data = list()
-        if 'action' in request.GET:
 
-            if request.GET['action'] == 'list':
+        data = [[var.key, var.value, '', var.id] for var in node.variable_set.all()]
 
-                data = [[var.key, var.value, '', var.id] for var in node.variable_set.all()]
+        for ancestor in NodeDetailsView.get_node_ancestors(node):
+            for var in ancestor.variable_set.all():
+                data.append([var.key, var.value, var.group.name, var.group.id])
+        group_all = Group.objects.get(name='all')
 
-            #elif request.GET['action'] == 'list_inh':
+        for var in group_all.variable_set.all():
+            data.append([var.key, var.value, 'all', var.group.id])
 
-                for ancestor in NodeDetailsView.get_node_ancestors(node):
-                    for var in ancestor.variable_set.all():
-                        data.append([var.key, var.value, var.group.name, var.group.id])
-                group_all = Group.objects.get(name='all')
-
-                for var in group_all.variable_set.all():
-                    data.append([var.key, var.value, 'all', var.group.id])
-            else:
-                raise Http404('Invalid action')
-        else:
-            raise Http404('Invalid request')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
