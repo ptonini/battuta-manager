@@ -1,8 +1,6 @@
 function buildArgsSelectionBox(start_value) {
     var savedArguments = $('#saved_arguments');
-    savedArguments.children('option').each(function(){
-        $(this).remove()
-    });
+    savedArguments.empty();
     $.ajax({
         url: '/runner/playbooks/',
         type: 'GET',
@@ -47,7 +45,7 @@ function clearPlaybookArgsForm() {
 
 function loadPlaybookEditor(text, filename) {
 
-    var editor = ace.edit("playbook_editor");
+    var editor = ace.edit('playbook_editor');
 
     // Load playbook data
     editor.setValue(text);
@@ -316,7 +314,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                loadPlaybookEditor (data)
+                loadPlaybookEditor(data)
             }
         });
     });

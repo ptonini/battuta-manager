@@ -41,31 +41,41 @@
             <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Subset:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.subset }}</strong></div>
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                        <strong>{{ runner.subset }}</strong>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Tags:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.tags }}</strong></div>
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                        <strong>{{ runner.tags }}</strong>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4 col-md-push-8 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Skip tags:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.skip_tags }}</strong></div>
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                        <strong>{{ runner.skip_tags }}</strong>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Extra vars:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.extra_vars }}</strong></div>
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                        <strong>{{ runner.extra_vars }}</strong>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4 col-md-pull-8 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Check:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.check|lower }}</strong></div>
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                        <strong>{{ runner.check|lower }}</strong>
+                    </div>
                 </div>
             </div>
         </div>
