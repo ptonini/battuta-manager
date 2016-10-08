@@ -55,7 +55,6 @@ $(document).ready(function () {
                             .html('<strong>' + data.msg + '</strong>')
                             .dialog('open');
                     }
-
                 }
             });
         }
