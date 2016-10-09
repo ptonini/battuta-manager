@@ -53,7 +53,7 @@ $(document).ready(function () {
         addButtonTitle: 'Add ' + nodeType,
         formatItem: function (listItem) {
             listItem.click(function () {
-                window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
+                window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')
             });
         },
         addButtonAction: function () {
@@ -78,7 +78,7 @@ $(document).ready(function () {
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
-                    window.open('/inventory/' + nodeType + '/' + data[data.length - 1], '_self')
+                    window.open('/inventory/' + nodeType + '/' + data[0], '_self')
                 });
 
             if (nodeType == 'host') {

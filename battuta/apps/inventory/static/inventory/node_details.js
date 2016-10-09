@@ -20,7 +20,7 @@ function formatRelationListItem(listItem, nodeType, relation) {
     var name = listItem.data('value');
     listItem.removeClass('truncate-text').html('').append(
         $('<span>').append(name).click( function () {
-            window.open('/inventory/' + nodeType + '/' + id, '_self')
+            window.open('/inventory/' + nodeType + '/' + name, '_self')
         }),
         $('<span>').attr('style', 'float: right; vertical-align: middle').append(
             $('<a>')
@@ -195,7 +195,7 @@ function buildDescendantsList() {
                 formatItem: function (listItem) {
                     var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
                     listItem.click(function () {
-                        window.open('/inventory/' + nodeType + '/' + $(this).data('id'), '_self')
+                        window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')
                     });
                 }
             };
@@ -333,7 +333,7 @@ $(document).ready(function () {
                     .html(data[2].italics())
                     .attr('title', 'Open ' + data[2])
                     .click(function () {
-                        window.open('/inventory/group/' + data[3], '_self')
+                        window.open('/inventory/group/' + data[2], '_self')
                     });
             }
         }

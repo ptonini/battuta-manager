@@ -210,9 +210,7 @@ class NodesView(View):
                 raise Http404('Invalid node type')
             for node_id in request.POST.getlist('selection[]'):
                 node = get_object_or_404(node_class, pk=node_id)
-                if node_type == 'group' and node.name == 'all':
-                    pass
-                else:
+                if node.type == 'host' or node.name != 'all':
                     node.delete()
             data = {'result': 'ok'}
         else:
@@ -224,7 +222,7 @@ class NodeDetailsView(View):
     context = dict()
 
     @staticmethod
-    def build_node(node_type, node_id):
+    def build_node(node_type, node_name):
 
         # Get classes based on node type
         if node_type == 'host':
@@ -237,10 +235,10 @@ class NodeDetailsView(View):
             raise Http404('Invalid node type')
 
         # Build node object
-        if node_id == '0':
+        if node_name == '0':
             node = node_class()
         else:
-            node = get_object_or_404(node_class, pk=node_id)
+            node = get_object_or_404(node_class, name=node_name)
 
         setattr(node, 'form_class', node_form_class)
         return node
@@ -289,8 +287,8 @@ class NodeDetailsView(View):
         else:
             return None
 
-    def get(self, request, node_id, node_type):
-        node = self.build_node(node_type, node_id)
+    def get(self, request, node_name, node_type):
+        node = self.build_node(node_type, node_name)
         if 'action' not in request.GET:
             self.context['node'] = node
             return render(request, 'inventory/node_details.html', self.context)
@@ -316,8 +314,8 @@ class NodeDetailsView(View):
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")
 
-    def post(self, request, node_id, node_type):
-        node = self.build_node(node_type, node_id)
+    def post(self, request, node_name, node_type):
+        node = self.build_node(node_type, node_name)
         if request.POST['action'] == 'save':
             form = node.form_class(request.POST or None, instance=node)
             if form.is_valid():
@@ -330,9 +328,7 @@ class NodeDetailsView(View):
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'delete':
-            if node_type == 'group' and node.name == 'all':
-                pass
-            else:
+            if node.type == 'host' or node.name != 'all':
                 node.delete()
             data = {'result': 'ok'}
         else:
@@ -343,8 +339,8 @@ class NodeDetailsView(View):
 class VariablesView(View):
 
     @staticmethod
-    def get(request, node_type, node_id):
-        node = NodeDetailsView.build_node(node_type, node_id)
+    def get(request, node_type, node_name):
+        node = NodeDetailsView.build_node(node_type, node_name)
 
         data = [[var.key, var.value, '', var.id] for var in node.variable_set.all()]
 
@@ -353,13 +349,16 @@ class VariablesView(View):
                 data.append([var.key, var.value, var.group.name, var.group.id])
         group_all = Group.objects.get(name='all')
 
-        for var in group_all.variable_set.all():
-            data.append([var.key, var.value, 'all', var.group.id])
+        if node.name != 'all':
+            for var in group_all.variable_set.all():
+                data.append([var.key, var.value, 'all', var.group.id])
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
-    def post(request, node_type, node_id):
+    def post(request, node_type, node_name):
+        node = NodeDetailsView.build_node(node_type, node_name)
+
         if 'id' in request.POST:
             variable = get_object_or_404(Variable, pk=request.POST['id'])
         else:
@@ -368,7 +367,7 @@ class VariablesView(View):
         if 'action' in request.POST:
             if request.POST['action'] == 'save':
                 post_data = dict(request.POST.iteritems())
-                post_data[node_type] = node_id
+                post_data[node_type] = node.id
                 form = VariableForm(post_data or None, instance=variable)
                 if form.is_valid():
                     form.save(commit=True)
@@ -381,7 +380,7 @@ class VariablesView(View):
                 data = {'result': 'OK'}
 
             elif request.POST['action'] == 'copy':
-                node = NodeDetailsView.build_node(node_type, node_id)
+                node = NodeDetailsView.build_node(node_type, node_name)
                 source = NodeDetailsView.build_node(request.POST['type'], request.POST['source_id'])
                 for var in source.variable_set.all():
                     node.variable_set.create(key=var.key, value=var.value)
@@ -410,8 +409,8 @@ class RelationsView(View):
             raise Http404('Invalid relation: ' + relation)
         return related_set, related_class
 
-    def get(self, request, node_type, node_id, relation):
-        node = NodeDetailsView.build_node(node_type, node_id)
+    def get(self, request, node_type, node_name, relation):
+        node = NodeDetailsView.build_node(node_type, node_name)
         related_set, related_class = self.get_relations(node, relation)
         data = list()
         if request.GET['list'] == 'related':
@@ -423,11 +422,11 @@ class RelationsView(View):
                     data.append([related.name, related.id])
         return HttpResponse(json.dumps(data), content_type="application/json")
 
-    def post(self, request, node_type, node_id, relation):
+    def post(self, request, node_type, node_name, relation):
         if node_type == 'host':
-            node = get_object_or_404(Host, pk=node_id)
+            node = get_object_or_404(Host, name=node_name)
         elif node_type == 'group':
-            node = get_object_or_404(Group, pk=node_id)
+            node = get_object_or_404(Group, name=node_name)
         else:
             raise Http404('Invalid node type')
         related_set, related_class = self.get_relations(node, relation)

@@ -169,11 +169,11 @@ class AdHocView(BaseView):
 class PlaybookView(BaseView):
 
     @staticmethod
-    def load_playbook(f):
-        with open(os.path.join(settings.PLAYBOOK_DIR, f), 'r') as yaml_file:
+    def load_playbook(filename):
+        with open(os.path.join(settings.PLAYBOOK_DIR, filename), 'r') as yaml_file:
             data = {'text': yaml_file.read()}
             try:
-                data['filename'] = f
+                data['filename'] = filename
                 data['dict'] = yaml.load(data['text'])
                 data['is_valid'] = True
                 data['sudo'] = False
@@ -193,10 +193,10 @@ class PlaybookView(BaseView):
             if request.GET['action'] == 'get_list':
                 data = list()
                 for root, dirs, files in os.walk(settings.PLAYBOOK_DIR):
-                    for f in files:
-                        if f.split('.')[-1] == 'yml':
-                            playbook_data = self.load_playbook(f)
-                            data.append([f, playbook_data['is_valid']])
+                    for filename in files:
+                        if filename.split('.')[-1] == 'yml':
+                            playbook_data = self.load_playbook(filename)
+                            data.append([filename, playbook_data['is_valid']])
             else:
                 if request.GET['action'] == 'get_one':
                     data = self.load_playbook(request.GET['playbook_file'])
