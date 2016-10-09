@@ -63,7 +63,7 @@ $(document).ready(function () {
 
     nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
 
-    // Build host table
+    // Build node table
     $('#node_table').DataTable({
         paging: false,
         ajax: {
@@ -75,7 +75,7 @@ $(document).ready(function () {
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
         rowCallback: function (row, data) {
-            $(row)
+            $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
                     window.open('/inventory/' + nodeType + '/' + data[data.length - 1], '_self')

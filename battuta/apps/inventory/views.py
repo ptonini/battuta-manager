@@ -305,8 +305,12 @@ class NodeDetailsView(View):
                 data = {'result': 'ok'}
 
                 groups, hosts = self.get_node_descendants(node)
+
                 data['groups'] = [[group.name, group.id] for group in groups]
-                data['groups'] = [[host.name, host.id] for host in hosts]
+                data['hosts'] = [[host.name, host.id] for host in hosts]
+
+                data['groups'].sort()
+                data['hosts'].sort()
 
             else:
                 raise Http404('Invalid action')

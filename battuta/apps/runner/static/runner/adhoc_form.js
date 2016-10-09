@@ -10,7 +10,7 @@ function resetAdHocForm() {
     $('#module').val('');
     $('#cancel_edit').hide();
     $('#run_command').show();
-    $('#adhoc_form_label').html('Run command');
+    $('#adhoc_form_label').children('strong').html('Create task');
     $('#optional_fields').html('');
     $('#module_reference').hide();
     $('#adhoc_form').removeData('adhocId');
@@ -58,57 +58,57 @@ $(document).ready(function () {
                 resetAdHocForm()
             });
             $(row).find('td:eq(4)').removeAttr('data-toggle').removeAttr('title').html(
-            $('<span>').css('float', 'right').append(
-                $('<a>')
-                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
-                    .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
-                    .click(function() {
-                        loadAdHocForm(data);
-                        adhocForm.data('adhocId', data[4]);
-                        $('#adhoc_form_label').html('Edit command');
-                        $('#run_command').hide();
-                        $('#cancel_edit').show();
-                    }),
-                $('<a>')
-                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
-                    .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
-                    .click(function() {
-                        adhocForm.removeData('adhocId');
-                        loadAdHocForm(data);
-                    }),
-                $('<a>')
-                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
-                    .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
-                    .click(function() {
-                        $('#delete_dialog')
-                            .dialog('option', 'buttons', [
-                            {
-                                text: 'Delete',
-                                click: function () {
-                                    $(this).dialog('close');
-                                    $.ajax({
-                                        url: '/runner/adhoc/',
-                                        type: 'POST',
-                                        dataType: 'json',
-                                        data: {
-                                            action: 'delete',
-                                            id: data[4]
-                                        },
-                                        success: function () {
-                                            adhocTableObject.ajax.reload()
-                                        }
-                                    });
+                $('<span>').css('float', 'right').append(
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                        .click(function() {
+                            loadAdHocForm(data);
+                            adhocForm.data('adhocId', data[4]);
+                            $('#adhoc_form_label').children('strong').html('Edit task');
+                            $('#run_command').hide();
+                            $('#cancel_edit').show();
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Clone'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
+                        .click(function() {
+                            adhocForm.removeData('adhocId');
+                            loadAdHocForm(data);
+                        }),
+                    $('<a>')
+                        .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .click(function() {
+                            $('#delete_dialog')
+                                .dialog('option', 'buttons', [
+                                {
+                                    text: 'Delete',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                        $.ajax({
+                                            url: '/runner/adhoc/',
+                                            type: 'POST',
+                                            dataType: 'json',
+                                            data: {
+                                                action: 'delete',
+                                                id: data[4]
+                                            },
+                                            success: function () {
+                                                adhocTableObject.ajax.reload()
+                                            }
+                                        });
+                                    }
+                                },
+                                {
+                                    text: 'Cancel',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                    }
                                 }
-                            },
-                            {
-                                text: 'Cancel',
-                                click: function () {
-                                    $(this).dialog('close');
-                                }
-                            }
-                        ])
-                            .dialog('open');
-                    })
+                            ])
+                                .dialog('open');
+                        })
                 )
             )
         }

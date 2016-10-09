@@ -1,7 +1,7 @@
 {% load staticfiles %}
 <script src="{% static 'js/ansible.js' %}"></script>
 <script src="{% static 'runner/adhoc_form.js' %}"></script>
-<h5 id="adhoc_form_label">Run task</h5>
+<h6 id="adhoc_form_label"><strong>Create task</strong></h6>
 <form id="adhoc_form" method="post" enctype="multipart/form-data">
     <div class="row">
         <div class="col-md-3 col-xs-6">
@@ -46,7 +46,7 @@
     </div>
 </form>
 <hr>
-<h5>Saved tasks</h5>
+<h5>Tasks</h5>
 <div class="row">
     <div class="col-md-12">
         <table id="adhoc_table" class="table table-condensed table-hover table-striped">
@@ -62,6 +62,5 @@
         </table>
     </div>
 </div>
-<hr>
 
 

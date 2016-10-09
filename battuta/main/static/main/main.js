@@ -70,7 +70,7 @@ $(document).ready(function () {
         $('#pattern_dialog').dialog('open');
     });
 
-    // Select nodes
+    // Select nodes in pattern editor
     $('.select_nodes').click(function () {
         var nodeType = $(this).data('type');
         var op = $(this).data('op');
@@ -87,7 +87,7 @@ $(document).ready(function () {
             if (op == 'and') {
                 separator = ':&'
             }
-            else if (op == 'exc:') {
+            else if (op == 'exc') {
                 separator = ':!'
             }
         }

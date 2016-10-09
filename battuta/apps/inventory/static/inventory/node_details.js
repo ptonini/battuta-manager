@@ -177,7 +177,7 @@ function buildDescendantsList() {
         url: '',
         type: 'GET',
         dataType: 'json',
-        data: {action: 'descendants'        },
+        data: {action: 'descendants'},
         success: function (data) {
 
             var listOptions = {
