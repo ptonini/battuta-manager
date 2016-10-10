@@ -87,7 +87,10 @@ function postAnsibleJob(postData) {
         success: function (data) {
             if ( data.result == 'ok' ) {
                 if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
-                popupCenter('/runner/result/' + data.runner_id + '/', data.runner_id, 1000);
+                var window_title;
+                if (sessionStorage.getItem('single_job_window') == 'true') window_title = 'battuta_result_window';
+                else window_title = data.runner_id;
+                popupCenter('/runner/result/' + data.runner_id + '/', window_title, 1000);
             }
             else $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
         }

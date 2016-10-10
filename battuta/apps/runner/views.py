@@ -339,7 +339,7 @@ class ResultView(BaseView):
                     data.append([result.host,
                                  result.status,
                                  result.message,
-                                 json.loads(result.response)])
+                                 {result.host: json.loads(result.response)}])
             else:
                 raise Http404('Invalid action')
             return HttpResponse(json.dumps(data), content_type="application/json")

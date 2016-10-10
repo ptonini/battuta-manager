@@ -113,6 +113,12 @@ DEFAULT_PREFERENCES = [
                 'value': '__hidden__',
                 'data_type': 'str',
                 'description': ''
+            },
+            {
+                'name': 'single_job_window',
+                'value': 'no',
+                'data_type': 'bool',
+                'description': 'Open jobs in single window'
             }
         ]
     },
