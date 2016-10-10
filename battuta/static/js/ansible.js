@@ -45,11 +45,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
                     divCol4.clone().append(
                         $('<div>').attr('class', 'form-group').append(
                             $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Arguments'),
-                            $('<input>').attr({
-                                'class': 'form-control input-sm',
-                                'type': 'text',
-                                'id': 'arguments'
-                            })
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
                         )
                     ),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
@@ -62,11 +58,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
                     divCol4.clone().append(
                         $('<div>').attr('class', 'form-group').append(
                             $('<label>').attr({'for': 'service_name', 'class': 'requiredField'}).html('Name'),
-                            $('<input>').attr({
-                                'class': 'form-control input-sm',
-                                'type': 'text',
-                                'id': 'service_name'
-                            })
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'service_name'})
                         )
                     ),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
@@ -75,12 +67,13 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
                     divCol3.clone().append(
                         $('<div>').attr('class', 'form-group').append(
                             $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'),
-                            $('<select>').attr({'class': 'select form-control input-sm', 'id': 'service_state'}).append(
-                                $('<option>').attr('value', 'started').html('Started'),
-                                $('<option>').attr('value', 'stopped').html('Stopped'),
-                                $('<option>').attr('value', 'restarted').html('Restarted'),
-                                $('<option>').attr('value', 'reloaded').html('Reloaded')
-                            )
+                            $('<select>').attr({'class': 'select form-control input-sm', 'id': 'service_state'})
+                                .append(
+                                    $('<option>').attr('value', 'started').html('Started'),
+                                    $('<option>').attr('value', 'stopped').html('Stopped'),
+                                    $('<option>').attr('value', 'restarted').html('Restarted'),
+                                    $('<option>').attr('value', 'reloaded').html('Reloaded')
+                                )
                         )
                     ),
                     divCol2.clone().append(
