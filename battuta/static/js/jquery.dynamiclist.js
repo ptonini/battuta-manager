@@ -125,7 +125,7 @@
             if (opts.showTitle) {
                 headerDiv.css('color', '#777').append(
                     $('<span>').css('font-size', opts.titleFontSize).append(
-                        $('<strong>').append(opts.listTitle.replace(/_/g, ' '))
+                        $('<strong>').css('text-transform', 'capitalize').append(opts.listTitle.replace(/_/g, ' '))
                     ),
                     $('<span>').attr('id', opts.listTitle + '_count')
                 )

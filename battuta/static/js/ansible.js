@@ -1,6 +1,7 @@
 var ansibleModuleList = [
     'ping',
     //'script',
+    'service',
     'shell',
     'setup'
 ];
@@ -30,6 +31,12 @@ function AnsibleModules (name) {
 
 AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
     var name = this.name;
+    var divRow = $('<div>').attr('class', 'row');
+    var divCol1 = $('<div>').attr('class', 'col-md-1');
+    var divCol2 = $('<div>').attr('class', 'col-md-2');
+    var divCol3 = $('<div>').attr('class', 'col-md-3');
+    var divCol4 = $('<div>').attr('class', 'col-md-4');
+    var divCol5 = $('<div>').attr('class', 'col-md-5');
     fieldsContainer.html('');
     var sudoButton = $('<button>').html('Sudo')
         .attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm'})
@@ -37,10 +44,6 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
             event.preventDefault();
             $(this).toggleClass('checked_button');
         });
-    var divRow = $('<div>').attr('class', 'row');
-    var divCol1 = $('<div>').attr('class', 'col-md-1');
-    var divCol4 = $('<div>').attr('class', 'col-md-4');
-    var divCol5 = $('<div>').attr('class', 'col-md-5');
     $('#module_reference').off().show()
         .hover(function() {
             $(this).css('cursor', 'pointer')
@@ -72,6 +75,54 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 )
             );
+            break;
+        case 'service':
+            fieldsContainer.append(
+                divRow.clone().append(
+                    divCol4.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'service_name', 'class': 'requiredField'}).html('Name'),
+                            $('<input>').attr({
+                                'class': 'form-control input-sm',
+                                'type': 'text',
+                                'id': 'service_name'
+                            })
+                        )
+                    ),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
+                ),
+                divRow.clone().append(
+                    divCol3.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'),
+                            $('<select>').attr({'class': 'select form-control input-sm', 'id': 'service_state'}).append(
+                                $('<option>').attr('value', 'started').html('Started'),
+                                $('<option>').attr('value', 'stopped').html('Stopped'),
+                                $('<option>').attr('value', 'restarted').html('Restarted'),
+                                $('<option>').attr('value', 'reloaded').html('Reloaded')
+                            )
+                        )
+                    ),
+                    divCol2.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('Enabled'),
+                            $('<select>').attr({'class': 'select form-control input-sm', 'id': 'enabled'}).append(
+                                $('<option>').attr('value', 'yes').html('Yes'),
+                                $('<option>').attr('value', 'no').html('No')
+                            )
+                        )
+                    )
+                ),
+                divRow.clone().append(
+                    divCol5.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'file', 'class': 'requiredField'}).html('Additional parameters'),
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
+                        )
+                    )
+                )
+
+        );
             break;
         case 'script':
             fieldsContainer.append(

@@ -245,7 +245,7 @@ $(document).ready(function () {
     $('.relation_div').each(function () {
         var relation = $(this).data('relation');
         var nodeType = 'group';
-        if (relation == 'Members') {
+        if (relation == 'members') {
             nodeType = 'host'
         }
         $(this).DynamicList({

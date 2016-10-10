@@ -396,13 +396,13 @@ class VariablesView(View):
 class RelationsView(View):
     @staticmethod
     def get_relations(node, relation):
-        if relation == 'Parents':
+        if relation == 'parents':
             related_set = node.group_set
             related_class = Group
-        elif relation == 'Children':
+        elif relation == 'children':
             related_set = node.children
             related_class = Group
-        elif relation == 'Members':
+        elif relation == 'members':
             related_set = node.members
             related_class = Host
         else:

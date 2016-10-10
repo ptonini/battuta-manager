@@ -66,7 +66,9 @@ $(document).ready(function() {
     }));
 
     // Initialize password dialog
-    $('#password_dialog').dialog(defaultOptions);
+    $('#password_dialog').dialog($.extend({}, defaultOptions, {
+        width: '360'
+    }));
 
     // Initialize pattern dialog
     $('#pattern_dialog').dialog($.extend({}, defaultOptions, {

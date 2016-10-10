@@ -5,7 +5,7 @@ class Host(models.Model):
     name = models.CharField(max_length=64, blank=False, unique=True)
     description = models.TextField(max_length=256, blank=True)
     type = 'host'
-    relations = ['Parents']
+    relations = ['parents']
 
     def __str__(self):
         return self.name
@@ -17,7 +17,7 @@ class Group(models.Model):
     children = models.ManyToManyField('self', blank=True, symmetrical=False)
     members = models.ManyToManyField('Host', blank=True)
     type = 'group'
-    relations = ['Parents', 'Children', 'Members']
+    relations = ['parents', 'children', 'members']
 
     def __str__(self):
         return self.name
