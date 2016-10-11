@@ -37,23 +37,22 @@ function formatRelationListItem(listItem, nodeType, relation) {
     )
 }
 
-function formatCopyVariablesListItem(listItem, selectDialog, nodeType) {
+function formatCopyVariablesListItem(listItem, selectDialog, sourceNodeType) {
     listItem.click(function () {
-        var sourceValue = $(this).data('value');
-        var sourceId =  $(this).data('id');
+        var sourceNodeName = $(this).data('value');
         $.ajax({
             url: 'vars/',
             type: 'POST',
             dataType: 'json',
             data: {
                 action: 'copy',
-                source_id: sourceId,
-                type: nodeType
+                source_name: sourceNodeName,
+                source_type: sourceNodeType
             },
             success: function () {
                 selectDialog.dialog('close');
-                $('#variable_table').dataTables().ajax.reload();
-                $('#alert_dialog').html('<strong>Variables copied from ' + sourceValue + '</strong>').dialog('open');
+                $('#variable_table').DataTable().ajax.reload();
+                $('#alert_dialog').html('<strong>Variables copied from ' + sourceNodeName + '</strong>').dialog('open');
             }
         });
     });
@@ -93,7 +92,7 @@ function addRelationsButtonAction(selectDialog, nodeType, relation) {
         maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
         breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
-        ajaxUrl: relation + '/?list=non_related',
+        ajaxUrl: relation + '/?list=not_related',
         loadCallback: function (listContainer) {
             addRelationsListLoadCallback(listContainer, selectDialog, relation)
         },
@@ -280,6 +279,7 @@ $(document).ready(function () {
             dataSrc: ''
         },
         rowCallback: function (row, data) {
+            console.log(data)
             if ( data[2] == '' ) {
                 $(row).find('td:eq(2)').html(
                     $('<span>').css('float', 'right').append(
@@ -288,7 +288,7 @@ $(document).ready(function () {
                             .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                             .click(function() {
                                 cancelVarEdit.show();
-                                $('#variable_form').data('id', data[2]);
+                                $('#variable_form').data('id', data[3]);
                                 $('#var_form_label').children('strong').html('Edit variable');
                                 $('#key').val(data[0]);
                                 $('#value').val(data[1]).focus();
@@ -349,7 +349,7 @@ $(document).ready(function () {
             case 'Copy from node':
                 clearVariableForm();
                 $('.select_type').off('click').click(function () {
-                    var nodeType = $(this).attr('data-type');
+                    var sourceNodeType = $(this).attr('data-type');
                     nodeTypeDialog.dialog('close');
                     selectDialog.DynamicList({
                         listTitle: 'copy_from_node',
@@ -360,9 +360,9 @@ $(document).ready(function () {
                         maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
                         breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
                         maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
-                        ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
+                        ajaxUrl: '/inventory/?action=search&type=' + sourceNodeType + '&pattern=',
                         formatItem: function (listItem) {
-                            formatCopyVariablesListItem(listItem, selectDialog, nodeType)
+                            formatCopyVariablesListItem(listItem, selectDialog, sourceNodeType)
                         },
                         loadCallback: function (listContainer) {
                             var currentList = listContainer.find('div.dynamic-list');

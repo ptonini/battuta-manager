@@ -254,6 +254,9 @@ class NodeDetailsView(View):
                 for group in parent.group_set.all():
                     step_list.add(group)
             parents = step_list
+        if node.name != 'all':
+            ancestors.add(Group.objects.get(name='all'))
+
         return ancestors
 
     @staticmethod
@@ -347,11 +350,6 @@ class VariablesView(View):
         for ancestor in NodeDetailsView.get_node_ancestors(node):
             for var in ancestor.variable_set.all():
                 data.append([var.key, var.value, var.group.name, var.group.id])
-        group_all = Group.objects.get(name='all')
-
-        if node.name != 'all':
-            for var in group_all.variable_set.all():
-                data.append([var.key, var.value, 'all', var.group.id])
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -374,17 +372,18 @@ class VariablesView(View):
                     data = {'result': 'ok'}
                 else:
                     data = {'result': 'fail', 'msg': str(form.errors)}
+
             elif request.POST['action'] == 'del':
                 variable = get_object_or_404(Variable, pk=request.POST['id'])
                 variable.delete()
                 data = {'result': 'OK'}
 
             elif request.POST['action'] == 'copy':
-                node = NodeDetailsView.build_node(node_type, node_name)
-                source = NodeDetailsView.build_node(request.POST['type'], request.POST['source_id'])
-                for var in source.variable_set.all():
-                    node.variable_set.create(key=var.key, value=var.value)
-                    node.save()
+                source = NodeDetailsView.build_node(request.POST['source_type'], request.POST['source_name'])
+                for source_var in source.variable_set.all():
+                    var, created = node.variable_set.get_or_create(key=source_var.key)
+                    var.value = source_var.value
+                    var.save()
                 data = {'result': 'ok'}
             else:
                 raise Http404('Invalid action')
@@ -416,19 +415,14 @@ class RelationsView(View):
         if request.GET['list'] == 'related':
             for related in related_set.order_by('name'):
                 data.append([related.name, related.id])
-        elif request.GET['list'] == 'non_related':
+        elif request.GET['list'] == 'not_related':
             for related in related_class.objects.order_by('name'):
                 if related not in related_set.all() and related != node and related.name != 'all':
                     data.append([related.name, related.id])
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     def post(self, request, node_type, node_name, relation):
-        if node_type == 'host':
-            node = get_object_or_404(Host, name=node_name)
-        elif node_type == 'group':
-            node = get_object_or_404(Group, name=node_name)
-        else:
-            raise Http404('Invalid node type')
+        node = NodeDetailsView.build_node(node_type, node_name)
         related_set, related_class = self.get_relations(node, relation)
         if request.POST['action'] == 'add':
             for selected in request.POST.getlist('selection[]'):

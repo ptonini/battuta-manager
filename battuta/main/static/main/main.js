@@ -46,9 +46,9 @@ $(document).ready(function () {
 
     // Search form
     $('#search_form').submit(function (event) {
-       if ($('#searchbox').val() == '') {
-           event.preventDefault()
-       }
+        event.preventDefault();
+        var pattern = $('#searchbox').val();
+        if (pattern) window.open('/search/' + pattern, '_self')
     });
 
     // Open import data dialog

@@ -11,7 +11,7 @@ $(document).ready(function () {
     var nodeType = $('#node_type').val();
     var deleteDialog = $('#delete_dialog');
 
-    document.title = 'Battuta - ' + capitalize(nodeType) + 's';
+    document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
 
     if (nodeType == 'host') {
         $('#node_table_header').append(

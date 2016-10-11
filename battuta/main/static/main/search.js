@@ -1,6 +1,6 @@
-function searchEntities(entityType, resultContainer, searchPattern) {
+function searchEntities(entityType, resultContainer, pattern) {
     resultContainer.DynamicList({
-        listTitle: capitalize(entityType) + 's',
+        listTitle: entityType + 's',
         showTitle: true,
         hideIfEmpty: true,
         checkered: true,
@@ -10,10 +10,10 @@ function searchEntities(entityType, resultContainer, searchPattern) {
         maxColumns: sessionStorage.getItem('node_list_max_columns'),
         breakPoint: sessionStorage.getItem('node_list_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
-        ajaxUrl: '/inventory/?action=search&type=' + entityType + '&pattern=' + searchPattern,
+        ajaxUrl: '/inventory/?action=search&type=' + entityType + '&pattern=' + pattern,
         formatItem: function (listItem) {
             listItem.click(function () {
-                window.open('/inventory/' + entityType + '/' + $(this).data('id'), '_self')
+                window.open('/inventory/' + entityType + '/' + $(this).data('value'), '_self')
             });
         }
     });
@@ -22,9 +22,9 @@ function searchEntities(entityType, resultContainer, searchPattern) {
 $(document).ready(function () {
 
     var searchResults = $('#search_results');
-    var searchPattern = searchResults.children('h4').children('span').html();
+    var pattern = searchResults.children('h4').children('span').html();
 
-    searchEntities('group', $('#group_results'), searchPattern);
-    searchEntities('host', $('#host_results'), searchPattern);
+    searchEntities('group', $('#group_results'), pattern);
+    searchEntities('host', $('#host_results'), pattern);
 
 });

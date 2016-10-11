@@ -2,16 +2,6 @@ from . import DefaultPrefs
 from models import Item
 
 
-def convert_to_boolean(data_type, value):
-    if data_type == 'bool':
-        if value == 'yes':
-            return True
-        else:
-            return False
-    else:
-        return value
-
-
 def get_preferences():
 
     default_prefs = DefaultPrefs()

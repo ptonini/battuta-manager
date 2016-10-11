@@ -28,9 +28,7 @@ class MainView(View):
 
 class SearchView(View):
     @staticmethod
-    def get(request):
-        if request.GET['search_pattern'] == '':
-            return render(request, 'main/main.html', {'user': request.user})
-        else:
-            return render(request, 'main/search.html', {'search_pattern': request.GET['search_pattern']})
+    def get(request, pattern):
+        return render(request, 'main/search.html', {'pattern': pattern})
+
 
