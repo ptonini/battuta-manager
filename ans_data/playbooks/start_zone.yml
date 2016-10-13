@@ -1,11 +1,9 @@
 ---
 - name: Start Zone
   gather_facts: False
-  hosts: frotaweb:!znh
+  hosts: m2mfrota:!znh
   become: yes
-  
   tasks:
-
     - name: Start mongos
       service: name=mongos enabled=yes state=started
       when: "'app-mongos' in group_names"

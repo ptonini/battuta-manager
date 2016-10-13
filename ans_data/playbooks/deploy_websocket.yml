@@ -2,7 +2,15 @@
 - name: Deploy Websocket
   hosts: m2m-websocket:!znh
   become: yes
+  vars:
+      mode: deploy
+  
   roles:
-    - common
-    - m2m-websocket
-    - { role: m2m-watchdog, mode: config }
+    - role: nodejs 
+      when: mode == 'install'
+      
+    - role: m2m-websocket
+    
+    - role: m2m-watchdog
+      config: 'service'
+      when: mode == 'install'

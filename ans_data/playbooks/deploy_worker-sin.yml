@@ -2,7 +2,14 @@
 - name: Deploy Worker
   hosts: m2m-worker-sin:!znh
   become: yes
+  vars:
+    mode: deploy
+      
   roles:
-    - common
-    - m2m-worker-sin
-    - { role: m2m-watchdog, mode: config }
+    - role: java 
+      when: mode == 'install'
+      
+    - role: m2m-worker-sin
+    
+    - role: m2m-watchdog
+      when:  mode == 'install'

@@ -2,8 +2,19 @@
 - name: Deploy M2M Adapter
   hosts: m2m-adapter:!znh
   become: yes
+  vars:
+      mode: deploy
+      
   roles:
-    - common
-    - m2m-adapter
-    - { role: m2m-watchdog, mode: config }
+    - role: java 
+      when: mode == 'install'
+    
+    - role: redis 
+      when: mode == 'install'
+    
+    - role: m2m-adapter
+    
+    - role: m2m-watchdog
+      config: 'service'
+      when:  mode == 'install'
 

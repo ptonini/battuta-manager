@@ -3,6 +3,15 @@
   gather_facts: False
   hosts: m2m-web:!znh
   become: yes
+  vars:
+      mode: 'deploy'
+  
   roles: 
-    - common
-    - m2m-web
+    - role: nfs
+      service_type: 'server'
+      exports:
+        - '/gfs_dados 10.10.1.0/22(rw,sync,no_subtree_check,no_root_squash)'
+      when: mode == 'install'
+    
+    - role: m2m-web
+    

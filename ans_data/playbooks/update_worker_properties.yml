@@ -1,16 +1,15 @@
 ---
 - name: Update m2m-worker properties
   gather_facts: no
-  hosts: m2m-worker:m2m-worker-rep:m2m-worker-sin!znh
+  hosts: m2m-worker:m2m-worker-rep:m2m-worker-sin:!znh
   become: yes
 
   tasks:
-    - name: Copy config.properties file
-      copy: content=clientes={{ clientes }}
-            dest=/opt/{{ item }}/config.properties
-            owner=root
-            group=root
-            mode=0644
+    - name: Update worker properties
+      replace: dest=/opt/{{ item }}/config.properties
+               regexp="^clientes=.*"
+               replace="clientes={{ clientes }}"
+
       when: "'{{ item }}' in group_names"
       notify:
         - Restart {{ item }}

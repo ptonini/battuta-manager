@@ -2,7 +2,21 @@
 - name: Deploy API
   hosts: m2m-api:!znh
   become: yes
+  vars:
+      mode: deploy
+  
   roles:
-    - common
-    - m2m-api
-    - { role: m2m-watchdog, mode: config }
+    - role: nodejs 
+      when: mode == 'install'
+    
+    - role: nfs
+      service_type: 'client'
+      mountpoint: '/gfs_dados'
+      nfs_share: '{{ nginx }}:/gfs_dados'
+      when: mode == 'install'
+    
+    - role: m2m-api
+    
+    - role: m2m-watchdog
+      config: 'service'
+      when: mode == 'install'

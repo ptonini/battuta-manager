@@ -3,5 +3,5 @@
   hosts: frotaweb:!znh
   become: yes
   roles:
-    - common
-    - { role: m2m-watchdog, mode: install}  
+    - role: m2m-watchdog
+      config: watchdog  

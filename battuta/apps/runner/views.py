@@ -37,6 +37,12 @@ class RunnerView(View):
             data = None
             run_data = dict(request.POST.iteritems())
 
+            # Convert become value to boolean
+            if run_data['become'] == 'true':
+                run_data['become'] = True
+            else:
+                run_data['become'] = False
+
             # Add credentials to run data
             if 'cred' in run_data:
                 cred = get_object_or_404(Credential, pk=run_data['cred'])

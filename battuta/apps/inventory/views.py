@@ -10,6 +10,7 @@ from django.views.generic import View
 
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
+from apps.preferences.functions import get_preferences
 
 
 class InventoryView(View):
@@ -166,6 +167,7 @@ class NodesView(View):
     @staticmethod
     def get(request, node_type_plural):
         node_type = node_type_plural[:-1]
+        prefs = get_preferences()
         if 'action' not in request.GET:
             context = {'node_type': node_type, 'node_type_plural': node_type_plural}
             return render(request, 'inventory/nodes.html', context)
@@ -175,16 +177,36 @@ class NodesView(View):
                 for host in Host.objects.all():
                     if host.facts:
                         facts = json.loads(host.facts)
-                        data.append([host.name,
-                                     host.description,
-                                     facts['ansible_default_ipv4']['address'],
-                                     facts['ansible_processor_count'],
-                                     facts['ansible_memtotal_mb'],
-                                     facts['ansible_mounts'][0]['size_total'],
-                                     facts['ansible_date_time']['date'],
-                                     host.id])
+                        if prefs['use_ec2_facts']:
+                            if 'ansible_ec2_public_ipv4' in facts:
+                                ansible_ec2_public_ipv4 = facts['ansible_ec2_public_ipv4']
+                            else:
+                                ansible_ec2_public_ipv4 = ''
+                            if 'ansible_ec2_instance_type' in facts:
+                                ansible_ec2_instance_type = facts['ansible_ec2_instance_type']
+                            else:
+                                ansible_ec2_instance_type = ''
+
+                            data.append([host.name,
+                                         facts['ansible_default_ipv4']['address'],
+                                         ansible_ec2_public_ipv4,
+                                         ansible_ec2_instance_type,
+                                         facts['ansible_processor_count'],
+                                         facts['ansible_memtotal_mb'],
+                                         facts['ansible_mounts'][0]['size_total'],
+                                         facts['ansible_date_time']['date']])
+                        else:
+                            data.append([host.name,
+                                         facts['ansible_default_ipv4']['address'],
+                                         facts['ansible_processor_count'],
+                                         facts['ansible_memtotal_mb'],
+                                         facts['ansible_mounts'][0]['size_total'],
+                                         facts['ansible_date_time']['date']])
                     else:
-                        data.append([host.name, '', '', '', '', '', '', host.id])
+                        if prefs['use_ec2_facts']:
+                            data.append([host.name, '', '', '', '', '', '', ''])
+                        else:
+                            data.append([host.name, '', '', '', '', ''])
             elif request.GET['action'] == 'group_table':
                 for group in Group.objects.all():
                     data.append([group.name,

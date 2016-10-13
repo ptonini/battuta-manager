@@ -1,9 +1,0 @@
----
-- name: Config NRPE
-  hosts: frotaweb:!znh
-  become: yes
-  gather_facts: true
-  serial: 10
-  roles:
-    - common
-    - nrpe

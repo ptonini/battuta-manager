@@ -4,5 +4,4 @@
   hosts: m2m-sso-web:!znh
   become: yes
   roles: 
-    - common
     - m2m-sso-web

@@ -3,5 +3,4 @@
   hosts: m2m-painel-web:!znh
   become: yes
   roles: 
-    - common
     - m2m-painel-web

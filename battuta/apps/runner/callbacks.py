@@ -209,7 +209,7 @@ class BattutaCallback(CallbackBase):
         if 'msg' in response:
             message = response['msg']
 
-        if self._current_task_module == 'setup' and self._runner.name == 'gather facts':
+        if 'ansible_facts' in response:
 
             sql_query = 'SELECT facts FROM inventory_host WHERE name=%s'
             facts_string = self._run_query_on_db('single_value', sql_query, (host,))

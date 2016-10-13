@@ -1,8 +1,0 @@
----
-- name: Config Java
-  hosts: app-java:!znh:aws-bastion
-  become: yes
-  roles:
-    - common
-    - java
-

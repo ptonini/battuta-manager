@@ -1,7 +1,0 @@
----
-- name: Config NRPE
-  hosts: mxt-gateway:!znh
-  become: yes
-  roles:
-    - common
-    - mxt-gateway

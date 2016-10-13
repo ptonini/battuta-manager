@@ -14,15 +14,27 @@ $(document).ready(function () {
     document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
 
     if (nodeType == 'host') {
-        $('#node_table_header').append(
+
+        if (sessionStorage.getItem('use_ec2_facts') == 'true') $('#node_table_header').append(
             $('<th>').addClass('col-md-2').html('Host'),
-            $('<th>').addClass('col-md-4').html('Description'),
             $('<th>').addClass('col-md-2').html('Address'),
+            $('<th>').addClass('col-md-2').html('Public address'),
+            $('<th>').addClass('col-md-2').html('Type'),
             $('<th>').addClass('col-md-1').html('Cores'),
             $('<th>').addClass('col-md-1').html('Mem (GB)'),
             $('<th>').addClass('col-md-1').html('Disc (GB)'),
             $('<th>').addClass('col-md-1').html('Date')
-        )
+        );
+        else $('#node_table_header').append(
+            $('<th>').addClass('col-md-2').html('Host'),
+            $('<th>').addClass('col-md-2').html('Address'),
+            $('<th>').addClass('col-md-1').html('Cores'),
+            $('<th>').addClass('col-md-1').html('Mem (GB)'),
+            $('<th>').addClass('col-md-5').html('Disc (GB)'),
+            $('<th>').addClass('col-md-1').html('Date')
+            )
+
+
     }
     else if (nodeType == 'group') {
         $('#node_table_header').append(
@@ -75,6 +87,7 @@ $(document).ready(function () {
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
         rowCallback: function (row, data) {
+            console.log(data);
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
@@ -82,8 +95,15 @@ $(document).ready(function () {
                 });
 
             if (nodeType == 'host') {
-                if (data[4]) $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / 1024));
-                if (data[5]) $(row).find('td:eq(5)').html(Math.ceil(Number(data[5]) / (1024 * 1024 * 1024)))
+                if (sessionStorage.getItem('use_ec2_facts') == 'true') {
+                    if (data[5]) $(row).find('td:eq(5)').html(Math.ceil(Number(data[5]) / 1024));
+                    if (data[6]) $(row).find('td:eq(6)').html(Math.ceil(Number(data[6]) / (1024 * 1024 * 1024)))
+                }
+                else {
+                    if (data[3]) $(row).find('td:eq(3)').html(Math.ceil(Number(data[3]) / 1024));
+                    if (data[4]) $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / (1024 * 1024 * 1024)))
+                    }
+
             }
         },
         drawCallback: function () {

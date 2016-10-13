@@ -2,8 +2,16 @@
 - name: Deploy M2M Monitor
   hosts: m2m-monitoria:!znh
   become: yes
+  vars:
+      mode: deploy
+      
   roles:
-    - common
-    - m2m-monitoria
-    - { role: m2m-watchdog, mode: config }
+    - role: java 
+      when: mode == 'install'
+    
+    - role: m2m-monitoria
+    
+    - role: m2m-watchdog
+      config: 'service'
+      when: mode == 'install'
 

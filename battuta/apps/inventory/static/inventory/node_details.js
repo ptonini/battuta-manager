@@ -119,7 +119,6 @@ function getFacts(successCallback) {
         dataType: 'json',
         data: {action: 'facts'},
         success: function (data) {
-            console.log(data.facts);
             successCallback(data);
         }
     });
@@ -138,7 +137,7 @@ function loadFacts(data) {
         var prettyHdSize = Math.ceil(Number(facts.ansible_mounts['0'].size_total) / (1024 * 1024 * 1024));
         var distribution = facts.ansible_distribution + ' ' + facts.ansible_distribution_version;
         factsContainer.empty().append(
-            divRow.clone().append(
+            divRow.clone().attr('id', 'facts_row').append(
                 divCol4.clone().append(
                     divRow.clone().append(
                         divCol6L.clone().append('Full hostname:'),
@@ -162,11 +161,29 @@ function loadFacts(data) {
             divRow.clone().append(divCol12.html('Facts gathered in ' + facts.ansible_date_time.date))
         )
     }
+    if (sessionStorage.getItem('use_ec2_facts') == 'true') {
+        $('#facts_row').append(
+            divCol4.clone().append(
+                divRow.clone().append(
+                    divCol6L.clone().append('EC2 hostname:'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_hostname + '</strong>'),
+                    divCol6L.clone().append('EC2 public address:'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_public_ipv4 + '</strong>'),
+                    divCol6L.clone().append('EC2 instance type:'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_instance_type + '</strong>'),
+                    divCol6L.clone().append('EC2 instance id:'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_instance_id + '</strong>'),
+                    divCol6L.clone().append('EC2 avaliability zone:'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_placement_availability_zone + '</strong>')
+                )
+            )
+        )
+    }
 }
 
 function openNodeFactsDialog(data) {
     if (data.result == 'ok') {
-        $('#json_box').JSONView(data.facts).JSONView('collapse', 2);
+        $('#json_box').JSONView(data.facts).JSONView('collapse', 1);
         $('#json_dialog').dialog('open');
     }
     else $('#alert_dialog').dialog('open').html('<strong>Facts file not found</strong>');

@@ -2,7 +2,15 @@
 - name: Deploy Admin API
   hosts: m2m-admin-api
   become: yes
+  vars:
+      mode: deploy
+  
   roles:
-    - common
-    - m2m-admin-api
-    - { role: m2m-watchdog, mode: config }
+    - role: nodejs 
+      when: mode == 'install'
+
+    - role: m2m-admin-api
+
+    - role: m2m-watchdog
+      config: 'service'
+      when: mode == 'install'

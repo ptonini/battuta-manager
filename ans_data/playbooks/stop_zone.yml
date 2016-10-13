@@ -1,11 +1,9 @@
 ---
 - name: Stop Zone
   gather_facts: False
-  hosts: frotaweb:!znh
+  hosts: m2mfrota:!znh
   become: yes
-  
   tasks:
-
     - name: Stop m2m-adapter
       service: name=m2m-adapter enabled=yes state=stopped
       when: "'m2m-adapter' in group_names"
@@ -22,7 +20,7 @@
       service: name=m2m-websocket enabled=yes state=stopped
       when: "'m2m-websocket' in group_names"
 
-    - pause: prompt="Please wait until all queues are drained"
+    #- pause: prompt="Please wait until all queues are drained"
 
     - name: Stop m2m-worker
       service: name=m2m-worker enabled=yes state=stopped

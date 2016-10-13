@@ -137,6 +137,8 @@ function buildResultTables(runner, intervalId) {
             // Build Play container and header
             var playContainerId = 'play_' + play.id + '_container';
             var playContainerSelector = '#' + playContainerId;
+            var become = 'no';
+            if (play.become) become = 'yes';
             if ($(playContainerSelector).length == 0) {
                 var playContainer = $('<div>').attr('id', playContainerId);
                 resultContainer.append(playContainer);
@@ -149,7 +151,7 @@ function buildResultTables(runner, intervalId) {
                                 divCol3.clone().html('Hosts:'),
                                 divCol9.clone().html('<strong>' + play.hosts + '</strong>'),
                                 divCol3.clone().html('Become:'),
-                                divCol9.clone().html('<strong>' + play.become + '</strong>')
+                                divCol9.clone().html('<strong>' + become + '</strong>')
                             )
                         ),
                         headerLastLine

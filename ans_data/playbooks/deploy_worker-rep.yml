@@ -2,7 +2,21 @@
 - name: Deploy Worker Relatorio
   hosts: m2m-worker-rep:!znh
   become: yes
+  vars:
+    mode: deploy
+      
   roles:
-    - common
-    - m2m-worker-rep
-    - { role: m2m-watchdog, mode: config }
+    - role: java 
+      when: mode == 'install'
+      
+    - role: m2m-worker-rep
+    
+    - role: nfs
+      service_type: 'client'
+      mountpoint: '/gfs_dados'
+      nfs_share: '{{ nginx }}:/gfs_dados'
+      when: mode == 'install'
+    
+    - role: m2m-watchdog
+      config: 'service'
+      when:  mode == 'install'

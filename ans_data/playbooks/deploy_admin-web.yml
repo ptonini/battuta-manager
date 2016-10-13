@@ -4,5 +4,4 @@
   hosts: m2m-admin-web:!znh
   sudo: yes
   roles: 
-    - common
     - m2m-admin-web
