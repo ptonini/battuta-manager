@@ -1,8 +1,6 @@
-import os
 import json
 
 from ansible.plugins.callback import CallbackBase
-from django.conf import settings
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -129,6 +127,7 @@ class BattutaCallback(CallbackBase):
         # Get host pattern
         hosts = ', '.join(play.__dict__['_attributes']['hosts'])
 
+        play_name = None
         gather_facts = False
         become = False
 
@@ -211,10 +210,23 @@ class BattutaCallback(CallbackBase):
             message = response['msg']
 
         if self._current_task_module == 'setup' and self._runner.name == 'gather facts':
-            facts = {'ansible_facts': response['ansible_facts']}
-            filename = (os.path.join(settings.FACTS_DIR, host))
-            with open(filename, "w") as f:
-                f.write(json.dumps(facts, indent=4))
+
+            sql_query = 'SELECT facts FROM inventory_host WHERE name=%s'
+            facts_string = self._run_query_on_db('single_value', sql_query, (host,))
+
+            if facts_string:
+                facts = json.loads(facts_string)
+            else:
+                facts = dict()
+
+            new_facts = response['ansible_facts']
+
+            for key in new_facts:
+                facts[key] = new_facts[key]
+
+            sql_query = 'UPDATE inventory_host SET facts=%s WHERE name=%s'
+            self._run_query_on_db('update', sql_query, (json.dumps(facts), host))
+
         elif self._current_task_module == 'command' or self._current_task_module == 'script':
             message = response['stdout'] + response['stderr']
 

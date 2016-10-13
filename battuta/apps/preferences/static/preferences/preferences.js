@@ -96,7 +96,7 @@ function savePreferences() {
     var noError = true;
     $('#preferences_container').find('input,select').each(function() {
         var result = validateItemDataType($(this).data('data_type'), $(this).val());
-        if (result[0]) itemValues[$(this).data('name')] = $(this).val()
+        if (result[0]) itemValues[$(this).data('name')] = $(this).val();
         else {
             $('#' + $(this).data('name') + '_warning').html(result[1]);
             noError = false;

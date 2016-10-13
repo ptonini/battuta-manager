@@ -80,7 +80,6 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 LOGIN_URL = '/'
 
 DATA_DIR = '/opt/ans_data'
-
 FACTS_DIR = os.path.join(DATA_DIR, 'facts')
 PLAYBOOK_DIR = os.path.join(DATA_DIR, 'playbooks')
 USERDATA_DIR = os.path.join(DATA_DIR, 'userdata')
@@ -237,6 +236,24 @@ DEFAULT_PREFERENCES = [
                 'description': '',
             }
         ],
+    },
+    {
+        'name': 'AWS',
+        'description': '',
+        'items': [
+            {
+                'name': 'aws_group',
+                'value': 'datacenter-aws',
+                'data_type': 'str',
+                'description': '',
+            },
+            {
+                'name': 'use_ec2_facts',
+                'value': 'yes',
+                'data_type': 'bool',
+                'description': '',
+            }
+        ]
     }
 ]
 

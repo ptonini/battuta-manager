@@ -173,8 +173,8 @@ class NodesView(View):
             data = list()
             if request.GET['action'] == 'host_table':
                 for host in Host.objects.all():
-                    facts = NodeDetailsView.get_facts(host.name)
-                    if facts:
+                    if host.facts:
+                        facts = json.loads(host.facts)
                         data.append([host.name,
                                      host.description,
                                      facts['ansible_default_ipv4']['address'],
@@ -281,15 +281,6 @@ class NodeDetailsView(View):
                     hosts.add(host)
         return groups, hosts
 
-    @staticmethod
-    def get_facts(host_name):
-        facts_file = os.path.join(settings.FACTS_DIR, host_name)
-        if os.path.isfile(facts_file):
-            with open(facts_file, "r") as f:
-                return json.loads(f.read())['ansible_facts']
-        else:
-            return None
-
     def get(self, request, node_name, node_type):
         node = self.build_node(node_type, node_name)
         if 'action' not in request.GET:
@@ -297,9 +288,8 @@ class NodeDetailsView(View):
             return render(request, 'inventory/node_details.html', self.context)
         else:
             if request.GET['action'] == 'facts':
-                facts = self.get_facts(node.name)
-                if facts:
-                    data = {'result': 'ok', 'facts': facts}
+                if node.facts:
+                    data = {'result': 'ok', 'facts': json.loads(node.facts)}
                 else:
                     data = {'result': 'failed'}
             elif request.GET['action'] == 'descendants':

@@ -119,6 +119,7 @@ function getFacts(successCallback) {
         dataType: 'json',
         data: {action: 'facts'},
         success: function (data) {
+            console.log(data.facts);
             successCallback(data);
         }
     });
@@ -279,7 +280,6 @@ $(document).ready(function () {
             dataSrc: ''
         },
         rowCallback: function (row, data) {
-            console.log(data)
             if ( data[2] == '' ) {
                 $(row).find('td:eq(2)').html(
                     $('<span>').css('float', 'right').append(
