@@ -122,7 +122,7 @@ function buildResultTables(runner, intervalId) {
             var taskContainerPadding =  parseInt($('div.col-md-12').css('padding-left').replace(/\D/g,''));
 
             // Set playbook only elements
-            if (runner.type == 'playbook') {
+            if (runner.type == 'playbook' || runner.type == 'gather_facts') {
                 var separator = $('<hr>');
                 var headerFirstLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
                 var headerLastLine = divCol12.clone().html('Tasks:');

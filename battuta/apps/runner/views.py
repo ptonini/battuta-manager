@@ -37,12 +37,6 @@ class RunnerView(View):
             data = None
             run_data = dict(request.POST.iteritems())
 
-            # Convert become value to boolean
-            if run_data['become'] == 'true':
-                run_data['become'] = True
-            else:
-                run_data['become'] = False
-
             # Add credentials to run data
             if 'cred' in run_data:
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
@@ -74,6 +68,13 @@ class RunnerView(View):
             # Execute task
             elif run_data['type'] == 'adhoc':
                 adhoc_form = AdHocTaskForm(run_data)
+
+                # Convert become value to boolean
+                if run_data['become'] == 'true':
+                    run_data['become'] = True
+                else:
+                    run_data['become'] = False
+
                 if adhoc_form.is_valid():
                     run_data['adhoc_task'] = {
                         'name': run_data['name'],
@@ -88,26 +89,44 @@ class RunnerView(View):
                     }
                 else:
                     data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
+
+            elif run_data['type'] == 'gather_facts':
+
+                run_data['name'] = 'Gather facts'
+                run_data['become'] = False
+                run_data['adhoc_task'] = {
+                    'name': run_data['name'],
+                    'hosts': run_data['hosts'],
+                    'gather_facts': False,
+                    'tasks': [
+                        {'action': {'module': 'setup'}},
+                        {'action': {'module': 'ec2_facts'}}
+                    ]
+                }
+
             else:
                 raise Http404('Invalid form data')
 
             if data is None:
                 runner_form = RunnerForm(run_data)
-                runner = runner_form.save(commit=False)
-                runner.user = request.user
-                runner.status = 'created'
-                runner.is_running = True
-                setattr(runner, 'data', run_data)
-                setattr(runner, 'prefs', get_preferences())
-                runner.save()
-                try:
-                    p = Process(target=play_runner, args=(runner,))
-                    p.start()
-                except Exception as e:
-                    runner.delete()
-                    data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+                if runner_form.is_valid():
+                    runner = runner_form.save(commit=False)
+                    runner.user = request.user
+                    runner.status = 'created'
+                    runner.is_running = True
+                    setattr(runner, 'data', run_data)
+                    setattr(runner, 'prefs', get_preferences())
+                    runner.save()
+                    try:
+                        p = Process(target=play_runner, args=(runner,))
+                        p.start()
+                    except Exception as e:
+                        runner.delete()
+                        data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+                    else:
+                        data = {'result': 'ok', 'runner_id': runner.id}
                 else:
-                    data = {'result': 'ok', 'runner_id': runner.id}
+                    data = {'result': 'fail', 'msg': str(runner_form.errors)}
 
         # Kill job
         elif request.POST['action'] == 'kill':

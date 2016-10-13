@@ -23,7 +23,9 @@ class PlaybookArgs(models.Model):
 class Runner(models.Model):
     user = models.ForeignKey(User)
     is_running = models.BooleanField(default=False)
-    type = models.CharField(max_length=8, choices=(('playbook', 'playbook'), ('adhoc', 'adhoc')))
+    type = models.CharField(max_length=16, choices=(('playbook', 'playbook'),
+                                                    ('adhoc', 'adhoc'),
+                                                    ('gather_facts', 'gather_facts')))
     created_on = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128)
     pid = models.IntegerField(blank=True, null=True)

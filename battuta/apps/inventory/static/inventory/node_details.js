@@ -128,7 +128,7 @@ function loadFacts(data) {
     var divRow = $('<div>').attr('class', 'row');
     var divCol4 = $('<div>').attr('class', 'col-md-4 col-xs-6');
     var divCol6L = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_left');
-    var divCol6R = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_right');
+    var divCol6R = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_right truncate-text');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
 
     if (data.result == 'ok') {
@@ -141,19 +141,19 @@ function loadFacts(data) {
                 divCol4.clone().append(
                     divRow.clone().append(
                         divCol6L.clone().append('Full hostname:'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_fqdn + '</strong>'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_fqdn + '&nbsp;</strong>'),
                         divCol6L.clone().append('Default IPv4 address:'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_default_ipv4.address + '</strong>'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_default_ipv4.address + '&nbsp;</strong>'),
                         divCol6L.clone().append('Cores:'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '</strong>'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_processor_count + '&nbsp;</strong>'),
                         divCol6L.clone().append('Hard disk (GB):'),
                         divCol6R.clone().append('<strong>' + prettyHdSize + '<small>GB</small></strong>'),
                         divCol6L.clone().append('RAM Memory (MB):'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_memtotal_mb + '</strong>'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_memtotal_mb + '&nbsp;</strong>'),
                         divCol6L.clone().append('OS Family:'),
-                        divCol6R.clone().append('<strong>' + facts.ansible_os_family + '</strong>'),
+                        divCol6R.clone().append('<strong>' + facts.ansible_os_family + '&nbsp;</strong>'),
                         divCol6L.clone().append('OS Distribution:'),
-                        divCol6R.clone().append('<strong>' + distribution + '</strong>')
+                        divCol6R.clone().append('<strong>' + distribution + '&nbsp;</strong>')
                     )
                 )
             ),
@@ -166,15 +166,15 @@ function loadFacts(data) {
             divCol4.clone().append(
                 divRow.clone().append(
                     divCol6L.clone().append('EC2 hostname:'),
-                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_hostname + '</strong>'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_hostname + '&nbsp;</strong>'),
                     divCol6L.clone().append('EC2 public address:'),
-                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_public_ipv4 + '</strong>'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_public_ipv4 + '&nbsp;</strong>'),
                     divCol6L.clone().append('EC2 instance type:'),
-                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_instance_type + '</strong>'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_instance_type + '&nbsp;</strong>'),
                     divCol6L.clone().append('EC2 instance id:'),
-                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_instance_id + '</strong>'),
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_instance_id + '&nbsp;</strong>'),
                     divCol6L.clone().append('EC2 avaliability zone:'),
-                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_placement_availability_zone + '</strong>')
+                    divCol6R.clone().append('<strong>' + facts.ansible_ec2_placement_availability_zone + '&nbsp;</strong>')
                 )
             )
         )

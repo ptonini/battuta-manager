@@ -141,6 +141,8 @@ class BattutaCallback(CallbackBase):
             play_name = 'AdHoc task'
             if self._runner.data['become']:
                 become = True
+        elif self._runner.type == 'gather_facts':
+            play_name = 'Gather facts'
 
         # Save play to database
         sql_query = 'INSERT INTO runner_runnerplay (runner_id,name,hosts,become,gather_facts,host_count,failed_count) '\

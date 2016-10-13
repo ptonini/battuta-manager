@@ -233,14 +233,11 @@ function gatherFacts(nodeName, finishCallback) {
     var runner_key = 'runner_' + Math.random().toString(36).substring(2, 10);
     var postData = {
         action: 'run',
-        type: 'adhoc',
-        name: 'gather facts',
+        type: 'gather_facts',
         hosts: nodeName,
-        module: 'setup',
         remote_pass: '',
         become_pass: '',
         arguments: '',
-        become: false,
         runner_key: runner_key
     };
     $.ajax({

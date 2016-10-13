@@ -186,7 +186,6 @@ class NodesView(View):
                                 ansible_ec2_instance_type = facts['ansible_ec2_instance_type']
                             else:
                                 ansible_ec2_instance_type = ''
-
                             data.append([host.name,
                                          facts['ansible_default_ipv4']['address'],
                                          ansible_ec2_public_ipv4,
