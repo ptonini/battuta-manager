@@ -2,16 +2,25 @@ $(document).ready(function () {
 
     var fileTable = $('#file_table');
 
+    fileTable.data('current_directory', '');
+
     // Build entity adhoc table
     fileTable.DataTable({
         pageLength: 10,
-        ajax: {dataSrc: '', data: {action: 'list'}},
+        ajax: {
+            dataSrc: '',
+            data: function(d) {
+                d.action = 'list';
+                d.root = fileTable.data('current_directory')
+            }
+        },
         order: [[0, "desc"]],
         rowCallback: function (row, data) {
+            var current_directory = fileTable.data('current_directory')
             if (data[1] == 'directory') {
                 $(row).css({'cursor': 'pointer', 'font-weight': 'bold'}).click(function() {
-                    var ajaxData = {dataSrc: '', data: {action: 'list', root: data[0]}};
-                    fileTable.DataTable()
+                    fileTable.data('current_directory', current_directory + '/' + data[0]);
+                    fileTable.DataTable().ajax.reload();
                 });
             }
 
