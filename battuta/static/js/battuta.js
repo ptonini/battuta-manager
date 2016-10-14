@@ -237,7 +237,6 @@ function gatherFacts(nodeName, finishCallback) {
         hosts: nodeName,
         remote_pass: '',
         become_pass: '',
-        arguments: '',
         runner_key: runner_key
     };
     $.ajax({

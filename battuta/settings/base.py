@@ -95,6 +95,12 @@ DEFAULT_PREFERENCES = [
                 'description': 'Server hostname'
             },
             {
+                'name': 'ansible_server',
+                'value': '127.0.0.1',
+                'data_type': 'str',
+                'description': 'Ansible server address'
+            },
+            {
                 'name': 'date_format',
                 'value': '%Y-%m-%d %H:%M:%S',
                 'data_type': 'str',

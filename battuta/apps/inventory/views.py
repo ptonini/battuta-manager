@@ -16,6 +16,7 @@ class InventoryView(View):
     @staticmethod
     def get(request):
         if 'action' not in request.GET:
+
             data = {'_meta': {'hostvars': dict()}}
 
             for host in Host.objects.order_by('name'):
@@ -36,6 +37,7 @@ class InventoryView(View):
                     data[group.name]['children'] = [child.name for child in group.children.all()]
 
                 data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
+
                 if group.description:
                     data[group.name]['vars']['_description'] = group.description
 
