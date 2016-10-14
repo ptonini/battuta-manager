@@ -80,6 +80,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 LOGIN_URL = '/'
 
 DATA_DIR = '/opt/ans_data'
+FILE_DIR = os.path.join(DATA_DIR, 'files')
 PLAYBOOK_DIR = os.path.join(DATA_DIR, 'playbooks')
 USERDATA_DIR = os.path.join(DATA_DIR, 'userdata')
 

@@ -1,7 +1,23 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
+    <script src="{% static 'runner/files.js' %}"></script>
     <script>document.title = 'Battuta - Files';</script>
     <h3>Files</h3>
     <br>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="file_table" class="result_table table table-condensed table-hover table-striped">
+                <thead>
+                <tr>
+                    <th class="col-md-6">Name</th>
+                    <th class="col-md-2">Type</th>
+                    <th class="col-md-1">Size</th>
+                    <th class="col-md-2">Created</th>
+                    <th class="col-md-1"></th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
 {% endblock %}

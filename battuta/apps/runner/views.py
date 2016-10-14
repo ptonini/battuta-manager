@@ -3,6 +3,7 @@ import psutil
 import os
 import yaml
 import ast
+import magic
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -14,7 +15,7 @@ from multiprocessing import Process
 
 from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
-from .functions import play_runner
+from .functions import play_runner, get_directory_content
 
 from apps.users.models import Credential
 from apps.preferences.functions import get_preferences
@@ -27,15 +28,13 @@ class BaseView(View):
         self.context = dict()
 
 
-class RunnerView(View):
+class RunnerView(BaseView):
 
-    @staticmethod
-    def post(request):
+    def post(self, request):
 
         # Run job
         if request.POST['action'] == 'run':
             data = None
-            prefs = get_preferences()
             run_data = dict(request.POST.iteritems())
 
             # Add credentials to run data
@@ -95,7 +94,7 @@ class RunnerView(View):
 
                 tasks = [{'action': {'module': 'setup'}}]
 
-                if prefs['use_ec2_facts']:
+                if self.prefs['use_ec2_facts']:
                     tasks.append({'action': {'module': 'ec2_facts'}})
 
                 run_data['name'] = 'Gather facts'
@@ -118,7 +117,7 @@ class RunnerView(View):
                     runner.status = 'created'
                     runner.is_running = True
                     setattr(runner, 'data', run_data)
-                    setattr(runner, 'prefs', get_preferences())
+                    setattr(runner, 'prefs', self.prefs())
                     runner.save()
                     try:
                         p = Process(target=play_runner, args=(runner,))
@@ -309,6 +308,13 @@ class FileView(BaseView):
         if 'action' not in request.GET:
             self.context['user'] = request.user
             return render(request, 'runner/files.html', self.context)
+
+        else:
+            data = None
+            if request.GET['action'] == 'list':
+                content = get_directory_content(os.path.join(settings.FILE_DIR))
+                data = content['filelist']
+            return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class RoleView(BaseView):
