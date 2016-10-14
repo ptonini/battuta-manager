@@ -1,9 +1,9 @@
 var ansibleModuleList = [
+    'ec2_facts',
     'ping',
     'service',
     'shell',
-    'setup',
-    'ec2_facts'
+    'setup'
 ];
 
 function AnsibleModules (name) {

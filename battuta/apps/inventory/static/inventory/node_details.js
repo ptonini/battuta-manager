@@ -262,9 +262,8 @@ $(document).ready(function () {
     $('.relation_div').each(function () {
         var relation = $(this).data('relation');
         var nodeType = 'group';
-        if (relation == 'members') {
-            nodeType = 'host'
-        }
+        if (relation == 'members') nodeType = 'host';
+
         $(this).DynamicList({
             listTitle: relation,
             showTitle: true,
@@ -488,7 +487,7 @@ $(document).ready(function () {
     // Gather facts on node
     $('#gather_facts').click(function () {
         gatherFacts(nodeName, function() {
-            getFacts(loadFacts)
+            if (nodeType == 'host') getFacts(loadFacts)
         });
     });
 

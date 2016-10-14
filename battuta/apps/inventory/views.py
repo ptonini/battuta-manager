@@ -1,9 +1,7 @@
 import json
-import os
 import csv
 import tempfile
 
-from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
@@ -178,22 +176,50 @@ class NodesView(View):
                     if host.facts:
                         facts = json.loads(host.facts)
                         if prefs['use_ec2_facts']:
+
+                            if 'ansible_default_ipv4' in facts:
+                                ansible_default_ipv4 = facts['ansible_default_ipv4']['address']
+                            else:
+                                ansible_default_ipv4 = ''
+
                             if 'ansible_ec2_public_ipv4' in facts:
                                 ansible_ec2_public_ipv4 = facts['ansible_ec2_public_ipv4']
                             else:
                                 ansible_ec2_public_ipv4 = ''
+
                             if 'ansible_ec2_instance_type' in facts:
                                 ansible_ec2_instance_type = facts['ansible_ec2_instance_type']
                             else:
                                 ansible_ec2_instance_type = ''
+
+                            if 'ansible_processor_count' in facts:
+                                ansible_processor_count = facts['ansible_processor_count']
+                            else:
+                                ansible_processor_count = ''
+
+                            if 'ansible_memtotal_mb' in facts:
+                                ansible_memtotal_mb = facts['ansible_memtotal_mb']
+                            else:
+                                ansible_memtotal_mb = ''
+
+                            if 'ansible_mounts' in facts:
+                                ansible_root_size = facts['ansible_mounts'][0]['size_total']
+                            else:
+                                ansible_root_size = ''
+
+                            if 'ansible_date_time' in facts:
+                                ansible_date_time = facts['ansible_date_time']['date']
+                            else:
+                                ansible_date_time = ''
+
                             data.append([host.name,
-                                         facts['ansible_default_ipv4']['address'],
+                                         ansible_default_ipv4,
                                          ansible_ec2_public_ipv4,
                                          ansible_ec2_instance_type,
-                                         facts['ansible_processor_count'],
-                                         facts['ansible_memtotal_mb'],
-                                         facts['ansible_mounts'][0]['size_total'],
-                                         facts['ansible_date_time']['date']])
+                                         ansible_processor_count,
+                                         ansible_memtotal_mb,
+                                         ansible_root_size,
+                                         ansible_date_time])
                         else:
                             data.append([host.name,
                                          facts['ansible_default_ipv4']['address'],

@@ -13,13 +13,12 @@ function updateTaskTable(task, taskColumn, currentTaskTable, intervalId) {
         taskColumn.addClass('hidden-print');
         clearInterval(intervalId)
     }
-    // Stop loop if all hosts are in table
-    else if (hostCount == rowCount) {
-        clearInterval(intervalId)
-    }
-    else if (task.is_handler && !runner.is_running) {
-        clearInterval(intervalId)
-    }
+
+    if (runner.status == 'canceled') clearInterval(intervalId);
+
+    if (hostCount == rowCount) clearInterval(intervalId);
+
+    else if (task.is_handler && !runner.is_running) clearInterval(intervalId);
 }
 
 // Row callback function for task table
