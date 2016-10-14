@@ -304,6 +304,20 @@ class PlaybookView(BaseView):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
+class FileView(BaseView):
+    def get(self, request):
+        if 'action' not in request.GET:
+            self.context['user'] = request.user
+            return render(request, 'runner/files.html', self.context)
+
+
+class RoleView(BaseView):
+    def get(self, request):
+        if 'action' not in request.GET:
+            self.context['user'] = request.user
+            return render(request, 'runner/roles.html', self.context)
+
+
 class HistoryView(BaseView):
     def get(self, request):
         if 'action' not in request.GET:
