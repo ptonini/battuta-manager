@@ -35,6 +35,7 @@ class RunnerView(View):
         # Run job
         if request.POST['action'] == 'run':
             data = None
+            prefs = get_preferences()
             run_data = dict(request.POST.iteritems())
 
             # Add credentials to run data
@@ -92,16 +93,18 @@ class RunnerView(View):
 
             elif run_data['type'] == 'gather_facts':
 
+                tasks = [{'action': {'module': 'setup'}}]
+
+                if prefs['use_ec2_facts']:
+                    tasks.append({'action': {'module': 'ec2_facts'}})
+
                 run_data['name'] = 'Gather facts'
                 run_data['become'] = False
                 run_data['adhoc_task'] = {
                     'name': run_data['name'],
                     'hosts': run_data['hosts'],
                     'gather_facts': False,
-                    'tasks': [
-                        {'action': {'module': 'setup'}},
-                        {'action': {'module': 'ec2_facts'}}
-                    ]
+                    'tasks': tasks
                 }
 
             else:

@@ -339,6 +339,9 @@ class NodeDetailsView(View):
                     data = {'result': 'ok', 'facts': json.loads(node.facts)}
                 else:
                     data = {'result': 'failed'}
+            elif request.GET['action'] == 'ancestors':
+                data = {'result': 'ok', 'groups': [[group.name, group.id] for group in self.get_node_ancestors()]}
+
             elif request.GET['action'] == 'descendants':
                 data = {'result': 'ok'}
 
