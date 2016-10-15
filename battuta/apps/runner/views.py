@@ -3,7 +3,6 @@ import psutil
 import os
 import yaml
 import ast
-import magic
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -312,7 +311,7 @@ class FileView(BaseView):
         else:
             data = None
             if request.GET['action'] == 'list':
-                content = get_directory_content(os.path.join(settings.FILE_DIR))
+                content = get_directory_content(os.path.join(settings.FILE_DIR, request.GET['root']))
                 data = content['filelist']
             return HttpResponse(json.dumps(data), content_type='application/json')
 

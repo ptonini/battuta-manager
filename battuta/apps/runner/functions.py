@@ -174,12 +174,12 @@ def play_runner(runner):
                        (status, message, runner.id))
 
 
-def get_directory_content(root=None):
+def get_directory_content(root):
     content = {'root': root, 'filelist': list()}
 
     for filename in os.listdir(root):
 
-        full_filename = os.path.join(settings.FILE_DIR, filename)
+        full_filename = os.path.join(root, filename)
 
         if os.path.isfile(full_filename):
             file_mime_type = magic.from_file(full_filename, mime='true')
