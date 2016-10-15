@@ -4,13 +4,15 @@ function create_dir_path_links(index, value) {
     var dirSpan = $('<span>').attr('id', 'span_path_' + index).html(value + '/');
     $('#dir_path').append(dirSpan);
 
+    console.log($('#file_table').data('current_dir'), currentPathArray, arrayLength)
+
     if (index != arrayLength) {
         dirSpan.css('cursor', 'pointer').click(function () {
             var spanArray = $('#dir_path').children();
             spanArray.slice(index + 1).remove();
-            console.log(spanArray[0]);
             $(spanArray[index]).off('click').css('cursor', 'default');
             var next_path = currentPathArray.slice(0, index - 1).join('/');
+            console.log(next_path);
             $('#file_table').data('current_dir', next_path).DataTable().ajax.reload();
         })
     }
