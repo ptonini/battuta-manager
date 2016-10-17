@@ -6,7 +6,7 @@ from django.views.generic import View
 from django.http import HttpResponse
 from django.conf import settings
 
-from .functions import get_directory_content
+from . import get_directory_content
 
 
 class BaseView(View):
@@ -23,7 +23,7 @@ class FileView(BaseView):
     def get(self, request):
         if 'action' not in request.GET:
             self.context['user'] = request.user
-            return render(request, 'files/files.html', self.context)
+            return render(request, 'fileman/files.html', self.context)
 
         else:
             data = None
@@ -37,4 +37,4 @@ class RoleView(BaseView):
     def get(self, request):
         if 'action' not in request.GET:
             self.context['user'] = request.user
-            return render(request, 'files/roles.html', self.context)
+            return render(request, 'fileman/roles.html', self.context)
