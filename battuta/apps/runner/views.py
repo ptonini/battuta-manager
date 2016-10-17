@@ -14,7 +14,7 @@ from multiprocessing import Process
 
 from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
-from .functions import play_runner, get_directory_content
+from .functions import play_runner
 
 from apps.users.models import Credential
 from apps.preferences.functions import get_preferences
@@ -302,25 +302,7 @@ class PlaybookView(BaseView):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class FileView(BaseView):
-    def get(self, request):
-        if 'action' not in request.GET:
-            self.context['user'] = request.user
-            return render(request, 'runner/files.html', self.context)
 
-        else:
-            data = None
-            if request.GET['action'] == 'list':
-                content = get_directory_content(os.path.join(settings.FILE_DIR, request.GET['root']))
-                data = content['filelist']
-            return HttpResponse(json.dumps(data), content_type='application/json')
-
-
-class RoleView(BaseView):
-    def get(self, request):
-        if 'action' not in request.GET:
-            self.context['user'] = request.user
-            return render(request, 'runner/roles.html', self.context)
 
 
 class HistoryView(BaseView):

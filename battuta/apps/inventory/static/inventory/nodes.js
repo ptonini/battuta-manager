@@ -78,16 +78,10 @@ $(document).ready(function () {
     // Build node table
     $('#node_table').DataTable({
         paging: false,
-        ajax: {
-            url: '',
-            type: 'GET',
-            dataSrc: '',
-            data: {action: nodeType +'_table'}
-        },
+        ajax: {dataSrc: '', data: {action: nodeType +'_table'}},
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
         rowCallback: function (row, data) {
-            console.log(data);
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {

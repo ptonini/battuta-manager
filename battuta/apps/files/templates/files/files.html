@@ -1,13 +1,21 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'runner/files.js' %}"></script>
+    <script src="{% static 'files/files.js' %}"></script>
     <script>document.title = 'Battuta - Files';</script>
     <h3>Files</h3>
     <br>
     <div class="row">
+        <div class="col-md-6">
+            <h5>Path: <i id="root_path">&lt;root&gt;</i>/<span id="dir_path"></span></h5>
+        </div>
+        <div class="col-md-6">
+            <span style="float: right">
+                <button id="create_file" class="btn btn-default btn-xs">Create</button>
+                <button id="upload_file" class="btn btn-default btn-xs">Upload</button>
+            </span>
+        </div>
         <div class="col-md-12">
-            <h5>Path: <i>&lt;root&gt;</i>/<span id="dir_path"></span></h5>
             <table id="file_table" class="result_table table table-condensed table-hover table-striped">
                 <thead>
                 <tr>
