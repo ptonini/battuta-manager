@@ -15,6 +15,10 @@ class BaseView(View):
         self.context = dict()
 
 
+class ManagerView(BaseView):
+    pass
+
+
 class FileView(BaseView):
     def get(self, request):
         if 'action' not in request.GET:

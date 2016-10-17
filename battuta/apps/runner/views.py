@@ -302,9 +302,6 @@ class PlaybookView(BaseView):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-
-
-
 class HistoryView(BaseView):
     def get(self, request):
         if 'action' not in request.GET:
