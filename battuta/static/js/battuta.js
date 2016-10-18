@@ -308,6 +308,11 @@ function editTextFile(editor, text, path, filename, mimeType) {
         if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
         else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
         else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
+        else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
+        else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
+        else if (['py'].indexOf(fileExtension) > -1) aceMode = 'python';
+        else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
+        else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
     }
     else if (mimeType == 'application/xml') aceMode = 'xml';
     else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
@@ -329,7 +334,7 @@ function saveTextFile(editor, successCallback, ext) {
     var editorData = $('#text_editor').data();
     var newFilename = $('#filename').val();
     if (newFilename) {
-        if (ext && newFilename.split('.')[newFilename.split('.').length - 1] != ext) newFilename += '.' + ext;
+        if (ext && newFilename.slice(-1)[0] != ext) newFilename += '.' + ext;
         var filePath = editorData.path;
         var oldFilename = editorData.filename;
         if (filePath) {
