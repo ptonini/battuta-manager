@@ -310,7 +310,7 @@ function editTextFile(editor, text, path, filename, mimeType) {
         else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
         else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
         else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
-        else if (['py'].indexOf(fileExtension) > -1) aceMode = 'python';
+        else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
         else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
         else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
     }

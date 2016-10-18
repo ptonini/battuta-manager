@@ -9,15 +9,13 @@ from django.conf import settings
 from . import get_directory_content
 
 
-class BaseView(View):
-    def __init__(self):
-        super(BaseView, self).__init__()
-        self.context = dict()
-
-
-class ManagerView(BaseView):
+class ManagerView(View):
     base_dir = None
     html_template = None
+
+    def __init__(self):
+        super(ManagerView, self).__init__()
+        self.context = dict()
 
     def get(self, request):
         if 'action' not in request.GET:
@@ -51,6 +49,21 @@ class ManagerView(BaseView):
             # Save file
             with open(filepath, 'w') as f:
                 f.write(request.POST['text'])
+
+            data['result'] = 'ok'
+
+        elif request.POST['action'] == 'rename':
+
+            old_name = os.path.join(self.base_dir, request.POST['old_name'])
+            new_name = os.path.join(self.base_dir, request.POST['new_name'])
+
+            os.rename(old_name, new_name)
+
+            data['result'] = 'ok'
+
+        elif request.POST['action'] == 'delete':
+
+            os.remove(os.path.join(self.base_dir, request.POST['filename']))
 
             data['result'] = 'ok'
 

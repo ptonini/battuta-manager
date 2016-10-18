@@ -35,7 +35,6 @@ $(document).ready(function () {
 
     $('#ace_mode').change(function () {
         editor.getSession().setMode('ace/mode/' + $('option:selected', this).val());
-
     });
 
     fileTable.data('current_dir', '');
