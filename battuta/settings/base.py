@@ -82,6 +82,7 @@ LOGIN_URL = '/'
 
 DATA_DIR = '/opt/ans_data'
 FILE_DIR = os.path.join(DATA_DIR, 'files')
+ROLE_DIR = os.path.join(DATA_DIR, 'roles')
 PLAYBOOK_DIR = os.path.join(DATA_DIR, 'playbooks')
 USERDATA_DIR = os.path.join(DATA_DIR, 'userdata')
 

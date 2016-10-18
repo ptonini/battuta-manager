@@ -87,5 +87,17 @@ $(document).ready(function() {
             }
         }
     }));
+
+    // Initialize editor dialog
+    $('#editor_dialog').dialog({
+        autoOpen: false,
+        modal: true,
+        show: true,
+        hide: true,
+        width: 900,
+        dialogClass: 'no_title',
+        closeOnEscape: false,
+    });
+
         
 });

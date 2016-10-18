@@ -43,18 +43,6 @@ function clearPlaybookArgsForm() {
     $('#arguments_box_header').html('&nbsp;');
 }
 
-function submitRequest(type, postData, successCallback) {
-    $.ajax({
-        url: '',
-        type: type,
-        data: postData,
-        dataType: 'json',
-        success: function (data) {
-            successCallback(data)
-        }
-    })
-}
-
 function loadPlaybook(data) {
     if (data.is_valid) {
         loadPlaybookArgsForm(data);
@@ -76,7 +64,7 @@ function editPlaybook(editor, text, filename) {
     }
     $('#playbook_editor').data({'text': text, 'filename': filename}).css('height', window.innerHeight * 0.7);
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    $('#editor_dialog').dialog('open');
+    $('#playbook_editor_dialog').dialog('open');
 }
 
 function savePlaybook(editor) {
@@ -117,7 +105,7 @@ $(document).ready(function () {
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
     var playbookEditor = $('#playbook_editor');
-    var editorDialog = $('#editor_dialog');
+    var editorDialog = $('#playbook_editor_dialog');
 
     document.title = 'Battuta - Playbooks';
     
@@ -160,8 +148,6 @@ $(document).ready(function () {
     playbookTable.DataTable({
         pageLength: 10,
         ajax: {
-            url: '/runner/playbooks/',
-            type: 'GET',
             dataSrc: '',
             data: {action: 'get_list'}
         },

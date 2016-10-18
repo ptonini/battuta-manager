@@ -163,3 +163,7 @@ div.dataTables_filter {
     height: 25px;
 }
 
+.editor_column {
+    margin-top: 10px;
+}
+

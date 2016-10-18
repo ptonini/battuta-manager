@@ -280,3 +280,81 @@ function rememberSelectedTab(tabId) {
     if (activeTab) $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
 }
 
+function submitRequest(type, postData, successCallback) {
+    $.ajax({
+        url: '',
+        type: type,
+        data: postData,
+        dataType: 'json',
+        success: function (data) {
+            successCallback(data)
+        }
+    })
+}
+
+function editTextFile(editor, text, path, filename, mimeType) {
+
+    editor.setValue(text);
+    editor.session.getUndoManager().reset();
+    editor.selection.moveCursorFileStart();
+
+    var aceMode = 'text';
+    if (mimeType == 'text/plain') {
+        var filenameArray = filename.split('.');
+        var arrayLength = filenameArray.length;
+        var fileExtension = filenameArray[arrayLength - 1];
+        if (fileExtension == 'j2') fileExtension = filenameArray[arrayLength - 2];
+
+        if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
+        else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
+        else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
+    }
+    else if (mimeType == 'application/xml') aceMode = 'xml';
+    else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
+
+    $('#ace_mode').val(aceMode);
+    editor.getSession().setMode('ace/mode/' + aceMode);
+
+    if (filename) $('#filename').removeAttr('placeholder').val(filename);
+    else {
+        $('#filename').attr('placeholder', 'New file').val('');
+        filename = '/invalid_name'
+    }
+    $('#text_editor').data({text: text, filename: filename, path: path}).css('height', window.innerHeight * 0.7);
+    $('div.ui-dialog-buttonpane').css('border-top', 'none');
+    $('#editor_dialog').dialog('open');
+}
+
+function saveTextFile(editor, successCallback, ext) {
+    var editorData = $('#text_editor').data();
+    var newFilename = $('#filename').val();
+    if (newFilename) {
+        if (ext && newFilename.split('.')[newFilename.split('.').length - 1] != ext) newFilename += '.' + ext;
+        var filePath = editorData.path;
+        var oldFilename = editorData.filename;
+        if (filePath) {
+            oldFilename = filePath + '/' + oldFilename;
+            newFilename = filePath + '/' + newFilename
+        }
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'save',
+                old_filename: oldFilename,
+                new_filename: newFilename,
+                text: editor.getValue()
+            },
+            success: function (data) {
+                if (data.result == 'ok') {
+                    successCallback(data);
+                    $('#editor_dialog').dialog('close');
+                }
+                else if (data.result == 'fail') {
+                    $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                }
+            }
+        });
+    }
+}
+

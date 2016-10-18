@@ -20,8 +20,23 @@ $(document).ready(function () {
 
     var editableMimeTypes = [
         'text/plain',
-        'inode/x-empty'
+        'text/x-shellscript',
+        'inode/x-empty',
+        'application/xml'
     ];
+
+    // Initialize code editor
+    var editor = ace.edit('text_editor');
+    editor.setTheme('ace/theme/chrome');
+    editor.renderer.setShowPrintMargin(false);
+    editor.setHighlightActiveLine(false);
+    editor.setFontSize(13);
+    editor.$blockScrolling = Infinity;
+
+    $('#ace_mode').change(function () {
+        editor.getSession().setMode('ace/mode/' + $('option:selected', this).val());
+
+    });
 
     fileTable.data('current_dir', '');
 
@@ -30,7 +45,29 @@ $(document).ready(function () {
         fileTable.data('current_dir', '').DataTable().ajax.reload();
     });
 
-    // Build entity adhoc table
+    $('#editor_dialog').dialog('option', 'buttons', [
+        {
+            text: 'Save',
+            click: function () {
+                function successCallback() {
+                    $('#ace_mode').val('');
+                    editor.getSession().setMode('ace/mode/text');
+                    fileTable.DataTable().ajax.reload()
+                }
+                saveTextFile(editor, successCallback)
+            }
+        },
+        {
+            text: 'Cancel',
+            click: function () {
+                $(this).dialog('close');
+                $('#ace_mode').val('');
+                editor.getSession().setMode('ace/mode/text');
+                $('div.ui-dialog-buttonpane').css('border-top', '');
+            }
+        }
+    ]);
+
     fileTable.DataTable({
         paging: false,
         searching: false,
@@ -43,23 +80,36 @@ $(document).ready(function () {
         },
         order: [[0, 'desc']],
         rowCallback: function (row, data) {
+            var currentDir = fileTable.data('current_dir');
             if (data[1] == 'directory') {
                 $(row).attr('class', 'directory_row').css('font-weight', 'bold').find('td:eq(0)')
                     .css('cursor', 'pointer')
                     .off('click')
                     .click(function() {
-                        var current_dir = fileTable.data('current_dir');
-                        var next_dir = data[0];
-                        if (current_dir) next_dir = current_dir + '/' + next_dir;
+                        var nextDir = data[0];
+                        if (currentDir) nextDir = currentDir + '/' + nextDir;
                         dirPath.children().remove();
-                        $.each(next_dir.split('/'), createDirPathLinks);
-                        fileTable.data('current_dir', next_dir).DataTable().ajax.reload();
+                        $.each(nextDir.split('/'), createDirPathLinks);
+                        fileTable.data('current_dir', nextDir).DataTable().ajax.reload();
                 });
             }
             var buttonSpan = $('<span>').css('float', 'right').append(
                 $('<a>')
                     .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
-                    .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell')),
+                    .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
+                    .click(function() {
+                        var filename = data[0];
+                        var mimeType = data[1];
+                        var fullFilename = data[0];
+                        if (currentDir) fullFilename = currentDir + '/' + data[0];
+                        if (editableMimeTypes.indexOf(data[1]) > -1) {
+                            function successCallback(data) {
+                                editTextFile(editor, data.text, currentDir, filename, mimeType)
+                            }
+                            submitRequest('GET', {action: 'edit', file: fullFilename}, successCallback);
+                        }
+
+                    }),
                 $('<a>')
                     .attr({href: '#', 'data-toggle': 'tooltip', title: 'Download'})
                     .append($('<span>').attr('class', 'glyphicon glyphicon-download btn-incell')),
@@ -81,16 +131,11 @@ $(document).ready(function () {
             });
 
             if (table.api().order()[0][1] == 'asc') {
-                for (var i = directoryArray.length; i > 0 ; --i) table.prepend(directoryArray[i-1]);
+                for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]);
             }
             else {
                 for (var j = 0; j < directoryArray.length; ++j) table.append(directoryArray[j]);
             }
-
-
-
-
-
         }
     });
 });
