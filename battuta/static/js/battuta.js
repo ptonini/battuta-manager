@@ -282,7 +282,6 @@ function rememberSelectedTab(tabId) {
 
 function submitRequest(type, postData, successCallback) {
     $.ajax({
-        url: '',
         type: type,
         data: postData,
         dataType: 'json',
@@ -316,6 +315,7 @@ function editTextFile(editor, text, path, filename, mimeType) {
     }
     else if (mimeType == 'application/xml') aceMode = 'xml';
     else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
+    else if (mimeType == 'text/yaml') aceMode = 'yaml';
 
     $('#ace_mode').val(aceMode);
     editor.getSession().setMode('ace/mode/' + aceMode);
@@ -334,7 +334,7 @@ function saveTextFile(editor, successCallback, ext) {
     var editorData = $('#text_editor').data();
     var newFilename = $('#filename').val();
     if (newFilename) {
-        if (ext && newFilename.slice(-1)[0] != ext) newFilename += '.' + ext;
+        if (ext && newFilename.split('.').slice(-1)[0] != ext) newFilename += '.' + ext;
         var filePath = editorData.path;
         var oldFilename = editorData.filename;
         if (filePath) {
@@ -344,12 +344,7 @@ function saveTextFile(editor, successCallback, ext) {
         $.ajax({
             type: 'POST',
             dataType: 'json',
-            data: {
-                action: 'save',
-                old_filename: oldFilename,
-                new_filename: newFilename,
-                text: editor.getValue()
-            },
+            data: {action: 'save', old_filename: oldFilename, new_filename: newFilename, text: editor.getValue()},
             success: function (data) {
                 if (data.result == 'ok') {
                     successCallback(data);

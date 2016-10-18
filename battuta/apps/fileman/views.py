@@ -44,9 +44,15 @@ class ManagerView(View):
         else:
             data = None
             if request.GET['action'] == 'list':
+
+                if not os.path.exists(self.base_dir):
+                    os.makedirs(self.base_dir)
+
                 content = self.get_directory_content(os.path.join(self.base_dir, request.GET['root']))
                 data = content['filelist']
+
             elif request.GET['action'] == 'edit':
+
                 with open(os.path.join(self.base_dir, request.GET['file']), 'r') as text_file:
                     data = {'text': text_file.read()}
 

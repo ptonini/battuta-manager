@@ -77,7 +77,7 @@ $(document).ready(function () {
                 d.root = fileTable.data('current_dir')
             }
         },
-        order: [[0, 'desc']],
+        order: [[0, 'asc']],
         rowCallback: function (row, data) {
             var currentDir = fileTable.data('current_dir');
             if (data[1] == 'directory') {

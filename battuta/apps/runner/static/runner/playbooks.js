@@ -49,7 +49,7 @@ function loadPlaybook(data) {
         buildArgsSelectionBox();
     }
     else $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
-};
+}
 
 function editPlaybook(editor, text, filename) {
 
@@ -110,7 +110,7 @@ $(document).ready(function () {
     document.title = 'Battuta - Playbooks';
     
     // Initialize code editor
-    var editor = ace.edit('playbook_editor');
+    var editor = ace.edit('text_editor');
     editor.setTheme('ace/theme/chrome');
     editor.getSession().setMode('ace/mode/yaml');
     editor.renderer.setShowPrintMargin(false);
@@ -119,24 +119,28 @@ $(document).ready(function () {
     editor.$blockScrolling = Infinity;
 
     // Initialize editor dialog
-    editorDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        width: 900,
-        dialogClass: 'no_title',
-        closeOnEscape: false,
-        buttons: {
-            Save: function () {
-                savePlaybook(editor)
-            },
-            Cancel: function () {
+    $('#editor_dialog').dialog('option', 'buttons', [
+        {
+            text: 'Save',
+            click: function () {
+                function successCallback() {
+                    $('#ace_mode').val('');
+                    editor.getSession().setMode('ace/mode/text');
+                    playbookTable.DataTable().ajax.reload()
+                }
+                saveTextFile(editor, successCallback, 'yml')
+            }
+        },
+        {
+            text: 'Cancel',
+            click: function () {
                 $(this).dialog('close');
+                $('#ace_mode').val('');
+                editor.getSession().setMode('ace/mode/text');
                 $('div.ui-dialog-buttonpane').css('border-top', '');
             }
         }
-    });
+    ]);
     
     // Build credentials selector box
     buildCredentialsSelectionBox(credentials);
@@ -167,9 +171,9 @@ $(document).ready(function () {
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                         .click(function () {
-                            var successCallback = function (data) {
-                                editPlaybook(editor, data.text, playbookFile)
-                            };
+                            function successCallback(data) {
+                                editTextFile(editor, data.text, '', playbookFile, 'text/yaml')
+                            }
                             submitRequest(type, postData, successCallback);
                         }),
                     $('<a>')
@@ -177,7 +181,7 @@ $(document).ready(function () {
                         .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
                         .click(function () {
                             var successCallback = function (data) {
-                                editPlaybook(editor, data.text)
+                                editTextFile(editor, data.text, '', '', 'text/yaml')
                             };
                             submitRequest(type, postData, successCallback);
                         }),
@@ -303,7 +307,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                editPlaybook(editor, data)
+                editTextFile(editor, data, '', '', 'text/yaml')
             }
         });
     });
