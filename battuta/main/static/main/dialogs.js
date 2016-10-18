@@ -1,12 +1,17 @@
-$(document).ready(function() {
+var defaultOptions =  {
+    autoOpen: false,
+    modal: true,
+    show: true,
+    hide: true,
+    dialogClass: 'no_title'
+};
 
-    var defaultOptions =  {
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        dialogClass: 'no_title'
-    };
+
+
+
+
+
+$(document).ready(function() {
 
     // Initialize delete dialog
     $('#delete_dialog').dialog(defaultOptions);
@@ -87,17 +92,4 @@ $(document).ready(function() {
             }
         }
     }));
-
-    // Initialize editor dialog
-    $('#editor_dialog').dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        width: 900,
-        dialogClass: 'no_title',
-        closeOnEscape: false,
-    });
-
-        
 });

@@ -12,7 +12,6 @@ function createDirPathLinks(index, value) {
     );
 }
 
-
 $(document).ready(function () {
 
     var fileTable = $('#file_table');
@@ -24,18 +23,6 @@ $(document).ready(function () {
         'inode/x-empty',
         'application/xml'
     ];
-
-    // Initialize code editor
-    var editor = ace.edit('text_editor');
-    editor.setTheme('ace/theme/chrome');
-    editor.renderer.setShowPrintMargin(false);
-    editor.setHighlightActiveLine(false);
-    editor.setFontSize(13);
-    editor.$blockScrolling = Infinity;
-
-    $('#ace_mode').change(function () {
-        editor.getSession().setMode('ace/mode/' + $('option:selected', this).val());
-    });
 
     fileTable.data('current_dir', '');
 
@@ -53,7 +40,7 @@ $(document).ready(function () {
                     editor.getSession().setMode('ace/mode/text');
                     fileTable.DataTable().ajax.reload()
                 }
-                saveTextFile(editor, successCallback)
+                saveTextFile(successCallback)
             }
         },
         {
@@ -103,7 +90,7 @@ $(document).ready(function () {
                         if (currentDir) fullFilename = currentDir + '/' + data[0];
                         if (editableMimeTypes.indexOf(data[1]) > -1) {
                             function successCallback(data) {
-                                editTextFile(editor, data.text, currentDir, filename, mimeType)
+                                editTextFile(data.text, currentDir, filename, mimeType)
                             }
                             submitRequest('GET', {action: 'edit', file: fullFilename}, successCallback);
                         }
@@ -117,8 +104,6 @@ $(document).ready(function () {
                     .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
             );
             $(row).find('td:eq(4)').removeAttr('data-toggle').removeAttr('title').html(buttonSpan);
-
-
         },
         drawCallback: function() {
             var table = this;

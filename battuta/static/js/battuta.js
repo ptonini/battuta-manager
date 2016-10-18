@@ -291,7 +291,7 @@ function submitRequest(type, postData, successCallback) {
     })
 }
 
-function editTextFile(editor, text, path, filename, mimeType) {
+function editTextFileb(editor, text, path, filename, mimeType) {
 
     editor.setValue(text);
     editor.session.getUndoManager().reset();
@@ -330,7 +330,7 @@ function editTextFile(editor, text, path, filename, mimeType) {
     $('#editor_dialog').dialog('open');
 }
 
-function saveTextFile(editor, successCallback, ext) {
+function saveTextFileb(editor, successCallback, ext) {
     var editorData = $('#text_editor').data();
     var newFilename = $('#filename').val();
     if (newFilename) {

@@ -51,51 +51,6 @@ function loadPlaybook(data) {
     else $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
 }
 
-function editPlaybook(editor, text, filename) {
-
-    // Load playbook data
-    editor.setValue(text);
-    editor.session.getUndoManager().reset();
-    editor.selection.moveCursorFileStart();
-    if (filename) $('#playbook_name').removeAttr('placeholder').val(filename);
-    else {
-        $('#playbook_name').attr('placeholder', 'New playbook').val('');
-        filename = '/invalid_name'
-    }
-    $('#playbook_editor').data({'text': text, 'filename': filename}).css('height', window.innerHeight * 0.7);
-    $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    $('#playbook_editor_dialog').dialog('open');
-}
-
-function savePlaybook(editor) {
-    var newFilename = $('#playbook_name').val();
-    if (newFilename) {
-        if (newFilename.split('.')[newFilename.split('.').length - 1] != 'yml') newFilename += '.yml';
-        $.ajax({
-            url: '/runner/playbooks/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'save',
-                old_filename: $('#playbook_editor').data('filename'),
-                new_filename: newFilename,
-                text: editor.getValue()
-            },
-            success: function (data) {
-                if (data.result == 'ok') {
-                    loadPlaybookArgsForm(data, newFilename);
-                    buildArgsSelectionBox();
-                    $('#editor_dialog').dialog('close');
-                    $('#playbook_table').DataTable().ajax.reload(null, false)
-                }
-                else if (data.result == 'fail') {
-                    $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                }
-            }
-        });
-    }
-}
-
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
@@ -104,19 +59,8 @@ $(document).ready(function () {
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
-    var playbookEditor = $('#playbook_editor');
-    var editorDialog = $('#playbook_editor_dialog');
 
     document.title = 'Battuta - Playbooks';
-    
-    // Initialize code editor
-    var editor = ace.edit('text_editor');
-    editor.setTheme('ace/theme/chrome');
-    editor.getSession().setMode('ace/mode/yaml');
-    editor.renderer.setShowPrintMargin(false);
-    editor.setHighlightActiveLine(false);
-    editor.setFontSize(13);
-    editor.$blockScrolling = Infinity;
 
     // Initialize editor dialog
     $('#editor_dialog').dialog('option', 'buttons', [
@@ -128,7 +72,7 @@ $(document).ready(function () {
                     editor.getSession().setMode('ace/mode/text');
                     playbookTable.DataTable().ajax.reload()
                 }
-                saveTextFile(editor, successCallback, 'yml')
+                saveTextFile(successCallback, 'yml')
             }
         },
         {
@@ -172,7 +116,7 @@ $(document).ready(function () {
                         .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                         .click(function () {
                             function successCallback(data) {
-                                editTextFile(editor, data.text, '', playbookFile, 'text/yaml')
+                                editTextFile(data.text, '', playbookFile, 'text/yaml')
                             }
                             submitRequest(type, postData, successCallback);
                         }),
@@ -181,7 +125,7 @@ $(document).ready(function () {
                         .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
                         .click(function () {
                             var successCallback = function (data) {
-                                editTextFile(editor, data.text, '', '', 'text/yaml')
+                                editTextFile(data.text, '', '', 'text/yaml')
                             };
                             submitRequest(type, postData, successCallback);
                         }),
@@ -293,12 +237,6 @@ $(document).ready(function () {
                 break;
         }
     });
-    
-    // Reload playbook from server
-    $('#reload_playbook').click(function () {
-        editor.setValue(playbookEditor.data('text'));
-        editor.selection.moveCursorFileStart();
-    });
 
     // New playbook
     $('#new_playbook').click(function () {
@@ -307,7 +245,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                editTextFile(editor, data, '', '', 'text/yaml')
+                editTextFile(data, '', '', 'text/yaml')
             }
         });
     });
