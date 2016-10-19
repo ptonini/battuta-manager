@@ -365,7 +365,7 @@ $(document).ready(function () {
             case 'Copy from node':
                 clearVariableForm();
                 $('.select_type').off('click').click(function () {
-                    var sourceNodeType = $(this).attr('data-type');
+                    var sourceNodeType = $(this).data('type');
                     nodeTypeDialog.dialog('close');
                     selectDialog.DynamicList({
                         listTitle: 'copy_from_node',
