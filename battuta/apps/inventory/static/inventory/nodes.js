@@ -9,7 +9,6 @@ $(document).ready(function () {
 
     var nodeList = $('#node_list');
     var nodeType = $('#node_type').val();
-    var deleteDialog = $('#delete_dialog');
 
     document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
 
@@ -97,7 +96,6 @@ $(document).ready(function () {
                     if (data[3]) $(row).find('td:eq(3)').html(Math.ceil(Number(data[3]) / 1024));
                     if (data[4]) $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / (1024 * 1024 * 1024)))
                     }
-
             }
         },
         drawCallback: function () {

@@ -47,10 +47,10 @@ $(document).ready(function () {
                                 $('<li>').html('Variables added: ' + data.added_vars)
                             )
                         );
-                        $('#alert_dialog').css('text-align', 'left').html(message).dialog('open');
+                        alertDialog.css('text-align', 'left').html(message).dialog('open');
                     }
                     else {
-                        $('#alert_dialog')
+                        alertDialog
                             .css('text-align', 'center')
                             .html('<strong>' + data.msg + '</strong>')
                             .dialog('open');

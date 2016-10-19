@@ -37,7 +37,7 @@ function formatRelationListItem(listItem, nodeType, relation) {
     )
 }
 
-function formatCopyVariablesListItem(listItem, selectDialog, sourceNodeType) {
+function formatCopyVariablesListItem(listItem, sourceNodeType) {
     listItem.click(function () {
         var sourceNodeName = $(this).data('value');
         $.ajax({
@@ -52,13 +52,13 @@ function formatCopyVariablesListItem(listItem, selectDialog, sourceNodeType) {
             success: function () {
                 selectDialog.dialog('close');
                 $('#variable_table').DataTable().ajax.reload();
-                $('#alert_dialog').html('<strong>Variables copied from ' + sourceNodeName + '</strong>').dialog('open');
+                alertDialog.html('<strong>Variables copied from ' + sourceNodeName + '</strong>').dialog('open');
             }
         });
     });
 }
 
-function addRelationsListLoadCallback(listContainer, selectDialog, relation) {
+function addRelationsListLoadCallback(listContainer, relation) {
     var currentList = listContainer.find('div.dynamic-list');
     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
     selectDialog.dialog('option', 'buttons', [
@@ -79,7 +79,7 @@ function addRelationsListLoadCallback(listContainer, selectDialog, relation) {
     ]);
 }
 
-function addRelationsButtonAction(selectDialog, nodeType, relation) {
+function addRelationsButtonAction(nodeType, relation) {
     selectDialog.DynamicList({
         listTitle: 'selection',
         showFilter: true,
@@ -94,7 +94,7 @@ function addRelationsButtonAction(selectDialog, nodeType, relation) {
         maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
         ajaxUrl: relation + '/?list=not_related',
         loadCallback: function (listContainer) {
-            addRelationsListLoadCallback(listContainer, selectDialog, relation)
+            addRelationsListLoadCallback(listContainer, relation)
         },
         addButtonAction: function () {
             openAddNodeDialog(nodeType, function () {
@@ -184,9 +184,9 @@ function loadFacts(data) {
 function openNodeFactsDialog(data) {
     if (data.result == 'ok') {
         $('#json_box').JSONView(data.facts).JSONView('collapse', 1);
-        $('#json_dialog').dialog('open');
+        jsonDialog.dialog('open');
     }
-    else $('#alert_dialog').dialog('open').html('<strong>Facts file not found</strong>');
+    else alertDialog.dialog('open').html('<strong>Facts file not found</strong>');
 }
 
 function buildDescendantsList() {
@@ -236,13 +236,8 @@ $(document).ready(function () {
     var nodeName = $('#header_node_name').html();
     var nodeType = $('#header_node_type').html();
     var variableTable = $('#variable_table');
-    var selectDialog = $('#select_dialog');
-    var alertDialog = $('#alert_dialog');
-    var deleteDialog = $('#delete_dialog');
-    var nodeDialog = $('#node_dialog');
     var nodeForm = $('#node_form');
     var nodeDescriptionHeader = $('#node_description_header');
-    var nodeTypeDialog = $('#node_type_dialog');
     var cancelVarEdit = $('#cancel_var_edit');
 
     document.title = 'Battuta - ' + nodeName;
@@ -281,7 +276,7 @@ $(document).ready(function () {
                 formatRelationListItem(listItem, nodeType, relation)
             },
             addButtonAction: function () {
-                addRelationsButtonAction(selectDialog, nodeType, relation)
+                addRelationsButtonAction(nodeType, relation)
             }
         });
     });
@@ -378,7 +373,7 @@ $(document).ready(function () {
                         maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
                         ajaxUrl: '/inventory/?action=search&type=' + sourceNodeType + '&pattern=',
                         formatItem: function (listItem) {
-                            formatCopyVariablesListItem(listItem, selectDialog, sourceNodeType)
+                            formatCopyVariablesListItem(listItem, sourceNodeType)
                         },
                         loadCallback: function (listContainer) {
                             var currentList = listContainer.find('div.dynamic-list');

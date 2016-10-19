@@ -42,7 +42,7 @@ function taskTableRowCallback(row, data) {
         .css('cursor','pointer')
         .click(function () {
             $('#json_box').JSONView(data[3]).JSONView('collapse', 2);
-            $('#json_dialog').dialog('open')
+            jsonDialog.dialog('open')
         })
 }
 
@@ -384,7 +384,7 @@ $(document).ready(function () {
                 data: {action: 'kill', runner_id: runner.id},
                 success: function (data) {
                     if (data.result == 'fail') {
-                        $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
                     }
                 }
             })

@@ -48,14 +48,13 @@ function loadPlaybook(data) {
         loadPlaybookArgsForm(data);
         buildArgsSelectionBox();
     }
-    else $('#alert_dialog').html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
+    else alertDialog.html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
 }
 
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
     var argumentsBox = $('#arguments_box');
-    var alertDialog = $('#alert_dialog');
     var savedArguments = $('#saved_arguments');
     var argumentsForm = $('#arguments_form');
     var credentials = $('#credentials');
@@ -141,7 +140,7 @@ $(document).ready(function () {
                                 }
                                 playbookTable.DataTable().ajax.reload()
                             };
-                            $('#delete_dialog')
+                            deleteDialog
                                 .dialog('option', 'buttons', [
                                     {
                                         text: 'Delete',

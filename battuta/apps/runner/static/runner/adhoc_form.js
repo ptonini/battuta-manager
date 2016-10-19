@@ -19,7 +19,6 @@ function resetAdHocForm() {
 $(document).ready(function () {
 
     var adhocTable = $('#adhoc_table');
-    var alertDialog = $('#alert_dialog');
     var credentials = $('#credentials');
     var fieldsContainer = $('#optional_fields');
     var hosts = $('#hosts');
@@ -76,7 +75,7 @@ $(document).ready(function () {
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {
-                            $('#delete_dialog')
+                            deleteDialog
                                 .dialog('option', 'buttons', [
                                     {
                                         text: 'Delete',

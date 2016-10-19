@@ -112,7 +112,7 @@ function savePreferences() {
                 item_values: JSON.stringify(itemValues)
             },
             success: function () {
-                $('#alert_dialog').html('<strong>Preferences saved</strong>').dialog('open');
+                alertDialog.html('<strong>Preferences saved</strong>').dialog('open');
                 getPreferences();
                 loadPreferences();
             }
@@ -123,7 +123,6 @@ function savePreferences() {
 $(document).ready(function () {
 
     var restoreDialog = $('#restore_dialog');
-    var alertDialog = $('#alert_dialog').css('text-align', 'center');
 
     document.title = 'Battuta - Preferences';
 
@@ -150,7 +149,7 @@ $(document).ready(function () {
     });
     
     $('.reload_prefs').click(function() {
-        alertDialog.html('<strong>Preferences reloaded</strong>').dialog('open');
+        alertDialog.css('text-align', 'center').html('<strong>Preferences reloaded</strong>').dialog('open');
         loadPreferences();
     });
 

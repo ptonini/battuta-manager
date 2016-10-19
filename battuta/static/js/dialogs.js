@@ -1,5 +1,5 @@
 // Default dialog options
-var defaultOptions =  {
+var defaultDialogOptions =  {
     autoOpen: false,
     modal: true,
     show: true,
@@ -18,13 +18,13 @@ var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).
     $('<strong>').html('This action cannot be undone')
 );
 hiddenDiv.append(deleteDialog);
-deleteDialog.dialog(defaultOptions);
+deleteDialog.dialog(defaultDialogOptions);
 
 
 // Alert dialog
 var alertDialog = $('<div>').attr('id', 'alert_dialog');
 hiddenDiv.append(alertDialog);
-alertDialog.dialog($.extend({}, defaultOptions, {
+alertDialog.dialog($.extend({}, defaultDialogOptions, {
     minWidth: 160,
     buttons: {
         Ok: function () {
@@ -37,7 +37,7 @@ alertDialog.dialog($.extend({}, defaultOptions, {
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog');
 hiddenDiv.append(selectDialog);
-selectDialog.dialog($.extend({}, defaultOptions, {
+selectDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Cancel: function () {
             $('.filter_box').val('');
@@ -47,31 +47,7 @@ selectDialog.dialog($.extend({}, defaultOptions, {
 }));
 
 
-// Node dialog
-var nodeDialog = $('<div>').attr('id', 'node_dialog').append(
-    $('<h5>').attr('id', 'node_dialog_header'),
-    $('<form>').attr('id', 'node_form').append(
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr({for: 'node_name', class: 'requiredField'}).html('Name'),
-            $('<input>').attr({id: 'node_name', type: 'text', class: 'form-control input-sm'})
-        ),
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr({for: 'node_description', class: 'requiredField'}).html('Description'),
-            $('<textarea>').attr({id: 'node_name', class: 'textarea form-control input-sm'})
-        )
-    )
-);
-hiddenDiv.append(nodeDialog);
-nodeDialog.dialog($.extend({}, defaultOptions, {
-    buttons: {
-        Save: function (){
-            $('#node_form').submit()
-        },
-        Cancel: function (){
-            $(this).dialog('close');
-        }
-    }
-}));
+
 
 
 // JSON dialog
@@ -79,7 +55,7 @@ var jsonDialog = $('<div>').attr('id', 'json_dialog').append(
     $('<pre>').attr('id', 'json_box')
 );
 hiddenDiv.append(jsonDialog);
-jsonDialog.dialog($.extend({}, defaultOptions, {
+jsonDialog.dialog($.extend({}, defaultDialogOptions, {
     width: 'auto',
     maxHeight: 480,
     buttons: {
@@ -99,14 +75,13 @@ var nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-cen
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'group').html('Groups')
 );
 hiddenDiv.append(nodeTypeDialog);
-nodeTypeDialog.dialog($.extend({}, defaultOptions, {
+nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Cancel: function () {
             $(this).dialog('close');
         }
     }
 }));
-
 
 // Password dialog
 var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20px').append(
@@ -121,81 +96,9 @@ var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20p
     $('<input>').attr({id: 'sudo_password', type: 'password', class: 'form-control input-sm sudo_pass_group'})
 );
 hiddenDiv.append(passwordDialog);
-passwordDialog.dialog($.extend({}, defaultOptions, {
+passwordDialog.dialog($.extend({}, defaultDialogOptions, {
     width: '360'
 }));
 
 
-// Pattern dialog
-var patternDialog = $('<div>').attr('id', 'pattern_dialog').css('overflow-x', 'hidden').append(
-    $('<div>').attr('class', 'row').append(
-        $('<div>').attr('class', 'col-md-12').append(
-            $('<h5>').html('Pattern builder').append(
-                $('<span>').css('float', 'right').append(
-                    $('<a>').attr({href: 'http://docs.ansible.com/ansible/intro_patterns.html', target: '_blank'}).append(
-                        $('<small>').html('patterns reference')
-                    )
-                )
-            ),
-            $('<hr>')
-        ),
-        $('<div>').attr('class', 'col-md-2').html('Select:'),
-        $('<div>').attr('class', 'col-md-2').append(
-            $('<button>')
-                .attr('class', 'btn btn-default btn-xs select_nodes')
-                .data({type: 'group', op: 'sel'})
-                .html('Groups')
-        ),
-        $('<div>').attr('class', 'col-md-8').append(
-            $('<button>')
-                .attr('class', 'btn btn-default btn-xs select_nodes')
-                .data({type: 'host', op: 'sel'})
-                .html('Hosts')
-        ),
-        $('<div>').attr('class', 'col-md-2').html('and:'),
-        $('<div>').attr('class', 'col-md-2').append(
-            $('<button>')
-                .attr('class', 'btn btn-default btn-xs select_nodes')
-                .data({type: 'group', op: 'and'})
-                .html('Groups')
-        ),
-        $('<div>').attr('class', 'col-md-8').append(
-            $('<button>')
-                .attr('class', 'btn btn-default btn-xs select_nodes')
-                .data({type: 'host', op: 'and'})
-                .html('Hosts')
-        ),
-        $('<div>').attr('class', 'col-md-2').html('exclude:'),
-        $('<div>').attr('class', 'col-md-2').append(
-            $('<button>')
-                .attr('class', 'btn btn-default btn-xs select_nodes')
-                .data({type: 'group', op: 'exc'})
-                .html('Groups')
-        ),
-        $('<div>').attr('class', 'col-md-8').append(
-            $('<button>')
-                .attr('class', 'btn btn-default btn-xs select_nodes')
-                .data({type: 'host', op: 'exc'})
-                .html('Hosts')
-        )
-    ),
-    $('<br>'),
-    $('<pre>').attr({id: 'pattern_container', class: 'text-left hidden'})
-);
-hiddenDiv.append(patternDialog);
-patternDialog.dialog($.extend({}, defaultOptions, {
-    width: 520,
-    buttons: {
-        Use: function () {
-            $('.pattern-input').val($('#pattern_container').text());
-            $(this).dialog('close');
-        },
-        Reset: function () {
-            $('#pattern_container').addClass('hidden').html('');
-            $('.pattern-input').val('');
-        },
-        Cancel: function () {
-            $(this).dialog('close');
-        }
-    }
-}));
+

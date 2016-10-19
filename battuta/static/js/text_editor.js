@@ -1,3 +1,34 @@
+var aceModeSelector = $('<select>').attr({id: 'ace_mode', class: 'select form-control input-sm'}).append(
+    $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
+);
+
+var reloadButton = $('<button>').attr({id: 'reload_file', class: 'btn btn-default btn-sm'}).html('Reload');
+
+var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
+    $('<div>').attr('class', 'col-md-4 editor_column').append(
+        $('<label>').attr({for: 'filename', class: 'requiredField sr-only'}).html('Filename'),
+        $('<input>').attr({id: 'filename', type: 'text', class: 'form-control input-sm'})
+    ),
+    $('<div>').attr('class', 'col-md-6 editor_column text-right').append(reloadButton),
+    $('<div>').attr('class', 'col-md-2 editor_column').append(
+        $('<label>').attr({for: 'ace_mode', class: 'requiredField sr-only'}).html('Mode'),
+        aceModeSelector
+    ),
+    $('<div>').attr('class', 'col-md-12 editor_column').append(
+        $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey')
+    )
+);
+hiddenDiv.append(editorDialog);
+editorDialog.dialog({
+    autoOpen: false,
+    modal: true,
+    show: true,
+    hide: true,
+    width: 900,
+    dialogClass: 'no_title',
+    closeOnEscape: false
+});
+
 var aceModesArray = [
     ['apache_conf', 'Apache conf'],
     ['batchfile', 'BatchFile'],
@@ -20,27 +51,6 @@ var aceModesArray = [
     ['yaml', 'YAML']
 ];
 
-var aceModeSelector = $('<select>').attr({id: 'ace_mode', class: 'select form-control input-sm'}).append(
-    $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
-);
-
-var reloadButton = $('<button>').attr({id: 'reload_file', class: 'btn btn-default btn-sm'}).html('Reload');
-
-var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
-    $('<div>').attr('class', 'col-md-4 editor_column').append(
-        $('<label>').attr({for: 'filename', class: 'requiredField sr-only'}).html('Filename'),
-        $('<input>').attr({id: 'filename', type: 'text', class: 'form-control input-sm'})
-    ),
-    $('<div>').attr('class', 'col-md-6 editor_column text-right').append(reloadButton),
-    $('<div>').attr('class', 'col-md-2 editor_column').append(
-        $('<label>').attr({for: 'ace_mode', class: 'requiredField sr-only'}).html('Mode'),
-        aceModeSelector
-    ),
-    $('<div>').attr('class', 'col-md-12 editor_column').append(
-        $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey')
-    )
-);
-
 $.each(aceModesArray, function(index, value){
     aceModeSelector.append($('<option>').attr('value', value[0]).html(value[1]))
 });
@@ -55,24 +65,12 @@ aceModeSelector.change(function () {
     editor.getSession().setMode('ace/mode/' + $(this).val());
 });
 
-$(document.body).append($('<div>').attr('class', 'hidden').append(editorDialog));
-
 var editor = ace.edit('text_editor');
 editor.setTheme('ace/theme/chrome');
 editor.renderer.setShowPrintMargin(false);
 editor.setHighlightActiveLine(false);
 editor.setFontSize(13);
 editor.$blockScrolling = Infinity;
-
-editorDialog.dialog({
-    autoOpen: false,
-    modal: true,
-    show: true,
-    hide: true,
-    width: 900,
-    dialogClass: 'no_title',
-    closeOnEscape: false
-});
 
 function editTextFile(text, path, filename, mimeType) {
 
