@@ -7,12 +7,6 @@ var defaultDialogOptions =  {
     dialogClass: 'no_title'
 };
 
-
-// Dialogs hidden container
-var hiddenDiv = $('<div>').attr('class', 'hidden');
-$(document.body).append(hiddenDiv);
-
-
 // Delete dialog
 var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).append(
     $('<strong>').html('This action cannot be undone')
@@ -45,9 +39,6 @@ selectDialog.dialog($.extend({}, defaultDialogOptions, {
         }
     }
 }));
-
-
-
 
 
 // JSON dialog

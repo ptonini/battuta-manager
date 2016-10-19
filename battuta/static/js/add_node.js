@@ -1,28 +1,54 @@
-/**
- * Created by ptonini on 19/10/16.
- */
-// Node dialog
-var nodeDialog = $('<div>').attr('id', 'node_dialog').append(
-    $('<h5>').attr('id', 'node_dialog_header'),
-    $('<form>').attr('id', 'node_form').append(
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr({for: 'node_name', class: 'requiredField'}).html('Name'),
-            $('<input>').attr({id: 'node_name', type: 'text', class: 'form-control input-sm'})
-        ),
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr({for: 'node_description', class: 'requiredField'}).html('Description'),
-            $('<textarea>').attr({id: 'node_name', class: 'textarea form-control input-sm'})
-        )
+var nodeDialogHeader = $('<h5>').attr('id', 'node_dialog_header');
+
+var nodeForm = $('<form>').attr('id', 'node_form').append(
+    $('<div>').attr('class', 'form-group').append(
+        $('<label>').attr({for: 'node_name', class: 'requiredField'}).html('Name'),
+        $('<input>').attr({id: 'node_name', type: 'text', class: 'form-control input-sm'})
+    ),
+    $('<div>').attr('class', 'form-group').append(
+        $('<label>').attr({for: 'node_description', class: 'requiredField'}).html('Description'),
+        $('<textarea>').attr({id: 'node_name', class: 'textarea form-control input-sm'})
     )
 );
+
+var nodeDialog = $('<div>').attr('id', 'node_dialog').append(nodeDialogHeader, nodeForm);
 hiddenDiv.append(nodeDialog);
 nodeDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Save: function (){
-            $('#node_form').submit()
+            nodeForm.submit()
         },
         Cancel: function (){
             $(this).dialog('close');
         }
     }
 }));
+
+// Open Add Node dialog
+function openAddNodeDialog(nodeType, addNodeCallback) {
+    nodeDialogHeader.html('Add ' + nodeType);
+    nodeForm.find('input').val('');
+    nodeForm.off('submit').submit(function(event) {
+        event.preventDefault();
+        $.ajax({
+            url: '/inventory/' + nodeType + '/0/',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'save',
+                name: $('#node_name').val(),
+                description: $('#node_description').val()
+            },
+            success: function (data) {
+                if (data.result == 'ok') {
+                    addNodeCallback();
+                    nodeDialog.dialog('close');
+                }
+                else if (data.result == 'fail') {
+                    alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
+                }
+            }
+        });
+    });
+    nodeDialog.dialog('open')
+}

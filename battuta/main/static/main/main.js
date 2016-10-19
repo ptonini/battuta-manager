@@ -48,11 +48,6 @@ $(document).ready(function () {
         if (pattern) window.open('/search/' + pattern, '_self')
     });
 
-    // Open import data dialog
-    $('#import_data').click(function () {
-        $('#import_dialog').dialog('open')
-    });
-
     // Capture enter on password dialog
     $('#password_dialog').keypress(function (event) {
         if (event.keyCode == 13) {

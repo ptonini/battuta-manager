@@ -422,7 +422,6 @@ $(document).ready(function () {
         nodeForm.off('submit').submit(function(event) {
             event.preventDefault();
             $.ajax({
-                url: '',
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -432,11 +431,7 @@ $(document).ready(function () {
                 },
                 success: function (data) {
                     if (data.result == 'ok') {
-                        $('#header_node_name').html(data.name);
-                        if (data.description) nodeDescriptionHeader.html(data.description);
-                        else nodeDescriptionHeader.html('<small>No description available</small>');
-                        nodeForm.find('input, textarea').val('').html('');
-                        nodeDialog.dialog('close');
+                        window.open('/inventory/' + $('#header_node_type').html() + '/' + data.name, '_self');
                     }
                     else if (data.result == 'fail') {
                         alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
@@ -457,12 +452,9 @@ $(document).ready(function () {
                 click: function () {
                     $(this).dialog('close');
                     $.ajax({
-                        url: '',
                         type: 'POST',
                         dataType: 'json',
-                        data: {
-                            action: 'delete'
-                        },
+                        data: {action: 'delete'},
                         success: function () {
                             window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
                         }

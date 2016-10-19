@@ -1,3 +1,7 @@
+// Hidden container
+var hiddenDiv = $('<div>').attr('class', 'hidden');
+$(document.body).append(hiddenDiv);
+
 // Get cookie
 function getCookie(name) {
     var cookieValue = null;
@@ -183,38 +187,6 @@ function buildCredentialsSelectionBox(credentials, start_value) {
     });
 }
 
-// Open Add Node dialog
-function openAddNodeDialog(nodeType, addNodeCallback) {
-    var alertDialog = $('#alert_dialog');
-    var nodeForm = $('#node_form');
-    var nodeDialog = $('#node_dialog');
-    $('#node_dialog_header').html('Add ' + nodeType);
-    nodeForm.find('input').val('');
-    nodeForm.off('submit').submit(function(event) {
-        event.preventDefault();
-        $.ajax({
-            url: '/inventory/' + nodeType + '/0/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'save',
-                name: $('#node_name').val(),
-                description: $('#node_description').val()
-            },
-            success: function (data) {
-                if (data.result == 'ok') {
-                    addNodeCallback();
-                    nodeDialog.dialog('close');
-                }
-                else if (data.result == 'fail') {
-                    alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
-                }
-            }
-        });
-    });
-    nodeDialog.dialog('open')
-}
-
 function getPreferences() {
     $.ajax({
         url: '/',
@@ -291,70 +263,4 @@ function submitRequest(type, postData, successCallback) {
     })
 }
 
-function editTextFileb(editor, text, path, filename, mimeType) {
-
-    editor.setValue(text);
-    editor.session.getUndoManager().reset();
-    editor.selection.moveCursorFileStart();
-
-    var aceMode = 'text';
-    if (mimeType == 'text/plain') {
-        var filenameArray = filename.split('.');
-        var arrayLength = filenameArray.length;
-        var fileExtension = filenameArray[arrayLength - 1];
-        if (fileExtension == 'j2') fileExtension = filenameArray[arrayLength - 2];
-
-        if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
-        else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
-        else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
-        else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
-        else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
-        else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
-        else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
-        else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
-    }
-    else if (mimeType == 'application/xml') aceMode = 'xml';
-    else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
-    else if (mimeType == 'text/yaml') aceMode = 'yaml';
-
-    $('#ace_mode').val(aceMode);
-    editor.getSession().setMode('ace/mode/' + aceMode);
-
-    if (filename) $('#filename').removeAttr('placeholder').val(filename);
-    else {
-        $('#filename').attr('placeholder', 'New file').val('');
-        filename = '/invalid_name'
-    }
-    $('#text_editor').data({text: text, filename: filename, path: path}).css('height', window.innerHeight * 0.7);
-    $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    $('#editor_dialog').dialog('open');
-}
-
-function saveTextFileb(editor, successCallback, ext) {
-    var editorData = $('#text_editor').data();
-    var newFilename = $('#filename').val();
-    if (newFilename) {
-        if (ext && newFilename.split('.').slice(-1)[0] != ext) newFilename += '.' + ext;
-        var filePath = editorData.path;
-        var oldFilename = editorData.filename;
-        if (filePath) {
-            oldFilename = filePath + '/' + oldFilename;
-            newFilename = filePath + '/' + newFilename
-        }
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            data: {action: 'save', old_filename: oldFilename, new_filename: newFilename, text: editor.getValue()},
-            success: function (data) {
-                if (data.result == 'ok') {
-                    successCallback(data);
-                    $('#editor_dialog').dialog('close');
-                }
-                else if (data.result == 'fail') {
-                    $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                }
-            }
-        });
-    }
-}
 

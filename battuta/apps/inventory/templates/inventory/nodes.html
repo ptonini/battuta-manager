@@ -1,7 +1,8 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script src="{% static 'inventory/nodes.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/add_node.js' %}"></script>
+    <script type="text/javascript" src="{% static 'inventory/nodes.js' %}"></script>
     <input id="node_type" type="hidden" value="{{ node_type }}">
     <div class="row">
         <div class="col-md-12">
