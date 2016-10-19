@@ -7,6 +7,7 @@ var defaultDialogOptions =  {
     dialogClass: 'no_title'
 };
 
+
 // Delete dialog
 var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).append(
     $('<strong>').html('This action cannot be undone')
@@ -73,6 +74,7 @@ nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {
         }
     }
 }));
+
 
 // Password dialog
 var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20px').append(

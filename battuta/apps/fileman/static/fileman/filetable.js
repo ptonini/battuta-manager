@@ -36,8 +36,6 @@ $(document).ready(function () {
             text: 'Save',
             click: function () {
                 function successCallback() {
-                    $('#ace_mode').val('');
-                    editor.getSession().setMode('ace/mode/text');
                     fileTable.DataTable().ajax.reload()
                 }
                 saveTextFile(successCallback)
@@ -47,13 +45,10 @@ $(document).ready(function () {
             text: 'Cancel',
             click: function () {
                 $(this).dialog('close');
-                $('#ace_mode').val('');
-                editor.getSession().setMode('ace/mode/text');
                 $('div.ui-dialog-buttonpane').css('border-top', '');
             }
         }
     ]);
-
     fileTable.DataTable({
         paging: false,
         searching: false,

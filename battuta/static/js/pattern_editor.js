@@ -75,7 +75,7 @@ patternDialog.dialog($.extend({}, defaultDialogOptions, {
     }
 }));
 
-// Select nodes in pattern editor
+// Select nodes in pattern textEditor
 $('.select_nodes').click(function () {
     var nodeType = $(this).data('type');
     var op = $(this).data('op');
@@ -146,7 +146,7 @@ $('.select_nodes').click(function () {
 });
 
 $(document).ready(function () {
-    // Open pattern editor
+    // Open pattern textEditor
     $('#pattern_editor').click(function () {
         event.preventDefault();
         patternContainer.addClass('hidden').html('');

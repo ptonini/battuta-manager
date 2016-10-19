@@ -57,29 +57,29 @@ $.each(aceModesArray, function(index, value){
 
 // Reload playbook from server
 reloadButton.click(function () {
-    editor.setValue($('#text_editor').data('text'));
-    editor.selection.moveCursorFileStart();
+    textEditor.setValue($('#text_editor').data('text'));
+    textEditor.selection.moveCursorFileStart();
 });
 
 aceModeSelector.change(function () {
-    editor.getSession().setMode('ace/mode/' + $(this).val());
+    textEditor.getSession().setMode('ace/mode/' + $(this).val());
 });
 
-var editor = ace.edit('text_editor');
-editor.setTheme('ace/theme/chrome');
-editor.renderer.setShowPrintMargin(false);
-editor.setHighlightActiveLine(false);
-editor.setFontSize(13);
-editor.$blockScrolling = Infinity;
+var textEditor = ace.edit('text_editor');
+textEditor.setTheme('ace/theme/chrome');
+textEditor.renderer.setShowPrintMargin(false);
+textEditor.setHighlightActiveLine(false);
+textEditor.setFontSize(13);
+textEditor.$blockScrolling = Infinity;
 
 function editTextFile(text, path, filename, mimeType) {
 
-    editor.setValue(text);
-    editor.session.getUndoManager().reset();
-    editor.selection.moveCursorFileStart();
+    textEditor.setValue(text);
+    textEditor.session.getUndoManager().reset();
+    textEditor.selection.moveCursorFileStart();
 
     var aceMode = 'text';
-    if (mimeType == 'text/plain') {
+    if (!mimeType || mimeType == 'text/plain') {
         var filenameArray = filename.split('.');
         var arrayLength = filenameArray.length;
         var fileExtension = filenameArray[arrayLength - 1];
@@ -99,7 +99,7 @@ function editTextFile(text, path, filename, mimeType) {
     else if (mimeType == 'text/yaml') aceMode = 'yaml';
 
     $('#ace_mode').val(aceMode);
-    editor.getSession().setMode('ace/mode/' + aceMode);
+    textEditor.getSession().setMode('ace/mode/' + aceMode);
 
     if (filename) $('#filename').removeAttr('placeholder').val(filename);
     else {
@@ -125,7 +125,7 @@ function saveTextFile(successCallback, ext) {
         $.ajax({
             type: 'POST',
             dataType: 'json',
-            data: {action: 'save', old_filename: oldFilename, new_filename: newFilename, text: editor.getValue()},
+            data: {action: 'save', old_filename: oldFilename, new_filename: newFilename, text: textEditor.getValue()},
             success: function (data) {
                 if (data.result == 'ok') {
                     successCallback(data);

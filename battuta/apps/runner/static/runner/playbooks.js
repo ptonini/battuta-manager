@@ -61,14 +61,12 @@ $(document).ready(function () {
 
     document.title = 'Battuta - Playbooks';
 
-    // Initialize editor dialog
+    // Initialize textEditor dialog
     $('#editor_dialog').dialog('option', 'buttons', [
         {
             text: 'Save',
             click: function () {
                 function successCallback() {
-                    $('#ace_mode').val('');
-                    editor.getSession().setMode('ace/mode/text');
                     playbookTable.DataTable().ajax.reload()
                 }
                 saveTextFile(successCallback, 'yml')
@@ -78,8 +76,6 @@ $(document).ready(function () {
             text: 'Cancel',
             click: function () {
                 $(this).dialog('close');
-                $('#ace_mode').val('');
-                editor.getSession().setMode('ace/mode/text');
                 $('div.ui-dialog-buttonpane').css('border-top', '');
             }
         }
