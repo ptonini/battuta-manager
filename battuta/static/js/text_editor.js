@@ -4,6 +4,8 @@ var aceModeSelector = $('<select>').attr({id: 'ace_mode', class: 'select form-co
 
 var reloadButton = $('<button>').attr({id: 'reload_file', class: 'btn btn-default btn-sm'}).html('Reload');
 
+var textEditorContainer = $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey');
+
 var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
     $('<div>').attr('class', 'col-md-4 editor_column').append(
         $('<label>').attr({for: 'filename', class: 'requiredField sr-only'}).html('Filename'),
@@ -14,9 +16,7 @@ var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
         $('<label>').attr({for: 'ace_mode', class: 'requiredField sr-only'}).html('Mode'),
         aceModeSelector
     ),
-    $('<div>').attr('class', 'col-md-12 editor_column').append(
-        $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey')
-    )
+    $('<div>').attr('class', 'col-md-12 editor_column').append(textEditorContainer)
 );
 hiddenDiv.append(editorDialog);
 editorDialog.dialog({
@@ -26,8 +26,48 @@ editorDialog.dialog({
     hide: true,
     width: 900,
     dialogClass: 'no_title',
-    closeOnEscape: false
+    closeOnEscape: false,
+    buttons: {
+        Save: function () {
+            var editorData = textEditorContainer.data();
+            var newFilename = $('#filename').val();
+            if (newFilename) {
+                if (editorData.ext && newFilename.split('.').slice(-1)[0] != editorData.ext) {
+                    newFilename += '.' + editorData.ext;
+                }
+                var filePath = editorData.path;
+                var oldFilename = editorData.filename;
+                if (filePath) {
+                    oldFilename = filePath + '/' + oldFilename;
+                    newFilename = filePath + '/' + newFilename
+                }
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'save',
+                        old_filename: oldFilename,
+                        new_filename: newFilename,
+                        text: textEditor.getValue()
+                    },
+                    success: function (data) {
+                        if (data.result == 'ok') {
+                            editorDialog.dialog('close');
+                        }
+                        else if (data.result == 'fail') {
+                            alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                        }
+                    }
+                });
+            }
+        },
+        Cancel: function () {
+            $(this).dialog('close');
+            $('div.ui-dialog-buttonpane').css('border-top', '');
+        }
+    }
 });
+
 
 var aceModesArray = [
     ['apache_conf', 'Apache conf'],
@@ -72,7 +112,7 @@ textEditor.setHighlightActiveLine(false);
 textEditor.setFontSize(13);
 textEditor.$blockScrolling = Infinity;
 
-function editTextFile(text, path, filename, mimeType) {
+function editTextFile(text, path, filename, mimeType, ext) {
 
     textEditor.setValue(text);
     textEditor.session.getUndoManager().reset();
@@ -98,7 +138,7 @@ function editTextFile(text, path, filename, mimeType) {
     else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
     else if (mimeType == 'text/yaml') aceMode = 'yaml';
 
-    $('#ace_mode').val(aceMode);
+    aceModeSelector.val(aceMode);
     textEditor.getSession().setMode('ace/mode/' + aceMode);
 
     if (filename) $('#filename').removeAttr('placeholder').val(filename);
@@ -106,35 +146,9 @@ function editTextFile(text, path, filename, mimeType) {
         $('#filename').attr('placeholder', 'New file').val('');
         filename = '/invalid_name'
     }
-    $('#text_editor').data({text: text, filename: filename, path: path}).css('height', window.innerHeight * 0.7);
+    textEditorContainer
+        .data({text: text, filename: filename, path: path, ext: ext})
+        .css('height', window.innerHeight * 0.7);
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    $('#editor_dialog').dialog('open');
-}
-
-function saveTextFile(successCallback, ext) {
-    var editorData = $('#text_editor').data();
-    var newFilename = $('#filename').val();
-    if (newFilename) {
-        if (ext && newFilename.split('.').slice(-1)[0] != ext) newFilename += '.' + ext;
-        var filePath = editorData.path;
-        var oldFilename = editorData.filename;
-        if (filePath) {
-            oldFilename = filePath + '/' + oldFilename;
-            newFilename = filePath + '/' + newFilename
-        }
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            data: {action: 'save', old_filename: oldFilename, new_filename: newFilename, text: textEditor.getValue()},
-            success: function (data) {
-                if (data.result == 'ok') {
-                    successCallback(data);
-                    $('#editor_dialog').dialog('close');
-                }
-                else if (data.result == 'fail') {
-                    $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                }
-            }
-        });
-    }
+    editorDialog.dialog('open');
 }

@@ -61,25 +61,9 @@ $(document).ready(function () {
 
     document.title = 'Battuta - Playbooks';
 
-    // Initialize textEditor dialog
-    $('#editor_dialog').dialog('option', 'buttons', [
-        {
-            text: 'Save',
-            click: function () {
-                function successCallback() {
-                    playbookTable.DataTable().ajax.reload()
-                }
-                saveTextFile(successCallback, 'yml')
-            }
-        },
-        {
-            text: 'Cancel',
-            click: function () {
-                $(this).dialog('close');
-                $('div.ui-dialog-buttonpane').css('border-top', '');
-            }
-        }
-    ]);
+    editorDialog.on('dialogclose', function() {
+        playbookTable.DataTable().ajax.reload()
+    });
     
     // Build credentials selector box
     buildCredentialsSelectionBox(credentials);
@@ -111,7 +95,7 @@ $(document).ready(function () {
                         .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                         .click(function () {
                             function successCallback(data) {
-                                editTextFile(data.text, '', playbookFile, 'text/yaml')
+                                editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml')
                             }
                             submitRequest(type, postData, successCallback);
                         }),
@@ -120,7 +104,7 @@ $(document).ready(function () {
                         .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
                         .click(function () {
                             var successCallback = function (data) {
-                                editTextFile(data.text, '', '', 'text/yaml')
+                                editTextFile(data.text, '', '', 'text/yaml', 'yml')
                             };
                             submitRequest(type, postData, successCallback);
                         }),
@@ -240,7 +224,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                editTextFile(data, '', '', 'text/yaml')
+                editTextFile(data, '', '', 'text/yaml', 'yml')
             }
         });
     });

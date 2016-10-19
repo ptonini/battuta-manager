@@ -104,7 +104,6 @@ class RunnerView(BaseView):
                     'gather_facts': False,
                     'tasks': tasks
                 }
-
             else:
                 raise Http404('Invalid form data')
 
@@ -116,7 +115,7 @@ class RunnerView(BaseView):
                     runner.status = 'created'
                     runner.is_running = True
                     setattr(runner, 'data', run_data)
-                    setattr(runner, 'prefs', self.prefs())
+                    setattr(runner, 'prefs', self.prefs)
                     runner.save()
                     try:
                         p = Process(target=play_runner, args=(runner,))

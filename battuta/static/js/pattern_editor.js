@@ -152,7 +152,6 @@ $(document).ready(function () {
         patternContainer.addClass('hidden').html('');
         patternDialog.dialog('open');
     });
-
-})
+});
 
 

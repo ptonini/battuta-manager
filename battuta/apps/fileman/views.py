@@ -86,6 +86,18 @@ class ManagerView(View):
 
             data['result'] = 'ok'
 
+        elif request.POST['action'] == 'create':
+
+            new_object = os.path.join(self.base_dir, request.POST['name'])
+
+            if request.POST['is_directory'] == 'true':
+                if not os.path.exists(new_object):
+                    os.makedirs(new_object)
+            else:
+                open(new_object, 'a').close()
+
+            data['result'] = 'ok'
+
         elif request.POST['action'] == 'delete':
 
             os.remove(os.path.join(self.base_dir, request.POST['filename']))
