@@ -24,84 +24,62 @@ $(document).ready(function () {
         'application/xml'
     ];
 
-    // Rename dialog
-    var renameField = $('<input>').attr({id: 'rename_field', type: 'text', class: 'form-control'});
-    var renameDialog = $('<div>').attr('id', 'rename_dialog').css('margin', '20px').append(
-        $('<label>').attr({for: 'rename_field', class: 'user_pass_group'}).html('Rename'),
-        renameField
+    // File dialog
+    var nameField = $('<input>').attr({id: 'name_field', type: 'text', class: 'form-control'});
+    var nameFieldLabel = $('<label>').attr({id: 'name_field_label', for: 'name_field'});
+    var isDirectory = $('<input>').attr({type: 'checkbox', name: 'is_directory'});
+    var createOnlyContainer = $('<div>').css('display', 'none').append(
+        $('<br>'), isDirectory, ' Directory'
     );
-    hiddenDiv.append(renameDialog);
-    renameDialog.dialog($.extend({}, defaultDialogOptions, {
+    var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '20px').append(
+        nameFieldLabel, nameField, createOnlyContainer
+    );
+    hiddenDiv.append(fileDialog);
+    fileDialog.dialog($.extend({}, defaultDialogOptions, {
         width: '360',
         buttons: {
             Save: function () {
-                var file_data = renameDialog.data();
-                var oldName = file_data.filename;
-                var newName = renameField.val();
+                var currentDir = fileTable.data('current_dir');
+                var postData = {};
 
-                if (newName && newName != oldName) {
+                for (var k in fileDialog.data()) postData[k] = fileDialog.data()[k];
+                delete postData['ui-dialog'];
 
-                    if (file_data.current_dir) {
-                        oldName = file_data.current_dir + '/' + file_data.filename;
-                        newName = file_data.current_dir + '/' + newName;
-                    }
+                postData['new_name'] = nameField.val();
+                if (currentDir) postData.new_name = currentDir + '/' + postData.new_name;
 
-                    function renameSuccess(data) {
-                        fileTable.DataTable().ajax.reload();
-                        renameField.val('');
-                        renameDialog.dialog('close');
-                    }
-                    submitRequest('POST', {action: 'rename', old_name: oldName, new_name: newName}, renameSuccess)
+                if (currentDir && postData.action == 'rename') {
+                    postData.old_name = currentDir + '/' + postData.old_name;
                 }
-                else {
-                    renameField.val('');
-                    renameDialog.dialog('close')
-                }
-            },
-            Cancel: function () {
-                renameField.val('');
-                $(this).dialog('close')
-            }
-        }
-    }));
 
-    // Create dialog
-    var createField = $('<input>').attr({id: 'create_field', type: 'text', class: 'form-control'});
-    var isDirectory = $('<input>').attr({type: 'checkbox', name: 'is_directory'});
-    var createDialog = $('<div>').attr('id', 'create_dialog').css('margin', '20px').append(
-        $('<label>').attr('for', 'create_field').html('Name'),
-        createField,
-        $('<br>'),
-        isDirectory,
-        $('<span>').html(' Directory')
-    );
-    hiddenDiv.append(createDialog);
-    createDialog.dialog($.extend({}, defaultDialogOptions, {
-        width: '360',
-        buttons: {
-            Create: function () {
-                var name = createField.val();
-                if (name) {
-                    if (fileTable.data('current_dir')) name = fileTable.data('current_dir') + '/' + name;
-                    var data = {action: 'create', name: name, is_directory: isDirectory.is(':checked')};
-                    function createSuccess(data) {}
-                    submitRequest('POST', data, createSuccess)
+                if (postData.action == 'create') {
+                    postData['is_directory'] = isDirectory.is(':checked');
+                }
+
+                if (postData.new_name && postData.new_name != postData.old_name) {
+                    function successCallback(data) {}
+                    submitRequest('POST', postData, successCallback)
                 }
                 $(this).dialog('close');
-                fileTable.DataTable().ajax.reload();
-                createField.val('');
-                isDirectory.attr('checked', false)
             },
             Cancel: function () {
-                createField.val('');
-                $(this).dialog('close')
+                $(this).dialog('close');
             }
+        },
+        close: function() {
+            nameField.val('');
+            nameFieldLabel.html('');
+            isDirectory.attr('checked', false);
+            createOnlyContainer.hide();
+            fileTable.DataTable().ajax.reload()
         }
     }));
 
     // Create button action
     $('#create_file').click(function() {
-        createDialog.dialog('open')
+        nameFieldLabel.html('Create');
+        createOnlyContainer.show();
+        fileDialog.data('action', 'create').dialog('open')
     });
 
     // Set root dir for table
@@ -132,15 +110,15 @@ $(document).ready(function () {
         order: [[0, 'asc']],
         rowCallback: function (row, data) {
             var currentDir = fileTable.data('current_dir');
+            var filename = data[0];
+            var mimeType = data[1];
+            var fullFilename = filename;
+            if (currentDir) fullFilename = currentDir + '/' + filename;
             var buttonSpan = $('<span>').css('float', 'right').append(
                 $('<a>')
                     .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
                     .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                     .click(function() {
-                        var filename = data[0];
-                        var mimeType = data[1];
-                        var fullFilename = data[0];
-                        if (currentDir) fullFilename = currentDir + '/' + data[0];
                         if (editableMimeTypes.indexOf(data[1]) > -1) {
                             function successCallback(data) {
                                 editTextFile(data.text, currentDir, filename, mimeType)
@@ -148,21 +126,43 @@ $(document).ready(function () {
                             submitRequest('GET', {action: 'edit', file: fullFilename}, successCallback);
                         }
                         else {
-                            $('#rename_field').val(filename);
-                            renameDialog.data({current_dir: currentDir, filename: filename }).dialog('open')
+                            nameFieldLabel.html('Rename');
+                            nameField.val(filename);
+                            fileDialog.data({action: 'rename', old_name: filename}).dialog('open')
                         }
                     }),
                 $('<a>')
-                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Download'})
+                    .attr({
+                        href: '?action=download&object=' + fullFilename,
+                        'data-toggle': 'tooltip',
+                        title: 'Download ' + filename
+                    })
                     .append($('<span>').attr('class', 'glyphicon glyphicon-download btn-incell')),
                 $('<a>')
                     .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
                     .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                     .click(function() {
-                        var filename = data[0];
-                        var is_directory = false;
-                        if (currentDir) filename = currentDir + '/' + data[0];
-                        if (data[1] == 'directory') is_directory = true;
+                        deleteDialog
+                            .dialog('option', 'buttons', [
+                                {
+                                    text: 'Delete',
+                                    click: function () {
+                                        function successCallback(data) {
+                                            fileTable.DataTable().ajax.reload()
+                                        }
+                                        submitRequest('POST', {action: 'delete', object: fullFilename}, successCallback)
+                                        $(this).dialog('close');
+                                    }
+                                },
+                                {
+                                    text: 'Cancel',
+                                    click: function () {
+                                        $(this).dialog('close');
+                                    }
+                                }
+                            ])
+                            .dialog('open');
+
 
                     })
             );

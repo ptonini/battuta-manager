@@ -1,11 +1,8 @@
 var aceModeSelector = $('<select>').attr({id: 'ace_mode', class: 'select form-control input-sm'}).append(
     $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
 );
-
 var reloadButton = $('<button>').attr({id: 'reload_file', class: 'btn btn-default btn-sm'}).html('Reload');
-
 var textEditorContainer = $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey');
-
 var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
     $('<div>').attr('class', 'col-md-4 editor_column').append(
         $('<label>').attr({for: 'filename', class: 'requiredField sr-only'}).html('Filename'),
@@ -68,7 +65,6 @@ editorDialog.dialog({
     }
 });
 
-
 var aceModesArray = [
     ['apache_conf', 'Apache conf'],
     ['batchfile', 'BatchFile'],
@@ -95,14 +91,13 @@ $.each(aceModesArray, function(index, value){
     aceModeSelector.append($('<option>').attr('value', value[0]).html(value[1]))
 });
 
-// Reload playbook from server
+aceModeSelector.change(function () {
+    textEditor.getSession().setMode('ace/mode/' + $(this).val());
+});
+
 reloadButton.click(function () {
     textEditor.setValue($('#text_editor').data('text'));
     textEditor.selection.moveCursorFileStart();
-});
-
-aceModeSelector.change(function () {
-    textEditor.getSession().setMode('ace/mode/' + $(this).val());
 });
 
 var textEditor = ace.edit('text_editor');
