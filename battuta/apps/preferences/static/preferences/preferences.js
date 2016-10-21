@@ -14,18 +14,6 @@ function validateItemDataType(dataType, value) {
     return result
 }
 
-function loadPreferences() {
-    $.ajax({
-        url: '',
-        type: 'GET',
-        dataType: 'json',
-        data: {action: 'preferences'},
-        success: function(data) {
-            buildPreferencesContainer(data)
-        }
-    })
-}
-
 function buildPreferencesContainer(data) {
 
     var preferencesContainer = $('#preferences_container');
@@ -103,19 +91,10 @@ function savePreferences() {
         }
     });
     if (noError) {
-        $.ajax({
-            url: '',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'save',
-                item_values: JSON.stringify(itemValues)
-            },
-            success: function () {
-                alertDialog.html('<strong>Preferences saved</strong>').dialog('open');
-                getPreferences();
-                loadPreferences();
-            }
+        submitRequest('POST', {action: 'save', item_values: JSON.stringify(itemValues)}, function () {
+            alertDialog.html('<strong>Preferences saved</strong>').dialog('open');
+            getPreferences();
+            submitRequest('GET', {action: 'preferences'}, buildPreferencesContainer);
         })
     }
 }
@@ -126,7 +105,7 @@ $(document).ready(function () {
 
     document.title = 'Battuta - Preferences';
 
-    loadPreferences();
+    submitRequest('GET', {action: 'preferences'}, buildPreferencesContainer);
     
     restoreDialog.dialog({
         autoOpen: false,
@@ -150,7 +129,7 @@ $(document).ready(function () {
     
     $('.reload_prefs').click(function() {
         alertDialog.css('text-align', 'center').html('<strong>Preferences reloaded</strong>').dialog('open');
-        loadPreferences();
+        submitRequest('GET', {action: 'preferences'}, buildPreferencesContainer);
     });
 
     $('.save_prefs').click(function() {

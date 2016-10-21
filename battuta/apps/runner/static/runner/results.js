@@ -287,11 +287,10 @@ function buildResultTables(runner, intervalId) {
 // Load job results from database
 function loadResults(intervalId) {
     $.ajax({
-        url: '',
         type: 'GET',
         dataType: 'json',
         data: {action: 'status'},
-        success: function (runner) {
+        success: function(runner) {
             document.title = runner.name;
             buildResultTables(runner, intervalId)
         }

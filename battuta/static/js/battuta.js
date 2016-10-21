@@ -241,7 +241,6 @@ function gatherFacts(nodeName, finishCallback) {
 }
 
 function rememberSelectedTab(tabId) {
-    
     var keyName = tabId + '_activeTab';
     
     $('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
@@ -252,10 +251,10 @@ function rememberSelectedTab(tabId) {
     if (activeTab) $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
 }
 
-function submitRequest(type, postData, successCallback) {
+function submitRequest(type, data, successCallback) {
     $.ajax({
         type: type,
-        data: postData,
+        data: data,
         dataType: 'json',
         success: function (data) {
             successCallback(data)
@@ -263,4 +262,32 @@ function submitRequest(type, postData, successCallback) {
     })
 }
 
+function humanBytes(number, suffix) {
+
+    if (suffix) {
+        if (suffix == 'KB') number = number * 1024;
+        else if (suffix == 'MB') number = number * 1048576;
+        else if (suffix == 'GB') number = number * 1073741824;
+        else if (suffix == 'TB') number = number * 1099511627776;
+    }
+    else suffix = 'B';
+
+    if (number > 1024 && number <= 1048576) {
+        suffix = 'KB';
+        number = number / 1024
+    }
+    else if (number > 1048576 && number <= 1073741824) {
+        suffix = 'MB';
+        number = number / 1048576
+    }
+    else if (number > 1073741824 && number <= 1099511627776) {
+        suffix = 'GB';
+        number = number / 1073741824
+    }
+    else if (number > 1099511627776 && number <= 1125899906842624) {
+        suffix = 'TB';
+        number = number / 1099511627776
+    }
+    return Math.ceil(number) + suffix
+}
 

@@ -89,9 +89,11 @@ var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20p
     $('<input>').attr({id: 'sudo_password', type: 'password', class: 'form-control input-sm sudo_pass_group'})
 );
 hiddenDiv.append(passwordDialog);
-passwordDialog.dialog($.extend({}, defaultDialogOptions, {
-    width: '360'
-}));
+passwordDialog
+    .dialog($.extend({}, defaultDialogOptions, {width: '360'}))
+    .keypress(function (event) {
+        if (event.keyCode == 13) $('.ui-button-text:contains("Run")').parent('button').click()
+    });
 
 
 

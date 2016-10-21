@@ -34,10 +34,7 @@ $(document).ready(function () {
                                                 url: '/users/view/',
                                                 type: 'POST',
                                                 dataType: 'json',
-                                                data: {
-                                                    action: 'delete',
-                                                    user_id: data[4]
-                                                },
+                                                data: {action: 'delete', user_id: data[4]},
                                                 success: function () {
                                                     userTableApi.ajax.reload()
                                                 }

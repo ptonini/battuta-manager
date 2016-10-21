@@ -20,31 +20,27 @@ $(document).ready(function () {
             $('<th>').addClass('col-md-2').html('Public address'),
             $('<th>').addClass('col-md-2').html('Type'),
             $('<th>').addClass('col-md-1').html('Cores'),
-            $('<th>').addClass('col-md-1').html('Mem (GB)'),
-            $('<th>').addClass('col-md-1').html('Disc (GB)'),
+            $('<th>').addClass('col-md-1').html('Memory'),
+            $('<th>').addClass('col-md-1').html('Disc'),
             $('<th>').addClass('col-md-1').html('Date')
         );
         else $('#node_table_header').append(
             $('<th>').addClass('col-md-2').html('Host'),
             $('<th>').addClass('col-md-2').html('Address'),
             $('<th>').addClass('col-md-1').html('Cores'),
-            $('<th>').addClass('col-md-1').html('Mem (GB)'),
-            $('<th>').addClass('col-md-5').html('Disc (GB)'),
+            $('<th>').addClass('col-md-1').html('Memory'),
+            $('<th>').addClass('col-md-5').html('Disc'),
             $('<th>').addClass('col-md-1').html('Date')
-            )
-
-
+        )
     }
-    else if (nodeType == 'group') {
-        $('#node_table_header').append(
+    else if (nodeType == 'group') $('#node_table_header').append(
             $('<th>').addClass('col-md-2').html('Group'),
             $('<th>').addClass('col-md-5').html('Description'),
             $('<th>').addClass('col-md-1').html('Members'),
             $('<th>').addClass('col-md-1').html('Parents'),
             $('<th>').addClass('col-md-1').html('Children'),
             $('<th>').addClass('col-md-1').html('Variables')
-        )
-    }
+    );
 
     var defaultListOptions = {
         minColumns: sessionStorage.getItem('node_list_min_columns'),
@@ -89,13 +85,13 @@ $(document).ready(function () {
 
             if (nodeType == 'host') {
                 if (sessionStorage.getItem('use_ec2_facts') == 'true') {
-                    if (data[5]) $(row).find('td:eq(5)').html(Math.ceil(Number(data[5]) / 1024));
-                    if (data[6]) $(row).find('td:eq(6)').html(Math.ceil(Number(data[6]) / (1024 * 1024 * 1024)))
+                    if (data[5]) $(row).find('td:eq(5)').html(humanBytes(data[5], 'MB'));
+                    if (data[6]) $(row).find('td:eq(6)').html(humanBytes(data[6]))
                 }
                 else {
-                    if (data[3]) $(row).find('td:eq(3)').html(Math.ceil(Number(data[3]) / 1024));
-                    if (data[4]) $(row).find('td:eq(4)').html(Math.ceil(Number(data[4]) / (1024 * 1024 * 1024)))
-                    }
+                    if (data[3]) $(row).find('td:eq(3)').html(humanBytes(data[3], 'MB'));
+                    if (data[4]) $(row).find('td:eq(4)').html(humanBytes(data[4]))
+                }
             }
         },
         drawCallback: function () {
@@ -126,20 +122,11 @@ $(document).ready(function () {
                 {
                     text: 'Confirm',
                     click: function () {
-                        $.ajax({
-                            url: '',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                action: 'delete',
-                                selection: $('#node_list').DynamicList('getSelected', 'id')
-                            },
-                            success: function () {
-                                reloadNodes();
-                                deleteDialog.dialog('close');
-                            }
+                        var data = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
+                        submitRequest('POST', data, function () {
+                            reloadNodes();
+                            deleteDialog.dialog('close');
                         });
-
                     }
                 },
                 {
@@ -154,24 +141,21 @@ $(document).ready(function () {
 
     // Download host table
     $('#download_table').click(function () {
-        $.ajax({
-            url: '',
-            type: 'GET',
-            dataType: 'json',
-            data: {action: 'host_table'},
-            success: function (data) {
-                var csvContent = 'data:text/csv;charset=utf-8,' +
-                    'Host, Description, Address, Cores, Memory, Disc, Date, id\n';
-                data.forEach(function(infoArray){
-                    csvContent += infoArray.join(',') + '\n';
-                });
-                var link = document.createElement('a');
-                link.setAttribute('href', encodeURI(csvContent));
-                link.setAttribute('download', 'host_table.csv');
-                document.body.appendChild(link);
-                link.click();
+        submitRequest('GET', {action: 'host_table'}, function (data) {
+            var csvHeaders = 'Host, Address, Cores, Memory, Disc, Date\n';
+            if (sessionStorage.getItem('use_ec2_facts') == 'true') {
+                csvHeaders = 'Host, Address, Public address, Type, Cores, Memory, Disc, Date\n';
             }
-        })
+            var csvContent = 'data:text/csv;charset=utf-8,' + csvHeaders;
+            data.forEach(function(infoArray){
+                csvContent += infoArray.join(',') + '\n';
+            });
+            var link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', 'host_table.csv');
+            document.body.appendChild(link);
+            link.click();
+        });
     });
 
     $('#update_facts').click(function () {

@@ -158,7 +158,8 @@ class ImportExportView(View):
                     data['msg'] = 'Error: Invalid file type (.' + request.POST['type'] + ')'
 
         else:
-            return Http404('Invalid action')
+            raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
@@ -244,7 +245,7 @@ class NodesView(View):
                                  len(group.variable_set.all()),
                                  group.id])
             else:
-                return Http404('Invalid action')
+                raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
@@ -263,7 +264,7 @@ class NodesView(View):
                     node.delete()
             data = {'result': 'ok'}
         else:
-            return Http404('Invalid action')
+            raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 

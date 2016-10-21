@@ -1,27 +1,19 @@
 function buildArgsSelectionBox(start_value) {
     var savedArguments = $('#saved_arguments');
     savedArguments.empty();
-    $.ajax({
-        url: '/runner/playbooks/',
-        type: 'GET',
-        dataType: 'json',
-        data: {
-            action: 'get_args',
-            playbook_file: $('#arguments_box').data('currentPlaybook')
-        },
-        success: function (data) {
-            $.each(data, function (index, args) {
-                var optionLabel = [];
-                if (args.subset) optionLabel.push('--limit ' + args.subset);
-                if (args.tags) optionLabel.push('--tags ' + args.tags);
-                if (args.skip_tags) optionLabel.push('--skip_tags ' + args.skip_tags);
-                if (args.extra_vars) optionLabel.push('--extra_vars "' + args.extra_vars + '"');
-                savedArguments.append($('<option>').val(args.id).data(args).append(optionLabel.join(' ')))
-            });
-            savedArguments.append($('<option>').val('new').append('new'));
-            if (start_value) savedArguments.val(start_value).change();
-            else savedArguments.change();
-        }
+    var data = {action: 'get_args', playbook_file: $('#arguments_box').data('currentPlaybook')};
+    submitRequest('GET', data, function (data) {
+        $.each(data, function (index, args) {
+            var optionLabel = [];
+            if (args.subset) optionLabel.push('--limit ' + args.subset);
+            if (args.tags) optionLabel.push('--tags ' + args.tags);
+            if (args.skip_tags) optionLabel.push('--skip_tags ' + args.skip_tags);
+            if (args.extra_vars) optionLabel.push('--extra_vars "' + args.extra_vars + '"');
+            savedArguments.append($('<option>').val(args.id).data(args).append(optionLabel.join(' ')))
+        });
+        savedArguments.append($('<option>').val('new').append('new'));
+        if (start_value) savedArguments.val(start_value).change();
+        else savedArguments.change();
     });
 }
 
@@ -80,13 +72,10 @@ $(document).ready(function () {
         },
         rowCallback: function (row, data) {
             var playbookFile = data[0];
-            var type = 'GET';
             var postData = {action: 'get_one', playbook_file: playbookFile};
-
             if (!data[1]) $(row).css('color', 'red');
-
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
-                submitRequest(type, postData, loadPlaybook);
+                submitRequest('GET', postData, loadPlaybook);
             });
             $(row).find('td:eq(1)').removeAttr('data-toggle').removeAttr('title').html(
                 $('<span>').css('float', 'right').append(
@@ -94,38 +83,34 @@ $(document).ready(function () {
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                         .click(function () {
-                            function successCallback(data) {
+                            submitRequest('GET', postData, function(data) {
                                 editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml')
-                            }
-                            submitRequest(type, postData, successCallback);
+                            });
                         }),
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Copy'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
                         .click(function () {
-                            var successCallback = function (data) {
+                            submitRequest('GET', postData, function(data) {
                                 editTextFile(data.text, '', '', 'text/yaml', 'yml')
-                            };
-                            submitRequest(type, postData, successCallback);
+                            });
                         }),
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {
-                            type = 'POST';
-                            postData = {action: 'delete', playbook_file: playbookFile};
-                            var successCallback = function () {
-                                if (argumentsBox.data('currentPlaybook') == playbookFile) {
-                                    clearPlaybookArgsForm()
-                                }
-                                playbookTable.DataTable().ajax.reload()
-                            };
                             deleteDialog
                                 .dialog('option', 'buttons', [
                                     {
                                         text: 'Delete',
                                         click: function () {
-                                            submitRequest(type, postData, successCallback);
+                                            postData = {action: 'delete', playbook_file: playbookFile};
+                                            submitRequest('POST', postData, function () {
+                                                if (argumentsBox.data('currentPlaybook') == playbookFile) {
+                                                    clearPlaybookArgsForm()
+                                                }
+                                                playbookTable.DataTable().ajax.reload()
+                                            });
                                             $(this).dialog('close');
                                         }
                                     },
@@ -169,11 +154,7 @@ $(document).ready(function () {
         switch ($(document.activeElement).html()) {
             case 'Save':
                 if (!(!subset.val() && !tags.val() && !skip_tags.val() && !extra_vars.val())) {
-                    $.ajax({
-                        url: '/runner/playbooks/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
+                    var postData = {
                             action: 'save_args',
                             id: argumentsForm.data('id'),
                             subset: subset.val(),
@@ -181,33 +162,23 @@ $(document).ready(function () {
                             skip_tags: skip_tags.val(),
                             extra_vars: extra_vars.val(),
                             playbook: argumentsBox.data('currentPlaybook')
-                        },
-                        success: function (data) {
-                            if (data.result == 'ok') buildArgsSelectionBox(data.id);
-                            else if (data.result == 'fail') {
-                                alertDialog
-                                    .html('<strong>Submit error<strong><br><br>')
-                                    .append(data.msg)
-                                    .dialog('open');
-                            }
+                    };
+                    submitRequest('POST', postData, function(data) {
+                        if (data.result == 'ok') buildArgsSelectionBox(data.id);
+                        else if (data.result == 'fail') {
+                            alertDialog
+                                .html('<strong>Submit error<strong><br><br>')
+                                .append(data.msg)
+                                .dialog('open');
                         }
-                    })
+                    });
                 }
                 break;
             case 'Delete':
-                $.ajax({
-                    url: '/runner/playbooks/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action: 'del_args',
-                        id: argumentsForm.data('id')
-                    },
-                    success: function (data) {
-                        if (data.result == 'ok') buildArgsSelectionBox();
-                        else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
-                        }
+                submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function(data) {
+                    if (data.result == 'ok') buildArgsSelectionBox();
+                    else if (data.result == 'fail') {
+                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
                     }
                 });
                 break;
@@ -218,7 +189,7 @@ $(document).ready(function () {
     });
 
     // New playbook
-    $('#new_playbook').click(function () {
+    $('#new_playbook').click(function() {
         $.ajax({
             url: '/static/runner/playbook_template.yml',
             type: 'GET',
@@ -230,7 +201,7 @@ $(document).ready(function () {
     });
     
     // Run playbook
-    $('#run_playbook').click(function (event) {
+    $('#run_playbook').click(function(event) {
         event.preventDefault();
         var cred = $('option:selected', credentials).data();
         var askPassword = {
@@ -252,7 +223,7 @@ $(document).ready(function () {
     });
 
     // Clear playbook arguments form
-    $('#cancel_run').click(function (event) {
+    $('#cancel_run').click(function(event) {
         event.preventDefault();
         clearPlaybookArgsForm()
     });

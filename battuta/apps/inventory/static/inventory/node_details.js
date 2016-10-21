@@ -3,12 +3,9 @@ function alterRelation(relation, selection, action) {
         url: relation + '/',
         type: 'POST',
         dataType: 'json',
-        data: {
-            selection: selection,
-            action: action
-        },
+        data: {selection: selection, action: action},
         success: function () {
-            buildDescendantsList();
+            submitRequest('GET', {action: 'descendants'}, buildDescendantsList);
             $('#variable_table').DataTable().ajax.reload();
             $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
         }
@@ -44,11 +41,7 @@ function formatCopyVariablesListItem(listItem, sourceNodeType) {
             url: 'vars/',
             type: 'POST',
             dataType: 'json',
-            data: {
-                action: 'copy',
-                source_name: sourceNodeName,
-                source_type: sourceNodeType
-            },
+            data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
             success: function () {
                 selectDialog.dialog('close');
                 $('#variable_table').DataTable().ajax.reload();
@@ -110,18 +103,6 @@ function clearVariableForm() {
     $('#variable_form').removeData('id').find('input').val('');
     $('#key').focus();
     $('#var_form_label').children('strong').html('Add variable');
-}
-
-function getFacts(successCallback) {
-    $.ajax({
-        url: '',
-        type: 'GET',
-        dataType: 'json',
-        data: {action: 'facts'},
-        success: function (data) {
-            successCallback(data);
-        }
-    });
 }
 
 function loadFacts(data) {
@@ -189,46 +170,36 @@ function openNodeFactsDialog(data) {
     else alertDialog.dialog('open').html('<strong>Facts file not found</strong>');
 }
 
-function buildDescendantsList() {
-    $.ajax({
-        url: '',
-        type: 'GET',
-        dataType: 'json',
-        data: {action: 'descendants'},
-        success: function (data) {
-
-            var listOptions = {
-                dataSource: 'array',
-                showTitle: true,
-                hideIfEmpty: true,
-                checkered: true,
-                showCount: true,
-                headerBottomMargin: '0',
-                listContainerBottomMargin: '20px',
-                minColumns: sessionStorage.getItem('node_list_min_columns'),
-                maxColumns: sessionStorage.getItem('node_list_max_columns'),
-                breakPoint: sessionStorage.getItem('node_list_break_point'),
-                maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
-                formatItem: function (listItem) {
-                    var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
-                    listItem.click(function () {
-                        window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')
-                    });
-                }
-            };
-            $('#descendants_container').empty().append(
-                $('<div>')
-                    .attr('id', 'descendant_groups')
-                    .data('nodeType', 'group')
-                    .DynamicList($.extend({}, listOptions, {listTitle: 'Groups', dataArray: data.groups})),
-                $('<div>')
-                    .attr('id', 'descendant_hosts')
-                    .data('nodeType', 'host')
-                    .DynamicList($.extend({}, listOptions, {listTitle: 'Hosts', dataArray: data.hosts}))
-            )
-
+function buildDescendantsList(data) {
+    var listOptions = {
+        dataSource: 'array',
+        showTitle: true,
+        hideIfEmpty: true,
+        checkered: true,
+        showCount: true,
+        headerBottomMargin: '0',
+        listContainerBottomMargin: '20px',
+        minColumns: sessionStorage.getItem('node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('node_list_break_point'),
+        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+        formatItem: function (listItem) {
+            var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
+            listItem.click(function () {
+                window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')
+            });
         }
-    });
+    };
+    $('#descendants_container').empty().append(
+        $('<div>')
+            .attr('id', 'descendant_groups')
+            .data('nodeType', 'group')
+            .DynamicList($.extend({}, listOptions, {listTitle: 'Groups', dataArray: data.groups})),
+        $('<div>')
+            .attr('id', 'descendant_hosts')
+            .data('nodeType', 'host')
+            .DynamicList($.extend({}, listOptions, {listTitle: 'Hosts', dataArray: data.hosts}))
+    )
 }
 
 $(document).ready(function () {
@@ -250,8 +221,8 @@ $(document).ready(function () {
     }
     else rememberSelectedTab($('ul.node_tabs').attr('id'));
 
-    if (nodeType == 'group') buildDescendantsList();
-    else if (nodeType == 'host') getFacts(loadFacts);
+    if (nodeType == 'group') submitRequest('GET', {action: 'descendants'}, buildDescendantsList);
+    else if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts);
 
     // Build relationship lists
     $('.relation_div').each(function () {
@@ -291,7 +262,7 @@ $(document).ready(function () {
             dataSrc: ''
         },
         rowCallback: function (row, data) {
-            if ( data[2] == '' ) {
+            if (data[2] == '') {
                 $(row).find('td:eq(2)').html(
                     $('<span>').css('float', 'right').append(
                         $('<a>')
@@ -421,21 +392,13 @@ $(document).ready(function () {
         }
         nodeForm.off('submit').submit(function(event) {
             event.preventDefault();
-            $.ajax({
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action: 'save',
-                    name: $('#node_name').val(),
-                    description: $('#node_description').val()
-                },
-                success: function (data) {
-                    if (data.result == 'ok') {
-                        window.open('/inventory/' + $('#header_node_type').html() + '/' + data.name, '_self');
-                    }
-                    else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
-                    }
+            var data = {action: 'save', name: $('#node_name').val(), description: $('#node_description').val()};
+            submitRequest('POST', data, function (data) {
+                if (data.result == 'ok') {
+                    window.open('/inventory/' + $('#header_node_type').html() + '/' + data.name, '_self');
+                }
+                else if (data.result == 'fail') {
+                    alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
                 }
             });
         });
@@ -447,40 +410,35 @@ $(document).ready(function () {
         event.preventDefault();
         deleteDialog
             .dialog('option', 'buttons', [
-            {
-                text: 'Delete',
-                click: function () {
-                    $(this).dialog('close');
-                    $.ajax({
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {action: 'delete'},
-                        success: function () {
+                {
+                    text: 'Delete',
+                    click: function () {
+                        $(this).dialog('close');
+                        submitRequest('POST', {action: 'delete'}, function () {
                             window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
-                        }
-                    });
+                        });
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    click: function () {
+                        $(this).dialog('close');
+                    }
                 }
-            },
-            {
-                text: 'Cancel',
-                click: function () {
-                    $(this).dialog('close');
-                }
-            }
-        ])
+            ])
             .dialog('open');
     });
 
     // Gather facts on node
     $('#gather_facts').click(function () {
         gatherFacts(nodeName, function() {
-            if (nodeType == 'host') getFacts(loadFacts)
+            if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts);
         });
     });
 
     // Open node facts dialog
     $('#open_facts').click(function (){
-        getFacts(openNodeFactsDialog)
+        submitRequest('GET', {action: 'facts'}, openNodeFactsDialog)
     });
     
 });

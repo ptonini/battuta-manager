@@ -80,20 +80,14 @@ $('.select_nodes').click(function () {
     var nodeType = $(this).data('type');
     var op = $(this).data('op');
     var separator;
-    if (op == 'sel') {
-        separator = ':';
-    }
+    if (op == 'sel') separator = ':';
     else {
         if (patternContainer.html() == '') {
             alertDialog.html($('<strong>').html('Please select hosts/groups first')).dialog('open');
             return
         }
-        if (op == 'and') {
-            separator = ':&'
-        }
-        else if (op == 'exc') {
-            separator = ':!'
-        }
+        if (op == 'and') separator = ':&';
+        else if (op == 'exc') separator = ':!'
     }
     selectDialog
         .DynamicList({

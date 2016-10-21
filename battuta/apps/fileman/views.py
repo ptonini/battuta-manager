@@ -7,7 +7,7 @@ import tempfile
 
 from django.shortcuts import render
 from django.views.generic import View
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
 
 
@@ -45,7 +45,6 @@ class ManagerView(View):
             return render(request, self.html_template, self.context)
 
         else:
-            data = None
             if request.GET['action'] == 'list':
 
                 if not os.path.exists(self.base_dir):
@@ -66,6 +65,7 @@ class ManagerView(View):
 
                 if os.path.isfile(object_full_path):
                     filename = object_full_path
+
                 else:
                     temp = tempfile.NamedTemporaryFile()
                     filename = temp.name
@@ -76,13 +76,15 @@ class ManagerView(View):
                     object_name += '.zip'
 
                 response = StreamingHttpResponse((line for line in open(filename, 'r')))
-                response['Content-Disposition'] = "attachment; filename={0}".format(object_name)
+                response['Content-Disposition'] = 'attachment; filename={0}'.format(object_name)
                 response['Content-Length'] = os.path.getsize(filename)
 
                 if os.path.isdir(object_full_path):
                     os.remove(filename)
 
                 return response
+            else:
+                raise Http404('Invalid action')
 
             return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -126,6 +128,18 @@ class ManagerView(View):
 
             data['result'] = 'ok'
 
+        elif request.POST['action'] == 'copy':
+
+            old_object = os.path.join(self.base_dir, request.POST['old_name'])
+            new_object = os.path.join(self.base_dir, request.POST['new_name'])
+
+            if os.path.isfile(old_object):
+                shutil.copy(old_object, new_object)
+            else:
+                shutil.copytree(old_object, new_object)
+
+            data['result'] = 'ok'
+
         elif request.POST['action'] == 'delete':
 
             object_full_path = os.path.join(self.base_dir, request.POST['object'])
@@ -136,6 +150,9 @@ class ManagerView(View):
                 shutil.rmtree(object_full_path)
 
             data['result'] = 'ok'
+
+        else:
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

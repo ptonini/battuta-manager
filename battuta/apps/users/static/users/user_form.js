@@ -92,12 +92,10 @@ $(document).ready(function () {
         page = 'view';
         document.title = 'Battuta - ' + $('h3').html();
     }
-    else{
+    else {
         var page = 'new';
         document.title = 'Battuta - New user';
     }
-
-
 
     // Build timezone selection box
     timezones.timezones();

@@ -25,61 +25,19 @@ $(document).ready(function () {
     ];
 
     // File dialog
-    var nameField = $('<input>').attr({id: 'name_field', type: 'text', class: 'form-control'});
-    var nameFieldLabel = $('<label>').attr({id: 'name_field_label', for: 'name_field'});
-    var isDirectory = $('<input>').attr({type: 'checkbox', name: 'is_directory'});
-    var createOnlyContainer = $('<div>').css('display', 'none').append(
-        $('<br>'), isDirectory, ' Directory'
-    );
-    var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '20px').append(
-        nameFieldLabel, nameField, createOnlyContainer
-    );
-    hiddenDiv.append(fileDialog);
-    fileDialog.dialog($.extend({}, defaultDialogOptions, {
-        width: '360',
-        buttons: {
-            Save: function () {
-                var currentDir = fileTable.data('current_dir');
-                var postData = {};
-
-                for (var k in fileDialog.data()) postData[k] = fileDialog.data()[k];
-                delete postData['ui-dialog'];
-
-                postData['new_name'] = nameField.val();
-                if (currentDir) postData.new_name = currentDir + '/' + postData.new_name;
-
-                if (currentDir && postData.action == 'rename') {
-                    postData.old_name = currentDir + '/' + postData.old_name;
-                }
-
-                if (postData.action == 'create') {
-                    postData['is_directory'] = isDirectory.is(':checked');
-                }
-
-                if (postData.new_name && postData.new_name != postData.old_name) {
-                    function successCallback(data) {}
-                    submitRequest('POST', postData, successCallback)
-                }
-                $(this).dialog('close');
-            },
-            Cancel: function () {
-                $(this).dialog('close');
-            }
-        },
-        close: function() {
-            nameField.val('');
-            nameFieldLabel.html('');
-            isDirectory.attr('checked', false);
-            createOnlyContainer.hide();
-            fileTable.DataTable().ajax.reload()
-        }
-    }));
+    fileDialog.on( "dialogclose", function() {
+        nameField.val('');
+        nameFieldLabel.html('');
+        isDirectory.attr('checked', false);
+        createOnlyContainer.hide();
+        fileTable.DataTable().ajax.reload()
+    } );
 
     // Create button action
     $('#create_file').click(function() {
         nameFieldLabel.html('Create');
         createOnlyContainer.show();
-        fileDialog.data('action', 'create').dialog('open')
+        fileDialog.data({action: 'create', current_dir: fileTable.data('current_dir')}).dialog('open')
     });
 
     // Set root dir for table
@@ -113,23 +71,39 @@ $(document).ready(function () {
             var filename = data[0];
             var mimeType = data[1];
             var fullFilename = filename;
+            var objectData = {current_dir: currentDir};
             if (currentDir) fullFilename = currentDir + '/' + filename;
             var buttonSpan = $('<span>').css('float', 'right').append(
                 $('<a>')
-                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
+                    .attr({'data-toggle': 'tooltip', title: 'Edit'})
+                    .css('cursor', 'pointer')
                     .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
                     .click(function() {
                         if (editableMimeTypes.indexOf(data[1]) > -1) {
-                            function successCallback(data) {
+                            objectData['action'] = 'edit';
+                            objectData['file'] = fullFilename;
+                            submitRequest('GET', objectData,  function(data) {
                                 editTextFile(data.text, currentDir, filename, mimeType)
-                            }
-                            submitRequest('GET', {action: 'edit', file: fullFilename}, successCallback);
+                            });
                         }
                         else {
+                            objectData['action'] = 'rename';
+                            objectData['old_name'] = filename;
                             nameFieldLabel.html('Rename');
                             nameField.val(filename);
-                            fileDialog.data({action: 'rename', old_name: filename}).dialog('open')
+                            fileDialog.data(objectData).dialog('open')
                         }
+                    }),
+                $('<a>')
+                    .attr({'data-toggle': 'tooltip', title: 'Copy'})
+                    .css('cursor', 'pointer')
+                    .append($('<span>').attr('class', 'glyphicon glyphicon-duplicate btn-incell'))
+                    .click(function() {
+                        objectData['action'] = 'copy';
+                        objectData['old_name'] = filename;
+                        nameFieldLabel.html('Copy');
+                        nameField.val(filename + ' (copy)');
+                        fileDialog.data(objectData).dialog('open')
                     }),
                 $('<a>')
                     .attr({
@@ -139,7 +113,8 @@ $(document).ready(function () {
                     })
                     .append($('<span>').attr('class', 'glyphicon glyphicon-download btn-incell')),
                 $('<a>')
-                    .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
+                    .css('cursor', 'pointer')
+                    .attr({'data-toggle': 'tooltip', title: 'Remove'})
                     .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                     .click(function() {
                         deleteDialog
@@ -147,10 +122,11 @@ $(document).ready(function () {
                                 {
                                     text: 'Delete',
                                     click: function () {
-                                        function successCallback(data) {
+                                        objectData['action'] = 'delete';
+                                        objectData['object'] = fullFilename;
+                                        submitRequest('POST', objectData, function() {
                                             fileTable.DataTable().ajax.reload()
-                                        }
-                                        submitRequest('POST', {action: 'delete', object: fullFilename}, successCallback)
+                                        });
                                         $(this).dialog('close');
                                     }
                                 },
@@ -162,11 +138,11 @@ $(document).ready(function () {
                                 }
                             ])
                             .dialog('open');
-
-
                     })
             );
-
+            var d = new Date(data[3] * 1000);
+            $(row).find('td:eq(2)').html(humanBytes(data[2]));
+            $(row).find('td:eq(3)').html(d.toLocaleString());
             $(row).find('td:eq(4)').removeAttr('data-toggle').removeAttr('title').html(buttonSpan);
             if (data[1] == 'directory') {
                 $(row).attr('class', 'directory_row').css('font-weight', 'bold').find('td:eq(0)')
@@ -190,12 +166,7 @@ $(document).ready(function () {
                 this.node().remove()
             });
 
-            if (table.api().order()[0][1] == 'asc') {
-                for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]);
-            }
-            else {
-                for (var j = 0; j < directoryArray.length; ++j) table.append(directoryArray[j]);
-            }
+            for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]);
         }
     });
 });

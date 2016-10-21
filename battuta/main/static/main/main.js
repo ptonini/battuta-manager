@@ -9,8 +9,6 @@ $(document).ready(function () {
     //     }, 200);
     // });
 
-    var patternContainer = $('#pattern_container');
-
     // Load config data into sessionStorage
     if ($('#is_authenticated').val()) {
         getPreferences()
@@ -47,14 +45,4 @@ $(document).ready(function () {
         var pattern = $('#searchbox').val();
         if (pattern) window.open('/search/' + pattern, '_self')
     });
-
-    // Capture enter on password dialog
-    $('#password_dialog').keypress(function (event) {
-        if (event.keyCode == 13) {
-            $('.ui-button-text:contains("Run")').parent('button').click()
-        }
-    });
-
-
-        
 });
