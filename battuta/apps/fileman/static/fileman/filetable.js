@@ -161,7 +161,7 @@ $(document).ready(function () {
             var table = this;
             var directoryArray = [];
 
-            this.api().rows('.directory_row').every(function() {
+            table.api().rows('.directory_row').every(function() {
                 directoryArray.push(this.node());
                 this.node().remove()
             });
