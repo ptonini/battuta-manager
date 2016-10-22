@@ -12,7 +12,6 @@ var defaultDialogOptions =  {
 var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).append(
     $('<strong>').html('This action cannot be undone')
 );
-//hiddenContainer.append(deleteDialog);
 deleteDialog.dialog(defaultDialogOptions);
 
 
@@ -30,14 +29,7 @@ alertDialog.dialog($.extend({}, defaultDialogOptions, {
 
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog');
-selectDialog.dialog($.extend({}, defaultDialogOptions, {
-    buttons: {
-        Cancel: function () {
-            $('.filter_box').val('');
-            $(this).dialog('close');
-        }
-    }
-}));
+selectDialog.dialog(defaultDialogOptions);
 
 
 // JSON dialog
@@ -71,22 +63,4 @@ nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {
     }
 }));
 
-
-// Password dialog
-var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20px').append(
-    $('<label>').attr({for: 'user_password', class: 'user_pass_group'}).html('Password for user ').append(
-        $('<i>').attr('id', 'exec_user')
-    ),
-    $('<input>').attr({id: 'user_password', type: 'password', class: 'form-control input-sm user_pass_group'}),
-    $('<br>').attr('class', 'user_pass_group'),
-    $('<label>').attr({for: 'sudo_password', class: 'sudo_pass_group'}).html('Sudo password').append(
-        $('<span>').attr('class', 'user_pass_group').html(' (defaults to user)')
-    ),
-    $('<input>').attr({id: 'sudo_password', type: 'password', class: 'form-control input-sm sudo_pass_group'})
-);
-passwordDialog
-    .dialog($.extend({}, defaultDialogOptions, {width: '360'}))
-    .keypress(function (event) {
-        if (event.keyCode == 13) $('.ui-button-text:contains("Run")').parent('button').click()
-    });
 

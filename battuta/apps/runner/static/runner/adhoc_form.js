@@ -38,7 +38,7 @@ $(document).ready(function () {
     });
 
     // Build adhoc table
-    var adhocTableObject = adhocTable.DataTable({
+    adhocTable.DataTable({
         pageLength: 50,
         ajax: {
             url: '/runner/adhoc/',
@@ -90,7 +90,7 @@ $(document).ready(function () {
                                                     id: data[4]
                                                 },
                                                 success: function () {
-                                                    adhocTableObject.ajax.reload()
+                                                    adhocTable.DataTable().ajax.reload()
                                                 }
                                             });
                                         }
@@ -137,7 +137,7 @@ $(document).ready(function () {
                     data: postData,
                     success: function (data) {
                         if (data.result == 'ok') {
-                            adhocTableObject.ajax.reload();
+                            adhocTable.DataTable().ajax.reload();
                             resetAdHocForm()
                         }
                         else if (data.result == 'fail') {

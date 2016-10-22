@@ -4,8 +4,15 @@ var prefsContainer = $('<div>')
 
 var prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
     $('<div>').attr('class', 'row').append(
-        $('<div>').attr('class', 'col-md-6').append(
-            $('<h4>').html('Preferences')
+        $('<div>').attr('class', 'col-md-12').append(
+            $('<h4>').append(
+                $('<span>').html('Preferences'),
+                $('<span>').css('float', 'right').append(
+                    $('<button>').attr('class', 'btn btn-default btn-xs').html('Restore defaults').click(function() {
+                        restoreDialog.dialog('open')
+                    })
+                )
+            )
         )
     ),
     prefsContainer
@@ -14,9 +21,6 @@ var prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 
 prefsDialog.dialog($.extend({}, defaultDialogOptions, {
     width: 800,
     buttons: {
-        'Restore defaults': function() {
-            restoreDialog.dialog('open')
-        },
         Reload: function() {
             buildPreferencesContainer(function() {
                 alertDialog.css('text-align', 'center').html('<strong>Preferences reloaded</strong>').dialog('open');
@@ -24,13 +28,19 @@ prefsDialog.dialog($.extend({}, defaultDialogOptions, {
         },
         Save: function() {
             savePreferences(function () {
+                getPreferences();
                 prefsDialog.dialog('close');
                 alertDialog
                     .css('text-align', 'center')
                     .html('<strong>Preferences saved</strong>')
-                    .dialog('open');
-                getPreferences();
+                    .dialog('open')
+                    .on('dialogclose', function() {
+                        window.location.reload(true)
+                    })
             })
+        },
+        Cancel: function() {
+            $(this).dialog('close')
         }
 
     }
@@ -39,25 +49,20 @@ prefsDialog.dialog($.extend({}, defaultDialogOptions, {
 var restoreDialog = $('<div>').attr('id', 'restore_dialog').css('text-align', 'center').append(
     $('<strong>').html('Restore all preferences to default values?')
 );
-restoreDialog.dialog({
-    autoOpen: false,
-    modal: true,
-    show: true,
-    hide: true,
-    dialogClass: 'no_title',
+restoreDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
-        Ok: function () {
+        Ok: function() {
             $(this).dialog('close');
             $.each(prefsContainer.data('defaultValues'), function (index, item) {
                 $('#item_' + item[0] ).val(item[1])
             });
             savePreferences(getPreferences)
         },
-        Cancel: function () {
+        Cancel: function() {
             $(this).dialog('close');
         }
     }
-});
+}));
 
 
 function validateItemDataType(dataType, value) {
@@ -183,50 +188,3 @@ $(document).ready(function () {
         });
     });
 });
-
-//
-//
-//
-//
-// $(document).ready(function () {
-//
-//     var restoreDialog = $('#restore_dialog');
-//
-//     document.title = 'Battuta - Preferences';
-//
-//     submitRequest('GET', {action: 'preferences'}, buildPreferencesContainer);
-//
-//     restoreDialog.dialog({
-//         autoOpen: false,
-//         modal: true,
-//         show: true,
-//         hide: true,
-//         dialogClass: 'no_title',
-//         buttons: {
-//             Ok: function () {
-//                 $(this).dialog('close');
-//                 $.each($('#preferences_container').data('defaultValues'), function (index, item) {
-//                     $('#item_' + item[0] ).val(item[1])
-//                 });
-//                 savePreferences()
-//             },
-//             Cancel: function () {
-//                 $(this).dialog('close');
-//             }
-//         }
-//     });
-//
-//     $('.reload_prefs').click(function() {
-//         alertDialog.css('text-align', 'center').html('<strong>Preferences reloaded</strong>').dialog('open');
-//         submitRequest('GET', {action: 'preferences'}, buildPreferencesContainer);
-//     });
-//
-//     $('.save_prefs').click(function() {
-//         savePreferences()
-//     });
-//
-//     $('#restore_defaults').click(function() {
-//         restoreDialog.dialog('open')
-//     })
-//
-// });
