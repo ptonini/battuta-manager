@@ -45,4 +45,6 @@ $(document).ready(function () {
         var pattern = $('#searchbox').val();
         if (pattern) window.open('/search/' + pattern, '_self')
     });
+
+
 });

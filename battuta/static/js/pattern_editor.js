@@ -57,7 +57,6 @@ var patternDialog = $('<div>').attr('id', 'pattern_dialog').css('overflow-x', 'h
     patternContainer
 
 );
-hiddenDiv.append(patternDialog);
 patternDialog.dialog($.extend({}, defaultDialogOptions, {
     width: 520,
     buttons: {

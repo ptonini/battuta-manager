@@ -8,7 +8,6 @@ var createOnlyContainer = $('<div>').css('display', 'none').append(
 var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '20px').append(
     nameFieldLabel, nameField, createOnlyContainer
 );
-hiddenDiv.append(fileDialog);
 fileDialog
     .dialog($.extend({}, defaultDialogOptions, {
         width: '360',

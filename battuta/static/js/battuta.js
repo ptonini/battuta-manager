@@ -1,7 +1,3 @@
-// Hidden container
-var hiddenDiv = $('<div>').attr('class', 'hidden');
-$(document.body).append(hiddenDiv);
-
 // Get cookie
 function getCookie(name) {
     var cookieValue = null;

@@ -12,13 +12,12 @@ var defaultDialogOptions =  {
 var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).append(
     $('<strong>').html('This action cannot be undone')
 );
-hiddenDiv.append(deleteDialog);
+//hiddenContainer.append(deleteDialog);
 deleteDialog.dialog(defaultDialogOptions);
 
 
 // Alert dialog
 var alertDialog = $('<div>').attr('id', 'alert_dialog');
-hiddenDiv.append(alertDialog);
 alertDialog.dialog($.extend({}, defaultDialogOptions, {
     minWidth: 160,
     buttons: {
@@ -31,7 +30,6 @@ alertDialog.dialog($.extend({}, defaultDialogOptions, {
 
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog');
-hiddenDiv.append(selectDialog);
 selectDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Cancel: function () {
@@ -46,7 +44,6 @@ selectDialog.dialog($.extend({}, defaultDialogOptions, {
 var jsonDialog = $('<div>').attr('id', 'json_dialog').append(
     $('<pre>').attr('id', 'json_box')
 );
-hiddenDiv.append(jsonDialog);
 jsonDialog.dialog($.extend({}, defaultDialogOptions, {
     width: 'auto',
     maxHeight: 480,
@@ -66,7 +63,6 @@ var nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-cen
     $('<span>').html('&nbsp;&nbsp;&nbsp;&nbsp;'),
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'group').html('Groups')
 );
-hiddenDiv.append(nodeTypeDialog);
 nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Cancel: function () {
@@ -88,12 +84,9 @@ var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20p
     ),
     $('<input>').attr({id: 'sudo_password', type: 'password', class: 'form-control input-sm sudo_pass_group'})
 );
-hiddenDiv.append(passwordDialog);
 passwordDialog
     .dialog($.extend({}, defaultDialogOptions, {width: '360'}))
     .keypress(function (event) {
         if (event.keyCode == 13) $('.ui-button-text:contains("Run")').parent('button').click()
     });
-
-
 

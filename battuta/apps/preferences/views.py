@@ -12,16 +12,11 @@ class PreferencesView(View):
 
     @staticmethod
     def get(request):
-        if 'action' not in request.GET:
-            return render(request, 'preferences/preferences.html')
-        else:
-            if request.GET['action'] == 'preferences':
-                data = dict()
-                data['default'] = DefaultPrefs().get_schema()
-                data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
-            else:
-                raise Http404('Invalid action')
-            return HttpResponse(json.dumps(data), content_type="application/json")
+
+        data = dict()
+        data['default'] = DefaultPrefs().get_schema()
+        data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):

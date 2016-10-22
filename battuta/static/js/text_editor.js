@@ -15,7 +15,6 @@ var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
     ),
     $('<div>').attr('class', 'col-md-12 editor_column').append(textEditorContainer)
 );
-hiddenDiv.append(editorDialog);
 editorDialog.dialog({
     autoOpen: false,
     modal: true,

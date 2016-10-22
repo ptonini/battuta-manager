@@ -12,7 +12,6 @@ var nodeForm = $('<form>').attr('id', 'node_form').append(
 );
 
 var nodeDialog = $('<div>').attr('id', 'node_dialog').append(nodeDialogHeader, nodeForm);
-hiddenDiv.append(nodeDialog);
 nodeDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Save: function (){
