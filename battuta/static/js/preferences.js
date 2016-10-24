@@ -1,6 +1,6 @@
 var prefsContainer = $('<div>')
     .attr('id', 'preferences_container')
-    .css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'max-height': '600px', 'padding-right': '10px'});
+    .css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
 
 var prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
     $('<div>').attr('class', 'row').append(
@@ -42,7 +42,6 @@ prefsDialog.dialog($.extend({}, defaultDialogOptions, {
         Cancel: function() {
             $(this).dialog('close')
         }
-
     }
 }));
 
@@ -97,7 +96,7 @@ function buildPreferencesContainer(buildCallback) {
         url: '/preferences/',
         dataType: 'json',
         success: function(data) {
-            prefsContainer.empty();
+            prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
             $.each(data.default, function (index, item_group) {
                 prefsContainer.append(
                     divRow.clone().append(

@@ -42,8 +42,8 @@ class InventoryView(View):
                 if group.description:
                     data[group.name]['vars']['_description'] = group.description
 
-                data['all']['vars']['roles_path'] = settings.ROLES_DIR
-                data['all']['vars']['files_path'] = settings.FILES_DIR
+                data['all']['vars']['roles_path'] = settings.ROLES_PATH
+                data['all']['vars']['files_path'] = settings.FILES_PATH
 
         else:
             data = list()

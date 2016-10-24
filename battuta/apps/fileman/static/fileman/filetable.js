@@ -80,7 +80,7 @@ $(document).ready(function () {
             var fileDir = fileTable.data('current_dir');
             var objectData = {file_dir: fileDir};
 
-            var downloadUrl = '?action=download&object=' + fileName;
+            var downloadUrl = '?action=download&file_path=' + fileName;
             if (fileDir) downloadUrl = '?action=download&object=' + fileDir + '/' + fileName;
 
             if (data[1] == 'directory') {

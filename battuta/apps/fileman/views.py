@@ -55,7 +55,7 @@ class ManagerView(View):
 
             elif request.GET['action'] == 'edit':
 
-                full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['file_path'])
+                full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['file_name'])
 
                 if os.path.exists(full_path):
                     with open(full_path, 'r') as text_file:
@@ -65,7 +65,7 @@ class ManagerView(View):
 
             elif request.GET['action'] == 'download':
 
-                object_full_path = os.path.join(self.base_dir, request.GET['object'])
+                object_full_path = os.path.join(self.base_dir, request.GET['file_path'])
                 object_name = ntpath.basename(object_full_path)
 
                 if os.path.isfile(object_full_path):
