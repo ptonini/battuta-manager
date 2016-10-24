@@ -1,5 +1,6 @@
 // Default dialog options
 var defaultDialogOptions =  {
+    width: '360',
     autoOpen: false,
     modal: true,
     show: true,

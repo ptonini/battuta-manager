@@ -10,20 +10,12 @@ var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '20px').appe
 );
 fileDialog
     .dialog($.extend({}, defaultDialogOptions, {
-        width: '360',
         buttons: {
             Save: function () {
                 var postData = {file_name: nameField.val()};
 
                 for (var k in fileDialog.data()) postData[k] = fileDialog.data()[k];
                 delete postData['ui-dialog'];
-
-                //if (postData.file_dir) {
-                //    postData.file_name = postData.file_dir + '/' + postData.file_name;
-                //    if (postData.action == 'rename' || postData.action == 'copy') {
-                //        postData.old_file_name = postData.file_dir + '/' + postData.old_file_name;
-                //    }
-                //}
 
                 if (postData.action == 'create') postData['is_directory'] = isDirectory.is(':checked');
 

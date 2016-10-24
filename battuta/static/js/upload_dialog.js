@@ -24,12 +24,10 @@ uploadDialog
             Upload: function() {
                 if (uploadField.data('files')) {
                     uploadDialog.parent().block({ message: null });
-                    var filePath = uploadField.data('files')[0].name;
-                    var fileDir = uploadDialog.data('file_dir');
-                    if (fileDir) filePath = fileDir + '/' + filePath;
                     var postData = new FormData();
                     postData.append('action', 'upload');
-                    postData.append('file_path', filePath);
+                    postData.append('file_name', uploadField.data('files')[0].name);
+                    postData.append('file_dir', uploadDialog.data('file_dir'));
                     postData.append('file', uploadField.data('files')[0]);
                     $.ajax({
                         type: 'POST',

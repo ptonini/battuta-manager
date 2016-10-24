@@ -95,11 +95,15 @@ class ManagerView(View):
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request):
-        data = dict()
-        if request.POST['action'] == 'save':
 
+        full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
+
+        if 'old_full_path' in request.POST:
             old_full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['old_file_name'])
-            full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
+        else:
+            old_full_path = None
+
+        if request.POST['action'] == 'save':
 
             if full_path != old_full_path and os.path.exists(full_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
@@ -108,7 +112,7 @@ class ManagerView(View):
                     with open(full_path, 'w') as f:
                         f.write(request.POST['text'])
                 except Exception as e:
-                    data = {'result': 'fail', 'msg': e}
+                    data = {'result': 'fail', 'msg': str(e)}
                 else:
                     if full_path != old_full_path:
                         try:
@@ -119,71 +123,59 @@ class ManagerView(View):
 
         elif request.POST['action'] == 'rename':
 
-            old_name = os.path.join(self.base_dir, request.POST['old_name'])
-            new_name = os.path.join(self.base_dir, request.POST['file_name'])
-
-            if os.path.exists(new_name):
-                data['result'] = 'fail'
-                data['msg'] = 'This name is already in use'
+            if os.path.exists(full_path):
+                data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
-                os.rename(old_name, new_name)
-                data['result'] = 'ok'
+                os.rename(old_full_path, full_path)
+                data = {'result': 'ok'}
 
         elif request.POST['action'] == 'create':
 
-            new_object = os.path.join(self.base_dir, request.POST['file_name'])
-
-            if os.path.exists(new_object):
-                data['result'] = 'fail'
-                data['msg'] = 'This name is already in use'
+            if os.path.exists(full_path):
+                data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
                 if request.POST['is_directory'] == 'true':
-                    if not os.path.exists(new_object):
-                        os.makedirs(new_object)
+                    if not os.path.exists(full_path):
+                        os.makedirs(full_path)
                 else:
-                    open(new_object, 'a').close()
+                    open(full_path, 'a').close()
 
-                data['result'] = 'ok'
+                data = {'result': 'ok'}
 
         elif request.POST['action'] == 'copy':
 
-            old_object = os.path.join(self.base_dir, request.POST['old_name'])
-            new_object = os.path.join(self.base_dir, request.POST['file_name'])
-
-            if os.path.exists(new_object):
-                data['result'] = 'fail'
-                data['msg'] = 'This name is already in use'
+            if os.path.exists(full_path):
+                data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
-                if os.path.isfile(old_object):
-                    shutil.copy(old_object, new_object)
+                if os.path.isfile(old_full_path):
+                    shutil.copy(old_full_path, full_path)
                 else:
-                    shutil.copytree(old_object, new_object)
+                    shutil.copytree(old_full_path, full_path)
 
-                data['result'] = 'ok'
+                data = {'result': 'ok'}
 
         elif request.POST['action'] == 'upload':
 
-            file_path = os.path.join(self.base_dir, request.POST['file_path'])
-
-            if os.path.exists(file_path):
-                data['result'] = 'fail'
-                data['msg'] = 'This name is already in use'
+            if os.path.exists(full_path):
+                data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
-                with open(file_path, 'w') as f:
-                    for chunk in request.FILES['file']:
-                        f.write(chunk)
-                data['result'] = 'ok'
+                try:
+                    with open(full_path, 'w') as f:
+                        for chunk in request.FILES['file']:
+                            f.write(chunk)
+                except Exception as e:
+                    data = {'result': 'fail', 'msg': str(e)}
+                else:
+                    data = {'result': 'ok'}
 
         elif request.POST['action'] == 'delete':
-
-            full_path = os.path.join(self.base_dir, request.POST['object'])
 
             if os.path.isfile(full_path):
                 os.remove(full_path)
             else:
                 shutil.rmtree(full_path)
 
-            data['result'] = 'ok'
+            data = {'result': 'ok'}
 
         else:
             raise Http404('Invalid action')

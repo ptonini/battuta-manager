@@ -28,12 +28,12 @@ $(document).ready(function () {
     $('#create_file').click(function() {
         nameFieldLabel.html('Create');
         createOnlyContainer.show();
-        fileDialog.data({action: 'create', current_dir: fileTable.data('current_dir')}).dialog('open')
+        fileDialog.data({action: 'create', file_dir: fileTable.data('current_dir')}).dialog('open')
     });
 
     //Upload button action
     $('#upload_file').click(function () {
-        uploadDialog.data('current_dir', fileTable.data('current_dir')).dialog('open');
+        uploadDialog.data('file_dir', fileTable.data('current_dir')).dialog('open');
     });
 
     // Set root dir for table
@@ -139,7 +139,7 @@ $(document).ready(function () {
                         .append($('<span>').attr('class', 'glyphicon glyphicon-download btn-incell')),
                     $('<a>')
                         .css('cursor', 'pointer')
-                        .attr({'data-toggle': 'tooltip', title: 'Remove'})
+                        .attr({'data-toggle': 'tooltip', title: 'Delete'})
                         .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
                         .click(function() {
                             deleteDialog
@@ -148,7 +148,7 @@ $(document).ready(function () {
                                         text: 'Delete',
                                         click: function () {
                                             objectData['action'] = 'delete';
-                                            objectData['object'] = filePath;
+                                            objectData['file_name'] = fileName;
                                             submitRequest('POST', objectData, function() {
                                                 fileTable.DataTable().ajax.reload()
                                             });
