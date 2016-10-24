@@ -271,7 +271,6 @@ $(document).ready(function () {
                 postData.append('ask_sudo_pass', $('#ask_sudo_pass').hasClass('checked_button'));
                 postData.append('rsa_key', credentialForm.data('rsa_key'));
                 if (credRsaKey.data('files')) {
-                    console.log(credRsaKey.data('files')[0]);
                     postData.append('rsa_key_file', credRsaKey.data('files')[0]);
                     postData.append('rsa_key', credRsaKey.data('files')[0].name)
                 }

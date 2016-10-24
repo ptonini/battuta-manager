@@ -191,7 +191,7 @@ $(document).ready(function () {
     // New playbook
     $('#new_playbook').click(function() {
         $.ajax({
-            url: '/static/runner/playbook_template.yml',
+            url: '/static/templates/playbook_template.yml',
             type: 'GET',
             dataType: 'text',
             success: function (data) {

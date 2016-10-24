@@ -6,25 +6,34 @@ var ansibleModuleList = [
     'setup'
 ];
 
-function AnsibleModules (name) {
+function AnsibleModules(name) {
     this.name = name;
 }
 
-AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
+AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
     var name = this.name;
+
     var divRow = $('<div>').attr('class', 'row');
     var divCol1 = $('<div>').attr('class', 'col-md-1');
     var divCol2 = $('<div>').attr('class', 'col-md-2');
     var divCol3 = $('<div>').attr('class', 'col-md-3');
     var divCol4 = $('<div>').attr('class', 'col-md-4');
     var divCol5 = $('<div>').attr('class', 'col-md-5');
+
     fieldsContainer.html('');
-    var sudoButton = $('<button>').html('Sudo')
+
+    var sudoButton = $('<button>')
+        .html('Sudo')
         .attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm'})
         .off('click').click(function(event) {
             event.preventDefault();
             $(this).toggleClass('checked_button');
         });
+
+    var argumentsLabel = $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Arguments');
+
+    var argumentsField = $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'});
+
     $('#module_reference').off().show()
         .hover(function() {
             $(this).css('cursor', 'pointer')
@@ -32,6 +41,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
         .click(function() {
             window.open('http://docs.ansible.com/ansible/'+ name + '_module.html')
         });
+
     switch (name) {
         case 'ping':
             fieldsContainer.append(
@@ -44,10 +54,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
             fieldsContainer.append(
                 divRow.clone().append(
                     divCol4.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Arguments'),
-                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
-                        )
+                        $('<div>').attr('class', 'form-group').append(argumentsLabel, argumentsField)
                     ),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 )
@@ -89,10 +96,7 @@ AnsibleModules.prototype.buildFormFields = function (fieldsContainer) {
                 ),
                 divRow.clone().append(
                     divCol5.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'file', 'class': 'requiredField'}).html('Additional arguments'),
-                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
-                        )
+                        $('<div>').attr('class', 'form-group').append(argumentsLabel, argumentsField)
                     )
                 )
             );

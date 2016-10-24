@@ -56,12 +56,12 @@ class RunnerView(BaseView):
                 run_data['become_user'] = cred.sudo_user
 
             if cred.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.USERDATA_DIR, str(request.user.username),
+                run_data['rsa_key'] = os.path.join(settings.USERDATA_PATH, str(request.user.username),
                                                    '.ssh', cred.rsa_key)
 
             # Execute playbook
             if run_data['type'] == 'playbook':
-                run_data['playbook_path'] = os.path.join(settings.PLAYBOOK_DIR, run_data['playbook'])
+                run_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, run_data['playbook'])
                 run_data['name'] = run_data['playbook']
 
             # Execute task
@@ -192,10 +192,10 @@ class AdHocView(BaseView):
 
 
 class PlaybookView(BaseView):
+    playbook_path = settings.PLAYBOOK_PATH
 
-    @staticmethod
-    def load_playbook(filename):
-        with open(os.path.join(settings.PLAYBOOK_DIR, filename), 'r') as yaml_file:
+    def load_playbook(self, filename):
+        with open(os.path.join(self.playbook_path, filename), 'r') as yaml_file:
             data = {'text': yaml_file.read()}
             try:
                 data['filename'] = filename
@@ -217,7 +217,7 @@ class PlaybookView(BaseView):
         else:
             if request.GET['action'] == 'get_list':
                 data = list()
-                for root, dirs, files in os.walk(settings.PLAYBOOK_DIR):
+                for root, dirs, files in os.walk(self.playbook_path):
                     for filename in files:
                         if filename.split('.')[-1] == 'yml':
                             playbook_data = self.load_playbook(filename)
@@ -239,30 +239,33 @@ class PlaybookView(BaseView):
         # Save playbook
         if request.POST['action'] == 'save':
 
-            # Remove old playbook and modify existing arguments if necessary
-            if request.POST['new_filename'] != request.POST['old_filename']:
+            old_full_path = os.path.join(self.playbook_path, request.POST['file_dir'], request.POST['old_file_name'])
+            full_path = os.path.join(self.playbook_path, request.POST['file_dir'], request.POST['file_name'])
+
+            if full_path != old_full_path and os.path.exists(full_path):
+                data = {'result': 'fail', 'msg': 'This name is already in use'}
+            else:
                 try:
-                    os.remove(os.path.join(settings.PLAYBOOK_DIR, request.POST['old_filename']))
-                except os.error:
-                    pass
-                for args in PlaybookArgs.objects.filter(playbook=request.POST['old_filename']):
-                    args.playbook = request.POST['new_filename']
-                    args.save()
+                    with open(full_path, 'w') as f:
+                        f.write(request.POST['text'])
+                except Exception as e:
+                    data = {'result': 'fail', 'msg': e}
+                else:
+                    if full_path != old_full_path:
+                        try:
+                            os.remove(old_full_path)
+                        except os.error:
+                            pass
+                        for args in PlaybookArgs.objects.filter(playbook=request.POST['old_file_name']):
+                            args.playbook = request.POST['file_name']
+                            args.save()
 
-            # Build playbook filepath
-            filepath = os.path.join(settings.PLAYBOOK_DIR, request.POST['new_filename'])
-
-            # Save playbook to file
-            with open(filepath, 'w') as f:
-                f.write(request.POST['text'])
-
-            # Load saved playbook data
-            data = self.load_playbook(request.POST['new_filename'])
-            data['result'] = 'ok'
+                    data = self.load_playbook(request.POST['file_name'])
+                    data['result'] = 'ok'
 
         elif request.POST['action'] == 'delete':
             try:
-                os.remove(os.path.join(settings.PLAYBOOK_DIR, request.POST['playbook_file']))
+                os.remove(os.path.join(settings.PLAYBOOK_PATH, request.POST['playbook_file']))
             except os.error:
                 pass
             for args in PlaybookArgs.objects.filter(playbook=request.POST['playbook_file']):

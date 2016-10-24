@@ -103,8 +103,6 @@ function getPreferences() {
     });
 }
 
-
-
 function rememberSelectedTab(tabId) {
     var keyName = tabId + '_activeTab';
     

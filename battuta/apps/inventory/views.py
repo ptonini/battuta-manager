@@ -5,6 +5,7 @@ import tempfile
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
+from django.conf import settings
 
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
@@ -40,6 +41,9 @@ class InventoryView(View):
 
                 if group.description:
                     data[group.name]['vars']['_description'] = group.description
+
+                data['all']['vars']['roles_path'] = settings.ROLES_DIR
+                data['all']['vars']['files_path'] = settings.FILES_DIR
 
         else:
             data = list()

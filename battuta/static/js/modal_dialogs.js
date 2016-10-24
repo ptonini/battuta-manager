@@ -16,7 +16,7 @@ deleteDialog.dialog(defaultDialogOptions);
 
 
 // Alert dialog
-var alertDialog = $('<div>').attr('id', 'alert_dialog');
+var alertDialog = $('<div>').attr({id: 'alert_dialog', class: 'text-center'});
 alertDialog.dialog($.extend({}, defaultDialogOptions, {
     minWidth: 160,
     buttons: {

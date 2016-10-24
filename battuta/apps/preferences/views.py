@@ -13,7 +13,7 @@ class PreferencesView(View):
     def get(request):
 
         data = dict()
-        data['default'] = {'default': DefaultPrefs().get_schema()}
+        data['default'] = DefaultPrefs().get_schema()
         data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
         return HttpResponse(json.dumps(data), content_type="application/json")
 

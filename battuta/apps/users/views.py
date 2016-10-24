@@ -195,7 +195,7 @@ class CredentialView(View):
 
         # Validate user
         if request.user == page_user or request.user.is_superuser:
-            ssh_path = os.path.join(settings.USERDATA_DIR, str(page_user.username), '.ssh')
+            ssh_path = os.path.join(settings.USERDATA_PATH, str(page_user.username), '.ssh')
 
             # Save/Update credential
             if request.POST['action'] == 'save':

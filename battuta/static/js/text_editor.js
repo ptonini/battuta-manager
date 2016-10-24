@@ -3,10 +3,10 @@ var aceModeSelector = $('<select>').attr({id: 'ace_mode', class: 'select form-co
 );
 var reloadButton = $('<button>').attr({id: 'reload_file', class: 'btn btn-default btn-sm'}).html('Reload');
 var textEditorContainer = $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey');
+var fileNameField = $('<input>').attr({id: 'file_name_field', type: 'text', class: 'form-control input-sm'});
 var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
     $('<div>').attr('class', 'col-md-4 editor_column').append(
-        $('<label>').attr({for: 'filename', class: 'requiredField sr-only'}).html('Filename'),
-        $('<input>').attr({id: 'filename', type: 'text', class: 'form-control input-sm'})
+        $('<label>').attr({for: 'file_name_field', class: 'requiredField sr-only'}).html('File name'),fileNameField
     ),
     $('<div>').attr('class', 'col-md-6 editor_column text-right').append(reloadButton),
     $('<div>').attr('class', 'col-md-2 editor_column').append(
@@ -26,35 +26,24 @@ editorDialog.dialog({
     buttons: {
         Save: function () {
             var editorData = textEditorContainer.data();
-            var newFilename = $('#filename').val();
-            if (newFilename) {
-                if (editorData.ext && newFilename.split('.').slice(-1)[0] != editorData.ext) {
-                    newFilename += '.' + editorData.ext;
+            var fileName = fileNameField.val();
+            if (fileName) {
+                if (editorData.ext && fileName.split('.').slice(-1)[0] != editorData.ext) {
+                    fileName += '.' + editorData.ext;
                 }
-                var filePath = editorData.path;
-                var oldFilename = editorData.filename;
-                if (filePath) {
-                    oldFilename = filePath + '/' + oldFilename;
-                    newFilename = filePath + '/' + newFilename
-                }
-                $.ajax({
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action: 'save',
-                        old_filename: oldFilename,
-                        new_filename: newFilename,
-                        text: textEditor.getValue()
-                    },
-                    success: function (data) {
-                        if (data.result == 'ok') {
-                            editorDialog.dialog('close');
-                        }
-                        else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                        }
-                    }
-                });
+                var fileDir = editorData.fileDir;
+                var oldFileName = editorData.fileName;
+                var postData = {
+                    action: 'save',
+                    file_dir: fileDir,
+                    old_file_name: oldFileName,
+                    file_name: fileName,
+                    text: textEditor.getValue()
+                };
+                submitRequest('POST', postData, function (data) {
+                    if (data.result == 'ok') editorDialog.dialog('close');
+                    else alertDialog.dialog('open').html($('<strong>').html(data.msg))
+                })
             }
         },
         Cancel: function () {
@@ -106,7 +95,7 @@ textEditor.setHighlightActiveLine(false);
 textEditor.setFontSize(13);
 textEditor.$blockScrolling = Infinity;
 
-function editTextFile(text, path, filename, mimeType, ext) {
+function editTextFile(text, fileDir, fileName, mimeType, ext) {
 
     textEditor.setValue(text);
     textEditor.session.getUndoManager().reset();
@@ -114,10 +103,9 @@ function editTextFile(text, path, filename, mimeType, ext) {
 
     var aceMode = 'text';
     if (!mimeType || mimeType == 'text/plain') {
-        var filenameArray = filename.split('.');
-        var arrayLength = filenameArray.length;
-        var fileExtension = filenameArray[arrayLength - 1];
-        if (fileExtension == 'j2') fileExtension = filenameArray[arrayLength - 2];
+        var fileNameArray = fileName.split('.');
+        var fileExtension = fileNameArray[fileNameArray.length - 1];
+        if (fileExtension == 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
 
         if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
         else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
@@ -129,19 +117,20 @@ function editTextFile(text, path, filename, mimeType, ext) {
         else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
     }
     else if (mimeType == 'application/xml') aceMode = 'xml';
+    else if (mimeType == 'application/json') aceMode = 'json';
     else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
     else if (mimeType == 'text/yaml') aceMode = 'yaml';
 
     aceModeSelector.val(aceMode);
     textEditor.getSession().setMode('ace/mode/' + aceMode);
 
-    if (filename) $('#filename').removeAttr('placeholder').val(filename);
+    if (fileName) fileNameField.removeAttr('placeholder').val(fileName);
     else {
-        $('#filename').attr('placeholder', 'New file').val('');
-        filename = '/invalid_name'
+        fileNameField.attr('placeholder', 'New file').val('');
+        fileName = '/invalid_name'
     }
     textEditorContainer
-        .data({text: text, filename: filename, path: path, ext: ext})
+        .data({text: text, fileDir: fileDir, fileName: fileName, ext: ext})
         .css('height', window.innerHeight * 0.7);
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
     editorDialog.dialog('open');

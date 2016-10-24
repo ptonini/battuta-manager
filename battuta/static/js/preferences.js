@@ -109,7 +109,6 @@ function buildPreferencesContainer(buildCallback) {
                         )
                     )
                 );
-
                 $.each(item_group.items, function(index, item) {
                     defaultValues.push([item.name, item.value]);
                     var itemId = 'item_' + item.name;

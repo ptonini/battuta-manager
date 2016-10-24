@@ -14,10 +14,10 @@ var nodeForm = $('<form>').attr('id', 'node_form').append(
 var nodeDialog = $('<div>').attr('id', 'node_dialog').append(nodeDialogHeader, nodeForm);
 nodeDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
-        Save: function (){
+        Save: function() {
             nodeForm.submit()
         },
-        Cancel: function (){
+        Cancel: function() {
             $(this).dialog('close');
         }
     }
@@ -40,9 +40,9 @@ function openAddNodeDialog(nodeType, addNodeCallback) {
             },
             success: function (data) {
                 if (data.result == 'ok') {
-                    addNodeCallback();
                     nodeDialog.dialog('close');
-                }
+                    addNodeCallback();
+                    }
                 else if (data.result == 'fail') {
                     alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
                 }

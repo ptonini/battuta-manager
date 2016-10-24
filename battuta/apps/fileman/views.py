@@ -55,8 +55,13 @@ class ManagerView(View):
 
             elif request.GET['action'] == 'edit':
 
-                with open(os.path.join(self.base_dir, request.GET['file']), 'r') as text_file:
-                    data = {'text': text_file.read()}
+                full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['file_path'])
+
+                if os.path.exists(full_path):
+                    with open(full_path, 'r') as text_file:
+                        data = {'result': 'ok', 'text': text_file.read()}
+                else:
+                    data = {'result': 'fail', 'msg': 'The file was not found'}
 
             elif request.GET['action'] == 'download':
 
@@ -76,13 +81,14 @@ class ManagerView(View):
                     object_name += '.zip'
 
                 response = StreamingHttpResponse((line for line in open(filename, 'r')))
-                response['Content-Disposition'] = 'attachment; filename={0}'.format(object_name)
+                response['Content-Disposition'] = 'attachment; filename=' + object_name
                 response['Content-Length'] = os.path.getsize(filename)
 
                 if os.path.isdir(object_full_path):
                     os.remove(filename)
 
                 return response
+
             else:
                 raise Http404('Invalid action')
 
@@ -92,62 +98,90 @@ class ManagerView(View):
         data = dict()
         if request.POST['action'] == 'save':
 
-            if request.POST['new_filename'] != request.POST['old_filename']:
+            old_full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['old_file_name'])
+            full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
+
+            if full_path != old_full_path and os.path.exists(full_path):
+                data = {'result': 'fail', 'msg': 'This name is already in use'}
+            else:
                 try:
-                    os.remove(os.path.join(self.base_dir, request.POST['old_filename']))
-                except os.error:
-                    pass
-
-            # Build filepath
-            filepath = os.path.join(self.base_dir, request.POST['new_filename'])
-
-            # Save file
-            with open(filepath, 'w') as f:
-                f.write(request.POST['text'])
-
-            data['result'] = 'ok'
+                    with open(full_path, 'w') as f:
+                        f.write(request.POST['text'])
+                except Exception as e:
+                    data = {'result': 'fail', 'msg': e}
+                else:
+                    if full_path != old_full_path:
+                        try:
+                            os.remove(old_full_path)
+                        except os.error:
+                            pass
+                    data = {'result': 'ok'}
 
         elif request.POST['action'] == 'rename':
 
             old_name = os.path.join(self.base_dir, request.POST['old_name'])
-            new_name = os.path.join(self.base_dir, request.POST['new_name'])
+            new_name = os.path.join(self.base_dir, request.POST['file_name'])
 
-            os.rename(old_name, new_name)
-
-            data['result'] = 'ok'
+            if os.path.exists(new_name):
+                data['result'] = 'fail'
+                data['msg'] = 'This name is already in use'
+            else:
+                os.rename(old_name, new_name)
+                data['result'] = 'ok'
 
         elif request.POST['action'] == 'create':
 
-            new_object = os.path.join(self.base_dir, request.POST['new_name'])
+            new_object = os.path.join(self.base_dir, request.POST['file_name'])
 
-            if request.POST['is_directory'] == 'true':
-                if not os.path.exists(new_object):
-                    os.makedirs(new_object)
+            if os.path.exists(new_object):
+                data['result'] = 'fail'
+                data['msg'] = 'This name is already in use'
             else:
-                open(new_object, 'a').close()
+                if request.POST['is_directory'] == 'true':
+                    if not os.path.exists(new_object):
+                        os.makedirs(new_object)
+                else:
+                    open(new_object, 'a').close()
 
-            data['result'] = 'ok'
+                data['result'] = 'ok'
 
         elif request.POST['action'] == 'copy':
 
             old_object = os.path.join(self.base_dir, request.POST['old_name'])
-            new_object = os.path.join(self.base_dir, request.POST['new_name'])
+            new_object = os.path.join(self.base_dir, request.POST['file_name'])
 
-            if os.path.isfile(old_object):
-                shutil.copy(old_object, new_object)
+            if os.path.exists(new_object):
+                data['result'] = 'fail'
+                data['msg'] = 'This name is already in use'
             else:
-                shutil.copytree(old_object, new_object)
+                if os.path.isfile(old_object):
+                    shutil.copy(old_object, new_object)
+                else:
+                    shutil.copytree(old_object, new_object)
 
-            data['result'] = 'ok'
+                data['result'] = 'ok'
+
+        elif request.POST['action'] == 'upload':
+
+            file_path = os.path.join(self.base_dir, request.POST['file_path'])
+
+            if os.path.exists(file_path):
+                data['result'] = 'fail'
+                data['msg'] = 'This name is already in use'
+            else:
+                with open(file_path, 'w') as f:
+                    for chunk in request.FILES['file']:
+                        f.write(chunk)
+                data['result'] = 'ok'
 
         elif request.POST['action'] == 'delete':
 
-            object_full_path = os.path.join(self.base_dir, request.POST['object'])
+            full_path = os.path.join(self.base_dir, request.POST['object'])
 
-            if os.path.isfile(object_full_path):
-                os.remove(object_full_path)
+            if os.path.isfile(full_path):
+                os.remove(full_path)
             else:
-                shutil.rmtree(object_full_path)
+                shutil.rmtree(full_path)
 
             data['result'] = 'ok'
 
@@ -158,10 +192,10 @@ class ManagerView(View):
 
 
 class FileView(ManagerView):
-    base_dir = settings.FILE_DIR
+    base_dir = settings.FILES_PATH
     html_template = 'fileman/files.html'
 
 
 class RoleView(ManagerView):
-    base_dir = settings.ROLE_DIR
+    base_dir = settings.ROLES_PATH
     html_template = 'fileman/roles.html'

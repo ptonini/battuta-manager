@@ -13,33 +13,40 @@ fileDialog
         width: '360',
         buttons: {
             Save: function () {
-                var postData = {new_name: nameField.val()};
+                var postData = {file_name: nameField.val()};
 
                 for (var k in fileDialog.data()) postData[k] = fileDialog.data()[k];
                 delete postData['ui-dialog'];
 
-                if (postData.current_dir) postData.new_name = postData.current_dir + '/' + postData.new_name;
-
-                if (postData.current_dir) {
-                    if (postData.action == 'rename' || postData.action == 'copy') {
-                        postData.old_name = postData.current_dir + '/' + postData.old_name;
-                    }
-                }
+                //if (postData.file_dir) {
+                //    postData.file_name = postData.file_dir + '/' + postData.file_name;
+                //    if (postData.action == 'rename' || postData.action == 'copy') {
+                //        postData.old_file_name = postData.file_dir + '/' + postData.old_file_name;
+                //    }
+                //}
 
                 if (postData.action == 'create') postData['is_directory'] = isDirectory.is(':checked');
 
-                if (postData.new_name && postData.new_name != postData.old_name) {
-                    submitRequest('POST', postData, function() {})
+                if (postData.file_name && postData.file_name != postData.old_file_name) {
+                    submitRequest('POST', postData, function(data) {
+                        if (data.result == 'ok') fileDialog.dialog('close');
+                        else alertDialog.dialog('open').html($('<strong>').html(data.msg))
+                    })
                 }
 
-                $(this).dialog('close');
             },
             Cancel: function () {
                 $(this).dialog('close');
             }
+        },
+        beforeClose: function () {
+            nameField.val('');
+            nameFieldLabel.html('');
+            isDirectory.attr('checked', false);
+            createOnlyContainer.hide();
         }
     }))
     .keypress(function (event) {
-        if (event.keyCode == 13) $('.ui-button-text:contains("Save")').parent('button').click()
+        if (event.keyCode == 13) fileDialog.parent().find('.ui-button-text:contains("Save")').parent('button').click()
     });
 

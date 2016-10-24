@@ -80,11 +80,11 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 LOGIN_URL = '/'
 
-DATA_DIR = '/opt/ans_data'
-FILE_DIR = os.path.join(DATA_DIR, 'files')
-ROLE_DIR = os.path.join(DATA_DIR, 'roles')
-PLAYBOOK_DIR = os.path.join(DATA_DIR, 'playbooks')
-USERDATA_DIR = os.path.join(DATA_DIR, 'userdata')
+DATA_PATH = '/opt/ans_data'
+FILES_PATH = os.path.join(DATA_PATH, 'files')
+ROLES_PATH = os.path.join(DATA_PATH, 'roles')
+PLAYBOOK_PATH = os.path.join(DATA_PATH, 'playbooks')
+USERDATA_PATH = os.path.join(DATA_PATH, 'userdata')
 
 DEFAULT_PREFERENCES = [
     {
@@ -105,7 +105,7 @@ DEFAULT_PREFERENCES = [
             },
             {
                 'name': 'date_format',
-                'value': '%Y-%m-%d %H:%M:%S',
+                'value': '%d/%m/%Y %H:%M:%S',
                 'data_type': 'str',
                 'description': 'Date format'
             },
@@ -146,6 +146,32 @@ DEFAULT_PREFERENCES = [
                 'description': '',
             }
         ]
+    },
+    {
+        'name': 'Truncate large responses',
+        'description': '',
+        'items': [
+            {
+                'name': 'truncate_responses',
+                'value': 'yes',
+                'data_type': 'bool',
+                'description': '',
+
+            },
+            {
+                'name': 'truncate_msg',
+                'value': 'truncated_by_battuta',
+                'data_type': 'str',
+                'description': '',
+
+            },
+            {
+                'name': 'truncated_keys',
+                'value': 'check_results,ansible_facts',
+                'data_type': 'str',
+                'description': '',
+            }
+        ],
     },
     {
         'name': 'Node list',
@@ -237,32 +263,6 @@ DEFAULT_PREFERENCES = [
             }
         ],
     },
-    {
-        'name': 'Truncate large responses',
-        'description': '',
-        'items': [
-            {
-                'name': 'truncate_responses',
-                'value': 'yes',
-                'data_type': 'bool',
-                'description': '',
-
-            },
-            {
-                'name': 'truncate_msg',
-                'value': 'truncated_by_battuta',
-                'data_type': 'str',
-                'description': '',
-
-            },
-            {
-                'name': 'truncated_keys',
-                'value': 'check_results,ansible_facts',
-                'data_type': 'str',
-                'description': '',
-            }
-        ],
-    },
-    ]
+]
 
 
