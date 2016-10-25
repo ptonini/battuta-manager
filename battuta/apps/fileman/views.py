@@ -11,27 +11,54 @@ from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
 
 
+class SearchView(View):
+
+    file_sources = [
+        [
+            settings.FILES_PATH,
+            'Files',
+            '{{ files_path }}',
+            None
+        ],
+        [
+            settings.ROLES_PATH,
+            'Roles',
+            '{{ roles_path }}',
+            ['tasks', 'handlers', 'vars', 'defaults', 'meta']
+        ]
+    ]
+
+    archive_mime_types = ['application/zip', 'application/x-tar', 'application/x-gtar']
+
+    def get(self, request):
+        data = list()
+
+        for directory, category, prefix, exclude in self.file_sources:
+            for root, dirs, files in os.walk(directory):
+                for file_name in files:
+
+                    relative_path = root.replace(directory, '')
+                    file_path = os.path.join(relative_path, file_name)
+
+                    if request.GET['term'] not in file_path:
+                        continue
+                    if exclude and len(relative_path.split('/')) > 2 and relative_path.split('/')[2] in exclude:
+                        continue
+
+                    data.append({'label': os.path.join(relative_path, file_name),
+                                 'prefix': prefix,
+                                 'category': category})
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+
 class ManagerView(View):
     base_dir = None
     html_template = None
 
     def get(self, request):
 
-        if not self.html_template:
-            sources = [[settings.FILES_PATH, 'Files', '{{ files_path }}'],
-                       [settings.ROLES_PATH, 'Roles', '{{ roles_path }}']]
-            data = list()
-
-            for directory, category, prefix in sources:
-                for root, dirs, files in os.walk(directory):
-                    for file_name in files:
-                        data.append({'label': os.path.join(root[len(directory):], file_name),
-                                     'prefix': prefix,
-                                     'category': category})
-
-            return HttpResponse(json.dumps(data), content_type='application/json')
-
-        elif 'action' not in request.GET:
+        if 'action' not in request.GET:
             return render(request, self.html_template, {'user': request.user})
 
         else:
@@ -187,7 +214,6 @@ class ManagerView(View):
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
-
 
 class FileView(ManagerView):
     base_dir = settings.FILES_PATH

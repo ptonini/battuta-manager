@@ -1,4 +1,5 @@
 var ansibleModuleList = [
+    'copy',
     'ec2_facts',
     'ping',
     'service',
@@ -19,6 +20,12 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
     var divCol3 = $('<div>').attr('class', 'col-md-3');
     var divCol4 = $('<div>').attr('class', 'col-md-4');
     var divCol5 = $('<div>').attr('class', 'col-md-5');
+
+    function autocompleteSelectCallback(event, ui) {
+        var separator = '/';
+        if (ui.item.value.charAt(0) == '/') separator = '';
+        $(this).data('prefix', ui.item.prefix + separator);
+    }
 
     fieldsContainer.html('');
 
@@ -93,6 +100,49 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
                             )
                         )
                     )
+                ),
+                divRow.clone().append(
+                    divCol5.clone().append(
+                        $('<div>').attr('class', 'form-group').append(argumentsLabel, argumentsField)
+                    )
+                )
+            );
+            break;
+        case 'copy':
+            fieldsContainer.append(
+                divRow.clone().append(
+                    divCol5.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'copy_src', 'class': 'requiredField'}).html('Source'),
+                            $('<input>')
+                                .attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_src'})
+                                .autocomplete({source: '/fileman/search/'})
+                                .on('autocompleteselect', autocompleteSelectCallback)
+                        )
+                    )
+                ),
+                divRow.clone().append(
+                    divCol5.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'copy_dest', 'class': 'requiredField'}).html('Destination'),
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_dest'})
+                        )
+                    )
+                ),
+                divRow.clone().append(
+                    divCol2.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'copy_owner', 'class': 'requiredField'}).html('Owner'),
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_owner'})
+                        )
+                    ),
+                    divCol2.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'copy_group', 'class': 'requiredField'}).html('Group'),
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_group'})
+                        )
+                    ),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 ),
                 divRow.clone().append(
                     divCol5.clone().append(
