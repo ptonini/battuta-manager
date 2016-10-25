@@ -16,11 +16,26 @@ class ManagerView(View):
     html_template = None
 
     def get(self, request):
-        if 'action' not in request.GET:
+
+        if not self.html_template:
+            sources = [[settings.FILES_PATH, 'Files', '{{ files_path }}'],
+                       [settings.ROLES_PATH, 'Roles', '{{ roles_path }}']]
+            data = list()
+
+            for directory, category, prefix in sources:
+                for root, dirs, files in os.walk(directory):
+                    for file_name in files:
+                        data.append({'label': os.path.join(root[len(directory):], file_name),
+                                     'prefix': prefix,
+                                     'category': category})
+
+            return HttpResponse(json.dumps(data), content_type='application/json')
+
+        elif 'action' not in request.GET:
             return render(request, self.html_template, {'user': request.user})
 
         else:
-            if request.GET['action'] == 'list':
+            if request.GET['action'] == 'table':
 
                 if not os.path.exists(self.base_dir):
                     os.makedirs(self.base_dir)

@@ -72,7 +72,7 @@ $(document).ready(function () {
         ajax: {
             dataSrc: '',
             data: function(d) {
-                d.action = 'list';
+                d.action = 'table';
                 d.directory = fileTable.data('current_dir')
             }
         },
