@@ -120,7 +120,7 @@ function submitRequest(type, data, successCallback) {
         data: data,
         dataType: 'json',
         success: function (data) {
-            successCallback(data)
+            if (successCallback) successCallback(data)
         }
     })
 }

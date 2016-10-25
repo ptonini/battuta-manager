@@ -60,6 +60,11 @@ $(document).ready(function () {
         fileTable.DataTable().ajax.reload()
     });
 
+    // Set roleDialog on close callback
+    $('#role_dialog').on('dialogclose', function() {
+        fileTable.data('current_dir', '').DataTable().ajax.reload()
+    });
+
     // Initiate file table
     fileTable.DataTable({
         paging: false,
@@ -68,7 +73,7 @@ $(document).ready(function () {
             dataSrc: '',
             data: function(d) {
                 d.action = 'list';
-                d.root = fileTable.data('current_dir')
+                d.directory = fileTable.data('current_dir')
             }
         },
         order: [[0, 'asc']],
@@ -79,9 +84,6 @@ $(document).ready(function () {
             
             var fileDir = fileTable.data('current_dir');
             var objectData = {file_dir: fileDir};
-
-            var downloadUrl = '?action=download&file_path=' + fileName;
-            if (fileDir) downloadUrl = '?action=download&object=' + fileDir + '/' + fileName;
 
             if (data[1] == 'directory') {
                 $(row).attr('class', 'directory_row').css('font-weight', 'bold').find('td:eq(0)')
@@ -135,7 +137,11 @@ $(document).ready(function () {
                             fileDialog.data(objectData).dialog('open')
                         }),
                     $('<a>')
-                        .attr({href: downloadUrl, 'data-toggle': 'tooltip', title: 'Download ' + fileName})
+                        .attr({
+                            href: '?action=download&file_dir=' + fileDir + '&file_name=' + fileName,
+                            'data-toggle': 'tooltip',
+                            title: 'Download ' + fileName
+                        })
                         .append($('<span>').attr('class', 'glyphicon glyphicon-download btn-incell')),
                     $('<a>')
                         .css('cursor', 'pointer')

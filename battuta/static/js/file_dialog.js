@@ -5,7 +5,7 @@ var isDirectory = $('<input>').attr({type: 'checkbox', name: 'is_directory'});
 var createOnlyContainer = $('<div>').css('display', 'none').append(
     $('<br>'), isDirectory, ' Directory'
 );
-var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '20px').append(
+var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '10px').append(
     nameFieldLabel, nameField, createOnlyContainer
 );
 fileDialog

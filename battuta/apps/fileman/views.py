@@ -15,34 +15,9 @@ class ManagerView(View):
     base_dir = None
     html_template = None
 
-    def __init__(self):
-        super(ManagerView, self).__init__()
-        self.context = dict()
-
-    @staticmethod
-    def get_directory_content(root):
-        content = {'root': root, 'filelist': list()}
-
-        for filename in os.listdir(root):
-
-            full_filename = os.path.join(root, filename)
-
-            if os.path.isfile(full_filename):
-                file_mime_type = magic.from_file(full_filename, mime='true')
-            else:
-                file_mime_type = 'directory'
-
-            file_size = os.path.getsize(full_filename)
-            file_timestamp = os.path.getmtime(full_filename)
-
-            content['filelist'].append([filename, file_mime_type, file_size, file_timestamp, ''])
-
-        return content
-
     def get(self, request):
         if 'action' not in request.GET:
-            self.context['user'] = request.user
-            return render(request, self.html_template, self.context)
+            return render(request, self.html_template, {'user': request.user})
 
         else:
             if request.GET['action'] == 'list':
@@ -50,8 +25,22 @@ class ManagerView(View):
                 if not os.path.exists(self.base_dir):
                     os.makedirs(self.base_dir)
 
-                content = self.get_directory_content(os.path.join(self.base_dir, request.GET['root']))
-                data = content['filelist']
+                data = list()
+                directory = os.path.join(self.base_dir, request.GET['directory'])
+
+                for file_name in os.listdir(directory):
+
+                    full_path = os.path.join(directory, file_name)
+
+                    if os.path.isfile(full_path):
+                        file_mime_type = magic.from_file(full_path, mime='true')
+                    else:
+                        file_mime_type = 'directory'
+
+                    file_size = os.path.getsize(full_path)
+                    file_timestamp = os.path.getmtime(full_path)
+
+                    data.append([file_name, file_mime_type, file_size, file_timestamp, ''])
 
             elif request.GET['action'] == 'edit':
 
@@ -65,26 +54,26 @@ class ManagerView(View):
 
             elif request.GET['action'] == 'download':
 
-                object_full_path = os.path.join(self.base_dir, request.GET['file_path'])
-                object_name = ntpath.basename(object_full_path)
+                full_path = os.path.join(self.base_dir, request.GET['file_path'])
+                file_name = ntpath.basename(full_path)
 
-                if os.path.isfile(object_full_path):
-                    filename = object_full_path
+                if os.path.isfile(full_path):
+                    filename = full_path
 
                 else:
                     temp = tempfile.NamedTemporaryFile()
                     filename = temp.name
 
-                    shutil.make_archive(filename, 'zip', object_full_path)
+                    shutil.make_archive(filename, 'zip', full_path)
 
                     filename += '.zip'
-                    object_name += '.zip'
+                    file_name += '.zip'
 
                 response = StreamingHttpResponse((line for line in open(filename, 'r')))
-                response['Content-Disposition'] = 'attachment; filename=' + object_name
+                response['Content-Disposition'] = 'attachment; filename=' + file_name
                 response['Content-Length'] = os.path.getsize(filename)
 
-                if os.path.isdir(object_full_path):
+                if os.path.isdir(full_path):
                     os.remove(filename)
 
                 return response
@@ -98,12 +87,14 @@ class ManagerView(View):
 
         full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
 
-        if 'old_full_path' in request.POST:
+        if 'old_file_name' in request.POST:
             old_full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['old_file_name'])
         else:
             old_full_path = None
 
         if request.POST['action'] == 'save':
+
+            print full_path, old_full_path
 
             if full_path != old_full_path and os.path.exists(full_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
