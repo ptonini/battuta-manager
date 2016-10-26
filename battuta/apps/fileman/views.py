@@ -1,6 +1,5 @@
 import json
 import os
-import stat
 import shutil
 import magic
 import ntpath
