@@ -1,5 +1,6 @@
 import json
 import os
+import stat
 import shutil
 import magic
 import ntpath
@@ -28,7 +29,7 @@ class SearchView(View):
         ]
     ]
 
-    archive_mime_types = ['application/zip', 'application/x-tar', 'application/x-gtar']
+    archive_types = ['application/zip', 'application/gzip', 'application/x-tar', 'application/x-gtar']
 
     def get(self, request):
         data = list()
@@ -37,12 +38,16 @@ class SearchView(View):
             for root, dirs, files in os.walk(directory):
                 for file_name in files:
 
+                    full_path = os.path.join(root, file_name)
                     relative_path = root.replace(directory, '')
                     file_path = os.path.join(relative_path, file_name)
 
                     if request.GET['term'] not in file_path:
                         continue
                     if exclude and len(relative_path.split('/')) > 2 and relative_path.split('/')[2] in exclude:
+                        continue
+
+                    if 'archives' in request.GET and magic.from_file(full_path, mime='true') not in self.archive_types:
                         continue
 
                     data.append({'label': os.path.join(relative_path, file_name),
@@ -173,6 +178,9 @@ class ManagerView(View):
                 else:
                     open(full_path, 'a').close()
 
+                if request.POST['is_executable'] == 'true':
+                    os.chmod(full_path, 744)
+
                 data = {'result': 'ok'}
 
         elif request.POST['action'] == 'copy':
@@ -214,6 +222,7 @@ class ManagerView(View):
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
+
 
 class FileView(ManagerView):
     base_dir = settings.FILES_PATH

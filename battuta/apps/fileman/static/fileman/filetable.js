@@ -24,6 +24,9 @@ $(document).ready(function () {
         'application/xml'
     ];
 
+    // Set root dir for table
+    fileTable.data('current_dir', '');
+
     // Create button action
     $('#create_file').click(function() {
         nameFieldLabel.html('Create');
@@ -35,9 +38,6 @@ $(document).ready(function () {
     $('#upload_file').click(function () {
         uploadDialog.data('file_dir', fileTable.data('current_dir')).dialog('open');
     });
-
-    // Set root dir for table
-    fileTable.data('current_dir', '');
 
     // Set root path link action
     $('#root_path').css('cursor', 'pointer').click(function() {

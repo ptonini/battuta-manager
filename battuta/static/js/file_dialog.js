@@ -2,8 +2,9 @@
 var nameField = $('<input>').attr({id: 'name_field', type: 'text', class: 'form-control'});
 var nameFieldLabel = $('<label>').attr({id: 'name_field_label', for: 'name_field'});
 var isDirectory = $('<input>').attr({type: 'checkbox', name: 'is_directory'});
+var isExecutable = $('<input>').attr({type: 'checkbox', name: 'is_executable'});
 var createOnlyContainer = $('<div>').css('display', 'none').append(
-    $('<br>'), isDirectory, ' Directory'
+    $('<br>'), isDirectory, ' Directory ', isExecutable, ' Executable'
 );
 var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '10px').append(
     nameFieldLabel, nameField, createOnlyContainer
@@ -17,7 +18,10 @@ fileDialog
                 for (var k in fileDialog.data()) postData[k] = fileDialog.data()[k];
                 delete postData['ui-dialog'];
 
-                if (postData.action == 'create') postData['is_directory'] = isDirectory.is(':checked');
+                if (postData.action == 'create') {
+                    postData['is_directory'] = isDirectory.is(':checked');
+                    postData['is_executable'] = isExecutable.is(':checked');
+                }
 
                 if (postData.file_name && postData.file_name != postData.old_file_name) {
                     submitRequest('POST', postData, function(data) {
@@ -25,7 +29,6 @@ fileDialog
                         else alertDialog.dialog('open').html($('<strong>').html(data.msg))
                     })
                 }
-
             },
             Cancel: function () {
                 $(this).dialog('close');
@@ -35,6 +38,7 @@ fileDialog
             nameField.val('');
             nameFieldLabel.html('');
             isDirectory.attr('checked', false);
+            isExecutable.attr('checked', false);
             createOnlyContainer.hide();
         }
     }))
