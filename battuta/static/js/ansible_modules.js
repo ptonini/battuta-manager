@@ -37,9 +37,10 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             $(this).toggleClass('checked_button');
         });
 
-    var argumentsLabel = $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Arguments');
-
-    var argumentsField = $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'});
+    var argumentsGroup = $('<div>').attr('class', 'form-group').append(
+        $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Arguments'),
+        $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
+    );
 
     $('#module_reference').off().show()
         .hover(function() {
@@ -60,9 +61,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
         case 'shell':
             fieldsContainer.append(
                 divRow.clone().append(
-                    divCol4.clone().append(
-                        $('<div>').attr('class', 'form-group').append(argumentsLabel, argumentsField)
-                    ),
+                    divCol4.clone().append(argumentsGroup),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 )
             );
@@ -102,24 +101,27 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
                     )
                 ),
                 divRow.clone().append(
-                    divCol5.clone().append(
-                        $('<div>').attr('class', 'form-group').append(argumentsLabel, argumentsField)
-                    )
+                    divCol5.clone().append(argumentsGroup)
                 )
             );
             break;
         case 'copy':
             fieldsContainer.append(
                 divRow.clone().append(
-                    divCol5.clone().append(
+                    divCol4.clone().append(
                         $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'copy_src', 'class': 'requiredField'}).html('Source'),
+                            $('<label>').attr({'for': 'copy_src', 'class': 'requiredField'}).html('Source').append(
+                                $('<small>').css('cursor', 'pointer').html('upload files').click(function() {
+                                    window.open('/fileman/files', '_blank');
+                                })
+                            ),
                             $('<input>')
                                 .attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_src'})
                                 .autocomplete({source: '/fileman/search/'})
                                 .on('autocompleteselect', autocompleteSelectCallback)
                         )
-                    )
+                    ),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 ),
                 divRow.clone().append(
                     divCol5.clone().append(
@@ -130,28 +132,9 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
                     )
                 ),
                 divRow.clone().append(
-                    divCol2.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'copy_owner', 'class': 'requiredField'}).html('Owner'),
-                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_owner'})
-                        )
-                    ),
-                    divCol2.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'copy_group', 'class': 'requiredField'}).html('Group'),
-                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'copy_group'})
-                        )
-                    ),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
-                ),
-                divRow.clone().append(
-                    divCol5.clone().append(
-                        $('<div>').attr('class', 'form-group').append(argumentsLabel, argumentsField)
-                    )
+                    divCol5.clone().append(argumentsGroup)
                 )
             );
-            break;
-        default:
             break;
     }
 };
@@ -161,11 +144,24 @@ AnsibleModules.prototype.buildArguments = function() {
     if (!arguments) arguments = '';
     switch (this.name) {
         case 'service':
-            var service_name = $('#service_name').val();
-            var service_state = $('#service_state').val();
-            var service_status = $('#service_status').val();
-            return 'name=' + service_name + ' state=' + service_state + ' enabled=' + service_status + ' ' + arguments;
+            var serviceName = $('#service_name').val();
+            var serviceState = $('#service_state').val();
+            var serviceStatus = $('#service_status').val();
+
+            return 'name=' + serviceName + ' state=' + serviceState + ' enabled=' + serviceStatus + ' ' + arguments;
             break;
+
+        case 'copy':
+            var copySrcInput = $('#copy_src');
+            var copySrc = copySrcInput.val();
+
+            if (copySrcInput.data('prefix')) copySrc = copySrcInput.data('prefix') + copySrc;
+
+            var copyDest = $('#copy_dest').val();
+
+            return 'src=' + copySrc + ' ' + 'dest=' + copyDest + ' ' + arguments;
+            break;
+
         default:
             return arguments;
             break;
@@ -174,17 +170,36 @@ AnsibleModules.prototype.buildArguments = function() {
 
 AnsibleModules.prototype.loadForm = function(arguments) {
     var argumentsInput = $('#arguments');
+    var variableArray = arguments.match(/{{.*}}/g);
+    if (variableArray) {
+        for (var i = 0; i < variableArray.length; i++) arguments = arguments.replace(variableArray[i], '');
+    }
     var argumentsArray = arguments.split(' ');
     switch (this.name) {
         case 'service':
             $('#service_name').val(argumentsArray[0].split('=')[1]);
             $('#service_state').val(argumentsArray[1].split('=')[1]);
             $('#service_status').val(argumentsArray[2].split('=')[1]);
+
             argumentsArray.splice(0, 3);
-            argumentsInput.val(argumentsArray.join(' '));
+
             break;
-        default:
-            argumentsInput.val(arguments);
+        case 'copy':
+            var prefix = null;
+            if (variableArray) prefix = variableArray[0];
+            var srcArg = argumentsArray[0].split('=')[1];
+
+            if (srcArg.split('/').length == 2) {
+                prefix += '/';
+                srcArg = srcArg.substring(1)
+            }
+
+            $('#copy_src').data('prefix', prefix).val(srcArg);
+            $('#copy_dest').val(argumentsArray[1].split('=')[1]);
+
+            argumentsArray.splice(0, 2);
+
             break;
     }
+    argumentsInput.val(argumentsArray.join(' '));
 };
