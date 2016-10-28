@@ -5,7 +5,7 @@ var prefsContainer = $('<div>')
 var prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
     $('<div>').attr('class', 'row').append(
         $('<div>').attr('class', 'col-md-12').append(
-            $('<h4>').append(
+            $('<h4>').css('margin-bottom', '20px').append(
                 $('<span>').html('Preferences'),
                 $('<span>').css('float', 'right').append(
                     $('<button>').attr('class', 'btn btn-default btn-xs').html('Restore defaults').click(function() {

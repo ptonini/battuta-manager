@@ -4,6 +4,8 @@
     <script type="text/javascript" src="{% static 'js/ansible_runner.js' %}"></script>
     <script>document.title = 'Battuta - AdHoc';</script>
     <h3>Ad-Hoc tasks</h3>
-    <br>
-    {% include 'runner/adhoc_form.html' %}
+    <div class="row">
+        <div class="col-md-12">{% include 'runner/adhoc_form.html' %}</div>
+    </div>
+
 {% endblock %}

@@ -18,13 +18,22 @@ class SearchView(View):
             settings.FILES_PATH,
             'Files',
             '{{ files_path }}',
-            None
+            None,
+            False
+        ],
+        [
+            settings.USERDATA_PATH,
+            'User files',
+            '{{ userdata_path }}',
+            None,
+            True
         ],
         [
             settings.ROLES_PATH,
             'Roles',
             '{{ roles_path }}',
-            ['tasks', 'handlers', 'vars', 'defaults', 'meta']
+            ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
+            False
         ]
     ]
 
@@ -33,7 +42,7 @@ class SearchView(View):
     def get(self, request):
         data = list()
 
-        for directory, category, prefix, exclude in self.file_sources:
+        for directory, category, prefix, exclude, is_user_folder in self.file_sources:
             for root, dirs, files in os.walk(directory):
                 for file_name in files:
 
@@ -45,8 +54,9 @@ class SearchView(View):
                         continue
                     if exclude and len(relative_path.split('/')) > 2 and relative_path.split('/')[2] in exclude:
                         continue
-
                     if 'archives' in request.GET and magic.from_file(full_path, mime='true') not in self.archive_types:
+                        continue
+                    if is_user_folder and relative_path.split('/')[1] != request.user.username:
                         continue
 
                     data.append({'label': os.path.join(relative_path, file_name),
@@ -59,8 +69,12 @@ class SearchView(View):
 class ManagerView(View):
     base_dir = None
     html_template = None
+    is_user = False
 
     def get(self, request):
+
+        if self.is_user:
+            self.base_dir = os.path.join(self.base_dir, request.user.username)
 
         if 'action' not in request.GET:
             return render(request, self.html_template, {'user': request.user})
@@ -73,20 +87,21 @@ class ManagerView(View):
 
                 data = list()
                 directory = os.path.join(self.base_dir, request.GET['directory'])
+                if not directory.startswith('.'):
+                    for file_name in os.listdir(directory):
 
-                for file_name in os.listdir(directory):
+                        full_path = os.path.join(directory, file_name)
 
-                    full_path = os.path.join(directory, file_name)
+                        if os.path.isfile(full_path):
+                            file_mime_type = magic.from_file(full_path, mime='true')
+                        else:
+                            file_mime_type = 'directory'
 
-                    if os.path.isfile(full_path):
-                        file_mime_type = magic.from_file(full_path, mime='true')
-                    else:
-                        file_mime_type = 'directory'
+                        file_size = os.path.getsize(full_path)
+                        file_timestamp = os.path.getmtime(full_path)
 
-                    file_size = os.path.getsize(full_path)
-                    file_timestamp = os.path.getmtime(full_path)
-
-                    data.append([file_name, file_mime_type, file_size, file_timestamp, ''])
+                        if not file_name.startswith('.'):
+                            data.append([file_name, file_mime_type, file_size, file_timestamp, ''])
 
             elif request.GET['action'] == 'edit':
 
@@ -130,6 +145,9 @@ class ManagerView(View):
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request):
+
+        if self.is_user:
+            self.base_dir = os.path.join(self.base_dir, request.user.username)
 
         full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
 
@@ -231,3 +249,9 @@ class FileView(ManagerView):
 class RoleView(ManagerView):
     base_dir = settings.ROLES_PATH
     html_template = 'fileman/roles.html'
+
+
+class UserFilesView(ManagerView):
+    base_dir = settings.USERDATA_PATH
+    html_template = 'fileman/user_files.html'
+    is_user = True

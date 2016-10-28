@@ -33,7 +33,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             $(this).data('prefix', ui.item.prefix + separator);
         });
 
-    var fileSourceLabel = $('<label>').attr({'id': 'file_src_label', 'for': 'file_src', 'class': 'requiredField'})
+    var fileSourceLabel = $('<label>').attr({'id': 'file_src_label', 'for': 'file_src', 'class': 'requiredField'});
 
     var fileSourceGroup = $('<div>').attr('class', 'form-group').append(
         fileSourceLabel.html('Source'),

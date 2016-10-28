@@ -13,10 +13,10 @@ fileDialog
     .dialog($.extend({}, defaultDialogOptions, {
         buttons: {
             Save: function () {
-                var postData = {file_name: nameField.val()};
-
-                for (var k in fileDialog.data()) postData[k] = fileDialog.data()[k];
+                var postData = Object.assign({}, fileDialog.data());
                 delete postData['ui-dialog'];
+
+                postData['file_name'] = nameField.val();
 
                 if (postData.action == 'create') {
                     postData['is_directory'] = isDirectory.is(':checked');
