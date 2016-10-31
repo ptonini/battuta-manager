@@ -108,9 +108,7 @@
         if (typeof options === 'object') {
             opts = $.extend({}, $.fn.DynamicList.defaults, options);
 
-            var headerDiv = $('<div>')
-                .attr({'class': 'dynamic-list-header', 'id': opts.listTitle})
-                .css({'margin-bottom': opts.headerBottomMargin, height: opts.headerHeight});
+            var listHeader = $('<h5>').attr({'class': 'dynamic-list-header', 'id': opts.listTitle});
 
             var listDiv = $('<div>').attr({'class': 'list-group dynamic-list', 'id': opts.listTitle + '_list'});
 
@@ -118,21 +116,21 @@
                 .empty()
                 .css('margin-bottom', opts.listContainerBottomMargin)
                 .addClass('dynamic-list-group')
-                .append(headerDiv, listDiv);
+                .append(listHeader, listDiv);
 
-            if (opts.showTopSeparator) headerDiv.before($('<hr>'));
+            if (opts.showTopSeparator) listHeader.before($('<hr>'));
 
             if (opts.showTitle) {
-                headerDiv.css('color', '#777').append(
-                    $('<span>').css('font-size', opts.titleFontSize).append(
+                listHeader.append(
+                    $('<span>').append(
                         $('<strong>').css('text-transform', 'capitalize').append(opts.listTitle.replace(/_/g, ' '))
                     ),
-                    $('<span>').attr('id', opts.listTitle + '_count')
+                    $('<small>').attr('id', opts.listTitle + '_count')
                 )
             }
 
             if (opts.itemToggle) {
-                headerDiv
+                listHeader
                     .append($('<button>')
                         .attr('class', 'btn btn-default btn-xs').html('Select all')
                         .click( function () {
@@ -169,14 +167,15 @@
                 if (opts.addButtonType == 'icon') {
                     addButton = $('<a>')
                         .data('toggle', 'tooltip')
+                        .css('margin', '0 10px')
                         .attr({href: '#', title: opts.addButtonTitle, class: opts.addButtonClass})
-                        .append('<span class="glyphicon glyphicon-plus btn-sm"></span>')
+                        .append('<span class="glyphicon glyphicon-plus"></span>')
                         .after(' ')
                 }
                 else if (opts.addButtonType == 'button') {
                     addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
                 }
-                headerDiv.append(
+                listHeader.append(
                     addButton.click(function () {
                         opts.addButtonAction($(this))
                     })
@@ -184,7 +183,7 @@
             }
 
             if (opts.showFilter) {
-                headerDiv.append(
+                listHeader.append(
                     $('<div>').attr('class', 'pull-right form-inline').append(
                         $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
                             'Search:',
@@ -253,9 +252,6 @@
         addButtonClass: null,
         addButtonTitle: null,
         addButtonType: 'icon',
-        titleFontSize: '14px',
-        headerHeight: '30px',
-        headerBottomMargin: '10px',
         listContainerBottomMargin: 0,
         showListSeparator: false,
         hideIfEmpty: false,
