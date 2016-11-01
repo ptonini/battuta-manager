@@ -29,7 +29,7 @@ alertDialog.dialog($.extend({}, defaultDialogOptions, {
 
 
 // Select dialog
-var selectDialog = $('<div>').attr('id', 'select_dialog');
+var selectDialog = $('<div>').attr('id', 'select_dialog').css('overflow-x', 'hidden');
 selectDialog.dialog(defaultDialogOptions);
 
 

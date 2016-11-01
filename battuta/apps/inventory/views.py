@@ -392,11 +392,20 @@ class VariablesView(View):
     def get(request, node_type, node_name):
         node = NodeDetailsView.build_node(node_type, node_name)
 
-        data = [[var.key, var.value, '', var.id] for var in node.variable_set.all()]
+        variables = {var.key: [{'value': var.value, 'source': '', 'id': var.id}] for var in node.variable_set.all()}
 
         for ancestor in NodeDetailsView.get_node_ancestors(node):
             for var in ancestor.variable_set.all():
-                data.append([var.key, var.value, var.group.name, var.group.id])
+                var_dict = {'value': var.value, 'source': var.group.name, 'id': var.group.id}
+                if var.key in variables:
+                    variables[var.key].append(var_dict)
+                else:
+                    variables[var.key] = [var_dict]
+
+        data = list()
+        for variable, values in variables.iteritems():
+            for value in values:
+                data.append([variable, value['value'], value['source'], value['id']])
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 

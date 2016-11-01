@@ -108,17 +108,30 @@
         if (typeof options === 'object') {
             opts = $.extend({}, $.fn.DynamicList.defaults, options);
 
-            var listHeader = $('<h5>').attr({'class': 'dynamic-list-header', 'id': opts.listTitle});
+            var listHeader = $('<h5>').attr({class: 'dynamic-list-header', id: opts.listTitle});
 
-            var listDiv = $('<div>').attr({'class': 'list-group dynamic-list', 'id': opts.listTitle + '_list'});
+            if (opts.noHeaderMargins) listHeader.css({'margin-bottom': '0', 'margin-top': '0'});
+
+            var listBody = $('<div>').attr({class: 'list-group dynamic-list', id: opts.listTitle + '_list'});
 
             listContainer
                 .empty()
                 .css('margin-bottom', opts.listContainerBottomMargin)
-                .addClass('dynamic-list-group')
-                .append(listHeader, listDiv);
+                .addClass('row dynamic-list-group')
+                .append(
+                    $('<div>').attr('class', 'col-md-6').append(listHeader),
+                    $('<div>').attr('class', 'col-md-12').append(listBody)
+                );
 
-            if (opts.showTopSeparator) listHeader.before($('<hr>'));
+            if (opts.showTopSeparator) listHeader.parent().before($('<hr>'));
+
+            if (opts.lineBreakBeforeList) {
+                listBody.closest('.col-md-12').before(
+                    $('<div>').attr('class', 'col-md-12').html('<br>')
+                )
+            }
+
+
 
             if (opts.showTitle) {
                 listHeader.append(
@@ -131,34 +144,35 @@
 
             if (opts.itemToggle) {
                 listHeader
-                    .append($('<button>')
-                        .attr('class', 'btn btn-default btn-xs').html('Select all')
-                        .click( function () {
-                            event.preventDefault();
-                            var addClass;
-                            switch ($(this).html()) {
-                                case 'Select all':
-                                    $(this).html('Select none');
-                                    addClass = true;
-                                    break;
-                                case 'Select none':
-                                    $(this).html('Select all');
-                                    addClass = false;
-                                    break;
-                            }
-                            listDiv.children('div.dynamic-item').each(function () {
-                                $(this).toggleClass('toggle-on', addClass);
-                            });
-                        })
-                    )
-                    .append($('<button>')
-                        .attr('class', 'btn btn-default btn-xs')
-                        .click(function() {
-                            listDiv.children('div.dynamic-item').each(function () {
-                                $(this).toggleClass('toggle-on');
-                            });
-                        })
-                        .html('Invert selection')
+                    .append(
+                        $('<button>')
+                            .attr('class', 'btn btn-default btn-xs').html('Select all')
+                            .css('margin-right', '10')
+                            .click(function() {
+                                event.preventDefault();
+                                var addClass;
+                                switch ($(this).html()) {
+                                    case 'Select all':
+                                        $(this).html('Select none');
+                                        addClass = true;
+                                        break;
+                                    case 'Select none':
+                                        $(this).html('Select all');
+                                        addClass = false;
+                                        break;
+                                }
+                                listBody.children('div.dynamic-item').each(function () {
+                                    $(this).toggleClass('toggle-on', addClass);
+                                });
+                            }),
+                        $('<button>')
+                            .attr('class', 'btn btn-default btn-xs')
+                            .click(function() {
+                                listBody.children('div.dynamic-item').each(function () {
+                                    $(this).toggleClass('toggle-on');
+                                });
+                            })
+                            .html('Invert selection')
                     )
             }
 
@@ -183,51 +197,53 @@
             }
 
             if (opts.showFilter) {
-                listHeader.append(
-                    $('<div>').attr('class', 'pull-right form-inline').append(
-                        $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
-                            'Search:',
-                            $('<input>')
-                                .attr({class: 'form-control input-sm', type: 'search'})
-                                .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
-                                .keyup(function () {
-                                    var pattern = $(this).val();
-                                    listDiv.children('div.dynamic-item').each(function () {
-                                        var value = $(this).html();
-                                        if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
-                                        else $(this).addClass('hidden');
-                                    });
-                                    _formatList(listDiv, opts)
-                                })
+                listHeader.parent().after(
+                    $('<div>').attr('class', 'col-md-6 form-inline').append(
+                        $('<span>').css('float', 'right').append(
+                            $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
+                                'Search:',
+                                $('<input>')
+                                    .attr({class: 'form-control input-sm', type: 'search'})
+                                    .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
+                                    .keyup(function () {
+                                        var pattern = $(this).val();
+                                        listBody.children('div.dynamic-item').each(function () {
+                                            var value = $(this).html();
+                                            if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
+                                            else $(this).addClass('hidden');
+                                        });
+                                        _formatList(listBody, opts)
+                                    })
+                            )
                         )
                     )
                 )
             }
 
-            if (opts.checkered) listDiv.addClass('checkered');
+            if (opts.checkered) listBody.addClass('checkered');
 
-            if (opts.maxHeight) listDiv.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
+            if (opts.maxHeight) listBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
 
-            if (opts.showBottomSeparator)  listDiv.after($('<hr>'));
+            if (opts.showBottomSeparator)  listBody.after($('<hr>'));
 
-            if (opts.buildNow) _load(listContainer, listDiv, opts);
+            if (opts.buildNow) _load(listContainer, listBody, opts);
         }
             
         else {
-            listDiv = listContainer.find('div.dynamic-list');
+            listBody = listContainer.find('div.dynamic-list');
             opts = $.extend({}, $.fn.DynamicList.defaults, listContainer.data());
             var selection = [];
             switch (arguments[0]) {
                 case 'load':
                     if (Array.isArray(arguments[1])) opts.dataArray = arguments[1];
-                    _load(listContainer, listDiv, opts);
+                    _load(listContainer, listBody, opts);
                     break;
                 case 'format':
-                    _formatList(listDiv, opts);
+                    _formatList(listBody, opts);
                     break;
                 case 'getSelected':
                     var t = arguments[1];
-                    listDiv.children('div.toggle-on:not(".hidden")').each(function () {
+                    listBody.children('div.toggle-on:not(".hidden")').each(function () {
                         selection.push($(this).data(t));
                     });
                     return selection;
@@ -253,9 +269,11 @@
         addButtonTitle: null,
         addButtonType: 'icon',
         listContainerBottomMargin: 0,
+        lineBreakBeforeList: false,
         showListSeparator: false,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',
+        noHeaderMargins: true,
         maxHeight: null,
         showFilter: false,
         buildNow: true,
