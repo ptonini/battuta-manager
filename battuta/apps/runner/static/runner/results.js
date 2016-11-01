@@ -244,6 +244,7 @@ function buildResultTables(runner, intervalId) {
     }
 
     if (runner.is_running){
+
         // Show running elements
         $('#auto_scroll').show();
         $('#cancel_runner').show();
@@ -256,6 +257,7 @@ function buildResultTables(runner, intervalId) {
         }
     }
     else  {
+
         // End loop
         clearInterval(intervalId);
         
@@ -264,7 +266,9 @@ function buildResultTables(runner, intervalId) {
         $('#auto_scroll').hide();
         $('#cancel_runner').hide();
         $('#print_report').show();
-        
+        $('#rerun').show();
+        if (runner.status == 'finished with errors') $('#rerun_failed').show();
+
         // Build statistics table
         if (runner.stats) {
             var statsTable = $('#stats_table');
