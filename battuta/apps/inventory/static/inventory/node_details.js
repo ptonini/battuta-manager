@@ -334,27 +334,26 @@ $(document).ready(function () {
                 $('.select_type').off('click').click(function () {
                     var sourceNodeType = $(this).data('type');
                     nodeTypeDialog.dialog('close');
-                    selectDialog.DynamicList({
-                        listTitle: 'copy_from_node',
-                        showListSeparator: true,
-                        showFilter: true,
-                        maxHeight: 400,
-                        lineBreakBeforeList: true,
-                        listContainerBottomMargin: '20px',
-                        minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
-                        maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
-                        breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
-                        maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
-                        ajaxUrl: '/inventory/?action=search&type=' + sourceNodeType + '&pattern=',
-                        formatItem: function (listItem) {
-                            formatCopyVariablesListItem(listItem, sourceNodeType)
-                        },
-                        loadCallback: function (listContainer) {
-                            var currentList = listContainer.find('div.dynamic-list');
-                            selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                        }
-                    });
-                    selectDialog.dialog('open');
+                    selectDialog
+                        .DynamicList({
+                            listTitle: 'copy_from_node',
+                            showFilter: true,
+                            maxHeight: 400,
+                            noHeaderMargins: true,
+                            minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
+                            maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
+                            breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
+                            maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
+                            ajaxUrl: '/inventory/?action=search&type=' + sourceNodeType + '&pattern=',
+                            formatItem: function (listItem) {
+                                formatCopyVariablesListItem(listItem, sourceNodeType)
+                            },
+                            loadCallback: function (listContainer) {
+                                var currentList = listContainer.find('div.dynamic-list');
+                                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                            }
+                        })
+                        .dialog('open');
                 });
                 nodeTypeDialog.dialog('open').children('h5').html('Select source type');
                 break;

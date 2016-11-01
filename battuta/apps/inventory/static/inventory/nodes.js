@@ -49,6 +49,7 @@ $(document).ready(function () {
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         checkered: true,
         showFilter: true,
+        noHeaderMargins: true,
         headerBottomPadding: 20,
         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern='
     };

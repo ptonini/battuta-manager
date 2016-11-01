@@ -30,7 +30,13 @@ alertDialog.dialog($.extend({}, defaultDialogOptions, {
 
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog').css('overflow-x', 'hidden');
-selectDialog.dialog(defaultDialogOptions);
+selectDialog.dialog($.extend({}, defaultDialogOptions, {
+    buttons: {
+        Cancel: function () {
+            $(this).dialog('close');
+        }
+    }
+}));
 
 
 // JSON dialog

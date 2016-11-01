@@ -125,7 +125,7 @@
 
             if (opts.showTopSeparator) listHeader.parent().before($('<hr>'));
 
-            if (opts.lineBreakBeforeList) {
+            if (opts.noHeaderMargins) {
                 listBody.closest('.col-md-12').before(
                     $('<div>').attr('class', 'col-md-12').html('<br>')
                 )
@@ -273,7 +273,7 @@
         showListSeparator: false,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',
-        noHeaderMargins: true,
+        noHeaderMargins: false,
         maxHeight: null,
         showFilter: false,
         buildNow: true,
