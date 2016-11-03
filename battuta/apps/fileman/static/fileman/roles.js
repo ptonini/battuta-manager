@@ -2,13 +2,13 @@ var roleNameField = $('<input>')
     .attr({id: 'role_name_field', type: 'text', class: 'form-control'})
     .css('margin-bottom', '10px');
 
+var roleMeta = $('<input>').attr({type: 'checkbox', name: 'roleMeta', value: 'meta'}).data('main', true);
+var roleVars = $('<input>').attr({type: 'checkbox', name: 'role_vars', value: 'vars'}).data('main', true);
 var roleFiles = $('<input>').attr({type: 'checkbox', name: 'role_files', value: 'files'});
-var roleTemplates = $('<input>').attr({type: 'checkbox', name: 'role_templates', value: 'templates'});
 var roleTasks = $('<input>').attr({type: 'checkbox', name: 'role_tasks', value: 'tasks'}).data('main', true);
 var roleHandlers = $('<input>').attr({type: 'checkbox', name: 'role_handlers', value: 'handlers'}).data('main', true);
-var roleVars = $('<input>').attr({type: 'checkbox', name: 'role_vars', value: 'vars'}).data('main', true);
 var roleDefaults = $('<input>').attr({type: 'checkbox', name: 'role_defaults', value: 'defaults'}).data('main', true);
-var roleMeta = $('<input>').attr({type: 'checkbox', name: 'roleMeta', value: 'meta'}).data('main', true);
+var roleTemplates = $('<input>').attr({type: 'checkbox', name: 'role_templates', value: 'templates'});
 
 var roleDialog = $('<div>').attr('id', 'role_dialog').css({'margin': '10px', 'overflow-x': 'hidden'}).append(
     $('<div>').attr('class', 'row').append(

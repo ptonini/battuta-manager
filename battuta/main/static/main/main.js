@@ -1,6 +1,6 @@
 $(document).ready(function () {
     
-    var globalResizeTimer = null;
+    // var globalResizeTimer = null;
 
     // $(window).resize(function() {
     //     if(globalResizeTimer != null) window.clearTimeout(globalResizeTimer);

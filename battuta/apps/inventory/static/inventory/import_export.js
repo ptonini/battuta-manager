@@ -64,20 +64,16 @@ $(document).ready(function () {
         event.preventDefault();
         switch ($('input[type="radio"][name="export_file_type"]:checked').val()) {
             case 'json':
-                $.ajax({
-                    url: '/inventory/',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-                        var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
-                        var link = document.createElement('a');
-                        link.setAttribute('href', jsonString);
-                        link.setAttribute('download', 'inventory.json');
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                    }
+                submitRequest('GET', {action: 'export', type: 'json'}, function(data) {
+                    var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
+                    var link = document.createElement('a');
+                    link.setAttribute('href', jsonString);
+                    link.setAttribute('download', 'inventory.json');
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
                 });
+
                 break;
             case 'zip':
                 break

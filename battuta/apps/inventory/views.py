@@ -15,35 +15,42 @@ from apps.preferences.functions import get_preferences
 class InventoryView(View):
 
     @staticmethod
-    def get(request):
-        if 'action' not in request.GET:
+    def inventory_to_dict(internal_vars=True):
 
-            data = {'_meta': {'hostvars': dict()}}
+        data = {'_meta': {'hostvars': dict()}}
 
-            for host in Host.objects.order_by('name'):
+        for host in Host.objects.order_by('name'):
 
-                if host.variable_set.all().exists() or host.description:
+            if host.variable_set.all().exists() or host.description:
 
-                    data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
-                    if host.description:
-                        data['_meta']['hostvars'][host.name]['_description'] = host.description
+                data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
+                if host.description and not internal_vars:
+                    data['_meta']['hostvars'][host.name]['_description'] = host.description
 
-            for group in Group.objects.order_by('name'):
-                data[group.name] = dict()
+        for group in Group.objects.order_by('name'):
+            data[group.name] = dict()
 
-                if group.members.all().exists():
-                    data[group.name]['hosts'] = [host.name for host in group.members.all()]
+            if group.members.all().exists():
+                data[group.name]['hosts'] = [host.name for host in group.members.all()]
 
-                if group.children.all().exists():
-                    data[group.name]['children'] = [child.name for child in group.children.all()]
+            if group.children.all().exists():
+                data[group.name]['children'] = [child.name for child in group.children.all()]
 
-                data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
+            data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
 
-                if group.description:
-                    data[group.name]['vars']['_description'] = group.description
+            if group.description  and not internal_vars:
+                data[group.name]['vars']['_description'] = group.description
 
+            if internal_vars:
                 data['all']['vars']['roles_path'] = settings.ROLES_PATH
                 data['all']['vars']['files_path'] = settings.FILES_PATH
+                data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
+
+        return data
+
+    def get(self, request):
+        if 'action' not in request.GET:
+            data = self.inventory_to_dict()
 
         else:
             data = list()
@@ -68,16 +75,30 @@ class ImportExportView(View):
     def get(request):
         if 'action' not in request.GET:
             return render(request, 'inventory/import_export.html')
+        else:
+
+            if request.GET['action'] == 'export' and request.GET['type'] == 'json':
+
+                data = InventoryView.inventory_to_dict(internal_vars=False)
+
+            else:
+                raise Http404('Invalid action')
+
+            return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):
+
         if request.POST['action'] == 'import':
+
+            # Create temp file and load import data
             with tempfile.TemporaryFile() as temp:
                 for chunk in request.FILES['file']:
                     temp.write(chunk)
                 temp.seek(0, 0)
                 data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
 
+                # Import from CSV
                 if request.POST['type'] == 'csv':
                     csv_data = csv.reader(temp)
                     header = next(csv_data)
@@ -107,13 +128,18 @@ class ImportExportView(View):
                                         var.save()
                         data['result'] = 'ok'
 
+                # Import from JSON
                 elif request.POST['type'] == 'json':
+
+                    # Load JSON data
                     try:
                         json_data = json.load(temp)
                     except ValueError:
                         data['result'] = 'failed'
                         data['msg'] = 'Error: File does not contain valid JSON'
                     else:
+
+                        # Iterate over JSON data host vars
                         for host_name, variables in json_data['_meta']['hostvars'].iteritems():
                             host, created = Host.objects.get_or_create(name=host_name)
                             if created:
@@ -129,22 +155,30 @@ class ImportExportView(View):
                                     var.save()
                             host.save()
                         json_data.pop('_meta', None)
+
+                        # Iterate over JSON data groups
                         for group_name, group_dict in json_data.iteritems():
                             group, created = Group.objects.get_or_create(name=group_name)
                             if created:
                                 data['added_groups'] += 1
+
+                            # Iterate over group children
                             if 'children' in group_dict:
                                 for child_name in group_dict['children']:
                                     child, created = Group.objects.get_or_create(name=child_name)
                                     if created:
                                         data['added_groups'] += 1
                                     group.children.add(child)
+
+                            # Iterate over group hosts
                             if 'hosts' in group_dict:
                                 for host_name in group_dict['hosts']:
                                     host, created = Host.objects.get_or_create(name=host_name)
                                     if created:
                                         data['added_hosts'] += 1
                                     group.members.add(host)
+
+                            # Iterate over group vars
                             if 'vars' in group_dict:
                                 for key, value in group_dict['vars'].iteritems():
                                     if key == '_description':

@@ -67,8 +67,8 @@ $(document).ready(function () {
 
     // Initiate file table
     fileTable.DataTable({
-        paging: false,
-        searching: false,
+        //paging: false,
+        //searching: false,
         ajax: {
             dataSrc: '',
             data: function(d) {

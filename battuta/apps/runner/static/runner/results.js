@@ -210,8 +210,6 @@ function buildResultTables(runner, intervalId) {
                                     searching: false,
                                     info: false,
                                     ajax: {
-                                        url: '',
-                                        type: 'GET',
                                         dataSrc: '',
                                         data: {action: 'task_results', task_id: task.id}
                                     },
@@ -263,11 +261,10 @@ function buildResultTables(runner, intervalId) {
         
         // Hide running elements
         $('#running_gif').hide();
+        if (runner.type == 'playbook') $('#rerun').show();
         $('#auto_scroll').hide();
         $('#cancel_runner').hide();
         $('#print_report').show();
-        $('#rerun').show();
-        if (runner.status == 'finished with errors') $('#rerun_failed').show();
 
         // Build statistics table
         if (runner.stats) {
@@ -276,6 +273,7 @@ function buildResultTables(runner, intervalId) {
             if (!$.fn.DataTable.isDataTable(statsTable)) {
                 statsTable.dataTable({data: runner.stats, paginate: false, searching: false});
             }
+            if (runner.status == 'finished with errors') $('#retry_failed').show();
         }
         
         // Auto scroll to top of page
@@ -341,6 +339,28 @@ $(document).ready(function () {
         autoScroll.toggleClass('checked_button');
         if (autoScroll.hasClass('checked_button')) sessionStorage.setItem('auto_scroll', true);
         else sessionStorage.removeItem('auto_scroll');
+    });
+
+    $('#retry_failed').click(function() {
+        var runner = JSON.parse(sessionStorage.getItem('runner'));
+        var failed_hosts = [];
+        if (runner.stats && runner.stats.length > 0) {
+            $.each(runner.stats, function(index, value) {
+                if (value[3] != 0 || value[4] != 0) failed_hosts.push(value[0])
+            });
+        }
+        else {
+            $.each(runner.plays, function(index, value) {
+                $.each(value.tasks, function(index, value) {
+
+                });
+                if (value[3] != 0 || value[4] != 0) failed_hosts.push(value[0])
+            });
+        }
+
+        var limit = failed_hosts.join(':')
+
+
     });
 
     // Print report

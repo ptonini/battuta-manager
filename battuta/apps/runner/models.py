@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from apps.users.models import Credential
 
 
 class AdHocTask(models.Model):
@@ -22,6 +23,7 @@ class PlaybookArgs(models.Model):
 
 class Runner(models.Model):
     user = models.ForeignKey(User)
+    cred = models.ForeignKey(Credential)
     is_running = models.BooleanField(default=False)
     type = models.CharField(max_length=16, choices=(('playbook', 'playbook'),
                                                     ('adhoc', 'adhoc'),
@@ -37,6 +39,7 @@ class Runner(models.Model):
     subset = models.CharField(max_length=1024, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)
+    failed_hosts = models.TextField(max_length=4096, blank=True, null=True)
 
 
 class RunnerPlay(models.Model):

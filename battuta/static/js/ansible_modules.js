@@ -90,16 +90,16 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
         case 'service':
             fieldsContainer.append(
                 divRow.clone().append(
-                    divCol4.clone().append(
+                    divCol5.clone().append(
                         $('<div>').attr('class', 'form-group').append(
                             $('<label>').attr({'for': 'service_name', 'class': 'requiredField'}).html('Name'),
                             $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'service_name'})
                         )
-                    ),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
+                    )
+
                 ),
                 divRow.clone().append(
-                    divCol3.clone().append(
+                    divCol2.clone().append(
                         $('<div>').attr('class', 'form-group').append(
                             $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'),
                             $('<select>').attr({'class': 'select form-control input-sm', 'id': 'service_state'})
@@ -119,7 +119,8 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
                                 $('<option>').attr('value', 'no').html('No')
                             )
                         )
-                    )
+                    ),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 ),
                 divRow.clone().append(
                     divCol5.clone().append(argumentsGroup)
@@ -129,37 +130,35 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
         case 'copy':
             fileSourceField.autocomplete({source: '/fileman/search/'});
             fieldsContainer.append(
-                divRow.clone().append(
-                    divCol4.clone().append(fileSourceGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
-                ),
+                divRow.clone().append(divCol5.clone().append(fileSourceGroup)),
                 divRow.clone().append(divCol5.clone().append(fileDestGroup)),
-                divRow.clone().append(divCol5.clone().append(argumentsGroup))
+                divRow.clone().append(
+                    divCol4.clone().append(argumentsGroup),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
+                )
             );
             break;
         case 'unarchive':
             fileSourceField.autocomplete({source: '/fileman/search/?archives=true'});
             fieldsContainer.append(
-                divRow.clone().append(
-                    divCol4.clone().append(fileSourceGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
-                ),
+                divRow.clone().append(divCol5.clone().append(fileSourceGroup)),
                 divRow.clone().append(divCol5.clone().append(fileDestGroup)),
-                divRow.clone().append(divCol5.clone().append(argumentsGroup))
+                divRow.clone().append(
+                    divCol4.clone().append(argumentsGroup),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
+                )
             );
             break;
         case 'script':
             fileSourceField.autocomplete({source: '/fileman/search/'});
             fileSourceLabel.html('Script');
             fieldsContainer.append(
+                divRow.clone().append(divCol4.clone().append(fileSourceGroup)),
                 divRow.clone().append(
-                    divCol4.clone().append(fileSourceGroup),
+                    divCol4.clone().append(argumentsGroup),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
-                ),
-                divRow.clone().append(divCol5.clone().append(argumentsGroup))
+                )
             );
-
-
     }
 };
 

@@ -41,7 +41,12 @@ class RunnerView(BaseView):
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
             else:
                 cred = request.user.userdata.default_cred
-            run_data['username'] = cred.username
+                run_data['cred'] = cred.id
+
+            run_data['username'] = request.user.username
+
+            if cred.username == request.user.username:
+                run_data['username'] += ' ({0})'.format(cred.username)
 
             if 'remote_pass' not in run_data:
                 run_data['remote_pass'] = cred.password
