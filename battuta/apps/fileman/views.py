@@ -10,34 +10,17 @@ from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
-from pytz import timezone
+from pytz import timezone, utc
 
 from apps.preferences.functions import get_preferences
+
 
 class SearchView(View):
 
     file_sources = [
-        [
-            settings.FILES_PATH,
-            'Files',
-            '{{ files_path }}',
-            None,
-            False
-        ],
-        [
-            settings.USERDATA_PATH,
-            'User files',
-            '{{ userdata_path }}',
-            None,
-            True
-        ],
-        [
-            settings.ROLES_PATH,
-            'Roles',
-            '{{ roles_path }}',
-            ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
-            False
-        ]
+        [settings.FILES_PATH, 'Files', '{{ files_path }}', None, False],
+        [settings.USERDATA_PATH, 'User files', '{{ userdata_path }}', None, True],
+        [settings.ROLES_PATH, 'Roles', '{{ roles_path }}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
     ]
 
     archive_types = ['application/zip', 'application/gzip', 'application/x-tar', 'application/x-gtar']
@@ -104,14 +87,13 @@ class ManagerView(View):
                             file_mime_type = 'directory'
 
                         file_size = os.path.getsize(full_path)
-                        file_timestamp = datetime.datetime.utcfromtimestamp(os.path.getmtime(full_path))
+                        file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
 
-                        print file_timestamp.tzinfo
-
-                        file_timestamp = file_timestamp.strftime(prefs['date_format'])
+                        utc_timestamp = utc.localize(file_timestamp)
+                        local_timestamp = utc_timestamp.astimezone(tz).strftime(prefs['date_format'])
 
                         if not file_name.startswith('.'):
-                            data.append([file_name, file_mime_type, file_size, file_timestamp, ''])
+                            data.append([file_name, file_mime_type, file_size, local_timestamp, ''])
 
             elif request.GET['action'] == 'edit':
 
@@ -167,8 +149,6 @@ class ManagerView(View):
             old_full_path = None
 
         if request.POST['action'] == 'save':
-
-            print full_path, old_full_path
 
             if full_path != old_full_path and os.path.exists(full_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}

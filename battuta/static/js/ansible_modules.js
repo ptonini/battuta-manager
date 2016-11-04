@@ -6,7 +6,8 @@ var ansibleModuleList = [
     'service',
     'shell',
     'setup',
-    'unarchive'
+    'unarchive',
+    'file'
 ];
 
 function AnsibleModules(name) {
@@ -50,6 +51,14 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
         $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'file_dest'})
     );
 
+    var stateSelect = $('<select>').attr({'class': 'select form-control input-sm', 'id': 'state_selector'});
+
+    var stateSelectGroup = $('<div>').attr('class', 'form-group').append(
+        $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'), stateSelect
+    );
+
+
+
     var sudoButton = $('<button>')
         .html('Sudo')
         .attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm'})
@@ -88,6 +97,13 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             );
             break;
         case 'service':
+            stateSelect.empty().append(
+                $('<option>').attr('value', 'started').html('Started'),
+                $('<option>').attr('value', 'stopped').html('Stopped'),
+                $('<option>').attr('value', 'restarted').html('Restarted'),
+                $('<option>').attr('value', 'reloaded').html('Reloaded')
+            );
+
             fieldsContainer.append(
                 divRow.clone().append(
                     divCol5.clone().append(
@@ -99,18 +115,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
 
                 ),
                 divRow.clone().append(
-                    divCol2.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'),
-                            $('<select>').attr({'class': 'select form-control input-sm', 'id': 'service_state'})
-                                .append(
-                                    $('<option>').attr('value', 'started').html('Started'),
-                                    $('<option>').attr('value', 'stopped').html('Stopped'),
-                                    $('<option>').attr('value', 'restarted').html('Restarted'),
-                                    $('<option>').attr('value', 'reloaded').html('Reloaded')
-                                )
-                        )
-                    ),
+                    divCol2.clone().append($('<div>').attr('class', 'form-group').append(stateSelectGroup)),
                     divCol2.clone().append(
                         $('<div>').attr('class', 'form-group').append(
                             $('<label>').attr({'for': 'service_status', 'class': 'requiredField'}).html('Enabled'),
@@ -122,9 +127,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
                     ),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 ),
-                divRow.clone().append(
-                    divCol5.clone().append(argumentsGroup)
-                )
+                divRow.clone().append(divCol5.clone().append(argumentsGroup))
             );
             break;
         case 'copy':
@@ -153,17 +156,45 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             fileSourceField.autocomplete({source: '/fileman/search/'});
             fileSourceLabel.html('Script');
             fieldsContainer.append(
-                divRow.clone().append(divCol4.clone().append(fileSourceGroup)),
+                divRow.clone().append(divCol5.clone().append(fileSourceGroup)),
                 divRow.clone().append(
                     divCol4.clone().append(argumentsGroup),
                     divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
                 )
             );
+            break;
+        case 'file':
+            stateSelect.empty().append(
+                $('<option>').attr('value', 'file').html('File'),
+                $('<option>').attr('value', 'link').html('Link'),
+                $('<option>').attr('value', 'directory').html('Directory'),
+                $('<option>').attr('value', 'hard').html('Hard'),
+                $('<option>').attr('value', 'touch').html('Touch'),
+                $('<option>').attr('value', 'absent').html('Absent')
+            );
+
+            fieldsContainer.append(
+                divRow.clone().append(
+                    divCol3.clone().append(
+                        $('<div>').attr('class', 'form-group').append(
+                            $('<label>').attr({'for': 'service_name', 'class': 'requiredField'}).html('Path'),
+                            $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'path_name'})
+                        )
+                    ),
+                    divCol2.clone().append($('<div>').attr('class', 'form-group').append(stateSelectGroup))
+                ),
+                divRow.clone().append(
+                    divCol4.clone().append(argumentsGroup),
+                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(sudoButton)
+                )
+            );
+            break;
     }
 };
 
 AnsibleModules.prototype.buildArguments = function() {
     var arguments = $('#arguments').val();
+    var selectedState = $('#state_selector').val();
     var fileSourceField = $('#file_src');
     var fileSrc = fileSourceField.val();
     if (fileSourceField.data('prefix')) fileSrc = fileSourceField.data('prefix') + fileSrc;
@@ -171,9 +202,12 @@ AnsibleModules.prototype.buildArguments = function() {
     switch (this.name) {
         case 'service':
             var serviceName = $('#service_name').val();
-            var serviceState = $('#service_state').val();
             var serviceStatus = $('#service_status').val();
-            return 'name=' + serviceName + ' state=' + serviceState + ' enabled=' + serviceStatus + ' ' + arguments;
+            return 'name=' + serviceName + ' state=' + selectedState + ' enabled=' + serviceStatus + ' ' + arguments;
+            break;
+        case 'file':
+            var pathName = $('#path_name').val();
+            return 'path=' + pathName + ' state=' + selectedState + ' ' + arguments;
             break;
         case 'copy':
         case 'unarchive':
@@ -191,6 +225,7 @@ AnsibleModules.prototype.buildArguments = function() {
 AnsibleModules.prototype.loadForm = function(arguments) {
     var argumentsInput = $('#arguments');
     var fileSourceField = $('#file_src');
+    var stateSelector = $('#state_selector');
     var variableArray = arguments.match(/{{.*}}/g);
     var src_prefix = null;
     if (variableArray) {
@@ -201,10 +236,14 @@ AnsibleModules.prototype.loadForm = function(arguments) {
     switch (this.name) {
         case 'service':
             $('#service_name').val(argumentsArray[0].split('=')[1]);
-            $('#service_state').val(argumentsArray[1].split('=')[1]);
+            stateSelector.val(argumentsArray[1].split('=')[1]);
             $('#service_status').val(argumentsArray[2].split('=')[1]);
             argumentsArray.splice(0, 3);
             break;
+        case 'file':
+            $('#path_name').val(argumentsArray[0].split('=')[1]);
+            stateSelector.val(argumentsArray[1].split('=')[1]);
+            argumentsArray.splice(0, 2);
         case 'copy':
         case 'unarchive':
             var srcArg = argumentsArray[0].split('=')[1];
