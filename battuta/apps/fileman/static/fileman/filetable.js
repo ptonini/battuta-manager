@@ -98,7 +98,6 @@ $(document).ready(function () {
                     });
             }
             $(row).find('td:eq(2)').html(humanBytes(data[2]));
-            $(row).find('td:eq(3)').html(new Date(data[3] * 1000).toLocaleString());
             $(row).find('td:eq(4)').removeAttr('data-toggle').removeAttr('title').html(
                 $('<span>').css('float', 'right').append(
                     $('<a>')

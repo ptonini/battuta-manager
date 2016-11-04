@@ -4,12 +4,15 @@ import shutil
 import magic
 import ntpath
 import tempfile
+import datetime
 
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
+from pytz import timezone
 
+from apps.preferences.functions import get_preferences
 
 class SearchView(View):
 
@@ -82,6 +85,9 @@ class ManagerView(View):
         else:
             if request.GET['action'] == 'table':
 
+                tz = timezone(request.user.userdata.timezone)
+                prefs = get_preferences()
+
                 if not os.path.exists(self.base_dir):
                     os.makedirs(self.base_dir)
 
@@ -98,7 +104,11 @@ class ManagerView(View):
                             file_mime_type = 'directory'
 
                         file_size = os.path.getsize(full_path)
-                        file_timestamp = os.path.getmtime(full_path)
+                        file_timestamp = datetime.datetime.utcfromtimestamp(os.path.getmtime(full_path))
+
+                        print file_timestamp.tzinfo
+
+                        file_timestamp = file_timestamp.strftime(prefs['date_format'])
 
                         if not file_name.startswith('.'):
                             data.append([file_name, file_mime_type, file_size, file_timestamp, ''])

@@ -105,7 +105,7 @@ DEFAULT_PREFERENCES = [
             },
             {
                 'name': 'date_format',
-                'value': '%d/%m/%Y %H:%M:%S',
+                'value': '%Y-%m-%d %H:%M:%S',
                 'data_type': 'str',
                 'description': 'Date format'
             },

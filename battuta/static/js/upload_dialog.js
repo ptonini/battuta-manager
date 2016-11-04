@@ -49,7 +49,7 @@ uploadDialog
             }
         },
         beforeClose: function() {
-            uploadField.data({}).fileinput('reset');
+            uploadField.removeData('files, file_dir').fileinput('reset');
         }
     }))
     .keypress(function (event) {
