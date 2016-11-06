@@ -49,14 +49,13 @@ $(document).ready(function () {
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         checkered: true,
         showFilter: true,
-        noHeaderMargins: true,
         headerBottomPadding: 20,
         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern='
     };
 
     var nodeSelectListOptions = {
         showAddButton: true,
-        addButtonType: 'button',
+        addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
         formatItem: function (listItem) {
@@ -98,7 +97,7 @@ $(document).ready(function () {
         drawCallback: function () {
             $('div.toolbar').css('float', 'left').html(
                 $('<buttom>')
-                    .attr({id: 'add_node', class: 'btn btn-default btn-xs'})
+                    .attr({id: 'add_node', class: 'btn btn-default btn-xs', style: 'margin: 5px 0'})
                     .html('Add '+ nodeType)
                     .click(function (event) {
                         event.preventDefault();

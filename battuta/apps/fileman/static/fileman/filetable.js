@@ -143,7 +143,7 @@ $(document).ready(function () {
                     $('<a>')
                         .css('cursor', 'pointer')
                         .attr({'data-toggle': 'tooltip', title: 'Delete'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-trash btn-incell'))
                         .click(function() {
                             deleteDialog
                                 .dialog('option', 'buttons', [

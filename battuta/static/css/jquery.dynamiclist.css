@@ -2,9 +2,19 @@ div.checkered div:nth-child(odd) {
     background-color: #F8F8F8;
 }
 
-div.dynamic-list-header button {
-    margin-right: 5px;
-    min-width: 25px;
+h5.dynamic-list-header.little-margins {
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+h5.dynamic-list-header span.badge {
+    margin-left: 5px;
+    background-color: #cacaca;
+}
+
+h5.dynamic-list-header button {
+    margin-left: 5px;
+    border-style: hidden
 }
 
 div.dynamic-list {
@@ -19,15 +29,9 @@ div.dynamic-list div.dynamic-item {
     color: #777;
 }
 
-div.dynamic-list div.dynamic-item:first-child {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+div.dynamic-list div.dynamic-item:not(.toggle-on) {
+    border-radius: 0;
 }
-
-div.dynamic-list div.dynamic-item:last-child {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    }
 
 div.dynamic-list div.dynamic-item:hover,
 div.dynamic-list div.dynamic-item .glyphicon:hover {
@@ -35,11 +39,12 @@ div.dynamic-list div.dynamic-item .glyphicon:hover {
     color: #2a2a2a;
 }
 
-div.dynamic-list div.toggle-on {
+div.dynamic-list div.dynamic-item.toggle-on {
     background: #D3D3D3;
+    border-radius: 5px;
 }
 
-div.dynamic-list div.toggle-on:hover {
+div.dynamic-list div.dynamic-item.toggle-on:hover {
     background: #BABABA;
     color: #FFFFFF;
 }

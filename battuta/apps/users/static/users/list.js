@@ -22,7 +22,7 @@ $(document).ready(function () {
                 $('<span>').css('float', 'right').append(
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-trash btn-incell'))
                         .click(function() {
                             $('#delete_dialog')
                                 .dialog('option', 'buttons', [

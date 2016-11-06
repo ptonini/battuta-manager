@@ -238,7 +238,6 @@ $(document).ready(function () {
             addButtonClass: 'add_relation',
             addButtonTitle: 'Add relationship',
             checkered: true,
-            noHeaderMargins: false,
             minColumns: sessionStorage.getItem('relation_list_min_columns'),
             maxColumns: sessionStorage.getItem('relation_list_max_columns'),
             breakPoint: sessionStorage.getItem('relation_list_break_point'),
@@ -279,7 +278,7 @@ $(document).ready(function () {
                             }),
                         $('<a>')
                             .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
-                            .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                            .append($('<span>').attr('class', 'glyphicon glyphicon-trash btn-incell'))
                             .click(function() {
                                 deleteDialog
                                     .dialog('option', 'buttons', [
@@ -325,11 +324,11 @@ $(document).ready(function () {
     // Submit variable form
     $('#variable_form').submit(function (event) {
         event.preventDefault();
-        switch ($(document.activeElement).html()) {
-            case 'Cancel':
+        switch ($(document.activeElement).attr('id')) {
+            case 'cancel_var_edit':
                 clearVariableForm();
                 break;
-            case 'Copy from node':
+            case 'copy_variables':
                 clearVariableForm();
                 $('.select_type').off('click').click(function () {
                     var sourceNodeType = $(this).data('type');
@@ -339,7 +338,6 @@ $(document).ready(function () {
                             listTitle: 'copy_from_node',
                             showFilter: true,
                             maxHeight: 400,
-                            noHeaderMargins: true,
                             minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
                             maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
                             breakPoint: sessionStorage.getItem('node_list_modal_break_point'),

@@ -5,20 +5,20 @@
 (function ($) {
 
     function _formatList(listDiv, opts) {
-        var listLength = listDiv.find('.dynamic-item:not(".hidden")').length;
+        var visibleItemsCount = listDiv.find('.dynamic-item:not(".hidden")').length;
         if (opts.showCount) {
             setTimeout(function() {
-                $('#' + opts.listTitle + '_count').html(' (' + listLength + ')')
+                $('#' + opts.listTitle + '_count').html(visibleItemsCount)
             }, 0)
         }
 
         for (var i = opts.minColumns; i <= opts.maxColumns; i++) {
             var columnCount = i;
-            var itemsPerColumn = parseInt(listLength / i);
+            var itemsPerColumn = parseInt(visibleItemsCount / i);
             if (itemsPerColumn <= opts.breakPoint) break;
         }
 
-        if (listLength % columnCount != 0) itemsPerColumn++;
+        if (visibleItemsCount % columnCount != 0) itemsPerColumn++;
 
         // Set list width
         listDiv.show();
@@ -110,8 +110,6 @@
 
             var listHeader = $('<h5>').attr({class: 'dynamic-list-header', id: opts.listTitle});
 
-            if (opts.noHeaderMargins) listHeader.css({'margin-bottom': '0', 'margin-top': '0'});
-
             var listBody = $('<div>').attr({class: 'list-group dynamic-list', id: opts.listTitle + '_list'});
 
             listContainer
@@ -125,39 +123,39 @@
 
             if (opts.showTopSeparator) listHeader.parent().before($('<hr>'));
 
-            if (opts.noHeaderMargins) {
-                listBody.closest('.col-md-12').before(
-                    $('<div>').attr('class', 'col-md-12').html('<br>')
-                )
-            }
-
-
-
             if (opts.showTitle) {
                 listHeader.append(
                     $('<span>').append(
                         $('<strong>').css('text-transform', 'capitalize').append(opts.listTitle.replace(/_/g, ' '))
                     ),
-                    $('<small>').attr('id', opts.listTitle + '_count')
+                    $('<span>').attr({id: opts.listTitle + '_count', class:'badge'})
                 )
+            }
+            else {
+                listHeader.addClass('little-margins');
+                listBody.closest('.col-md-12').before($('<div>').attr('class', 'col-md-12').html('<br>'));
             }
 
             if (opts.itemToggle) {
                 listHeader
                     .append(
                         $('<button>')
-                            .attr('class', 'btn btn-default btn-xs').html('Select all')
-                            .css('margin-right', '10')
+                            .attr({class: 'btn btn-default btn-xs', title:'Select all'})
+                            .html($('<span>').attr('class', 'glyphicon glyphicon-check'))
                             .click(function() {
                                 event.preventDefault();
                                 var addClass;
-                                switch ($(this).html()) {
+                                switch ($(this).attr('title')) {
                                     case 'Select all':
-                                        $(this).html('Select none');
+                                        $(this).attr('title', 'Select none').children('span')
+                                            .removeClass('glyphicon-check')
+                                            .addClass('glyphicon-unchecked');
                                         addClass = true;
                                         break;
                                     case 'Select none':
-                                        $(this).html('Select all');
+                                        $(this).attr('title', 'Select all').children('span')
+                                            .removeClass('glyphicon-unchecked')
+                                            .addClass('glyphicon-check');
                                         addClass = false;
                                         break;
                                 }
@@ -166,27 +164,24 @@
                                 });
                             }),
                         $('<button>')
-                            .attr('class', 'btn btn-default btn-xs')
+                            .attr({class: 'btn btn-default btn-xs', title:'Invert selection'})
+                            .html($('<span>').attr('class', 'glyphicon glyphicon-adjust'))
                             .click(function() {
                                 listBody.children('div.dynamic-item').each(function () {
                                     $(this).toggleClass('toggle-on');
                                 });
                             })
-                            .html('Invert selection')
                     )
             }
 
             if (opts.showAddButton) {
                 var addButton = null;
                 if (opts.addButtonType == 'icon') {
-                    addButton = $('<a>')
-                        .data('toggle', 'tooltip')
-                        .css('margin', '0 10px')
-                        .attr({href: '#', title: opts.addButtonTitle, class: opts.addButtonClass})
-                        .append('<span class="glyphicon glyphicon-plus"></span>')
-                        .after(' ')
+                    addButton = $('<button>')
+                        .attr({class: 'btn btn-default btn-xs '+ opts.addButtonClass, title: opts.addButtonTitle})
+                        .html($('<span>').attr('class', 'glyphicon glyphicon-plus'))
                 }
-                else if (opts.addButtonType == 'button') {
+                else if (opts.addButtonType == 'text') {
                     addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
                 }
                 listHeader.append(
@@ -224,7 +219,7 @@
 
             if (opts.maxHeight) listBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight +'px;">');
 
-            if (opts.showBottomSeparator)  listBody.after($('<hr>'));
+            if (opts.showBottomSeparator) listBody.after($('<hr>'));
 
             if (opts.buildNow) _load(listContainer, listBody, opts);
         }
@@ -273,7 +268,6 @@
         showListSeparator: false,
         hideIfEmpty: false,
         onHoverCursor: 'pointer',
-        noHeaderMargins: false,
         maxHeight: null,
         showFilter: false,
         buildNow: true,

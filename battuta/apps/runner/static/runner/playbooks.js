@@ -97,7 +97,7 @@ $(document).ready(function () {
                         }),
                     $('<a>')
                         .attr({href: '#', 'data-toggle': 'tooltip', title: 'Remove'})
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-remove-circle btn-incell'))
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-trash btn-incell'))
                         .click(function() {
                             deleteDialog
                                 .dialog('option', 'buttons', [
