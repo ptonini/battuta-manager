@@ -67,8 +67,6 @@ $(document).ready(function () {
 
     // Initiate file table
     fileTable.DataTable({
-        //paging: false,
-        //searching: false,
         ajax: {
             dataSrc: '',
             data: function(d) {
@@ -141,7 +139,7 @@ $(document).ready(function () {
                             'data-toggle': 'tooltip',
                             title: 'Download ' + fileName
                         })
-                        .append($('<span>').attr('class', 'glyphicon glyphicon-download btn-incell')),
+                        .append($('<span>').attr('class', 'glyphicon glyphicon-download-alt btn-incell')),
                     $('<a>')
                         .css('cursor', 'pointer')
                         .attr({'data-toggle': 'tooltip', title: 'Delete'})

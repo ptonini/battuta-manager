@@ -29,7 +29,7 @@ passwordDialog
     });
 
 // Post Ansible Job
-function postAnsibleJob(postData) {
+function postAnsibleJob(postData, same_window) {
     $.ajax({
         url: '/runner/',
         type: 'POST',
@@ -37,11 +37,17 @@ function postAnsibleJob(postData) {
         data: postData,
         success: function (data) {
             if ( data.result == 'ok' ) {
+                console.log(same_window);
                 if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
-                var window_title;
-                if (sessionStorage.getItem('single_job_window') == 'true') window_title = 'battuta_result_window';
-                else window_title = data.runner_id;
-                popupCenter('/runner/result/' + data.runner_id + '/', window_title, 1000);
+                if (same_window) {
+                    window.open('/runner/result/' + data.runner_id + '/', '_self');
+                }
+                else {
+                    var window_title;
+                    if (sessionStorage.getItem('single_job_window') == 'true') window_title = 'battuta_result_window';
+                    else window_title = data.runner_id;
+                    popupCenter('/runner/result/' + data.runner_id + '/', window_title, 1000);
+                }
             }
             else $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
         }
@@ -49,7 +55,7 @@ function postAnsibleJob(postData) {
 }
 
 // Run Ansible Job
-function executeAnsibleJob(postData, askPassword, username) {
+function executeAnsibleJob(postData, askPassword, username, same_window) {
 
     var userPasswordGroup = $('.user_pass_group');  // User pass field and label selector
     var sudoPasswordGroup = $('.sudo_pass_group');  // Sudo pass field and label selector
@@ -74,7 +80,7 @@ function executeAnsibleJob(postData, askPassword, username) {
                     postData.remote_pass = userPassword.val();
                     if (sudoPassword.val()) postData.become_pass = sudoPassword.val();
                     else postData.become_pass = userPassword.val();
-                    postAnsibleJob(postData)
+                    postAnsibleJob(postData, same_window)
                 }
             },
             {
@@ -87,7 +93,7 @@ function executeAnsibleJob(postData, askPassword, username) {
         passwordDialog.dialog('open');
     }
     else {
-        postAnsibleJob(postData);
+        postAnsibleJob(postData, same_window);
     }
 }
 

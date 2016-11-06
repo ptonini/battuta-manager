@@ -156,10 +156,13 @@ class CredentialView(View):
 
     def get(self, request):
         page_user = request.user
+
         if 'user_id' in request.GET:
             page_user = get_object_or_404(User, pk=request.GET['user_id'])
             set_default_cred(page_user)
+
         if request.user == page_user or request.user.is_superuser:
+
             if request.GET['action'] == 'list':
                 data = list()
                 for cred in Credential.objects.filter(user=page_user).values():
@@ -173,15 +176,26 @@ class CredentialView(View):
                         cred_owner = get_object_or_404(User, id=cred['user_id'])
                         cred['title'] += ' (' + cred_owner.username + ')'
                         data.append(self._truncate_secure_data(cred))
+
             elif request.GET['action'] == 'default':
                 cred = model_to_dict(request.user.userdata.default_cred)
                 cred['user_id'] = cred['user']
                 cred.pop('user', None)
+
                 if cred == page_user.userdata.default_cred:
                     cred['is_default'] = True
                 else:
                     cred['is_default'] = False
                 data = self._truncate_secure_data(cred)
+
+            elif request.GET['action'] == 'get_one':
+                cred = get_object_or_404(Credential, pk=request.GET['cred_id'])
+
+                if request.user.is_superuser or request.user is cred.user or cred.is_shared:
+                    data = {'result': 'ok', 'cred': self._truncate_secure_data(model_to_dict(cred))}
+                else:
+                    raise PermissionDenied
+
             else:
                 raise Http404('Invalid action')
         else:

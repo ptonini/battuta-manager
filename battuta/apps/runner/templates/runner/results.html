@@ -12,22 +12,26 @@
                     <span id="running_gif" style="display: none;">
                         <img src="{% static 'images/waiting-small.gif' %}">
                     </span>
-
                 </span>
-                <button id="rerun" class="btn btn-default btn-xs navbar-btn"
-                        style="display: none;">Rerun</button>
-                <button id="retry_failed" class="btn btn-default btn-xs navbar-btn"
-                        style="display: none;">Retry failed</button>
+                <button id="rerun_playbook" class="btn btn-default btn-xs navbar-btn run_again" style="display: none;">
+                    <span class="glyphicon glyphicon-repeat" title="Rerun playbook"></span>
+                </button>
+                <button id="retry_failed" class="btn btn-default btn-xs navbar-btn run_again" style="display: none;">
+                    <span class="glyphicon glyphicon-repeat" style="color: orange" title="Retry failed hosts"></span>
+                </button>
             </div>
             <div class="navbar-right">
+
                 <button id="auto_scroll" class="btn btn-default btn-xs navbar-btn"
                         style="display: none;">Auto scroll</button>
                 <button id="cancel_runner" class="btn btn-danger btn-xs navbar-btn"
                         style="display: none;">Cancel</button>
-                <button id="show_stats" class="btn btn-default btn-xs navbar-btn"
-                        style="display: none;">Stats</button>
-                <button id="print_report" class="btn btn-default btn-xs navbar-btn"
-                        style="display: none;">Report</button>
+                <button id="show_stats" class="btn btn-default btn-xs navbar-btn" style="display: none;">
+                    <span class="glyphicon glyphicon-list" title="Statistics"></span>
+                </button>
+                <button id="print_report" class="btn btn-default btn-xs navbar-btn" style="display: none;">
+                    <span class="glyphicon glyphicon-print" title="Print"></span>
+                </button>
             </div>
         </div>
     </header>
@@ -47,7 +51,7 @@
             <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Subset:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.subset }}">
                         <strong>{{ runner.subset }}</strong>
                     </div>
                 </div>
@@ -55,7 +59,7 @@
             <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Tags:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.tags }}">
                         <strong>{{ runner.tags }}</strong>
                     </div>
                 </div>
@@ -63,7 +67,7 @@
             <div class="col-md-4 col-md-push-8 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Skip tags:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.skip_tags }}">
                         <strong>{{ runner.skip_tags }}</strong>
                     </div>
                 </div>
@@ -71,7 +75,7 @@
             <div class="col-md-4 col-xs-6 playbook_only">
                 <div class="row">
                     <div class="col-md-3 col-xs-3 report_field_left">Extra vars:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
+                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.extra_vars }}">
                         <strong>{{ runner.extra_vars }}</strong>
                     </div>
                 </div>

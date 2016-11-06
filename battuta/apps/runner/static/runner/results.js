@@ -258,10 +258,10 @@ function buildResultTables(runner, intervalId) {
 
         // End loop
         clearInterval(intervalId);
-        
+
         // Hide running elements
         $('#running_gif').hide();
-        if (runner.type == 'playbook') $('#rerun').show();
+        if (runner.type == 'playbook') $('#rerun_playbook').show();
         $('#auto_scroll').hide();
         $('#cancel_runner').hide();
         $('#print_report').show();
@@ -341,26 +341,53 @@ $(document).ready(function () {
         else sessionStorage.removeItem('auto_scroll');
     });
 
-    $('#retry_failed').click(function() {
+    $('.run_again').click(function() {
         var runner = JSON.parse(sessionStorage.getItem('runner'));
-        var failed_hosts = [];
+
         if (runner.stats && runner.stats.length > 0) {
-            $.each(runner.stats, function(index, value) {
-                if (value[3] != 0 || value[4] != 0) failed_hosts.push(value[0])
-            });
-        }
-        else {
-            $.each(runner.plays, function(index, value) {
-                $.each(value.tasks, function(index, value) {
 
+            var subset = runner.subset;
+
+            if ($(this).attr('id') == 'retry_failed') {
+                var failed_hosts = [];
+                $.each(runner.stats, function (index, stat) {
+                    if (stat[3] != 0 || stat[4] != 0) failed_hosts.push(stat[0])
                 });
-                if (value[3] != 0 || value[4] != 0) failed_hosts.push(value[0])
+                subset = failed_hosts.join(':')
+            }
+
+            var become = false;
+            $.each(runner.plays, function(index, play) {
+              if (play.become) become = true
+            });
+
+            $.ajax({
+                url: '/users/credentials/',
+                method: 'GET',
+                data: {action: 'get_one', cred_id: runner.cred},
+                success: function(data) {
+                    if (data.result == 'ok') {
+                        var askPassword = {
+                            user: (!data.cred.password && data.cred.ask_pass && !data.cred.rsa_key),
+                            sudo: (become && !data.cred.sudo_pass && data.cred.ask_sudo_pass)
+                        };
+                        var postData = {
+                            action: 'run',
+                            type: 'playbook',
+                            cred: data.cred.id,
+                            playbook: runner.name,
+                            check: runner.check,
+                            subset: subset,
+                            tags: runner.tags,
+                            skip_tags: runner.skip_tags,
+                            extra_vars: runner.extra_vars
+                        };
+                        executeAnsibleJob(postData, askPassword, data.cred.username, true);
+                    }
+                    else alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                }
             });
         }
-
-        var limit = failed_hosts.join(':')
-
-
     });
 
     // Print report
