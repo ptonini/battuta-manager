@@ -361,7 +361,6 @@ $(document).ready(function () {
 
             $.ajax({
                 url: '/users/credentials/',
-                method: 'GET',
                 data: {action: 'get_one', cred_id: runner.cred},
                 success: function(data) {
                     if (data.result == 'ok') {
@@ -382,7 +381,7 @@ $(document).ready(function () {
                         };
                         executeAnsibleJob(postData, askPassword, data.cred.username, true);
                     }
-                    alertDialog
+                    else alertDialog
                         .data('left-align', true)
                         .html('<strong>Submit error<strong><br><br>')
                         .append(data.msg)
