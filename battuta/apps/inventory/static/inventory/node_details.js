@@ -245,7 +245,7 @@ $(document).ready(function () {
         ajax: {url: 'vars/', dataSrc: ''},
         rowCallback: function(row, data) {
             if (data[2] == '') {
-                $(row).find('td:eq(2)').html(
+                $(row).find('td:eq(2)').append('.',
                     $('<span>').css('float', 'right').append(
                         $('<a>')
                             .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})

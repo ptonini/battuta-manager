@@ -43,10 +43,12 @@
                         </div>
                         {% if node_type == 'host' %}
                             <div class="col-md-12" style="margin-top: 20px">
-                                <button id="download_table" class="btn btn-default btn-xs">
-                                    <span class="glyphicon glyphicon-download-alt" title="Download as CSV"></span>
+                                <button id="download_table" class="btn btn-default btn-xs" title="Download as CSV">
+                                    <span class="glyphicon glyphicon-download-alt"></span>
                                 </button>
-                                <button id="update_facts" class="btn btn-default btn-xs">Update facts</button>
+                                <button id="update_facts" class="btn btn-default btn-xs" title="Update facts">
+                                    <span class="glyphicon glyphicon-refresh"></span>
+                                </button>
                             </div>
                         {% endif %}
                     </div>

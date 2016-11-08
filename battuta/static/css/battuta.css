@@ -1,6 +1,12 @@
 html {overflow-y: scroll}
 
-body, .dropdown-menu {font-size: small}
+body {padding-top: 50px}
+
+section {margin-top: 20px}
+
+body, .dropdown-menu {
+    font-size: small
+}
 
 header {font-size: 14px;}
 
@@ -30,13 +36,20 @@ h5 {
     color: #525252;
 }
 
-h3, h4, h5, label, th, .chkbox_label, .navbar, .report_field_left {font-family: 'Kanit', sans-serif}
+h3, h4, h5, label, th, .chkbox_label, .navbar, .report_field_left, #runner_status {font-family: 'Kanit', sans-serif}
 
 button, small, select {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;}
 
 label {font-weight: 400}
 
-h4 {font-weight: 700}
+.navbar button.btn-icon {
+    background-color: #F8F8F8;
+    border: transparent;
+}
+
+.navbar button.btn-icon:hover {
+    background-color: #e6e6e6;
+}
 
 .chkbox_label {padding: 0 20px 5px 5px}
 
