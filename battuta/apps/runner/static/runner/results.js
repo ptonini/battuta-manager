@@ -436,8 +436,7 @@ $(document).ready(function () {
                 dataType: 'json',
                 data: {action: 'kill', runner_id: runner.id},
                 success: function (data) {
-                    if (data.result == 'fail') {
-                        alertDialog.html($('<strong>').append(data.msg)).dialog('open')
+                    if (data.result == 'fail') alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                 }
             })
         }
