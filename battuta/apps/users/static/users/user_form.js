@@ -21,8 +21,8 @@ function submitCredentials(postData) {
         success: function (data) {
             if (data.result == 'ok') buildCredentialsSelectionBox($('#credentials'), data.cred_id);
             else if (data.result == 'fail') {
-                $('#alert_dialog')
-                    .css('text-align', 'left')
+                alertDialog
+                    .data('left-align', true)
                     .html('<strong>Submit error<strong><br><br>')
                     .append(data.msg)
                     .dialog('open')
@@ -33,7 +33,6 @@ function submitCredentials(postData) {
 
 $(document).ready(function () {
 
-    var alertDialog = $('#alert_dialog');
     var timezones = $('#timezones');
     var userTimezone = $('#user_timezone');
     var addPassword1 = $('#add_password1');
@@ -115,14 +114,15 @@ $(document).ready(function () {
                     if (data.result == 'ok') {
                         if (page == 'new') location.reload();
                         else if (page == 'view') {
-                            alertDialog.css('text-align', 'center').html('<strong>User saved</strong>').dialog('open');
+                            alertDialog.html($('<strong>').append('User saved')).dialog('open')
                         }
                     }
                     else if (data.result == 'fail') {
-                        alertDialog.css('text-align', 'left')
-                            .html('<strong>Form submit error<strong><br><br>')
+                        alertDialog
+                            .data('left-align', true)
+                            .html('<strong>Submit error<strong><br><br>')
                             .append(data.msg)
-                            .dialog('open');
+                            .dialog('open')
                     }
                 }
             });
@@ -140,7 +140,7 @@ $(document).ready(function () {
             postData.username = $('#username').val();
             postData.password = addPassword1.val();
             if (postData.password == addPassword2.val()) saveUser(postData);
-            else alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
+            else alertDialog.html($('<strong>').append('Passwords do not match').dialog('open'));
         }
         else if (page == 'view') saveUser(postData);
         addPassword1.val('');
@@ -165,18 +165,14 @@ $(document).ready(function () {
                     dataType: 'json',
                     data: postData,
                     success: function (data) {
-                        if (data.result == 'ok') {
-                            var message = '<strong>The password was changed</strong>';
-                        }
-                        else if (data.result == 'fail') {
-                            message = '<strong>' + data.msg + '</strong>';
-                        }
-                        alertDialog.css('text-align', 'center').html(message).dialog('open')
+                        if (data.result == 'ok') var message = 'The password was changed';
+                        else if (data.result == 'fail') message = data.msg;
+                        alertDialog.html($('<strong>').append(message)).dialog('open')
                     }
                 });
             }
             else if (postData.new_password != $('#new_password2').val()) {
-                alertDialog.css('text-align', 'center').html('<strong>Passwords do not match</strong>').dialog('open');
+                alertDialog.html($('<strong>').append('Passwords do not match')).dialog('open');
             }
         }
         $(this).find('input').val('')

@@ -49,8 +49,11 @@ function postAnsibleJob(postData, same_window) {
                     popupCenter('/runner/result/' + data.runner_id + '/', window_title, 1000);
                 }
             }
-            else $('#alert_dialog').html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-        }
+            else alertDialog
+                .data('left-align', true)
+                .html('<strong>Submit error<strong><br><br>')
+                .append(data.msg)
+                .dialog('open')}
     });
 }
 

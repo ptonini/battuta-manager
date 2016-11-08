@@ -127,7 +127,6 @@ class CredentialView(View):
 
         if 'user_id' in request.GET:
             page_user = get_object_or_404(User, pk=request.GET['user_id'])
-            set_default_cred(page_user)
 
         if request.user == page_user or request.user.is_superuser:
 

@@ -2,6 +2,7 @@ function searchEntities(entityType, resultContainer, pattern) {
     resultContainer.DynamicList({
         listTitle: entityType + 's',
         showTitle: true,
+        showCount: true,
         hideIfEmpty: true,
         checkered: true,
         headerBottomMargin: '0',
@@ -22,7 +23,7 @@ function searchEntities(entityType, resultContainer, pattern) {
 $(document).ready(function () {
 
     var searchResults = $('#search_results');
-    var pattern = searchResults.children('h4').children('span').html();
+    var pattern = searchResults.children('h3').children('span').html();
 
     searchEntities('group', $('#group_results'), pattern);
     searchEntities('host', $('#host_results'), pattern);

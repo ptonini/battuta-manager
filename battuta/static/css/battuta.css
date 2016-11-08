@@ -1,19 +1,10 @@
-html {
-    overflow-y: scroll;
-}
+html {overflow-y: scroll}
 
-body,
-.dropdown-menu{
-    font-size: small;
-}
+body, .dropdown-menu {font-size: small}
 
-header {
-    font-size: 14px;
-}
+header {font-size: 14px;}
 
-footer {
-    height: 25px;
-}
+footer {height: 25px;}
 
 a,
 label,
@@ -32,23 +23,26 @@ button:focus {
     text-decoration: none;
 }
 
-th, h4 {
-    color: #525252;
-}
+th, h4 {color: #525252}
 
 h5 {
-    font-weight: bold;
     font-size: 11pt;
     color: #525252;
 }
 
-.report_field_left {
-    padding: 0 0 0 15px;
-}
+h3, h4, h5, label, th, .chkbox_label, .navbar {font-family: 'Kanit', sans-serif}
 
-.report_field_right {
-    padding: 0 15px 0 0;
-}
+button, small, select {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;}
+
+label {font-weight: 400}
+
+h4 {font-weight: 700}
+
+.chkbox_label {padding: 0 20px 5px 5px}
+
+.report_field_left {padding: 0 0 0 15px}
+
+.report_field_right {padding: 0 15px 0 0}
 
 .btn-incell {
     font-size: 1.3em;
@@ -60,9 +54,7 @@ h5 {
     margin: 10px 0
 }
 
-.pattern_editor_row div:first-of-type{
-    text-align: right;
-}
+.pattern_editor_row div:first-of-type{text-align: right}
 
 .truncate-text {
     text-overflow: ellipsis;
@@ -135,7 +127,14 @@ table.dataTable thead .sorting_desc_disabled:after {
 }
 
 .ui-dialog {
+    box-shadow: 0 0 20px #888888;
+    border-radius: 5px;
     position: fixed;
+}
+
+.ui-widget-overlay {
+    background: white;
+    opacity: 0;
 }
 
 .pagination>li>a,
@@ -167,3 +166,9 @@ div.dataTables_filter {
     margin-top: 10px;
 }
 
+.row-eq-height {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+}

@@ -384,8 +384,11 @@ $(document).ready(function () {
                         };
                         executeAnsibleJob(postData, askPassword, data.cred.username, true);
                     }
-                    else alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                }
+                    alertDialog
+                        .data('left-align', true)
+                        .html('<strong>Submit error<strong><br><br>')
+                        .append(data.msg)
+                        .dialog('open')}
             });
         }
     });
@@ -434,8 +437,7 @@ $(document).ready(function () {
                 data: {action: 'kill', runner_id: runner.id},
                 success: function (data) {
                     if (data.result == 'fail') {
-                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
-                    }
+                        alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                 }
             })
         }

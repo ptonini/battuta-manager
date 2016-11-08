@@ -13,17 +13,23 @@ var defaultDialogOptions =  {
 var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).append(
     $('<strong>').html('This action cannot be undone')
 );
-deleteDialog.dialog(defaultDialogOptions);
+deleteDialog.dialog($.extend({}, defaultDialogOptions, {width: '320'}));
 
 
 // Alert dialog
-var alertDialog = $('<div>').attr({id: 'alert_dialog', class: 'text-center'});
+var alertDialog = $('<div>').attr({id: 'alert_dialog'});
 alertDialog.dialog($.extend({}, defaultDialogOptions, {
-    minWidth: 160,
+    width: '320',
     buttons: {
         Ok: function () {
             $(this).dialog('close');
         }
+    },
+    open: function () {
+        if ($(this).data('left-align')) {
+            $(this).removeClass('text-center').removeData('left-align');
+        }
+        else $(this).addClass('text-center');
     }
 }));
 
@@ -57,7 +63,7 @@ jsonDialog.dialog($.extend({}, defaultDialogOptions, {
 
 // Node type dialog
 var nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-center'}).append(
-    $('<h5>'),$('<br>'),
+    $('<h4>'),$('<br>'),
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'host').html('Hosts'),
     $('<span>').html('&nbsp;&nbsp;&nbsp;&nbsp;'),
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'group').html('Groups')
@@ -69,5 +75,4 @@ nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {
         }
     }
 }));
-
 

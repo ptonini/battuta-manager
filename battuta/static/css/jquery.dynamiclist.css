@@ -1,24 +1,24 @@
-div.checkered div:nth-child(odd) {
-    background-color: #F8F8F8;
-}
 
-h5.dynamic-list-header.little-margins {
-    margin-bottom: 5px;
-    margin-top: 5px;
-}
-
-h5.dynamic-list-header span.badge {
+h4.dynamic-list-header span.badge {
     margin-left: 5px;
     background-color: #cacaca;
 }
 
-h5.dynamic-list-header button {
+h4.dynamic-list-header a {
     margin-left: 5px;
     border-style: hidden
+}
+h4.dynamic-list-header.top-align {
+    vertical-align: text-top;
+    margin-top: 0;
 }
 
 div.dynamic-list {
     margin-bottom: 0;
+}
+
+div.dynamic-list.checkered div:nth-child(odd) {
+    background-color: #F8F8F8;
 }
 
 div.dynamic-list div.dynamic-item {
@@ -27,6 +27,7 @@ div.dynamic-list div.dynamic-item {
     margin-bottom: 0;
     border: none;
     color: #777;
+    line-height: 30px;
 }
 
 div.dynamic-list div.dynamic-item:not(.toggle-on) {
@@ -36,12 +37,14 @@ div.dynamic-list div.dynamic-item:not(.toggle-on) {
 div.dynamic-list div.dynamic-item:hover,
 div.dynamic-list div.dynamic-item .glyphicon:hover {
     background: #F4F4F4;
+    border-radius: 3px;
     color: #2a2a2a;
+    cursor: pointer;
 }
 
 div.dynamic-list div.dynamic-item.toggle-on {
     background: #D3D3D3;
-    border-radius: 5px;
+    border-radius: 3px;
 }
 
 div.dynamic-list div.dynamic-item.toggle-on:hover {
@@ -53,4 +56,11 @@ div.dynamic-list div.dynamic-item.toggle-on:hover {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+}
+
+.row-eq-height {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display:         flex;
 }

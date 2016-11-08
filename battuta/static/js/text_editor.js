@@ -44,7 +44,7 @@ editorDialog.dialog({
                 };
                 submitRequest('POST', postData, function (data) {
                     if (data.result == 'ok') editorDialog.dialog('close');
-                    else alertDialog.dialog('open').html($('<strong>').html(data.msg))
+                    else alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open')
                 })
             }
         },

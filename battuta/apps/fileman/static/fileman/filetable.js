@@ -3,7 +3,7 @@ function createDirPathLinks(index, value) {
         .attr('id', 'span_path_' + index)
         .html(value + '/')
         .css('cursor', 'pointer')
-        .click(function () {
+        .click(function() {
             var nextDir = '';
             for (var i = 0; i <= index; i++) nextDir += $('#span_path_' + i).html()
             $(this).nextAll().remove();
@@ -12,7 +12,7 @@ function createDirPathLinks(index, value) {
     );
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
 
     var fileTable = $('#file_table');
     var dirPath = $('#dir_path');
@@ -35,9 +35,7 @@ $(document).ready(function () {
     });
 
     //Upload button action
-    $('#upload_file').click(function () {
-        uploadDialog.data('file_dir', fileTable.data('current_dir')).dialog('open');
-    });
+    $('#upload_file').click(function() {uploadDialog.data('file_dir', fileTable.data('current_dir')).dialog('open')});
 
     // Set root path link action
     $('#root_path').css('cursor', 'pointer').click(function() {
@@ -46,24 +44,16 @@ $(document).ready(function () {
     });
 
     // Set file dialog on close callback
-    fileDialog.on( "dialogclose", function() {
-        fileTable.DataTable().ajax.reload()
-    } );
+    fileDialog.on('dialogclose', function() {fileTable.DataTable().ajax.reload()});
 
     // Set text editor dialog on close callback
-    editorDialog.on('dialogclose', function() {
-        fileTable.DataTable().ajax.reload()
-    });
+    editorDialog.on('dialogclose', function() {fileTable.DataTable().ajax.reload()});
 
     // Set uploadDialog on close callback
-    uploadDialog.on('dialogclose', function() {
-        fileTable.DataTable().ajax.reload()
-    });
+    uploadDialog.on('dialogclose', function() {fileTable.DataTable().ajax.reload()});
 
     // Set roleDialog on close callback
-    $('#role_dialog').on('dialogclose', function() {
-        fileTable.data('current_dir', '').DataTable().ajax.reload()
-    });
+    $('#role_dialog').on('dialogclose', function() {fileTable.data('current_dir', '').DataTable().ajax.reload()});
 
     // Initiate file table
     fileTable.DataTable({
@@ -75,7 +65,7 @@ $(document).ready(function () {
             }
         },
         order: [[0, 'asc']],
-        rowCallback: function (row, data) {
+        rowCallback: function(row, data) {
 
             var fileName = data[0];
             var mimeType = data[1];
@@ -110,7 +100,7 @@ $(document).ready(function () {
                                     if (data.result == 'ok') editTextFile(data.text, fileDir, fileName, mimeType);
                                     else {
                                         fileTable.DataTable().ajax.reload();
-                                        alertDialog.dialog('open').html($('<strong>').html(data.msg))
+                                        alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                                     }
                                 });
                             }
@@ -160,9 +150,7 @@ $(document).ready(function () {
                                     },
                                     {
                                         text: 'Cancel',
-                                        click: function () {
-                                            $(this).dialog('close');
-                                        }
+                                        click: function() {$(this).dialog('close')}
                                     }
                                 ])
                                 .dialog('open');

@@ -8,9 +8,7 @@ $(document).ready(function () {
     
     // Initialize import data field
     importFile
-        .change(function (event) {
-            $(this).data('files', event.target.files);
-        })
+        .change(function(event) {$(this).data('files', event.target.files)})
         .fileinput({
             showPreview: false,
             showRemove: false,
@@ -37,7 +35,7 @@ $(document).ready(function () {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success: function (data) {
+                success: function(data) {
                     if (data.result == 'ok') {
                         var message = $('<div>').append(
                             $('<div>').html('<strong>Import successful:</strong>').css('margin', '5px 0'),
@@ -47,14 +45,9 @@ $(document).ready(function () {
                                 $('<li>').html('Variables added: ' + data.added_vars)
                             )
                         );
-                        alertDialog.css('text-align', 'left').html(message).dialog('open');
+                        alertDialog.data('left-align', true).append($('<strong>').append(message)).dialog('open')
                     }
-                    else {
-                        alertDialog
-                            .css('text-align', 'center')
-                            .html('<strong>' + data.msg + '</strong>')
-                            .dialog('open');
-                    }
+                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
                 }
             });
         }
@@ -73,7 +66,6 @@ $(document).ready(function () {
                     link.click();
                     link.remove();
                 });
-
                 break;
             case 'zip':
                 break

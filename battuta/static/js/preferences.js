@@ -5,7 +5,7 @@ var prefsContainer = $('<div>')
 var prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
     $('<div>').attr('class', 'row').append(
         $('<div>').attr('class', 'col-md-12').append(
-            $('<h4>').css('margin-bottom', '20px').append(
+            $('<h3>').css('margin-bottom', '20px').append(
                 $('<span>').html('Preferences'),
                 $('<span>').css('float', 'right').append(
                     $('<button>').attr('class', 'btn btn-default btn-xs').html('Restore defaults').click(function() {
@@ -23,7 +23,7 @@ prefsDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Reload: function() {
             buildPreferencesContainer(function() {
-                alertDialog.css('text-align', 'center').html('<strong>Preferences reloaded</strong>').dialog('open');
+                alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open');
             })
         },
         Save: function() {
@@ -31,12 +31,11 @@ prefsDialog.dialog($.extend({}, defaultDialogOptions, {
                 getPreferences();
                 prefsDialog.dialog('close');
                 alertDialog
-                    .css('text-align', 'center')
-                    .html('<strong>Preferences saved</strong>')
-                    .dialog('open')
                     .on('dialogclose', function() {
                         window.location.reload(true)
                     })
+                    .html($('<strong>').append('Preferences saved'))
+                    .dialog('open')
             })
         },
         Cancel: function() {
@@ -101,7 +100,7 @@ function buildPreferencesContainer(buildCallback) {
                 prefsContainer.append(
                     divRow.clone().append(
                         divCol4.clone().append(
-                            $('<h5>')
+                            $('<h4>')
                                 .data('toggle', 'tooltip')
                                 .attr('title', item_group.description)
                                 .html(item_group.name)

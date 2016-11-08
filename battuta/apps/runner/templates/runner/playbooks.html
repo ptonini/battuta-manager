@@ -7,14 +7,14 @@
     <script type="text/javascript" src="{% static 'js/ansible_runner.js' %}"></script>
     <script type="text/javascript" src="{% static 'runner/playbooks.js' %}"></script>
     <h3>Playbooks</h3>
-    <div class="row">
+    <div class="row row-eq-height">
         <div class="col-md-6">
-            <h5>
+            <h4>
                 <span>Playbook list</span>
                 <span style="float: right">
                     <button id="new_playbook" class="btn btn-default btn-xs">New playbook</button>
                 </span>
-            </h5>
+            </h4>
             <br>
             <table id="playbook_table" class="table table-condensed table-hover table-striped">
                 <thead>
@@ -29,12 +29,12 @@
         <div class="col-md-5">
             <hr class="visible-xs visible-sm medium">
             <div id="arguments_box">
-                <h5>
+                <h4>
                     <span id="arguments_box_header">&nbsp;</span>
                     <small id="become" class="hidden" style="line-height: 16px; float: right; color: #777">
                         Require sudo
                     </small>
-                </h5>
+                </h4>
                 <br>
                 <div class="row">
                     <div class="col-md-4">

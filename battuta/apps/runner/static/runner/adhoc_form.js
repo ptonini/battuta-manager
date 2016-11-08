@@ -61,7 +61,7 @@ $(document).ready(function () {
                         .click(function() {
                             loadAdHocForm(data);
                             adhocForm.data('adhocId', data[4]);
-                            $('#adhoc_form_label').children('strong').html('Edit task');
+                            $('#adhoc_form_label').html('Edit task');
                             $('#run_task').hide();
                         }),
                     $('<a>')
@@ -141,7 +141,11 @@ $(document).ready(function () {
                             resetAdHocForm()
                         }
                         else if (data.result == 'fail') {
-                            alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open')
+                            alertDialog
+                                .data('left-align', true)
+                                .html('<strong>Submit error<strong><br><br>')
+                                .append(data.msg)
+                                .dialog('open')
                        }
                     }
                 });

@@ -167,9 +167,10 @@ $(document).ready(function () {
                         if (data.result == 'ok') buildArgsSelectionBox(data.id);
                         else if (data.result == 'fail') {
                             alertDialog
+                                .data('left-align', true)
                                 .html('<strong>Submit error<strong><br><br>')
                                 .append(data.msg)
-                                .dialog('open');
+                                .dialog('open')
                         }
                     });
                 }
@@ -177,9 +178,7 @@ $(document).ready(function () {
             case 'Delete':
                 submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function(data) {
                     if (data.result == 'ok') buildArgsSelectionBox();
-                    else if (data.result == 'fail') {
-                        alertDialog.html('<strong>Submit error<strong><br><br>').append(data.msg).dialog('open');
-                    }
+                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                 });
                 break;
             case 'Check':

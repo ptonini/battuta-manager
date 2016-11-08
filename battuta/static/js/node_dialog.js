@@ -1,4 +1,4 @@
-var nodeDialogHeader = $('<h5>').attr('id', 'node_dialog_header');
+var nodeDialogHeader = $('<h4>').attr('id', 'node_dialog_header');
 
 var nodeForm = $('<form>').attr('id', 'node_form').append(
     $('<div>').attr('class', 'form-group').append(
@@ -44,8 +44,11 @@ function openAddNodeDialog(nodeType, addNodeCallback) {
                     addNodeCallback();
                     }
                 else if (data.result == 'fail') {
-                    alertDialog.html('<strong>Form submit error<br><br></strong>').append(data.msg).dialog('open');
-                }
+                    alertDialog
+                        .data('left-align', true)
+                        .html('<strong>Submit error<strong><br><br>')
+                        .append(data.msg)
+                        .dialog('open')}
             }
         });
     });

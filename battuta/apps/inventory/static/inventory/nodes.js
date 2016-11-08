@@ -3,7 +3,7 @@ function reloadNodes() {
     $('#node_table').DataTable().ajax.reload()
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
     
     rememberSelectedTab($('ul.select_tabs').attr('id'));
 
@@ -50,6 +50,7 @@ $(document).ready(function () {
         checkered: true,
         showFilter: true,
         headerBottomPadding: 20,
+        topAlignHeader: true,
         ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern='
     };
 
@@ -58,14 +59,10 @@ $(document).ready(function () {
         addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
-        formatItem: function (listItem) {
-            listItem.click(function () {
-                window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')
-            });
+        formatItem: function(listItem) {
+            listItem.click(function() {window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')});
         },
-        addButtonAction: function () {
-            openAddNodeDialog(nodeType, reloadNodes)
-        }
+        addButtonAction: function() {openAddNodeDialog(nodeType, reloadNodes)}
     };
 
     nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
@@ -76,12 +73,10 @@ $(document).ready(function () {
         ajax: {dataSrc: '', data: {action: nodeType +'_table'}},
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
-        rowCallback: function (row, data) {
+        rowCallback: function(row, data) {
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
-                .click(function () {
-                    window.open('/inventory/' + nodeType + '/' + data[0], '_self')
-                });
+                .click(function() {window.open('/inventory/' + nodeType + '/' + data[0], '_self')});
 
             if (nodeType == 'host') {
                 if (sessionStorage.getItem('use_ec2_facts') == 'true') {
@@ -94,12 +89,12 @@ $(document).ready(function () {
                 }
             }
         },
-        drawCallback: function () {
+        drawCallback: function() {
             $('div.toolbar').css('float', 'left').html(
                 $('<buttom>')
-                    .attr({id: 'add_node', class: 'btn btn-default btn-xs', style: 'margin: 5px 0'})
+                    .attr({id: 'add_node', class: 'btn btn-default btn-xs'})
                     .html('Add '+ nodeType)
-                    .click(function (event) {
+                    .click(function(event) {
                         event.preventDefault();
                         openAddNodeDialog(nodeType, reloadNodes)
                     })
@@ -121,9 +116,9 @@ $(document).ready(function () {
             .dialog('option', 'buttons', [
                 {
                     text: 'Confirm',
-                    click: function () {
+                    click: function() {
                         var data = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
-                        submitRequest('POST', data, function () {
+                        submitRequest('POST', data, function() {
                             reloadNodes();
                             deleteDialog.dialog('close');
                         });
@@ -131,25 +126,21 @@ $(document).ready(function () {
                 },
                 {
                     text: 'Cancel',
-                    click: function () {
-                        $(this).dialog('close');
-                    }
+                    click: function() {$(this).dialog('close')}
                 }
             ])
             .dialog('open');
     });
 
     // Download host table
-    $('#download_table').click(function () {
-        submitRequest('GET', {action: 'host_table'}, function (data) {
+    $('#download_table').click(function() {
+        submitRequest('GET', {action: 'host_table'}, function(data) {
             var csvHeaders = 'Host, Address, Cores, Memory, Disc, Date\n';
             if (sessionStorage.getItem('use_ec2_facts') == 'true') {
                 csvHeaders = 'Host, Address, Public address, Type, Cores, Memory, Disc, Date\n';
             }
             var csvContent = 'data:text/csv;charset=utf-8,' + csvHeaders;
-            data.forEach(function(infoArray){
-                csvContent += infoArray.join(',') + '\n';
-            });
+            data.forEach(function(infoArray) {csvContent += infoArray.join(',') + '\n';});
             var link = document.createElement('a');
             link.setAttribute('href', encodeURI(csvContent));
             link.setAttribute('download', 'host_table.csv');
@@ -158,10 +149,6 @@ $(document).ready(function () {
         });
     });
 
-    $('#update_facts').click(function () {
-        gatherFacts('all', function() {
-            $('#node_table').DataTable().ajax.reload()
-        });
-    })
+    $('#update_facts').click(function() {gatherFacts('all', function() {$('#node_table').DataTable().ajax.reload()})})
  
 });

@@ -39,7 +39,7 @@ uploadDialog
                         success: function (data) {
                             uploadDialog.parent().unblock();
                             if (data.result == 'ok') uploadDialog.dialog('close');
-                            else alertDialog.dialog('open').html($('<strong>').html(data.msg))
+                            else alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open')
                         }
                     });
                 }

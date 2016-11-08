@@ -2,17 +2,16 @@
 var patternContainer = $('<pre>').attr({id: 'pattern_container', class: 'text-left hidden'});
 
 var patternDialog = $('<div>').attr('id', 'pattern_dialog').css('overflow-x', 'hidden').append(
+    $('<div>').attr('class', 'row row-eq-height').append(
+        $('<div>').attr('class', 'col-md-6').append($('<h4>').html('Pattern builder')),
+        $('<div>').attr('class', 'col-md-6 text-right').css('margin', 'auto').append(
+            $('<a>').attr({href: 'http://docs.ansible.com/ansible/intro_patterns.html', target: '_blank'}).append(
+                $('<small>').html('patterns reference')
+            )
+        )
+    ),
+    $('<br>'),
     $('<div>').attr('class', 'row').append(
-        $('<div>').attr('class', 'col-md-12').append(
-            $('<h5>').html('Pattern builder').append(
-                $('<span>').css('float', 'right').append(
-                    $('<a>').attr({href: 'http://docs.ansible.com/ansible/intro_patterns.html', target: '_blank'}).append(
-                        $('<small>').html('patterns reference')
-                    )
-                )
-            ),
-            $('<hr>')
-        ),
         $('<div>').attr('class', 'col-md-2').html('Select:'),
         $('<div>').attr('class', 'col-md-2').append(
             $('<button>')
@@ -82,7 +81,7 @@ $('.select_nodes').click(function () {
     if (op == 'sel') separator = ':';
     else {
         if (patternContainer.html() == '') {
-            alertDialog.html($('<strong>').html('Please select hosts/groups first')).dialog('open');
+            alertDialog.html($('<strong>').append('Please select hosts/groups first')).dialog('open');
             return
         }
         if (op == 'and') separator = ':&';

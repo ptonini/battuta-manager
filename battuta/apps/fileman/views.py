@@ -77,9 +77,9 @@ class ManagerView(View):
                 data = list()
                 directory = os.path.join(self.base_dir, request.GET['directory'])
                 if not directory.startswith('.'):
-                    for file_name in os.listdir(directory):
+                    for base_name in os.listdir(directory):
 
-                        full_path = os.path.join(directory, file_name)
+                        full_path = os.path.join(directory, base_name)
 
                         if os.path.isfile(full_path):
                             file_mime_type = magic.from_file(full_path, mime='true')
@@ -92,8 +92,8 @@ class ManagerView(View):
                         utc_timestamp = utc.localize(file_timestamp)
                         local_timestamp = utc_timestamp.astimezone(tz).strftime(prefs['date_format'])
 
-                        if not file_name.startswith('.'):
-                            data.append([file_name, file_mime_type, file_size, local_timestamp, ''])
+                        if not base_name.startswith('.'):
+                            data.append([base_name, file_mime_type, file_size, local_timestamp, ''])
 
             elif request.GET['action'] == 'edit':
 
@@ -107,27 +107,24 @@ class ManagerView(View):
 
             elif request.GET['action'] == 'download':
 
-                full_path = os.path.join(self.base_dir, request.GET['file_path'])
-                file_name = ntpath.basename(full_path)
+                full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['file_name'])
 
                 if os.path.isfile(full_path):
-                    filename = full_path
+                    target = full_path
+                    delete_after = False
 
                 else:
-                    temp = tempfile.NamedTemporaryFile()
-                    filename = temp.name
+                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['file_name']),
+                                                 'zip',
+                                                 full_path)
+                    delete_after = True
 
-                    shutil.make_archive(filename, 'zip', full_path)
+                response = StreamingHttpResponse((line for line in open(target, 'r')))
+                response['Content-Length'] = os.path.getsize(target)
+                response['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
 
-                    filename += '.zip'
-                    file_name += '.zip'
-
-                response = StreamingHttpResponse((line for line in open(filename, 'r')))
-                response['Content-Disposition'] = 'attachment; filename=' + file_name
-                response['Content-Length'] = os.path.getsize(filename)
-
-                if os.path.isdir(full_path):
-                    os.remove(filename)
+                if delete_after:
+                    os.remove(target)
 
                 return response
 

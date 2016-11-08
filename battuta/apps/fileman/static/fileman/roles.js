@@ -16,15 +16,15 @@ var roleDialog = $('<div>').attr('id', 'role_dialog').css({'margin': '10px', 'ov
             $('<label>').attr({for: 'role_name_field'}).html('Role name'),roleNameField
         ),
         $('<div>').attr('class', 'col-md-6').append(
-            $('<div>').append(roleFiles, ' Files'),
-            $('<div>').append(roleTemplates, ' Templates'),
-            $('<div>').append(roleHandlers, ' Handlers'),
-            $('<div>').append(roleTasks, ' Tasks')
+            $('<div>').append(roleFiles, $('<span>').attr('class', 'chkbox_label').html('Files')),
+            $('<div>').append(roleTemplates, $('<span>').attr('class', 'chkbox_label').html('Templates')),
+            $('<div>').append(roleHandlers, $('<span>').attr('class', 'chkbox_label').html('Handlers')),
+            $('<div>').append(roleTasks, $('<span>').attr('class', 'chkbox_label').html('Tasks'))
         ),
         $('<div>').attr('class', 'col-md-6').append(
-            $('<div>').append(roleDefaults, ' Defaults'),
-            $('<div>').append(roleVars, ' Vars'),
-            $('<div>').append(roleMeta, ' Meta')
+            $('<div>').append(roleDefaults, $('<span>').attr('class', 'chkbox_label').html('Defaults')),
+            $('<div>').append(roleVars, $('<span>').attr('class', 'chkbox_label').html('Vars')),
+            $('<div>').append(roleMeta, $('<span>').attr('class', 'chkbox_label').html('Meta'))
         )
     )
 );
@@ -54,13 +54,11 @@ roleDialog.dialog($.extend({}, defaultDialogOptions, {
                         });
                         roleDialog.dialog('close');
                     }
-                    else alertDialog.dialog('open').html($('<strong>').html(data.msg))
+                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                 })
             }
         },
-        Cancel: function() {
-            $(this).dialog('close')
-        }
+        Cancel: function() {$(this).dialog('close')}
     }
 }));
 
