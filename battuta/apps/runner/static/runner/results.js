@@ -381,11 +381,8 @@ $(document).ready(function () {
                         };
                         executeAnsibleJob(postData, askPassword, data.cred.username, true);
                     }
-                    else alertDialog
-                        .data('left-align', true)
-                        .html('<strong>Submit error<strong><br><br>')
-                        .append(data.msg)
-                        .dialog('open')}
+                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
+                }
             });
         }
     });
