@@ -30,7 +30,7 @@ h5 {
     color: #525252;
 }
 
-h3, h4, h5, label, th, .chkbox_label, .navbar {font-family: 'Kanit', sans-serif}
+h3, h4, h5, label, th, .chkbox_label, .navbar, .report_field_left {font-family: 'Kanit', sans-serif}
 
 button, small, select {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;}
 

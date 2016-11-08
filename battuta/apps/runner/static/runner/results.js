@@ -213,9 +213,7 @@ function buildResultTables(runner, intervalId) {
                                         dataSrc: '',
                                         data: {action: 'task_results', task_id: task.id}
                                     },
-                                    rowCallback: function(row, data) {
-                                        taskTableRowCallback(row, data)
-                                    },
+                                    rowCallback: taskTableRowCallback,
                                     drawCallback: function () {
                                         taskTableDrawCallBack(this.api(), task)
                                     }
