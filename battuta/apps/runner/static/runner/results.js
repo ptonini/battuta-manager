@@ -14,11 +14,9 @@ function updateTaskTable(task, taskColumn, currentTaskTable, intervalId) {
         clearInterval(intervalId)
     }
 
-    if (runner.status == 'canceled') clearInterval(intervalId);
-
-    if (hostCount == rowCount) clearInterval(intervalId);
-
-    else if (task.is_handler && !runner.is_running) clearInterval(intervalId);
+    if (runner.status == 'canceled' || hostCount == rowCount || task.is_handler && !runner.is_running) {
+        clearInterval(intervalId);
+    }
 }
 
 // Row callback function for task table

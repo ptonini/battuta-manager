@@ -37,15 +37,18 @@ $(document).ready(function () {
                 contentType: false,
                 success: function(data) {
                     if (data.result == 'ok') {
-                        var message = $('<div>').append(
-                            $('<div>').html('<strong>Import successful:</strong>').css('margin', '5px 0'),
-                            $('<ul>').append(
-                                $('<li>').html('Hosts added: ' + data.added_hosts),
-                                $('<li>').html('Groups added: ' + data.added_groups),
-                                $('<li>').html('Variables added: ' + data.added_vars)
+                        alertDialog.data('left-align', true).dialog('open').html(
+                            $('<div>').append(
+                                $('<div>').css('margin-bottom', '10px').html(
+                                    $('<strong>').append('Import successful:')
+                                ),
+                                $('<ul>').append(
+                                    $('<li>').html('Hosts added: ' + data.added_hosts),
+                                    $('<li>').html('Groups added: ' + data.added_groups),
+                                    $('<li>').html('Variables added: ' + data.added_vars)
+                                )
                             )
-                        );
-                        alertDialog.data('left-align', true).append($('<strong>').append(message)).dialog('open')
+                        )
                     }
                     else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
                 }

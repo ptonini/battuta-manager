@@ -67,7 +67,7 @@ label {font-weight: 400}
     margin: 10px 0
 }
 
-.pattern_editor_row div:first-of-type{text-align: right}
+.pattern_editor_row div:first-of-type {text-align: right}
 
 .truncate-text {
     text-overflow: ellipsis;
@@ -77,12 +77,9 @@ label {font-weight: 400}
 
 #alert_dialog,
 #delete_dialog,
-#restore_dialog{
+#restore_dialog,
+#password_dialog {
     padding: 20px;
-}
-
-#playbook_editor {
-    border: solid 1px lightgrey;
 }
 
 #json_box {

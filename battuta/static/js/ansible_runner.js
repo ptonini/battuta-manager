@@ -1,26 +1,23 @@
 // Password dialog
-var userPassword = $('<input>').attr({
-    id: 'user_password',
-    type: 'password',
-    class: 'form-control input-sm user_pass_group'
-});
 
+var userPasswordGroup = $('<div>').attr({id: 'user_password_group', class: 'form-group'});
+var userPassword = $('<input>').attr({id: 'user_password', type: 'password', class: 'form-control input-sm'});
 var execUser = $('<i>').attr('id', 'exec_user');
 
-var sudoPassword = $('<input>').attr({
-    id: 'sudo_password',
-    type: 'password',
-    class: 'form-control input-sm sudo_pass_group'
-});
+var sudoPasswordGroup = $('<div>').attr({id: 'user_password_group', class: 'form-group'});
+var sudoPassword = $('<input>').attr({id: 'sudo_password', type: 'password', class: 'form-control input-sm'});
 
-var passwordDialog = $('<div>').attr('id', 'password_dialog').css('margin', '20px').append(
-    $('<label>').attr({for: 'user_password', class: 'user_pass_group'}).html('Password for user ').append(execUser),
-    userPassword,
-    $('<br>').attr('class', 'user_pass_group'),
-    $('<label>').attr({for: 'sudo_password', class: 'sudo_pass_group'}).html('Sudo password').append(
-        $('<span>').attr('class', 'user_pass_group').html(' (defaults to user)')
+var passwordDialog = $('<div>').attr('id', 'password_dialog').append(
+    userPasswordGroup.append(
+        $('<label>').attr('for', 'user_password').html('Password for user ').append(execUser),
+        userPassword
     ),
-    sudoPassword
+    sudoPasswordGroup.append(
+        $('<label>').attr('for', 'sudo_password').html('Sudo password').append(
+            $('<span>').attr('class', 'user_pass_group').html(' (defaults to user)')
+        ),
+        sudoPassword
+    )
 );
 passwordDialog
     .dialog($.extend({}, defaultDialogOptions, {width: '360'}))
@@ -29,39 +26,30 @@ passwordDialog
     });
 
 // Post Ansible Job
-function postAnsibleJob(postData, same_window) {
+function postAnsibleJob(postData, sameWindow) {
     $.ajax({
         url: '/runner/',
         type: 'POST',
         dataType: 'json',
         data: postData,
         success: function (data) {
-            if ( data.result == 'ok' ) {
-                console.log(same_window);
+            if (data.result == 'ok') {
                 if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
-                if (same_window) {
-                    window.open('/runner/result/' + data.runner_id + '/', '_self');
-                }
+                if (sameWindow) window.open('/runner/result/' + data.runner_id + '/', '_self');
                 else {
-                    var window_title;
-                    if (sessionStorage.getItem('single_job_window') == 'true') window_title = 'battuta_result_window';
-                    else window_title = data.runner_id;
-                    popupCenter('/runner/result/' + data.runner_id + '/', window_title, 1000);
+                    var windowTitle;
+                    if (sessionStorage.getItem('single_job_window') == 'true') windowTitle = 'battuta_result_window';
+                    else windowTitle = data.runner_id;
+                    popupCenter('/runner/result/' + data.runner_id + '/', windowTitle, 1000);
                 }
             }
-            else alertDialog
-                .data('left-align', true)
-                .html('<strong>Submit error<strong><br><br>')
-                .append(data.msg)
-                .dialog('open')}
+            else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
+        }
     });
 }
 
 // Run Ansible Job
 function executeAnsibleJob(postData, askPassword, username, same_window) {
-
-    var userPasswordGroup = $('.user_pass_group');  // User pass field and label selector
-    var sudoPasswordGroup = $('.sudo_pass_group');  // Sudo pass field and label selector
 
     // Check if passwords are needed
     if (askPassword.user || askPassword.sudo) {
