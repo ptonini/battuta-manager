@@ -36,12 +36,10 @@ function taskTableRowCallback(row, data) {
             $(row).css('color', 'red');
             break;
     }
-    $(row)
-        .css('cursor','pointer')
-        .click(function () {
-            $('#json_box').JSONView(data[3]).JSONView('collapse', 2);
-            jsonDialog.dialog('open')
-        })
+    $(row).css('cursor','pointer').click(function () {
+        $('#json_box').JSONView(data[3]).JSONView('collapse', 2);
+        jsonDialog.dialog('open')
+    })
 }
 
 // Draw callback function for task table
@@ -49,12 +47,8 @@ function taskTableDrawCallBack(taskTableApi, task) {
     var hostCount = sessionStorage.getItem('task_' + task.id + '_host_count');
     var rowCount = taskTableApi.rows().count();
     var taskCounter = $('#task_' + task.id + '_count');
-    if (task.is_handler) {
-        taskCounter.html('&nbsp;&nbsp;(' + rowCount + ')');
-    }
-    else {
-        taskCounter.html('&nbsp;&nbsp;(' + rowCount + ' of ' + hostCount + ')');
-    }
+    if (task.is_handler) taskCounter.html('&nbsp;&nbsp;(' + rowCount + ')');
+    else taskCounter.html('&nbsp;&nbsp;(' + rowCount + ' of ' + hostCount + ')');
 }
 
 // Build result tables
@@ -107,9 +101,7 @@ function buildResultTables(runner, intervalId) {
 
     // Display error message if exists
     if (runner.message) {
-        resultContainer.empty().append(
-            $('<pre>').css('margin-top', '20px').css('color', 'red').html(runner.message)
-        );
+        resultContainer.empty().append($('<pre>').css('margin-top', '20px').css('color', 'red').html(runner.message));
     }
 
     // Build Play tables
@@ -207,10 +199,7 @@ function buildResultTables(runner, intervalId) {
                                     paginate: false,
                                     searching: false,
                                     info: false,
-                                    ajax: {
-                                        dataSrc: '',
-                                        data: {action: 'task_results', task_id: task.id}
-                                    },
+                                    ajax: {dataSrc: '', data: {action: 'task_results', task_id: task.id}},
                                     rowCallback: taskTableRowCallback,
                                     drawCallback: function () {
                                         taskTableDrawCallBack(this.api(), task)

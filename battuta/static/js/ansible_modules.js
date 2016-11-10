@@ -72,13 +72,9 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
         $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'})
     );
 
-    $('#module_reference').off().show()
-        .hover(function() {
-            $(this).css('cursor', 'pointer')
-        })
-        .click(function() {
-            window.open('http://docs.ansible.com/ansible/'+ name + '_module.html')
-        });
+    $('#module_reference').off().show().click(function () {
+        window.open('http://docs.ansible.com/ansible/'+ name + '_module.html')
+    });
 
     switch (name) {
         case 'ping':

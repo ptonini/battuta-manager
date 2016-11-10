@@ -23,7 +23,7 @@ function submitCredentials(postData) {
             else if (data.result == 'fail') {
                 alertDialog
                     .data('left-align', true)
-                    .html('<strong>Submit error<strong><br><br>')
+                    .html($('<h5>').html('Submit error:'))
                     .append(data.msg)
                     .dialog('open')
             }
@@ -120,7 +120,7 @@ $(document).ready(function () {
                     else if (data.result == 'fail') {
                         alertDialog
                             .data('left-align', true)
-                            .html('<strong>Submit error<strong><br><br>')
+                            .html($('<h5>').html('Submit error:'))
                             .append(data.msg)
                             .dialog('open')
                     }

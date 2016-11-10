@@ -5,14 +5,7 @@ $(document).ready(function () {
     // Build entity adhoc table
     $('#runner_table').DataTable({
         pageLength: 10,
-        ajax: {
-            url: '',
-            type: 'GET',
-            dataSrc: '',
-            data: {
-                action: 'list'
-            }
-        },
+        ajax: {dataSrc: '', data: {action: 'list'}},
         "order": [[0, "desc"]],
         rowCallback: function (row, data) {
             switch (data[4]) {

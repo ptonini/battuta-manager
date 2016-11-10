@@ -1,64 +1,22 @@
 html {overflow-y: scroll}
 
-body {padding-top: 50px}
+body {padding-top: 50px; font-size: small}
 
 section {margin-top: 20px}
 
-body, .dropdown-menu {
-    font-size: small
-}
+header {font-size: 14px}
 
-header {font-size: 14px;}
-
-footer {height: 25px;}
-
-a,
-label,
-.glyphicon,
-.pagination > li > a,
-div.dataTables_length,
-div.dataTables_filter,
-div.dataTables_info {
-    color: #777;
-}
-
-a:focus,
-a:hover,
-button:focus {
-    outline: none;
-    text-decoration: none;
-}
-
-th, h4 {color: #525252}
-
-h5 {
-    font-size: 11pt;
-    color: #525252;
-}
-
-h3, h4, h5, label, th, small,
-ul.nav a, ul.pagination a,
-.chkbox_label, .navbar, .report_field_left, .dataTables_info, #runner_status {
-    font-family: 'Kanit', sans-serif
-}
-
-a.btn, button.btn, span.ui-button-text  {font-family: "Actor", sans-serif;}
-
-input, select, td, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
-    font-family: "Anaheim", sans-serif;
-    font-weight: bold;
-}
+footer {height: 25px}
 
 label {font-weight: 400}
 
-.navbar button.btn-icon {
-    background-color: #F8F8F8;
-    border: transparent;
-}
+h5 {font-size: 11pt; color: #525252}
 
-.navbar button.btn-icon:hover {
-    background-color: #e6e6e6;
-}
+th, h4 {color: #525252}
+
+a, label, .glyphicon {color: #777}
+
+a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .chkbox_label {padding: 0 20px 5px 5px}
 
@@ -66,49 +24,48 @@ label {font-weight: 400}
 
 .report_field_right {padding: 0 15px 0 0}
 
-.btn-incell {
-    padding: 0 3px;
-}
+.reference_link {color: #777; float: right; cursor: pointer}
 
-.pattern_editor_row {
-    width: 95%;
-    margin: 10px 0
-}
+/* Pattern editor options ************/
+
+#pattern_dialog div.col-md-2, #pattern_dialog div.col-md-8 {margin: 5px 0}
 
 .pattern_editor_row div:first-of-type {text-align: right}
 
-.truncate-text {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-}
+.pattern_editor_row {width: 95%; margin: 10px 0}
 
-#alert_dialog,
-#delete_dialog,
-#restore_dialog,
-#password_dialog {
-    padding: 20px;
-}
+/*************************************/
 
-#json_box {
-    background-color: transparent;
-    border: none;
-    font-size: small;
-    overflow-y: auto;
-    width: 660px;
-    margin: 0 10px;
-}
 
-#pattern_dialog div.col-md-2,
-#pattern_dialog div.col-md-8 {
-    margin: 5px 0;
-}
+/* Navbar options ********************/
 
-.table.dataTable {
-    table-layout: fixed;
-    border-bottom: 2px solid lightgrey;
+.navbar button.btn-icon {background-color: #F8F8F8; border: transparent}
 
-}
+.navbar button.btn-icon:hover {background-color: #e6e6e6}
+
+.dropdown-menu {font-size: small}
+
+/*************************************/
+
+
+/* JQuery UI options *****************/
+
+.ui-dialog-titlebar-close, .no_title .ui-dialog-titlebar  {display: none}
+
+.ui-button-text {padding: 1px 1px; font-size: 12px; line-height: 1.5; border-radius: 3px}
+
+.ui-widget button {font-size: 12px}
+
+.ui-dialog {box-shadow: 0 0 20px #888888; border-radius: 5px; position: fixed}
+
+.ui-widget-overlay {background: white; opacity: 0}
+
+/*************************************/
+
+
+/* DataTables options ****************/
+
+.table.dataTable { table-layout: fixed; border-bottom: 2px solid lightgrey}
 
 .table.dataTable tbody > tr > td {
     vertical-align: middle;
@@ -117,76 +74,59 @@ label {font-weight: 400}
     overflow: hidden;
 }
 
-.no_close .ui-dialog-titlebar-close,
-.no_title .ui-dialog-titlebar,
-table.dataTable thead .sorting:after,
-table.dataTable thead .sorting_asc:after,
-table.dataTable thead .sorting_desc:after,
-table.dataTable thead .sorting_asc_disabled:after,
-table.dataTable thead .sorting_desc_disabled:after {
-    display: none;
-}
+.pagination > li > a, .pagination > li > span {padding: 2px 6px}
 
-.checked_button,
-.checked_button:focus,
-.checked_button:hover {
-    background-color: #cdcdcd;
-}
-
-.ui-button-text {
-    padding: 1px 1px;
-    font-size: 12px;
-    line-height: 1.5;
-    border-radius: 3px;
-}
-
-.ui-widget button {
-    font-size: 12px;
-}
-
-.ui-dialog {
-    box-shadow: 0 0 20px #888888;
-    border-radius: 5px;
-    position: fixed;
-}
-
-.ui-widget-overlay {
-    background: white;
-    opacity: 0;
-}
-
-.pagination>li>a,
-.pagination>li>span {
-    padding: 2px 6px;
-}
-
-.pagination>.active>a,
-.pagination>.active>a:focus,
-.pagination>.active>a:hover,
-.pagination>.active>span,
-.pagination>.active>span:focus,
-.pagination>.active>span:hover {
+.pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover,
+.pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
     background-color: lightgrey;
     border-color: lightgrey;
 }
 
-div.dataTables_length select.input-sm,
-div.dataTables_filter input.input-sm {
-    height: 25px;
+.pagination > li > a, div.dataTables_length, div.dataTables_filter, div.dataTables_info {color: #777}
+
+div.dataTables_length select.input-sm, div.dataTables_filter input.input-sm {height: 25px}
+
+div.dataTables_length, div.dataTables_filter {height: 25px}
+
+table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:after, table.dataTable thead .sorting_asc_disabled:after,
+table.dataTable thead .sorting_desc_disabled:after {display: none}
+
+.btn-incell {padding: 0 3px; cursor: pointer}
+
+/*************************************/
+
+
+/* Checked button class options */
+.checked_button, .checked_button:focus, .checked_button:hover {background-color: #cdcdcd}
+
+/* Truncate text larger than container */
+.truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
+
+/* Make all cell within row of equal height */
+.row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}
+
+/* Elements using Kanit font */
+h3, h4, h5, label, th, small, ul.nav a, ul.pagination a,
+.chkbox_label, .navbar, .report_field_left, .dataTables_info, #runner_status {font-family: "Kanit", sans-serif}
+
+/* Elements using Actor font */
+a.btn, button.btn, span.ui-button-text  {font-family: "Actor", sans-serif;}
+
+/* Elements using Helvetica font */
+input, select, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
-div.dataTables_length,
-div.dataTables_filter {
-    height: 25px;
-}
+/* Set padding for small dialogs*/
+#alert_dialog, #delete_dialog, #restore_dialog, #password_dialog {padding: 20px}
 
-.editor_column {
-    margin-top: 10px;
-}
-
-.row-eq-height {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
+/* JSON box options */
+#json_box {
+    background-color: transparent;
+    border: none;
+    font-size: small;
+    overflow-y: auto;
+    width: 660px;
+    margin: 0 10px;
 }

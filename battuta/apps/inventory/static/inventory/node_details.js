@@ -16,29 +16,22 @@ function formatRelationListItem(listItem, nodeType, relation) {
     var id = listItem.data('id');
     var name = listItem.data('value');
     listItem.removeClass('truncate-text').html('').append(
-        $('<span>').append(name).click(function() {window.open('/inventory/' + nodeType + '/' + name, '_self')}),
-        $('<span>').attr('style', 'float: right; vertical-align: middle').append(
-            $('<a>')
-                .attr({'data-toggle': 'tooltip', 'title': 'Remove'})
-                .click(function() {alterRelation(relation, [id], 'remove')})
-                .append(
-                    $('<span>')
-                        .attr('class', 'glyphicon glyphicon-remove-circle')
-                        .css({'vertical-align': 'middle', 'font-size': '1.3em', 'padding-bottom': '3px'})
-                )
-        )
+        $('<span>').append(name).click(function () {window.open('/inventory/' + nodeType + '/' + name, '_self')}),
+        $('<span>').css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+            .attr({class: 'glyphicon glyphicon-remove-circle', title: 'Remove'})
+            .click(function () {alterRelation(relation, [id], 'remove')})
     )
 }
 
 function formatCopyVariablesListItem(listItem, sourceNodeType) {
-    listItem.click(function() {
+    listItem.click(function () {
         var sourceNodeName = $(this).data('value');
         $.ajax({
             url: 'vars/',
             type: 'POST',
             dataType: 'json',
             data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
-            success: function() {
+            success: function () {
                 selectDialog.dialog('close');
                 $('#variable_table').DataTable().ajax.reload();
                 alertDialog.html($('<strong>').append('Variables copied from ' + sourceNodeName)).dialog('open');
@@ -263,46 +256,42 @@ $(document).ready(function () {
         ajax: {url: 'vars/', dataSrc: ''},
         rowCallback: function(row, data) {
             if (data[2] == '') {
-                $(row).find('td:eq(2)').append(
-                    $('<span>').css('float', 'right').append(
-                        $('<a>')
-                            .attr({href: '#', 'data-toggle': 'tooltip', title: 'Edit'})
-                            .append($('<span>').attr('class', 'glyphicon glyphicon-edit btn-incell'))
-                            .click(function() {
-                                cancelVarEdit.show();
-                                $('#variable_form').data('id', data[3]);
-                                $('#var_form_label').html('Edit variable');
-                                $('#key').val(data[0]);
-                                $('#value').val(data[1]).focus();
-                                window.location.href = '#';
-                            }),
-                        $('<a>')
-                            .attr({href: '#', 'data-toggle': 'tooltip', title: 'Delete'})
-                            .append($('<span>').attr('class', 'glyphicon glyphicon-trash btn-incell'))
-                            .click(function() {
-                                deleteDialog
-                                    .dialog('option', 'buttons', [
-                                        {
-                                            text: 'Delete',
-                                            click: function() {
-                                                $(this).dialog('close');
-                                                $.ajax({
-                                                    url: 'vars/',
-                                                    type: 'POST',
-                                                    dataType: 'json',
-                                                    data: {action: 'del', id: data[3]},
-                                                    success: function() {variableTable.DataTable().ajax.reload()}
-                                                });
-                                            }
-                                        },
-                                        {
-                                            text: 'Cancel',
-                                            click: function() {$(this).dialog('close')}
+                $(row).find('td:eq(2)').attr('class', 'text-right').append(
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
+                        .click(function() {
+                            cancelVarEdit.show();
+                            $('#variable_form').data('id', data[3]);
+                            $('#var_form_label').html('Edit variable');
+                            $('#key').val(data[0]);
+                            $('#value').val(data[1]).focus();
+                            window.location.href = '#';
+                        }),
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-trash btn-incell',  title: 'Delete'})
+                        .click(function() {
+                            deleteDialog
+                                .dialog('option', 'buttons', [
+                                    {
+                                        text: 'Delete',
+                                        click: function() {
+                                            $(this).dialog('close');
+                                            $.ajax({
+                                                url: 'vars/',
+                                                type: 'POST',
+                                                dataType: 'json',
+                                                data: {action: 'del', id: data[3]},
+                                                success: function() {variableTable.DataTable().ajax.reload()}
+                                            });
                                         }
-                                    ])
-                                    .dialog('open');
-                            })
-                    )
+                                    },
+                                    {
+                                        text: 'Cancel',
+                                        click: function() {$(this).dialog('close')}
+                                    }
+                                ])
+                                .dialog('open');
+                        })
                 )
             }
             else {
@@ -366,7 +355,7 @@ $(document).ready(function () {
                         else if (data.result == 'fail') {
                             alertDialog
                                 .data('left-align', true)
-                                .html('<strong>Submit error<strong><br><br>')
+                                .html($('<h5>').html('Submit error:'))
                                 .append(data.msg)
                                 .dialog('open')
                         }
@@ -393,7 +382,7 @@ $(document).ready(function () {
                 else if (data.result == 'fail') {
                     alertDialog
                         .data('left-align', true)
-                        .html('<strong>Submit error<strong><br><br>')
+                        .html($('<h5>').html('Submit error:'))
                         .append(data.msg)
                         .dialog('open')
                 }

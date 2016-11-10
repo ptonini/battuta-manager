@@ -5,9 +5,10 @@ var patternDialog = $('<div>').attr('id', 'pattern_dialog').css('overflow-x', 'h
     $('<div>').attr('class', 'row row-eq-height').append(
         $('<div>').attr('class', 'col-md-6').append($('<h4>').html('Pattern builder')),
         $('<div>').attr('class', 'col-md-6 text-right').css('margin', 'auto').append(
-            $('<a>').attr({href: 'http://docs.ansible.com/ansible/intro_patterns.html', target: '_blank'}).append(
-                $('<small>').html('patterns reference')
-            )
+            $('<small>')
+                .html('patterns reference')
+                .attr('class', 'reference_link')
+                .click(function () {window.open('http://docs.ansible.com/ansible/intro_patterns.html', '_blank')})
         )
     ),
     $('<br>'),

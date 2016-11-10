@@ -45,7 +45,7 @@ $.extend($.fn.dataTable.defaults, {
     lengthMenu: [5, 10, 25, 50, 100],
     createdRow: function (row) {
         $(row).children('td').each(function () {
-            $(this).addClass('truncate-text').attr({'data-toggle': 'tooltip', title: $(this).html()})
+            $(this).addClass('truncate-text').attr('title', $(this).html())
         })
     }
 });

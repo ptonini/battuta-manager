@@ -39,9 +39,7 @@ $(document).ready(function () {
                     if (data.result == 'ok') {
                         alertDialog.data('left-align', true).dialog('open').html(
                             $('<div>').append(
-                                $('<div>').css('margin-bottom', '10px').html(
-                                    $('<strong>').append('Import successful:')
-                                ),
+                                $('<h5>').append('Import successful:'),
                                 $('<ul>').append(
                                     $('<li>').html('Hosts added: ' + data.added_hosts),
                                     $('<li>').html('Groups added: ' + data.added_groups),

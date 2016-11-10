@@ -6,16 +6,22 @@ var reloadButton = $('<button>').attr({id: 'reload_file', class: 'btn btn-defaul
 );
 var textEditorContainer = $('<div>').attr('id', 'text_editor').css('border', 'solid 1px lightgrey');
 var fileNameField = $('<input>').attr({id: 'file_name_field', type: 'text', class: 'form-control input-sm'});
-var editorDialog = $('<div>').attr('id', 'editor_dialog').append(
-    $('<div>').attr('class', 'col-md-4 editor_column').append(
-        $('<label>').attr({for: 'file_name_field', class: 'requiredField sr-only'}).html('File name'),fileNameField
+var editorDialog = $('<div>').attr('id', 'editor_dialog').css('overflow-x', 'hidden').append(
+    $('<div>').attr('class', 'row form-group').append(
+        $('<div>').attr('class', 'col-md-4').append(
+            $('<label>').attr({for: 'file_name_field', class: 'requiredField sr-only'}).html('File name'),fileNameField
+        ),
+        $('<div>').attr('class', 'col-md-6').append(reloadButton),
+        $('<div>').attr('class', 'col-md-2').append(
+            $('<label>').attr({for: 'ace_mode', class: 'requiredField sr-only'}).html('Mode'),
+            aceModeSelector
+        )
     ),
-    $('<div>').attr('class', 'col-md-6 editor_column').append(reloadButton),
-    $('<div>').attr('class', 'col-md-2 editor_column').append(
-        $('<label>').attr({for: 'ace_mode', class: 'requiredField sr-only'}).html('Mode'),
-        aceModeSelector
-    ),
-    $('<div>').attr('class', 'col-md-12 editor_column').append(textEditorContainer)
+    $('<div>').attr('class', 'row').append(
+        $('<div>').attr('class', 'col-md-12 editor_column').append(textEditorContainer)
+    )
+
+
 );
 editorDialog.dialog({
     autoOpen: false,

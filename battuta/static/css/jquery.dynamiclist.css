@@ -23,8 +23,7 @@ div.dynamic-list.checkered div:nth-child(odd) {
 
 div.dynamic-list div.dynamic-item {
     padding: 0 5px;
-    vertical-align: middle;
-    margin-bottom: 0;
+    margin: auto;
     border: none;
     color: #777;
     line-height: 30px;
@@ -62,5 +61,5 @@ div.dynamic-list div.dynamic-item.toggle-on:hover {
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
-    display:         flex;
+    display: flex;
 }
