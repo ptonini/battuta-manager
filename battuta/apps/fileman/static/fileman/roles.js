@@ -33,24 +33,32 @@ roleDialog.dialog($.extend({}, defaultDialogOptions, {
     buttons: {
         Save: function() {
             if (roleNameField.val()) {
-                var postData = {action: 'create', file_dir: '', file_name: roleNameField.val(), is_directory: true};
-                submitRequest('POST', postData, function(data) {
+                submitRequest('POST', {
+                    action: 'create',
+                    file_dir: '',
+                    file_name: roleNameField.val(),
+                    is_directory: true,
+                    is_executable: false
+                }, function(data) {
                     if (data.result == 'ok') {
                         $('input:checked').each(function() {
                             submitRequest('POST', {
                                 action: 'create',
                                 file_dir: roleNameField.val(),
                                 file_name: $(this).val(),
-                                is_directory: true
+                                is_directory: true,
+                                is_executable: false
+                            }, function () {
+                                if ($(this).data('main')) {
+                                    submitRequest('POST', {
+                                        action: 'create',
+                                        file_dir: roleNameField.val() + '/' + $(this).val(),
+                                        file_name: 'main.yml',
+                                        is_directory: false,
+                                        is_executable: false
+                                    });
+                                }
                             });
-                            if ($(this).data('main')) {
-                                submitRequest('POST', {
-                                    action: 'create',
-                                    file_dir: roleNameField.val() + '/' + $(this).val(),
-                                    file_name: 'main.yml',
-                                    is_directory: false
-                                });
-                            }
                         });
                         roleDialog.dialog('close');
                     }

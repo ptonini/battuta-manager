@@ -53,7 +53,7 @@ $(document).ready(function() {
     uploadDialog.on('dialogclose', function() {fileTable.DataTable().ajax.reload()});
 
     // Set roleDialog on close callback
-    $('#role_dialog').on('dialogclose', function() {fileTable.data('current_dir', '').DataTable().ajax.reload()});
+    roleDialog.on('dialogclose', function() {fileTable.data('current_dir', '').DataTable().ajax.reload()});
 
     // Initiate file table
     fileTable.DataTable({
@@ -73,23 +73,21 @@ $(document).ready(function() {
             var fileDir = fileTable.data('current_dir');
             var objectData = {file_dir: fileDir};
 
-            if (data[1] == 'directory') {
-                $(row).attr('class', 'directory_row').find('td:eq(0)')
-                    .css({'cursor': 'pointer', 'font-weight': '700'})
-                    .off('click')
-                    .click(function() {
-                        var nextDir = data[0];
-                        if (fileDir) nextDir = fileDir + '/' + nextDir;
-                        dirPath.children().remove();
-                        $.each(nextDir.split('/'), createDirPathLinks);
-                        fileTable.data('current_dir', nextDir).DataTable().ajax.reload();
-                    });
-            }
+            if (data[1] == 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
+                .css({'cursor': 'pointer', 'font-weight': '700'})
+                .off('click')
+                .click(function () {
+                    var nextDir = data[0];
+                    if (fileDir) nextDir = fileDir + '/' + nextDir;
+                    dirPath.children().remove();
+                    $.each(nextDir.split('/'), createDirPathLinks);
+                    fileTable.data('current_dir', nextDir).DataTable().ajax.reload();
+                });
             $(row).find('td:eq(2)').html(humanBytes(data[2]));
             $(row).find('td:eq(4)').attr('class', 'text-right').removeAttr('title').append(
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
-                    .click(function() {
+                    .click(function () {
                         if (editableMimeTypes.indexOf(data[1]) > -1) {
                             objectData['action'] = 'edit';
                             objectData['file_name'] = fileName;
@@ -111,22 +109,21 @@ $(document).ready(function() {
                     }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
-                    .click(function() {
+                    .click(function () {
                         objectData['action'] = 'copy';
                         objectData['old_file_name'] = fileName;
                         nameFieldLabel.html('Copy');
                         nameField.val(fileName + ' (copy)');
                         fileDialog.data(objectData).dialog('open')
                     }),
-                $('<a>')
-                    .attr({
-                        href: '?action=download&file_dir=' + fileDir + '&file_name=' + fileName,
-                        title: 'Download ' + fileName
-                    })
-                    .html($('<span>').attr('class', 'glyphicon glyphicon-download-alt btn-incell')),
+                $('<span>')
+                    .attr({class: 'glyphicon glyphicon-download-alt btn-incell', title: 'Download ' + fileName})
+                    .click(function () {
+                        window.open('?action=download&file_dir=' + fileDir + '&file_name=' + fileName, '_self')
+                    }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
-                    .click(function() {
+                    .click(function () {
                         deleteDialog
                             .dialog('option', 'buttons', [
                                 {
@@ -153,7 +150,7 @@ $(document).ready(function() {
             var table = this;
             var directoryArray = [];
 
-            table.api().rows('.directory_row').every(function() {
+            table.api().rows('.directory_row').every(function () {
                 directoryArray.push(this.node());
                 this.node().remove()
             });

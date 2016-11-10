@@ -139,6 +139,7 @@ class ManagerView(View):
             self.base_dir = os.path.join(self.base_dir, request.user.username)
 
         full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
+        full_dir = os.path.join(self.base_dir, request.POST['file_dir'])
 
         if 'old_file_name' in request.POST:
             old_full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['old_file_name'])
