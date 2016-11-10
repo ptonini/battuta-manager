@@ -91,7 +91,7 @@ $(document).ready(function() {
         },
         drawCallback: function() {
             $('div.toolbar').css('float', 'left').html(
-                $('<buttom>')
+                $('<button>')
                     .attr({id: 'add_node', class: 'btn btn-default btn-xs'})
                     .html('Add '+ nodeType)
                     .click(function(event) {
@@ -115,7 +115,7 @@ $(document).ready(function() {
         deleteDialog
             .dialog('option', 'buttons', [
                 {
-                    text: 'Confirm',
+                    text: 'Delete',
                     click: function() {
                         var data = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
                         submitRequest('POST', data, function() {

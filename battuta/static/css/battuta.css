@@ -36,9 +36,18 @@ h5 {
     color: #525252;
 }
 
-h3, h4, h5, label, th, .chkbox_label, .navbar, .report_field_left, #runner_status {font-family: 'Kanit', sans-serif}
+h3, h4, h5, label, th, small,
+ul.nav a, ul.pagination a,
+.chkbox_label, .navbar, .report_field_left, .dataTables_info, #runner_status {
+    font-family: 'Kanit', sans-serif
+}
 
-button, small, select {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;}
+a.btn, button.btn, span.ui-button-text  {font-family: "Actor", sans-serif;}
+
+input, select, td, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
+    font-family: "Anaheim", sans-serif;
+    font-weight: bold;
+}
 
 label {font-weight: 400}
 
@@ -58,7 +67,6 @@ label {font-weight: 400}
 .report_field_right {padding: 0 15px 0 0}
 
 .btn-incell {
-    font-size: 1.3em;
     padding: 0 3px;
 }
 
