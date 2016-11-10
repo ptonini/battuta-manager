@@ -327,7 +327,7 @@ $(document).ready(function () {
                         })
                         .dialog('open');
                 });
-                nodeTypeDialog.dialog('open').children('h5').html('Select source type');
+                nodeTypeDialog.dialog('open').children('h4').html('Select source type');
                 break;
             default:
                 $.ajax({
