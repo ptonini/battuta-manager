@@ -2,7 +2,7 @@ html {overflow-y: scroll}
 
 body {padding-top: 50px; font-size: small}
 
-section {margin-top: 20px}
+section {margin-top: 10px}
 
 header {font-size: 14px}
 
@@ -26,6 +26,7 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .reference_link {color: #777; float: right; cursor: pointer}
 
+
 /* Pattern editor options ************/
 
 #pattern_dialog div.col-md-2, #pattern_dialog div.col-md-8 {margin: 5px 0}
@@ -39,11 +40,11 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 /* Navbar options ********************/
 
-.navbar button.btn-icon {background-color: #F8F8F8; border: transparent}
+header.navbar button.btn-icon {background-color: #F8F8F8; border: transparent}
 
-.navbar button.btn-icon:hover {background-color: #e6e6e6}
+header.navbar button.btn-icon:hover {background-color: #e6e6e6}
 
-.dropdown-menu {font-size: small}
+header.navbar .dropdown-menu {font-size: small}
 
 /*************************************/
 
@@ -107,11 +108,11 @@ table.dataTable thead .sorting_desc_disabled:after {display: none}
 .row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}
 
 /* Elements using Kanit font */
-h3, h4, h5, label, th, small, ul.nav a, ul.pagination a,
-.chkbox_label, .navbar, .report_field_left, .dataTables_info, #runner_status {font-family: "Kanit", sans-serif}
+h3, h4, h5, label, th, small, ul.nav a, ul.pagination a, .chkbox_label,
+.navbar, .report_field_left, .dataTables_info, #runner_status {font-family: "Kanit", sans-serif}
 
 /* Elements using Actor font */
-a.btn, button.btn, span.ui-button-text  {font-family: "Actor", sans-serif;}
+a.btn, button.btn, span.ui-button-text {font-family: "Actor", sans-serif;}
 
 /* Elements using Helvetica font */
 input, select, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {

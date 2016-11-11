@@ -53,7 +53,7 @@ $(document).ready(function() {
     uploadDialog.on('dialogclose', function() {fileTable.DataTable().ajax.reload()});
 
     // Set roleDialog on close callback
-    roleDialog.on('dialogclose', function() {fileTable.data('current_dir', '').DataTable().ajax.reload()});
+    $('#role_dialog').on('dialogclose', function() {fileTable.data('current_dir', '').DataTable().ajax.reload()});
 
     // Initiate file table
     fileTable.DataTable({
