@@ -84,7 +84,7 @@ $(document).ready(function() {
                     fileTable.data('current_dir', nextDir).DataTable().ajax.reload();
                 });
             $(row).find('td:eq(2)').html(humanBytes(data[2]));
-            $(row).find('td:eq(4)').attr('class', 'text-right').removeAttr('title').append(
+            $(row).find('td:eq(4)').attr('class', 'text-right').removeAttr('title').html('').append(
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                     .click(function () {

@@ -256,7 +256,7 @@ $(document).ready(function () {
         ajax: {url: 'vars/', dataSrc: ''},
         rowCallback: function(row, data) {
             if (data[2] == '') {
-                $(row).find('td:eq(2)').attr('class', 'text-right').append(
+                $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                         .click(function() {
