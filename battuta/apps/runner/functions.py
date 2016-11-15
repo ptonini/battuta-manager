@@ -40,6 +40,20 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'syntax'])
 
 
+def get_variable(key, node):
+    variable_manager = VariableManager()
+    loader = DataLoader()
+    inventory = Inventory(loader=loader, variable_manager=variable_manager)
+    variable_manager.set_inventory(inventory)
+
+    if node.type == 'group':
+        vars = inventory.get_vars(node.name)
+    else:
+        vars = inventory.get_vars(node.name)
+
+    print vars
+
+
 def play_runner(runner):
 
     db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'],

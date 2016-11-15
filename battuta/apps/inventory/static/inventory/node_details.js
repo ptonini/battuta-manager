@@ -1,3 +1,9 @@
+function getAllIndexes(arr, val) {
+    var indexes = [], i = -1;
+    while ((i = arr.indexOf(val, i+1)) != -1) indexes.push(i);
+    return indexes;
+}
+
 function alterRelation(relation, selection, action) {
     $.ajax({
         url: relation + '/',
@@ -301,6 +307,43 @@ $(document).ready(function () {
                     .attr('title', 'Open ' + data[2])
                     .click(function() {window.open('/inventory/group/' + data[2], '_self')});
             }
+        },
+        drawCallback: function() {
+            var table = this;
+            var variableKeys = table.api().columns(0).data()[0];
+            var duplicateArray = [];
+
+            table.api().rows().every(function () {
+                var keyIndexes = getAllIndexes(variableKeys, this.data()[0]);
+
+                if (keyIndexes.length > 1)  {
+                    console.log(this.data()[0], this.data()[4], this.node());
+                }
+
+
+
+                //directoryArray.push(this.node());
+                //this.node().remove()
+            });
+
+
+
+/*            $.each(variableKeys, function (i, key) {
+                var keyIndexes = getAllIndexes(variableKeys, key);
+
+                if (keyIndexes.length > 1 ) {
+                    var duplicates = [];
+
+                    $.each(keyIndexes,function (j, keyIndex) {
+                        duplicates.push(table.api().rows(keyIndex).data());
+                        //table.api().rows(keyIndex).remove()
+                    });
+
+                    if (keyIndexes.indexOf(i) == 0) duplicateArray.push(duplicates);
+                }
+            });*/
+
+            console.log(duplicateArray)
         }
     });
 

@@ -10,6 +10,7 @@ from django.conf import settings
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 from apps.preferences.functions import get_preferences
+from apps.runner.functions import get_variable
 
 
 class InventoryView(View):
@@ -426,7 +427,10 @@ class VariablesView(View):
     def get(request, node_type, node_name):
         node = NodeDetailsView.build_node(node_type, node_name)
 
-        variables = {var.key: [{'value': var.value, 'source': '', 'id': var.id}] for var in node.variable_set.all()}
+        variables = dict()
+
+        for var in node.variable_set.all():
+            variables[var.key] = [{'value': var.value, 'source': '', 'id': var.id}]
 
         for ancestor in NodeDetailsView.get_node_ancestors(node):
             for var in ancestor.variable_set.all():
@@ -438,8 +442,49 @@ class VariablesView(View):
 
         data = list()
         for variable, values in variables.iteritems():
+            from_host = False
+            value_list = list()
+
             for value in values:
-                data.append([variable, value['value'], value['source'], value['id']])
+
+                if value['source'] == '':
+                    from_host = True
+                    value_list.append([variable, value['value'], value['source'], value['id'], True])
+                else:
+                    value_list.append([variable, value['value'], value['source'], value['id'], False])
+
+            if len([item for item in value_list if item[2] != '']) > 1 and not from_host:
+
+                print get_variable(variable, node)
+                # sources = list()
+                # for value in value_list:
+                #    sources.append(value[2])
+                # print ':'.join(sources)
+
+            data += value_list
+
+            # if len(values) == 1:
+            #     data.append([variable, values[0]['value'], values[0]['source'], values[0]['id'], True])
+            # else:
+            #     if [var for var in values if var['source'] == '']
+
+                # var_list = list()
+                #
+                # host_var = [var for var in values if var['source'] == '']
+                #
+                # if host_var:
+                #     data.append(data.append([variable, host_var['value'], host_var['source'], host_var['id'], True]))
+                #
+                #
+                # for value in values:
+                #
+                #
+                #     is_primary = False
+                #
+                #     # if host value exists set as primary
+                #
+                #
+                #     if value['source'] == '':
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 

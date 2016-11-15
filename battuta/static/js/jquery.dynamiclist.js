@@ -132,21 +132,21 @@
                     .append(
                         $('<a>')
                             .attr({class: 'btn btn-default btn-xs', title:'Select all'})
-                            .html($('<span>').attr('class', 'glyphicon glyphicon-check'))
+                            .html($('<span>').attr('class', 'glyphicon glyphicon-unchecked'))
                             .click(function() {
                                 event.preventDefault();
                                 var addClass;
                                 switch ($(this).attr('title')) {
                                     case 'Select all':
                                         $(this).attr('title', 'Select none').children('span')
-                                            .removeClass('glyphicon-check')
-                                            .addClass('glyphicon-unchecked');
+                                            .removeClass('glyphicon-unchecked')
+                                            .addClass('glyphicon-check');
                                         addClass = true;
                                         break;
                                     case 'Select none':
                                         $(this).attr('title', 'Select all').children('span')
-                                            .removeClass('glyphicon-unchecked')
-                                            .addClass('glyphicon-check');
+                                            .removeClass('glyphicon-check')
+                                            .addClass('glyphicon-unchecked');
                                         addClass = false;
                                         break;
                                 }
