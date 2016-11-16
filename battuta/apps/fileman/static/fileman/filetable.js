@@ -1,21 +1,6 @@
-function createDirPathLinks(index, value) {
-    $('#dir_path').append($('<span>')
-        .attr('id', 'span_path_' + index)
-        .html(value + '/')
-        .css('cursor', 'pointer')
-        .click(function() {
-            var nextDir = '';
-            for (var i = 0; i <= index; i++) nextDir += $('#span_path_' + i).html()
-            $(this).nextAll().remove();
-            $('#file_table').data('current_dir', nextDir.slice(0,-1)).DataTable().ajax.reload();
-        })
-    );
-}
-
 $(document).ready(function() {
 
     var fileTable = $('#file_table');
-    var dirPath = $('#dir_path');
 
     var editableMimeTypes = [
         'text/plain',
@@ -38,8 +23,8 @@ $(document).ready(function() {
     $('#upload_file').click(function() {uploadDialog.data('file_dir', fileTable.data('current_dir')).dialog('open')});
 
     // Set root path link action
-    $('#root_path').css('cursor', 'pointer').click(function() {
-        dirPath.children().remove();
+    $('#root_path').click(function() {
+        $(this).nextAll().remove();
         fileTable.data('current_dir', '').DataTable().ajax.reload();
     });
 
@@ -79,8 +64,20 @@ $(document).ready(function() {
                 .click(function () {
                     var nextDir = data[0];
                     if (fileDir) nextDir = fileDir + '/' + nextDir;
-                    dirPath.children().remove();
-                    $.each(nextDir.split('/'), createDirPathLinks);
+                    $('.path_link').remove();
+                    $.each(nextDir.split('/'), function (index, value) {
+                        $('#path_links').append(
+                            $('<li>')
+                                .attr({id: 'path_link_' + index, class: 'path_link'})
+                                .html(value)
+                                .click(function () {
+                                    var nextDir = '';
+                                    for (var i = 0; i <= index; i++) nextDir += $('#path_link_' + i).html() + '/'
+                                    $(this).nextAll().remove();
+                                    fileTable.data('current_dir', nextDir.slice(0, -1)).DataTable().ajax.reload();
+                                })
+                        )
+                    });
                     fileTable.data('current_dir', nextDir).DataTable().ajax.reload();
                 });
             $(row).find('td:eq(2)').html(humanBytes(data[2]));

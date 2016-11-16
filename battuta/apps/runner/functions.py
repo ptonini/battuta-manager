@@ -41,17 +41,19 @@ AnsibleOptions = namedtuple('Options', ['connection',
 
 
 def get_variable(key, node):
+
     variable_manager = VariableManager()
     loader = DataLoader()
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
 
-    if node.type == 'group':
-        vars = inventory.get_vars(node.name)
-    else:
-        vars = inventory.get_vars(node.name)
+    host = inventory.get_host(node.name)
+    host_vars = variable_manager.get_vars(loader, host=host)
 
-    print vars
+    if key in host_vars:
+        return host_vars[key]
+    else:
+        return None
 
 
 def play_runner(runner):

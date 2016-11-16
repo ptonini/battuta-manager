@@ -9,6 +9,7 @@ from django.conf import settings
 
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
+
 from apps.preferences.functions import get_preferences
 from apps.runner.functions import get_variable
 
@@ -16,12 +17,11 @@ from apps.runner.functions import get_variable
 class InventoryView(View):
 
     @staticmethod
-    def inventory_to_dict(internal_vars=True):
+    def inventory_to_dict(hosts=Host.objects.order_by('name'), internal_vars=True):
 
         data = {'_meta': {'hostvars': dict()}}
 
-        for host in Host.objects.order_by('name'):
-
+        for host in hosts:
             if host.variable_set.all().exists() or host.description:
 
                 data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
@@ -34,12 +34,11 @@ class InventoryView(View):
             if group.members.all().exists():
                 data[group.name]['hosts'] = [host.name for host in group.members.all()]
 
-            if group.children.all().exists():
-                data[group.name]['children'] = [child.name for child in group.children.all()]
+            data[group.name]['children'] = [child.name for child in group.children.all()]
 
             data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
 
-            if group.description  and not internal_vars:
+            if group.description and not internal_vars:
                 data[group.name]['vars']['_description'] = group.description
 
             if internal_vars:
@@ -345,7 +344,6 @@ class NodeDetailsView(View):
             parents = step_list
         if node.name != 'all':
             ancestors.add(Group.objects.get(name='all'))
-
         return ancestors
 
     @staticmethod
@@ -441,50 +439,27 @@ class VariablesView(View):
                     variables[var.key] = [var_dict]
 
         data = list()
-        for variable, values in variables.iteritems():
-            from_host = False
+        for key, values in variables.iteritems():
+            from_node = False
             value_list = list()
 
             for value in values:
 
                 if value['source'] == '':
-                    from_host = True
-                    value_list.append([variable, value['value'], value['source'], value['id'], True])
+                    from_node = True
+                    value_list.append([key, value['value'], value['source'], value['id'], True])
                 else:
-                    value_list.append([variable, value['value'], value['source'], value['id'], False])
+                    value_list.append([key, value['value'], value['source'], value['id'], False])
 
-            if len([item for item in value_list if item[2] != '']) > 1 and not from_host:
+            if len([value for value in value_list if value[2] != '']) > 1 and not from_node and node.type == 'host':
 
-                print get_variable(variable, node)
-                # sources = list()
-                # for value in value_list:
-                #    sources.append(value[2])
-                # print ':'.join(sources)
+                actual_value = get_variable(key, node)
+
+                for value in value_list:
+                    if value[1] == actual_value:
+                        value[4] = True
 
             data += value_list
-
-            # if len(values) == 1:
-            #     data.append([variable, values[0]['value'], values[0]['source'], values[0]['id'], True])
-            # else:
-            #     if [var for var in values if var['source'] == '']
-
-                # var_list = list()
-                #
-                # host_var = [var for var in values if var['source'] == '']
-                #
-                # if host_var:
-                #     data.append(data.append([variable, host_var['value'], host_var['source'], host_var['id'], True]))
-                #
-                #
-                # for value in values:
-                #
-                #
-                #     is_primary = False
-                #
-                #     # if host value exists set as primary
-                #
-                #
-                #     if value['source'] == '':
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 

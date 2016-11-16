@@ -1,11 +1,15 @@
 // File dialog
 var nameField = $('<input>').attr({id: 'name_field', type: 'text', class: 'form-control'});
 var nameFieldLabel = $('<label>').attr({id: 'name_field_label', for: 'name_field'});
-var isDirectory = $('<input>').attr({type: 'checkbox', name: 'is_directory'});
-var isExecutable = $('<input>').attr({type: 'checkbox', name: 'is_executable'});
-var createOnlyContainer = $('<div>').css({'display': 'none'}).append(
-    isDirectory, $('<span>').attr('class', 'chkbox_label').html('Directory'),
-    isExecutable, $('<span>').attr('class', 'chkbox_label').html('Executable')
+var isDirectory = $('<input>').attr({type: 'checkbox', id: 'is_directory'});
+var isExecutable = $('<input>').attr({type: 'checkbox', id: 'is_executable'});
+var createOnlyContainer = $('<div>').css({display: 'none'}).append(
+    $('<label>').attr({for: 'is_directory', class: 'checkbox_label'}).append(
+        isDirectory, $('<span>').html('Directory')
+    ),
+    $('<label>').attr({for: 'is_executable', class: 'checkbox_label'}).append(
+        isExecutable, $('<span>').html('Executable')
+    )
 );
 var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '10px').append(
     nameFieldLabel, nameField, $('<br>'), createOnlyContainer

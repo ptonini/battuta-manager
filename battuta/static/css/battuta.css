@@ -18,7 +18,13 @@ a, label, .glyphicon {color: #777}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
-.chkbox_label {padding: 0 20px 5px 5px}
+.input[type="checkbox"] {margin: 10px 0 0 5px}
+
+
+
+.chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
+
+.breadcrumb {margin-bottom: 0; cursor: pointer}
 
 .report_field_left {padding: 0 0 0 15px}
 

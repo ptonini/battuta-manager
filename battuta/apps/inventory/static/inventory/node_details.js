@@ -311,39 +311,24 @@ $(document).ready(function () {
         drawCallback: function() {
             var table = this;
             var variableKeys = table.api().columns(0).data()[0];
-            var duplicateArray = [];
+            var duplicates = {};
 
             table.api().rows().every(function () {
-                var keyIndexes = getAllIndexes(variableKeys, this.data()[0]);
+                var rowKey = this.data()[0];
+                var keyIndexes = getAllIndexes(variableKeys, rowKey);
+
 
                 if (keyIndexes.length > 1)  {
-                    console.log(this.data()[0], this.data()[4], this.node());
+
+                    var rowData = [this.data(), this.node()];
+
+                    if (duplicates.hasOwnProperty(rowKey)) duplicates[rowKey].push(rowData);
+                    else duplicates[rowKey] = [rowData];
+
                 }
-
-
-
-                //directoryArray.push(this.node());
-                //this.node().remove()
             });
+            console.log(duplicates);
 
-
-
-/*            $.each(variableKeys, function (i, key) {
-                var keyIndexes = getAllIndexes(variableKeys, key);
-
-                if (keyIndexes.length > 1 ) {
-                    var duplicates = [];
-
-                    $.each(keyIndexes,function (j, keyIndex) {
-                        duplicates.push(table.api().rows(keyIndex).data());
-                        //table.api().rows(keyIndex).remove()
-                    });
-
-                    if (keyIndexes.indexOf(i) == 0) duplicateArray.push(duplicates);
-                }
-            });*/
-
-            console.log(duplicateArray)
         }
     });
 
