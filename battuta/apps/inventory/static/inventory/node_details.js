@@ -316,51 +316,65 @@ $(document).ready(function () {
             table.api().rows().every(function () {
                 var rowKey = this.data()[0];
                 var keyIndexes = getAllIndexes(variableKeys, rowKey);
+                var hasMainValue = false;
 
                 if (keyIndexes.length > 1)  {
 
+
+                    if (this.data()[4]) hasMainValue = true;
+
                     var rowData = [this.data(), this.node()];
 
-                    if (duplicates.hasOwnProperty(rowKey)) duplicates[rowKey].push(rowData);
-                    else duplicates[rowKey] = [rowData];
+                    if (duplicates.hasOwnProperty(rowKey)) {
+                        duplicates[rowKey].values.push(rowData);
+                        duplicates[rowKey].hasMainValue = hasMainValue
+                    }
+
+                    else duplicates[rowKey] = {hasMainValue: hasMainValue, values: [rowData]}
+
 
                 }
             });
 
+            console.log(duplicates);
+
             Object.keys(duplicates).forEach(function (key) {
 
-                var mainValue = null;
-                var duplicatesTable = $('<table>')
-                    .css({margin: 0, color: '#777'})
-                    .attr('class', 'table table-condensed table-striped table-hover')
-                    .append($('<tbody>'));
+                if (duplicates[key].hasMainValue) {
+                    var mainValue = null;
+                    var duplicatesTable = $('<table>')
+                        .css({margin: 0, color: '#777'})
+                        .attr('class', 'table table-condensed table-striped table-hover')
+                        .append($('<tbody>'));
 
-                $.each(duplicates[key], function (index, value) {
-                    if (value[0][4]) mainValue = value;
-                    else {
-                        $(value[1]).find('td:eq(0)').html('').removeAttr('title').addClass('col-md-3');
-                        $(value[1]).find('td:eq(1)').addClass('col-md-7');
-                        $(value[1]).find('td:eq(2)').addClass('col-md-2');
-                        duplicatesTable.find('tbody').append(value[1]);
+                    $.each(duplicates[key]['values'], function (index, value) {
+                        if (value[0][4]) mainValue = value;
+                        else {
+                            $(value[1]).find('td:eq(0)').html('').removeAttr('title').addClass('col-md-3');
+                            $(value[1]).find('td:eq(1)').addClass('col-md-7');
+                            $(value[1]).find('td:eq(2)').addClass('col-md-2');
+                            duplicatesTable.find('tbody').append(value[1]);
+                        }
+                    });
+
+                    if (mainValue) {
+
+                        var row = table.DataTable().row(mainValue[1]);
+
+                        $(mainValue[1]).find('td:eq(0)').html('').append(
+                            $('<span>')
+                                .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
+                                .off()
+                                .click(function () {
+                                    if (row.child.isShown()) row.child.hide();
+                                    else row.child(duplicatesTable).show();
+                                }),
+                            mainValue[0][0]
+                        );
+
                     }
-                });
-
-                if (mainValue) {
-
-                    var row = table.DataTable().row(mainValue[1]);
-
-                    $(mainValue[1]).find('td:eq(0)').html('').append(
-                        $('<span>')
-                            .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
-                            .off()
-                            .click(function () {
-                                if (row.child.isShown()) row.child.hide();
-                                else row.child(duplicatesTable).show();
-                            }),
-                        mainValue[0][0]
-                    );
-
                 }
+
             });
         }
     });
