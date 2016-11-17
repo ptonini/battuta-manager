@@ -2,29 +2,42 @@ var roleNameField = $('<input>')
     .attr({id: 'role_name_field', type: 'text', class: 'form-control'})
     .css('margin-bottom', '10px');
 
-var roleMeta = $('<input>').attr({type: 'checkbox', name: 'roleMeta', value: 'meta'}).data('main', true);
-var roleVars = $('<input>').attr({type: 'checkbox', name: 'role_vars', value: 'vars'}).data('main', true);
-var roleFiles = $('<input>').attr({type: 'checkbox', name: 'role_files', value: 'files'});
-var roleTasks = $('<input>').attr({type: 'checkbox', name: 'role_tasks', value: 'tasks'}).data('main', true);
-var roleHandlers = $('<input>').attr({type: 'checkbox', name: 'role_handlers', value: 'handlers'}).data('main', true);
-var roleDefaults = $('<input>').attr({type: 'checkbox', name: 'role_defaults', value: 'defaults'}).data('main', true);
-var roleTemplates = $('<input>').attr({type: 'checkbox', name: 'role_templates', value: 'templates'});
-
 var roleDialog = $('<div>').attr('id', 'role_dialog').css({'margin': '10px', 'overflow-x': 'hidden'}).append(
     $('<div>').attr('class', 'row').append(
         $('<div>').attr('class', 'col-md-12').append(
             $('<label>').attr({for: 'role_name_field'}).html('Role name'),roleNameField
         ),
         $('<div>').attr('class', 'col-md-6').append(
-            $('<div>').append(roleFiles, $('<span>').attr('class', 'chkbox_label').html('Files')),
-            $('<div>').append(roleTemplates, $('<span>').attr('class', 'chkbox_label').html('Templates')),
-            $('<div>').append(roleHandlers, $('<span>').attr('class', 'chkbox_label').html('Handlers')),
-            $('<div>').append(roleTasks, $('<span>').attr('class', 'chkbox_label').html('Tasks'))
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_files', value: 'files'}),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_files'}).html('Files')
+            ),
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_templates', value: 'templates'}),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_templates'}).html('Templates')
+            ),
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_handlers', value: 'handlers'}).data('main', true),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_handlers'}).html('Handlers')
+            ),
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_tasks', value: 'tasks'}).data('main', true),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_tasks'}).html('Tasks')
+            )
         ),
         $('<div>').attr('class', 'col-md-6').append(
-            $('<div>').append(roleDefaults, $('<span>').attr('class', 'chkbox_label').html('Defaults')),
-            $('<div>').append(roleVars, $('<span>').attr('class', 'chkbox_label').html('Vars')),
-            $('<div>').append(roleMeta, $('<span>').attr('class', 'chkbox_label').html('Meta'))
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_defaults', value: 'defaults'}).data('main', true),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_defaults'}).html('Defaults')
+            ),
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_vars', value: 'vars'}).data('main', true),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_vars'}).html('Vars')
+            ),
+            $('<div>').append(
+                $('<input>').attr({type: 'checkbox', id: 'role_meta', value: 'meta'}).data('main', true),
+                $('<label>').attr({class: 'chkbox_label', for: 'role_meta'}).html('Meta')
+            )
         )
     )
 );

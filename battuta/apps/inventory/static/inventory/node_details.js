@@ -317,7 +317,6 @@ $(document).ready(function () {
                 var rowKey = this.data()[0];
                 var keyIndexes = getAllIndexes(variableKeys, rowKey);
 
-
                 if (keyIndexes.length > 1)  {
 
                     var rowData = [this.data(), this.node()];
@@ -327,8 +326,42 @@ $(document).ready(function () {
 
                 }
             });
-            console.log(duplicates);
 
+            Object.keys(duplicates).forEach(function (key) {
+
+                var mainValue = null;
+                var duplicatesTable = $('<table>')
+                    .css({margin: 0, color: '#777'})
+                    .attr('class', 'table table-condensed table-striped table-hover')
+                    .append($('<tbody>'));
+
+                $.each(duplicates[key], function (index, value) {
+                    if (value[0][4]) mainValue = value;
+                    else {
+                        $(value[1]).find('td:eq(0)').html('').removeAttr('title').addClass('col-md-3');
+                        $(value[1]).find('td:eq(1)').addClass('col-md-7');
+                        $(value[1]).find('td:eq(2)').addClass('col-md-2');
+                        duplicatesTable.find('tbody').append(value[1]);
+                    }
+                });
+
+                if (mainValue) {
+
+                    var row = table.DataTable().row(mainValue[1]);
+
+                    $(mainValue[1]).find('td:eq(0)').html('').append(
+                        $('<span>')
+                            .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
+                            .off()
+                            .click(function () {
+                                if (row.child.isShown()) row.child.hide();
+                                else row.child(duplicatesTable).show();
+                            }),
+                        mainValue[0][0]
+                    );
+
+                }
+            });
         }
     });
 

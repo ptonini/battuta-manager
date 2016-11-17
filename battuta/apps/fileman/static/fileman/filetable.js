@@ -152,7 +152,7 @@ $(document).ready(function() {
                 this.node().remove()
             });
 
-            for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]);
+            for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]).DataTable().draw();
         }
     });
 });
