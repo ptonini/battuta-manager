@@ -315,32 +315,24 @@ $(document).ready(function () {
 
             table.api().rows().every(function () {
                 var rowKey = this.data()[0];
+                var isMain = this.data()[4];
+                var rowData = [this.data(), this.node()];
                 var keyIndexes = getAllIndexes(variableKeys, rowKey);
-                var hasMainValue = false;
 
                 if (keyIndexes.length > 1)  {
 
-
-                    if (this.data()[4]) hasMainValue = true;
-
-                    var rowData = [this.data(), this.node()];
-
                     if (duplicates.hasOwnProperty(rowKey)) {
+                        if (isMain) duplicates[rowKey].hasMainValue = true;
                         duplicates[rowKey].values.push(rowData);
-                        duplicates[rowKey].hasMainValue = hasMainValue
                     }
-
-                    else duplicates[rowKey] = {hasMainValue: hasMainValue, values: [rowData]}
-
-
+                    else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
                 }
             });
-
-            console.log(duplicates);
 
             Object.keys(duplicates).forEach(function (key) {
 
                 if (duplicates[key].hasMainValue) {
+
                     var mainValue = null;
                     var duplicatesTable = $('<table>')
                         .css({margin: 0, color: '#777'})
@@ -366,8 +358,14 @@ $(document).ready(function () {
                                 .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
                                 .off()
                                 .click(function () {
-                                    if (row.child.isShown()) row.child.hide();
-                                    else row.child(duplicatesTable).show();
+                                    if (row.child.isShown()) {
+                                       $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
+                                        row.child.hide()
+                                    }
+                                    else {
+                                        $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
+                                        row.child(duplicatesTable).show()
+                                    }
                                 }),
                             mainValue[0][0]
                         );
