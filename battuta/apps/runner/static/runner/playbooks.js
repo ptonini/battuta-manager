@@ -105,31 +105,22 @@ $(document).ready(function () {
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Remove'})
                     .click(function() {
                         deleteDialog
-                            .dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        postData = {action: 'delete', playbook_file: playbookFile};
-                                        submitRequest('POST', postData, function () {
-                                            if (argumentsBox.data('currentPlaybook') == playbookFile) {
-                                                clearPlaybookArgsForm()
-                                            }
-                                            playbookTable.DataTable().ajax.reload()
-                                        });
-                                        $(this).dialog('close');
-                                    }
+                            .dialog('option', 'buttons', {
+                                Delete: function () {
+                                    postData = {action: 'delete', playbook_file: playbookFile};
+                                    submitRequest('POST', postData, function () {
+                                        if (argumentsBox.data('currentPlaybook') == playbookFile) {
+                                            clearPlaybookArgsForm()
+                                        }
+                                        playbookTable.DataTable().ajax.reload()
+                                    });
+                                    $(this).dialog('close');
                                 },
-                                {
-                                    text: 'Cancel',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                    }
-                                }
-                            ])
+                                Cancel: function () {$(this).dialog('close')}
+                            })
                             .dialog('open');
                     })
             );
-
         }
     });
 

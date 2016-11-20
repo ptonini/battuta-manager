@@ -3,5 +3,5 @@
 {% block content %}
     <script>document.title = 'Battuta - User files';</script>
     <h3>{{ request.user }} files</h3>
-    {% include 'fileman/filetable.html' with root_folder='user_root' %}
+    {% include 'fileman/filetable.html' with root_folder='user_path' %}
 {% endblock %}

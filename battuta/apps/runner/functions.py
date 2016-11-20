@@ -6,7 +6,7 @@ from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
 from ansible.utils.vars import load_extra_vars
-from ansible.inventory import Inventory
+from ansible.inventory import Inventory, Host
 from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
@@ -47,7 +47,12 @@ def get_variable(key, node):
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
 
-    host = inventory.get_host(node.name)
+    if node.type == 'host':
+        host = inventory.get_host(node.name)
+    else:
+        host = Host('temp_host')
+        host.add_group(inventory.get_group(node.name))
+
     host_vars = variable_manager.get_vars(loader, host=host)
 
     if key in host_vars:

@@ -4,11 +4,12 @@ var nameFieldLabel = $('<label>').attr({id: 'name_field_label', for: 'name_field
 var isDirectory = $('<input>').attr({type: 'checkbox', id: 'is_directory'});
 var isExecutable = $('<input>').attr({type: 'checkbox', id: 'is_executable'});
 var createOnlyContainer = $('<div>').css({display: 'none'}).append(
+    $('<br>'),
     isDirectory, $('<label>').attr({class: 'chkbox_label', for: 'is_directory'}).html('Directory'),
     isExecutable, $('<label>').attr({class: 'chkbox_label', for: 'is_executable'}).html('Executable')
 );
-var fileDialog = $('<div>').attr('id', 'file_dialog').css('margin', '10px').append(
-    nameFieldLabel, nameField, $('<br>'), createOnlyContainer
+var fileDialog = $('<div>').attr('id', 'file_dialog').append(
+    nameFieldLabel, nameField, createOnlyContainer
 );
 
 fileDialog

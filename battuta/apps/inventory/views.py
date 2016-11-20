@@ -1,6 +1,7 @@
 import json
 import csv
 import tempfile
+import collections
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -41,10 +42,10 @@ class InventoryView(View):
             if group.description and not internal_vars:
                 data[group.name]['vars']['_description'] = group.description
 
-            if internal_vars:
-                data['all']['vars']['roles_path'] = settings.ROLES_PATH
-                data['all']['vars']['files_path'] = settings.FILES_PATH
-                data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
+        if internal_vars:
+            data['all']['vars']['roles_path'] = settings.ROLES_PATH
+            data['all']['vars']['files_path'] = settings.FILES_PATH
+            data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
 
         return data
 
@@ -311,7 +312,6 @@ class NodeDetailsView(View):
 
     @staticmethod
     def build_node(node_type, node_name):
-
         # Get classes based on node type
         if node_type == 'host':
             node_class = Host
@@ -329,10 +329,7 @@ class NodeDetailsView(View):
             node = get_object_or_404(node_class, name=node_name)
 
         setattr(node, 'form_class', node_form_class)
-        return node
 
-    @staticmethod
-    def get_node_ancestors(node):
         ancestors = set()
         parents = node.group_set.all()
         while len(parents) > 0:
@@ -344,13 +341,14 @@ class NodeDetailsView(View):
             parents = step_list
         if node.name != 'all':
             ancestors.add(Group.objects.get(name='all'))
-        return ancestors
 
-    @staticmethod
-    def get_node_descendants(node):
-        groups = set()
-        hosts = set()
+        setattr(node, 'ancestors', ancestors)
+
+        groups = None
+        hosts = None
+
         if node.type == 'group':
+            groups = set()
             children = node.children.all()
             while len(children) > 0:
                 step_list = set()
@@ -360,13 +358,13 @@ class NodeDetailsView(View):
                         step_list.add(node)
                 children = step_list
 
-            for host in node.members.all():
-                hosts.add(host)
+            members = {host for host in node.members.all()}
+            hosts = members.union({host for group in groups for host in group.members.all()})
 
-            for group in groups:
-                for host in group.members.all():
-                    hosts.add(host)
-        return groups, hosts
+        setattr(node, 'group_descendants', groups)
+        setattr(node, 'host_descendants', hosts)
+
+        return node
 
     def get(self, request, node_name, node_type):
         node = self.build_node(node_type, node_name)
@@ -376,19 +374,17 @@ class NodeDetailsView(View):
         else:
             if request.GET['action'] == 'facts':
                 if node.facts:
-                    data = {'result': 'ok', 'facts': json.loads(node.facts)}
+                    data = {'result': 'ok', 'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))}
                 else:
                     data = {'result': 'failed'}
             elif request.GET['action'] == 'ancestors':
-                data = {'result': 'ok', 'groups': [[group.name, group.id] for group in self.get_node_ancestors()]}
+                data = {'result': 'ok', 'groups': [[group.name, group.id] for group in node.ancestors]}
 
             elif request.GET['action'] == 'descendants':
-                data = {'result': 'ok'}
 
-                groups, hosts = self.get_node_descendants(node)
-
-                data['groups'] = [[group.name, group.id] for group in groups]
-                data['hosts'] = [[host.name, host.id] for host in hosts]
+                data = {'result': 'ok',
+                        'groups': [[group.name, group.id] for group in node.group_descendants],
+                        'hosts': [[host.name, host.id] for host in node.host_descendants]}
 
                 data['groups'].sort()
                 data['hosts'].sort()
@@ -430,7 +426,7 @@ class VariablesView(View):
         for var in node.variable_set.all():
             variables[var.key] = [{'value': var.value, 'source': '', 'id': var.id}]
 
-        for ancestor in NodeDetailsView.get_node_ancestors(node):
+        for ancestor in node.ancestors:
             for var in ancestor.variable_set.all():
                 var_dict = {'value': var.value, 'source': var.group.name, 'id': var.group.id}
                 if var.key in variables:
@@ -451,7 +447,7 @@ class VariablesView(View):
                 else:
                     value_list.append([key, value['value'], value['source'], value['id'], False])
 
-            if len([value for value in value_list if value[2] != '']) > 1 and not from_node and node.type == 'host':
+            if len([value for value in value_list if value[2] != '']) > 1 and not from_node:
 
                 actual_value = get_variable(key, node)
 
@@ -504,7 +500,7 @@ class VariablesView(View):
 
 class RelationsView(View):
     @staticmethod
-    def get_relations(node, relation):
+    def get_relationships(node, relation):
         if relation == 'parents':
             related_set = node.group_set
             related_class = Group
@@ -518,22 +514,38 @@ class RelationsView(View):
             raise Http404('Invalid relation: ' + relation)
         return related_set, related_class
 
-    def get(self, request, node_type, node_name, relation):
+    def get(self, request, node_type, node_name, relationship):
         node = NodeDetailsView.build_node(node_type, node_name)
-        related_set, related_class = self.get_relations(node, relation)
-        data = list()
+        related_set, related_class = self.get_relationships(node, relationship)
+        data = None
+
         if request.GET['list'] == 'related':
-            for related in related_set.order_by('name'):
-                data.append([related.name, related.id])
+
+            data = [[related.name, related.id] for related in related_set.order_by('name')]
+
         elif request.GET['list'] == 'not_related':
+
+            data = list()
+
+            candidate_set = related_class.objects.order_by('name')
+            if relationship == 'parents':
+                pass
+
+
+            #node_ancestors = NodeDetailsView.get_node_ancestors(node)
+
             for related in related_class.objects.order_by('name'):
                 if related not in related_set.all() and related != node and related.name != 'all':
                     data.append([related.name, related.id])
+
+        else:
+
+            raise Http404('Invalid request')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     def post(self, request, node_type, node_name, relation):
         node = NodeDetailsView.build_node(node_type, node_name)
-        related_set, related_class = self.get_relations(node, relation)
+        related_set, related_class = self.get_relationships(node, relation)
         if request.POST['action'] == 'add':
             for selected in request.POST.getlist('selection[]'):
                 related_set.add(get_object_or_404(related_class, pk=selected))

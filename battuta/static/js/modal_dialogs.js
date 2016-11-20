@@ -5,7 +5,8 @@ var defaultDialogOptions =  {
     modal: true,
     show: true,
     hide: true,
-    dialogClass: 'no_title'
+    dialogClass: 'no_title',
+    resizable: false
 };
 
 

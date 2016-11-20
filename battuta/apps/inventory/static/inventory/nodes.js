@@ -113,22 +113,16 @@ $(document).ready(function() {
 
     $('#delete_nodes').click(function() {
         deleteDialog
-            .dialog('option', 'buttons', [
-                {
-                    text: 'Delete',
-                    click: function() {
-                        var data = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
-                        submitRequest('POST', data, function() {
-                            reloadNodes();
-                            deleteDialog.dialog('close');
-                        });
-                    }
+            .dialog('option', 'buttons', {
+                Delete: function() {
+                    var data = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
+                    submitRequest('POST', data, function() {
+                        reloadNodes();
+                        deleteDialog.dialog('close');
+                    });
                 },
-                {
-                    text: 'Cancel',
-                    click: function() {$(this).dialog('close')}
-                }
-            ])
+                Cancel: function() {$(this).dialog('close')}
+            })
             .dialog('open');
     });
 

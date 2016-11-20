@@ -49,22 +49,16 @@ function formatCopyVariablesListItem(listItem, sourceNodeType) {
 function addRelationsListLoadCallback(listContainer, relation) {
     var currentList = listContainer.find('div.dynamic-list');
     selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-    selectDialog.dialog('option', 'buttons', [
-        {
-            text: 'Add',
-            click: function() {
-                alterRelation(relation, selectDialog.DynamicList('getSelected', 'id'), 'add');
-                $(this).dialog('close');
-            }
+    selectDialog.dialog('option', 'buttons', {
+        Add: function () {
+            alterRelation(relation, selectDialog.DynamicList('getSelected', 'id'), 'add');
+            $(this).dialog('close');
         },
-        {
-            text: 'Cancel',
-            click: function() {
-                $('.filter_box').val('');
-                $(this).dialog('close');
-            }
+        Cancel: function () {
+            $('.filter_box').val('');
+            $(this).dialog('close');
         }
-    ]);
+    });
 }
 
 function addRelationsButtonAction(nodeType, relation) {
@@ -277,25 +271,19 @@ $(document).ready(function () {
                         .attr({class: 'glyphicon glyphicon-trash btn-incell',  title: 'Delete'})
                         .click(function() {
                             deleteDialog
-                                .dialog('option', 'buttons', [
-                                    {
-                                        text: 'Delete',
-                                        click: function() {
-                                            $(this).dialog('close');
-                                            $.ajax({
-                                                url: 'vars/',
-                                                type: 'POST',
-                                                dataType: 'json',
-                                                data: {action: 'del', id: data[3]},
-                                                success: function() {variableTable.DataTable().ajax.reload()}
-                                            });
-                                        }
+                                .dialog('option', 'buttons', {
+                                    Delete: function() {
+                                        $(this).dialog('close');
+                                        $.ajax({
+                                            url: 'vars/',
+                                            type: 'POST',
+                                            dataType: 'json',
+                                            data: {action: 'del', id: data[3]},
+                                            success: function() {variableTable.DataTable().ajax.reload()}
+                                        });
                                     },
-                                    {
-                                        text: 'Cancel',
-                                        click: function() {$(this).dialog('close')}
-                                    }
-                                ])
+                                    Cancel: function() {$(this).dialog('close')}
+                                })
                                 .dialog('open');
                         })
                 )
@@ -468,21 +456,15 @@ $(document).ready(function () {
     $('#delete_node').click(function() {
         event.preventDefault();
         deleteDialog
-            .dialog('option', 'buttons', [
-                {
-                    text: 'Delete',
-                    click: function() {
-                        $(this).dialog('close');
-                        submitRequest('POST', {action: 'delete'}, function() {
-                            window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
-                        });
-                    }
+            .dialog('option', 'buttons', {
+                Delete: function() {
+                    $(this).dialog('close');
+                    submitRequest('POST', {action: 'delete'}, function() {
+                        window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
+                    });
                 },
-                {
-                    text: 'Cancel',
-                    click: function() {$(this).dialog('close')}
-                }
-            ])
+                Cancel: function() {$(this).dialog('close')}
+            })
             .dialog('open');
     });
 

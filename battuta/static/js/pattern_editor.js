@@ -112,29 +112,23 @@ $('.select_nodes').click(function () {
                 })
             }
         })
-        .dialog('option', 'buttons', [
-            {
-                text: 'Add',
-                click: function () {
-                    var selection = selectDialog.DynamicList('getSelected', 'value');
-                    for (var i = 0; i < selection.length; i++) {
-                        if (patternContainer.html() != '') {
-                            patternContainer.append(separator)
-                        }
-                        patternContainer.append(selection[i])
+        .dialog('option', 'buttons', {
+            Add: function () {
+                var selection = selectDialog.DynamicList('getSelected', 'value');
+                for (var i = 0; i < selection.length; i++) {
+                    if (patternContainer.html() != '') {
+                        patternContainer.append(separator)
                     }
-                    patternContainer.removeClass('hidden');
-                    $(this).dialog('close');
+                    patternContainer.append(selection[i])
                 }
+                patternContainer.removeClass('hidden');
+                $(this).dialog('close');
             },
-            {
-                text: 'Cancel',
-                click: function () {
-                    $('.filter_box').val('');
-                    $(this).dialog('close');
-                }
+            Cancel: function () {
+                $('.filter_box').val('');
+                $(this).dialog('close');
             }
-        ])
+        })
         .dialog('open');
 });
 

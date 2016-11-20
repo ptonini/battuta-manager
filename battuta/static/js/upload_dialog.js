@@ -1,7 +1,7 @@
 // Upload dialog
 var uploadField = $('<input>').attr({id: 'upload_field', type: 'file', class: 'form-control'});
 var uploadFieldLabel = $('<label>').attr({id: 'upload_field_label', for: 'upload_field'}).html('Select file');
-var uploadDialog = $('<div>').attr('id', 'upload_dialog').css('margin', '20px').append(uploadFieldLabel, uploadField);
+var uploadDialog = $('<div>').attr('id', 'upload_dialog').append(uploadFieldLabel, uploadField);
 
 uploadField
     .change(function (event) {

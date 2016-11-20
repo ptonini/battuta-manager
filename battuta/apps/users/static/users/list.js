@@ -18,25 +18,19 @@ $(document).ready(function () {
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
                     .click(function() {
                         deleteDialog
-                            .dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        $(this).dialog('close');
-                                        $.ajax({
-                                            url: '/users/view/',
-                                            type: 'POST',
-                                            dataType: 'json',
-                                            data: {action: 'delete', user_id: data[4]},
-                                            success: function () {userTable.DataTable().ajax.reload()}
-                                        });
-                                    }
+                            .dialog('option', 'buttons', {
+                                Delete: function () {
+                                    $(this).dialog('close');
+                                    $.ajax({
+                                        url: '/users/view/',
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        data: {action: 'delete', user_id: data[4]},
+                                        success: function () {userTable.DataTable().ajax.reload()}
+                                    });
                                 },
-                                {
-                                    text: 'Cancel',
-                                    click: function () {$(this).dialog('close')}
-                                }
-                            ])
+                                Cancel: function () {$(this).dialog('close')}
+                            })
                             .dialog('open');
                     })
             )

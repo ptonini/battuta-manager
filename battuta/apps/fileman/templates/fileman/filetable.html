@@ -7,12 +7,12 @@
 <div class="row"><div class="col-md-12"><br></div></div>
 <div class="row row-eq-height">
     <div class="col-md-10">
-        <ol id="path_links" class="breadcrumb">
-            <li id="root_path"><i><b>&lt;{{ root_folder }}&gt;</b></i></li>
+        <ol id="path_links" class="breadcrumb">Path:
+            <li id="root_path"><i><b>{{ root_folder }}</b></i></li>
         </ol>
     </div>
     <div class="col-md-2 text-right" style="margin: auto">
-        {% if root_folder == 'role_root' %}
+        {% if root_folder == 'roles_path' %}
             <button id="create_role" class="btn btn-default btn-sm">New role</button>
         {% endif %}
         <button id="create_file" class="btn btn-default btn-sm" title="Create">

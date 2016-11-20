@@ -20,8 +20,6 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .input[type="checkbox"] {margin: 10px 0 0 5px}
 
-
-
 .chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
 
 .breadcrumb {margin-bottom: 0; cursor: pointer}
@@ -126,7 +124,7 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 }
 
 /* Set padding for small dialogs*/
-#alert_dialog, #delete_dialog, #restore_dialog, #password_dialog {padding: 20px}
+#alert_dialog, #delete_dialog, #restore_dialog, #password_dialog, #file_dialog, #upload_dialog {padding: 20px}
 
 /* JSON box options */
 #json_box {

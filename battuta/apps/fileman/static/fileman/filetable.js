@@ -42,6 +42,8 @@ $(document).ready(function() {
 
     // Initiate file table
     fileTable.DataTable({
+        paginate: false,
+        filter: false,
         ajax: {
             dataSrc: '',
             data: function(d) {
@@ -122,23 +124,17 @@ $(document).ready(function() {
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
                     .click(function () {
                         deleteDialog
-                            .dialog('option', 'buttons', [
-                                {
-                                    text: 'Delete',
-                                    click: function () {
-                                        objectData['action'] = 'delete';
-                                        objectData['file_name'] = fileName;
-                                        submitRequest('POST', objectData, function() {
-                                            fileTable.DataTable().ajax.reload()
-                                        });
-                                        $(this).dialog('close');
-                                    }
+                            .dialog('option', 'buttons', {
+                                Delete: function () {
+                                    objectData['action'] = 'delete';
+                                    objectData['file_name'] = fileName;
+                                    submitRequest('POST', objectData, function() {
+                                        fileTable.DataTable().ajax.reload()
+                                    });
+                                    $(this).dialog('close');
                                 },
-                                {
-                                    text: 'Cancel',
-                                    click: function() {$(this).dialog('close')}
-                                }
-                            ])
+                                Cancel: function() {$(this).dialog('close')}
+                            })
                             .dialog('open');
                     })
             );
@@ -149,10 +145,9 @@ $(document).ready(function() {
 
             table.api().rows('.directory_row').every(function () {
                 directoryArray.push(this.node());
-                this.node().remove()
             });
 
-            for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]).DataTable().draw();
+            for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]);
         }
     });
 });

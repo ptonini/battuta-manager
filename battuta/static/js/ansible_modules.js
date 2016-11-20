@@ -57,8 +57,6 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
         $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'), stateSelect
     );
 
-
-
     var sudoButton = $('<button>')
         .html('Sudo')
         .attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm'})
