@@ -1,25 +1,14 @@
+.dynamic-list-header > span.badge {background-color: #cacaca}
 
-h4.dynamic-list-header span.badge {
-    margin-left: 5px;
-    background-color: #cacaca;
-}
+.dynamic-list-header > span, .dynamic-list-header > a, .dynamic-list-header > button {margin-right: 5px}
 
-h4.dynamic-list-header a {
-    margin-left: 5px;
-    border-style: hidden
-}
-h4.dynamic-list-header.top-align {
-    vertical-align: text-top;
-    margin-top: 0;
-}
+.dynamic-list-header > a {border-style: hidden}
 
-div.dynamic-list {
-    margin-bottom: 0;
-}
+.dynamic-list-header.top-align {vertical-align: text-top; margin-top: 0}
 
-div.dynamic-list.checkered div:nth-child(odd) {
-    background-color: #F8F8F8;
-}
+div.dynamic-list {margin-bottom: 0}
+
+div.dynamic-list.checkered div:nth-child(odd) {background-color: #F8F8F8}
 
 div.dynamic-list div.dynamic-item {
     padding: 0 5px;
@@ -29,9 +18,7 @@ div.dynamic-list div.dynamic-item {
     line-height: 30px;
 }
 
-div.dynamic-list div.dynamic-item:not(.toggle-on) {
-    border-radius: 0;
-}
+div.dynamic-list div.dynamic-item:not(.toggle-on) {border-radius: 0}
 
 div.dynamic-list div.dynamic-item:hover,
 div.dynamic-list div.dynamic-item .glyphicon:hover {
@@ -41,25 +28,10 @@ div.dynamic-list div.dynamic-item .glyphicon:hover {
     cursor: pointer;
 }
 
-div.dynamic-list div.dynamic-item.toggle-on {
-    background: #D3D3D3;
-    border-radius: 3px;
-}
+div.dynamic-list div.dynamic-item.toggle-on {background: #D3D3D3; border-radius: 3px}
 
-div.dynamic-list div.dynamic-item.toggle-on:hover {
-    background: #BABABA;
-    color: #FFFFFF;
-}
+div.dynamic-list div.dynamic-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 
-.truncate-text {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-}
+.truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
 
-.row-eq-height {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-}
+.row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}

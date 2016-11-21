@@ -174,6 +174,7 @@ function openNodeFactsDialog(data) {
 
 function buildDescendantsList(data) {
     var listOptions = {
+        headerTag: '<h5>',
         dataSource: 'array',
         showTitle: true,
         hideIfEmpty: true,

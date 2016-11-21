@@ -312,6 +312,7 @@ class NodeDetailsView(View):
 
     @staticmethod
     def build_node(node_type, node_name):
+
         # Get classes based on node type
         if node_type == 'host':
             node_class = Host
@@ -322,52 +323,52 @@ class NodeDetailsView(View):
         else:
             raise Http404('Invalid node type')
 
+        ancestors = None
+        group_descendants = None
+        host_descendants = None
+
         # Build node object
         if node_name == '0':
             node = node_class()
         else:
             node = get_object_or_404(node_class, name=node_name)
 
-        setattr(node, 'form_class', node_form_class)
-
-        ancestors = set()
-        parents = node.group_set.all()
-        while len(parents) > 0:
-            step_list = set()
-            for parent in parents:
-                ancestors.add(parent)
-                for group in parent.group_set.all():
-                    step_list.add(group)
-            parents = step_list
-        if node.name != 'all':
-            ancestors.add(Group.objects.get(name='all'))
-
-        setattr(node, 'ancestors', ancestors)
-
-        groups = None
-        hosts = None
-
-        if node.type == 'group':
-            groups = set()
-            children = node.children.all()
-            while len(children) > 0:
+            ancestors = set()
+            parents = node.group_set.all()
+            while len(parents) > 0:
                 step_list = set()
-                for child in children:
-                    groups.add(child)
-                    for node in child.children.all():
-                        step_list.add(node)
-                children = step_list
+                for parent in parents:
+                    ancestors.add(parent)
+                    for group in parent.group_set.all():
+                        step_list.add(group)
+                parents = step_list
+            if node.name != 'all':
+                ancestors.add(Group.objects.get(name='all'))
 
-            members = {host for host in node.members.all()}
-            hosts = members.union({host for group in groups for host in group.members.all()})
+            if node.type == 'group':
+                group_descendants = set()
+                children = node.children.all()
+                while len(children) > 0:
+                    step_list = set()
+                    for child in children:
+                        group_descendants.add(child)
+                        for grandchild in child.children.all():
+                            step_list.add(grandchild)
+                    children = step_list
 
-        setattr(node, 'group_descendants', groups)
-        setattr(node, 'host_descendants', hosts)
+                members = {host for host in node.members.all()}
+                host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
+
+        setattr(node, 'form_class', node_form_class)
+        setattr(node, 'ancestors', ancestors)
+        setattr(node, 'group_descendants', group_descendants)
+        setattr(node, 'host_descendants', host_descendants)
 
         return node
 
     def get(self, request, node_name, node_type):
         node = self.build_node(node_type, node_name)
+
         if 'action' not in request.GET:
             self.context['node'] = node
             return render(request, 'inventory/node_details.html', self.context)
@@ -377,6 +378,7 @@ class NodeDetailsView(View):
                     data = {'result': 'ok', 'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))}
                 else:
                     data = {'result': 'failed'}
+
             elif request.GET['action'] == 'ancestors':
                 data = {'result': 'ok', 'groups': [[group.name, group.id] for group in node.ancestors]}
 
@@ -517,7 +519,6 @@ class RelationsView(View):
     def get(self, request, node_type, node_name, relationship):
         node = NodeDetailsView.build_node(node_type, node_name)
         related_set, related_class = self.get_relationships(node, relationship)
-        data = None
 
         if request.GET['list'] == 'related':
 
@@ -525,33 +526,38 @@ class RelationsView(View):
 
         elif request.GET['list'] == 'not_related':
 
-            data = list()
+            candidate_set = related_class.objects.order_by('name').exclude(name='all')
 
-            candidate_set = related_class.objects.order_by('name')
-            if relationship == 'parents':
-                pass
+            if related_class == type(node):
+                candidate_set = candidate_set.exclude(pk=node.id)
 
+            if relationship == 'parents' and node.group_descendants:
+                candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.group_descendants])
+            elif relationship == 'children' and node.ancestors:
+                candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
 
-            #node_ancestors = NodeDetailsView.get_node_ancestors(node)
-
-            for related in related_class.objects.order_by('name'):
-                if related not in related_set.all() and related != node and related.name != 'all':
-                    data.append([related.name, related.id])
+            data = [[candidate.name, candidate.id] for candidate in candidate_set if candidate not in related_set.all()]
 
         else:
-
             raise Http404('Invalid request')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
-    def post(self, request, node_type, node_name, relation):
+    def post(self, request, node_type, node_name, relationship):
+
         node = NodeDetailsView.build_node(node_type, node_name)
-        related_set, related_class = self.get_relationships(node, relation)
+
+        related_set, related_class = self.get_relationships(node, relationship)
+
         if request.POST['action'] == 'add':
             for selected in request.POST.getlist('selection[]'):
                 related_set.add(get_object_or_404(related_class, pk=selected))
+
         elif request.POST['action'] == 'remove':
+
             for selected in request.POST.getlist('selection[]'):
                 related_set.remove(get_object_or_404(related_class, pk=selected))
+
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps({'result': 'ok'}), content_type="application/json")
