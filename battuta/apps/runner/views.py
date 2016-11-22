@@ -16,11 +16,9 @@ from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from .functions import play_runner
 
+from main.functions import parse_datatable_serverside_request
 from apps.users.models import Credential
 from apps.preferences.functions import get_preferences
-
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
 
 
 class BaseView(View):
@@ -318,7 +316,9 @@ class HistoryView(BaseView):
             self.context['user'] = request.user
             return render(request, "runner/history.html", self.context)
         else:
-            print pp.pprint(dict(request.GET.iteritems()))
+
+            parse_datatable_serverside_request(dict(request.GET.iteritems()))
+
             tz = timezone(request.user.userdata.timezone)
 
             if request.user.is_superuser:
@@ -344,12 +344,7 @@ class HistoryView(BaseView):
                        runner.status,
                        runner.id]
 
-                if request.GET['search[value]']:
-                    for cell in row:
-                        if cell and request.GET['search[value]'] in str(cell):
-                            filtered_result.append(row)
-                            break
-                else:
+                if not request.GET['search[value]'] or request.GET['search[value]'] in str(json.dumps(row)):
                     filtered_result.append(row)
 
             sort_column = int(request.GET['order[0][column]'])
@@ -367,8 +362,6 @@ class HistoryView(BaseView):
                     'recordsTotal': len(full_queryset),
                     'recordsFiltered': len(filtered_result),
                     'data': filtered_result[start:end]}
-
-            pp.pprint(data)
 
             return HttpResponse(json.dumps(data), content_type="application/json")
 
