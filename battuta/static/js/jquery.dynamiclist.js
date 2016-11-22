@@ -45,9 +45,13 @@
     }
 
     function _loadFromArray(listContainer, listBody, opts) {
-        if (opts.dataArray == 0 && opts.hideIfEmpty) listContainer.hide();
+        if (opts.dataArray == 0){
+            if (opts.hideIfEmpty) listContainer.hide();
+            if (opts.hideBodyIfEmpty) listBody.empty().closest('div.row').hide();
+        }
         else {
             listContainer.show();
+            listBody.closest('div.row').show();
             listBody.empty();
             $.each(opts.dataArray, function (index, value) {
                 listBody.append(
@@ -123,11 +127,12 @@
 
             var listHeader = $(opts.headerTag).attr({class: 'dynamic-list-header', id: opts.listTitle});
 
-            var listBody = $('<div>').attr({class: 'list-group dynamic-list', id: opts.listTitle + '_list'});
+            var listBody = $('<div>')
+                .attr({class: 'list-group dynamic-list', id: opts.listTitle + '_list'})
+                .css({'margin-bottom': opts.listBodyBottomMargin, 'margin-top': opts.listBodyTopMargin});
 
             listContainer
                 .empty()
-                .css('margin-bottom', opts.listContainerBottomMargin)
                 .addClass('dynamic-list-group')
                 .append(
                     $('<div>').attr('class', 'row row-eq-height').append(
@@ -256,8 +261,10 @@
         addButtonTitle: null,
         topAlignHeader: false,
         addButtonType: 'icon',
-        listContainerBottomMargin: 0,
+        listBodyTopMargin: 0,
+        listBodyBottomMargin: 0,
         hideIfEmpty: false,
+        hideBodyIfEmpty: false,
         maxHeight: null,
         showFilter: false,
         checkered: false,

@@ -29,6 +29,9 @@ $.ajaxSetup({
     cache: false
 });
 
+
+jQuery.fn.reverse = [].reverse;
+
 // Set AJAX default error handling
 $(document).ajaxError(function (event, xhr) {
     if (xhr.status == 500) $('body').html($('pre').html(xhr.responseText));
@@ -181,3 +184,10 @@ function popupCenter(url, title, w) {
     }
 }
 
+function invertRGB(rgb) {
+    rgb = Array.prototype.join.call(arguments).match(/(-?[0-9\.]+)/g);
+    for (var i = 0; i < rgb.length; i++) {
+        rgb[i] = (i === 3 ? 1 : 255) - rgb[i];
+    }
+    return rgb;
+}

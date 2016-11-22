@@ -22,7 +22,7 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
 
-.breadcrumb {margin-bottom: 0; cursor: pointer}
+#path_links.breadcrumb {margin-bottom: 0; cursor: pointer}
 
 .report_field_left {padding: 0 0 0 15px}
 
@@ -39,8 +39,6 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .pattern_editor_row {width: 95%; margin: 10px 0}
 
-/*************************************/
-
 
 /* Navbar options ********************/
 
@@ -49,8 +47,6 @@ header.navbar button.btn-icon {background-color: #F8F8F8; border: transparent}
 header.navbar button.btn-icon:hover {background-color: #e6e6e6}
 
 header.navbar .dropdown-menu {font-size: small}
-
-/*************************************/
 
 
 /* JQuery UI options *****************/
@@ -64,8 +60,6 @@ header.navbar .dropdown-menu {font-size: small}
 .ui-dialog {box-shadow: 0 0 20px #888888; border-radius: 5px; position: fixed}
 
 .ui-widget-overlay {background: white; opacity: 0}
-
-/*************************************/
 
 
 /* DataTables options ****************/
@@ -94,12 +88,17 @@ div.dataTables_length select.input-sm, div.dataTables_filter input.input-sm {hei
 div.dataTables_length, div.dataTables_filter {height: 25px}
 
 table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after,
-table.dataTable thead .sorting_desc:after, table.dataTable thead .sorting_asc_disabled:after,
-table.dataTable thead .sorting_desc_disabled:after {display: none}
+table.dataTable thead .sorting_desc:after {font-family: FontAwesome, sans-serif}
+
+table.dataTable thead th.sorting:after {content: "\f0dc"; color: transparent}
+table.dataTable thead th.sorting_asc:after {content: "\f0de"}
+table.dataTable thead th.sorting_desc:after {content: "\f0dd"}
 
 .btn-incell {padding: 0 3px; cursor: pointer}
 
-/*************************************/
+.child_table_container {margin: 0; padding: 10px}
+
+tr.child_row {background-color: transparent !important}
 
 
 /* Checked button class options */
@@ -120,7 +119,7 @@ a.btn, button.btn, span.ui-button-text {font-family: "Actor", sans-serif;}
 
 /* Elements using Helvetica font */
 input, select, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Set padding for small dialogs*/

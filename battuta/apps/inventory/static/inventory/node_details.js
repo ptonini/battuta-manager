@@ -180,7 +180,7 @@ function buildDescendantsList(data) {
         hideIfEmpty: true,
         checkered: true,
         showCount: true,
-        listContainerBottomMargin: '20px',
+        listBodyBottomMargin: '20px',
         minColumns: sessionStorage.getItem('node_list_min_columns'),
         maxColumns: sessionStorage.getItem('node_list_max_columns'),
         breakPoint: sessionStorage.getItem('node_list_break_point'),
@@ -240,6 +240,8 @@ $(document).ready(function () {
             addButtonClass: 'add_relation',
             addButtonTitle: 'Add relationship',
             checkered: true,
+            listBodyTopMargin: '10px',
+            hideBodyIfEmpty: true,
             minColumns: sessionStorage.getItem('relation_list_min_columns'),
             maxColumns: sessionStorage.getItem('relation_list_max_columns'),
             breakPoint: sessionStorage.getItem('relation_list_break_point'),
@@ -303,10 +305,14 @@ $(document).ready(function () {
             var duplicates = {};
 
             table.api().rows().every(function () {
+
                 var rowKey = this.data()[0];
                 var isMain = this.data()[4];
                 var rowData = [this.data(), this.node()];
                 var keyIndexes = getAllIndexes(variableKeys, rowKey);
+
+
+
 
                 if (keyIndexes.length > 1)  {
 
@@ -324,14 +330,15 @@ $(document).ready(function () {
 
                     var mainValue = null;
                     var duplicatesTable = $('<table>')
-                        .css({margin: 0, color: '#777'})
-                        .attr('class', 'table table-condensed table-striped table-hover')
-                        .append($('<tbody>'));
+                        .css({margin: '5px', color: '#777'})
+                        .attr('class', 'table table-condensed table-striped')
+                        .append($('<tbody>')
+                    );
 
                     $.each(duplicates[key]['values'], function (index, value) {
                         if (value[0][4]) mainValue = value;
                         else {
-                            $(value[1]).find('td:eq(0)').html('').removeAttr('title').addClass('col-md-3');
+                            $(value[1]).find('td:eq(0)').css({'background-color': 'white', color: 'transparent'});
                             $(value[1]).find('td:eq(1)').addClass('col-md-7');
                             $(value[1]).find('td:eq(2)').addClass('col-md-2');
                             duplicatesTable.find('tbody').append(value[1]);
@@ -343,20 +350,22 @@ $(document).ready(function () {
                         var row = table.DataTable().row(mainValue[1]);
 
                         $(mainValue[1]).find('td:eq(0)').html('').append(
+                            mainValue[0][0],
                             $('<span>')
                                 .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
                                 .off()
                                 .click(function () {
                                     if (row.child.isShown()) {
-                                       $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
+                                        $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
                                         row.child.hide()
                                     }
                                     else {
                                         $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                                        row.child(duplicatesTable).show()
+                                        row.child(duplicatesTable).show();
+                                        $(mainValue[1]).closest('tr').next().attr('class', 'child_row')
                                     }
-                                }),
-                            mainValue[0][0]
+                                })
+
                         );
 
                     }

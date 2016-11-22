@@ -1,5 +1,4 @@
 import os
-import pprint
 import MySQLdb
 
 from collections import namedtuple
@@ -15,6 +14,7 @@ from django.conf import settings
 
 from .callbacks import BattutaCallback
 
+import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 AnsibleOptions = namedtuple('Options', ['connection',

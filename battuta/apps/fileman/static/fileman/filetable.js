@@ -42,8 +42,6 @@ $(document).ready(function() {
 
     // Initiate file table
     fileTable.DataTable({
-        paginate: false,
-        filter: false,
         ajax: {
             dataSrc: '',
             data: function(d) {
@@ -125,6 +123,7 @@ $(document).ready(function() {
                     .click(function () {
                         deleteDialog
                             .dialog('option', 'buttons', {
+
                                 Delete: function () {
                                     objectData['action'] = 'delete';
                                     objectData['file_name'] = fileName;
@@ -141,13 +140,7 @@ $(document).ready(function() {
         },
         drawCallback: function() {
             var table = this;
-            var directoryArray = [];
-
-            table.api().rows('.directory_row').every(function () {
-                directoryArray.push(this.node());
-            });
-
-            for (var i = directoryArray.length; i > 0; --i) table.prepend(directoryArray[i-1]);
+            fileTable.find('tr.directory_row').reverse().each(function () {table.prepend($(this));});
         }
     });
 });

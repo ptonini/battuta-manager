@@ -6,7 +6,7 @@ function searchEntities(entityType, resultContainer, pattern) {
         hideIfEmpty: true,
         checkered: true,
         headerBottomMargin: '0',
-        listContainerBottomMargin: '20px',
+        listBodyBottomMargin: '20px',
         minColumns: sessionStorage.getItem('node_list_min_columns'),
         maxColumns: sessionStorage.getItem('node_list_max_columns'),
         breakPoint: sessionStorage.getItem('node_list_break_point'),
