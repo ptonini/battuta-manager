@@ -16,7 +16,7 @@ from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
 from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from .functions import play_runner
 
-from main.functions import parse_datatable_serverside_request
+from main import DataTableRequestHandler
 from apps.users.models import Credential
 from apps.preferences.functions import get_preferences
 
@@ -317,17 +317,18 @@ class HistoryView(BaseView):
             return render(request, "runner/history.html", self.context)
         else:
 
-            parse_datatable_serverside_request(dict(request.GET.iteritems()))
-
-            tz = timezone(request.user.userdata.timezone)
-
+            # Build queryset
             if request.user.is_superuser:
-                full_queryset = Runner.objects.all()
+                queryset = Runner.objects.all()
             else:
-                full_queryset = Runner.objects.filter(user=request.user)
+                queryset = Runner.objects.filter(user=request.user)
 
-            filtered_result = list()
-            for runner in full_queryset:
+            # Initiate handler
+            handler = DataTableRequestHandler(request.GET, queryset)
+
+            # Build list from queryset
+            tz = timezone(request.user.userdata.timezone)
+            for runner in queryset:
                 if runner.subset:
                     target = runner.subset
                 else:
@@ -344,26 +345,9 @@ class HistoryView(BaseView):
                        runner.status,
                        runner.id]
 
-                if not request.GET['search[value]'] or request.GET['search[value]'] in str(json.dumps(row)):
-                    filtered_result.append(row)
+                handler.add_and_filter_row(row)
 
-            sort_column = int(request.GET['order[0][column]'])
-            if request.GET['order[0][dir]'] == 'desc':
-                reverse = True
-            else:
-                reverse = False
-
-            filtered_result.sort(key=lambda x: x[sort_column], reverse=reverse)
-
-            start = int(request.GET['start'])
-            end = start + int(request.GET['length'])
-
-            data = {'draw': int(request.GET['draw']),
-                    'recordsTotal': len(full_queryset),
-                    'recordsFiltered': len(filtered_result),
-                    'data': filtered_result[start:end]}
-
-            return HttpResponse(json.dumps(data), content_type="application/json")
+            return HttpResponse(handler.build_response(), content_type="application/json")
 
 
 class ResultView(BaseView):

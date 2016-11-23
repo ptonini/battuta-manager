@@ -79,7 +79,6 @@ class ImportExportView(View):
         else:
 
             if request.GET['action'] == 'export' and request.GET['type'] == 'json':
-
                 data = InventoryView.inventory_to_dict(internal_vars=False)
 
             else:
