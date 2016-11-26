@@ -48,14 +48,14 @@ selectDialog.dialog($.extend({}, defaultDialogOptions, {
 
 // JSON dialog
 var jsonDialog = $('<div>').attr('id', 'json_dialog').append(
-    $('<pre>').attr('id', 'json_box')
+    $('<h4>').attr('id', 'json_dialog_header'),
+    $('<div>').attr('id', 'json_box')
 );
 jsonDialog.dialog($.extend({}, defaultDialogOptions, {
     width: 'auto',
-    maxHeight: 480,
     buttons: {
         Ok: function () {
-            $(this).children('pre').html('');
+            $(this).children().html('');
             $(this).dialog('close');
         }
     }

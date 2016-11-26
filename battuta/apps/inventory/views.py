@@ -215,59 +215,53 @@ class NodesView(View):
             if request.GET['action'] == 'host_table':
                 for host in Host.objects.all():
                     if host.facts:
+                        row = [host.name]
                         facts = json.loads(host.facts)
                         if prefs['use_ec2_facts']:
 
-                            if 'ansible_default_ipv4' in facts:
-                                ansible_default_ipv4 = facts['ansible_default_ipv4']['address']
+                            if 'default_ipv4' in facts:
+                                row.append(facts['default_ipv4']['address'])
                             else:
-                                ansible_default_ipv4 = ''
+                                row.append('')
 
-                            if 'ansible_ec2_public_ipv4' in facts:
-                                ansible_ec2_public_ipv4 = facts['ansible_ec2_public_ipv4']
+                            if 'ec2_public_ipv4' in facts:
+                                row.append(facts['ec2_public_ipv4'])
                             else:
-                                ansible_ec2_public_ipv4 = ''
+                                row.append('')
 
-                            if 'ansible_ec2_instance_type' in facts:
-                                ansible_ec2_instance_type = facts['ansible_ec2_instance_type']
+                            if 'ec2_instance_type' in facts:
+                                row.append(facts['ec2_instance_type'])
                             else:
-                                ansible_ec2_instance_type = ''
+                                row.append('')
 
-                            if 'ansible_processor_count' in facts:
-                                ansible_processor_count = facts['ansible_processor_count']
+                            if 'processor_count' in facts:
+                                row.append(facts['processor_count'])
                             else:
-                                ansible_processor_count = ''
+                                row.append('')
 
-                            if 'ansible_memtotal_mb' in facts:
-                                ansible_memtotal_mb = facts['ansible_memtotal_mb']
+                            if 'memtotal_mb' in facts:
+                                row.append(facts['memtotal_mb'])
                             else:
-                                ansible_memtotal_mb = ''
+                                row.append('')
 
-                            if 'ansible_mounts' in facts:
-                                ansible_root_size = facts['ansible_mounts'][0]['size_total']
+                            if 'mounts' in facts:
+                                row.append(facts['mounts'][0]['size_total'])
                             else:
-                                ansible_root_size = ''
+                                row.append('')
 
-                            if 'ansible_date_time' in facts:
-                                ansible_date_time = facts['ansible_date_time']['date']
+                            if 'date_time' in facts:
+                                row.append(facts['date_time']['date'])
                             else:
-                                ansible_date_time = ''
+                                row.append('')
 
-                            data.append([host.name,
-                                         ansible_default_ipv4,
-                                         ansible_ec2_public_ipv4,
-                                         ansible_ec2_instance_type,
-                                         ansible_processor_count,
-                                         ansible_memtotal_mb,
-                                         ansible_root_size,
-                                         ansible_date_time])
+                            data.append(row)
                         else:
                             data.append([host.name,
-                                         facts['ansible_default_ipv4']['address'],
-                                         facts['ansible_processor_count'],
-                                         facts['ansible_memtotal_mb'],
-                                         facts['ansible_mounts'][0]['size_total'],
-                                         facts['ansible_date_time']['date']])
+                                         facts['default_ipv4']['address'],
+                                         facts['processor_count'],
+                                         facts['memtotal_mb'],
+                                         facts['mounts'][0]['size_total'],
+                                         facts['date_time']['date']])
                     else:
                         if prefs['use_ec2_facts']:
                             data.append([host.name, '', '', '', '', '', '', ''])
@@ -374,7 +368,9 @@ class NodeDetailsView(View):
         else:
             if request.GET['action'] == 'facts':
                 if node.facts:
-                    data = {'result': 'ok', 'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))}
+                    data = {'result': 'ok',
+                            'name': node.name,
+                            'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))}
                 else:
                     data = {'result': 'failed'}
 

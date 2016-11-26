@@ -98,10 +98,10 @@ function loadFacts(data) {
     if (data.result == 'ok') {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
-        var distribution = facts.ansible_distribution + ' ' + facts.ansible_distribution_version;
+        var distribution = facts.distribution + ' ' + facts.distribution_version;
         var hdSizeSum = 0;
         var hdCount = 0;
-        $.each(facts.ansible_mounts, function(index, value) {
+        $.each(facts.mounts, function(index, value) {
             hdSizeSum += value.size_total;
             ++hdCount
         });
@@ -109,24 +109,24 @@ function loadFacts(data) {
             divRow.clone().attr('id', 'facts_row').append(
                 divCol4.clone().append(
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('Full hostname:'), divCol6R.clone().append(facts.ansible_fqdn)
+                        divCol6L.clone().append('Full hostname:'), divCol6R.clone().append(facts.fqdn)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
                         divCol6L.clone().append('Default IPv4 address:'),
-                        divCol6R.clone().append(facts.ansible_default_ipv4.address)
+                        divCol6R.clone().append(facts.default_ipv4.address)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('Cores:'), divCol6R.clone().append(facts.ansible_processor_count)
+                        divCol6L.clone().append('Cores:'), divCol6R.clone().append(facts.processor_count)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
                         divCol6L.clone().append('Total disk space'), divCol6R.clone().append(humanBytes(hdSizeSum))
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
                         divCol6L.clone().append('RAM Memory'),
-                        divCol6R.clone().append(humanBytes(facts.ansible_memtotal_mb, 'MB'))
+                        divCol6R.clone().append(humanBytes(facts.memtotal_mb, 'MB'))
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('OS Family:'), divCol6R.clone().append(facts.ansible_os_family)
+                        divCol6L.clone().append('OS Family:'), divCol6R.clone().append(facts.os_family)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
                         divCol6L.clone().append('OS Distribution:'), divCol6R.clone().append(distribution)
@@ -134,30 +134,30 @@ function loadFacts(data) {
                 )
             ),
             $('<br>'),
-            divRow.clone().append(divCol12.html('Facts gathered in ' + facts.ansible_date_time.date))
+            divRow.clone().append(divCol12.html('Facts gathered in ' + facts.date_time.date))
         )
     }
     if (sessionStorage.getItem('use_ec2_facts') == 'true') {
         $('#facts_row').append(
             divCol4.clone().append(
                 divRow.clone().attr('class', 'row-eq-height').append(
-                    divCol6L.clone().append('EC2 hostname:'), divCol6R.clone().append(facts.ansible_ec2_hostname)
+                    divCol6L.clone().append('EC2 hostname:'), divCol6R.clone().append(facts.ec2_hostname)
                 ),
                 divRow.clone().attr('class', 'row-eq-height').append(
                     divCol6L.clone().append('EC2 public address:'),
-                    divCol6R.clone().append(facts.ansible_ec2_public_ipv4)
+                    divCol6R.clone().append(facts.ec2_public_ipv4)
                 ),
                 divRow.clone().attr('class', 'row-eq-height').append(
                     divCol6L.clone().append('EC2 instance type:'),
-                    divCol6R.clone().append(facts.ansible_ec2_instance_type)
+                    divCol6R.clone().append(facts.ec2_instance_type)
                 ),
                 divRow.clone().attr('class', 'row-eq-height').append(
                     divCol6L.clone().append('EC2 instance id:'),
-                    divCol6R.clone().append(facts.ansible_ec2_instance_id)
+                    divCol6R.clone().append(facts.ec2_instance_id)
                 ),
                 divRow.clone().attr('class', 'row-eq-height').append(
                     divCol6L.clone().append('EC2 avaliability zone:'),
-                    divCol6R.clone().append(facts.ansible_ec2_placement_availability_zone)
+                    divCol6R.clone().append(facts.ec2_placement_availability_zone)
                 )
             )
         )
@@ -166,8 +166,8 @@ function loadFacts(data) {
 
 function openNodeFactsDialog(data) {
     if (data.result == 'ok') {
-        $('#json_box').JSONView(data.facts).JSONView('collapse', 1);
-        jsonDialog.dialog('open');
+        $('#json_box').JSONView(data.facts, {'recursive_collapser': true}).JSONView('collapse', 1);
+        jsonDialog.dialog('open').children('h4').html(data.name + ' facts');
     }
     else alertDialog.html($('<strong>').append('Facts file not found')).dialog('open');
 }

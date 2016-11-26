@@ -30,6 +30,9 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .reference_link {color: #777; float: right; cursor: pointer}
 
+.jsonview li {margin: 3px 0 3px 0}
+
+#json_box {overflow-y: auto; max-height: 380px; word-break: break-all; width: 700px}
 
 /* Pattern editor options ************/
 

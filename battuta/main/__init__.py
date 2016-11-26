@@ -7,14 +7,12 @@ class DataTableRequestHandler:
     def _build_order_list(request_data):
         order_list = list()
         index = 0
-        while True:
-            if 'order[' + str(index) + '][column]' in request_data:
-                order_list.append({
-                    'column': int(request_data['order[' + str(index) + '][column]']),
-                    'dir': request_data['order[' + str(index) + '][dir]']
-                })
-            else:
-                break
+        while 'order[' + str(index) + '][column]' in request_data:
+            order_list.append({
+                'column': int(request_data['order[' + str(index) + '][column]']),
+                'dir': request_data['order[' + str(index) + '][dir]']
+            })
+
             index += 1
         return order_list
 
@@ -22,20 +20,18 @@ class DataTableRequestHandler:
     def _build_column_list(request_data):
         column_list = list()
         index = 0
-        while True:
-            if 'columns[' + str(index) + '][data]' in request_data:
-                column_list.append({
-                    'data': int(request_data['columns[' + str(index) + '][data]']),
-                    'name': request_data['columns[' + str(index) + '][name]'],
-                    'orderable': request_data['columns[' + str(index) + '][orderable]'] == 'true',
-                    'searchable': request_data['columns[' + str(index) + '][searchable]'] == 'true',
-                    'search': {
-                        'value': request_data['columns[' + str(index) + '][search][value]'],
-                        'regex': request_data['columns[' + str(index) + '][search][regex]'] == 'true',
-                    },
-                })
-            else:
-                break
+        while 'columns[' + str(index) + '][data]' in request_data:
+            column_list.append({
+                'data': int(request_data['columns[' + str(index) + '][data]']),
+                'name': request_data['columns[' + str(index) + '][name]'],
+                'orderable': request_data['columns[' + str(index) + '][orderable]'] == 'true',
+                'searchable': request_data['columns[' + str(index) + '][searchable]'] == 'true',
+                'search': {
+                    'value': request_data['columns[' + str(index) + '][search][value]'],
+                    'regex': request_data['columns[' + str(index) + '][search][regex]'] == 'true',
+                },
+            })
+
             index += 1
         return column_list
 
@@ -54,6 +50,7 @@ class DataTableRequestHandler:
         self._filtered_result = list()
 
     def add_and_filter_row(self, row):
+
         if not self.search['value'] or self.search['value'] in str(json.dumps(row)):
             self._filtered_result.append(row)
 
