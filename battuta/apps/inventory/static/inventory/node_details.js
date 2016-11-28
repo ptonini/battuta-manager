@@ -166,8 +166,9 @@ function loadFacts(data) {
 
 function openNodeFactsDialog(data) {
     if (data.result == 'ok') {
-        $('#json_box').JSONView(data.facts, {'recursive_collapser': true}).JSONView('collapse', 1);
-        jsonDialog.dialog('open').children('h4').html(data.name + ' facts');
+        $('#json_dialog_header').html(data.name + ' facts');
+        $('#json_box').JSONView(data.facts, {'collapsed': true});
+        jsonDialog.dialog('open');
     }
     else alertDialog.html($('<strong>').append('Facts file not found')).dialog('open');
 }

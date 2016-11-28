@@ -206,7 +206,7 @@ class ManagerView(View):
             else:
                 try:
                     with open(full_path, 'w') as f:
-                        for chunk in request.FILES['file']:
+                        for chunk in request.FILES['file_data']:
                             f.write(chunk)
                 except Exception as e:
                     data = {'result': 'fail', 'msg': str(e)}

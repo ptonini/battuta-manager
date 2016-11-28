@@ -12,7 +12,6 @@ class DataTableRequestHandler:
                 'column': int(request_data['order[' + str(index) + '][column]']),
                 'dir': request_data['order[' + str(index) + '][dir]']
             })
-
             index += 1
         return order_list
 
@@ -31,7 +30,6 @@ class DataTableRequestHandler:
                     'regex': request_data['columns[' + str(index) + '][search][regex]'] == 'true',
                 },
             })
-
             index += 1
         return column_list
 
@@ -40,8 +38,8 @@ class DataTableRequestHandler:
         self._draw = int(request_data['draw'])
         self._start = int(request_data['start'])
         self._length = int(request_data['length'])
-        self.search = {'value': request_data['search[value]'],
-                       'regex': request_data['search[regex]'] == 'true'}
+        self._search = {'value': request_data['search[value]'],
+                        'regex': request_data['search[regex]'] == 'true'}
 
         self._order = self._build_order_list(request_data)
         self._columns = self._build_column_list(request_data)
@@ -50,8 +48,7 @@ class DataTableRequestHandler:
         self._filtered_result = list()
 
     def add_and_filter_row(self, row):
-
-        if not self.search['value'] or self.search['value'] in str(json.dumps(row)):
+        if not self._search['value'] or self._search['value'] in str(json.dumps(row)):
             self._filtered_result.append(row)
 
     def build_response(self):

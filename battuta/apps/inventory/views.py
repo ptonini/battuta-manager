@@ -90,10 +90,10 @@ class ImportExportView(View):
     def post(request):
 
         if request.POST['action'] == 'import':
-
+            print request.POST
             # Create temp file and load import data
             with tempfile.TemporaryFile() as temp:
-                for chunk in request.FILES['file']:
+                for chunk in request.FILES['file_data']:
                     temp.write(chunk)
                 temp.seek(0, 0)
                 data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}

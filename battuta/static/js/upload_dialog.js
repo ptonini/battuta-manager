@@ -4,10 +4,17 @@ var uploadFieldLabel = $('<label>').attr({id: 'upload_field_label', for: 'upload
 var uploadDialog = $('<div>').attr('id', 'upload_dialog').append(uploadFieldLabel, uploadField);
 
 uploadField
-    .change(function (event) {
-        $(this).data('files', event.target.files);
-    })
     .fileinput({
+        uploadUrl: window.location.href,
+        uploadAsync: true,
+        uploadExtraData: function () {
+            return {
+                action: 'upload',
+                file_name: uploadField.fileinput('getFileStack')[0].name,
+                file_dir: uploadDialog.data('file_dir'),
+                csrfmiddlewaretoken: getCookie('csrftoken')
+            }
+        },
         showPreview: false,
         showRemove: false,
         showCancel: false,
@@ -15,36 +22,26 @@ uploadField
         browseLabel: '',
         captionClass: 'form-control input-sm',
         browseClass: 'btn btn-default btn-sm'
+    })
+    .on('fileuploaded', function(event, data, previewId, index) {
+        uploadField.fileinput('clear').fileinput('enable');
+        if (data.response.result == 'ok') uploadDialog.dialog('close');
+        else alertDialog.html($('<strong>').append(data.response.msg)).dialog('open')
+    })
+    .on('fileloaded', function(event, file, previewId, index, reader) {
+        $('.ui-button-text:contains("Upload")').parent('button')
+            .off('click')
+            .click(function(event) {uploadField.fileinput('upload')});
     });
+
 
 uploadDialog
     .dialog($.extend({}, defaultDialogOptions, {
         width: '360',
         buttons: {
-            Upload: function() {
-                if (uploadField.data('files')) {
-                    uploadDialog.parent().block({ message: null });
-                    var postData = new FormData();
-                    postData.append('action', 'upload');
-                    postData.append('file_name', uploadField.data('files')[0].name);
-                    postData.append('file_dir', uploadDialog.data('file_dir'));
-                    postData.append('file', uploadField.data('files')[0]);
-                    $.ajax({
-                        type: 'POST',
-                        data: postData,
-                        dataType: 'json',
-                        cache: false,
-                        processData: false,
-                        contentType: false,
-                        success: function (data) {
-                            uploadDialog.parent().unblock();
-                            if (data.result == 'ok') uploadDialog.dialog('close');
-                            else alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open')
-                        }
-                    });
-                }
-            },
+            Upload: function() {},
             Cancel: function() {
+                uploadField.fileinput('cancel');
                 $(this).dialog('close')
             }
         },

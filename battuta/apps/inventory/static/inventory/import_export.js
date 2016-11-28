@@ -3,13 +3,27 @@ $(document).ready(function () {
     rememberSelectedTab('import_tabs');
 
     var importFile = $('#import_file');
+    var importFileButton = $('#import_file_button');
 
     document.title = 'Battuta - Import/Export';
     
     // Initialize import data field
     importFile
-        .change(function(event) {$(this).data('files', event.target.files)})
         .fileinput({
+            uploadUrl: window.location.href,
+            uploadAsync: true,
+            uploadExtraData: function () {
+                return {
+                    action: 'import',
+                    type: $('input[type="radio"][name="import_file_type"]:checked').val(),
+                    csrfmiddlewaretoken: getCookie('csrftoken')
+                }
+            },
+            ajaxSettings: function () {
+                return {
+                    headers: {'X-CSRFToken': getCookie('csrftoken')}
+                }
+            },
             showPreview: false,
             showRemove: false,
             showCancel: false,
@@ -17,45 +31,34 @@ $(document).ready(function () {
             browseLabel: '',
             captionClass: 'form-control input-sm',
             browseClass: 'btn btn-default btn-sm'
+        })
+        .on('fileuploaded', function(event, data, previewId, index) {
+            importFile.fileinput('clear').fileinput('enable');
+            importFileButton.prop('disabled', true);
+            if (data.response.result == 'ok') {
+                alertDialog.data('left-align', true).dialog('open').html(
+                    $('<div>').append(
+                        $('<h5>').append('Import successful:'),
+                        $('<ul>').append(
+                            $('<li>').html('Hosts added: ' + data.response.added_hosts),
+                            $('<li>').html('Groups added: ' + data.response.added_groups),
+                            $('<li>').html('Variables added: ' + data.response.added_vars)
+                        )
+                    )
+                );
+
+            }
+            else alertDialog.html($('<strong>').append(data.response.msg)).dialog('open');
+        })
+        .on('fileloaded', function(event, file, previewId, index, reader) {
+            importFileButton
+                .prop('disabled', false)
+                .off('click')
+                .click(function(event) {importFile.fileinput('upload')});
         });
 
-    $('#import_form').submit(function(event) {
-        event.preventDefault();
-        var sourceType = $('input[type="radio"][name="import_file_type"]:checked').val();
-        if (importFile.data('files')) {
-            var postData = new FormData();
-            postData.append('action', 'import');
-            postData.append('type', sourceType);
-            postData.append('file', importFile.data('files')[0]);
-            $.ajax({
-                url: '',
-                type: 'POST',
-                data: postData,
-                dataType: 'json',
-                cache: false,
-                processData: false,
-                contentType: false,
-                success: function(data) {
-                    if (data.result == 'ok') {
-                        alertDialog.data('left-align', true).dialog('open').html(
-                            $('<div>').append(
-                                $('<h5>').append('Import successful:'),
-                                $('<ul>').append(
-                                    $('<li>').html('Hosts added: ' + data.added_hosts),
-                                    $('<li>').html('Groups added: ' + data.added_groups),
-                                    $('<li>').html('Variables added: ' + data.added_vars)
-                                )
-                            )
-                        )
-                    }
-                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
-                }
-            });
-        }
-    });
 
-    $('#export_form').submit(function(event) {
-        event.preventDefault();
+    $('#export_file_button').click(function(event) {
         switch ($('input[type="radio"][name="export_file_type"]:checked').val()) {
             case 'json':
                 submitRequest('GET', {action: 'export', type: 'json'}, function(data) {

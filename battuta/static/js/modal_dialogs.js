@@ -53,12 +53,7 @@ var jsonDialog = $('<div>').attr('id', 'json_dialog').append(
 );
 jsonDialog.dialog($.extend({}, defaultDialogOptions, {
     width: 'auto',
-    buttons: {
-        Ok: function () {
-            $(this).children().html('');
-            $(this).dialog('close');
-        }
-    }
+    buttons: {Ok: function () { $(this).dialog('close') }}
 }));
 
 
@@ -69,11 +64,5 @@ var nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-cen
     $('<span>').html('&nbsp;&nbsp;&nbsp;&nbsp;'),
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'group').html('Groups')
 );
-nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {
-    buttons: {
-        Cancel: function () {
-            $(this).dialog('close');
-        }
-    }
-}));
+nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, { buttons: {Cancel: function () {$(this).dialog('close')} }}));
 
