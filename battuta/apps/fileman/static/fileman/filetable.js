@@ -85,7 +85,7 @@ $(document).ready(function() {
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                     .click(function () {
-                        if (editableMimeTypes.indexOf(data[1]) > -1) {
+                        if (editableMimeTypes.indexOf(data[1]) > -1 && data[2] >= 65536) {
                             objectData['action'] = 'edit';
                             objectData['file_name'] = fileName;
                             submitRequest('GET', objectData,  function(data) {

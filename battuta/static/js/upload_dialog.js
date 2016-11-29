@@ -8,9 +8,12 @@ uploadField
         uploadUrl: window.location.href,
         uploadAsync: true,
         uploadExtraData: function () {
+            var fileName = '';
+            var fileStack = uploadField.fileinput('getFileStack');
+            if (fileStack.length == 1) fileName = fileStack[0].name;
             return {
                 action: 'upload',
-                file_name: uploadField.fileinput('getFileStack')[0].name,
+                file_name: fileName,
                 file_dir: uploadDialog.data('file_dir'),
                 csrfmiddlewaretoken: getCookie('csrftoken')
             }
@@ -21,7 +24,8 @@ uploadField
         showUpload: false,
         browseLabel: '',
         captionClass: 'form-control input-sm',
-        browseClass: 'btn btn-default btn-sm'
+        browseClass: 'btn btn-default btn-sm',
+        progressClass: 'progress-bar progress-bar-success active'
     })
     .on('fileuploaded', function(event, data, previewId, index) {
         uploadField.fileinput('clear').fileinput('enable');
@@ -41,7 +45,7 @@ uploadDialog
         buttons: {
             Upload: function() {},
             Cancel: function() {
-                uploadField.fileinput('cancel');
+                uploadField.fileinput('cancel').fileinput('clear').fileinput('enable');
                 $(this).dialog('close')
             }
         },

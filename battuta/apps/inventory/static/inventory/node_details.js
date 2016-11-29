@@ -322,6 +322,8 @@ $(document).ready(function () {
                         duplicates[rowKey].values.push(rowData);
                     }
                     else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
+
+                    console.log(rowData)
                 }
             });
 

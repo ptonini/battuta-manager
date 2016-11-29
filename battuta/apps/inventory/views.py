@@ -451,6 +451,7 @@ class VariablesView(View):
                 for value in value_list:
                     if value[1] == actual_value:
                         value[4] = True
+                        break
 
             data += value_list
 
