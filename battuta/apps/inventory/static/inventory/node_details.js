@@ -259,6 +259,7 @@ $(document).ready(function () {
         pageLength: 100,
         ajax: {url: 'vars/', dataSrc: ''},
         rowCallback: function(row, data) {
+
             if (data[2] == '') {
                 $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
                     $('<span>')
@@ -307,13 +308,12 @@ $(document).ready(function () {
 
             table.api().rows().every(function () {
 
+                if (this.child.isShown()) this.child.hide();
+
                 var rowKey = this.data()[0];
                 var isMain = this.data()[4];
                 var rowData = [this.data(), this.node()];
                 var keyIndexes = getAllIndexes(variableKeys, rowKey);
-
-
-
 
                 if (keyIndexes.length > 1)  {
 
@@ -322,8 +322,6 @@ $(document).ready(function () {
                         duplicates[rowKey].values.push(rowData);
                     }
                     else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
-
-                    console.log(rowData)
                 }
             });
 
@@ -333,20 +331,30 @@ $(document).ready(function () {
 
                     var mainValue = null;
                     var duplicatesTable = $('<table>')
-                        .css({margin: '5px', color: '#777'})
-                        .attr('class', 'table table-condensed table-striped')
+                        .css({'margin-bottom': '0', 'color': '#777'})
+                        .attr('class', 'table table-condensed table-striped table-hover child-table')
                         .append($('<tbody>')
                     );
 
                     $.each(duplicates[key]['values'], function (index, value) {
                         if (value[0][4]) mainValue = value;
                         else {
-                            $(value[1]).find('td:eq(0)').css({'background-color': 'white', color: 'transparent'});
-                            $(value[1]).find('td:eq(1)').addClass('col-md-7');
-                            $(value[1]).find('td:eq(2)').addClass('col-md-2');
-                            duplicatesTable.find('tbody').append(value[1]);
+                            var newRow = $(value[1]).clone();
+                            newRow.find('td:eq(0)').remove();
+                            newRow.find('td:eq(0)').addClass('col-md-7');
+                            newRow.find('td:eq(1)').addClass('col-md-2');
+                            duplicatesTable.find('tbody').append(newRow);
                         }
                     });
+
+                    var containerTable = $('<table>').attr('class', 'table').css('margin-bottom', '0').append(
+                        $('<tbody>').append(
+                            $('<tr>').append(
+                                $('<td>').attr('class', 'col-md-3').css('text-align', 'right').html('Duplicates:'),
+                                $('<td>').attr('class', 'col-md-9').append(duplicatesTable)
+                            )
+                        )
+                    );
 
                     if (mainValue) {
 
@@ -364,7 +372,7 @@ $(document).ready(function () {
                                     }
                                     else {
                                         $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                                        row.child(duplicatesTable).show();
+                                        row.child(containerTable).show();
                                         $(mainValue[1]).closest('tr').next().attr('class', 'child_row')
                                     }
                                 })

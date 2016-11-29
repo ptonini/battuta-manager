@@ -37,7 +37,8 @@ function taskTableRowCallback(row, data) {
             break;
     }
     $(row).css('cursor','pointer').click(function () {
-        $('#json_box').JSONView(data[3]).JSONView('collapse', 2);
+        $('#json_dialog_header').html($(row).closest('table').data('task_name') + ': ' + data[0]);
+        $('#json_box').JSONView(data[3], {'collapsed': true});
         jsonDialog.dialog('open')
     })
 }
@@ -163,19 +164,18 @@ function buildResultTables(runner, intervalId) {
                         // Save task host count to session storage
                         sessionStorage.setItem('task_' + task.id + '_host_count', task.host_count);
 
+                        var taskName = '<strong>' + task.name + '</strong>';
+                        headerTopMargin = '15px';
+
                         // Set task title
                         if ( play.name == 'AdHoc task') {
-                            task.name = 'Task: <strong>' + task.name + '</strong>';
+                            taskName = 'Task: <strong>' + task.name + '</strong>';
                             var headerTopMargin = '5px'
-                        }
-                        else {
-                            task.name = '<strong>' + task.name + '</strong>';
-                            headerTopMargin = '15px'
                         }
 
                         //  Create task header
                         var tableHeader = $('<div>').css('margin-top', headerTopMargin).append(
-                            $('<span>').html(task.name),
+                            $('<span>').html(taskName),
                             $('<span>').attr('id', 'task_' + task.id + '_count')
                         );
 
@@ -190,7 +190,9 @@ function buildResultTables(runner, intervalId) {
                             // Create task table if is not an include task
                             if (task.module == 'include') taskColumn.html(tableHeader.addClass('hidden-print'));
                             else  {
-                                var currentTaskTable = taskTable.clone().attr('id', 'task_' + task.id + '_table');
+                                var currentTaskTable = taskTable.clone()
+                                    .attr('id', 'task_' + task.id + '_table')
+                                    .data('task_name', task.name);
 
                                 taskColumn.append(tableHeader, currentTaskTable);
 
@@ -268,7 +270,6 @@ function buildResultTables(runner, intervalId) {
             }, 2000)
         }
     }
-
 }
 
 // Load job results from database
@@ -303,9 +304,7 @@ $(document).ready(function () {
         maxHeight: 520,
         dialogClass: 'no_title',
         buttons: {
-            Ok: function () {
-                $(this).dialog('close'); 
-            }
+            Ok: function () {$(this).dialog('close')}
         }
     });
     
@@ -313,9 +312,7 @@ $(document).ready(function () {
     if ($('#runner_status').attr('data-is_running') == 'true') {
         autoScroll.addClass('checked_button');
         sessionStorage.setItem('auto_scroll', true);
-        var intervalId = setInterval(function () {
-            loadResults(intervalId);
-        }, 1000);
+        var intervalId = setInterval(function () {loadResults(intervalId)}, 1000);
     }
     else loadResults(0);
 
@@ -403,9 +400,7 @@ $(document).ready(function () {
     });
 
     // Show statistics
-    $('#show_stats').click(function() {
-        $('#stats_dialog').dialog('open')
-    });
+    $('#show_stats').click(function() {$('#stats_dialog').dialog('open')});
 
     // Cancel job
     $('#cancel_runner').click(function () {

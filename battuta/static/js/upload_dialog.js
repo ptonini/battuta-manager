@@ -54,5 +54,5 @@ uploadDialog
         }
     }))
     .keypress(function (event) {
-    if (event.keyCode == 13) $('.ui-button-text:contains("Upload")').parent('button').click()
-});
+        if (event.keyCode == 13) $('.ui-button-text:contains("Upload")').parent('button').click()
+    });

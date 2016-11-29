@@ -20,8 +20,6 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
 
-#path_links.breadcrumb {margin-bottom: 0; cursor: pointer}
-
 .report_field_left {padding: 0 0 0 15px}
 
 .report_field_right {padding: 0 15px 0 0}
@@ -31,6 +29,8 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 .jsonview li {margin: 3px 0 3px 0}
 
 #json_box {overflow-y: auto; max-height: 380px; word-break: break-all; width: 700px}
+
+#path_links.breadcrumb {margin-bottom: 0; cursor: pointer}
 
 /* Pattern editor options ************/
 
@@ -98,6 +98,8 @@ table.dataTable thead th.sorting_desc:after {content: "\f0dd"}
 .btn-incell {padding: 0 3px; cursor: pointer}
 
 .child_table_container {margin: 0; padding: 10px}
+
+.child-table {box-shadow: 0 0 10px #888888}
 
 tr.child_row {background-color: transparent !important}
 

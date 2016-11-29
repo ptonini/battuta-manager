@@ -8,11 +8,11 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
 
+from . import InventoryQueries
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
 from apps.preferences.functions import get_preferences
-from apps.runner.functions import get_variable
 
 
 class InventoryView(View):
@@ -326,17 +326,18 @@ class NodeDetailsView(View):
         else:
             node = get_object_or_404(node_class, name=node_name)
 
-            ancestors = set()
+            ancestors = list()
             parents = node.group_set.all()
             while len(parents) > 0:
-                step_list = set()
+                step_list = list()
                 for parent in parents:
-                    ancestors.add(parent)
+                    if parent not in ancestors:
+                        ancestors.append(parent)
                     for group in parent.group_set.all():
-                        step_list.add(group)
+                        step_list.append(group)
                 parents = step_list
             if node.name != 'all':
-                ancestors.add(Group.objects.get(name='all'))
+                ancestors.append(Group.objects.get(name='all'))
 
             if node.type == 'group':
                 group_descendants = set()
@@ -419,6 +420,7 @@ class VariablesView(View):
         node = NodeDetailsView.build_node(node_type, node_name)
 
         variables = dict()
+        queries = InventoryQueries()
 
         for var in node.variable_set.all():
             variables[var.key] = [{'value': var.value, 'source': '', 'id': var.id}]
@@ -446,7 +448,7 @@ class VariablesView(View):
 
             if len([value for value in value_list if value[2] != '']) > 1 and not from_node:
 
-                actual_value = get_variable(key, node)
+                actual_value = queries.get_variable(key, node)
 
                 for value in value_list:
                     if value[1] == actual_value:

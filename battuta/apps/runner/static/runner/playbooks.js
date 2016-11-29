@@ -83,43 +83,46 @@ $(document).ready(function () {
             var playbookFile = data[0];
             var postData = {action: 'get_one', playbook_file: playbookFile};
             if (!data[1]) $(row).css('color', 'red');
-            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
-                submitRequest('GET', postData, loadPlaybook);
-            });
-            $(row).find('td:eq(1)').attr('class', 'text-right').removeAttr('title').html('').append(
-                $('<span>')
-                    .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
-                    .click(function () {
-                        submitRequest('GET', postData, function(data) {
-                            editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml')
-                        });
-                    }),
-                $('<span>')
-                    .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
-                    .click(function () {
-                        submitRequest('GET', postData, function(data) {
-                            editTextFile(data.text, '', '', 'text/yaml', 'yml')
-                        });
-                    }),
-                $('<span>')
-                    .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Remove'})
-                    .click(function() {
-                        deleteDialog
-                            .dialog('option', 'buttons', {
-                                Delete: function () {
-                                    postData = {action: 'delete', playbook_file: playbookFile};
-                                    submitRequest('POST', postData, function () {
-                                        if (argumentsBox.data('currentPlaybook') == playbookFile) {
-                                            clearPlaybookArgsForm()
-                                        }
-                                        playbookTable.DataTable().ajax.reload()
-                                    });
-                                    $(this).dialog('close');
-                                },
-                                Cancel: function () {$(this).dialog('close')}
-                            })
-                            .dialog('open');
-                    })
+            $(row).find('td:eq(0)').html('').append(
+                $('<span>').html(data[0]).css('cursor', 'pointer').click(function() {
+                    submitRequest('GET', postData, loadPlaybook);
+                }),
+                $('<span>').css('float', 'right').append(
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
+                        .click(function () {
+                            submitRequest('GET', postData, function(data) {
+                                editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml')
+                            });
+                        }),
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
+                        .click(function () {
+                            submitRequest('GET', postData, function(data) {
+                                editTextFile(data.text, '', '', 'text/yaml', 'yml')
+                            });
+                        }),
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Remove'})
+                        .click(function() {
+                            deleteDialog
+                                .dialog('option', 'buttons', {
+                                    Delete: function () {
+                                        postData = {action: 'delete', playbook_file: playbookFile};
+                                        submitRequest('POST', postData, function () {
+                                            if (argumentsBox.data('currentPlaybook') == playbookFile) {
+                                                clearPlaybookArgsForm()
+                                            }
+                                            playbookTable.DataTable().ajax.reload()
+                                        });
+                                        $(this).dialog('close');
+                                    },
+                                    Cancel: function () {$(this).dialog('close')}
+                                })
+                                .dialog('open');
+                        })
+                )
+
             );
         }
     });
