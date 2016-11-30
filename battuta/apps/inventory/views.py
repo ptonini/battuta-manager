@@ -14,6 +14,9 @@ from .forms import HostForm, GroupForm, VariableForm
 
 from apps.preferences.functions import get_preferences
 
+# Create built-in group 'all' if not exists
+Group.objects.get_or_create(name='all')
+
 
 class InventoryView(View):
 
@@ -526,6 +529,8 @@ class RelationsView(View):
 
             candidate_set = related_class.objects.order_by('name').exclude(name='all')
 
+            candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
+
             if related_class == type(node):
                 candidate_set = candidate_set.exclude(pk=node.id)
 
@@ -534,7 +539,7 @@ class RelationsView(View):
             elif relationship == 'children' and node.ancestors:
                 candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
 
-            data = [[candidate.name, candidate.id] for candidate in candidate_set if candidate not in related_set.all()]
+            data = [[candidate.name, candidate.id] for candidate in candidate_set]
 
         else:
             raise Http404('Invalid request')

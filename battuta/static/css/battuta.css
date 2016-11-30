@@ -97,13 +97,6 @@ table.dataTable thead th.sorting_desc:after {content: "\f0dd"}
 
 .btn-incell {padding: 0 3px; cursor: pointer}
 
-.child_table_container {margin: 0; padding: 10px}
-
-.child-table {box-shadow: 0 0 10px #888888}
-
-tr.child_row {background-color: transparent !important}
-
-
 /* Checked button class options */
 .checked_button, .checked_button:focus, .checked_button:hover {background-color: #cdcdcd}
 

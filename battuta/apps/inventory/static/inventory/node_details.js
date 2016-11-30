@@ -135,33 +135,34 @@ function loadFacts(data) {
             ),
             $('<br>'),
             divRow.clone().append(divCol12.html('Facts gathered in ' + facts.date_time.date))
-        )
-    }
-    if (sessionStorage.getItem('use_ec2_facts') == 'true') {
-        $('#facts_row').append(
-            divCol4.clone().append(
-                divRow.clone().attr('class', 'row-eq-height').append(
-                    divCol6L.clone().append('EC2 hostname:'), divCol6R.clone().append(facts.ec2_hostname)
-                ),
-                divRow.clone().attr('class', 'row-eq-height').append(
-                    divCol6L.clone().append('EC2 public address:'),
-                    divCol6R.clone().append(facts.ec2_public_ipv4)
-                ),
-                divRow.clone().attr('class', 'row-eq-height').append(
-                    divCol6L.clone().append('EC2 instance type:'),
-                    divCol6R.clone().append(facts.ec2_instance_type)
-                ),
-                divRow.clone().attr('class', 'row-eq-height').append(
-                    divCol6L.clone().append('EC2 instance id:'),
-                    divCol6R.clone().append(facts.ec2_instance_id)
-                ),
-                divRow.clone().attr('class', 'row-eq-height').append(
-                    divCol6L.clone().append('EC2 avaliability zone:'),
-                    divCol6R.clone().append(facts.ec2_placement_availability_zone)
+        );
+        if (sessionStorage.getItem('use_ec2_facts') == 'true' && facts.hasOwnProperty('ec2_hostname')) {
+            $('#facts_row').append(
+                divCol4.clone().append(
+                    divRow.clone().attr('class', 'row-eq-height').append(
+                        divCol6L.clone().append('EC2 hostname:'), divCol6R.clone().append(facts.ec2_hostname)
+                    ),
+                    divRow.clone().attr('class', 'row-eq-height').append(
+                        divCol6L.clone().append('EC2 public address:'),
+                        divCol6R.clone().append(facts.ec2_public_ipv4)
+                    ),
+                    divRow.clone().attr('class', 'row-eq-height').append(
+                        divCol6L.clone().append('EC2 instance type:'),
+                        divCol6R.clone().append(facts.ec2_instance_type)
+                    ),
+                    divRow.clone().attr('class', 'row-eq-height').append(
+                        divCol6L.clone().append('EC2 instance id:'),
+                        divCol6R.clone().append(facts.ec2_instance_id)
+                    ),
+                    divRow.clone().attr('class', 'row-eq-height').append(
+                        divCol6L.clone().append('EC2 avaliability zone:'),
+                        divCol6R.clone().append(facts.ec2_placement_availability_zone)
+                    )
                 )
             )
-        )
+        }
     }
+
 }
 
 function openNodeFactsDialog(data) {
@@ -330,50 +331,41 @@ $(document).ready(function () {
                 if (duplicates[key].hasMainValue) {
 
                     var mainValue = null;
-                    var duplicatesTable = $('<table>')
-                        .css({'margin-bottom': '0', 'color': '#777'})
-                        .attr('class', 'table table-condensed table-striped table-hover child-table')
-                        .append($('<tbody>')
-                    );
+                    var rowArray = [];
 
                     $.each(duplicates[key]['values'], function (index, value) {
                         if (value[0][4]) mainValue = value;
                         else {
-                            var newRow = $(value[1]).clone();
-                            newRow.find('td:eq(0)').remove();
-                            newRow.find('td:eq(0)').addClass('col-md-7');
-                            newRow.find('td:eq(1)').addClass('col-md-2');
-                            duplicatesTable.find('tbody').append(newRow);
+                            var newRow = $(value[1]).clone().css('color', '#777');
+                            newRow.find('td:eq(0)').html('');
+                            newRow.find('td:eq(2)').addClass('col-md-2').click(function() {
+                                window.open('/inventory/group/' + value[0][2], '_self')
+                            });
+                            rowArray.push(newRow);
+                            $(value[1]).remove()
                         }
                     });
 
-                    var containerTable = $('<table>').attr('class', 'table').css('margin-bottom', '0').append(
-                        $('<tbody>').append(
-                            $('<tr>').append(
-                                $('<td>').attr('class', 'col-md-3').css('text-align', 'right').html('Duplicates:'),
-                                $('<td>').attr('class', 'col-md-9').append(duplicatesTable)
-                            )
-                        )
-                    );
 
                     if (mainValue) {
 
                         var row = table.DataTable().row(mainValue[1]);
 
                         $(mainValue[1]).find('td:eq(0)').html('').append(
-                            mainValue[0][0],
+                            $('<span>').html(mainValue[0][0]),
                             $('<span>')
                                 .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
                                 .off()
                                 .click(function () {
                                     if (row.child.isShown()) {
                                         $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
+                                        $(this).closest('tr').css('font-weight', 'normal');
                                         row.child.hide()
                                     }
                                     else {
                                         $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                                        row.child(containerTable).show();
-                                        $(mainValue[1]).closest('tr').next().attr('class', 'child_row')
+                                        $(this).closest('tr').css('font-weight', 'bold');
+                                        row.child(rowArray).show();
                                     }
                                 })
 

@@ -49,47 +49,51 @@ $(document).ready(function () {
         },
         rowCallback: function (row, data) {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
-            $(row).find('td:eq(4)').attr('class', 'text-right').removeAttr('title').html('').append(
-                $('<span>')
-                    .attr({class: 'glyphicon glyphicon-play-circle btn-incell', title: 'Load'})
-                    .click(function() {
-                        adhocForm.data('adhocId', data[4]);
-                        $('#adhoc_form_label').html('Run/Edit task');
-                        loadAdHocForm(data);
-                    }),
-                $('<span>')
-                    .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Clone'})
-                    .click(function() {
-                        adhocForm.removeData('adhocId');
-                        $('#adhoc_form_label').html('Run/Create task');
-                        loadAdHocForm(data);
-                    }),
-                $('<span>')
-                    .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
-                    .click(function() {
-                        deleteDialog
-                            .dialog('option', 'buttons', {
-                                Delete: function () {
-                                    $(this).dialog('close');
-                                    $.ajax({
-                                        url: '/runner/adhoc/',
-                                        type: 'POST',
-                                        dataType: 'json',
-                                        data: {
-                                            action: 'delete',
-                                            id: data[4]
-                                        },
-                                        success: function () {
-                                            adhocTable.DataTable().ajax.reload()
-                                        }
-                                    });
-                                },
-                                Cancel: function () {
-                                    $(this).dialog('close');
-                                }
-                            })
-                            .dialog('open');
-                    })
+            $(row).find('td:eq(3)').append(
+                $('<span>').css('float', 'right').append(
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-play-circle btn-incell', title: 'Load'})
+                        .click(function() {
+                            adhocForm.data('adhocId', data[4]);
+                            $('#adhoc_form_label').html('Run/Edit task');
+                            loadAdHocForm(data);
+                        }),
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Clone'})
+                        .click(function() {
+                            adhocForm.removeData('adhocId');
+                            $('#adhoc_form_label').html('Run/Create task');
+                            loadAdHocForm(data);
+                        }),
+                    $('<span>')
+                        .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
+                        .click(function() {
+                            deleteDialog
+                                .dialog('option', 'buttons', {
+                                    Delete: function () {
+                                        $(this).dialog('close');
+                                        $.ajax({
+                                            url: '/runner/adhoc/',
+                                            type: 'POST',
+                                            dataType: 'json',
+                                            data: {
+                                                action: 'delete',
+                                                id: data[4]
+                                            },
+                                            success: function () {
+                                                adhocTable.DataTable().ajax.reload()
+                                            }
+                                        });
+                                    },
+                                    Cancel: function () {
+                                        $(this).dialog('close');
+                                    }
+                                })
+                                .dialog('open');
+                        })
+                )
+
+
             )
         }
     });

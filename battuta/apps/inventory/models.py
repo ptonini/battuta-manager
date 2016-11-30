@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import RegexValidator
 
 
 class Host(models.Model):
@@ -23,12 +24,9 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
-# Create built-in group 'all' if not exists
-Group.objects.get_or_create(name='all')
-
-
 class Variable(models.Model):
-    key = models.CharField(max_length=32, blank=False)
+    key = models.CharField(max_length=32, blank=False, validators=[
+        RegexValidator(regex='\-', message='Key names cannot contain "-"', inverse_match=True)])
     value = models.CharField(max_length=1024)
     host = models.ForeignKey('Host', blank=True, null=True)
     group = models.ForeignKey('Group', blank=True, null=True)
