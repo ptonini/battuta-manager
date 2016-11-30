@@ -36,11 +36,28 @@ function taskTableRowCallback(row, data) {
             $(row).css('color', 'red');
             break;
     }
-    $(row).css('cursor','pointer').click(function () {
-        $('#json_dialog_header').html($(row).closest('table').data('task_name') + ': ' + data[0]);
-        $('#json_box').JSONView(data[3], {'collapsed': true});
-        jsonDialog.dialog('open')
-    })
+
+    var rowApi = this.api().row(row);
+
+    $(row).find('td:eq(2)').html('').append(
+        data[2],
+        $('<span>')
+            .css('float', 'right')
+            .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
+            .off()
+            .click(function () {
+                if (rowApi.child.isShown()) {
+                    $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
+                    $(row).css('font-weight', 'normal');
+                    rowApi.child.hide()
+                }
+                else {
+                    $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
+                    rowApi.child($('<div>').attr('class', 'well').JSONView(data[3], {'collapsed': true})).show();
+                    $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                }
+            })
+    )
 }
 
 // Draw callback function for task table
@@ -102,7 +119,9 @@ function buildResultTables(runner, intervalId) {
 
     // Display error message if exists
     if (runner.message) {
-        resultContainer.empty().append($('<pre>').css('margin-top', '20px').css('color', 'red').html(runner.message));
+        resultContainer.empty().append(
+            $('<pre>').attr('class', 'runner_error_box').html(runner.message)
+        );
     }
 
     // Build Play tables

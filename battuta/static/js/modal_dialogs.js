@@ -21,48 +21,22 @@ deleteDialog.dialog($.extend({}, defaultDialogOptions, {width: '320'}));
 var alertDialog = $('<div>').attr({id: 'alert_dialog'});
 alertDialog.dialog($.extend({}, defaultDialogOptions, {
     width: '320',
-    buttons: {
-        Ok: function () {
-            $(this).dialog('close');
-        }
-    },
-    open: function () {
-        if ($(this).data('left-align')) {
-            $(this).removeClass('text-center').removeData('left-align');
-        }
-        else $(this).addClass('text-center');
-    }
+    buttons: {Ok: function () {$(this).dialog('close')}}
 }));
 
 
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog').css('overflow-x', 'hidden');
-selectDialog.dialog($.extend({}, defaultDialogOptions, {
-    buttons: {
-        Cancel: function () {
-            $(this).dialog('close');
-        }
-    }
-}));
-
-
-// JSON dialog
-var jsonDialog = $('<div>').attr('id', 'json_dialog').append(
-    $('<h4>').attr('id', 'json_dialog_header'),
-    $('<div>').attr('id', 'json_box')
-);
-jsonDialog.dialog($.extend({}, defaultDialogOptions, {
-    width: 'auto',
-    buttons: {Ok: function () { $(this).dialog('close') }}
-}));
+selectDialog.dialog($.extend({}, defaultDialogOptions, {buttons: {Cancel: function () {$(this).dialog('close')}}}));
 
 
 // Node type dialog
 var nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-center'}).append(
-    $('<h4>'),$('<br>'),
+    $('<h4>'),
+    $('<br>'),
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'host').html('Hosts'),
     $('<span>').html('&nbsp;&nbsp;&nbsp;&nbsp;'),
     $('<button>').attr('class', 'btn btn-default btn-sm select_type').data('type', 'group').html('Groups')
 );
-nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, { buttons: {Cancel: function () {$(this).dialog('close')} }}));
+nodeTypeDialog.dialog($.extend({}, defaultDialogOptions, {buttons: {Cancel: function () {$(this).dialog('close')} }}));
 

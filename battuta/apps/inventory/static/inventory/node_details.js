@@ -101,10 +101,12 @@ function loadFacts(data) {
         var distribution = facts.distribution + ' ' + facts.distribution_version;
         var hdSizeSum = 0;
         var hdCount = 0;
+
         $.each(facts.mounts, function(index, value) {
             hdSizeSum += value.size_total;
             ++hdCount
         });
+
         factsContainer.empty().append(
             divRow.clone().attr('id', 'facts_row').append(
                 divCol4.clone().append(
@@ -136,6 +138,11 @@ function loadFacts(data) {
             $('<br>'),
             divRow.clone().append(divCol12.html('Facts gathered in ' + facts.date_time.date))
         );
+
+        $('#all_facts_container').append(
+            $('<div>').attr('class', 'well').JSONView(data.facts, {'collapsed': true})
+        );
+
         if (sessionStorage.getItem('use_ec2_facts') == 'true' && facts.hasOwnProperty('ec2_hostname')) {
             $('#facts_row').append(
                 divCol4.clone().append(
@@ -162,16 +169,6 @@ function loadFacts(data) {
             )
         }
     }
-
-}
-
-function openNodeFactsDialog(data) {
-    if (data.result == 'ok') {
-        $('#json_dialog_header').html(data.name + ' facts');
-        $('#json_box').JSONView(data.facts, {'collapsed': true});
-        jsonDialog.dialog('open');
-    }
-    else alertDialog.html($('<strong>').append('Facts file not found')).dialog('open');
 }
 
 function buildDescendantsList(data) {
@@ -349,7 +346,7 @@ $(document).ready(function () {
 
                     if (mainValue) {
 
-                        var row = table.DataTable().row(mainValue[1]);
+                        var rowApi = table.DataTable().row(mainValue[1]);
 
                         $(mainValue[1]).find('td:eq(0)').html('').append(
                             $('<span>').html(mainValue[0][0]),
@@ -357,15 +354,15 @@ $(document).ready(function () {
                                 .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
                                 .off()
                                 .click(function () {
-                                    if (row.child.isShown()) {
+                                    if (rowApi.child.isShown()) {
                                         $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
-                                        $(this).closest('tr').css('font-weight', 'normal');
-                                        row.child.hide()
+                                        $(mainValue[1]).css('font-weight', 'normal');
+                                        rowApi.child.hide()
                                     }
                                     else {
                                         $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                                        $(this).closest('tr').css('font-weight', 'bold');
-                                        row.child(rowArray).show();
+                                        $(mainValue[1]).css('font-weight', 'bold');
+                                        rowApi.child(rowArray).show();
                                     }
                                 })
 
@@ -485,8 +482,5 @@ $(document).ready(function () {
     $('#gather_facts').click(function() {
         gatherFacts(nodeName, function() {if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts)});
     });
-
-    // Open node facts dialog
-    $('#open_facts').click(function() {submitRequest('GET', {action: 'facts'}, openNodeFactsDialog)});
     
 });

@@ -28,9 +28,12 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 .jsonview li {margin: 3px 0 3px 0}
 
-#json_box {overflow-y: auto; max-height: 380px; word-break: break-all; width: 700px}
+.well {word-break: break-all; margin-bottom: 0}
+
+.runner_error_box {margin-top: 20px; color: red; font-size: 12px}
 
 #path_links.breadcrumb {margin-bottom: 0; cursor: pointer}
+
 
 /* Pattern editor options ************/
 
@@ -94,6 +97,8 @@ table.dataTable thead .sorting_desc:after {font-family: FontAwesome, sans-serif}
 table.dataTable thead th.sorting:after {content: "\f0dc"; color: transparent}
 table.dataTable thead th.sorting_asc:after {content: "\f0de"}
 table.dataTable thead th.sorting_desc:after {content: "\f0dd"}
+
+tr.child_row {background-color: transparent !important}
 
 .btn-incell {padding: 0 3px; cursor: pointer}
 
