@@ -24,6 +24,7 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
+
 class Variable(models.Model):
     key = models.CharField(max_length=32, blank=False, validators=[
         RegexValidator(regex='\-', message='Key names cannot contain "-"', inverse_match=True)])
