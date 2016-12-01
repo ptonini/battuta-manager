@@ -44,10 +44,12 @@ class RunnerView(BaseView):
                 cred = request.user.userdata.default_cred
                 run_data['cred'] = cred.id
 
-            run_data['username'] = request.user.username
+            # run_data['username'] = request.user.username
+            #
+            # if cred.username == request.user.username:
+            #     run_data['username'] += ' ({0})'.format(cred.username)
 
-            if cred.username == request.user.username:
-                run_data['username'] += ' ({0})'.format(cred.username)
+            run_data['remote_username'] = cred.username
 
             if 'remote_pass' not in run_data:
                 run_data['remote_pass'] = cred.password

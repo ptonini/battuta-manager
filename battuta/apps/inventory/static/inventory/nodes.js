@@ -15,22 +15,20 @@ $(document).ready(function() {
     if (nodeType == 'host') {
 
         if (sessionStorage.getItem('use_ec2_facts') == 'true') $('#node_table_header').append(
-            $('<th>').addClass('col-md-2').html('Host'),
+            $('<th>').addClass('col-md-3').html('Host'),
             $('<th>').addClass('col-md-2').html('Address'),
             $('<th>').addClass('col-md-2').html('Public address'),
             $('<th>').addClass('col-md-2').html('Type'),
             $('<th>').addClass('col-md-1').html('Cores'),
             $('<th>').addClass('col-md-1').html('Memory'),
-            $('<th>').addClass('col-md-1').html('Disc'),
-            $('<th>').addClass('col-md-1').html('Date')
+            $('<th>').addClass('col-md-1').html('Disc')
         );
         else $('#node_table_header').append(
-            $('<th>').addClass('col-md-2').html('Host'),
+            $('<th>').addClass('col-md-3').html('Host'),
             $('<th>').addClass('col-md-2').html('Address'),
             $('<th>').addClass('col-md-1').html('Cores'),
             $('<th>').addClass('col-md-1').html('Memory'),
-            $('<th>').addClass('col-md-5').html('Disc'),
-            $('<th>').addClass('col-md-1').html('Date')
+            $('<th>').addClass('col-md-5').html('Disc')
         )
     }
     else if (nodeType == 'group') $('#node_table_header').append(

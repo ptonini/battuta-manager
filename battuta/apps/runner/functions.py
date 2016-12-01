@@ -96,7 +96,7 @@ def play_runner(runner):
     options = AnsibleOptions(connection=runner.data['connection'],
                              module_path=runner.data['module_path'],
                              forks=runner.data['forks'],
-                             remote_user=runner.data['username'],
+                             remote_user=runner.data['remote_username'],
                              private_key_file=runner.data['rsa_key'],
                              ssh_common_args=None,
                              ssh_extra_args=None,
@@ -126,6 +126,8 @@ def play_runner(runner):
         inventory.subset(runner.data['subset'])
 
     message = None
+
+    pp.pprint(runner.data)
 
     if 'playbook' in runner.data:
         try:

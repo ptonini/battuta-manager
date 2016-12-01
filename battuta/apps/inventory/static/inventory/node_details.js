@@ -90,51 +90,99 @@ function clearVariableForm() {
 
 function loadFacts(data) {
     var divRow = $('<div>').attr('class', 'row');
-    var divCol4 = $('<div>').attr('class', 'col-md-4 col-xs-6');
-    var divCol6L = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_left');
-    var divCol6R = $('<div>').attr('class', 'col-md-6 col-xs-6 report_field_right truncate-text');
+    var divCol6 = $('<div>').attr('class', 'col-md-6 col-xs-6');
+    var divCol8 = $('<div>').attr('class', 'col-md-8 col-xs-8');
+    var divCol4L = $('<div>').attr('class', 'col-md-4 col-xs-4 report_field_left');
+    var divCol8R = $('<div>').attr('class', 'col-md-8 col-xs-8 report_field_right truncate-text');
     var divCol12 = $('<div>').attr('class', 'col-md-12');
+    var factsTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
 
     if (data.result == 'ok') {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
         var distribution = facts.distribution + ' ' + facts.distribution_version;
-        var hdSizeSum = 0;
-        var hdCount = 0;
+        var interfaceTable = factsTable.clone();
+        var mountTable = factsTable.clone();
 
-        $.each(facts.mounts, function(index, value) {
-            hdSizeSum += value.size_total;
-            ++hdCount
+        var interfacesArray = [];
+        $.each(facts.interfaces, function(index, value) {
+
+            var currentRow = [value];
+
+            if (facts[value].type) currentRow.push(facts[value].type);
+            else currentRow.push('');
+
+            if (facts[value].ipv4.address) currentRow.push(facts[value].ipv4.address);
+            else currentRow.push('');
+
+            if (facts[value].ipv4.netmask) currentRow.push(facts[value].ipv4.netmask);
+            else currentRow.push('');
+
+            if (facts[value].macaddress) currentRow.push(facts[value].macaddress);
+            else currentRow.push('');
+
+            interfacesArray.push(currentRow)
+        });
+
+        interfaceTable.DataTable({
+            data: interfacesArray,
+            columns: [
+                {title: 'Interface'},
+                {title: 'Type'},
+                {title: 'IPv4 address'},
+                {title: 'Netmask'},
+                {title: 'MAC'}
+            ]
+        });
+
+        mountTable.DataTable({
+            data: facts.mounts,
+            columns: [
+                {class: 'col-md-2', title: 'Mount point', data: 'mount'},
+                {class: 'col-md-4', title: 'Device', data: 'device'},
+                {
+                    class: 'col-md-2',
+                    title: 'Size',
+                    data: 'size_total',
+                    createdCell: function (cell, cellData) {$(cell).html(humanBytes(cellData))}
+                },
+                {class: 'col-md-2', title: 'Type', data: 'fstype'},
+                {class: 'col-md-2', title: 'options', data: 'options'}
+            ]
         });
 
         factsContainer.empty().append(
             divRow.clone().attr('id', 'facts_row').append(
-                divCol4.clone().append(
+                divCol6.clone().append(
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('Full hostname:'), divCol6R.clone().append(facts.fqdn)
+                        divCol4L.clone().append('Full hostname:'), divCol8R.clone().append(facts.fqdn)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('Default IPv4 address:'),
-                        divCol6R.clone().append(facts.default_ipv4.address)
+                        divCol4L.clone().append('Processor:'),
+                        divCol8R.clone().append(facts.processor[1])
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('Cores:'), divCol6R.clone().append(facts.processor_count)
+                        divCol4L.clone().append('Cores:'),
+                        divCol8R.clone().append(facts.processor_count )
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('Total disk space'), divCol6R.clone().append(humanBytes(hdSizeSum))
+                        divCol4L.clone().append('RAM Memory'),
+                        divCol8R.clone().append(humanBytes(facts.memtotal_mb, 'MB'))
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('RAM Memory'),
-                        divCol6R.clone().append(humanBytes(facts.memtotal_mb, 'MB'))
+                        divCol4L.clone().append('OS Family:'), divCol8R.clone().append(facts.os_family)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('OS Family:'), divCol6R.clone().append(facts.os_family)
-                    ),
-                    divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('OS Distribution:'), divCol6R.clone().append(distribution)
+                        divCol4L.clone().append('OS Distribution:'), divCol8R.clone().append(distribution)
                     )
                 )
             ),
+            $('<br>'),
+            divRow.clone().append(divCol8.clone().append($('<h4>').html('Interfaces'))),
+            divRow.clone().append(divCol8.clone().append(interfaceTable)),
+            $('<br>'),
+            divRow.clone().append(divCol8.clone().append($('<h4>').html('Mounts'))),
+            divRow.clone().append(divCol8.clone().append(mountTable)),
             $('<br>'),
             divRow.clone().append(divCol12.html('Facts gathered in ' + facts.date_time.date))
         );
@@ -145,25 +193,25 @@ function loadFacts(data) {
 
         if (sessionStorage.getItem('use_ec2_facts') == 'true' && facts.hasOwnProperty('ec2_hostname')) {
             $('#facts_row').append(
-                divCol4.clone().append(
+                divCol6.clone().append(
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('EC2 hostname:'), divCol6R.clone().append(facts.ec2_hostname)
+                        divCol4L.clone().append('EC2 hostname:'), divCol8R.clone().append(facts.ec2_hostname)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('EC2 public address:'),
-                        divCol6R.clone().append(facts.ec2_public_ipv4)
+                        divCol4L.clone().append('EC2 public address:'),
+                        divCol8R.clone().append(facts.ec2_public_ipv4)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('EC2 instance type:'),
-                        divCol6R.clone().append(facts.ec2_instance_type)
+                        divCol4L.clone().append('EC2 instance type:'),
+                        divCol8R.clone().append(facts.ec2_instance_type)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('EC2 instance id:'),
-                        divCol6R.clone().append(facts.ec2_instance_id)
+                        divCol4L.clone().append('EC2 instance id:'),
+                        divCol8R.clone().append(facts.ec2_instance_id)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol6L.clone().append('EC2 avaliability zone:'),
-                        divCol6R.clone().append(facts.ec2_placement_availability_zone)
+                        divCol4L.clone().append('EC2 avaliability zone:'),
+                        divCol8R.clone().append(facts.ec2_placement_availability_zone)
                     )
                 )
             )
@@ -476,6 +524,11 @@ $(document).ready(function () {
                 Cancel: function() {$(this).dialog('close')}
             })
             .dialog('open');
+    });
+
+    $('#open_facts').click(function() {
+        if ($(this).html() == 'View facts') $(this).html('Hide facts');
+        else $(this).html('View facts');
     });
 
     // Gather facts on node

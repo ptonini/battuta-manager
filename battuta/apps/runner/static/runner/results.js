@@ -39,24 +39,16 @@ function taskTableRowCallback(row, data) {
 
     var rowApi = this.api().row(row);
 
-    $(row).find('td:eq(0)').html('').append(
-        $('<span>')
-            .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
-            .off()
-            .click(function () {
-                if (rowApi.child.isShown()) {
-                    $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
-                    $(row).css('font-weight', 'normal');
-                    rowApi.child.hide()
-                }
-                else {
-                    $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                    rowApi.child($('<div>').attr('class', 'well').JSONView(data[3], {'collapsed': true})).show();
-                    $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
-                }
-            })
-        , data[0]
-    )
+    $(row).css('cursor', 'pointer').click(function () {
+        if (rowApi.child.isShown()) {
+            $(row).css('font-weight', 'normal');
+            rowApi.child.hide()
+        }
+        else {
+            rowApi.child($('<div>').attr('class', 'well').JSONView(data[3], {'collapsed': true})).show();
+            $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+        }
+    })
 }
 
 // Draw callback function for task table

@@ -136,22 +136,22 @@ function humanBytes(number, suffix) {
         else if (suffix == 'GB') number = number * 1073741824;
         else if (suffix == 'TB') number = number * 1099511627776;
     }
-    else suffix = 'B';
+    else suffix = ' B';
 
     if (number > 1024 && number <= 1048576) {
-        suffix = 'KB';
+        suffix = ' KB';
         number = number / 1024
     }
     else if (number > 1048576 && number <= 1073741824) {
-        suffix = 'MB';
+        suffix = ' MB';
         number = number / 1048576
     }
     else if (number > 1073741824 && number <= 1099511627776) {
-        suffix = 'GB';
+        suffix = ' GB';
         number = number / 1073741824
     }
     else if (number > 1099511627776 && number <= 1125899906842624) {
-        suffix = 'TB';
+        suffix = ' TB';
         number = number / 1099511627776
     }
     return Math.ceil(number) + suffix

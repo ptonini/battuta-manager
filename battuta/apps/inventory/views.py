@@ -222,10 +222,7 @@ class NodesView(View):
                         facts = json.loads(host.facts)
                         if prefs['use_ec2_facts']:
 
-                            if 'default_ipv4' in facts:
-                                row.append(facts['default_ipv4']['address'])
-                            else:
-                                row.append('')
+                            row.append(facts['default_ipv4']['address'])
 
                             if 'ec2_public_ipv4' in facts:
                                 row.append(facts['ec2_public_ipv4'])
@@ -237,39 +234,21 @@ class NodesView(View):
                             else:
                                 row.append('')
 
-                            if 'processor_count' in facts:
-                                row.append(facts['processor_count'])
-                            else:
-                                row.append('')
-
-                            if 'memtotal_mb' in facts:
-                                row.append(facts['memtotal_mb'])
-                            else:
-                                row.append('')
-
-                            if 'mounts' in facts:
-                                row.append(facts['mounts'][0]['size_total'])
-                            else:
-                                row.append('')
-
-                            if 'date_time' in facts:
-                                row.append(facts['date_time']['date'])
-                            else:
-                                row.append('')
-
+                            row.append(facts['processor_count'])
+                            row.append(facts['memtotal_mb'])
+                            row.append(facts['mounts'][0]['size_total'])
                             data.append(row)
                         else:
                             data.append([host.name,
                                          facts['default_ipv4']['address'],
                                          facts['processor_count'],
                                          facts['memtotal_mb'],
-                                         facts['mounts'][0]['size_total'],
-                                         facts['date_time']['date']])
+                                         facts['mounts'][0]['size_total']])
                     else:
                         if prefs['use_ec2_facts']:
-                            data.append([host.name, '', '', '', '', '', '', ''])
+                            data.append([host.name, '', '', '', '', '', ''])
                         else:
-                            data.append([host.name, '', '', '', '', ''])
+                            data.append([host.name, '', '', '', ''])
             elif request.GET['action'] == 'group_table':
                 for group in Group.objects.all():
                     data.append([group.name,
