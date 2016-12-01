@@ -39,10 +39,8 @@ fileDialog
         },
         beforeClose: function () {
             nameField.val('');
-            nameFieldLabel.html('');
             isDirectory.attr('checked', false);
             isExecutable.attr('checked', false);
-            createOnlyContainer.hide();
         }
     }))
     .keypress(function (event) {

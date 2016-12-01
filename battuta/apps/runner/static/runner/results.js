@@ -39,10 +39,8 @@ function taskTableRowCallback(row, data) {
 
     var rowApi = this.api().row(row);
 
-    $(row).find('td:eq(2)').html('').append(
-        data[2],
+    $(row).find('td:eq(0)').html('').append(
         $('<span>')
-            .css('float', 'right')
             .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
             .off()
             .click(function () {
@@ -57,6 +55,7 @@ function taskTableRowCallback(row, data) {
                     $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
                 }
             })
+        , data[0]
     )
 }
 

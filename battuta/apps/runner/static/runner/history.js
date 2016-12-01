@@ -6,8 +6,8 @@ $(document).ready(function () {
     $('#runner_table').DataTable({
         pageLength: 10,
         serverSide: true,
-        //ajax: {url: ''},
-        "order": [[0, "desc"]],
+        processing: true,
+        order: [[0, "desc"]],
         rowCallback: function (row, data) {
             switch (data[4]) {
                 case 'running':

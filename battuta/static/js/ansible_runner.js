@@ -113,11 +113,10 @@ function gatherFacts(nodeName, finishCallback) {
         }
     });
     var intervalId = setInterval(function() {
-        var runner_id = sessionStorage.getItem(runner_key);
-        if (runner_id) {
+        var runnerId = sessionStorage.getItem(runner_key);
+        if (runnerId) {
             $.ajax({
-                url: '/runner/result/' + runner_id + '/',
-                type: 'GET',
+                url: '/runner/result/' + runnerId + '/',
                 dataType: 'json',
                 data: {action: 'status'},
                 success: function (runner) {
