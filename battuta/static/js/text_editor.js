@@ -33,6 +33,7 @@ editorDialog.dialog({
     closeOnEscape: false,
     buttons: {
         Save: function () {
+            console.log('aqui');
             var editorData = textEditorContainer.data();
             var fileName = fileNameField.val();
             if (fileName) {
@@ -50,7 +51,7 @@ editorDialog.dialog({
                 };
                 submitRequest('POST', postData, function (data) {
                     if (data.result == 'ok') editorDialog.dialog('close');
-                    else alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open')
+                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                 })
             }
         },

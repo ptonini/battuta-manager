@@ -100,38 +100,21 @@ function loadFacts(data) {
     if (data.result == 'ok') {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
-        var distribution = facts.distribution + ' ' + facts.distribution_version;
+        var os = facts.os_family + ' - ' + facts.distribution + ' ' + facts.distribution_version;
         var interfaceTable = factsTable.clone();
         var mountTable = factsTable.clone();
 
         var interfacesArray = [];
-        $.each(facts.interfaces, function(index, value) {
-
-            var currentRow = [value];
-
-            if (facts[value].type) currentRow.push(facts[value].type);
-            else currentRow.push('');
-
-            if (facts[value].ipv4.address) currentRow.push(facts[value].ipv4.address);
-            else currentRow.push('');
-
-            if (facts[value].ipv4.netmask) currentRow.push(facts[value].ipv4.netmask);
-            else currentRow.push('');
-
-            if (facts[value].macaddress) currentRow.push(facts[value].macaddress);
-            else currentRow.push('');
-
-            interfacesArray.push(currentRow)
-        });
+        $.each(facts.interfaces, function(index, value) {interfacesArray.push(facts[value])});
 
         interfaceTable.DataTable({
             data: interfacesArray,
             columns: [
-                {title: 'Interface'},
-                {title: 'Type'},
-                {title: 'IPv4 address'},
-                {title: 'Netmask'},
-                {title: 'MAC'}
+                {title: 'Interface', data: 'device'},
+                {title: 'Type', data: 'type', defaultContent: ''},
+                {title: 'IPv4 address', data: 'ipv4.address', defaultContent: ''},
+                {title: 'Netmask', data: 'ipv4.netmask', defaultContent: ''},
+                {title: 'MAC', data: 'macaddress', defaultContent: ''}
             ]
         });
 
@@ -140,15 +123,13 @@ function loadFacts(data) {
             columns: [
                 {class: 'col-md-2', title: 'Mount point', data: 'mount'},
                 {class: 'col-md-4', title: 'Device', data: 'device'},
-                {
-                    class: 'col-md-2',
-                    title: 'Size',
-                    data: 'size_total',
-                    createdCell: function (cell, cellData) {$(cell).html(humanBytes(cellData))}
-                },
+                {class: 'col-md-2', title: 'Size', data: 'size_total'},
                 {class: 'col-md-2', title: 'Type', data: 'fstype'},
                 {class: 'col-md-2', title: 'options', data: 'options'}
-            ]
+            ],
+            rowCallback: function(row, data) {
+                $(row).find('td:eq(2)').html(humanBytes(data.size_total))
+            }
         });
 
         factsContainer.empty().append(
@@ -170,10 +151,10 @@ function loadFacts(data) {
                         divCol8R.clone().append(humanBytes(facts.memtotal_mb, 'MB'))
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol4L.clone().append('OS Family:'), divCol8R.clone().append(facts.os_family)
+                        divCol4L.clone().append('System:'), divCol8R.clone().append(facts.system)
                     ),
                     divRow.clone().attr('class', 'row-eq-height').append(
-                        divCol4L.clone().append('OS Distribution:'), divCol8R.clone().append(distribution)
+                        divCol4L.clone().append('OS:'), divCol8R.clone().append(os)
                     )
                 )
             ),
@@ -527,13 +508,14 @@ $(document).ready(function () {
     });
 
     $('#open_facts').click(function() {
-        if ($(this).html() == 'View facts') $(this).html('Hide facts');
-        else $(this).html('View facts');
+        var thisButton = $(this);
+        if (thisButton.html() == 'View facts') thisButton.html('Hide facts');
+        else setTimeout(function () {thisButton.html('View facts')}, 500);
     });
 
     // Gather facts on node
     $('#gather_facts').click(function() {
-        gatherFacts(nodeName, function() {if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts)});
+        gatherFacts(nodeName, function () {if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts)});
     });
     
 });

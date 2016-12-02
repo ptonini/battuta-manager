@@ -138,6 +138,8 @@ function humanBytes(number, suffix) {
     }
     else suffix = ' B';
 
+    number = parseInt(number);
+
     if (number > 1024 && number <= 1048576) {
         suffix = ' KB';
         number = number / 1024
