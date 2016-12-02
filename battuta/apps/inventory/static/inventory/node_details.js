@@ -101,6 +101,7 @@ function loadFacts(data) {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
         var os = facts.os_family + ' - ' + facts.distribution + ' ' + facts.distribution_version;
+        var factsDate = facts.date_time.date + ' ' + facts.date_time.time + ' ' + facts.date_time.tz
         var interfaceTable = factsTable.clone();
         var mountTable = factsTable.clone();
 
@@ -127,9 +128,7 @@ function loadFacts(data) {
                 {class: 'col-md-2', title: 'Type', data: 'fstype'},
                 {class: 'col-md-2', title: 'options', data: 'options'}
             ],
-            rowCallback: function(row, data) {
-                $(row).find('td:eq(2)').html(humanBytes(data.size_total))
-            }
+            rowCallback: function(row, data) {$(row).find('td:eq(2)').html(humanBytes(data.size_total))}
         });
 
         factsContainer.empty().append(
@@ -165,7 +164,7 @@ function loadFacts(data) {
             divRow.clone().append(divCol8.clone().append($('<h4>').html('Mounts'))),
             divRow.clone().append(divCol8.clone().append(mountTable)),
             $('<br>'),
-            divRow.clone().append(divCol12.html('Facts gathered in ' + facts.date_time.date))
+            divRow.clone().append(divCol12.append('Facts gathered in ', $('<strong>').html(factsDate)))
         );
 
         $('#all_facts_container').append(

@@ -28,20 +28,18 @@
         <div class="col-md-5">
             <hr class="visible-xs visible-sm medium">
             <div id="arguments_box">
-                <h4>
-                    <span id="arguments_box_header">&nbsp;</span>
-                    <small id="become" class="hidden" style="line-height: 16px; float: right; color: #777">
-                        Require sudo
-                    </small>
-                </h4>
+                <div class="row row-eq-height">
+                    <div class="col-md-9">
+                        <h4><span id="arguments_box_header">&nbsp;</span></h4>
+                    </div>
+                    <div class="col-md-3 text-right" style="margin: auto">
+                        <small id="become" class="hidden">requires sudo</small>
+                    </div>
+                </div>
                 <br>
                 <div class="row">
-                    <div class="col-md-4">
-                        <label for="saved_arguments" class="requiredField" style="font-size: 13px; padding: 6px 0">
-                            Saved arguments
-                        </label>
-                    </div>
-                    <div class="col-md-8">
+                    <div class="col-md-12">
+                        <label for="saved_arguments" class="requiredField">Saved arguments</label>
                         <select class="select form-control input-sm" id="saved_arguments"></select>
                     </div>
                 </div>
@@ -53,15 +51,15 @@
                                 <label for="subset-field" class="requiredField">Limit</label>
                                 <div class="input-group">
                                     <input class="form-control input-sm pattern-input" id="subset-field" type="text">
-                                <span class="input-group-btn">
-                                    <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
-                                        <span class="glyphicon glyphicon-edit"></span>
-                                    </button>
-                                </span>
+                                    <span class="input-group-btn">
+                                        <button id="pattern_editor" class="btn btn-default btn-sm" title="Build pattern">
+                                            <span class="glyphicon glyphicon-edit"></span>
+                                        </button>
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 text-right" style="margin-top: 22px">
+                        <div class="col-md-3 text-right" style="margin-top: 23px">
                             <button id="check" class="btn btn-default btn-sm" data-action="check">Check</button>
                         </div>
                         <div class="col-md-6">

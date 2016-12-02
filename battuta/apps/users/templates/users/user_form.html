@@ -105,18 +105,15 @@
 <div class="hidden">
     <div id="credential_dialog" style="overflow: hidden">
         <h4>Credentials</h4>
+        <br>
         <div class="row">
-            <div class="col-md-3">
-                <label for="credentials" class="requiredField" style="font-size: 13px; padding: 6px 0">
-                    Saved credentials
-                </label>
-            </div>
-            <div class="col-md-9">
+            <div class="col-md-12">
+                <label for="credentials" class="requiredField">Saved credentials</label>
                 <select class="select form-control input-sm" id="credentials"></select>
             </div>
         </div>
         <br>
-        <form id="credential_form" method="post" autocomplete="off">
+        <form id="credential_form" method="post">
             <div class="row">
                 <div class="col-md-8">
                     <div class="form-group">
@@ -142,9 +139,9 @@
                         <label for="cred_pass" class="requiredField">Password</label>
                         <div class="input-group">
                             <input class="form-control input-sm" id="cred_pass" type="password" autocomplete="off">
-                        <span class="input-group-btn">
-                            <button id="ask_pass" class="btn btn-default btn-sm">Ask</button>
-                        </span>
+                            <span class="input-group-btn">
+                                <button id="ask_pass" class="btn btn-default btn-sm">Ask</button>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -168,9 +165,9 @@
                         <label for="cred_sudo_pass" class=" requiredField">SUDO Password</label>
                         <div class="input-group">
                             <input class="form-control input-sm" id="cred_sudo_pass" type="password" autocomplete="off">
-                        <span class="input-group-btn">
-                            <button id="ask_sudo_pass" class="btn btn-default btn-sm">Ask</button>
-                        </span>
+                            <span class="input-group-btn">
+                                <button id="ask_sudo_pass" class="btn btn-default btn-sm">Ask</button>
+                            </span>
                         </div>
                     </div>
                 </div>

@@ -255,7 +255,7 @@ class PlaybookView(BaseView):
             else:
                 try:
                     with open(full_path, 'w') as f:
-                        f.write(request.POST['text'])
+                        f.write(request.POST['text'].encode('utf8'))
                 except Exception as e:
                     data = {'result': 'fail', 'msg': e}
                 else:

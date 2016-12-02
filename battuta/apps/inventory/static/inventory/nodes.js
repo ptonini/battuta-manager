@@ -9,36 +9,34 @@ $(document).ready(function() {
 
     var nodeList = $('#node_list');
     var nodeType = $('#node_type').val();
+    var nodeTableColumns = null;
 
     document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
 
     if (nodeType == 'host') {
 
-        if (sessionStorage.getItem('use_ec2_facts') == 'true') $('#node_table_header').append(
-            $('<th>').addClass('col-md-3').html('Host'),
-            $('<th>').addClass('col-md-2').html('Address'),
-            $('<th>').addClass('col-md-2').html('Public address'),
-            $('<th>').addClass('col-md-2').html('Type'),
-            $('<th>').addClass('col-md-1').html('Cores'),
-            $('<th>').addClass('col-md-1').html('Memory'),
-            $('<th>').addClass('col-md-1').html('Disc')
-        );
-        else $('#node_table_header').append(
-            $('<th>').addClass('col-md-3').html('Host'),
-            $('<th>').addClass('col-md-2').html('Address'),
-            $('<th>').addClass('col-md-1').html('Cores'),
-            $('<th>').addClass('col-md-1').html('Memory'),
-            $('<th>').addClass('col-md-5').html('Disc')
-        )
+        if (sessionStorage.getItem('use_ec2_facts') == 'true') nodeTableColumns = [
+            {title: 'Host'},
+            {title: 'Address'},
+            {title: 'Public address'},
+            {title: 'Type'},
+            {title: 'Cores'},
+            {title: 'Memory'},
+            {title: 'Disc'}
+        ];
+
+        else nodeTableColumns = [
+            {title: 'Host'}, {title: 'Address'}, {title: 'Cores'}, {title: 'Memory'}, {title: 'Disc'}
+        ];
     }
-    else if (nodeType == 'group') $('#node_table_header').append(
-            $('<th>').addClass('col-md-2').html('Group'),
-            $('<th>').addClass('col-md-5').html('Description'),
-            $('<th>').addClass('col-md-1').html('Members'),
-            $('<th>').addClass('col-md-1').html('Parents'),
-            $('<th>').addClass('col-md-1').html('Children'),
-            $('<th>').addClass('col-md-1').html('Variables')
-    );
+    else if (nodeType == 'group') nodeTableColumns = [
+        {title: 'Group'},
+        {title: 'Description'},
+        {title: 'Members'},
+        {title: 'Parents'},
+        {title: 'Children'},
+        {title: 'Variables'}
+    ];
 
     var defaultListOptions = {
         minColumns: sessionStorage.getItem('node_list_min_columns'),
@@ -69,6 +67,7 @@ $(document).ready(function() {
     $('#node_table').DataTable({
         paging: false,
         ajax: {dataSrc: '', data: {action: nodeType +'_table'}},
+        columns: nodeTableColumns,
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
         rowCallback: function(row, data) {
