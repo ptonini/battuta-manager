@@ -28,41 +28,50 @@ class SearchView(View):
     def get(self, request):
         data = list()
 
-        for directory, category, prefix, exclude, is_user_folder in self.file_sources:
-            for root, dirs, files in os.walk(directory):
+        if 'term' in request.GET:
 
-                # fs_object_list = list()
+            for directory, category, prefix, exclude, is_user_folder in self.file_sources:
+                for root, dirs, files in os.walk(directory):
+                    for file_name in files:
 
-                if root.split('/')[-1] in exclude:
-                    continue
+                        full_path = os.path.join(root, file_name)
+                        relative_path = root.replace(directory, '')
 
-                # if request.GET['type'] == 'file' or request.GET['type'] == 'archive':
-                #
-                #     fs_object_list = [{'root': root, 'name': object_name} for object_name in files]
-                #
-                # elif request.GET['type'] == 'directory':
-                #
-                #     fs_object_list = [{'root': root, 'name': object_name} for object_name in dirs]
-
-                for file_name in files:
-
-                    full_path = os.path.join(root, file_name)
-                    relative_path = root.replace(directory, '')
-
-                    if request.GET['term'] not in full_path:
-                        continue
-
-                    if request.GET['type'] == 'archive':
-                        mime_type = magic.from_file(full_path, mime='true')
-                        if mime_type not in self.archive_types:
+                        if request.GET['term'] not in full_path:
                             continue
 
-                    if is_user_folder and relative_path.split('/')[1] != request.user.username:
-                        continue
+                        if root.split('/')[-1] in exclude:
+                            continue
 
-                    data.append({'label': os.path.join(relative_path, file_name),
-                                 'prefix': prefix,
-                                 'category': category})
+                        if request.GET['type'] == 'archive':
+                            if magic.from_file(full_path, mime='true') not in self.archive_types:
+                                continue
+
+                        if is_user_folder and relative_path.split('/')[1] != request.user.username:
+                            continue
+
+                        data.append({'label': os.path.join(relative_path, file_name),
+                                     'prefix': prefix,
+                                     'category': category})
+
+        elif 'directory' in request.GET:
+
+            if request.GET['root_path'] == 'files_path':
+                root_folder = settings.FILES_PATH
+            elif request.GET['root_path'] == 'roles_path':
+                root_folder = settings.ROLES_PATH
+            elif request.GET['root_path'] == 'user_path':
+                root_folder = settings.USERDATA_PATH
+            else:
+                raise Http404('Invalid root path')
+
+            if os.path.isdir(os.path.join(root_folder, request.GET['directory'])):
+                data = {'result': 'ok'}
+            else:
+                data = {'result': 'failed', 'msg': 'Directory not found'}
+
+        else:
+            raise Http404('Invalid request')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

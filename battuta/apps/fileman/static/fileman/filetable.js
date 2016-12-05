@@ -61,15 +61,12 @@ $(document).ready(function() {
                                 var editPathVal = $(this).val();
                                 $.ajax({
                                     url: '/fileman/search/',
-                                    data: {'type': 'directory', term: $(this).val()},
+                                    data: {directory: $(this).val(), root_path: $('#root_path').html()},
                                     success: function (data) {
-                                        if (data.length > 0) fileTable
+                                        if (data.result == 'ok') fileTable
                                             .data('current_dir', editPathVal)
                                             .DataTable().ajax.reload();
-
-                                        else alertDialog
-                                            .html($('<strong>').append('Directory not found'))
-                                            .dialog('open');
+                                        else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
                                     }
                                 });
 
