@@ -122,7 +122,9 @@ $(document).ready(function() {
                             objectData['action'] = 'edit';
                             objectData['file_name'] = fileName;
                             submitRequest('GET', objectData,  function(data) {
-                                if (data.result == 'ok') editTextFile(data.text, currentDir, fileName, mimeType, reloadFileTable);
+                                if (data.result == 'ok') {
+                                    editTextFile(data.text, currentDir, fileName, mimeType, '', reloadFileTable);
+                                }
                                 else {
                                     fileTable.DataTable().ajax.reload();
                                     alertDialog.html($('<strong>').append(data.msg)).dialog('open')

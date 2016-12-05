@@ -102,7 +102,7 @@ textEditor.setHighlightActiveLine(false);
 textEditor.setFontSize(13);
 textEditor.$blockScrolling = Infinity;
 
-function editTextFile(text, fileDir, fileName, mimeType, ext, onCloseCallback) {
+function editTextFile(text, fileDir, fileName, mimeType, ext, closeCallback) {
 
     textEditor.setValue(text);
     textEditor.session.getUndoManager().reset();
@@ -138,7 +138,8 @@ function editTextFile(text, fileDir, fileName, mimeType, ext, onCloseCallback) {
     }
     textEditorContainer
         .data({text: text, fileDir: fileDir, fileName: fileName, ext: ext})
-        .css('height', window.innerHeight * 0.7);
+        .css('height', window.innerHeight * .7);
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    editorDialog.on('dialogclose', onCloseCallback).dialog('open');
+    editorDialog.on('dialogclose', closeCallback).dialog('open');
+    textEditor.focus();
 }
