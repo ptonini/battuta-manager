@@ -135,7 +135,6 @@ $('.select_nodes').click(function () {
 $(document).ready(function () {
     // Open pattern textEditor
     $('#pattern_editor').click(function () {
-        event.preventDefault();
         patternContainer.addClass('hidden').html('');
         patternDialog.dialog('open');
     });

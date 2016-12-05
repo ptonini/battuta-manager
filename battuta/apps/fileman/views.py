@@ -18,8 +18,8 @@ from apps.preferences.functions import get_preferences
 class SearchView(View):
 
     file_sources = [
-        [settings.FILES_PATH, 'Files', '{{ files_path }}', None, False],
-        [settings.USERDATA_PATH, 'User files', '{{ userdata_path }}', None, True],
+        [settings.FILES_PATH, 'Files', '{{ files_path }}', list(), False],
+        [settings.USERDATA_PATH, 'User files', '{{ userdata_path }}', list(), True],
         [settings.ROLES_PATH, 'Roles', '{{ roles_path }}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
     ]
 
@@ -30,18 +30,33 @@ class SearchView(View):
 
         for directory, category, prefix, exclude, is_user_folder in self.file_sources:
             for root, dirs, files in os.walk(directory):
+
+                # fs_object_list = list()
+
+                if root.split('/')[-1] in exclude:
+                    continue
+
+                # if request.GET['type'] == 'file' or request.GET['type'] == 'archive':
+                #
+                #     fs_object_list = [{'root': root, 'name': object_name} for object_name in files]
+                #
+                # elif request.GET['type'] == 'directory':
+                #
+                #     fs_object_list = [{'root': root, 'name': object_name} for object_name in dirs]
+
                 for file_name in files:
 
                     full_path = os.path.join(root, file_name)
                     relative_path = root.replace(directory, '')
-                    file_path = os.path.join(relative_path, file_name)
 
-                    if request.GET['term'] not in file_path:
+                    if request.GET['term'] not in full_path:
                         continue
-                    if exclude and len(relative_path.split('/')) > 2 and relative_path.split('/')[2] in exclude:
-                        continue
-                    if 'archives' in request.GET and magic.from_file(full_path, mime='true') not in self.archive_types:
-                        continue
+
+                    if request.GET['type'] == 'archive':
+                        mime_type = magic.from_file(full_path, mime='true')
+                        if mime_type not in self.archive_types:
+                            continue
+
                     if is_user_folder and relative_path.split('/')[1] != request.user.username:
                         continue
 

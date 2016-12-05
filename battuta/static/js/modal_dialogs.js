@@ -18,10 +18,14 @@ deleteDialog.dialog($.extend({}, defaultDialogOptions, {width: '320'}));
 
 
 // Alert dialog
-var alertDialog = $('<div>').attr({id: 'alert_dialog'});
+var alertDialog = $('<div>').attr('id', 'alert_dialog');
 alertDialog.dialog($.extend({}, defaultDialogOptions, {
     width: '320',
-    buttons: {Ok: function () {$(this).dialog('close')}}
+    buttons: {Ok: function () {$(this).dialog('close')}},
+    open: function (event, ui) {
+        if ($(this).data('left-align')) $(this).removeClass('text-center').removeData('left-align');
+        else $(this).addClass('text-center');
+     }
 }));
 
 

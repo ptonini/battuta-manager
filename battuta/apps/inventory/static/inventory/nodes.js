@@ -16,26 +16,30 @@ $(document).ready(function() {
     if (nodeType == 'host') {
 
         if (sessionStorage.getItem('use_ec2_facts') == 'true') nodeTableColumns = [
-            {title: 'Host'},
-            {title: 'Address'},
-            {title: 'Public address'},
-            {title: 'Type'},
-            {title: 'Cores'},
-            {title: 'Memory'},
-            {title: 'Disc'}
+            {class: 'col-md-3', title: 'Host'},
+            {class: 'col-md-2', title: 'Address'},
+            {class: 'col-md-2', title: 'Public address'},
+            {class: 'col-md-2', title: 'Type'},
+            {class: 'col-md-1', title: 'Cores'},
+            {class: 'col-md-1', title: 'Memory'},
+            {class: 'col-md-1', title: 'Disc'}
         ];
 
         else nodeTableColumns = [
-            {title: 'Host'}, {title: 'Address'}, {title: 'Cores'}, {title: 'Memory'}, {title: 'Disc'}
+            {class: 'col-md-3', title: 'Host'},
+            {class: 'col-md-2', title: 'Address'},
+            {class: 'col-md-1', title: 'Cores'},
+            {class: 'col-md-1', title: 'Memory'},
+            {class: 'col-md-5', title: 'Disc'}
         ];
     }
     else if (nodeType == 'group') nodeTableColumns = [
-        {title: 'Group'},
-        {title: 'Description'},
-        {title: 'Members'},
-        {title: 'Parents'},
-        {title: 'Children'},
-        {title: 'Variables'}
+        {class: 'col-md-2', title: 'Group'},
+        {class: 'col-md-5', title: 'Description'},
+        {class: 'col-md-1', title: 'Members'},
+        {class: 'col-md-1', title: 'Parents'},
+        {class: 'col-md-1', title: 'Children'},
+        {class: 'col-md-1', title: 'Variables'}
     ];
 
     var defaultListOptions = {

@@ -34,7 +34,6 @@ editorDialog.dialog({
     closeOnEscape: false,
     buttons: {
         Save: function () {
-            console.log('aqui');
             var editorData = textEditorContainer.data();
             var fileName = fileNameField.val();
             if (fileName) {
@@ -89,9 +88,7 @@ $.each(aceModesArray, function(index, value){
     aceModeSelector.append($('<option>').attr('value', value[0]).html(value[1]))
 });
 
-aceModeSelector.change(function () {
-    textEditor.getSession().setMode('ace/mode/' + $(this).val());
-});
+aceModeSelector.change(function () {textEditor.getSession().setMode('ace/mode/' + $(this).val())});
 
 reloadButton.click(function () {
     textEditor.setValue($('#text_editor').data('text'));
@@ -105,7 +102,7 @@ textEditor.setHighlightActiveLine(false);
 textEditor.setFontSize(13);
 textEditor.$blockScrolling = Infinity;
 
-function editTextFile(text, fileDir, fileName, mimeType, ext) {
+function editTextFile(text, fileDir, fileName, mimeType, ext, onCloseCallback) {
 
     textEditor.setValue(text);
     textEditor.session.getUndoManager().reset();
@@ -143,5 +140,5 @@ function editTextFile(text, fileDir, fileName, mimeType, ext) {
         .data({text: text, fileDir: fileDir, fileName: fileName, ext: ext})
         .css('height', window.innerHeight * 0.7);
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    editorDialog.dialog('open');
+    editorDialog.on('dialogclose', onCloseCallback).dialog('open');
 }

@@ -125,7 +125,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             );
             break;
         case 'copy':
-            fileSourceField.autocomplete({source: '/fileman/search/'});
+            fileSourceField.autocomplete({source: '/fileman/search/?type=file'});
             fieldsContainer.append(
                 divRow.clone().append(divCol5.clone().append(fileSourceGroup)),
                 divRow.clone().append(divCol5.clone().append(fileDestGroup)),
@@ -136,7 +136,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             );
             break;
         case 'unarchive':
-            fileSourceField.autocomplete({source: '/fileman/search/?archives=true'});
+            fileSourceField.autocomplete({source: '/fileman/search/?type=archive'});
             fieldsContainer.append(
                 divRow.clone().append(divCol5.clone().append(fileSourceGroup)),
                 divRow.clone().append(divCol5.clone().append(fileDestGroup)),
@@ -147,7 +147,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
             );
             break;
         case 'script':
-            fileSourceField.autocomplete({source: '/fileman/search/'});
+            fileSourceField.autocomplete({source: '/fileman/search/?type=file'});
             fileSourceLabel.html('Script');
             fieldsContainer.append(
                 divRow.clone().append(divCol5.clone().append(fileSourceGroup)),

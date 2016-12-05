@@ -363,7 +363,8 @@ $(document).ready(function () {
                         else {
                             var newRow = $(value[1]).clone().css('color', '#777');
                             newRow.find('td:eq(0)').html('');
-                            newRow.find('td:eq(2)').addClass('col-md-2').click(function() {
+                            newRow.find('td:eq(2)').click(function() {
+                                console.log('hey, hey, hey...,', value)
                                 window.open('/inventory/group/' + value[0][2], '_self')
                             });
                             rowArray.push(newRow);

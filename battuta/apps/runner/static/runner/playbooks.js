@@ -43,6 +43,8 @@ function loadPlaybook(data) {
     else alertDialog.html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
 }
 
+function reloadPlaybookTable() {$('#playbook_table').DataTable().ajax.reload()}
+
 $(document).ready(function () {
 
     var playbookTable = $('#playbook_table');
@@ -54,10 +56,6 @@ $(document).ready(function () {
     var runPlaybook = $('#run_playbook');
 
     document.title = 'Battuta - Playbooks';
-
-    editorDialog.on('dialogclose', function() {
-        playbookTable.DataTable().ajax.reload()
-    });
 
     subsetField.keypress(function(event) {
         if (event.keyCode == 13) {
@@ -92,14 +90,14 @@ $(document).ready(function () {
                         .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                         .click(function () {
                             submitRequest('GET', postData, function(data) {
-                                editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml')
+                                editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml', reloadPlaybookTable)
                             });
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
                         .click(function () {
                             submitRequest('GET', postData, function(data) {
-                                editTextFile(data.text, '', '', 'text/yaml', 'yml')
+                                editTextFile(data.text, '', '', 'text/yaml', 'yml', reloadPlaybookTable)
                             });
                         }),
                     $('<span>')
@@ -191,7 +189,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                editTextFile(data, '', '', 'text/yaml', 'yml')
+                editTextFile(data, '', '', 'text/yaml', 'yml', reloadPlaybookTable)
             }
         });
     });
