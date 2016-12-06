@@ -92,18 +92,6 @@ DEFAULT_PREFERENCES = [
         'description': '',
         'items': [
             {
-                'name': 'hostname',
-                'value': 'localhost',
-                'data_type': 'str',
-                'description': 'Server hostname'
-            },
-            {
-                'name': 'ansible_server',
-                'value': '127.0.0.1',
-                'data_type': 'str',
-                'description': 'Ansible server address'
-            },
-            {
                 'name': 'date_format',
                 'value': '%Y-%m-%d %H:%M:%S',
                 'data_type': 'str',
@@ -126,6 +114,12 @@ DEFAULT_PREFERENCES = [
                 'value': 'no',
                 'data_type': 'bool',
                 'description': 'Open jobs in single window'
+            },
+            {
+                'name': 'show_hidden_files',
+                'value': 'no',
+                'data_type': 'bool',
+                'description': 'Show hidden files and folders'
             }
         ]
     },

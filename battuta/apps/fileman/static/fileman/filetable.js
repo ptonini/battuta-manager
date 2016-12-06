@@ -11,9 +11,12 @@ function buildBreadcrumbs(table) {
                 .html(value)
                 .click(function () {
                     var nextDir = '';
-                    for (var i = 0; i <= index; i++) nextDir += $('#path_link_' + i).html() + '/'
+                    for (var i = 0; i <= index; i++) {
+                        nextDir += $('#path_link_' + i).html();
+                        if (i < index) nextDir += '/'
+                    }
                     $(this).nextAll('.path_link').remove();
-                    $(table).data('current_dir', nextDir.slice(0, -1)).DataTable().ajax.reload();
+                    $(table).data('current_dir', nextDir).DataTable().ajax.reload();
                 })
         )
     });
@@ -37,7 +40,7 @@ $(document).ready(function() {
     $('#create_file').click(function() {
         nameFieldLabel.html('Create');
         createOnlyContainer.show();
-        fileDialog.data({action: 'create', file_dir: fileTable.data('current_dir')}).dialog('open')
+        fileDialog.data({action: 'create', current_dir: fileTable.data('current_dir')}).dialog('open')
     });
 
     //Upload button action
@@ -47,33 +50,34 @@ $(document).ready(function() {
     $('#root_path').click(function() {fileTable.data('current_dir', '').DataTable().ajax.reload()});
 
     $('#edit_path').click(function () {
-        $(this).children('span').toggleClass('checked_button');
-        if ($('#path_input').length == 0) {
-            $('.path_link').remove();
-            $(this).after(
-                $('<li>').attr('class', 'path_link').append(
-                    $('<input>')
-                        .attr('id', 'path_input')
-                        .css('width', $(this).closest('.breadcrumb').width() * .75 + 'px')
-                        .val(fileTable.data('current_dir'))
-                        .keypress(function (event) {
-                            if (event.keyCode == 13) {
-                                var editPathVal = $(this).val();
-                                $.ajax({
-                                    url: '/fileman/search/',
-                                    data: {directory: $(this).val(), root_path: $('#root_path').html()},
-                                    success: function (data) {
-                                        if (data.result == 'ok') fileTable
-                                            .data('current_dir', editPathVal)
-                                            .DataTable().ajax.reload();
-                                        else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
-                                    }
-                                });
 
-                            }
-                        })
-                )
-            )
+        $(this).children('span').toggleClass('checked_button');
+        var pathInput = $('<input>')
+            .attr('id', 'path_input')
+            .css({width: $(this).closest('.breadcrumb').width() * .75 + 'px'})
+            .val(fileTable.data('current_dir'))
+            .keypress(function (event) {
+                if (event.keyCode == 13) {
+                    var editPathVal = $(this).val();
+                    if (editPathVal.charAt(editPathVal.length - 1) == '/') {
+                        editPathVal = editPathVal.substr(0, editPathVal.length - 1)
+                    }
+                    $.ajax({
+                        data: {exists: editPathVal, type:'directory'},
+                        success: function (data) {
+                            if (data.result == 'ok') fileTable
+                                .data('current_dir', editPathVal)
+                                .DataTable().ajax.reload();
+                            else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
+                        }
+                    });
+                }
+            });
+
+        if ($(this).parent().find('#path_input').length == 0) {
+            $('.path_link').remove();
+            $(this).after($('<li>').attr('class', 'path_link').append(pathInput));
+            pathInput.focus()
         }
         else buildBreadcrumbs('#file_table')
     });
@@ -91,25 +95,22 @@ $(document).ready(function() {
     fileTable.DataTable({
         ajax: {
             dataSrc: '',
-            data: function(d) {
-                d.action = 'table';
-                d.directory = fileTable.data('current_dir')
-            }
+            data: function(d) {d.list = fileTable.data('current_dir')}
         },
         order: [[0, 'asc']],
         rowCallback: function(row, data) {
 
-            var fileName = data[0];
+            var objectName = data[0];
+            var objectDir = fileTable.data('current_dir');
             var mimeType = data[1];
-            
-            var currentDir = fileTable.data('current_dir');
-            var objectData = {file_dir: currentDir};
+
+            var requestData = {current_dir: objectDir};
 
             if (data[1] == 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                 .css({'cursor': 'pointer', 'font-weight': '700'})
                 .off('click')
                 .click(function () {
-                    if (currentDir) var nextDir = currentDir + '/' + data[0];
+                    if (objectDir) var nextDir = objectDir + '/' + data[0];
                     else nextDir = data[0];
                     fileTable.data('current_dir', nextDir).DataTable().ajax.reload();
                 });
@@ -119,11 +120,10 @@ $(document).ready(function() {
                     .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                     .click(function () {
                         if (editableMimeTypes.indexOf(data[1]) > -1 && data[2] <= 65536) {
-                            objectData['action'] = 'edit';
-                            objectData['file_name'] = fileName;
-                            submitRequest('GET', objectData,  function(data) {
+                            requestData['edit'] = objectName;
+                            submitRequest('GET', requestData,  function(data) {
                                 if (data.result == 'ok') {
-                                    editTextFile(data.text, currentDir, fileName, mimeType, '', reloadFileTable);
+                                    editTextFile(data.text, objectDir, objectName, mimeType, '', reloadFileTable);
                                 }
                                 else {
                                     fileTable.DataTable().ajax.reload();
@@ -132,28 +132,28 @@ $(document).ready(function() {
                             });
                         }
                         else {
-                            objectData['action'] = 'rename';
-                            objectData['old_file_name'] = fileName;
+                            requestData['action'] = 'rename';
+                            requestData['old_base_name'] = objectName;
                             nameFieldLabel.html('Rename');
-                            nameField.val(fileName);
+                            nameField.val(objectName);
                             createOnlyContainer.hide();
-                            fileDialog.data(objectData).dialog('open')
+                            fileDialog.data(requestData).dialog('open')
                         }
                     }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
                     .click(function () {
-                        objectData['action'] = 'copy';
-                        objectData['old_file_name'] = fileName;
+                        requestData['action'] = 'copy';
+                        requestData['old_file_name'] = objectName;
                         nameFieldLabel.html('Copy');
-                        nameField.val(fileName + ' (copy)');
+                        nameField.val(objectName + ' (copy)');
                         createOnlyContainer.hide();
-                        fileDialog.data(objectData).dialog('open')
+                        fileDialog.data(requestData).dialog('open')
                     }),
                 $('<span>')
-                    .attr({class: 'glyphicon glyphicon-download-alt btn-incell', title: 'Download ' + fileName})
+                    .attr({class: 'glyphicon glyphicon-download-alt btn-incell', title: 'Download ' + objectName})
                     .click(function () {
-                        window.open('?action=download&file_dir=' + currentDir + '&file_name=' + fileName, '_self')
+                        window.open('?download=' + objectName + '&file_dir=' + objectDir, '_self')
                     }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
@@ -162,9 +162,9 @@ $(document).ready(function() {
                             .dialog('option', 'buttons', {
 
                                 Delete: function () {
-                                    objectData['action'] = 'delete';
-                                    objectData['file_name'] = fileName;
-                                    submitRequest('POST', objectData, function() {
+                                    requestData['action'] = 'delete';
+                                    requestData['base_name'] = objectName;
+                                    submitRequest('POST', requestData, function() {
                                         fileTable.DataTable().ajax.reload()
                                     });
                                     $(this).dialog('close');

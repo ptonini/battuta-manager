@@ -8,13 +8,13 @@ uploadField
         uploadUrl: window.location.href,
         uploadAsync: true,
         uploadExtraData: function () {
-            var fileName = '';
+            var baseName = '';
             var fileStack = uploadField.fileinput('getFileStack');
-            if (fileStack.length == 1) fileName = fileStack[0].name;
+            if (fileStack.length == 1) baseName = fileStack[0].name;
             return {
                 action: 'upload',
-                file_name: fileName,
-                file_dir: uploadDialog.data('file_dir'),
+                base_name: baseName,
+                current_dir: uploadDialog.data('current_dir'),
                 csrfmiddlewaretoken: getCookie('csrftoken')
             }
         },
@@ -27,15 +27,15 @@ uploadField
         browseClass: 'btn btn-default btn-sm',
         progressClass: 'progress-bar progress-bar-success active'
     })
-    .on('fileuploaded', function(event, data, previewId, index) {
+    .on('fileuploaded', function(event, data) {
         uploadField.fileinput('clear').fileinput('enable');
         if (data.response.result == 'ok') uploadDialog.dialog('close');
         else alertDialog.html($('<strong>').append(data.response.msg)).dialog('open')
     })
-    .on('fileloaded', function(event, file, previewId, index, reader) {
+    .on('fileloaded', function() {
         $('.ui-button-text:contains("Upload")').parent('button')
             .off('click')
-            .click(function(event) {uploadField.fileinput('upload')});
+            .click(function() {uploadField.fileinput('upload')});
     });
 
 
@@ -50,7 +50,7 @@ uploadDialog
             }
         },
         beforeClose: function() {
-            uploadField.removeData('files, file_dir').fileinput('reset');
+            uploadField.removeData('files, current_dir').fileinput('reset');
         }
     }))
     .keypress(function (event) {

@@ -19,14 +19,14 @@ fileDialog
                 var postData = Object.assign({}, fileDialog.data());
                 delete postData['ui-dialog'];
 
-                postData['file_name'] = nameField.val();
+                postData['base_name'] = nameField.val();
 
                 if (postData.action == 'create') {
                     postData['is_directory'] = isDirectory.is(':checked');
                     postData['is_executable'] = isExecutable.is(':checked');
                 }
 
-                if (postData.file_name && postData.file_name != postData.old_file_name) {
+                if (postData.base_name && postData.base_name != postData.old_base_name) {
                     submitRequest('POST', postData, function(data) {
                         if (data.result == 'ok') fileDialog.dialog('close');
                         else alertDialog.html($('<strong>').append(data.msg)).dialog('open');

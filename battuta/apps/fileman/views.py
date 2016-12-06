@@ -27,6 +27,7 @@ class SearchView(View):
 
     def get(self, request):
         data = list()
+        prefs = get_preferences()
 
         if 'term' in request.GET:
 
@@ -36,6 +37,9 @@ class SearchView(View):
 
                         full_path = os.path.join(root, file_name)
                         relative_path = root.replace(directory, '')
+
+                        if not prefs['show_hidden_files'] and any(s.startswith('.') for s in full_path.split('/')):
+                            continue
 
                         if request.GET['term'] not in full_path:
                             continue
@@ -53,23 +57,6 @@ class SearchView(View):
                         data.append({'label': os.path.join(relative_path, file_name),
                                      'prefix': prefix,
                                      'category': category})
-
-        elif 'directory' in request.GET:
-
-            if request.GET['root_path'] == 'files_path':
-                root_folder = settings.FILES_PATH
-            elif request.GET['root_path'] == 'roles_path':
-                root_folder = settings.ROLES_PATH
-            elif request.GET['root_path'] == 'user_path':
-                root_folder = settings.USERDATA_PATH
-            else:
-                raise Http404('Invalid root path')
-
-            if os.path.isdir(os.path.join(root_folder, request.GET['directory'])):
-                data = {'result': 'ok'}
-            else:
-                data = {'result': 'failed', 'msg': 'Directory not found'}
-
         else:
             raise Http404('Invalid request')
 
@@ -83,78 +70,91 @@ class ManagerView(View):
 
     def get(self, request):
 
+        data = None
+
         if self.is_user:
             self.base_dir = os.path.join(self.base_dir, request.user.username)
 
-        if 'action' not in request.GET:
-            return render(request, self.html_template, {'user': request.user})
+        if 'list' in request.GET:
 
-        else:
-            if request.GET['action'] == 'table':
+            tz = timezone(request.user.userdata.timezone)
+            prefs = get_preferences()
 
-                tz = timezone(request.user.userdata.timezone)
-                prefs = get_preferences()
+            if not os.path.exists(self.base_dir):
+                os.makedirs(self.base_dir)
 
-                if not os.path.exists(self.base_dir):
-                    os.makedirs(self.base_dir)
+            data = list()
+            directory = os.path.join(self.base_dir, request.GET['list'])
+            for base_name in os.listdir(directory):
 
-                data = list()
-                directory = os.path.join(self.base_dir, request.GET['directory'])
-                if not directory.startswith('.'):
-                    for base_name in os.listdir(directory):
+                full_path = os.path.join(directory, base_name)
 
-                        full_path = os.path.join(directory, base_name)
-
-                        if os.path.isfile(full_path):
-                            file_mime_type = magic.from_file(full_path, mime='true')
-                        else:
-                            file_mime_type = 'directory'
-
-                        file_size = os.path.getsize(full_path)
-                        file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-
-                        utc_timestamp = utc.localize(file_timestamp)
-                        local_timestamp = utc_timestamp.astimezone(tz).strftime(prefs['date_format'])
-
-                        if not base_name.startswith('.'):
-                            data.append([base_name, file_mime_type, file_size, local_timestamp, ''])
-
-            elif request.GET['action'] == 'edit':
-
-                full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['file_name'])
-
-                if os.path.exists(full_path):
-                    with open(full_path, 'r') as text_file:
-                        data = {'result': 'ok', 'text': text_file.read()}
-                else:
-                    data = {'result': 'fail', 'msg': 'The file was not found'}
-
-            elif request.GET['action'] == 'download':
-
-                full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['file_name'])
+                if not prefs['show_hidden_files'] and base_name.startswith('.'):
+                    continue
 
                 if os.path.isfile(full_path):
-                    target = full_path
-                    delete_after = False
-
+                    file_mime_type = magic.from_file(full_path, mime='true')
                 else:
-                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['file_name']),
-                                                 'zip',
-                                                 full_path)
-                    delete_after = True
+                    file_mime_type = 'directory'
 
-                response = StreamingHttpResponse((line for line in open(target, 'r')))
-                response['Content-Length'] = os.path.getsize(target)
-                response['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
+                file_size = os.path.getsize(full_path)
+                file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
 
-                if delete_after:
-                    os.remove(target)
+                utc_timestamp = utc.localize(file_timestamp)
+                local_timestamp = utc_timestamp.astimezone(tz).strftime(prefs['date_format'])
 
-                return response
+                data.append([base_name, file_mime_type, file_size, local_timestamp, ''])
+
+        elif 'edit' in request.GET:
+
+            full_path = os.path.join(self.base_dir, request.GET['current_dir'], request.GET['edit'])
+
+            if os.path.exists(full_path):
+                with open(full_path, 'r') as text_file:
+                    data = {'result': 'ok', 'text': text_file.read()}
+            else:
+                data = {'result': 'fail', 'msg': 'The file was not found'}
+
+        elif 'download' in request.GET:
+
+            full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['download'])
+
+            if os.path.isfile(full_path):
+                target = full_path
+                delete_after = False
 
             else:
-                raise Http404('Invalid action')
+                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['file_name']),
+                                             'zip',
+                                             full_path)
+                delete_after = True
 
+            stream = StreamingHttpResponse((line for line in open(target, 'r')))
+            stream['Content-Length'] = os.path.getsize(target)
+            stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
+
+            if delete_after:
+                os.remove(target)
+
+            return stream
+
+        elif 'exists' in request.GET:
+
+            if request.GET['type'] == 'directory':
+                check_method = os.path.isdir
+            elif request.GET['type'] == 'file':
+                check_method = os.path.isfile
+            else:
+                raise Http404('Invalid object type')
+
+            if check_method(os.path.join(self.base_dir, request.GET['exists'])):
+                data = {'result': 'ok'}
+            else:
+                data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
+
+        if data is None:
+            return render(request, self.html_template, {'user': request.user})
+        else:
             return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request):
@@ -162,10 +162,10 @@ class ManagerView(View):
         if self.is_user:
             self.base_dir = os.path.join(self.base_dir, request.user.username)
 
-        full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['file_name'])
+        full_path = os.path.join(self.base_dir, request.POST['current_dir'], request.POST['base_name'])
 
-        if 'old_file_name' in request.POST:
-            old_full_path = os.path.join(self.base_dir, request.POST['file_dir'], request.POST['old_file_name'])
+        if 'old_base_name' in request.POST:
+            old_full_path = os.path.join(self.base_dir, request.POST['current_dir'], request.POST['old_base_name'])
         else:
             old_full_path = None
 
