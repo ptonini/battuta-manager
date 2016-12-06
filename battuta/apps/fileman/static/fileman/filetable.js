@@ -144,7 +144,7 @@ $(document).ready(function() {
                     .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
                     .click(function () {
                         requestData['action'] = 'copy';
-                        requestData['old_file_name'] = objectName;
+                        requestData['old_base_name'] = objectName;
                         nameFieldLabel.html('Copy');
                         nameField.val(objectName + ' (copy)');
                         createOnlyContainer.hide();
@@ -153,7 +153,7 @@ $(document).ready(function() {
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-download-alt btn-incell', title: 'Download ' + objectName})
                     .click(function () {
-                        window.open('?download=' + objectName + '&file_dir=' + objectDir, '_self')
+                        window.open('?download=' + objectName + '&current_dir=' + objectDir, '_self')
                     }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
@@ -178,7 +178,7 @@ $(document).ready(function() {
         drawCallback: function() {
             var table = this;
             buildBreadcrumbs(table);
-            $(table).find('tr.directory_row').reverse().each(function () {table.prepend($(this));});
+            $(table).find('tr.directory_row').reverse().each(function () {table.prepend($(this))});
         }
     });
 });

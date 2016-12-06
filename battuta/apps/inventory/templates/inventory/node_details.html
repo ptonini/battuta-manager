@@ -21,24 +21,29 @@
                 <div class="col-md-12">
                     <h4 id="node_description_header" style="margin-bottom: 30px"
                         >{{ node.description|default:"<small>No description available</small>" }}</h4>
-                    <button id="edit_node" class="btn btn-default btn-xs">Edit</button>
-                    <button id="delete_node" class="btn btn-default btn-xs">Delete</button>
-                    <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
+                    <button id="edit_node" class="btn btn-default btn-xs" title="Edit">
+                        <span class="glyphicon glyphicon-edit"></span>
+                    </button>
+                    <button id="delete_node" class="btn btn-default btn-xs" title="Remove">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
                     <hr>
                     {% if node.type == 'host' %}
                         <h4>Host information</h4>
                         <div id="facts_container"></div>
                         <br>
                         <div>
-                            <button class="btn btn-default btn-xs" id="open_facts" type="button"
-                                    data-toggle="collapse" data-target="#all_facts_container"
-                                    aria-expanded="false" aria-controls="all_facts_container">View facts</button>
+                            <button class="btn btn-default btn-xs" id="open_facts" type="button" data-toggle="collapse"
+                                    data-target="#all_facts_container" aria-controls="all_facts_container"
+                                    aria-expanded="false" style="display: none">View facts</button>
+                            <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
                         </div>
                         <br>
                         <div class="collapse" id="all_facts_container"></div>
                     {% elif node.type == 'group' %}
                         <h4>Descendants</h4>
                         <div id="descendants_container" style="margin: 10px"></div>
+                        <div><button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button></div>
                     {% endif %}
                 </div>
             </div>

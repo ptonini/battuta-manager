@@ -196,6 +196,8 @@ function loadFacts(data) {
                 )
             )
         }
+
+        $('#open_facts').show()
     }
 }
 

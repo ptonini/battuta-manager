@@ -117,7 +117,7 @@ class ManagerView(View):
 
         elif 'download' in request.GET:
 
-            full_path = os.path.join(self.base_dir, request.GET['file_dir'], request.GET['download'])
+            full_path = os.path.join(self.base_dir, request.GET['current_dir'], request.GET['download'])
 
             if os.path.isfile(full_path):
                 target = full_path
