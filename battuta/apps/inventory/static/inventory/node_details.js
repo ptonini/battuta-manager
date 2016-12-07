@@ -101,7 +101,7 @@ function loadFacts(data) {
         var factsContainer = $('#facts_container');
         var facts = data.facts;
         var os = facts.os_family + ' - ' + facts.distribution + ' ' + facts.distribution_version;
-        var factsDate = facts.date_time.date + ' ' + facts.date_time.time + ' ' + facts.date_time.tz
+        var factsDate = facts.date_time.date + ' ' + facts.date_time.time + ' ' + facts.date_time.tz;
         var interfaceTable = factsTable.clone();
         var mountTable = factsTable.clone();
 
