@@ -298,8 +298,8 @@ class NodeDetailsView(View):
         else:
             raise Http404('Invalid node type')
 
-        ancestors = None
-        group_descendants = None
+        ancestors = list()
+        group_descendants = list()
         host_descendants = None
 
         # Build node object
@@ -307,8 +307,6 @@ class NodeDetailsView(View):
             node = node_class()
         else:
             node = get_object_or_404(node_class, name=node_name)
-
-            ancestors = list()
             parents = node.group_set.all()
             while len(parents) > 0:
                 step_list = list()
