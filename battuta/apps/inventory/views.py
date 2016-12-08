@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
 
-from . import InventoryQueries
+from . import AnsibleInventory
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
@@ -400,7 +400,7 @@ class VariablesView(View):
         node = NodeDetailsView.build_node(node_type, node_name)
 
         variables = dict()
-        queries = InventoryQueries()
+        inventory = AnsibleInventory()
 
         for var in node.variable_set.all():
             variables[var.key] = [{'value': var.value, 'source': '', 'id': var.id}]
@@ -428,7 +428,7 @@ class VariablesView(View):
 
             if len([value for value in value_list if value[2] != '']) > 1 and not from_node:
 
-                actual_value = queries.get_variable(key, node)
+                actual_value = inventory.get_variable(key, node)
 
                 for value in value_list:
                     if value[1] == actual_value:

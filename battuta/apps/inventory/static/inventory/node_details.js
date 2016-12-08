@@ -106,16 +106,17 @@ function loadFacts(data) {
         var mountTable = factsTable.clone();
 
         var interfacesArray = [];
-        $.each(facts.interfaces, function(index, value) {interfacesArray.push(facts[value])});
+        $.each(facts.interfaces, function(index, value) {if (value != 'lo') interfacesArray.push(facts[value])});
 
         interfaceTable.DataTable({
             data: interfacesArray,
             columns: [
-                {title: 'Interface', data: 'device'},
-                {title: 'Type', data: 'type', defaultContent: ''},
-                {title: 'IPv4 address', data: 'ipv4.address', defaultContent: ''},
-                {title: 'Netmask', data: 'ipv4.netmask', defaultContent: ''},
-                {title: 'MAC', data: 'macaddress', defaultContent: ''}
+                {class: 'col-md-2', title: 'Interface', data: 'device'},
+                {class: 'col-md-2', title: 'Type', data: 'type', defaultContent: ''},
+                {class: 'col-md-2', title: 'IPv4 address', data: 'ipv4.address', defaultContent: ''},
+                {class: 'col-md-2', title: 'Netmask', data: 'ipv4.netmask', defaultContent: ''},
+                {class: 'col-md-3', title: 'MAC', data: 'macaddress', defaultContent: ''},
+                {class: 'col-md-1', title: 'MTU', data: 'mtu', defaultContent: ''}
             ]
         });
 
@@ -158,10 +159,10 @@ function loadFacts(data) {
                 )
             ),
             $('<br>'),
-            divRow.clone().append(divCol8.clone().append($('<h4>').html('Interfaces'))),
+            divRow.clone().append(divCol8.clone().append($('<h4>').html('Networking'))),
             divRow.clone().append(divCol8.clone().append(interfaceTable)),
             $('<br>'),
-            divRow.clone().append(divCol8.clone().append($('<h4>').html('Mounts'))),
+            divRow.clone().append(divCol8.clone().append($('<h4>').html('Storage'))),
             divRow.clone().append(divCol8.clone().append(mountTable)),
             $('<br>'),
             divRow.clone().append(divCol12.append('Facts gathered in ', $('<strong>').html(factsDate)))

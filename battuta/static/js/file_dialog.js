@@ -1,4 +1,4 @@
-// File dialog
+ // File dialog
 var nameField = $('<input>').attr({id: 'name_field', type: 'text', class: 'form-control'});
 var nameFieldLabel = $('<label>').attr({id: 'name_field_label', for: 'name_field'});
 var isDirectory = $('<input>').attr({type: 'checkbox', id: 'is_directory'});

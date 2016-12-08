@@ -3,7 +3,7 @@ from ansible.vars import VariableManager
 from ansible.inventory import Inventory, Host
 
 
-class InventoryQueries:
+class AnsibleInventory:
 
     def __init__(self):
         self._variable_manager = VariableManager()
