@@ -300,7 +300,7 @@ class NodeDetailsView(View):
 
         ancestors = list()
         group_descendants = list()
-        host_descendants = None
+        host_descendants = list()
 
         # Build node object
         if node_name == '0':
