@@ -1,9 +1,9 @@
 function loadFileTable() {
 
     var editableMimeTypes = [
+        'inode/x-empty',
         'text/plain',
         'text/x-shellscript',
-        'inode/x-empty',
         'application/xml'
     ];
 
@@ -14,13 +14,11 @@ function loadFileTable() {
         },
         order: [[0, 'asc']],
         rowCallback: function(row, data) {
-            var table = this;
 
+            var table = this;
             var objectName = data[0];
             var objectDir = sessionStorage.getItem('current_dir');
             var mimeType = data[1];
-
-            var requestData = {current_dir: objectDir};
 
             if (data[1] == 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                 .css({'cursor': 'pointer', 'font-weight': '700'})
@@ -37,8 +35,8 @@ function loadFileTable() {
                     .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                     .click(function () {
                         if (editableMimeTypes.indexOf(data[1]) > -1 && data[2] <= 65536) {
-                            requestData['edit'] = objectName;
-                            submitRequest('GET', requestData,  function(data) {
+                            var getData = {edit: objectName, current_dir: objectDir};
+                            submitRequest('GET', getData,  function(data) {
                                 if (data.result == 'ok') {
                                     editTextFile(data.text, objectDir, objectName, mimeType, '', reloadFileTable);
                                 }
@@ -49,23 +47,13 @@ function loadFileTable() {
                             });
                         }
                         else {
-                            requestData['action'] = 'rename';
-                            requestData['old_base_name'] = objectName;
-                            nameFieldLabel.html('Rename');
-                            nameField.val(objectName);
-                            createOnlyContainer.hide();
-                            fileDialog.data(requestData).dialog('open')
+                            new FileDialog('rename', objectName, objectDir, reloadFileTable);
                         }
                     }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
                     .click(function () {
-                        requestData['action'] = 'copy';
-                        requestData['old_base_name'] = objectName;
-                        nameFieldLabel.html('Copy');
-                        nameField.val(objectName + ' (copy)');
-                        createOnlyContainer.hide();
-                        fileDialog.data(requestData).dialog('open')
+                        new FileDialog('copy', objectName, objectDir, reloadFileTable);
                     }),
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-download-alt btn-incell', title: 'Download ' + objectName})
@@ -77,13 +65,13 @@ function loadFileTable() {
                     .click(function () {
                         deleteDialog
                             .dialog('option', 'buttons', {
-
                                 Delete: function () {
-                                    requestData['action'] = 'delete';
-                                    requestData['base_name'] = objectName;
-                                    submitRequest('POST', requestData, function() {
-                                        $(table).DataTable().ajax.reload()
-                                    });
+                                    var postData = {
+                                        action: 'delete',
+                                        base_name: objectName,
+                                        current_dir: objectDir
+                                    };
+                                    submitRequest('POST', postData, function() {$(table).DataTable().ajax.reload()});
                                     $(this).dialog('close');
                                 },
                                 Cancel: function() {$(this).dialog('close')}
@@ -144,14 +132,12 @@ $(document).ready(function() {
 
     // Create button action
     $('#create_file').click(function() {
-        nameFieldLabel.html('Create');
-        createOnlyContainer.show();
-        fileDialog.data({action: 'create', current_dir: sessionStorage.getItem('current_dir')}).dialog('open')
+        new FileDialog('create', null, sessionStorage.getItem('current_dir'), reloadFileTable);
     });
 
     //Upload button action
     $('#upload_file').click(function() {
-        uploadDialog.data('current_dir', sessionStorage.getItem('current_dir')).dialog('open')
+        new UploadDialog(sessionStorage.getItem('current_dir'), reloadFileTable);
     });
 
     // Set root path link action
@@ -176,9 +162,10 @@ $(document).ready(function() {
                     $.ajax({
                         data: {exists: editPathVal, type:'directory'},
                         success: function (data) {
-                            if (data.result == 'ok') fileTable
-                                .data('current_dir', editPathVal)
-                                .DataTable().ajax.reload();
+                            if (data.result == 'ok') {
+                                sessionStorage.setItem('current_dir', editPathVal);
+                                fileTable.DataTable().ajax.reload();
+                            }
                             else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
                         }
                     });
@@ -192,12 +179,6 @@ $(document).ready(function() {
         }
         else buildBreadcrumbs('#file_table')
     });
-
-    // Set file dialog on close callback
-    fileDialog.on('dialogclose', reloadFileTable);
-
-    // Set uploadDialog on close callback
-    uploadDialog.on('dialogclose', reloadFileTable);
 
     // Set roleDialog on close callback
     $('#role_dialog').on('dialogclose', reloadFileTable);
