@@ -12,12 +12,12 @@ function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
         isExecutable, $('<label>').attr({class: 'chkbox_label', for: 'is_executable'}).html('Executable')
     );
 
+    if (action == 'create') createOnlyContainer.show();
+    else if (action == 'copy') nameField.val(currentName + '_copy');
+
     this.fileDialogContainer = $('<div>')
         .attr('class', 'small_dialog')
         .append(nameFieldLabel, nameField, createOnlyContainer);
-
-    if (action == 'create') createOnlyContainer.show();
-    else if (action == 'copy') nameField.val(currentName + '_copy');
 
     this.fileDialogContainer
         .dialog($.extend({}, defaultDialogOptions, {

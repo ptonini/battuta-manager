@@ -4,8 +4,6 @@ function UploadDialog(currentDir, beforeCloseCallback) {
     var uploadFieldLabel = $('<label>').attr({id: 'upload_field_label', for: 'upload_field'}).html('Select file');
     var uploadDialogContainer = $('<div>').attr('class', 'small_dialog').append(uploadFieldLabel, uploadField);
 
-    this.uploadDialogContainer = uploadDialogContainer;
-
     uploadField
         .fileinput({
             uploadUrl: window.location.href,
@@ -34,8 +32,9 @@ function UploadDialog(currentDir, beforeCloseCallback) {
             if (data.response.result == 'ok') uploadDialogContainer.dialog('close');
             else alertDialog.html($('<strong>').append(data.response.msg)).dialog('open')
         });
+    this.uploadDialogContainer = uploadDialogContainer;
 
-    uploadDialogContainer
+    this.uploadDialogContainer
         .dialog($.extend({}, defaultDialogOptions, {
             buttons: {
                 Upload: function() {uploadField.fileinput('upload')},

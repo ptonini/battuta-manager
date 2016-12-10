@@ -365,9 +365,7 @@ $(document).ready(function () {
                         if (value[0][4]) mainValue = value;
                         else {
                             var newRow = $(value[1]).clone().css('color', '#777');
-                            newRow.find('td:eq(0)').html('');
                             newRow.find('td:eq(2)').click(function() {
-                                console.log('hey, hey, hey...,', value)
                                 window.open('/inventory/group/' + value[0][2], '_self')
                             });
                             rowArray.push(newRow);

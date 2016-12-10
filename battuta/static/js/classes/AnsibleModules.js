@@ -1,20 +1,22 @@
-var ansibleModuleList = [
-    'copy',
-    'ec2_facts',
-    'ping',
-    'script',
-    'service',
-    'shell',
-    'setup',
-    'unarchive',
-    'file'
-];
-
 function AnsibleModules(name) {
     this.name = name;
 }
 
-AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
+AnsibleModules.listModules = function() {
+    return [
+        'copy',
+        'ec2_facts',
+        'ping',
+        'script',
+        'service',
+        'shell',
+        'setup',
+        'unarchive',
+        'file'
+    ]
+};
+
+AnsibleModules.prototype.buildFormFields = function(fieldsContainer)  {
     var name = this.name;
 
     var divRow = $('<div>').attr('class', 'row');
@@ -24,7 +26,7 @@ AnsibleModules.prototype.buildFormFields = function(fieldsContainer) {
     var divCol4 = $('<div>').attr('class', 'col-md-4');
     var divCol5 = $('<div>').attr('class', 'col-md-5');
 
-    fieldsContainer.html('');
+    fieldsContainer.empty();
 
     var fileSourceField = $('<input>')
         .attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'file_src'})

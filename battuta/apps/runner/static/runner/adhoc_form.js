@@ -34,7 +34,7 @@ $(document).ready(function () {
     buildCredentialsSelectionBox(credentials);
 
     // Build module menu
-    $.each(ansibleModuleList.sort(), function (index, value) {
+    $.each(AnsibleModules.listModules().sort(), function (index, value) {
         $('#module').append($('<option>').attr('value', value).append(value))
     });
 

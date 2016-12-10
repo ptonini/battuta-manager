@@ -247,8 +247,8 @@ class PlaybookView(BaseView):
         # Save playbook
         if request.POST['action'] == 'save':
 
-            old_full_path = os.path.join(self.playbook_path, request.POST['file_dir'], request.POST['old_file_name'])
-            full_path = os.path.join(self.playbook_path, request.POST['file_dir'], request.POST['file_name'])
+            old_full_path = os.path.join(self.playbook_path, request.POST['current_dir'], request.POST['old_base_name'])
+            full_path = os.path.join(self.playbook_path, request.POST['current_dir'], request.POST['base_name'])
 
             if full_path != old_full_path and os.path.exists(full_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
@@ -264,11 +264,11 @@ class PlaybookView(BaseView):
                             os.remove(old_full_path)
                         except os.error:
                             pass
-                        for args in PlaybookArgs.objects.filter(playbook=request.POST['old_file_name']):
-                            args.playbook = request.POST['file_name']
+                        for args in PlaybookArgs.objects.filter(playbook=request.POST['old_base_name']):
+                            args.playbook = request.POST['base_name']
                             args.save()
 
-                    data = self.load_playbook(request.POST['file_name'])
+                    data = self.load_playbook(request.POST['base_name'])
                     data['result'] = 'ok'
 
         elif request.POST['action'] == 'delete':

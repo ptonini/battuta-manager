@@ -44,9 +44,9 @@ editorDialog.dialog({
                 var oldFileName = editorData.fileName;
                 var postData = {
                     action: 'save',
-                    file_dir: fileDir,
-                    old_file_name: oldFileName,
-                    file_name: fileName,
+                    current_dir: fileDir,
+                    old_base_name: oldFileName,
+                    base_name: fileName,
                     text: textEditor.getValue()
                 };
                 submitRequest('POST', postData, function (data) {
