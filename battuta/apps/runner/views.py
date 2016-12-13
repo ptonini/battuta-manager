@@ -3,6 +3,7 @@ import psutil
 import os
 import yaml
 import ast
+import magic
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -29,7 +30,6 @@ class BaseView(View):
 
 
 class RunnerView(BaseView):
-
     def post(self, request):
 
         # Run job
@@ -162,20 +162,56 @@ class RunnerView(BaseView):
 
 
 class AdHocView(BaseView):
-
     def get(self, request):
-        if 'action' not in request.GET:
+        prefs = get_preferences()
+        data = None
+
+        if 'list' in request.GET:
+            data = list()
+            for task in AdHocTask.objects.all():
+                if request.GET['list'] == '' or request.GET['list'] == task.hosts:
+                    data.append([task.hosts, task.module, task.arguments, task.become, task.id])
+
+        elif 'term' in request.GET:
+            data = list()
+            file_sources = [
+                [settings.FILES_PATH, '{{files_path}}', [], False],
+                [settings.USERDATA_PATH, '{{userdata_path}}', [], True],
+                [settings.ROLES_PATH, '{{roles_path}}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
+            ]
+
+            archive_types = ['application/zip', 'application/gzip', 'application/x-tar', 'application/x-gtar']
+
+            for path, prefix, exclude, is_user_folder in file_sources:
+                for root, dirs, files in os.walk(path):
+                    for file_name in files:
+
+                        full_path = os.path.join(root, file_name)
+                        relative_path = root.replace(path, prefix)
+
+                        if not prefs['show_hidden_files'] and any(s.startswith('.') for s in full_path.split('/')):
+                            continue
+
+                        if request.GET['term'] not in full_path:
+                            continue
+
+                        if root.split('/')[-1] in exclude:
+                            continue
+
+                        if request.GET['type'] == 'archive':
+                            if magic.from_file(full_path, mime='true') not in archive_types:
+                                continue
+
+                        if is_user_folder and relative_path.split('/')[1] != request.user.username:
+                            continue
+
+                        data.append({'value': os.path.join(relative_path, file_name)})
+
+        if data is None:
             self.context['user'] = request.user
             return render(request, "runner/adhoc.html", self.context)
         else:
-            if request.GET['action'] == 'list':
-                data = list()
-                for task in AdHocTask.objects.all():
-                    if request.GET['hosts'] == '' or request.GET['hosts'] == task.hosts:
-                        data.append([task.hosts, task.module, task.arguments, task.become, task.id])
-            else:
-                raise Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")
+            return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):

@@ -1,16 +1,13 @@
 function loadAdHocForm(data) {
-    var currentModule = new AnsibleModules(data[1], $('#optional_fields'));
+    var currentModule = new AnsibleModules(data[1], $('#optional_fields'), $('#module_reference'));
     currentModule.loadForm(data[2], data[3]);
-
     $('#module').val(data[1]);
     $('#hosts-field').val(data[0]);
     $('#adhoc_form').data('current_module', currentModule);
-
-
 }
 
 function resetAdHocForm() {
-    if (window.location.href.split('/').indexOf('inventory') == -1) $('#hosts').val('');
+    if (window.location.href.split('/').indexOf('inventory') == -1) $('#hosts-field').val('');
     $('#module').val('');
     $('#adhoc_form_label').html('Create task');
     $('#optional_fields').html('');
@@ -48,7 +45,7 @@ $(document).ready(function () {
             url: '/runner/adhoc/',
             type: 'GET',
             dataSrc: '',
-            data: {hosts: hostsField.val(), action: 'list'}
+            data: {list: hostsField.val()}
         },
         rowCallback: function (row, data) {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
@@ -95,7 +92,7 @@ $(document).ready(function () {
     // Build AdHoc form
     $('#module').change(function() {
         adhocForm
-            .data('current_module', new AnsibleModules(this.value, fieldsContainer))
+            .data('current_module', new AnsibleModules(this.value, fieldsContainer, $('#module_reference')))
             .find('input').keypress(function (event) {
                 if (event.keyCode == 13) {
                     event.preventDefault();

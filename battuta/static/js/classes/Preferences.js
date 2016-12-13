@@ -1,30 +1,28 @@
 function Preferences() {
     var self = this;
 
-    self._defaultValues = [];
+    self.defaultValues = [];
 
-    self._restoreDialog = $('<div>').attr('class', 'small_dialog text-center').append(
-        $('<strong>').html('Restore all preferences to default values?')
-    );
-    self._restoreDialog.dialog($.extend({}, defaultDialogOptions, {
-        buttons: {
-            Ok: function() {
-                $(this).dialog('close');
-                $.each(self._defaultValues, function (index, item) {
-                    $('#item_' + item[0] ).val(item[1])
-                });
-                self._savePreferences()
-            },
-            Cancel: function() {$(this).dialog('close')}
-        },
-        close: function() {$(this).remove()}
-    }));
-
-    self._prefsContainer = $('<div>')
+     self.prefsContainer = $('<div>')
         .attr('id', 'preferences_container')
         .css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
 
-    self._prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
+    self.restoreDialog = $('<div>').attr('class', 'small_dialog text-center').append(
+        $('<strong>').html('Restore all preferences to default values?')
+    );
+
+    self.restoreDialog.dialog($.extend({}, defaultDialogOptions, {
+        buttons: {
+            Ok: function() {
+                $(this).dialog('close');
+                $.each(self.defaultValues, function (index, item) {$('#item_' + item[0] ).val(item[1])});
+                self.savePreferences()
+            },
+            Cancel: function() {$(this).dialog('close')}
+        }
+    }));
+
+    self.prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
         $('<div>').attr('class', 'row').append(
             $('<div>').attr('class', 'col-md-12').append(
                 $('<h3>').css('margin-bottom', '20px').append(
@@ -32,41 +30,40 @@ function Preferences() {
                     $('<span>').css('float', 'right').append(
                         $('<button>').attr('class', 'btn btn-default btn-xs')
                             .html('Restore defaults')
-                            .click(function() {self._restoreDialog.dialog('open')})
+                            .click(function() {self.restoreDialog.dialog('open')})
                     )
                 )
             )
         ),
-        self._prefsContainer
+        self.prefsContainer
     );
 
-    self._prefsDialog.dialog($.extend({}, defaultDialogOptions, {
+    self.prefsDialog.dialog($.extend({}, defaultDialogOptions, {
         width: 800,
         buttons: {
             Reload: function() {
-                self._buildContainer(function () {
+                self.buildContainer(function () {
                     alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open')
                 })
             },
             Save: function() {
-                self._savePreferences(function () {
-                    self._prefsDialog.dialog('close');
+                self.savePreferences(function () {
+                    self.prefsDialog.dialog('close');
                     alertDialog
-                        .on('dialogclose', function() {
-                            window.location.reload(true)
-                        })
+                        .on('dialogclose', function() {window.location.reload(true)})
                         .html($('<strong>').append('Preferences saved'))
                         .dialog('open')
                 })
             },
-            Cancel: function() {
-                $(this).dialog('close')
-            }
+            Cancel: function () {$(this).dialog('close')}
         },
-        close: function () {$(this).remove()}
+        close: function () {
+            $(this).remove();
+            self.restoreDialog.remove()
+        }
     }));
 
-    self._buildContainer(function() {self._prefsDialog.dialog('open')});
+    self.buildContainer(function() {self.prefsDialog.dialog('open')});
 }
 
 Preferences.getPreferences = function () {
@@ -83,7 +80,7 @@ Preferences.getPreferences = function () {
     });
 };
 
-Preferences._validateItemDataType = function(dataType, dataValue) {
+Preferences.validateItemDataType = function (dataType, dataValue) {
     var result = [true, null];
     switch (dataType) {
         case 'str':
@@ -99,7 +96,7 @@ Preferences._validateItemDataType = function(dataType, dataValue) {
     return result
 };
 
-Preferences.prototype._buildContainer = function(buildCallback) {
+Preferences.prototype.buildContainer = function (buildCallback) {
     var self = this;
 
     var divRow = $('<div>').attr('class', 'row');
@@ -116,9 +113,9 @@ Preferences.prototype._buildContainer = function(buildCallback) {
         url: '/preferences/',
         dataType: 'json',
         success: function(data) {
-            self._prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
+            self.prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
             $.each(data.default, function (index, item_group) {
-                self._prefsContainer.append(
+                self.prefsContainer.append(
                     divRow.clone().append(
                         divCol4.clone().append(
                             $('<h4>')
@@ -146,7 +143,7 @@ Preferences.prototype._buildContainer = function(buildCallback) {
                             break;
                     }
 
-                    self._prefsContainer.append(
+                    self.prefsContainer.append(
                         divRow.clone().append(
                             divCol4.clone().append(
                                 fieldLabel.clone().html(item.name + ':').attr({for: itemId, title: item.description})
@@ -163,12 +160,12 @@ Preferences.prototype._buildContainer = function(buildCallback) {
                     )
                 });
 
-                if (index != data.default.length - 1) self._prefsContainer.append('<hr>');
+                if (index != data.default.length - 1) self.prefsContainer.append('<hr>');
             });
 
-            self._prefsContainer.data('defaultValues', defaultValues);
+            self.prefsContainer.data('defaultValues', defaultValues);
 
-            self._defaultValues = defaultValues;
+            self.defaultValues = defaultValues;
 
             $.each(data.stored, function (index, item) {
                 $('#item_' + item[0] ).val(item[1])
@@ -179,13 +176,13 @@ Preferences.prototype._buildContainer = function(buildCallback) {
     })
 };
 
-Preferences.prototype._savePreferences = function(saveCallback) {
+Preferences.prototype.savePreferences = function (saveCallback) {
     var self = this;
 
     var itemValues = {};
     var noError = true;
-    self._prefsContainer.find('input,select').each(function() {
-        var result = Preferences._validateItemDataType($(this).data('data_type'), $(this).val());
+    self.prefsContainer.find('input,select').each(function() {
+        var result = Preferences.validateItemDataType($(this).data('data_type'), $(this).val());
         if (result[0]) itemValues[$(this).data('name')] = $(this).val();
         else {
             $('#' + $(this).data('name') + '_warning').html(result[1]);

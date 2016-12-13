@@ -40,7 +40,7 @@ function UploadDialog(currentDir, beforeCloseCallback) {
         .dialog($.extend({}, defaultDialogOptions, {
             buttons: {
                 Upload: function() {uploadField.fileinput('upload')},
-                Cancel: function() {$(this).remove()}
+                Cancel: function() {$(this).dialog('close')}
             },
             beforeClose: function () {beforeCloseCallback()},
             close: function () {$(this).remove()}

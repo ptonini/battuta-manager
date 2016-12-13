@@ -44,9 +44,10 @@ function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
                         })
                     }
                 },
-                close: function() {$(this).remove()}
+                Cancel: function() {$(this).dialog('close')}
             },
-            beforeClose: function() {beforeCloseCallback()}
+            beforeClose: function() {beforeCloseCallback()},
+            close: function() {$(this).remove()}
         }))
         .keypress(function (event) {
             var thisDialog = this;

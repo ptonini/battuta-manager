@@ -10,10 +10,12 @@ function loadFileTable() {
     $('#file_table').DataTable({
         ajax: {
             dataSrc: '',
-            data: function(d) {d.list = sessionStorage.getItem('current_dir')}
+            data: function (d) {
+                d.list = sessionStorage.getItem('current_dir')
+            }
         },
         order: [[0, 'asc']],
-        rowCallback: function(row, data) {
+        rowCallback: function (row, data) {
 
             var table = this;
             var objectName = data[0];
@@ -36,7 +38,7 @@ function loadFileTable() {
                     .click(function () {
                         if (editableMimeTypes.indexOf(data[1]) > -1 && data[2] <= 65536) {
                             var getData = {edit: objectName, current_dir: objectDir};
-                            submitRequest('GET', getData,  function(data) {
+                            submitRequest('GET', getData, function (data) {
                                 if (data.result == 'ok') {
                                     editTextFile(data.text, objectDir, objectName, mimeType, '', reloadFileTable);
                                 }
@@ -71,24 +73,32 @@ function loadFileTable() {
                                         base_name: objectName,
                                         current_dir: objectDir
                                     };
-                                    submitRequest('POST', postData, function() {$(table).DataTable().ajax.reload()});
+                                    submitRequest('POST', postData, function () {
+                                        $(table).DataTable().ajax.reload()
+                                    });
                                     $(this).dialog('close');
                                 },
-                                Cancel: function() {$(this).dialog('close')}
+                                Cancel: function () {
+                                    $(this).dialog('close')
+                                }
                             })
                             .dialog('open');
                     })
             );
         },
-        drawCallback: function() {
+        drawCallback: function () {
             var table = this;
             buildBreadcrumbs(table);
-            $(table).find('tr.directory_row').reverse().each(function () {table.prepend($(this))});
+            $(table).find('tr.directory_row').reverse().each(function () {
+                table.prepend($(this))
+            });
         }
     });
 }
 
-function reloadFileTable() {$('#file_table').DataTable().ajax.reload()}
+function reloadFileTable() {
+    $('#file_table').DataTable().ajax.reload()
+}
 
 function buildBreadcrumbs(table) {
     var currentDir = sessionStorage.getItem('current_dir');
@@ -113,35 +123,39 @@ function buildBreadcrumbs(table) {
     });
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
 
     var fileTable = $('#file_table');
 
     // Load file table
     if (sessionStorage.getItem('current_dir')) {
         $.ajax({
-            data: {exists: sessionStorage.getItem('current_dir'), type:'directory'},
+            data: {exists: sessionStorage.getItem('current_dir'), type: 'directory'},
             success: function (data) {
                 if (data.result == 'failed')
                     sessionStorage.setItem('current_dir', '');
-                    loadFileTable()
+                loadFileTable()
             }
         });
     }
     else loadFileTable();
 
     // Create button action
-    $('#create_file').click(function() {
+    $('#create_file').click(function () {
         new FileDialog('create', null, sessionStorage.getItem('current_dir'), reloadFileTable);
     });
 
     //Upload button action
-    $('#upload_file').click(function() {
+    $('#upload_file').click(function () {
         new UploadDialog(sessionStorage.getItem('current_dir'), reloadFileTable);
     });
 
+    $('#create_role').click(function () {
+        new RoleDialog(reloadFileTable)
+    });
+
     // Set root path link action
-    $('#root_path').click(function() {
+    $('#root_path').click(function () {
         sessionStorage.setItem('current_dir', '');
         fileTable.DataTable().ajax.reload();
     });
@@ -160,7 +174,7 @@ $(document).ready(function() {
                         editPathVal = editPathVal.substr(0, editPathVal.length - 1)
                     }
                     $.ajax({
-                        data: {exists: editPathVal, type:'directory'},
+                        data: {exists: editPathVal, type: 'directory'},
                         success: function (data) {
                             if (data.result == 'ok') {
                                 sessionStorage.setItem('current_dir', editPathVal);
@@ -179,8 +193,4 @@ $(document).ready(function() {
         }
         else buildBreadcrumbs('#file_table')
     });
-
-    // Set roleDialog on close callback
-    $('#role_dialog').on('dialogclose', reloadFileTable);
-
 });

@@ -1,56 +1,55 @@
-function AnsibleModules(name, fieldsContainer) {
+function AnsibleModules(name, fieldsContainer, moduleReference) {
     var self = this;
 
     self.name = name;
     self.fieldsContainer = fieldsContainer;
 
-    self.fileSourceLabel = $('<label>').attr({'id': 'file_src_label', 'for': 'file_src', 'class': 'requiredField'});
-    self.fileSourceField = $('<input>')
-        .attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'file_src', 'data-parameter': 'src'})
-        .on('autocompleteselect', function(event, ui) {
-            var separator = '/';
-            if (ui.item.value.charAt(0) == '/') separator = '';
-            $(this).data('prefix', ui.item.prefix + separator);
-        });
+    self.fileSourceLabel = $('<label>').attr('class', 'requiredField');
+    self.fileSourceField = $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'src'});
 
     self.fileSourceGroup = $('<div>').attr('class', 'form-group').append(
-        self.fileSourceLabel.html('Source'),
-        $('<label>').css('float', 'right').append(
-            $('<small>').css('cursor', 'pointer').html('upload files').click(function() {
+        self.fileSourceLabel.append(
+            'Source',
+            $('<small>').attr('class', 'label_link').html('upload files').click(function() {
                 window.open('/fileman/files', '_blank');
-            })
-        ),
-        self.fileSourceField
+            }),
+            self.fileSourceField
+        )
+
     );
 
     self.fileDestGroup = $('<div>').attr('class', 'form-group').append(
-        $('<label>').attr({for: 'file_dest', class: 'requiredField'}).html('Destination'),
-        $('<input>').attr({class: 'form-control input-sm', type: 'text', id: 'file_dest', 'data-parameter': 'dest'})
+        $('<label>').attr('class', 'requiredField').append(
+            'Destination',
+            $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'dest'})
+        )
     );
 
     self.stateSelect = $('<select>')
-        .attr({'class': 'select form-control input-sm', 'id': 'state_selector', 'data-parameter': 'state'});
+        .attr({'class': 'select form-control input-sm', 'data-parameter': 'state'});
 
     self.stateSelectGroup = $('<div>').attr('class', 'form-group').append(
-        $('<label>').attr({'for': 'service_state', 'class': 'requiredField'}).html('State'), self.stateSelect
+        $('<label>').attr('class', 'requiredField').append('State', self.stateSelect)
     );
 
     self.sudoButton = $('<button>')
         .html('Sudo')
-        .attr({id: 'sudo', title: 'Run with sudo', class:'btn btn-default btn-sm', type: 'button'})
-        .off('click').click(function(event) {
-            event.preventDefault();
-            $(this).toggleClass('checked_button');
-        });
+        .attr({title: 'Run with sudo', class:'btn btn-default btn-sm', type: 'button'})
+        .off('click').click(function() {$(this).toggleClass('checked_button')});
 
-    self.arguments = $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'arguments'});
+    self.arguments = $('<input>').attr({'class': 'form-control input-sm', 'type': 'text'});
+
     self.argumentsGroup = $('<div>').attr('class', 'form-group').append(
-        $('<label>').attr({'for': 'arguments', 'class': 'requiredField'}).html('Arguments'), self.arguments
+        $('<label>').attr('class', 'requiredField').append('Arguments', self.arguments)
     );
 
-    $('#module_reference').off().show().click(function () {
-        window.open('http://docs.ansible.com/ansible/'+ self.name + '_module.html')
-    });
+    if (moduleReference) {
+        var moduleReferenceLink = 'http://docs.ansible.com/ansible/'+ self.name + '_module.html';
+        moduleReference.off().show()
+            .attr('title', moduleReferenceLink)
+            .click(function () {window.open(moduleReferenceLink)});
+    }
+
 
     var divRow = $('<div>').attr('class', 'row');
     var divCol1 = $('<div>').attr('class', 'col-md-1');
@@ -89,9 +88,10 @@ function AnsibleModules(name, fieldsContainer) {
                 divRow.clone().append(
                     divCol5.clone().append(
                         $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'service_name', 'class': 'requiredField'}).html('Name'),
-                            $('<input>')
-                                .attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'service_name', 'data-parameter': 'name'})
+                            $('<label>').attr('class', 'requiredField').append(
+                                'Name',
+                                $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'data-parameter': 'name'})
+                            )
                         )
                     )
 
@@ -100,10 +100,12 @@ function AnsibleModules(name, fieldsContainer) {
                     divCol2.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup)),
                     divCol2.clone().append(
                         $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'service_status', 'class': 'requiredField'}).html('Enabled'),
-                            $('<select>').attr({class: 'select form-control input-sm', id: 'service_status', 'data-parameter': 'enabled'}).append(
+                            $('<label>').attr('class', 'requiredField').append(
+                                'Enabled',
+                                $('<select>').attr({class: 'select form-control input-sm', 'data-parameter': 'enabled'}).append(
                                     $('<option>').attr('value', 'yes').html('Yes'),
                                     $('<option>').attr('value', 'no').html('No')
+                                )
                             )
                         )
                     ),
@@ -113,7 +115,7 @@ function AnsibleModules(name, fieldsContainer) {
             );
             break;
         case 'copy':
-            self.fileSourceField.autocomplete({source: '/fileman/search/?type=file'});
+            self.fileSourceField.autocomplete({source: '?type=file'});
             self.fieldsContainer.append(
                 divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
                 divRow.clone().append(divCol5.clone().append(self.fileDestGroup)),
@@ -124,7 +126,7 @@ function AnsibleModules(name, fieldsContainer) {
             );
             break;
         case 'unarchive':
-            self.fileSourceField.autocomplete({source: '/fileman/search/?type=archive'});
+            self.fileSourceField.autocomplete({source: '?type=archive'});
             self.fieldsContainer.append(
                 divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
                 divRow.clone().append(divCol5.clone().append(self.fileDestGroup)),
@@ -135,7 +137,7 @@ function AnsibleModules(name, fieldsContainer) {
             );
             break;
         case 'script':
-            self.fileSourceField.autocomplete({source: '/fileman/search/?type=file'});
+            self.fileSourceField.autocomplete({source: '?type=file'});
             self.fileSourceLabel.html('Script');
             self.fieldsContainer.append(
                 divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
@@ -159,9 +161,10 @@ function AnsibleModules(name, fieldsContainer) {
                 divRow.clone().append(
                     divCol3.clone().append(
                         $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr({'for': 'service_name', 'class': 'requiredField'}).html('Path'),
-                            $('<input>')
-                                .attr({'class': 'form-control input-sm', 'type': 'text', 'id': 'path_name', 'data-parameter': 'path'})
+                            $('<label>').attr('class', 'requiredField').append(
+                                'Path',
+                                $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'path'})
+                            )
                         )
                     ),
                     divCol2.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup))
@@ -192,47 +195,27 @@ AnsibleModules.listModules = function() {
 AnsibleModules.prototype.saveForm = function() {
     var self = this;
 
-    var arguments = $('#arguments').val();
-    var selectedState = $('#state_selector').val();
-    var fileSrc = self.fileSourceField.val();
-
-    if (self.fileSourceField.data('prefix')) fileSrc = self.fileSourceField.data('prefix') + fileSrc;
-    if (!arguments) arguments = '';
-
-    switch (self.name) {
-        case 'service':
-            var serviceName = $('#service_name').val();
-            var serviceStatus = $('#service_status').val();
-            return 'name=' + serviceName + ' state=' + selectedState + ' enabled=' + serviceStatus + ' ' + arguments;
-            break;
-        case 'file':
-            var pathName = $('#path_name').val();
-            return 'path=' + pathName + ' state=' + selectedState + ' ' + arguments;
-            break;
-        case 'copy':
-        case 'unarchive':
-            var fileDest = $('#file_dest').val();
-            return 'src=' + fileSrc + ' ' + 'dest=' + fileDest + ' ' + arguments;
-            break;
+    var output = '';
+    switch (this.name) {
         case 'script':
-            return fileSrc + ' ' + arguments;
-        default:
-            return arguments;
+            output = self.fileSourceField.val() + ' ';
             break;
+
+        default:
+            $.each(self.fieldsContainer.find("[data-parameter]"), function (index, value) {
+                if ($(value).val()) {
+                    output += $(value).attr('data-parameter') + '=' + $(value).val() + ' ';
+                }
+            });
+
     }
+    return output + self.arguments.val();
 };
 
 AnsibleModules.prototype.loadForm = function(arguments, sudo) {
     var self = this;
 
     self.sudoButton.toggleClass('checked_button', sudo);
-
-    var variableArray = arguments.match(/{{.*}}/g);
-    var sourcePrefix = null;
-    if (variableArray) {
-        sourcePrefix = variableArray[0];
-        for (var i = 0; i < variableArray.length; i++) arguments = arguments.replace(variableArray[i], '');
-    }
 
     switch (this.name) {
         case 'shell':
@@ -243,29 +226,21 @@ AnsibleModules.prototype.loadForm = function(arguments, sudo) {
             var argumentsArray = arguments.split(' ');
             var scriptFile = argumentsArray[0];
 
-            if (scriptFile.split('/').length == 2) {
-                sourcePrefix += '/';
-                scriptFile = scriptFile.substring(1)
-            }
-
             argumentsArray.splice(0, 1);
 
-            self.fileSourceField.data('prefix', sourcePrefix).val(scriptFile);
+            self.fileSourceField.val(scriptFile);
             self.arguments.val(argumentsArray.join(' '));
             break;
 
         default:
             var remainingArguments = '';
             $.each(arguments.split(' '), function (index, value) {
+
                 var valueArray = value.split('=');
-
                 var formField = self.fieldsContainer.find("[data-parameter='" + valueArray[0] + "']");
-
-                console.log(value, formField.length, formField);
 
                 if (formField.length > 0) formField.val(valueArray[1]);
                 else remainingArguments += value + ' '
-
 
             });
 

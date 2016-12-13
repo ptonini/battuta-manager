@@ -6,7 +6,7 @@ header {font-size: 14px}
 
 footer {height: 25px}
 
-label {font-weight: 400}
+label {font-weight: 400; width: 100%}
 
 h5 {font-size: 11pt; color: #525252}
 
@@ -15,6 +15,8 @@ th, h4 {color: #525252}
 a, label, .glyphicon {color: #777}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
+
+small.label_link {float: right; cursor: pointer}
 
 .input[type="checkbox"] {margin: 10px 0 0 5px}
 

@@ -1,7 +1,6 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script type="text/javascript" src="{% static 'fileman/roles.js' %}"></script>
     <script>document.title = 'Battuta - Roles';</script>
     <h3>Roles</h3>
     {% include 'fileman/filetable.html' with root_folder='roles_path' %}
