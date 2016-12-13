@@ -1,16 +1,19 @@
 function UploadDialog(currentDir, beforeCloseCallback) {
+    var self = this;
 
-    var uploadField = $('<input>').attr({id: 'upload_field', type: 'file', class: 'form-control'});
-    var uploadFieldLabel = $('<label>').attr({id: 'upload_field_label', for: 'upload_field'}).html('Select file');
-    var uploadDialogContainer = $('<div>').attr('class', 'small_dialog').append(uploadFieldLabel, uploadField);
+    self.uploadField = $('<input>').attr({id: 'upload_field', type: 'file', class: 'form-control'});
+    self.uploadFieldLabel = $('<label>').attr({id: 'upload_field_label', for: 'upload_field'}).html('Select file');
+    self.uploadDialogContainer = $('<div>')
+        .attr('class', 'small_dialog')
+        .append(self.uploadFieldLabel, self.uploadField);
 
-    uploadField
+    self.uploadField
         .fileinput({
             uploadUrl: window.location.href,
             uploadAsync: true,
             uploadExtraData: function () {
                 var baseName = '';
-                var fileStack = uploadField.fileinput('getFileStack');
+                var fileStack = self.uploadField.fileinput('getFileStack');
                 if (fileStack.length == 1) baseName = fileStack[0].name;
                 return {
                     action: 'upload',
@@ -29,12 +32,11 @@ function UploadDialog(currentDir, beforeCloseCallback) {
             progressClass: 'progress-bar progress-bar-success active'
         })
         .on('fileuploaded', function(event, data) {
-            if (data.response.result == 'ok') uploadDialogContainer.dialog('close');
+            if (data.response.result == 'ok') self.uploadDialogContainer.dialog('close');
             else alertDialog.html($('<strong>').append(data.response.msg)).dialog('open')
         });
-    this.uploadDialogContainer = uploadDialogContainer;
 
-    this.uploadDialogContainer
+    self.uploadDialogContainer
         .dialog($.extend({}, defaultDialogOptions, {
             buttons: {
                 Upload: function() {uploadField.fileinput('upload')},
@@ -45,7 +47,6 @@ function UploadDialog(currentDir, beforeCloseCallback) {
         }))
         .keypress(function (event) {
             if (event.keyCode == 13) $('.ui-button-text:contains("Upload")').parent('button').click()
-        });
-
-    this.uploadDialogContainer.dialog('open')
+        })
+        .dialog('open');
 }

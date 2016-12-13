@@ -10,7 +10,7 @@ $(document).ready(function () {
     // });
 
     // Load config data into sessionStorage
-    if ($('#is_authenticated').val()) getPreferences();
+    if ($('#is_authenticated').val()) Preferences.getPreferences();
 
     // Login form
     $('#login_form').submit(function (event) {
@@ -33,6 +33,8 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('#open_prefs').css('cursor', 'pointer').click(function () {new Preferences()});
 
     // Search form
     $('#search_form').submit(function (event) {

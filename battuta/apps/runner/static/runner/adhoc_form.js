@@ -1,9 +1,12 @@
 function loadAdHocForm(data) {
-    var currentModule = new AnsibleModules(data[1]);
+    var currentModule = new AnsibleModules(data[1], $('#optional_fields'));
+    currentModule.loadForm(data[2], data[3]);
+
+    $('#module').val(data[1]);
     $('#hosts-field').val(data[0]);
-    $('#module').val(data[1]).change();
-    $('#sudo').toggleClass('checked_button', data[3]);
-    currentModule.loadForm(data[2]);
+    $('#adhoc_form').data('current_module', currentModule);
+
+
 }
 
 function resetAdHocForm() {
@@ -12,7 +15,7 @@ function resetAdHocForm() {
     $('#adhoc_form_label').html('Create task');
     $('#optional_fields').html('');
     $('#module_reference').hide();
-    $('#adhoc_form').removeData('adhocId');
+    $('#adhoc_form').removeData('adhocId', 'current_module');
 }
 
 $(document).ready(function () {
@@ -55,14 +58,14 @@ $(document).ready(function () {
                         .attr({class: 'glyphicon glyphicon-play-circle btn-incell', title: 'Load'})
                         .click(function() {
                             adhocForm.data('adhocId', data[4]);
-                            $('#adhoc_form_label').html('Run/Edit task');
+                            $('#adhoc_form_label').html('Edit task');
                             loadAdHocForm(data);
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Clone'})
                         .click(function() {
                             adhocForm.removeData('adhocId');
-                            $('#adhoc_form_label').html('Run/Create task');
+                            $('#adhoc_form_label').html('Create task');
                             loadAdHocForm(data);
                         }),
                     $('<span>')
@@ -76,46 +79,35 @@ $(document).ready(function () {
                                             url: '/runner/adhoc/',
                                             type: 'POST',
                                             dataType: 'json',
-                                            data: {
-                                                action: 'delete',
-                                                id: data[4]
-                                            },
-                                            success: function () {
-                                                adhocTable.DataTable().ajax.reload()
-                                            }
+                                            data: {action: 'delete', id: data[4]},
+                                            success: function () {adhocTable.DataTable().ajax.reload()}
                                         });
                                     },
-                                    Cancel: function () {
-                                        $(this).dialog('close');
-                                    }
+                                    Cancel: function () {$(this).dialog('close')}
                                 })
                                 .dialog('open');
                         })
                 )
-
-
             )
         }
     });
 
     // Build AdHoc form
     $('#module').change(function() {
-        var currentModule = new AnsibleModules(this.value);
-        currentModule.buildFormFields(fieldsContainer);
-        adhocForm.find('input').keypress(function (event) {
-            if (event.keyCode == 13) {
-                event.preventDefault();
-                $(this).submit()
-            }
-        });
+        adhocForm
+            .data('current_module', new AnsibleModules(this.value, fieldsContainer))
+            .find('input').keypress(function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    $(this).submit()
+                }
+            });
     });
-
-
 
     // Ad-Hoc form submit events
     adhocForm.submit(function () {
         event.preventDefault();
-        var currentModule = new AnsibleModules($('#module').val());
+        var currentModule = adhocForm.data('current_module');
         var become = $('#sudo').hasClass('checked_button');
         var postData = {
             module: currentModule.name,
@@ -126,7 +118,7 @@ $(document).ready(function () {
             case 'Save':
                 postData.action = 'save';
                 postData.id = adhocForm.data('adhocId');
-                postData.arguments = currentModule.buildArguments();
+                postData.arguments = currentModule.saveForm();
                 $.ajax({
                     url: '/runner/adhoc/',
                     type: 'POST',
@@ -143,15 +135,12 @@ $(document).ready(function () {
                                 .html($('<h5>').html('Submit error:'))
                                 .append(data.msg)
                                 .dialog('open')
-                       }
+                        }
                     }
                 });
                 break;
             case 'Cancel':
                 resetAdHocForm();
-                break;
-            case 'sudo':
-                $(document.activeElement).toggleClass('checked_button');
                 break;
             default:
                 var cred = $('option:selected', credentials).data();
@@ -163,9 +152,11 @@ $(document).ready(function () {
                     user: (!cred.password && cred.ask_pass && !cred.rsa_key),
                     sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
                 };
-                postData.arguments = currentModule.buildArguments();
+                postData.arguments = currentModule.saveForm();
                 executeAnsibleJob(postData, askPassword, cred.username);
                 break;
         }
+
+
     });
 });

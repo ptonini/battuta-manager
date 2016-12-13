@@ -139,7 +139,7 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 }
 
 /* Set padding for small dialogs*/
-.small_dialog, #alert_dialog, #delete_dialog, #restore_dialog, #password_dialog {padding: 20px !important;}
+.small_dialog, #alert_dialog, #delete_dialog, #password_dialog {padding: 20px !important;}
 
 /* JSON box options */
 #json_box {

@@ -29,7 +29,6 @@ $.ajaxSetup({
     cache: false
 });
 
-
 jQuery.fn.reverse = [].reverse;
 
 // Set AJAX default error handling
@@ -88,20 +87,6 @@ function buildCredentialsSelectionBox(credentials, start_value) {
             });
             if (!runner) credentials.append($('<option>').val('new').append('new'))
             credentials.val(start_value).change()
-        }
-    });
-}
-
-function getPreferences() {
-    $.ajax({
-        url: '/',
-        type: 'GET',
-        dataType: 'json',
-        data: {action: 'preferences'},
-        success: function (data) {
-            Object.keys(data).forEach(function (key) {
-                sessionStorage.setItem(key, data[key])
-            });
         }
     });
 }
@@ -186,10 +171,3 @@ function popupCenter(url, title, w) {
     }
 }
 
-function invertRGB(rgb) {
-    rgb = Array.prototype.join.call(arguments).match(/(-?[0-9\.]+)/g);
-    for (var i = 0; i < rgb.length; i++) {
-        rgb[i] = (i === 3 ? 1 : 255) - rgb[i];
-    }
-    return rgb;
-}

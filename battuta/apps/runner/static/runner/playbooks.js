@@ -120,7 +120,6 @@ $(document).ready(function () {
                                 .dialog('open');
                         })
                 )
-
             );
         }
     });
@@ -143,13 +142,18 @@ $(document).ready(function () {
     // Submit arguments form
     argumentsForm.submit(function (event) {
         event.preventDefault();
-        var tags = $('#tags');
-        var skip_tags = $('#skip_tags');
-        var extra_vars = $('#extra_vars');
-        switch ($(document.activeElement).html()) {
-            case 'Save':
-                if (!(!subsetField.val() && !tags.val() && !skip_tags.val() && !extra_vars.val())) {
-                    var postData = {
+        if ($(document.activeElement).attr('id') == 'pattern_editor') {
+            patternContainer.addClass('hidden').html('');
+            patternDialog.dialog('open');
+        }
+        else {
+            var tags = $('#tags');
+            var skip_tags = $('#skip_tags');
+            var extra_vars = $('#extra_vars');
+            switch ($(document.activeElement).html()) {
+                case 'Save':
+                    if (!(!subsetField.val() && !tags.val() && !skip_tags.val() && !extra_vars.val())) {
+                        var postData = {
                             action: 'save_args',
                             id: argumentsForm.data('id'),
                             subset: subsetField.val(),
@@ -157,28 +161,29 @@ $(document).ready(function () {
                             skip_tags: skip_tags.val(),
                             extra_vars: extra_vars.val(),
                             playbook: argumentsBox.data('currentPlaybook')
-                    };
-                    submitRequest('POST', postData, function(data) {
-                        if (data.result == 'ok') buildArgsSelectionBox(data.id);
-                        else if (data.result == 'fail') {
-                            alertDialog
-                                .data('left-align', true)
-                                .html($('<h5>').html('Submit error:'))
-                                .append(data.msg)
-                                .dialog('open')
-                        }
+                        };
+                        submitRequest('POST', postData, function (data) {
+                            if (data.result == 'ok') buildArgsSelectionBox(data.id);
+                            else if (data.result == 'fail') {
+                                alertDialog
+                                    .data('left-align', true)
+                                    .html($('<h5>').html('Submit error:'))
+                                    .append(data.msg)
+                                    .dialog('open')
+                            }
+                        });
+                    }
+                    break;
+                case 'Delete':
+                    submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function (data) {
+                        if (data.result == 'ok') buildArgsSelectionBox();
+                        else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
                     });
-                }
-                break;
-            case 'Delete':
-                submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function(data) {
-                    if (data.result == 'ok') buildArgsSelectionBox();
-                    else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
-                });
-                break;
-            case 'Check':
-                $(document.activeElement).toggleClass('checked_button');
-                break;
+                    break;
+                case 'Check':
+                    $(document.activeElement).toggleClass('checked_button');
+                    break;
+            }
         }
     });
 
