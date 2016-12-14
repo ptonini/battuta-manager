@@ -119,6 +119,7 @@ tr.child_row {background-color: transparent !important}
 
 .btn-incell {padding: 0 3px; cursor: pointer}
 
+
 /* Checked button class options */
 .checked_button, .checked_button:focus, .checked_button:hover {background-color: #cdcdcd}
 
@@ -142,13 +143,3 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 
 /* Set padding for small dialogs*/
 .small_dialog, #alert_dialog, #delete_dialog, #password_dialog {padding: 20px !important;}
-
-/* JSON box options */
-#json_box {
-    background-color: transparent;
-    border: none;
-    font-size: small;
-    overflow-y: auto;
-    width: 660px;
-    margin: 0 10px;
-}
