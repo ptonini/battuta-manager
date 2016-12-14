@@ -20,8 +20,7 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
 
     self.fileDestGroup = $('<div>').attr('class', 'form-group').append(
         $('<label>').attr('class', 'requiredField').append(
-            'Destination',
-            $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'dest'})
+            'Destination', $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'dest'})
         )
     );
 
@@ -203,9 +202,7 @@ AnsibleModules.prototype.saveForm = function() {
 
         default:
             $.each(self.fieldsContainer.find("[data-parameter]"), function (index, value) {
-                if ($(value).val()) {
-                    output += $(value).attr('data-parameter') + '=' + $(value).val() + ' ';
-                }
+                if ($(value).val()) output += $(value).attr('data-parameter') + '=' + $(value).val() + ' ';
             });
 
     }
@@ -214,6 +211,7 @@ AnsibleModules.prototype.saveForm = function() {
 
 AnsibleModules.prototype.loadForm = function(arguments, sudo) {
     var self = this;
+    var argumentsArray = arguments.split(' ');
 
     self.sudoButton.toggleClass('checked_button', sudo);
 
@@ -223,7 +221,6 @@ AnsibleModules.prototype.loadForm = function(arguments, sudo) {
             break;
 
         case 'script':
-            var argumentsArray = arguments.split(' ');
             var scriptFile = argumentsArray[0];
 
             argumentsArray.splice(0, 1);
@@ -234,7 +231,7 @@ AnsibleModules.prototype.loadForm = function(arguments, sudo) {
 
         default:
             var remainingArguments = '';
-            $.each(arguments.split(' '), function (index, value) {
+            $.each(argumentsArray, function (index, value) {
 
                 var valueArray = value.split('=');
                 var formField = self.fieldsContainer.find("[data-parameter='" + valueArray[0] + "']");
