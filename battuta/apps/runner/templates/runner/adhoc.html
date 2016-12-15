@@ -1,6 +1,7 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
+    <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/ansible_runner.js' %}"></script>
     <script>document.title = 'Battuta - AdHoc';</script>
     <h3>Ad-Hoc tasks</h3>

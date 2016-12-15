@@ -1,4 +1,5 @@
-function reloadNodes() {
+function reloadNodes(data) {
+    data = null;
     $('#node_list').DynamicList('load');
     $('#node_table').DataTable().ajax.reload()
 }
@@ -62,7 +63,7 @@ $(document).ready(function() {
         formatItem: function(listItem) {
             listItem.click(function() {window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')});
         },
-        addButtonAction: function() {openAddNodeDialog(nodeType, reloadNodes)}
+        addButtonAction: function() {new NodeDialog('add', null, null, nodeType, reloadNodes)}
     };
 
     nodeList.DynamicList($.extend({}, defaultListOptions, nodeSelectListOptions));
@@ -95,9 +96,8 @@ $(document).ready(function() {
                 $('<button>')
                     .attr({id: 'add_node', class: 'btn btn-default btn-xs'})
                     .html('Add '+ nodeType)
-                    .click(function(event) {
-                        event.preventDefault();
-                        openAddNodeDialog(nodeType, reloadNodes)
+                    .click(function () {
+                        new NodeDialog('add', null, null, nodeType, reloadNodes);
                     })
             );
         }

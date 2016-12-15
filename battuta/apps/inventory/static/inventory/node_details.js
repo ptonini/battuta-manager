@@ -75,8 +75,10 @@ function addRelationsButtonAction(nodeType, relation) {
         breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
         ajaxUrl: relation + '/?list=not_related',
-        loadCallback: function(listContainer) {addRelationsListLoadCallback(listContainer, relation)},
-        addButtonAction: function() {openAddNodeDialog(nodeType, function() {selectDialog.DynamicList('load')})}
+        loadCallback: function (listContainer) {addRelationsListLoadCallback(listContainer, relation)},
+        addButtonAction: function () {
+            new NodeDialog('add', null, null, nodeType, function () {selectDialog.DynamicList('load')})
+        }
     });
     selectDialog.dialog('open');
 }
@@ -239,11 +241,13 @@ $(document).ready(function () {
     var nodeName = $('#header_node_name').html();
     var nodeType = $('#header_node_type').html();
     var variableTable = $('#variable_table');
-    var nodeForm = $('#node_form');
     var nodeDescriptionHeader = $('#node_description_header');
     var cancelVarEdit = $('#cancel_var_edit');
 
     document.title = 'Battuta - ' + nodeName;
+
+    var nodeDescription = nodeDescriptionHeader.html();
+    if (!nodeDescription) nodeDescriptionHeader.html($('<small>').html('<i>No description available</i>'));
 
     // Format page to 'all' group
     if (nodeName == 'all') {
@@ -277,8 +281,8 @@ $(document).ready(function () {
             breakPoint: sessionStorage.getItem('relation_list_break_point'),
             maxColumnWidth: sessionStorage.getItem('relation_list_max_column_width'),
             ajaxUrl: relation + '/?list=related',
-            formatItem: function(listItem) {formatRelationListItem(listItem, nodeType, relation)},
-            addButtonAction: function() {addRelationsButtonAction(nodeType, relation)}
+            formatItem: function (listItem) {formatRelationListItem(listItem, nodeType, relation)},
+            addButtonAction: function () {addRelationsButtonAction(nodeType, relation)}
         });
     });
 
@@ -467,29 +471,9 @@ $(document).ready(function () {
 
     // Edit node
     $('#edit_node').click(function() {
-        event.preventDefault();
-        $('#node_dialog_header').html('Edit ' + nodeName);
-        $('#node_name').val($('#header_node_name').html());
-        if ( nodeDescriptionHeader.children('small').length == 0 ) {
-            $('#node_description').val(nodeDescriptionHeader.html());
-        }
-        nodeForm.off('submit').submit(function(event) {
-            event.preventDefault();
-            var data = {action: 'save', name: $('#node_name').val(), description: $('#node_description').val()};
-            submitRequest('POST', data, function(data) {
-                if (data.result == 'ok') {
-                    window.open('/inventory/' + $('#header_node_type').html() + '/' + data.name, '_self');
-                }
-                else if (data.result == 'fail') {
-                    alertDialog
-                        .data('left-align', true)
-                        .html($('<h5>').html('Submit error:'))
-                        .append(data.msg)
-                        .dialog('open')
-                }
-            });
+        new NodeDialog('edit', nodeName, nodeDescription, nodeType, function (data) {
+            window.open('/inventory/' + $('#header_node_type').html() + '/' + data.name, '_self')
         });
-        nodeDialog.dialog('open');
     });
 
     // Delete node

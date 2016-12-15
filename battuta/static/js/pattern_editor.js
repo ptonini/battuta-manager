@@ -107,9 +107,7 @@ $('.select_nodes').click(function () {
                 selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
             },
             addButtonAction: function () {
-                openAddNodeDialog(nodeType, function () {
-                    selectDialog.DynamicList('load')
-                })
+                new NodeDialog('add', null, null, nodeType, function () {selectDialog.DynamicList('load')})
             }
         })
         .dialog('option', 'buttons', {

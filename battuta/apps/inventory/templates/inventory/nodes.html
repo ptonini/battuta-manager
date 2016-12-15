@@ -1,7 +1,7 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block content %}
-    <script type="text/javascript" src="{% static 'js/node_dialog.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/ansible_runner.js' %}"></script>
     <script type="text/javascript" src="{% static 'inventory/nodes.js' %}"></script>
     <input id="node_type" type="hidden" value="{{ node_type }}">

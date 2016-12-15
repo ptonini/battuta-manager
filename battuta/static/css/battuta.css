@@ -94,6 +94,8 @@ header.navbar .dropdown-menu {font-size: small}
     overflow: hidden;
 }
 
+.dataTables_filter > label {width: auto !important;}
+
 .pagination > li > a, .pagination > li > span {padding: 2px 6px}
 
 .pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover,

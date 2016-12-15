@@ -1,4 +1,4 @@
-function UploadDialog(currentDir, beforeCloseCallback) {
+function UploadDialog(baseDir, beforeCloseCallback) {
     var self = this;
 
     self.uploadField = $('<input>').attr({id: 'upload_field', type: 'file', class: 'form-control'});
@@ -18,7 +18,7 @@ function UploadDialog(currentDir, beforeCloseCallback) {
                 return {
                     action: 'upload',
                     base_name: baseName,
-                    current_dir: currentDir,
+                    current_dir: baseDir,
                     csrfmiddlewaretoken: getCookie('csrftoken')
                 }
             },
@@ -39,8 +39,8 @@ function UploadDialog(currentDir, beforeCloseCallback) {
     self.uploadDialogContainer
         .dialog($.extend({}, defaultDialogOptions, {
             buttons: {
-                Upload: function() {uploadField.fileinput('upload')},
-                Cancel: function() {$(this).dialog('close')}
+                Upload: function () {uploadField.fileinput('upload')},
+                Cancel: function () {$(this).dialog('close')}
             },
             beforeClose: function () {beforeCloseCallback()},
             close: function () {$(this).remove()}

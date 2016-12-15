@@ -1,4 +1,4 @@
-function Preferences() {
+function Preferences()  {
     var self = this;
 
     self.defaultValues = [];
@@ -90,7 +90,7 @@ Preferences.validateItemDataType = function (dataType, dataValue) {
             if (['yes', 'no'].indexOf(dataValue) == -1) result = [false, 'Value must be yes/no'];
             break;
         case 'number':
-            if (isNaN(dataValue)) result = [false, 'Value must be an  number'];
+            if (isNaN(dataValue)) result = [false, 'Value must be a number'];
             break;
     }
     return result

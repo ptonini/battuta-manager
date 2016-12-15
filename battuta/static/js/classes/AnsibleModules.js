@@ -15,7 +15,6 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             }),
             self.fileSourceField
         )
-
     );
 
     self.fileDestGroup = $('<div>').attr('class', 'form-group').append(
@@ -211,16 +210,16 @@ AnsibleModules.prototype.saveForm = function() {
 
 AnsibleModules.prototype.loadForm = function(arguments, sudo) {
     var self = this;
-    var argumentsArray = arguments.split(' ');
 
     self.sudoButton.toggleClass('checked_button', sudo);
-
+    var argumentsArray = arguments.split(' ');
     switch (this.name) {
         case 'shell':
             self.arguments.val(arguments);
             break;
 
         case 'script':
+
             var scriptFile = argumentsArray[0];
 
             argumentsArray.splice(0, 1);
@@ -231,7 +230,7 @@ AnsibleModules.prototype.loadForm = function(arguments, sudo) {
 
         default:
             var remainingArguments = '';
-            $.each(argumentsArray, function (index, value) {
+            $.each(arguments.split(' '), function (index, value) {
 
                 var valueArray = value.split('=');
                 var formField = self.fieldsContainer.find("[data-parameter='" + valueArray[0] + "']");

@@ -373,15 +373,12 @@ class NodeDetailsView(View):
 
     def post(self, request, node_name, node_type):
         node = self.build_node(node_type, node_name)
+
         if request.POST['action'] == 'save':
             form = node.form_class(request.POST or None, instance=node)
             if form.is_valid():
                 node = form.save(commit=True)
-                data = node.__dict__
-                data.pop('_state', None)
-                data.pop('form_class', None)
-                data['result'] = 'ok'
-                data['type'] = node.type
+                data = {'result': 'ok', 'name': node.name, 'type': node.type}
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'delete':
