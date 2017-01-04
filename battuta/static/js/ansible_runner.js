@@ -87,9 +87,7 @@ function executeAnsibleJob(postData, askPassword, username, same_window) {
         ]);
         passwordDialog.dialog('open');
     }
-    else {
-        postAnsibleJob(postData, same_window);
-    }
+    else postAnsibleJob(postData, same_window)
 }
 
 function gatherFacts(nodeName, finishCallback) {

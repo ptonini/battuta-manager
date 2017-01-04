@@ -80,7 +80,6 @@ function PatternEditor(patternField) {
         }))
         .dialog('open');
 
-// Select nodes in pattern textEditor
     $('.select_nodes').click(function () {
         var nodeType = $(this).data('type');
         var op = $(this).data('op');

@@ -90,14 +90,14 @@ $(document).ready(function () {
                         .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                         .click(function () {
                             submitRequest('GET', postData, function(data) {
-                                editTextFile(data.text, '', playbookFile, 'text/yaml', 'yml', reloadPlaybookTable)
+                                new TextEditor(data.text, '', playbookFile, 'text/yaml', 'yml', reloadPlaybookTable)
                             });
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
                         .click(function () {
                             submitRequest('GET', postData, function(data) {
-                                editTextFile(data.text, '', '', 'text/yaml', 'yml', reloadPlaybookTable)
+                                new TextEditor(data.text, '', '', 'text/yaml', 'yml', reloadPlaybookTable)
                             });
                         }),
                     $('<span>')
@@ -197,7 +197,7 @@ $(document).ready(function () {
             type: 'GET',
             dataType: 'text',
             success: function (data) {
-                editTextFile(data, '', '', 'text/yaml', 'yml', reloadPlaybookTable)
+                new TextEditor(data, '', '', 'text/yaml', 'yml', reloadPlaybookTable)
             }
         });
     });

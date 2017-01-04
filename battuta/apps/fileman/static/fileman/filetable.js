@@ -40,7 +40,7 @@ function loadFileTable() {
                             var getData = {edit: objectName, current_dir: objectDir};
                             submitRequest('GET', getData, function (data) {
                                 if (data.result == 'ok') {
-                                    editTextFile(data.text, objectDir, objectName, mimeType, '', reloadFileTable);
+                                    new TextEditor(data.text, objectDir, objectName, mimeType, '', reloadFileTable);
                                 }
                                 else {
                                     $(table).DataTable().ajax.reload();
