@@ -377,7 +377,6 @@ $(document).ready(function () {
                         }
                     });
 
-
                     if (mainValue) {
 
                         var rowApi = table.DataTable().row(mainValue[1]);

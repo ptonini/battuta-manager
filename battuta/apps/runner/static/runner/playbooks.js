@@ -124,6 +124,9 @@ $(document).ready(function () {
         }
     });
 
+
+    $('#pattern_editor').click(function () {new PatternEditor(subsetField)});
+
     // Load arguments
     savedArguments.change(function () {
         var selectedOption = $('option:selected', this);

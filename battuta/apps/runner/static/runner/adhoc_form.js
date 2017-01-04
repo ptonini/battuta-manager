@@ -22,10 +22,11 @@ $(document).ready(function () {
     var fieldsContainer = $('#optional_fields');
     var hostsField = $('#hosts-field');
     var adhocForm = $('#adhoc_form');
+    var patternEditor = $('#pattern_editor');
 
     if (window.location.href.split('/').indexOf('inventory') > -1) {
         hostsField.attr('disabled', 'disabled').val($('#header_node_name').html());
-        $('#pattern_editor').prop('disabled', true)
+        patternEditor.prop('disabled', true)
     }
 
     hostsField.keypress(function (event) {if (event.keyCode == 13) event.preventDefault()});
@@ -88,6 +89,8 @@ $(document).ready(function () {
             )
         }
     });
+
+    patternEditor.click(function () {new PatternEditor(hostsField)});
 
     // Build AdHoc form
     $('#module').change(function() {
