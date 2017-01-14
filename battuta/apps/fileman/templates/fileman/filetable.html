@@ -4,6 +4,7 @@
 <script type="text/javascript" src="{% static 'js/classes/FileDialog.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/classes/UploadDialog.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/classes/RoleDialog.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
 <script type="text/javascript" src="{% static 'fileman/filetable.js' %}"></script>
 <div class="row"><div class="col-md-12"><br></div></div>
 <div class="row row-eq-height">
@@ -15,6 +16,7 @@
         </ol>
     </div>
     <div class="col-md-2 text-right" style="margin: auto">
+
         {% if root_folder == 'roles_path' %}
             <button id="create_role" class="btn btn-default btn-sm">New role</button>
         {% endif %}

@@ -113,18 +113,10 @@ $(document).ready(function() {
     });
 
     $('#delete_nodes').click(function() {
-        deleteDialog
-            .dialog('option', 'buttons', {
-                Delete: function() {
-                    var data = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
-                    submitRequest('POST', data, function() {
-                        reloadNodes();
-                        deleteDialog.dialog('close');
-                    });
-                },
-                Cancel: function() {$(this).dialog('close')}
-            })
-            .dialog('open');
+        new DeleteDialog(function () {
+            var postData = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
+            submitRequest('POST', postData, reloadNodes);
+        })
     });
 
     // Download host table

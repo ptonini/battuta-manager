@@ -40,7 +40,7 @@ function formatCopyVariablesListItem(listItem, sourceNodeType) {
             success: function () {
                 selectDialog.dialog('close');
                 $('#variable_table').DataTable().ajax.reload();
-                alertDialog.html($('<strong>').append('Variables copied from ' + sourceNodeName)).dialog('open');
+                new AlertDialog($('<strong>').append('Variables copied from ' + sourceNodeName))
             }
         });
     });
@@ -307,22 +307,16 @@ $(document).ready(function () {
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-trash btn-incell',  title: 'Delete'})
-                        .click(function() {
-                            deleteDialog
-                                .dialog('option', 'buttons', {
-                                    Delete: function() {
-                                        $(this).dialog('close');
-                                        $.ajax({
-                                            url: 'vars/',
-                                            type: 'POST',
-                                            dataType: 'json',
-                                            data: {action: 'del', id: data[3]},
-                                            success: function() {variableTable.DataTable().ajax.reload()}
-                                        });
-                                    },
-                                    Cancel: function() {$(this).dialog('close')}
-                                })
-                                .dialog('open');
+                        .click(function () {
+                            new DeleteDialog(function () {
+                                $.ajax({
+                                    url: 'vars/',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {action: 'del', id: data[3]},
+                                    success: function() {variableTable.DataTable().ajax.reload()}
+                                });
+                            })
                         })
                 )
             }
@@ -457,11 +451,7 @@ $(document).ready(function () {
                             clearVariableForm();
                         }
                         else if (data.result == 'fail') {
-                            alertDialog
-                                .data('left-align', true)
-                                .html($('<h5>').html('Submit error:'))
-                                .append(data.msg)
-                                .dialog('open')
+                            new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left');
                         }
                     }
                 });
@@ -477,18 +467,11 @@ $(document).ready(function () {
 
     // Delete node
     $('#delete_node').click(function() {
-        event.preventDefault();
-        deleteDialog
-            .dialog('option', 'buttons', {
-                Delete: function() {
-                    $(this).dialog('close');
-                    submitRequest('POST', {action: 'delete'}, function() {
-                        window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
-                    });
-                },
-                Cancel: function() {$(this).dialog('close')}
-            })
-            .dialog('open');
+        new DeleteDialog(function () {
+            submitRequest('POST', {action: 'delete'}, function() {
+                window.open('/inventory/' + $('#header_node_type').html() + 's', '_self')
+            });
+        })
     });
 
     $('#open_facts').click(function() {

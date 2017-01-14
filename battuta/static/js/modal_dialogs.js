@@ -10,19 +10,12 @@ var defaultDialogOptions =  {
 };
 
 
-// Delete dialog
-var deleteDialog = $('<div>').attr({id: 'delete_dialog', class: 'text-center'}).append(
-    $('<strong>').html('This action cannot be undone')
-);
-deleteDialog.dialog($.extend({}, defaultDialogOptions, {width: '320'}));
-
-
 // Alert dialog
 var alertDialog = $('<div>').attr('id', 'alert_dialog');
 alertDialog.dialog($.extend({}, defaultDialogOptions, {
     width: '320',
     buttons: {Ok: function () {$(this).dialog('close')}},
-    open: function (event, ui) {
+    open: function () {
         if ($(this).data('left-align')) $(this).removeClass('text-center').removeData('left-align');
         else $(this).addClass('text-center');
      }

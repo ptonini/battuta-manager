@@ -17,21 +17,15 @@ $(document).ready(function () {
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
                     .click(function() {
-                        deleteDialog
-                            .dialog('option', 'buttons', {
-                                Delete: function () {
-                                    $(this).dialog('close');
-                                    $.ajax({
-                                        url: '/users/view/',
-                                        type: 'POST',
-                                        dataType: 'json',
-                                        data: {action: 'delete', user_id: data[4]},
-                                        success: function () {userTable.DataTable().ajax.reload()}
-                                    });
-                                },
-                                Cancel: function () {$(this).dialog('close')}
-                            })
-                            .dialog('open');
+                        new DeleteDialog(function () {
+                            $.ajax({
+                                url: '/users/view/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {action: 'delete', user_id: data[4]},
+                                success: function () {userTable.DataTable().ajax.reload()}
+                            });
+                        })
                     })
             )
         }

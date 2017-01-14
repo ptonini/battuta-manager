@@ -44,7 +44,7 @@ function loadFileTable() {
                                 }
                                 else {
                                     $(table).DataTable().ajax.reload();
-                                    alertDialog.html($('<strong>').append(data.msg)).dialog('open')
+                                    new AlertDialog($('<strong>').append(data.msg));
                                 }
                             });
                         }
@@ -65,24 +65,14 @@ function loadFileTable() {
                 $('<span>')
                     .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
                     .click(function () {
-                        deleteDialog
-                            .dialog('option', 'buttons', {
-                                Delete: function () {
-                                    var postData = {
-                                        action: 'delete',
-                                        base_name: objectName,
-                                        current_dir: objectDir
-                                    };
-                                    submitRequest('POST', postData, function () {
-                                        $(table).DataTable().ajax.reload()
-                                    });
-                                    $(this).dialog('close');
-                                },
-                                Cancel: function () {
-                                    $(this).dialog('close')
-                                }
-                            })
-                            .dialog('open');
+                        new DeleteDialog(function () {
+                           var postData = {
+                               action: 'delete',
+                               base_name: objectName,
+                               current_dir: objectDir
+                           };
+                           submitRequest('POST', postData, function () {$(table).DataTable().ajax.reload()});
+                       })
                     })
             );
         },
@@ -180,7 +170,7 @@ $(document).ready(function () {
                                 sessionStorage.setItem('current_dir', editPathVal);
                                 fileTable.DataTable().ajax.reload();
                             }
-                            else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
+                            else new AlertDialog($('<strong>').append(data.msg));
                         }
                     });
                 }

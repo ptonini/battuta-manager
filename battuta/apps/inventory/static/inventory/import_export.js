@@ -32,29 +32,27 @@ $(document).ready(function () {
             captionClass: 'form-control input-sm',
             browseClass: 'btn btn-default btn-sm'
         })
-        .on('fileuploaded', function(event, data, previewId, index) {
+        .on('fileuploaded', function(event, data) {
             importFile.fileinput('clear').fileinput('enable');
             importFileButton.prop('disabled', true);
             if (data.response.result == 'ok') {
-                alertDialog.data('left-align', true).dialog('open').html(
-                    $('<div>').append(
-                        $('<h5>').append('Import successful:'),
-                        $('<ul>').append(
-                            $('<li>').html('Hosts added: ' + data.response.added_hosts),
-                            $('<li>').html('Groups added: ' + data.response.added_groups),
-                            $('<li>').html('Variables added: ' + data.response.added_vars)
-                        )
+                var alertMessage = $('<div>').append(
+                    $('<h5>').append('Import successful:'),
+                    $('<ul>').append(
+                        $('<li>').html('Hosts added: ' + data.response.added_hosts),
+                        $('<li>').html('Groups added: ' + data.response.added_groups),
+                        $('<li>').html('Variables added: ' + data.response.added_vars)
                     )
                 );
-
+                new AlertDialog(alertMessage, 'left');
             }
-            else alertDialog.html($('<strong>').append(data.response.msg)).dialog('open');
+            else new AlertDialog($('<strong>').append(data.response.msg));
         })
-        .on('fileloaded', function(event, file, previewId, index, reader) {
+        .on('fileloaded', function() {
             importFileButton
                 .prop('disabled', false)
                 .off('click')
-                .click(function(event) {importFile.fileinput('upload')});
+                .click(function() {importFile.fileinput('upload')});
         });
 
 

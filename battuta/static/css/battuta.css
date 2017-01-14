@@ -18,12 +18,6 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 small.label_link {float: right; cursor: pointer}
 
-div.checkbox-inline label input {padding-bottom: 5px}
-
-label1.chkbox_label > input {margin: 0}
-
-label1.chkbox_label > span {margin: 0 5px}
-
 .input[type="checkbox"] {margin: 10px 0 0 5px}
 
 .chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
@@ -151,4 +145,4 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 }
 
 /* Set padding for small dialogs*/
-.small_dialog, #alert_dialog, #delete_dialog, #password_dialog {padding: 20px !important;}
+.small_dialog, #alert_dialog, #password_dialog {padding: 20px !important;}

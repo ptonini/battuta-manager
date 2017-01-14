@@ -103,21 +103,13 @@ $(document).ready(function () {
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Remove'})
                         .click(function() {
-                            deleteDialog
-                                .dialog('option', 'buttons', {
-                                    Delete: function () {
-                                        postData = {action: 'delete', playbook_file: playbookFile};
-                                        submitRequest('POST', postData, function () {
-                                            if (argumentsBox.data('currentPlaybook') == playbookFile) {
-                                                clearPlaybookArgsForm()
-                                            }
-                                            playbookTable.DataTable().ajax.reload()
-                                        });
-                                        $(this).dialog('close');
-                                    },
-                                    Cancel: function () {$(this).dialog('close')}
-                                })
-                                .dialog('open');
+                            new DeleteDialog(function () {
+                                postData = {action: 'delete', playbook_file: playbookFile};
+                                submitRequest('POST', postData, function () {
+                                    if (argumentsBox.data('currentPlaybook') == playbookFile) clearPlaybookArgsForm();
+                                    playbookTable.DataTable().ajax.reload()
+                                });
+                            })
                         })
                 )
             );
