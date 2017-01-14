@@ -125,8 +125,8 @@ function loadFacts(data) {
         mountTable.DataTable({
             data: facts.mounts,
             columns: [
-                {class: 'col-md-2', title: 'Mount point', data: 'mount'},
-                {class: 'col-md-4', title: 'Device', data: 'device'},
+                {class: 'col-md-3', title: 'Device', data: 'device'},
+                {class: 'col-md-3', title: 'Mount point', data: 'mount'},
                 {class: 'col-md-2', title: 'Size', data: 'size_total'},
                 {class: 'col-md-2', title: 'Type', data: 'fstype'},
                 {class: 'col-md-2', title: 'options', data: 'options'}
@@ -494,7 +494,7 @@ $(document).ready(function () {
     $('#open_facts').click(function() {
         var thisButton = $(this);
         if (thisButton.html() == 'View facts') thisButton.html('Hide facts');
-        else setTimeout(function () {thisButton.html('View facts')}, 500);
+        else setTimeout(function () {thisButton.html('Show facts')}, 500);
     });
 
     // Gather facts on node

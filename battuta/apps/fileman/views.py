@@ -153,13 +153,9 @@ class ManagerView(View):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
                 if request.POST['is_directory'] == 'true':
-                    if not os.path.exists(full_path):
-                        os.makedirs(full_path)
+                    os.makedirs(full_path)
                 else:
                     open(full_path, 'a').close()
-
-                if request.POST['is_executable'] == 'true':
-                    os.chmod(full_path, 744)
 
                 data = {'result': 'ok'}
 

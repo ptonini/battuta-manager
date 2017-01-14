@@ -1,4 +1,4 @@
-function buildArgsSelectionBox(start_value) {
+function buildArgsSelectionBox(startValue) {
     var savedArguments = $('#saved_arguments');
     savedArguments.empty();
     var data = {action: 'get_args', playbook_file: $('#arguments_box').data('currentPlaybook')};
@@ -12,8 +12,8 @@ function buildArgsSelectionBox(start_value) {
             savedArguments.append($('<option>').val(args.id).data(args).append(optionLabel.join(' ')))
         });
         savedArguments.append($('<option>').val('new').append('new'));
-        if (start_value) savedArguments.val(start_value).change();
-        else savedArguments.change();
+        if (startValue) savedArguments.val(startValue);
+        savedArguments.change();
     });
 }
 

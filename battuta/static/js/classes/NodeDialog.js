@@ -1,12 +1,12 @@
 function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
     var self = this;
 
-    self.nameField = $('<input>').attr({type: 'text', class: 'form-control input-sm'}).val(nodeName);
+    self.nameFieldInput = $('<input>').attr({type: 'text', class: 'form-control input-sm'}).val(nodeName);
     self.descriptionField = $('<textarea>').attr('class', 'textarea form-control input-sm').val(nodeDescription);
 
     self.nodeForm = $('<form>').append(
         $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr('class', 'requiredField').append('Name', self.nameField)
+            $('<label>').attr('class', 'requiredField').append('Name', self.nameFieldInput)
         ),
         $('<div>').attr('class', 'form-group').append(
             $('<label>').attr('class', 'requiredField').append('Description', self.descriptionField)
@@ -30,7 +30,7 @@ function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
                         dataType: 'json',
                         data: {
                             action: 'save',
-                            name: self.nameField .val(),
+                            name: self.nameFieldInput .val(),
                             description: self.descriptionField.val()
                         },
                         success: function (data) {

@@ -18,6 +18,12 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 small.label_link {float: right; cursor: pointer}
 
+div.checkbox-inline label input {padding-bottom: 5px}
+
+label1.chkbox_label > input {margin: 0}
+
+label1.chkbox_label > span {margin: 0 5px}
+
 .input[type="checkbox"] {margin: 10px 0 0 5px}
 
 .chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
@@ -50,6 +56,7 @@ li.path_link, #root_path, #edit_path {cursor: pointer}
 #edit_path > span {padding: 2px 4px 5px 4px; border-radius: 3px;}
 
 #path_input {border: none; padding: 0}
+
 
 
 /* Pattern editor options ************/

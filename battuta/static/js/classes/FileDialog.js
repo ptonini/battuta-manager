@@ -1,30 +1,30 @@
 function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
     var self = this;
 
-    self.nameField = $('<input>').attr({id: 'name_field', type: 'text', class: 'form-control', value: currentName});
-    self.nameFieldLabel = $('<label>')
-        .attr({id: 'name_field_label', for: 'name_field', class:'text-capitalize'})
-        .html(action);
-    self.isDirectory = $('<input>').attr({type: 'checkbox', id: 'is_directory'});
-    self.isExecutable = $('<input>').attr({type: 'checkbox', id: 'is_executable'});
-    self.createOnlyContainer = $('<div>').css({display: 'none'}).append(
-        $('<br>'),
-        self.isDirectory, $('<label>').attr({class: 'chkbox_label', for: 'is_directory'}).html('Directory'),
-        self.isExecutable, $('<label>').attr({class: 'chkbox_label', for: 'is_executable'}).html('Executable')
+    self.nameFieldInput = $('<input>').attr({type: 'text', class: 'form-control', value: currentName});
+    self.nameField =  $('<div>').attr('class', 'col-md-12').append(
+        $('<label>').attr('class', 'text-capitalize').append(action, self.nameFieldInput)
     );
 
-    if (action == 'create') self.createOnlyContainer.show();
-    else if (action == 'copy') self.nameField.val(currentName + '_copy');
+    self.isDirectoryInput = $('<input>').attr('type', 'checkbox');
+    self.isDirectory = $('<div>').attr('class', 'col-md-12').append(
+        $('<div>').attr('class', 'checkbox').append(
+            $('<label>').append(self.isDirectoryInput, 'Directory')
+        )
+    );
 
     self.fileDialogContainer = $('<div>')
         .attr('class', 'small_dialog')
-        .append(self.nameFieldLabel, self.nameField, self.createOnlyContainer);
+        .append(self.nameField);
+
+    if (action == 'create') self.fileDialogContainer.append(self.isDirectory);
+    else if (action == 'copy') self.nameFieldInput.val(currentName + '_copy');
 
     self.fileDialogContainer
         .dialog($.extend({}, defaultDialogOptions, {
             buttons: {
                 Save: function () {
-                    var newName = self.nameField.val();
+                    var newName = self.nameFieldInput.val();
                     var postData = {
                         action: action,
                         base_name: newName,
@@ -32,10 +32,7 @@ function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
                         current_dir: currentDir
                     };
 
-                    if (action == 'create') {
-                        postData['is_directory'] = self.isDirectory.is(':checked');
-                        postData['is_executable'] = self.isExecutable.is(':checked');
-                    }
+                    if (action == 'create') postData['is_directory'] = self.isDirectoryInput.is(':checked');
 
                     if (newName && newName != currentName) {
                         submitRequest('POST', postData, function(data) {

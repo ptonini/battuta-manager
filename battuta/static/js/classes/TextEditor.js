@@ -140,5 +140,4 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
     self.editorDialog.on('dialogclose', closeCallback).dialog('open');
     self.textEditor.focus();
-
 }
