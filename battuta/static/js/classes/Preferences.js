@@ -3,7 +3,10 @@ function Preferences()  {
 
     self.defaultValues = [];
 
-     self.prefsContainer = $('<div>')
+    self.alertOptions = successAlertOptions;
+    self.alertOptions.ele = self.prefsDialog;
+
+    self.prefsContainer = $('<div>')
         .attr('id', 'preferences_container')
         .css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
 
@@ -43,14 +46,14 @@ function Preferences()  {
         buttons: {
             Reload: function() {
                 self.buildContainer(function () {
-                    $.bootstrapGrowl('Preferences reloaded', { type: 'success', align: 'center'});
-                    //new AlertDialog($('<strong>').html('))
+                    self.alertOptions.offset.amount = (self.prefsDialog.height() / 2) - 26;
+                    $.bootstrapGrowl('Preferences reloaded', self.alertOptions)
                 })
             },
             Save: function() {
                 self.savePreferences(function () {
                     self.prefsDialog.dialog('close');
-                    new AlertDialog($('<strong>').html('Preferences saved'), 'center', function() {window.location.reload(true)});
+                    window.location.reload(true);
                 })
             },
             Cancel: function () {$(this).dialog('close')}
@@ -194,8 +197,10 @@ Preferences.prototype.savePreferences = function (saveCallback) {
             data: {action: 'save', item_values: JSON.stringify(itemValues)},
             dataType: 'json',
             success: function() {
+                self.alertOptions.offset = {from: 'top', amount: (self.prefsDialog.height() / 2) - 26};
+                $.bootstrapGrowl('Preferences saved', self.alertOptions);
                 Preferences.getPreferences();
-                if (saveCallback) saveCallback()
+                if (saveCallback) setTimeout(saveCallback, self.alertOptions.delay)
             }
         })
     }

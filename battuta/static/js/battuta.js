@@ -31,6 +31,21 @@ $.ajaxSetup({
 
 jQuery.fn.reverse = [].reverse;
 
+// Default GROWL style alerts options
+var successAlertOptions = {
+    align: 'center',
+    delay: 2000,
+    allow_dismiss: false,
+    offset: {from: 'top', amount: 0}
+};
+
+var failedAlertOptions = {
+    type: 'danger',
+    align: 'center',
+    delay: 2000,
+    allow_dismiss: true
+};
+
 // Set AJAX default error handling
 $(document).ajaxError(function (event, xhr) {
     if (xhr.status == 500) $('body').html($('pre').html(xhr.responseText));
@@ -53,7 +68,7 @@ $.extend($.fn.dataTable.defaults, {
 });
 
 // Set BootstrapGrow defaults
-$.extend($.fn.bootstrapGrowl.default_options, {});
+//$.extend($.fn.bootstrapGrowl.default_options, {align: 'center'});
 
 // Convert boolean value to glyphicon
 function prettyBoolean (element, value) {

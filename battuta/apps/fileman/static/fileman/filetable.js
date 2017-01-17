@@ -44,6 +44,7 @@ function loadFileTable() {
                                 }
                                 else {
                                     $(table).DataTable().ajax.reload();
+                                    $.bootstrapGrowl(data.msg, self.alertOptions)
                                     new AlertDialog($('<strong>').append(data.msg));
                                 }
                             });
@@ -79,9 +80,7 @@ function loadFileTable() {
         drawCallback: function () {
             var table = this;
             buildBreadcrumbs(table);
-            $(table).find('tr.directory_row').reverse().each(function () {
-                table.prepend($(this))
-            });
+            $(table).find('tr.directory_row').reverse().each(function () {table.prepend($(this))});
         }
     });
 }
