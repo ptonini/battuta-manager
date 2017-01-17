@@ -10,18 +10,6 @@ var defaultDialogOptions =  {
 };
 
 
-// Alert dialog
-var alertDialog = $('<div>').attr('id', 'alert_dialog');
-alertDialog.dialog($.extend({}, defaultDialogOptions, {
-    width: '320',
-    buttons: {Ok: function () {$(this).dialog('close')}},
-    open: function () {
-        if ($(this).data('left-align')) $(this).removeClass('text-center').removeData('left-align');
-        else $(this).addClass('text-center');
-     }
-}));
-
-
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog').css('overflow-x', 'hidden');
 selectDialog.dialog($.extend({}, defaultDialogOptions, {buttons: {Cancel: function () {$(this).dialog('close')}}}));

@@ -43,16 +43,14 @@ function Preferences()  {
         buttons: {
             Reload: function() {
                 self.buildContainer(function () {
-                    alertDialog.html($('<strong>').append('Preferences reloaded')).dialog('open')
+                    $.bootstrapGrowl('Preferences reloaded', { type: 'success', align: 'center'});
+                    //new AlertDialog($('<strong>').html('))
                 })
             },
             Save: function() {
                 self.savePreferences(function () {
                     self.prefsDialog.dialog('close');
-                    alertDialog
-                        .on('dialogclose', function() {window.location.reload(true)})
-                        .html($('<strong>').append('Preferences saved'))
-                        .dialog('open')
+                    new AlertDialog($('<strong>').html('Preferences saved'), 'center', function() {window.location.reload(true)});
                 })
             },
             Cancel: function () {$(this).dialog('close')}

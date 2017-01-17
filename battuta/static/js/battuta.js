@@ -52,6 +52,9 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
+// Set BootstrapGrow defaults
+$.extend($.fn.bootstrapGrowl.default_options, {});
+
 // Convert boolean value to glyphicon
 function prettyBoolean (element, value) {
     element.removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');

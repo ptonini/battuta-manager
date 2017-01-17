@@ -87,7 +87,7 @@ function PatternEditor(patternField) {
         if (op == 'sel') separator = ':';
         else {
             if (self.patternContainer.html() == '') {
-                alertDialog.html($('<strong>').append('Please select hosts/groups first')).dialog('open');
+                new AlertDialog($('<strong>').append('Please select hosts/groups first'));
                 return
             }
             if (op == 'and') separator = ':&';

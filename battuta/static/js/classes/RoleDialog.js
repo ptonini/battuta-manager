@@ -88,7 +88,7 @@ function RoleDialog(beforeCloseCallback) {
                                 });
                                 self.roleDialog.dialog('close');
                             }
-                            else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
+                            else new AlertDialog($('<strong>').html(data.msg))
                         })
                     }
                 },

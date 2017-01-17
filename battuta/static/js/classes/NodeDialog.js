@@ -38,12 +38,7 @@ function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
                                 self.nodeDialog.dialog('close');
                                 if (saveCallback) saveCallback(data);
                             }
-                            else if (data.result == 'fail') {
-                                alertDialog
-                                    .data('left-align', true)
-                                    .html($('<h5>').html('Submit error:'))
-                                    .append(data.msg)
-                                    .dialog('open')}
+                            else new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
                         }
                     });
                 },

@@ -37,7 +37,7 @@ function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
                     if (newName && newName != currentName) {
                         submitRequest('POST', postData, function(data) {
                             if (data.result == 'ok') self.fileDialogContainer.dialog('close');
-                            else alertDialog.html($('<strong>').append(data.msg)).dialog('open');
+                            else new AlertDialog($('<strong>').html(data.msg));
                         })
                     }
                 },

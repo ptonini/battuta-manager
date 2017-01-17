@@ -21,11 +21,7 @@ function submitCredentials(postData) {
         success: function (data) {
             if (data.result == 'ok') buildCredentialsSelectionBox($('#credentials'), data.cred_id);
             else if (data.result == 'fail') {
-                alertDialog
-                    .data('left-align', true)
-                    .html($('<h5>').html('Submit error:'))
-                    .append(data.msg)
-                    .dialog('open')
+                new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
             }
         }
     });
@@ -113,16 +109,10 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.result == 'ok') {
                         if (page == 'new') location.reload();
-                        else if (page == 'view') {
-                            alertDialog.html($('<strong>').append('User saved')).dialog('open')
-                        }
+                        else if (page == 'view') new AlertDialog($('<strong>').html('User saved'))
                     }
                     else if (data.result == 'fail') {
-                        alertDialog
-                            .data('left-align', true)
-                            .html($('<h5>').html('Submit error:'))
-                            .append(data.msg)
-                            .dialog('open')
+                        new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
                     }
                 }
             });
@@ -140,7 +130,7 @@ $(document).ready(function () {
             postData.username = $('#username').val();
             postData.password = addPassword1.val();
             if (postData.password == addPassword2.val()) saveUser(postData);
-            else alertDialog.html($('<strong>').append('Passwords do not match').dialog('open'));
+            else new AlertDialog($('<strong>').html('Passwords do not match'));
         }
         else if (page == 'view') saveUser(postData);
         addPassword1.val('');
@@ -167,12 +157,12 @@ $(document).ready(function () {
                     success: function (data) {
                         if (data.result == 'ok') var message = 'The password was changed';
                         else if (data.result == 'fail') message = data.msg;
-                        alertDialog.html($('<strong>').append(message)).dialog('open')
+                        new AlertDialog($('<strong>').html(message))
                     }
                 });
             }
             else if (postData.new_password != $('#new_password2').val()) {
-                alertDialog.html($('<strong>').append('Passwords do not match')).dialog('open');
+                new AlertDialog($('<strong>').html('Passwords do not match'));
             }
         }
         $(this).find('input').val('')

@@ -74,7 +74,7 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
                     };
                     submitRequest('POST', postData, function (data) {
                         if (data.result == 'ok') self.editorDialog.dialog('close');
-                        else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
+                        else new AlertDialog($('<strong>').html(data.msg));
                     })
                 }
             },

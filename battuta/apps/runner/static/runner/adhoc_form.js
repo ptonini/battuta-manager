@@ -124,11 +124,7 @@ $(document).ready(function () {
                             resetAdHocForm()
                         }
                         else if (data.result == 'fail') {
-                            alertDialog
-                                .data('left-align', true)
-                                .html($('<h5>').html('Submit error:'))
-                                .append(data.msg)
-                                .dialog('open')
+                            new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
                         }
                     }
                 });

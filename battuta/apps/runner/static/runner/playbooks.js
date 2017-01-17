@@ -40,7 +40,7 @@ function loadPlaybook(data) {
         loadPlaybookArgsForm(data);
         buildArgsSelectionBox();
     }
-    else alertDialog.html($('<pre>').html(data.msg)).dialog('option', 'width', 'auto').dialog('open')
+    else new AlertDialog($('<pre>').html(data.msg))
 }
 
 function reloadPlaybookTable() {$('#playbook_table').DataTable().ajax.reload()}
@@ -160,11 +160,7 @@ $(document).ready(function () {
                         submitRequest('POST', postData, function (data) {
                             if (data.result == 'ok') buildArgsSelectionBox(data.id);
                             else if (data.result == 'fail') {
-                                alertDialog
-                                    .data('left-align', true)
-                                    .html($('<h5>').html('Submit error:'))
-                                    .append(data.msg)
-                                    .dialog('open')
+                                new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
                             }
                         });
                     }
@@ -172,7 +168,7 @@ $(document).ready(function () {
                 case 'Delete':
                     submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function (data) {
                         if (data.result == 'ok') buildArgsSelectionBox();
-                        else alertDialog.html($('<strong>').append(data.msg)).dialog('open')
+                        else new AlertDialog($('<strong>').append(data.msg))
                     });
                     break;
                 case 'Check':
