@@ -33,7 +33,7 @@ function UploadDialog(baseDir, beforeCloseCallback) {
         })
         .on('fileuploaded', function(event, data) {
             if (data.response.result == 'ok') self.uploadDialogContainer.dialog('close');
-            else new AlertDialog($('<strong>').html(data.response.msg));
+            else new $.bootstrapGrowl(data.response.msg, failedAlertOptions);
         });
 
     self.uploadDialogContainer

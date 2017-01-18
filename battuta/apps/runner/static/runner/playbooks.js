@@ -40,7 +40,10 @@ function loadPlaybook(data) {
         loadPlaybookArgsForm(data);
         buildArgsSelectionBox();
     }
-    else new AlertDialog($('<pre>').html(data.msg))
+    else {
+        var message = $('<pre>').attr('class', 'large-alert').html(data.msg);
+        $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+    }
 }
 
 function reloadPlaybookTable() {$('#playbook_table').DataTable().ajax.reload()}
@@ -168,7 +171,7 @@ $(document).ready(function () {
                 case 'Delete':
                     submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function (data) {
                         if (data.result == 'ok') buildArgsSelectionBox();
-                        else new AlertDialog($('<strong>').append(data.msg))
+                        else $.bootstrapGrowl(data.msg, failedAlertOptions)
                     });
                     break;
                 case 'Check':

@@ -28,7 +28,7 @@ $(document).ready(function () {
                 if (data.result == 'ok') window.open('/', '_self');
                 else if (data.result == 'fail') {
                     $('#id_password').val('');
-                    new AlertDialog.html($('<strong>').html(data.msg));
+                    $.bootstrapGrowl(data.msg, failedAlertOptions);
                 }
             }
         });

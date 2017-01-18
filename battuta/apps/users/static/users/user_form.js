@@ -109,7 +109,7 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.result == 'ok') {
                         if (page == 'new') location.reload();
-                        else if (page == 'view') new AlertDialog($('<strong>').html('User saved'))
+                        else if (page == 'view') $.bootstrapGrowl('User saved', {type: 'success'})
                     }
                     else if (data.result == 'fail') {
                         new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
@@ -130,7 +130,7 @@ $(document).ready(function () {
             postData.username = $('#username').val();
             postData.password = addPassword1.val();
             if (postData.password == addPassword2.val()) saveUser(postData);
-            else new AlertDialog($('<strong>').html('Passwords do not match'));
+            else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
         }
         else if (page == 'view') saveUser(postData);
         addPassword1.val('');
@@ -155,14 +155,17 @@ $(document).ready(function () {
                     dataType: 'json',
                     data: postData,
                     success: function (data) {
-                        if (data.result == 'ok') var message = 'The password was changed';
-                        else if (data.result == 'fail') message = data.msg;
-                        new AlertDialog($('<strong>').html(message))
+                        if (data.result == 'ok') {
+                            $.bootstrapGrowl('The password was changed', {type: 'success'});
+                        }
+                        else if (data.result == 'fail') {
+                            $.bootstrapGrowl(data.msg, failedAlertOptions);
+                        }
                     }
                 });
             }
             else if (postData.new_password != $('#new_password2').val()) {
-                new AlertDialog($('<strong>').html('Passwords do not match'));
+                $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
             }
         }
         $(this).find('input').val('')

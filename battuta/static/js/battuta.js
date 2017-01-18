@@ -31,26 +31,22 @@ $.ajaxSetup({
 
 jQuery.fn.reverse = [].reverse;
 
-// Default GROWL style alerts options
-var successAlertOptions = {
-    align: 'center',
-    delay: 2000,
-    allow_dismiss: false,
-    offset: {from: 'top', amount: 0}
-};
-
-var failedAlertOptions = {
-    type: 'danger',
-    align: 'center',
-    delay: 2000,
-    allow_dismiss: true
-};
-
 // Set AJAX default error handling
 $(document).ajaxError(function (event, xhr) {
     if (xhr.status == 500) $('body').html($('pre').html(xhr.responseText));
     else $('body').html(xhr.responseText);
 });
+
+// Set bootstrapGrowl defaults
+$.extend($.bootstrapGrowl.default_options, {
+    align: 'center',
+    delay: 2500,
+    allow_dismiss: true,
+    width: 'auto',
+    offset: {from: 'bottom', amount: function () {return (window.innerHeight / 2)}}
+});
+
+var failedAlertOptions = {type: 'danger', delay: 5000};
 
 // Set DataTables defaults
 $.fn.dataTableExt.sErrMode = 'throw';

@@ -88,7 +88,7 @@ function RoleDialog(beforeCloseCallback) {
                                 });
                                 self.roleDialog.dialog('close');
                             }
-                            else new AlertDialog($('<strong>').html(data.msg))
+                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
                         })
                     }
                 },

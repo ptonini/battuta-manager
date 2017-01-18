@@ -44,8 +44,7 @@ function loadFileTable() {
                                 }
                                 else {
                                     $(table).DataTable().ajax.reload();
-                                    $.bootstrapGrowl(data.msg, self.alertOptions)
-                                    new AlertDialog($('<strong>').append(data.msg));
+                                    $.bootstrapGrowl(data.msg, failedAlertOptions)
                                 }
                             });
                         }
@@ -169,7 +168,7 @@ $(document).ready(function () {
                                 sessionStorage.setItem('current_dir', editPathVal);
                                 fileTable.DataTable().ajax.reload();
                             }
-                            else new AlertDialog($('<strong>').append(data.msg));
+                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
                         }
                     });
                 }

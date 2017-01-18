@@ -3,9 +3,6 @@ function Preferences()  {
 
     self.defaultValues = [];
 
-    self.alertOptions = successAlertOptions;
-    self.alertOptions.ele = self.prefsDialog;
-
     self.prefsContainer = $('<div>')
         .attr('id', 'preferences_container')
         .css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
@@ -19,7 +16,9 @@ function Preferences()  {
             Ok: function() {
                 $(this).dialog('close');
                 $.each(self.defaultValues, function (index, item) {$('#item_' + item[0] ).val(item[1])});
-                self.savePreferences()
+                self.savePreferences(function () {
+                    setTimeout(function () {$.bootstrapGrowl('Preferences restored', {type: 'success'})}, 500);
+                })
             },
             Cancel: function() {$(this).dialog('close')}
         }
@@ -46,14 +45,13 @@ function Preferences()  {
         buttons: {
             Reload: function() {
                 self.buildContainer(function () {
-                    self.alertOptions.offset.amount = (self.prefsDialog.height() / 2) - 26;
-                    $.bootstrapGrowl('Preferences reloaded', self.alertOptions)
+                    $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
                 })
             },
             Save: function() {
                 self.savePreferences(function () {
-                    self.prefsDialog.dialog('close');
-                    window.location.reload(true);
+                    var alertOptions = {type: 'success', close_callback: function () {window.location.reload(true)}};
+                    $.bootstrapGrowl('Preferences saved', alertOptions);
                 })
             },
             Cancel: function () {$(this).dialog('close')}
@@ -197,10 +195,8 @@ Preferences.prototype.savePreferences = function (saveCallback) {
             data: {action: 'save', item_values: JSON.stringify(itemValues)},
             dataType: 'json',
             success: function() {
-                self.alertOptions.offset = {from: 'top', amount: (self.prefsDialog.height() / 2) - 26};
-                $.bootstrapGrowl('Preferences saved', self.alertOptions);
                 Preferences.getPreferences();
-                if (saveCallback) setTimeout(saveCallback, self.alertOptions.delay)
+                if (saveCallback) saveCallback()
             }
         })
     }

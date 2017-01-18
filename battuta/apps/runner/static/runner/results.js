@@ -375,7 +375,7 @@ $(document).ready(function () {
                         };
                         executeAnsibleJob(postData, askPassword, data.cred.username, true);
                     }
-                    else new AlertDialog($('<strong>').append(data.msg))
+                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
                 }
             });
         }
@@ -422,7 +422,7 @@ $(document).ready(function () {
                 dataType: 'json',
                 data: {action: 'kill', runner_id: runner.id},
                 success: function (data) {
-                    if (data.result == 'fail') new AlertDialog($('<strong>').append(data.msg))
+                    if (data.result == 'fail') $.bootstrapGrowl(data.msg, failedAlertOptions)
                 }
             })
         }

@@ -146,3 +146,7 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 
 /* Set padding for small dialogs*/
 .small_dialog, #alert_dialog, #password_dialog {padding: 20px !important;}
+
+/**/
+pre.large-alert {font-weight: lighter; background-color: transparent; border-color: transparent}
+div.large-alert {font-weight: lighter; text-align: left; margin: 10px}

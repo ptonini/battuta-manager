@@ -74,7 +74,7 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
                     };
                     submitRequest('POST', postData, function (data) {
                         if (data.result == 'ok') self.editorDialog.dialog('close');
-                        else new AlertDialog($('<strong>').html(data.msg));
+                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
                     })
                 }
             },

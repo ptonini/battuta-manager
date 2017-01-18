@@ -36,7 +36,7 @@ $(document).ready(function () {
             importFile.fileinput('clear').fileinput('enable');
             importFileButton.prop('disabled', true);
             if (data.response.result == 'ok') {
-                var alertMessage = $('<div>').append(
+                var alertMessage = $('<div>').attr('class', 'large-alert').append(
                     $('<h5>').append('Import successful:'),
                     $('<ul>').append(
                         $('<li>').html('Hosts added: ' + data.response.added_hosts),
@@ -44,9 +44,9 @@ $(document).ready(function () {
                         $('<li>').html('Variables added: ' + data.response.added_vars)
                     )
                 );
-                new AlertDialog(alertMessage, 'left');
+                $.bootstrapGrowl(alertMessage, {type: 'success', delay: 0});
             }
-            else new AlertDialog($('<strong>').append(data.response.msg));
+            else $.bootstrapGrowl(data.response.msg, failedAlertOptions);
         })
         .on('fileloaded', function() {
             importFileButton

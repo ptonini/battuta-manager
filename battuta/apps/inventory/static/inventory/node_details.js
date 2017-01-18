@@ -40,7 +40,7 @@ function formatCopyVariablesListItem(listItem, sourceNodeType) {
             success: function () {
                 selectDialog.dialog('close');
                 $('#variable_table').DataTable().ajax.reload();
-                new AlertDialog($('<strong>').append('Variables copied from ' + sourceNodeName))
+                $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
             }
         });
     });
