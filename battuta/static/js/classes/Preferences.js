@@ -3,9 +3,7 @@ function Preferences()  {
 
     self.defaultValues = [];
 
-    self.prefsContainer = $('<div>')
-        .attr('id', 'preferences_container')
-        .css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
+    self.prefsContainer = $('<div>').css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
 
     self.restoreDialog = $('<div>').attr('class', 'small_dialog text-center').append(
         $('<strong>').html('Restore all preferences to default values?')
@@ -24,7 +22,7 @@ function Preferences()  {
         }
     }));
 
-    self.prefsDialog = $('<div>').attr('id', 'preferences_dialog').css('overflow-x', 'hidden').append(
+    self.prefsDialog = $('<div>').css('overflow-x', 'hidden').append(
         $('<div>').attr('class', 'row').append(
             $('<div>').attr('class', 'col-md-12').append(
                 $('<h3>').css('margin-bottom', '20px').append(

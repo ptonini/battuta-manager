@@ -96,7 +96,7 @@ function buildCredentialsSelectionBox(credentials, start_value) {
                 }
                 credentials.append($('<option>').val(cred.id).data(cred).append(display))
             });
-            if (!runner) credentials.append($('<option>').val('new').append('new'))
+            if (!runner) credentials.append($('<option>').val('new').append('new'));
             credentials.val(start_value).change()
         }
     });
@@ -118,41 +118,39 @@ function submitRequest(type, data, successCallback) {
         type: type,
         data: data,
         dataType: 'json',
-        success: function (data) {
-            if (successCallback) successCallback(data)
-        }
+        success: function (data) {if (successCallback) successCallback(data)}
     })
 }
 
-function humanBytes(number, suffix) {
+function humanBytes(value, suffix) {
 
     if (suffix) {
-        if (suffix == 'KB') number = number * 1024;
-        else if (suffix == 'MB') number = number * 1048576;
-        else if (suffix == 'GB') number = number * 1073741824;
-        else if (suffix == 'TB') number = number * 1099511627776;
+        if (suffix == 'KB') value = value * 1024;
+        else if (suffix == 'MB') value = value * 1048576;
+        else if (suffix == 'GB') value = value * 1073741824;
+        else if (suffix == 'TB') value = value * 1099511627776;
     }
     else suffix = ' B';
 
-    number = parseInt(number);
+    value = parseInt(value);
 
-    if (number > 1024 && number <= 1048576) {
+    if (value > 1024 && value <= 1048576) {
         suffix = ' KB';
-        number = number / 1024
+        value = value / 1024
     }
-    else if (number > 1048576 && number <= 1073741824) {
+    else if (value > 1048576 && value <= 1073741824) {
         suffix = ' MB';
-        number = number / 1048576
+        value = value / 1048576
     }
-    else if (number > 1073741824 && number <= 1099511627776) {
+    else if (value > 1073741824 && value <= 1099511627776) {
         suffix = ' GB';
-        number = number / 1073741824
+        value = value / 1073741824
     }
-    else if (number > 1099511627776 && number <= 1125899906842624) {
+    else if (value > 1099511627776 && value <= 1125899906842624) {
         suffix = ' TB';
-        number = number / 1099511627776
+        value = value / 1099511627776
     }
-    return Math.ceil(number) + suffix
+    return Math.ceil(value) + suffix
 }
 
 // Open popup window
@@ -170,15 +168,10 @@ function popupCenter(url, title, w) {
     var h = height - 100;
     var left = ((width / 2) - (w / 2)) + dualScreenLeft;
     var top = ((height / 2) - (h / 2)) + dualScreenTop;
-    var newWindow = window.open(
-        url,
-        title,
-        'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left
+    var newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left
     );
 
     // Puts focus on the newWindow
-    if (window.focus) {
-        newWindow.focus();
-    }
+    if (window.focus) newWindow.focus();
 }
 
