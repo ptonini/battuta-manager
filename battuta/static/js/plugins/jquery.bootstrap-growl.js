@@ -13,7 +13,6 @@
             $alert.addClass("alert-" + options.type);
         }
         if (options.allow_dismiss) {
-            //$alert.append("<a class=\"close\" data-dismiss=\"alert\" href=\"#\">&times;</a>");
             $alert.attr('data-dismiss', 'alert')
         }
         $alert.append(message);
