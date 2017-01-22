@@ -120,13 +120,15 @@ $(document).ready(function () {
         $.ajax({
             data: {exists: sessionStorage.getItem('current_dir'), type: 'directory'},
             success: function (data) {
-                if (data.result == 'failed')
-                    sessionStorage.setItem('current_dir', '');
+                if (data.result == 'failed') sessionStorage.setItem('current_dir', '');
                 loadFileTable()
             }
         });
     }
-    else loadFileTable();
+    else {
+        sessionStorage.setItem('current_dir', '');
+        loadFileTable();
+    }
 
     // Create button action
     $('#create_file').click(function () {

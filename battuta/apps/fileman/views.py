@@ -76,7 +76,7 @@ class ManagerView(View):
                 delete_after = False
 
             else:
-                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['file_name']),
+                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['download']),
                                              'zip',
                                              full_path)
                 delete_after = True

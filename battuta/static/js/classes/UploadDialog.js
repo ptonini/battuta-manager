@@ -32,14 +32,14 @@ function UploadDialog(baseDir, beforeCloseCallback) {
             progressClass: 'progress-bar progress-bar-success active'
         })
         .on('fileuploaded', function(event, data) {
-            if (data.response.result == 'ok') self.uploadDialogContainer.dialog('close');
-            else new $.bootstrapGrowl(data.response.msg, failedAlertOptions);
+            self.uploadDialogContainer.dialog('close');
+            if (data.response.result == 'fail') $.bootstrapGrowl(data.response.msg, failedAlertOptions);
         });
 
     self.uploadDialogContainer
         .dialog($.extend({}, defaultDialogOptions, {
             buttons: {
-                Upload: function () {uploadField.fileinput('upload')},
+                Upload: function () {self.uploadField.fileinput('upload')},
                 Cancel: function () {$(this).dialog('close')}
             },
             beforeClose: function () {beforeCloseCallback()},
