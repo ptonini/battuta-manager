@@ -28,8 +28,8 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     );
     self.reloadButton = $('<button>')
         .attr({class: 'btn btn-default btn-sm', title: 'Reload'})
-        .css('margin-top', '23px')
         .html($('<span>').attr('class', 'glyphicon glyphicon-refresh'));
+    self.buttonGroup = $('<div>').attr('class', 'btn-group').css('margin-top', '18px').append(self.reloadButton);
     self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey');
     self.fileNameField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
     self.editorDialog = $('<div>').css('overflow-x', 'hidden').append(
@@ -37,7 +37,7 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
             $('<div>').attr('class', 'col-md-4').append(
                 $('<label>').attr({class: 'requiredField'}).append('File name', self.fileNameField)
             ),
-            $('<div>').attr('class', 'col-md-6').append(self.reloadButton),
+            $('<div>').attr('class', 'col-md-6').append(self.buttonGroup),
             $('<div>').attr('class', 'col-md-2').append(
                 $('<label>').attr({class: 'requiredField'}).append('Mode', self.aceModeSelector)
             )

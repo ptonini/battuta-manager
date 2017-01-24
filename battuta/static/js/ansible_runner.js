@@ -43,7 +43,12 @@ function postAnsibleJob(postData, sameWindow) {
                     popupCenter('/runner/result/' + data.runner_id + '/', windowTitle, 1000);
                 }
             }
-            else new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
+            else {
+                var alertMessage = $('<div>').attr('class', 'large-alert').append(
+                    $('<h5>').html('Submit error:'), data.msg
+                );
+                $.bootstrapGrowl(alertMessage, failedAlertOptions);
+            }
         }
     });
 }

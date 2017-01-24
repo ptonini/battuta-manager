@@ -163,7 +163,10 @@ $(document).ready(function () {
                         submitRequest('POST', postData, function (data) {
                             if (data.result == 'ok') buildArgsSelectionBox(data.id);
                             else if (data.result == 'fail') {
-                                new AlertDialog($('<div>').append($('<h5>').html('Submit error:'), data.msg), 'left')
+                                var alertMessage = $('<div>').attr('class', 'large-alert').append(
+                                    $('<h5>').html('Submit error:'), data.msg
+                                );
+                                $.bootstrapGrowl(alertMessage, failedAlertOptions);
                             }
                         });
                     }
