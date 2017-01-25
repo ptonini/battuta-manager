@@ -1,13 +1,4 @@
-// Default dialog options
-var defaultDialogOptions =  {
-    width: '360',
-    autoOpen: false,
-    modal: true,
-    show: true,
-    hide: true,
-    dialogClass: 'no_title',
-    resizable: false
-};
+
 
 
 // Select dialog

@@ -48,6 +48,17 @@ $.extend($.bootstrapGrowl.default_options, {
 
 var failedAlertOptions = {type: 'danger', delay: 5000};
 
+// Default dialog options
+var defaultDialogOptions =  {
+    width: '360',
+    autoOpen: false,
+    modal: true,
+    show: true,
+    hide: true,
+    dialogClass: 'no_title',
+    resizable: false
+};
+
 // Set DataTables defaults
 $.fn.dataTableExt.sErrMode = 'throw';
 $.extend($.fn.dataTable.defaults, {
