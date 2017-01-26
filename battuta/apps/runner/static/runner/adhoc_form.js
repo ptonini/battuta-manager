@@ -12,7 +12,7 @@ function resetAdHocForm() {
     $('#adhoc_form_label').html('Create task');
     $('#optional_fields').html('');
     $('#module_reference').hide();
-    $('#adhoc_form').removeData('adhocId', 'current_module');
+    $('#adhoc_form').removeData('adhocId').removeData('current_module');
 }
 
 $(document).ready(function () {
@@ -58,13 +58,15 @@ $(document).ready(function () {
                             adhocForm.data('adhocId', data[4]);
                             $('#adhoc_form_label').html('Edit task');
                             loadAdHocForm(data);
+                            $.bootstrapGrowl('Task loaded', {type: 'success'});
                         }),
                     $('<span>')
-                        .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Clone'})
+                        .attr({class: 'glyphicon glyphicon-duplicate btn-incell', title: 'Copy'})
                         .click(function() {
                             adhocForm.removeData('adhocId');
                             $('#adhoc_form_label').html('Create task');
                             loadAdHocForm(data);
+                            $.bootstrapGrowl('Task copied', {type: 'success'});
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
@@ -75,7 +77,10 @@ $(document).ready(function () {
                                     type: 'POST',
                                     dataType: 'json',
                                     data: {action: 'delete', id: data[4]},
-                                    success: function () {adhocTable.DataTable().ajax.reload()}
+                                    success: function () {
+                                        adhocTable.DataTable().ajax.reload();
+                                        $.bootstrapGrowl('Task deleted', {type: 'success'});
+                                    }
                                 });
                             })
                         })
@@ -102,54 +107,56 @@ $(document).ready(function () {
     adhocForm.submit(function () {
         event.preventDefault();
         var currentModule = adhocForm.data('current_module');
-        var become = $('#sudo').hasClass('checked_button');
-        var postData = {
-            module: currentModule.name,
-            hosts: hostsField.val(),
-            become: become
-        };
-        switch ($(document.activeElement).html()) {
-            case 'Save':
-                postData.action = 'save';
-                postData.id = adhocForm.data('adhocId');
-                postData.arguments = currentModule.saveForm();
-                $.ajax({
-                    url: '/runner/adhoc/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: postData,
-                    success: function (data) {
-                        if (data.result == 'ok') {
-                            adhocTable.DataTable().ajax.reload();
-                            resetAdHocForm()
+        if (currentModule) {
+            var become = $('#sudo').hasClass('checked_button');
+            var postData = {
+                module: currentModule.name,
+                hosts: hostsField.val(),
+                become: become
+            };
+            switch ($(document.activeElement).html()) {
+                case 'Save':
+                    postData.action = 'save';
+                    postData.id = adhocForm.data('adhocId');
+                    postData.arguments = currentModule.saveForm();
+                    $.ajax({
+                        url: '/runner/adhoc/',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: postData,
+                        success: function (data) {
+                            if (data.result == 'ok') {
+                                adhocTable.DataTable().ajax.reload();
+                                resetAdHocForm();
+                                $.bootstrapGrowl('Task saved', {type: 'success'});
+                            }
+                            else if (data.result == 'fail') {
+                                var alertMessage = $('<div>').attr('class', 'large-alert').append(
+                                    $('<h5>').html('Submit error:'), data.msg
+                                );
+                                $.bootstrapGrowl(alertMessage, failedAlertOptions);
+                            }
                         }
-                        else if (data.result == 'fail') {
-                            var alertMessage = $('<div>').attr('class', 'large-alert').append(
-                                $('<h5>').html('Submit error:'), data.msg
-                            );
-                            $.bootstrapGrowl(alertMessage, failedAlertOptions);
-                        }
-                    }
-                });
-                break;
-            case 'Cancel':
-                resetAdHocForm();
-                break;
-            default:
-                var cred = $('option:selected', credentials).data();
-                postData.action = 'run';
-                postData.type = 'adhoc';
-                postData.name = '[adhoc task] ' + currentModule.name;
-                postData.cred = credentials.val();
-                var askPassword = {
-                    user: (!cred.password && cred.ask_pass && !cred.rsa_key),
-                    sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
-                };
-                postData.arguments = currentModule.saveForm();
-                executeAnsibleJob(postData, askPassword, cred.username);
-                break;
+                    });
+                    break;
+                case 'Cancel':
+                    resetAdHocForm();
+                    break;
+                default:
+                    var cred = $('option:selected', credentials).data();
+                    postData.action = 'run';
+                    postData.type = 'adhoc';
+                    postData.name = '[adhoc task] ' + currentModule.name;
+                    postData.cred = credentials.val();
+                    var askPassword = {
+                        user: (!cred.password && cred.ask_pass && !cred.rsa_key),
+                        sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
+                    };
+                    postData.arguments = currentModule.saveForm();
+                    executeAnsibleJob(postData, askPassword, cred.username);
+                    break;
+            }
         }
-
-
+        else $.bootstrapGrowl('No module loaded', {type: 'warning'});
     });
 });

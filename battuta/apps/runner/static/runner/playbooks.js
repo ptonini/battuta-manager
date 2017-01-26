@@ -140,48 +140,49 @@ $(document).ready(function () {
     // Submit arguments form
     argumentsForm.submit(function (event) {
         event.preventDefault();
-        if ($(document.activeElement).attr('id') == 'pattern_editor') {
-            patternContainer.addClass('hidden').html('');
-            patternDialog.dialog('open');
-        }
-        else {
-            var tags = $('#tags');
-            var skip_tags = $('#skip_tags');
-            var extra_vars = $('#extra_vars');
-            switch ($(document.activeElement).html()) {
-                case 'Save':
-                    if (!(!subsetField.val() && !tags.val() && !skip_tags.val() && !extra_vars.val())) {
-                        var postData = {
-                            action: 'save_args',
-                            id: argumentsForm.data('id'),
-                            subset: subsetField.val(),
-                            tags: tags.val(),
-                            skip_tags: skip_tags.val(),
-                            extra_vars: extra_vars.val(),
-                            playbook: argumentsBox.data('currentPlaybook')
-                        };
-                        submitRequest('POST', postData, function (data) {
-                            if (data.result == 'ok') buildArgsSelectionBox(data.id);
-                            else if (data.result == 'fail') {
-                                var alertMessage = $('<div>').attr('class', 'large-alert').append(
-                                    $('<h5>').html('Submit error:'), data.msg
-                                );
-                                $.bootstrapGrowl(alertMessage, failedAlertOptions);
-                            }
-                        });
-                    }
-                    break;
-                case 'Delete':
-                    submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function (data) {
-                        if (data.result == 'ok') buildArgsSelectionBox();
-                        else $.bootstrapGrowl(data.msg, failedAlertOptions)
+        var tags = $('#tags');
+        var skip_tags = $('#skip_tags');
+        var extra_vars = $('#extra_vars');
+        switch ($(document.activeElement).html()) {
+            case 'Save':
+                if (!(!subsetField.val() && !tags.val() && !skip_tags.val() && !extra_vars.val())) {
+                    var postData = {
+                        action: 'save_args',
+                        id: argumentsForm.data('id'),
+                        subset: subsetField.val(),
+                        tags: tags.val(),
+                        skip_tags: skip_tags.val(),
+                        extra_vars: extra_vars.val(),
+                        playbook: argumentsBox.data('currentPlaybook')
+                    };
+                    submitRequest('POST', postData, function (data) {
+                        if (data.result == 'ok') {
+                            buildArgsSelectionBox(data.id);
+                            $.bootstrapGrowl('Arguments saved', {type: 'success'});
+                        }
+                        else if (data.result == 'fail') {
+                            var alertMessage = $('<div>').attr('class', 'large-alert').append(
+                                $('<h5>').html('Submit error:'), data.msg
+                            );
+                            $.bootstrapGrowl(alertMessage, failedAlertOptions);
+                        }
                     });
-                    break;
-                case 'Check':
-                    $(document.activeElement).toggleClass('checked_button');
-                    break;
-            }
+                }
+                break;
+            case 'Delete':
+                submitRequest('POST', {action: 'del_args', id: argumentsForm.data('id')}, function (data) {
+                    if (data.result == 'ok') {
+                        buildArgsSelectionBox();
+                        $.bootstrapGrowl('Arguments deleted', {type: 'success'});
+                    }
+                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
+                });
+                break;
+            case 'Check':
+                $(document.activeElement).toggleClass('checked_button');
+                break;
         }
+
     });
 
     // New playbook

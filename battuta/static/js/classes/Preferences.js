@@ -22,7 +22,7 @@ function Preferences()  {
         }
     }));
 
-    self.prefsDialog = $('<div>').css('overflow-x', 'hidden').append(
+    self.prefsDialog = $('<div>').attr('class', 'large_dialog').append(
         $('<div>').attr('class', 'row').append(
             $('<div>').attr('class', 'col-md-12').append(
                 $('<h3>').css('margin-bottom', '20px').append(

@@ -1,6 +1,3 @@
-
-
-
 // Select dialog
 var selectDialog = $('<div>').attr('id', 'select_dialog').css('overflow-x', 'hidden');
 selectDialog.dialog($.extend({}, defaultDialogOptions, {buttons: {Cancel: function () {$(this).dialog('close')}}}));

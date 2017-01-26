@@ -144,8 +144,11 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-/* Set padding for small dialogs*/
-.small_dialog, #alert_dialog, #password_dialog {padding: 20px !important;}
+/* Settings for small dialogs */
+.small_dialog, #password_dialog {padding: 20px !important;}
+
+/* Settings for large dialogs */
+.large_dialog {overflow-x: hidden !important;}
 
 /**/
 pre.large-alert {font-weight: lighter; background-color: transparent; border-color: transparent}

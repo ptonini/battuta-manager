@@ -1,7 +1,7 @@
 function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     var self = this;
 
-    self.modesArray = [
+    self.modes = [
         ['apache_conf', 'Apache conf'],
         ['batchfile', 'BatchFile'],
         ['css', 'CSS'],
@@ -26,13 +26,18 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     self.aceModeSelector = $('<select>').attr({class: 'select form-control input-sm'}).append(
         $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
     );
+
     self.reloadButton = $('<button>')
         .attr({class: 'btn btn-default btn-sm', title: 'Reload'})
         .html($('<span>').attr('class', 'glyphicon glyphicon-refresh'));
+
     self.buttonGroup = $('<div>').attr('class', 'btn-group').css('margin-top', '18px').append(self.reloadButton);
+
     self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey');
+
     self.fileNameField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
-    self.editorDialog = $('<div>').css('overflow-x', 'hidden').append(
+
+    self.editorDialog = $('<div>').attr('class', 'large_dialog').append(
         $('<div>').attr('class', 'row form-group row-eq-height').append(
             $('<div>').attr('class', 'col-md-4').append(
                 $('<label>').attr({class: 'requiredField'}).append('File name', self.fileNameField)
@@ -73,10 +78,14 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
                         text: self.textEditor.getValue()
                     };
                     submitRequest('POST', postData, function (data) {
-                        if (data.result == 'ok') self.editorDialog.dialog('close');
+                        if (data.result == 'ok') {
+                            self.editorDialog.dialog('close');
+                            $.bootstrapGrowl(fileName + ' saved', {type: 'success'});
+                        }
                         else $.bootstrapGrowl(data.msg, failedAlertOptions);
                     })
                 }
+                else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
             },
             Cancel: function () {
                 $(this).dialog('close');
@@ -85,7 +94,7 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
         }
     });
 
-    $.each(self.modesArray, function(index, value){
+    $.each(self.modes, function(index, value){
         self.aceModeSelector.append($('<option>').attr('value', value[0]).html(value[1]))
     });
 

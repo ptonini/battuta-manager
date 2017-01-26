@@ -15,8 +15,8 @@ from pytz import timezone, utc
 from apps.preferences.functions import get_preferences
 
 
-class ManagerView(View):
-    base_dir = None
+class FileManagerView(View):
+    root_dir = None
     html_template = None
     is_user = False
 
@@ -25,18 +25,18 @@ class ManagerView(View):
         data = None
 
         if self.is_user:
-            self.base_dir = os.path.join(self.base_dir, request.user.username)
+            self.root_dir = os.path.join(self.root_dir, request.user.username)
 
         if 'list' in request.GET:
 
             tz = timezone(request.user.userdata.timezone)
             prefs = get_preferences()
 
-            if not os.path.exists(self.base_dir):
-                os.makedirs(self.base_dir)
+            if not os.path.exists(self.root_dir):
+                os.makedirs(self.root_dir)
 
             data = list()
-            directory = os.path.join(self.base_dir, request.GET['list'])
+            directory = os.path.join(self.root_dir, request.GET['list'])
             for base_name in os.listdir(directory):
 
                 full_path = os.path.join(directory, base_name)
@@ -59,7 +59,7 @@ class ManagerView(View):
 
         elif 'edit' in request.GET:
 
-            full_path = os.path.join(self.base_dir, request.GET['current_dir'], request.GET['edit'])
+            full_path = os.path.join(self.root_dir, request.GET['current_dir'], request.GET['edit'])
 
             if os.path.exists(full_path):
                 with open(full_path, 'r') as text_file:
@@ -67,18 +67,30 @@ class ManagerView(View):
             else:
                 data = {'result': 'fail', 'msg': 'The file was not found'}
 
+        elif 'exists' in request.GET:
+
+            if request.GET['type'] == 'directory':
+                check_method = os.path.isdir
+            elif request.GET['type'] == 'file':
+                check_method = os.path.isfile
+            else:
+                raise Http404('Invalid object type')
+
+            if check_method(os.path.join(self.root_dir, request.GET['exists'])):
+                data = {'result': 'ok'}
+            else:
+                data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
+
         elif 'download' in request.GET:
 
-            full_path = os.path.join(self.base_dir, request.GET['current_dir'], request.GET['download'])
+            full_path = os.path.join(self.root_dir, request.GET['current_dir'], request.GET['download'])
 
             if os.path.isfile(full_path):
                 target = full_path
                 delete_after = False
 
             else:
-                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['download']),
-                                             'zip',
-                                             full_path)
+                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['download']), 'zip', full_path)
                 delete_after = True
 
             stream = StreamingHttpResponse((line for line in open(target, 'r')))
@@ -90,20 +102,6 @@ class ManagerView(View):
 
             return stream
 
-        elif 'exists' in request.GET:
-
-            if request.GET['type'] == 'directory':
-                check_method = os.path.isdir
-            elif request.GET['type'] == 'file':
-                check_method = os.path.isfile
-            else:
-                raise Http404('Invalid object type')
-
-            if check_method(os.path.join(self.base_dir, request.GET['exists'])):
-                data = {'result': 'ok'}
-            else:
-                data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
-
         if data is None:
             return render(request, self.html_template, {'user': request.user})
         else:
@@ -112,12 +110,12 @@ class ManagerView(View):
     def post(self, request):
 
         if self.is_user:
-            self.base_dir = os.path.join(self.base_dir, request.user.username)
+            self.root_dir = os.path.join(self.root_dir, request.user.username)
 
-        full_path = os.path.join(self.base_dir, request.POST['current_dir'], request.POST['base_name'])
+        full_path = os.path.join(self.root_dir, request.POST['current_dir'], request.POST['base_name'])
 
         if 'old_base_name' in request.POST:
-            old_full_path = os.path.join(self.base_dir, request.POST['current_dir'], request.POST['old_base_name'])
+            old_full_path = os.path.join(self.root_dir, request.POST['current_dir'], request.POST['old_base_name'])
         else:
             old_full_path = None
 
@@ -200,17 +198,17 @@ class ManagerView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class FileView(ManagerView):
-    base_dir = settings.FILES_PATH
+class FileView(FileManagerView):
+    root_dir = settings.FILES_PATH
     html_template = 'fileman/files.html'
 
 
-class RoleView(ManagerView):
-    base_dir = settings.ROLES_PATH
+class RoleView(FileManagerView):
+    root_dir = settings.ROLES_PATH
     html_template = 'fileman/roles.html'
 
 
-class UserFilesView(ManagerView):
-    base_dir = settings.USERDATA_PATH
+class UserFilesView(FileManagerView):
+    root_dir = settings.USERDATA_PATH
     html_template = 'fileman/user_files.html'
     is_user = True

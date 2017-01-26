@@ -3,7 +3,7 @@ function PatternEditor(patternField) {
 
     self.patternContainer = $('<pre>').attr({id: 'pattern_container', class: 'text-left hidden'});
 
-    self.patternDialog = $('<div>').attr('id', 'pattern_dialog').css('overflow-x', 'hidden').append(
+    self.patternDialog = $('<div>').attr('class', 'large_dialog').append(
         $('<div>').attr('class', 'row row-eq-height').append(
             $('<div>').attr('class', 'col-md-6').append($('<h4>').html('Pattern builder')),
             $('<div>').attr('class', 'col-md-6 text-right').css('margin', 'auto').append(
