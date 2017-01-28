@@ -103,14 +103,13 @@
     }
 
     function _setToggleAllButton(listBody) {
-        var toggleAll = $('#toggle_all');
-
+        var toggleAll = $('.toggle_all');
         if (listBody.children('.dynamic-item:not(".hidden")').length == listBody.children('.toggle-on:not(".hidden")').length) {
             toggleAll.attr('title', 'Select none').data('add_class', false).children('span')
                 .removeClass('glyphicon-unchecked')
                 .addClass('glyphicon-check');
         }
-        else if (toggleAll.attr('title') != 'Select all') {
+        else {
             toggleAll.attr('title', 'Select all').data('add_class', true).children('span')
                 .removeClass('glyphicon-check')
                 .addClass('glyphicon-unchecked');
@@ -156,7 +155,7 @@
                 listHeader
                     .append(
                         $('<a>')
-                            .attr({id: 'toggle_all', class: 'btn btn-default btn-xs'})
+                            .attr('class', 'btn btn-default btn-xs toggle_all')
                             .html($('<span>').attr('class', 'glyphicon'))
                             .click(function () {
                                 event.preventDefault();

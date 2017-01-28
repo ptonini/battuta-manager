@@ -29,58 +29,29 @@ function formatRelationListItem(listItem, nodeType, relation) {
     )
 }
 
-function formatCopyVariablesListItem(listItem, sourceNodeType) {
-    listItem.click(function () {
-        var sourceNodeName = $(this).data('value');
-        $.ajax({
-            url: 'vars/',
-            type: 'POST',
-            dataType: 'json',
-            data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
-            success: function () {
-                selectDialog.dialog('close');
-                $('#variable_table').DataTable().ajax.reload();
-                $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
+function addRelationsButtonAction(nodeType, relation) {
+
+    var loadCallback = function (listContainer, dialog) {
+        var currentList = listContainer.find('div.dynamic-list');
+        dialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+        dialog.dialog('option', 'buttons', {
+            Add: function () {
+                alterRelation(relation, dialog.DynamicList('getSelected', 'id'), 'add');
+                $(this).dialog('close');
+            },
+            Cancel: function () {
+                $('.filter_box').val('');
+                $(this).dialog('close');
             }
         });
-    });
-}
+    };
 
-function addRelationsListLoadCallback(listContainer, relation) {
-    var currentList = listContainer.find('div.dynamic-list');
-    selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-    selectDialog.dialog('option', 'buttons', {
-        Add: function () {
-            alterRelation(relation, selectDialog.DynamicList('getSelected', 'id'), 'add');
-            $(this).dialog('close');
-        },
-        Cancel: function () {
-            $('.filter_box').val('');
-            $(this).dialog('close');
-        }
-    });
-}
+    var addButtonAction = function (dialog) {
+        new NodeDialog('add', null, null, nodeType, function () {dialog.DynamicList('load')})
+    };
 
-function addRelationsButtonAction(nodeType, relation) {
-    selectDialog.DynamicList({
-        listTitle: 'selection',
-        showFilter: true,
-        showAddButton: true,
-        addButtonClass: 'open_node_form',
-        addButtonTitle: 'Add ' + nodeType,
-        maxHeight: 400,
-        itemToggle: true,
-        minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
-        maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
-        breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
-        maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
-        ajaxUrl: relation + '/?list=not_related',
-        loadCallback: function (listContainer) {addRelationsListLoadCallback(listContainer, relation)},
-        addButtonAction: function () {
-            new NodeDialog('add', null, null, nodeType, function () {selectDialog.DynamicList('load')})
-        }
-    });
-    selectDialog.dialog('open');
+    new SelectNodesDialog(nodeType, relation + '/?list=not_related', true, loadCallback, addButtonAction, null);
+
 }
 
 function clearVariableForm() {
@@ -412,25 +383,34 @@ $(document).ready(function () {
             case 'copy_variables':
                 clearVariableForm();
                 $('.select_type').off('click').click(function() {
-                    var sourceNodeType = $(this).data('type');
                     nodeTypeDialog.dialog('close');
-                    selectDialog
-                        .DynamicList({
-                            listTitle: 'copy_from_node',
-                            showFilter: true,
-                            maxHeight: 400,
-                            minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
-                            maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
-                            breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
-                            maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
-                            ajaxUrl: '/inventory/?action=search&type=' + sourceNodeType + '&pattern=',
-                            formatItem: function(listItem) {formatCopyVariablesListItem(listItem, sourceNodeType)},
-                            loadCallback: function (listContainer) {
-                                var currentList = listContainer.find('div.dynamic-list');
-                                selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                            }
-                        })
-                        .dialog('open');
+
+                    var sourceNodeType = $(this).data('type');
+
+                    var url = '/inventory/?action=search&type=' + sourceNodeType + '&pattern=';
+                    var loadCallback = function (listContainer, dialog) {
+                        var currentList = listContainer.find('div.dynamic-list');
+                        dialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                    };
+                    var formatItem = function (listItem, dialog) {
+                        listItem.click(function () {
+                            var sourceNodeName = $(this).data('value');
+                            $.ajax({
+                                url: 'vars/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
+                                success: function () {
+                                    dialog.dialog('close');
+                                    $('#variable_table').DataTable().ajax.reload();
+                                    $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
+                                }
+                            });
+                        });
+                    };
+
+                    new SelectNodesDialog(nodeType, url, false, loadCallback, null, formatItem);
+
                 });
                 nodeTypeDialog.dialog('open').children('h4').html('Select source type');
                 break;

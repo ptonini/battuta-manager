@@ -93,46 +93,36 @@ function PatternEditor(patternField) {
             if (op == 'and') separator = ':&';
             else if (op == 'exc') separator = ':!'
         }
-        selectDialog
-            .DynamicList({
-                listTitle: 'selection',
-                showFilter: true,
-                showAddButton: true,
-                addButtonClass: 'open_node_form',
-                addButtonTitle: 'Add ' + nodeType,
-                maxHeight: 400,
-                itemToggle: true,
-                minColumns: sessionStorage.getItem('node_list_modal_min_columns'),
-                maxColumns: sessionStorage.getItem('node_list_modal_max_columns'),
-                breakPoint: sessionStorage.getItem('node_list_modal_break_point'),
-                maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
-                ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern=',
-                loadCallback: function (listContainer) {
-                    var currentList = listContainer.find('div.dynamic-list');
-                    selectDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                },
-                addButtonAction: function () {
-                    new NodeDialog('add', null, null, nodeType, function () {selectDialog.DynamicList('load')})
-                }
-            })
-            .dialog('option', 'buttons', {
-                Add: function () {
-                    var selection = selectDialog.DynamicList('getSelected', 'value');
-                    for (var i = 0; i < selection.length; i++) {
-                        if (self.patternContainer.html() != '') {
-                            self.patternContainer.append(separator)
+
+        var url = '/inventory/?action=search&type=' + nodeType + '&pattern=';
+        var loadCallback = function (listContainer, dialog) {
+            var currentList = listContainer.find('div.dynamic-list');
+            dialog
+                .dialog('option', 'width', $(currentList).css('column-count') * 140 + 20)
+                .dialog('option', 'buttons', {
+                    Add: function () {
+                        var selection = dialog.DynamicList('getSelected', 'value');
+                        for (var i = 0; i < selection.length; i++) {
+                            if (self.patternContainer.html() != '') {
+                                self.patternContainer.append(separator)
+                            }
+                            self.patternContainer.append(selection[i])
                         }
-                        self.patternContainer.append(selection[i])
+                        self.patternContainer.removeClass('hidden');
+                        $(this).dialog('close');
+                    },
+                    Cancel: function () {
+                        $('.filter_box').val('');
+                        $(this).dialog('close');
                     }
-                    self.patternContainer.removeClass('hidden');
-                    $(this).dialog('close');
-                },
-                Cancel: function () {
-                    $('.filter_box').val('');
-                    $(this).dialog('close');
-                }
-            })
-            .dialog('open');
+                })
+        };
+        var addButtonAction = function (dialog) {
+            new NodeDialog('add', null, null, nodeType, function () {dialog.DynamicList('load')})
+        };
+        new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
+
+
     });
 }
 
