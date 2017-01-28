@@ -14,7 +14,8 @@ function DeleteDialog(deleteAction) {
                     $(this).dialog('close');
                 },
                 Cancel: function () {$(this).dialog('close')}
-            }
+            },
+            close: function() {$(this).remove()}
         }))
         .dialog('open')
 }

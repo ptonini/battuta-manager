@@ -1,9 +1,3 @@
-function getAllIndexes(arr, val) {
-    var indexes = [], i = -1;
-    while ((i = arr.indexOf(val, i+1)) != -1) indexes.push(i);
-    return indexes;
-}
-
 function alterRelation(relation, selection, action) {
     $.ajax({
         url: relation + '/',
@@ -16,42 +10,6 @@ function alterRelation(relation, selection, action) {
             $('.dynamic-list-group[data-relation=' + relation + ']').DynamicList('load');
         }
     });
-}
-
-function formatRelationListItem(listItem, nodeType, relation) {
-    var id = listItem.data('id');
-    var name = listItem.data('value');
-    listItem.removeClass('truncate-text').html('').append(
-        $('<span>').append(name).click(function () {window.open('/inventory/' + nodeType + '/' + name, '_self')}),
-        $('<span>').css({float: 'right', margin: '7px 0', 'font-size': '15px'})
-            .attr({class: 'glyphicon glyphicon-remove-circle', title: 'Remove'})
-            .click(function () {alterRelation(relation, [id], 'remove')})
-    )
-}
-
-function addRelationsButtonAction(nodeType, relation) {
-
-    var loadCallback = function (listContainer, dialog) {
-        var currentList = listContainer.find('div.dynamic-list');
-        dialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-        dialog.dialog('option', 'buttons', {
-            Add: function () {
-                alterRelation(relation, dialog.DynamicList('getSelected', 'id'), 'add');
-                $(this).dialog('close');
-            },
-            Cancel: function () {
-                $('.filter_box').val('');
-                $(this).dialog('close');
-            }
-        });
-    };
-
-    var addButtonAction = function (dialog) {
-        new NodeDialog('add', null, null, nodeType, function () {dialog.DynamicList('load')})
-    };
-
-    new SelectNodesDialog(nodeType, relation + '/?list=not_related', true, loadCallback, addButtonAction, null);
-
 }
 
 function clearVariableForm() {
@@ -252,8 +210,43 @@ $(document).ready(function () {
             breakPoint: sessionStorage.getItem('relation_list_break_point'),
             maxColumnWidth: sessionStorage.getItem('relation_list_max_column_width'),
             ajaxUrl: relation + '/?list=related',
-            formatItem: function (listItem) {formatRelationListItem(listItem, nodeType, relation)},
-            addButtonAction: function () {addRelationsButtonAction(nodeType, relation)}
+            formatItem: function (listItem) {
+                var id = listItem.data('id');
+                var name = listItem.data('value');
+                listItem.removeClass('truncate-text').html('').append(
+                    $('<span>').append(name).click(function () {
+                        window.open('/inventory/' + nodeType + '/' + name, '_self')
+                    }),
+                    $('<span>').css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                        .attr({class: 'glyphicon glyphicon-remove-circle', title: 'Remove'})
+                        .click(function () {
+                            alterRelation(relation, [id], 'remove')
+                        })
+                )
+            },
+            addButtonAction: function () {
+                var url = relation + '/?list=not_related';
+                var loadCallback = function (listContainer, dialog) {
+                    var currentList = listContainer.find('div.dynamic-list');
+                    dialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                    dialog.dialog('option', 'buttons', {
+                        Add: function () {
+                            alterRelation(relation, dialog.DynamicList('getSelected', 'id'), 'add');
+                            $(this).dialog('close');
+                        },
+                        Cancel: function () {
+                            $('.filter_box').val('');
+                            $(this).dialog('close');
+                        }
+                    });
+                };
+                var addButtonAction = function (dialog) {
+                    new NodeDialog('add', null, null, nodeType, function () {
+                        dialog.DynamicList('load')
+                    })
+                };
+                new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
+            }
         });
     });
 
@@ -311,7 +304,10 @@ $(document).ready(function () {
                 var rowKey = this.data()[0];
                 var isMain = this.data()[4];
                 var rowData = [this.data(), this.node()];
-                var keyIndexes = getAllIndexes(variableKeys, rowKey);
+                var keyIndexes = [];
+                var i = -1;
+
+                while ((i = variableKeys.indexOf(rowKey, i+1)) != -1) keyIndexes.push(i);
 
                 if (keyIndexes.length > 1)  {
 
@@ -382,37 +378,7 @@ $(document).ready(function () {
                 break;
             case 'copy_variables':
                 clearVariableForm();
-                $('.select_type').off('click').click(function() {
-                    nodeTypeDialog.dialog('close');
-
-                    var sourceNodeType = $(this).data('type');
-
-                    var url = '/inventory/?action=search&type=' + sourceNodeType + '&pattern=';
-                    var loadCallback = function (listContainer, dialog) {
-                        var currentList = listContainer.find('div.dynamic-list');
-                        dialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                    };
-                    var formatItem = function (listItem, dialog) {
-                        listItem.click(function () {
-                            var sourceNodeName = $(this).data('value');
-                            $.ajax({
-                                url: 'vars/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
-                                success: function () {
-                                    dialog.dialog('close');
-                                    $('#variable_table').DataTable().ajax.reload();
-                                    $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
-                                }
-                            });
-                        });
-                    };
-
-                    new SelectNodesDialog(nodeType, url, false, loadCallback, null, formatItem);
-
-                });
-                nodeTypeDialog.dialog('open').children('h4').html('Select source type');
+                new CopyVariables('Select source type', function() {variableTable.DataTable().ajax.reload()});
                 break;
             default:
                 $.ajax({
@@ -429,6 +395,7 @@ $(document).ready(function () {
                         if (data.result == 'ok') {
                             variableTable.DataTable().ajax.reload();
                             clearVariableForm();
+                            $.bootstrapGrowl('Variable saved', {type: 'success'});
                         }
                         else if (data.result == 'fail') {
                             var alertMessage = $('<div>').attr('class', 'large-alert').append(

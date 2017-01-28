@@ -27,7 +27,12 @@ function SelectNodesDialog(nodeType, url, showButtons, loadCallback, addButtonAc
                 if (formatItem) formatItem(listItem, self.selectDialog)
             }
         })
-        .dialog($.extend({}, defaultDialogOptions, {buttons: {Cancel: function () {$(this).dialog('close')}}}))
+        .dialog($.extend({}, defaultDialogOptions, {
+            buttons: {
+                Cancel: function () {$(this).dialog('close')}
+            },
+            close: function() {$(this).remove()}
+        }))
         .dialog('open');
 }
 

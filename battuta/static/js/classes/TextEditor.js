@@ -91,7 +91,8 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
                 $(this).dialog('close');
                 $('div.ui-dialog-buttonpane').css('border-top', '');
             }
-        }
+        },
+        close: function() {$(this).remove()}
     });
 
     $.each(self.modes, function(index, value){
