@@ -3,30 +3,26 @@ function CopyVariables(copyCallback) {
 
     if (copyCallback) self.copyCallback = copyCallback;
 
-    self.hostsButton = $('<button>').attr('class', 'btn btn-default btn-sm').html('Hosts').click(function() {
+    self.hostsButton = xsButton.clone().css('margin-right', '20px').html('Hosts').click(function() {
         self._openSelectNodeDialog('host')
     });
 
-    self.groupsButton = $('<button>').attr('class', 'btn btn-default btn-sm').html('Groups').click(function() {
+    self.groupsButton = xsButton.clone().html('Groups').click(function() {
         self._openSelectNodeDialog('group')
     });
 
-    self.nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-center'}).append(
-        $('<h4>').html('Select source type'),
-        $('<br>'),
-        self.hostsButton,
-        $('<span>').html('&nbsp;&nbsp;&nbsp;&nbsp;'),
-        self.groupsButton
-
+    self.nodeTypeDialog = $('<div>').attr('class', 'text-center').append(
+        $('<h5>').html('Select source type'), self.hostsButton, self.groupsButton
     );
 
     self.nodeTypeDialog
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
+            width: 280,
             buttons: {Cancel: function () {
                 $(this).dialog('close')}
             },
             close: function() {$(this).remove()}
-        }))
+        })
         .dialog('open');
 }
 

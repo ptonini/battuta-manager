@@ -1,16 +1,12 @@
 function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
     var self = this;
 
-    self.nameFieldInput = $('<input>').attr({type: 'text', class: 'form-control input-sm'}).val(nodeName);
-    self.descriptionField = $('<textarea>').attr('class', 'textarea form-control input-sm').val(nodeDescription);
+    self.nameFieldInput = textInputField.clone().val(nodeName);
+    self.descriptionField = textAreaField.clone().val(nodeDescription);
 
     self.nodeForm = $('<form>').append(
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr('class', 'requiredField').append('Name', self.nameFieldInput)
-        ),
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr('class', 'requiredField').append('Description', self.descriptionField)
-        )
+        divFormGroup.clone().append($('<label>').html('Name').append(self.nameFieldInput)),
+        divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
     );
 
     if (action == 'edit') self.header = 'Edit ' + nodeName;
@@ -21,7 +17,7 @@ function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
 
     self.nodeDialog = $('<div>').append($('<h4>').html(self.header), self.nodeForm);
     self.nodeDialog
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             buttons: {
                 Save: function() {
                     $.ajax({
@@ -52,6 +48,6 @@ function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
                 }
             },
             close: function() {$(this).remove()}
-        }))
+        })
         .dialog('open');
 }

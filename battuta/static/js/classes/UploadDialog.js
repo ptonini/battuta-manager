@@ -1,11 +1,11 @@
 function UploadDialog(baseDir, beforeCloseCallback) {
     var self = this;
 
-    self.uploadField = $('<input>').attr({id: 'upload_field', type: 'file', class: 'form-control'});
-    self.uploadFieldLabel = $('<label>').attr({id: 'upload_field_label', for: 'upload_field'}).html('Select file');
-    self.uploadDialogContainer = $('<div>')
-        .attr('class', 'small_dialog')
-        .append(self.uploadFieldLabel, self.uploadField);
+    self.uploadField = fileInputField.clone();
+
+    self.uploadDialogContainer = smallDialog.clone().append(
+        $('<label>').html('Select file').append(self.uploadField)
+    );
 
     self.uploadField
         .fileinput({
@@ -37,14 +37,14 @@ function UploadDialog(baseDir, beforeCloseCallback) {
         });
 
     self.uploadDialogContainer
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             buttons: {
                 Upload: function () {self.uploadField.fileinput('upload')},
                 Cancel: function () {$(this).dialog('close')}
             },
             beforeClose: function () {beforeCloseCallback()},
             close: function () {$(this).remove()}
-        }))
+        })
         .keypress(function (event) {
             if (event.keyCode == 13) $('.ui-button-text:contains("Upload")').parent('button').click()
         })

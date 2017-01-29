@@ -1,7 +1,7 @@
 function SelectNodesDialog(nodeType, url, showButtons, loadCallback, addButtonAction, formatItem) {
     var self = this;
 
-    self.selectDialog = $('<div>').attr('class', 'large_dialog');
+    self.selectDialog = largeDialog.clone();
 
     self.selectDialog
         .DynamicList({
@@ -27,12 +27,12 @@ function SelectNodesDialog(nodeType, url, showButtons, loadCallback, addButtonAc
                 if (formatItem) formatItem(listItem, self.selectDialog)
             }
         })
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             buttons: {
                 Cancel: function () {$(this).dialog('close')}
             },
             close: function() {$(this).remove()}
-        }))
+        })
         .dialog('open');
 }
 

@@ -1,22 +1,7 @@
 function Credentials(userId) {
     var self = this;
 
-    var divRow = $('<div>').attr('class', 'row');
-    var divCol2 = $('<div>').attr('class', 'col-md-2 text-right').css('margin-top', '19px');
-    var divCol6 = $('<div>').attr('class', 'col-md-6');
-    var divCol8 = $('<div>').attr('class', 'col-md-8');
-    var divCol10 = $('<div>').attr('class', 'col-md-10');
-    var divCol12 = $('<div>').attr('class', 'col-md-12');
-    var divFormGroup = $('<div>').attr('class', 'form-group');
-    var divInputGroup = $('<div>').attr('class', 'input-group');
-    var spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
-
-    var selectField = $('<select>').attr('class', 'select form-control input-sm');
-    var textInputField = $('<input>').attr({class: 'form-control input-sm', type: 'text'});
-    var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
-    var smallButton = $('<button>').attr('class', 'btn btn-default btn-sm');
-    var extraSmallButton = $('<button>').attr('class', 'btn btn-default btn-xs').css('margin-right', '5px');
-
+    divCol2 = divCol2.addClass('text-right').css('margin-top', '19px');
 
     self.userId = userId;
     self.selectCredentials = selectField.clone().change(function () {
@@ -86,23 +71,23 @@ function Credentials(userId) {
             }
         });
     self.titleField = textInputField.clone();
-    self.isSharedButton = smallButton.clone().html('Shared');
-    self.isDefaultButton = smallButton.clone().html('Default');
+    self.isSharedButton = smButton.clone().html('Shared');
+    self.isDefaultButton = smButton.clone().html('Default');
     self.usernameField = textInputField.clone();
     self.passwordField = passInputField.clone();
-    self.askPassButton = smallButton.clone().html('Ask').click();
-    self.rsaFileInput = $('<input>').attr({class: 'input-file', type: 'file', id:'rsa_file_input'});
-    self.removeRsaButton = smallButton.clone().html('Remove');
+    self.askPassButton = smButton.clone().html('Ask');
+    self.rsaFileInput = fileInputField.clone();
+    self.removeRsaButton = smButton.clone().html('Remove');
     self.sudoUserField = textInputField.clone().attr('placeholder', 'root');
     self.sudoPassField = passInputField.clone();
-    self.askSudoPassButton = smallButton.clone().html('Ask');
-    self.saveButton = extraSmallButton.clone().html('Save');
-    self.deleteButton = extraSmallButton.clone().html('Delete');
+    self.askSudoPassButton = smButton.clone().html('Ask');
+    self.saveButton = xsButton.clone().html('Save').css('margin-right', '5px');
+    self.deleteButton = xsButton.clone().html('Delete');
 
-    self.confirmChangesDialog = $('<div>')
-        .attr('class', 'small_dialog text-center')
-        .html($('<strong>').append('You have unsaved changes<br>Save now?'));
-    self.confirmChangesDialog.dialog($.extend({}, defaultDialogOptions, {
+    self.confirmChangesDialog = smallDialog.clone().addClass('text-center').html(
+        $('<strong>').append('You have unsaved changes<br>Save now?')
+    );
+    self.confirmChangesDialog.dialog({
         buttons: {
             Yes: function () {
                 self.credentialsDialog.dialog('close');
@@ -118,9 +103,9 @@ function Credentials(userId) {
             }
         },
         close: function() {$(this).remove()}
-    }));
+    });
 
-    self.credentialsDialog = $('<div>').attr('class', 'large_dialog').append(
+    self.credentialsDialog = largeDialog.clone().append(
         divRow.clone().append(
             divCol12.clone().append($('<h4>').html('Credentials')),
             divCol12.clone().append(
@@ -164,7 +149,7 @@ function Credentials(userId) {
         )
     );
     self.credentialsDialog
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             width: 600,
             buttons: {
                 Done: function () {
@@ -176,7 +161,7 @@ function Credentials(userId) {
                 self.confirmChangesDialog.remove();
                 $(this).remove()
             }
-        }))
+        })
         .dialog('open');
 
     Credentials.buildSelectionBox(self.userId, self.selectCredentials);

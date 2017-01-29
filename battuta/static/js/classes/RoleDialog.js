@@ -1,61 +1,53 @@
 function RoleDialog(beforeCloseCallback) {
     var self = this;
 
-    self.roleNameField = $('<input>')
-        .attr({id: 'role_name_field', type: 'text', class: 'form-control'})
-        .css('margin-bottom', '10px');
+    self.roleNameField = textInputField.clone().css('margin-bottom', '10px');
 
-    self.roleDialog = $('<div>').attr('id', 'role_dialog').css({'margin': '10px', 'overflow-x': 'hidden'}).append(
-        $('<div>').attr('class', 'row').append(
-            $('<div>').attr('class', 'col-md-12').append(
-                $('<label>').append('Role name', self.roleNameField)
+    self.roleDialog = smallDialog.clone().append(
+        divRow.clone().append(
+            divCol12.clone().append(
+                $('<label>').html('Role name').append(self.roleNameField)
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append($('<input>').attr({type: 'checkbox', value: 'files'}), 'Files')
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'files'), 'Files')
                 )
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append(
-                        $('<input>').attr({type: 'checkbox', value: 'defaults'}).data('main', true), 'Defaults'
-                    )
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'defaults').data('main', true), 'Defaults')
                 )
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append($('<input>').attr({type: 'checkbox', value: 'templates'}), 'Templates')
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'templates'), 'Templates')
                 )
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append($('<input>').attr({type: 'checkbox', value: 'vars'}).data('main', true), 'Vars')
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'vars').data('main', true), 'Vars')
                 )
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append(
-                        $('<input>').attr({type: 'checkbox', value: 'handlers'}).data('main', true), 'Handlers'
-                    )
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'handlers').data('main', true), 'Handlers')
                 )
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append(
-                        $('<input>').attr({type: 'checkbox', value: 'tasks'}).data('main', true), 'Tasks'
-                    )
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'tasks').data('main', true), 'Tasks')
                 )
             ),
-            $('<div>').attr('class', 'col-md-6').append(
-                $('<div>').attr('class', 'checkbox').append(
-                    $('<label>').append($('<input>').attr({type: 'checkbox', value: 'meta'}).data('main', true), 'Meta')
+            divCol6.clone().append(
+                divChkbox.clone().append(
+                    $('<label>').append(chkboxInput.clone().attr('value', 'meta').data('main', true), 'Meta')
                 )
             )
         )
     );
 
     self.roleDialog
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             buttons: {
                 Save: function() {
                     if (self.roleNameField.val()) {
@@ -96,7 +88,7 @@ function RoleDialog(beforeCloseCallback) {
             },
             beforeClose: function() {beforeCloseCallback()},
             close: function() {$(this).remove()}
-        }))
+        })
         .dialog('open');
 }
 

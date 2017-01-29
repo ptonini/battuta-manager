@@ -1,52 +1,54 @@
 function PatternBuilder(patternField) {
     var self = this;
 
+    divRow = divRow.css('margin-bottom', '5px');
+
     self.patternContainer = $('<pre>').attr('class', 'text-left hidden');
 
-    self.patternDialog = $('<div>').attr('class', 'large_dialog').append(
-        $('<div>').attr('class', 'row row-eq-height').css('margin-bottom', '15px').append(
-            $('<div>').attr('class', 'col-md-6').append($('<h4>').html('Pattern builder')),
-            $('<div>').attr('class', 'col-md-6 text-right').css('margin', 'auto').append(
+    self.patternDialog = largeDialog.clone().append(
+        divRowEqHeight.clone().css('margin-bottom', '15px').append(
+            divCol6.clone().append($('<h4>').html('Pattern builder')),
+            divCol6.clone().addClass('text-right').css('margin', 'auto').append(
                 $('<small>').html('patterns reference').attr('class', 'reference_link').click(function () {
                     window.open('http://docs.ansible.com/ansible/intro_patterns.html', '_blank')
                 })
             )
         ),
-        $('<div>').attr('class', 'row').css('margin-bottom', '5px').append(
-            $('<div>').attr('class', 'col-md-2').html('Select:'),
-            $('<div>').attr('class', 'col-md-2').append(
-                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Groups').click(function () {
+        divRow.clone().append(
+            divCol2.clone().html('Select:'),
+            divCol2.clone().append(
+                xsButton.clone().html('Groups').click(function () {
                     self._selectNodes('group', 'sel', ':')
                 })
             ),
-            $('<div>').attr('class', 'col-md-8').append(
-                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Hosts').click(function () {
+            divCol8.clone().append(
+                xsButton.clone().html('Hosts').click(function () {
                     self._selectNodes('host', 'sel', ':')
                 })
             )
         ),
-        $('<div>').attr('class', 'row').css('margin-bottom', '5px').append(
-            $('<div>').attr('class', 'col-md-2').html('and:'),
-            $('<div>').attr('class', 'col-md-2').append(
-                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Groups').click(function () {
+        divRow.clone().append(
+            divCol2.clone().html('and:'),
+            divCol2.clone().append(
+                xsButton.clone().html('Groups').click(function () {
                     self._selectNodes('group', 'and', ':&')
                 })
             ),
-            $('<div>').attr('class', 'col-md-8').append(
-                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Hosts').click(function () {
+            divCol8.clone().append(
+                xsButton.clone().html('Hosts').click(function () {
                     self._selectNodes('host', 'and', ':&')
                 })
             )
         ),
-        $('<div>').attr('class', 'row').css('margin-bottom', '15px').append(
-            $('<div>').attr('class', 'col-md-2').html('exclude:'),
-            $('<div>').attr('class', 'col-md-2').append(
-                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Groups').click(function () {
+        divRow.clone().append(
+            divCol2.clone().html('exclude:'),
+            divCol2.clone().append(
+                xsButton.clone().html('Groups').click(function () {
                     self._selectNodes('group', 'exc', ':!')
                 })
             ),
-            $('<div>').attr('class', 'col-md-8').append(
-                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Hosts').click(function () {
+            divCol8.clone().append(
+                xsButton.clone().html('Hosts').click(function () {
                     self._selectNodes('host', 'exc', ':!')
                 })
             )
@@ -55,7 +57,7 @@ function PatternBuilder(patternField) {
     );
 
     self.patternDialog
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             width: 520,
             buttons: {
                 Use: function () {
@@ -71,7 +73,7 @@ function PatternBuilder(patternField) {
                 }
             },
             close: function () {$(this).remove()}
-        }))
+        })
         .dialog('open');
 }
 

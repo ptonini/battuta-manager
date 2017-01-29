@@ -6,12 +6,12 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
 
         console.log(askPassword);
 
-        self.userPasswordGroup = $('<div>').attr('class', 'form-group').toggleClass('hidden', (!askPassword.user));
-        self.userPassword = $('<input>').attr({type: 'password', class: 'form-control input-sm', autocomplete: 'new-password'});
+        self.userPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askPassword.user));
+        self.userPassword = passInputField.clone();
         self.execUser = $('<i>').html(username);
 
-        self.sudoPasswordGroup = $('<div>').attr('class', 'form-group').toggleClass('hidden', (!askPassword.sudo));
-        self.sudoPassword = $('<input>').attr({type: 'password', class: 'form-control input-sm', autocomplete: 'new-password'});
+        self.sudoPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askPassword.sudo));
+        self.sudoPassword = passInputField.clone();
 
         self.passwordDialog = $('<div>').append(
             self.userPasswordGroup.append(
@@ -25,7 +25,7 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
         );
 
         self.passwordDialog
-            .dialog($.extend({}, defaultDialogOptions, {
+            .dialog({
                 width: '360',
                 buttons: {
                     Run: function () {
@@ -41,7 +41,7 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
                 },
                 close: function () {$(this).remove()}
 
-            }))
+            })
             .dialog('open')
             .keypress(function (event) {
                 if (event.keyCode == 13) $('.ui-button-text:contains("Run")').parent('button').click()
@@ -78,43 +78,5 @@ AnsibleRunner.prototype._postJob = function (postData, sameWindow) {
         }
     });
 };
-
-function gatherFacts(nodeName, finishCallback) {
-    var runner_key = 'runner_' + Math.random().toString(36).substring(2, 10);
-    var postData = {
-        action: 'run',
-        type: 'gather_facts',
-        hosts: nodeName,
-        remote_pass: '',
-        become_pass: '',
-        runner_key: runner_key
-    };
-    $.ajax({
-        url: '/users/credentials/',
-        type: 'GET',
-        dataType: 'json',
-        data: { action: 'default'},
-        success: function (cred) {
-            var askPassword = { user: (!cred.password && cred.ask_pass && !cred.rsa_key), sudo: false};
-            executeAnsibleJob(postData, askPassword, cred.username);
-        }
-    });
-    var intervalId = setInterval(function() {
-        var runnerId = sessionStorage.getItem(runner_key);
-        if (runnerId) {
-            $.ajax({
-                url: '/runner/result/' + runnerId + '/',
-                dataType: 'json',
-                data: {action: 'status'},
-                success: function (runner) {
-                    if (!runner.is_running) {
-                        finishCallback();
-                        clearInterval(intervalId)
-                    }
-                }
-            })
-        }
-    }, 1000)
-}
 
 

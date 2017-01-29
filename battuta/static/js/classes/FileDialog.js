@@ -1,27 +1,23 @@
 function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
     var self = this;
 
-    self.nameFieldInput = $('<input>').attr({type: 'text', class: 'form-control', value: currentName});
-    self.nameField =  $('<div>').attr('class', 'col-md-12').append(
-        $('<label>').attr('class', 'text-capitalize').append(action, self.nameFieldInput)
+    self.nameFieldInput = textInputField.clone().attr('value', currentName);
+    self.nameField =  divCol12.clone().append(
+        $('<label>').attr('class', 'text-capitalize').html(action).append(self.nameFieldInput)
     );
 
-    self.isDirectoryInput = $('<input>').attr('type', 'checkbox');
-    self.isDirectory = $('<div>').attr('class', 'col-md-12').append(
-        $('<div>').attr('class', 'checkbox').append(
-            $('<label>').append(self.isDirectoryInput, 'Directory')
-        )
+    self.isDirectoryInput = chkboxInput.clone();
+    self.isDirectory = divCol12.clone().append(
+        divChkbox.clone().append($('<label>').append(self.isDirectoryInput, 'Directory'))
     );
 
-    self.fileDialogContainer = $('<div>')
-        .attr('class', 'small_dialog')
-        .append(self.nameField);
+    self.fileDialogContainer = smallDialog.clone().append(self.nameField);
 
     if (action == 'create') self.fileDialogContainer.append(self.isDirectory);
     else if (action == 'copy') self.nameFieldInput.val(currentName + '_copy');
 
     self.fileDialogContainer
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             buttons: {
                 Save: function () {
                     var newName = self.nameFieldInput.val();
@@ -45,7 +41,7 @@ function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
             },
             beforeClose: function() {beforeCloseCallback()},
             close: function() {$(this).remove()}
-        }))
+        })
         .keypress(function (event) {
             var thisDialog = this;
             if (event.keyCode == 13) {

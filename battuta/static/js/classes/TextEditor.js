@@ -23,32 +23,28 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
         ['yaml', 'YAML']
     ];
 
-    self.aceModeSelector = $('<select>').attr({class: 'select form-control input-sm'}).append(
+    self.aceModeSelector = selectField.clone().append(
         $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
     );
 
-    self.reloadButton = $('<button>')
-        .attr({class: 'btn btn-default btn-sm', title: 'Reload'})
-        .html($('<span>').attr('class', 'glyphicon glyphicon-refresh'));
+    self.reloadButton = smButton.clone().attr('title', 'Reload').html(
+        $('<span>').attr('class', 'glyphicon glyphicon-refresh')
+    );
 
-    self.buttonGroup = $('<div>').attr('class', 'btn-group').css('margin-top', '18px').append(self.reloadButton);
+    self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.reloadButton);
 
     self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey');
 
-    self.fileNameField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
+    self.fileNameField = textInputField.clone();
 
-    self.editorDialog = $('<div>').attr('class', 'large_dialog').append(
-        $('<div>').attr('class', 'row form-group row-eq-height').append(
-            $('<div>').attr('class', 'col-md-4').append(
-                $('<label>').attr({class: 'requiredField'}).append('File name', self.fileNameField)
-            ),
-            $('<div>').attr('class', 'col-md-6').append(self.buttonGroup),
-            $('<div>').attr('class', 'col-md-2').append(
-                $('<label>').attr({class: 'requiredField'}).append('Mode', self.aceModeSelector)
-            )
+    self.editorDialog = largeDialog.clone().append(
+        divRowEqHeight.clone().addClass('form-group').append(
+            divCol4.clone().append($('<label>').html('File name').append(self.fileNameField)),
+            divCol6.clone().append(self.buttonGroup),
+            divCol2.clone().append($('<label>').html('Mode').append(self.aceModeSelector))
         ),
-        $('<div>').attr('class', 'row').append(
-            $('<div>').attr('class', 'col-md-12 editor_column').append(self.textEditorContainer)
+        divRow.clone().append(
+            divCol12.clone().addClass('editor_column').append(self.textEditorContainer)
         )
     );
 

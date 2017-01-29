@@ -1,12 +1,12 @@
 function DeleteDialog(deleteAction) {
     var self = this;
 
-    self.deleteDialog = $('<div>').attr('class', 'text-center small_dialog').append(
+    self.deleteDialog = smallDialog.clone().addClass('text-center').append(
         $('<strong>').html('This action cannot be undone')
     );
 
     self.deleteDialog
-        .dialog($.extend({}, defaultDialogOptions, {
+        .dialog({
             width: '320',
             buttons: {
                 Delete: function () {
@@ -16,7 +16,7 @@ function DeleteDialog(deleteAction) {
                 Cancel: function () {$(this).dialog('close')}
             },
             close: function() {$(this).remove()}
-        }))
+        })
         .dialog('open')
 }
 

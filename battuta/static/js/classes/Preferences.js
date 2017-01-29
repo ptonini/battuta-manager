@@ -5,32 +5,34 @@ function Preferences()  {
 
     self.prefsContainer = $('<div>').css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
 
-    self.restoreDialog = $('<div>').attr('class', 'small_dialog text-center').append(
+    self.restoreDialog = smallDialog.clone().addClass('text-center').html(
         $('<strong>').html('Restore all preferences to default values?')
     );
 
-    self.restoreDialog.dialog($.extend({}, defaultDialogOptions, {
+    self.restoreDialog.dialog({
         buttons: {
             Ok: function() {
                 $(this).dialog('close');
                 $.each(self.defaultValues, function (index, item) {$('#item_' + item[0] ).val(item[1])});
                 self.savePreferences(function () {
-                    setTimeout(function () {$.bootstrapGrowl('Preferences restored', {type: 'success'})}, 500);
+                    setTimeout(function () {
+                        $.bootstrapGrowl('Preferences restored', {type: 'success'})
+                    }, 500);
                 })
             },
             Cancel: function() {$(this).dialog('close')}
         }
-    }));
+    });
 
-    self.prefsDialog = $('<div>').attr('class', 'large_dialog').append(
-        $('<div>').attr('class', 'row').append(
-            $('<div>').attr('class', 'col-md-12').append(
+    self.prefsDialog = largeDialog.append(
+        divRow.clone().append(
+            divCol12.append(
                 $('<h3>').css('margin-bottom', '20px').append(
                     $('<span>').html('Preferences'),
                     $('<span>').css('float', 'right').append(
-                        $('<button>').attr('class', 'btn btn-default btn-xs')
-                            .html('Restore defaults')
-                            .click(function() {self.restoreDialog.dialog('open')})
+                        xsButton.clone().html('Restore defaults').click(function() {
+                            self.restoreDialog.dialog('open')
+                        })
                     )
                 )
             )
@@ -38,7 +40,7 @@ function Preferences()  {
         self.prefsContainer
     );
 
-    self.prefsDialog.dialog($.extend({}, defaultDialogOptions, {
+    self.prefsDialog.dialog({
         width: 800,
         buttons: {
             Reload: function() {
@@ -58,7 +60,7 @@ function Preferences()  {
             $(this).remove();
             self.restoreDialog.remove()
         }
-    }));
+    });
 
     self.buildContainer(function() {self.prefsDialog.dialog('open')});
 }
@@ -96,9 +98,6 @@ Preferences.validateItemDataType = function (dataType, dataValue) {
 Preferences.prototype.buildContainer = function (buildCallback) {
     var self = this;
 
-    var divRow = $('<div>').attr('class', 'row');
-    var divCol4 = $('<div>').attr('class', 'col-md-4');
-    var inputField = $('<input>').attr({type: 'text', class: 'form-control input-sm'});
     var booleanField = $('<select>').addClass('select form-control input-sm').append(
         $('<option>').val('yes').html('yes'),
         $('<option>').val('no').html('no')
@@ -127,7 +126,7 @@ Preferences.prototype.buildContainer = function (buildCallback) {
                     var itemId = 'item_' + item.name;
                     switch (item.data_type) {
                         case 'str':
-                            var itemField = inputField.clone();
+                            var itemField = textInputField.clone();
                             var columnClass = 'col-md-4';
                             break;
                         case 'bool':
@@ -135,7 +134,7 @@ Preferences.prototype.buildContainer = function (buildCallback) {
                             columnClass = 'col-md-2';
                             break;
                         case 'number':
-                            itemField = inputField.clone();
+                            itemField = textInputField.clone();
                             columnClass = 'col-md-2';
                             break;
                     }

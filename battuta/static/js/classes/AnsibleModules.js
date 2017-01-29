@@ -1,45 +1,37 @@
 function AnsibleModules(name, fieldsContainer, moduleReference) {
     var self = this;
 
+    var divCol1Sudo = divCol1.clone().addClass('text-right').attr('style', 'margin-top: 18px');
+
     self.name = name;
     self.fieldsContainer = fieldsContainer;
 
-    self.fileSourceLabel = $('<label>').attr('class', 'requiredField');
-    self.fileSourceField = $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'src'});
-
-    self.fileSourceGroup = $('<div>').attr('class', 'form-group').append(
-        self.fileSourceLabel.append(
-            'Source',
-            $('<small>').attr('class', 'label_link').html('upload files').click(function() {
+    self.fileSourceLabel = $('<span>').html('Source');
+    self.fileSourceField = textInputField.clone().attr('data-parameter', 'src');
+    self.fileSourceGroup = divFormGroup.clone().append(
+        $('<label>').html(self.fileSourceLabel).append(
+            $('<small>').attr('class', 'label_link').html('upload files').click(function () {
                 window.open('/fileman/files', '_blank');
             }),
             self.fileSourceField
         )
     );
 
-    self.fileDestGroup = $('<div>').attr('class', 'form-group').append(
-        $('<label>').attr('class', 'requiredField').append(
-            'Destination', $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'dest'})
-        )
+    self.fileDestGroup = divFormGroup.clone().append(
+        $('<label>').html('Destination').append(textInputField.clone().attr('data-parameter', 'dest'))
     );
 
-    self.stateSelect = $('<select>')
-        .attr({'class': 'select form-control input-sm', 'data-parameter': 'state'});
+    self.stateSelect = selectField.clone().attr('data-parameter', 'state');
+    self.stateSelectGroup = divFormGroup.clone().append($('<label>').html('State').append(self.stateSelect));
 
-    self.stateSelectGroup = $('<div>').attr('class', 'form-group').append(
-        $('<label>').attr('class', 'requiredField').append('State', self.stateSelect)
-    );
+    self.sudoButton = smButton.clone().attr('title', 'Run with sudo').html('Sudo').click(function (event) {
+        event.preventDefault();
+        $(this).toggleClass('checked_button')
+    });
 
-    self.sudoButton = $('<button>')
-        .html('Sudo')
-        .attr({title: 'Run with sudo', class:'btn btn-default btn-sm', type: 'button'})
-        .off('click').click(function() {$(this).toggleClass('checked_button')});
+    self.arguments = textInputField.clone();
 
-    self.arguments = $('<input>').attr({'class': 'form-control input-sm', 'type': 'text'});
-
-    self.argumentsGroup = $('<div>').attr('class', 'form-group').append(
-        $('<label>').attr('class', 'requiredField').append('Arguments', self.arguments)
-    );
+    self.argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(self.arguments));
 
     if (moduleReference) {
         var moduleReferenceLink = 'http://docs.ansible.com/ansible/'+ self.name + '_module.html';
@@ -47,14 +39,6 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             .attr('title', moduleReferenceLink)
             .click(function () {window.open(moduleReferenceLink)});
     }
-
-
-    var divRow = $('<div>').attr('class', 'row');
-    var divCol1 = $('<div>').attr('class', 'col-md-1');
-    var divCol2 = $('<div>').attr('class', 'col-md-2');
-    var divCol3 = $('<div>').attr('class', 'col-md-3');
-    var divCol4 = $('<div>').attr('class', 'col-md-4');
-    var divCol5 = $('<div>').attr('class', 'col-md-5');
 
     self.fieldsContainer.empty();
 
@@ -70,7 +54,7 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             self.fieldsContainer.append(
                 divRow.clone().append(
                     divCol4.clone().append(self.argumentsGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(self.sudoButton)
+                    divCol1Sudo.clone().append(self.sudoButton)
                 )
             );
             break;
@@ -85,29 +69,25 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             self.fieldsContainer.append(
                 divRow.clone().append(
                     divCol5.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr('class', 'requiredField').append(
-                                'Name',
-                                $('<input>').attr({'class': 'form-control input-sm', 'type': 'text', 'data-parameter': 'name'})
-                            )
+                        divFormGroup.clone().append(
+                            $('<label>').html('Name').append(textInputField.clone().attr('data-parameter', 'name'))
                         )
                     )
 
                 ),
                 divRow.clone().append(
-                    divCol2.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup)),
+                    divCol2.clone().append(divFormGroup.clone().append(self.stateSelectGroup)),
                     divCol2.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr('class', 'requiredField').append(
-                                'Enabled',
-                                $('<select>').attr({class: 'select form-control input-sm', 'data-parameter': 'enabled'}).append(
+                        divFormGroup.clone().append(
+                            $('<label>').html('Enabled').append(
+                                selectField.clone().attr('data-parameter', 'enabled').append(
                                     $('<option>').attr('value', 'yes').html('Yes'),
                                     $('<option>').attr('value', 'no').html('No')
                                 )
                             )
                         )
                     ),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(self.sudoButton)
+                    divCol1Sudo.clone().append(self.sudoButton)
                 ),
                 divRow.clone().append(divCol5.clone().append(self.argumentsGroup))
             );
@@ -119,7 +99,7 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
                 divRow.clone().append(divCol5.clone().append(self.fileDestGroup)),
                 divRow.clone().append(
                     divCol4.clone().append(self.argumentsGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(self.sudoButton)
+                    divCol1Sudo.clone().append(self.sudoButton)
                 )
             );
             break;
@@ -130,7 +110,7 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
                 divRow.clone().append(divCol5.clone().append(self.fileDestGroup)),
                 divRow.clone().append(
                     divCol4.clone().append(self.argumentsGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(self.sudoButton)
+                    divCol1Sudo.clone().append(self.sudoButton)
                 )
             );
             break;
@@ -141,7 +121,7 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
                 divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
                 divRow.clone().append(
                     divCol4.clone().append(self.argumentsGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(self.sudoButton)
+                    divCol1Sudo.clone().append(self.sudoButton)
                 )
             );
             break;
@@ -158,18 +138,15 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             self.fieldsContainer.append(
                 divRow.clone().append(
                     divCol3.clone().append(
-                        $('<div>').attr('class', 'form-group').append(
-                            $('<label>').attr('class', 'requiredField').append(
-                                'Path',
-                                $('<input>').attr({class: 'form-control input-sm', type: 'text', 'data-parameter': 'path'})
-                            )
+                        divFormGroup.clone().append(
+                            $('<label>').html('Path').append(textInputField.clone().attr('data-parameter', 'path'))
                         )
                     ),
                     divCol2.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup))
                 ),
                 divRow.clone().append(
                     divCol4.clone().append(self.argumentsGroup),
-                    divCol1.clone().addClass('text-right').attr('style', 'margin-top: 22px').append(self.sudoButton)
+                    divCol1Sudo.clone().append(self.sudoButton)
                 )
             );
             break;
@@ -191,16 +168,14 @@ AnsibleModules.listModules = function () {
 };
 
 AnsibleModules.prototype.isSudo = function () {
-    var self = this;
-
-    return self.sudoButton.hasClass('checked_button')
+    return this.sudoButton.hasClass('checked_button')
 };
 
 AnsibleModules.prototype.saveForm = function () {
     var self = this;
 
     var output = '';
-    switch (this.name) {
+    switch (self.name) {
         case 'script':
             output = self.fileSourceField.val() + ' ';
             break;
@@ -219,7 +194,7 @@ AnsibleModules.prototype.loadForm = function (arguments, sudo) {
 
     self.sudoButton.toggleClass('checked_button', sudo);
     var argumentsArray = arguments.split(' ');
-    switch (this.name) {
+    switch (self.name) {
         case 'shell':
             self.arguments.val(arguments);
             break;
