@@ -160,12 +160,7 @@ $(document).ready(function () {
                             buildArgsSelectionBox(data.id);
                             $.bootstrapGrowl('Arguments saved', {type: 'success'});
                         }
-                        else if (data.result == 'fail') {
-                            var alertMessage = $('<div>').attr('class', 'large-alert').append(
-                                $('<h5>').html('Submit error:'), data.msg
-                            );
-                            $.bootstrapGrowl(alertMessage, failedAlertOptions);
-                        }
+                        else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
                     });
                 }
                 break;

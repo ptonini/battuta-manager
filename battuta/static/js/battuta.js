@@ -37,6 +37,8 @@ var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
 var largeDialog = $('<div>').attr('class', 'large_dialog');
 var smallDialog = $('<div>').attr('class', 'small_dialog');
 
+var submitErrorAlert = $('<div>').attr('class', 'large-alert').html($('<h5>').html('Submit error:'));
+
 // AJAX settings ///////////////////////
 
 // Get cookie

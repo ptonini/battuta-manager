@@ -34,12 +34,7 @@ function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
                                 self.nodeDialog.dialog('close');
                                 if (saveCallback) saveCallback(data);
                             }
-                            else {
-                                var alertMessage = $('<div>').attr('class', 'large-alert').append(
-                                    $('<h5>').html('Submit error:'), data.msg
-                                );
-                                $.bootstrapGrowl(alertMessage, failedAlertOptions);
-                            }
+                            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
                         }
                     });
                 },

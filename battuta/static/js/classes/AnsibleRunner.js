@@ -69,12 +69,7 @@ AnsibleRunner.prototype._postJob = function (postData, sameWindow) {
                     popupCenter('/runner/result/' + data.runner_id + '/', windowTitle, 1000);
                 }
             }
-            else {
-                var alertMessage = $('<div>').attr('class', 'large-alert').append(
-                    $('<h5>').html('Submit error:'), data.msg
-                );
-                $.bootstrapGrowl(alertMessage, failedAlertOptions);
-            }
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
         }
     });
 };

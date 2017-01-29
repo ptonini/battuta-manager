@@ -4,71 +4,16 @@ function Credentials(userId) {
     divCol2 = divCol2.addClass('text-right').css('margin-top', '19px');
 
     self.userId = userId;
-    self.selectCredentials = selectField.clone().change(function () {
-        var credentials = $('option:selected', this).data();
-        self._resetForm();
-        if (credentials.title) {
-            self.loadedCredentials = credentials;
-            self.deleteButton.removeClass('hidden');
-            self.titleField.val(credentials.title);
-            self.usernameField.val(credentials.username);
-            self.sudoUserField.val(credentials.sudo_user);
-            self.isSharedButton.toggleClass('checked_button', credentials.is_shared);
-            self.isDefaultButton.toggleClass('checked_button', credentials.is_default);
-            self.passwordField.val(credentials.password);
-            self.sudoPassField.val(credentials.sudo_pass);
-            self.askPassButton
-                .toggleClass('checked_button', credentials.ask_pass)
-                .prop('disabled', (credentials.password || credentials.rsa_key ));
-            self.askSudoPassButton
-                .toggleClass('checked_button', credentials.ask_sudo_pass)
-                .prop('disabled', credentials.sudo_pass);
-            self.rsaFileInput.fileinput('refresh', {initialCaption: credentials.rsa_key});
-        }
-        else self.loadedCredentials = {rsa_key: null}
+    self.credentialsSelector = selectField.clone().change(function () {
+        self._loadForm()
     });
     self.credentialsForm = $('<form>')
-        .change(function () {self.formHasChanged = true})
+        .change(function () {
+            self.formHasChanged = true
+        })
         .submit(function (event) {
             event.preventDefault();
-            var postData = new FormData();
-            postData.append('id', self.loadedCredentials.id);
-            postData.append('user_id', self.userId);
-            switch ($(document.activeElement).html()) {
-                case 'Default':
-                case 'Shared':
-                case 'Ask':
-                    $(document.activeElement).toggleClass('checked_button');
-                    break;
-                case 'Remove':
-                    self.loadedCredentials.rsa_key = '';
-                    self.rsaFileInput.fileinput('refresh', {initialCaption: ''});
-                    self.rsaFileInput.fileinput('reset');
-                    break;
-                case 'Delete':
-                    postData.append('action', 'delete');
-                    new DeleteDialog(function () {self._submitCredentials(postData)});
-                    break;
-                default:
-                    // Define post action and variables
-                    postData.append('action', 'save');
-                    postData.append('title', self.titleField.val());
-                    postData.append('username', self.usernameField.val());
-                    postData.append('sudo_user', self.sudoUserField.val());
-                    postData.append('password ', self.passwordField.val());
-                    postData.append('sudo_pass', self.sudoPassField.val());
-                    postData.append('is_shared', self.isSharedButton.hasClass('checked_button'));
-                    postData.append('is_default', self.isDefaultButton.hasClass('checked_button'));
-                    postData.append('ask_pass', self.askPassButton.hasClass('checked_button'));
-                    postData.append('ask_sudo_pass', self.askSudoPassButton.hasClass('checked_button'));
-                    postData.append('rsa_key', self.loadedCredentials.rsa_key);
-                    if (self.rsaFileInput.data('files')) {
-                        postData.append('rsa_key_file', self.rsaFileInput.data('files')[0]);
-                        postData.append('rsa_key', self.rsaFileInput.data('files')[0].name)
-                    }
-                    self._submitCredentials(postData);
-                    break;
-            }
+            self._submitForm()
         });
     self.titleField = textInputField.clone();
     self.isSharedButton = smButton.clone().html('Shared');
@@ -109,7 +54,7 @@ function Credentials(userId) {
         divRow.clone().append(
             divCol12.clone().append($('<h4>').html('Credentials')),
             divCol12.clone().append(
-                divFormGroup.clone().append($('<label>').html('Saved credentials').append(self.selectCredentials))
+                divFormGroup.clone().append($('<label>').html('Saved credentials').append(self.credentialsSelector))
             ),
             self.credentialsForm.append(
                 divCol8.clone().append(divFormGroup.clone().append($('<label>').html('Title').append(self.titleField))),
@@ -164,7 +109,7 @@ function Credentials(userId) {
         })
         .dialog('open');
 
-    Credentials.buildSelectionBox(self.userId, self.selectCredentials);
+    Credentials.buildSelectionBox(self.userId, self.credentialsSelector);
 
     self.rsaFileInput
         .fileinput({
@@ -211,6 +156,34 @@ Credentials.buildSelectionBox = function (userId, credentials, startValue) {
     });
 };
 
+Credentials.prototype._loadForm = function () {
+    var self = this;
+    var credentials = $('option:selected', self.credentialsSelector).data();
+
+    self._resetForm();
+    if (credentials.title) {
+        self.loadedCredentials = credentials;
+        self.deleteButton.removeClass('hidden');
+        self.titleField.val(credentials.title);
+        self.usernameField.val(credentials.username);
+        self.sudoUserField.val(credentials.sudo_user);
+        self.isSharedButton.toggleClass('checked_button', credentials.is_shared);
+        self.isDefaultButton.toggleClass('checked_button', credentials.is_default);
+        self.passwordField.val(credentials.password);
+        self.sudoPassField.val(credentials.sudo_pass);
+        self.askPassButton
+            .toggleClass('checked_button', credentials.ask_pass)
+            .prop('disabled', (credentials.password || credentials.rsa_key ));
+        self.askSudoPassButton
+            .toggleClass('checked_button', credentials.ask_sudo_pass)
+            .prop('disabled', credentials.sudo_pass);
+        self.rsaFileInput.fileinput('refresh', {initialCaption: credentials.rsa_key});
+    }
+    else self.loadedCredentials = {rsa_key: null}
+
+
+};
+
 Credentials.prototype._resetForm = function () {
     var self = this;
 
@@ -225,7 +198,50 @@ Credentials.prototype._resetForm = function () {
     self.askSudoPassButton.addClass('checked_button').prop('disabled', false);
 };
 
-Credentials.prototype._submitCredentials = function (postData) {
+Credentials.prototype._submitForm = function () {
+    var self = this;
+
+    var postData = new FormData();
+    postData.append('id', self.loadedCredentials.id);
+    postData.append('user_id', self.userId);
+    switch ($(document.activeElement).html()) {
+        case 'Default':
+        case 'Shared':
+        case 'Ask':
+            $(document.activeElement).toggleClass('checked_button');
+            break;
+        case 'Remove':
+            self.loadedCredentials.rsa_key = '';
+            self.rsaFileInput.fileinput('refresh', {initialCaption: ''});
+            self.rsaFileInput.fileinput('reset');
+            break;
+        case 'Delete':
+            postData.append('action', 'delete');
+            new DeleteDialog(function () {self._postCredentials(postData)});
+            break;
+        default:
+            // Define post action and variables
+            postData.append('action', 'save');
+            postData.append('title', self.titleField.val());
+            postData.append('username', self.usernameField.val());
+            postData.append('sudo_user', self.sudoUserField.val());
+            postData.append('password ', self.passwordField.val());
+            postData.append('sudo_pass', self.sudoPassField.val());
+            postData.append('is_shared', self.isSharedButton.hasClass('checked_button'));
+            postData.append('is_default', self.isDefaultButton.hasClass('checked_button'));
+            postData.append('ask_pass', self.askPassButton.hasClass('checked_button'));
+            postData.append('ask_sudo_pass', self.askSudoPassButton.hasClass('checked_button'));
+            postData.append('rsa_key', self.loadedCredentials.rsa_key);
+            if (self.rsaFileInput.data('files')) {
+                postData.append('rsa_key_file', self.rsaFileInput.data('files')[0]);
+                postData.append('rsa_key', self.rsaFileInput.data('files')[0].name)
+            }
+            self._postCredentials(postData);
+            break;
+    }
+};
+
+Credentials.prototype._postCredentials = function (postData) {
     var self = this;
 
     $.ajax({
@@ -238,17 +254,14 @@ Credentials.prototype._submitCredentials = function (postData) {
         contentType: false,
         success: function (data) {
             if (data.result == 'ok') {
-                Credentials.buildSelectionBox(self.userId, self.selectCredentials, data.cred_id);
+                Credentials.buildSelectionBox(self.userId, self.credentialsSelector, data.cred_id);
                 if (postData.get('action') == 'save') var message = 'Credentials saved';
                 else message = 'Credentials deleted';
                 $.bootstrapGrowl(message, {type: 'success'});
             }
-            else if (data.result == 'fail') {
-                var alertMessage = $('<div>').attr('class', 'large-alert').append(
-                    $('<h5>').html('Submit error:'), data.msg
-                );
-                $.bootstrapGrowl(alertMessage, failedAlertOptions);
-            }
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
         }
     });
 };
+
+
