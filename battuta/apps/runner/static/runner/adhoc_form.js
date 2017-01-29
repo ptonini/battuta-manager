@@ -89,7 +89,7 @@ $(document).ready(function () {
         }
     });
 
-    patternEditor.click(function () {new PatternEditor(hostsField)});
+    patternEditor.click(function () {new PatternBuilder(hostsField)});
 
     // Build AdHoc form
     $('#module').change(function() {
@@ -108,7 +108,7 @@ $(document).ready(function () {
         event.preventDefault();
         var currentModule = adhocForm.data('current_module');
         if (currentModule) {
-            var become = $('#sudo').hasClass('checked_button');
+            var become = currentModule.isSudo();
             var postData = {
                 module: currentModule.name,
                 hosts: hostsField.val(),
@@ -153,7 +153,7 @@ $(document).ready(function () {
                         sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
                     };
                     postData.arguments = currentModule.saveForm();
-                    executeAnsibleJob(postData, askPassword, cred.username);
+                    new AnsibleRunner(postData, askPassword, cred.username);
                     break;
             }
         }

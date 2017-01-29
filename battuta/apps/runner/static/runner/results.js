@@ -373,7 +373,7 @@ $(document).ready(function () {
                             skip_tags: runner.skip_tags,
                             extra_vars: runner.extra_vars
                         };
-                        executeAnsibleJob(postData, askPassword, data.cred.username, true);
+                        new AnsibleRunner(postData, askPassword, data.cred.username, true);
                     }
                     else $.bootstrapGrowl(data.msg, failedAlertOptions)
                 }

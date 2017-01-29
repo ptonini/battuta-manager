@@ -127,8 +127,6 @@ def play_runner(runner):
 
     message = None
 
-    pp.pprint(runner.data)
-
     if 'playbook' in runner.data:
         try:
             pbex = PlaybookExecutor([runner.data['playbook_path']],

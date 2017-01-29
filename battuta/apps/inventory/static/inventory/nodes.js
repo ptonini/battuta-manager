@@ -114,7 +114,7 @@ $(document).ready(function() {
 
     $('#delete_nodes').click(function() {
         new DeleteDialog(function () {
-            var postData = {action: 'delete', selection: $('#node_list').DynamicList('getSelected', 'id')};
+            var postData = {action: 'delete', selection: nodeList.DynamicList('getSelected', 'id')};
             submitRequest('POST', postData, reloadNodes);
         })
     });

@@ -1,63 +1,57 @@
-function PatternEditor(patternField) {
+function PatternBuilder(patternField) {
     var self = this;
 
-    self.patternContainer = $('<pre>').attr({id: 'pattern_container', class: 'text-left hidden'});
+    self.patternContainer = $('<pre>').attr('class', 'text-left hidden');
 
     self.patternDialog = $('<div>').attr('class', 'large_dialog').append(
-        $('<div>').attr('class', 'row row-eq-height').append(
+        $('<div>').attr('class', 'row row-eq-height').css('margin-bottom', '15px').append(
             $('<div>').attr('class', 'col-md-6').append($('<h4>').html('Pattern builder')),
             $('<div>').attr('class', 'col-md-6 text-right').css('margin', 'auto').append(
-                $('<small>')
-                    .html('patterns reference')
-                    .attr('class', 'reference_link')
-                    .click(function () {window.open('http://docs.ansible.com/ansible/intro_patterns.html', '_blank')})
+                $('<small>').html('patterns reference').attr('class', 'reference_link').click(function () {
+                    window.open('http://docs.ansible.com/ansible/intro_patterns.html', '_blank')
+                })
             )
         ),
-        $('<br>'),
-        $('<div>').attr('class', 'row').append(
+        $('<div>').attr('class', 'row').css('margin-bottom', '5px').append(
             $('<div>').attr('class', 'col-md-2').html('Select:'),
             $('<div>').attr('class', 'col-md-2').append(
-                $('<button>')
-                    .attr('class', 'btn btn-default btn-xs select_nodes')
-                    .data({type: 'group', op: 'sel'})
-                    .html('Groups')
+                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Groups').click(function () {
+                    self._selectNodes('group', 'sel', ':')
+                })
             ),
             $('<div>').attr('class', 'col-md-8').append(
-                $('<button>')
-                    .attr('class', 'btn btn-default btn-xs select_nodes')
-                    .data({type: 'host', op: 'sel'})
-                    .html('Hosts')
-            ),
-            $('<div>').attr('class', 'col-md-2').html('and:'),
-            $('<div>').attr('class', 'col-md-2').append(
-                $('<button>')
-                    .attr('class', 'btn btn-default btn-xs select_nodes')
-                    .data({type: 'group', op: 'and'})
-                    .html('Groups')
-            ),
-            $('<div>').attr('class', 'col-md-8').append(
-                $('<button>')
-                    .attr('class', 'btn btn-default btn-xs select_nodes')
-                    .data({type: 'host', op: 'and'})
-                    .html('Hosts')
-            ),
-            $('<div>').attr('class', 'col-md-2').html('exclude:'),
-            $('<div>').attr('class', 'col-md-2').append(
-                $('<button>')
-                    .attr('class', 'btn btn-default btn-xs select_nodes')
-                    .data({type: 'group', op: 'exc'})
-                    .html('Groups')
-            ),
-            $('<div>').attr('class', 'col-md-8').append(
-                $('<button>')
-                    .attr('class', 'btn btn-default btn-xs select_nodes')
-                    .data({type: 'host', op: 'exc'})
-                    .html('Hosts')
+                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Hosts').click(function () {
+                    self._selectNodes('host', 'sel', ':')
+                })
             )
         ),
-        $('<br>'),
+        $('<div>').attr('class', 'row').css('margin-bottom', '5px').append(
+            $('<div>').attr('class', 'col-md-2').html('and:'),
+            $('<div>').attr('class', 'col-md-2').append(
+                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Groups').click(function () {
+                    self._selectNodes('group', 'and', ':&')
+                })
+            ),
+            $('<div>').attr('class', 'col-md-8').append(
+                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Hosts').click(function () {
+                    self._selectNodes('host', 'and', ':&')
+                })
+            )
+        ),
+        $('<div>').attr('class', 'row').css('margin-bottom', '15px').append(
+            $('<div>').attr('class', 'col-md-2').html('exclude:'),
+            $('<div>').attr('class', 'col-md-2').append(
+                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Groups').click(function () {
+                    self._selectNodes('group', 'exc', ':!')
+                })
+            ),
+            $('<div>').attr('class', 'col-md-8').append(
+                $('<button>').attr('class', 'btn btn-default btn-xs ').html('Hosts').click(function () {
+                    self._selectNodes('host', 'exc', ':!')
+                })
+            )
+        ),
         self.patternContainer
-
     );
 
     self.patternDialog
@@ -79,50 +73,42 @@ function PatternEditor(patternField) {
             close: function () {$(this).remove()}
         }))
         .dialog('open');
+}
 
-    $('.select_nodes').click(function () {
-        var nodeType = $(this).data('type');
-        var op = $(this).data('op');
-        var separator;
-        if (op == 'sel') separator = ':';
-        else {
-            if (self.patternContainer.html() == '') {
-                $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
-                return
-            }
-            if (op == 'and') separator = ':&';
-            else if (op == 'exc') separator = ':!'
-        }
+PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator) {
+    var self = this;
 
-        var url = '/inventory/?action=search&type=' + nodeType + '&pattern=';
-        var loadCallback = function (listContainer, dialog) {
-            var currentList = listContainer.find('div.dynamic-list');
-            dialog
-                .dialog('option', 'width', $(currentList).css('column-count') * 140 + 20)
-                .dialog('option', 'buttons', {
-                    Add: function () {
-                        var selection = dialog.DynamicList('getSelected', 'value');
-                        for (var i = 0; i < selection.length; i++) {
-                            if (self.patternContainer.html() != '') {
-                                self.patternContainer.append(separator)
-                            }
-                            self.patternContainer.append(selection[i])
+    if (operation != 'sel' && self.patternContainer.html() == '') {
+        $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+        return
+    }
+
+    var url = '/inventory/?action=search&type=' + nodeType + '&pattern=';
+    var loadCallback = function (listContainer, dialog) {
+        var currentList = listContainer.find('div.dynamic-list');
+        dialog
+            .dialog('option', 'width', $(currentList).css('column-count') * 140 + 20)
+            .dialog('option', 'buttons', {
+                Add: function () {
+                    var selection = dialog.DynamicList('getSelected', 'value');
+                    for (var i = 0; i < selection.length; i++) {
+                        if (self.patternContainer.html() != '') {
+                            self.patternContainer.append(separator)
                         }
-                        self.patternContainer.removeClass('hidden');
-                        $(this).dialog('close');
-                    },
-                    Cancel: function () {
-                        $('.filter_box').val('');
-                        $(this).dialog('close');
+                        self.patternContainer.append(selection[i])
                     }
-                })
-        };
-        var addButtonAction = function (dialog) {
-            new NodeDialog('add', null, null, nodeType, function () {dialog.DynamicList('load')})
-        };
-        new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
-
-
-    });
+                    self.patternContainer.removeClass('hidden');
+                    $(this).dialog('close');
+                },
+                Cancel: function () {
+                    $('.filter_box').val('');
+                    $(this).dialog('close');
+                }
+            })
+    };
+    var addButtonAction = function (dialog) {
+        new NodeDialog('add', null, null, nodeType, function () {dialog.DynamicList('load')})
+    };
+    new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
 }
 

@@ -176,7 +176,7 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
     }
 }
 
-AnsibleModules.listModules = function() {
+AnsibleModules.listModules = function () {
     return [
         'copy',
         'ec2_facts',
@@ -190,7 +190,13 @@ AnsibleModules.listModules = function() {
     ]
 };
 
-AnsibleModules.prototype.saveForm = function() {
+AnsibleModules.prototype.isSudo = function () {
+    var self = this;
+
+    return self.sudoButton.hasClass('checked_button')
+};
+
+AnsibleModules.prototype.saveForm = function () {
     var self = this;
 
     var output = '';
@@ -208,7 +214,7 @@ AnsibleModules.prototype.saveForm = function() {
     return output + self.arguments.val();
 };
 
-AnsibleModules.prototype.loadForm = function(arguments, sudo) {
+AnsibleModules.prototype.loadForm = function (arguments, sudo) {
     var self = this;
 
     self.sudoButton.toggleClass('checked_button', sudo);

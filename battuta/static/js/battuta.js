@@ -81,38 +81,6 @@ function prettyBoolean (element, value) {
     else element.html('');
 }
 
-// Build credentials selection box
-function buildCredentialsSelectionBox(credentials, start_value) {
-    
-    var runner = !(window.location.href.split('/').indexOf('users') > -1);
-    
-    credentials.children('option').each(function(){
-        $(this).remove()
-    });
-    $.ajax({
-        url: '/users/credentials/',
-        type: 'GET',
-        dataType: 'json',
-        data: {
-            action: 'list',
-            user_id: $('#user_id').val(),
-            runner: runner
-        },
-        success: function (data) {
-            $.each(data, function (index, cred) {
-                var display = cred.title;
-                if (cred.is_default && !start_value) {
-                    display += ' (default)';
-                    start_value = cred.id
-                }
-                credentials.append($('<option>').val(cred.id).data(cred).append(display))
-            });
-            if (!runner) credentials.append($('<option>').val('new').append('new'));
-            credentials.val(start_value).change()
-        }
-    });
-}
-
 function rememberSelectedTab(tabId) {
     var keyName = tabId + '_activeTab';
     
@@ -186,3 +154,40 @@ function popupCenter(url, title, w) {
     if (window.focus) newWindow.focus();
 }
 
+function gatherFacts(nodeName, finishCallback) {
+    var runner_key = 'runner_' + Math.random().toString(36).substring(2, 10);
+    var postData = {
+        action: 'run',
+        type: 'gather_facts',
+        hosts: nodeName,
+        remote_pass: '',
+        become_pass: '',
+        runner_key: runner_key
+    };
+    $.ajax({
+        url: '/users/credentials/',
+        type: 'GET',
+        dataType: 'json',
+        data: { action: 'default'},
+        success: function (cred) {
+            var askPassword = { user: (!cred.password && cred.ask_pass && !cred.rsa_key), sudo: false};
+            new AnsibleRunner(postData, askPassword, cred.username);
+        }
+    });
+    var intervalId = setInterval(function() {
+        var runnerId = sessionStorage.getItem(runner_key);
+        if (runnerId) {
+            $.ajax({
+                url: '/runner/result/' + runnerId + '/',
+                dataType: 'json',
+                data: {action: 'status'},
+                success: function (runner) {
+                    if (!runner.is_running) {
+                        finishCallback();
+                        clearInterval(intervalId)
+                    }
+                }
+            })
+        }
+    }, 1000)
+}

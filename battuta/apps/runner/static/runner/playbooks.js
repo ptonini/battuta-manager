@@ -120,7 +120,7 @@ $(document).ready(function () {
     });
 
 
-    $('#pattern_editor').click(function () {new PatternEditor(subsetField)});
+    $('#pattern_editor').click(function () {new PatternBuilder(subsetField)});
 
     // Load arguments
     savedArguments.change(function () {
@@ -216,7 +216,7 @@ $(document).ready(function () {
             skip_tags: $('#skip_tags').val(),
             extra_vars: $('#extra_vars').val()
         };
-        executeAnsibleJob(postData, askPassword, cred.username);
+        new AnsibleRunner(postData, askPassword, cred.username);
     });
 
     // Clear playbook arguments form
