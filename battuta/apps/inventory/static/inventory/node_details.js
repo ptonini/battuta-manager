@@ -378,7 +378,7 @@ $(document).ready(function () {
                 break;
             case 'copy_variables':
                 clearVariableForm();
-                new CopyVariables('Select source type', function() {variableTable.DataTable().ajax.reload()});
+                new CopyVariables(function() {variableTable.DataTable().ajax.reload()});
                 break;
             default:
                 $.ajax({

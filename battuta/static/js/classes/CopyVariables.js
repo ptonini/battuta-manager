@@ -1,4 +1,4 @@
-function CopyVariables(title, copyCallback) {
+function CopyVariables(copyCallback) {
     var self = this;
 
     if (copyCallback) self.copyCallback = copyCallback;
@@ -12,7 +12,7 @@ function CopyVariables(title, copyCallback) {
     });
 
     self.nodeTypeDialog = $('<div>').attr({id: 'node_type_dialog', 'class': 'text-center'}).append(
-        $('<h4>').html(title),
+        $('<h4>').html('Select source type'),
         $('<br>'),
         self.hostsButton,
         $('<span>').html('&nbsp;&nbsp;&nbsp;&nbsp;'),

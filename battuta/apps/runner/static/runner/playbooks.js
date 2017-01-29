@@ -68,7 +68,7 @@ $(document).ready(function () {
     });
 
     // Build credentials selector box
-    buildCredentialsSelectionBox(credentials);
+    Credentials.buildSelectionBox(sessionStorage.getItem('user_id'), credentials);
 
     // Disable arguments box fields
     argumentsBox.find('*').prop('disabled', true);

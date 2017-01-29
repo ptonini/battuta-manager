@@ -32,7 +32,7 @@ $(document).ready(function () {
     hostsField.keypress(function (event) {if (event.keyCode == 13) event.preventDefault()});
 
     // Build credentials
-    buildCredentialsSelectionBox(credentials);
+    Credentials.buildSelectionBox(sessionStorage.getItem('user_id'), credentials);
 
     // Build module menu
     $.each(AnsibleModules.listModules().sort(), function (index, value) {
