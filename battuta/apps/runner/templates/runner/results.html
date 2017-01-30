@@ -1,7 +1,6 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block header %}
-    <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
     <header class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -36,6 +35,8 @@
     </header>
 {% endblock %}
 {% block content %}
+    <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/Statistics.js' %}"></script>
     <script src="{% static 'runner/results.js' %}"></script>
     <div id="runner_result">
         <br class="hidden-print">
@@ -97,24 +98,7 @@
             </div>
         </div>
         <div id="result_container"></div>
-        <hr class="visible-print-block playbook_only">
-        <div id="status_report" class="playbook_only"></div>
+        <div id="stats_container"></div>
     </div>
-    <div id="stats_container" class="hidden-print" style="display: none;">
-        <div id="stats_dialog" style="overflow-x: hidden; margin: 10px 0">
-            <h4>Statistics</h4>
-            <table id="stats_table" class="table table-condensed table-hover table-striped">
-                <thead>
-                <tr>
-                    <th class="col-md-3">host</th>
-                    <th class="col-md-1">ok</th>
-                    <th class="col-md-1">changed</th>
-                    <th class="col-md-1">dark</th>
-                    <th class="col-md-1">failures</th>
-                    <th class="col-md-1">skipped</th>
-                </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
+
 {% endblock %}

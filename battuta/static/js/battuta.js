@@ -16,6 +16,9 @@ var divCol10 = $('<div>').attr('class', 'col-md-10');
 //var divCol11 = $('<div>').attr('class', 'col-md-11');
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
+// Bootstrap tables
+var baseTable = $('<table>').attr('class', 'table-condensed table-hover table-striped')
+
 // Form groups
 var divFormGroup = $('<div>').attr('class', 'form-group');
 var divInputGroup = $('<div>').attr('class', 'input-group');
@@ -28,7 +31,7 @@ var selectField = $('<select>').attr('class', 'select form-control input-sm');
 var textInputField = $('<input>').attr({class: 'form-control input-sm', type: 'text'});
 var textAreaField = $('<textarea>').attr('class', 'textarea form-control input-sm');
 var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
-var fileInputField = $('<input>').attr({class: 'input-file', type: 'file'})
+var fileInputField = $('<input>').attr({class: 'input-file', type: 'file'});
 var chkboxInput =  $('<input>').attr('type', 'checkbox');
 var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
 var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');

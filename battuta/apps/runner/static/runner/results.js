@@ -110,9 +110,7 @@ function buildResultTables(runner, intervalId) {
 
     // Display error message if exists
     if (runner.message) {
-        resultContainer.empty().append(
-            $('<pre>').attr('class', 'runner_error_box').html(runner.message)
-        );
+        resultContainer.empty().append($('<pre>').attr('class', 'runner_error_box').html(runner.message));
     }
 
     // Build Play tables
@@ -265,11 +263,7 @@ function buildResultTables(runner, intervalId) {
 
         // Build statistics table
         if (runner.stats) {
-            var statsTable = $('#stats_table');
             $('#show_stats').show();
-            if (!$.fn.DataTable.isDataTable(statsTable)) {
-                statsTable.dataTable({data: runner.stats, paginate: false, searching: false});
-            }
             if (runner.status == 'finished with errors') $('#retry_failed').show();
         }
         
@@ -303,20 +297,6 @@ $(document).ready(function () {
 
     body.css('padding-top', '50px');
     sessionStorage.removeItem('auto_scroll');
-
-    // Initialize stats dialog
-    $('#stats_dialog').dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
-        width: '70%',
-        maxHeight: 520,
-        dialogClass: 'no_title',
-        buttons: {
-            Ok: function () {$(this).dialog('close')}
-        }
-    });
     
     // Refresh table until job is complete
     if ($('#runner_status').attr('data-is_running') == 'true') {
@@ -383,34 +363,34 @@ $(document).ready(function () {
 
     // Print report
     $('#print_report').click(function () {
+        loadResults(0);
+        var runner = JSON.parse(sessionStorage.getItem('runner'));
         var pageTitle = $(document).find("title").text();
         var reportTitle = pageTitle.replace('.yml', '');
-        var statsDialogCopy = $('#stats_dialog').clone().attr({
-            id: 'temp_container',
-            style: 'border-color: transparent'
-        });
-
-        // Update results
-        loadResults(0);
+        var statsContainer =  $('#stats_container');
 
         // Adjust windows for printing
         document.title = reportTitle;
         runnerResult.css('font-size', 'smaller');
-        $('#status_report').append(statsDialogCopy).css('font-size', 'smaller');
         body.css('padding-top', '0px');
+        statsContainer.css('font-size', 'smaller').append(new Statistics(runner.stats, false));
 
         // Open print window
         window.print();
 
         // Restore windows settings
         body.css('padding-top', '50px');
-        statsDialogCopy.remove();
+        statsContainer.children().remove();
         runnerResult.css('font-size', 'small');
-        document.title = pageTitle;
+        document.title = pageTitle
+
     });
 
     // Show statistics
-    $('#show_stats').click(function() {$('#stats_dialog').dialog('open')});
+    $('#show_stats').click(function () {
+        var runner = JSON.parse(sessionStorage.getItem('runner'));
+        new Statistics(runner.stats, true)
+    });
 
     // Cancel job
     $('#cancel_runner').click(function () {
