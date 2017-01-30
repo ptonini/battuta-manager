@@ -226,12 +226,12 @@ $(document).ready(function () {
             },
             addButtonAction: function () {
                 var url = relation + '/?list=not_related';
-                var loadCallback = function (listContainer, dialog) {
+                var loadCallback = function (listContainer, selectNodesDialog) {
                     var currentList = listContainer.find('div.dynamic-list');
-                    dialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-                    dialog.dialog('option', 'buttons', {
+                    selectNodesDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                    selectNodesDialog.dialog('option', 'buttons', {
                         Add: function () {
-                            alterRelation(relation, dialog.DynamicList('getSelected', 'id'), 'add');
+                            alterRelation(relation, selectNodesDialog.DynamicList('getSelected', 'id'), 'add');
                             $(this).dialog('close');
                         },
                         Cancel: function () {
@@ -240,9 +240,9 @@ $(document).ready(function () {
                         }
                     });
                 };
-                var addButtonAction = function (dialog) {
+                var addButtonAction = function (selectNodesDialog) {
                     new NodeDialog('add', null, null, nodeType, function () {
-                        dialog.DynamicList('load')
+                        selectNodesDialog.DynamicList('load')
                     })
                 };
                 new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);

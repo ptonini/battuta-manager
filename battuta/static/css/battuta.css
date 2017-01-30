@@ -134,6 +134,9 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* Labelless buttons*/
+.labelless_button {margin-top: 19px}
+
 /* Settings for small dialogs */
 .small_dialog, #password_dialog {padding: 20px !important;}
 

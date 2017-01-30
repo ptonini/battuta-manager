@@ -9,11 +9,11 @@ var divCol3 = $('<div>').attr('class', 'col-md-3');
 var divCol4 = $('<div>').attr('class', 'col-md-4');
 var divCol5 = $('<div>').attr('class', 'col-md-5');
 var divCol6 = $('<div>').attr('class', 'col-md-6');
-//var divCol7 = $('<div>').attr('class', 'col-md-7');
+var divCol7 = $('<div>').attr('class', 'col-md-7');
 var divCol8 = $('<div>').attr('class', 'col-md-8');
-//var divCol9 = $('<div>').attr('class', 'col-md-9');
+var divCol9 = $('<div>').attr('class', 'col-md-9');
 var divCol10 = $('<div>').attr('class', 'col-md-10');
-//var divCol11 = $('<div>').attr('class', 'col-md-11');
+var divCol11 = $('<div>').attr('class', 'col-md-11');
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
 // Bootstrap tables
@@ -41,6 +41,8 @@ var largeDialog = $('<div>').attr('class', 'large_dialog');
 var smallDialog = $('<div>').attr('class', 'small_dialog');
 
 var submitErrorAlert = $('<div>').attr('class', 'large-alert').html($('<h5>').html('Submit error:'));
+var glyphSpan = $('<span>').attr('class', 'glyphicon');
+
 
 // AJAX settings ///////////////////////
 

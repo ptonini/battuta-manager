@@ -11,27 +11,26 @@ function Statistics(data, modal) {
             {class: 'col-md-1', title: 'dark'},
             {class: 'col-md-1', title: 'failures'},
             {class: 'col-md-1', title: 'skip'}
-        ],
-        drawCallback: function () {}
+        ]
     });
 
-    self.statusTableContainer = $('<div>').append($('<h4>').html('Statistics'), self.statsTable);
+    self.statsTableContainer = $('<div>').append($('<h4>').html('Statistics'), self.statsTable);
 
     if (modal) {
-        self.statsDialog = $('<div>').append(self.statusTableContainer);
+        self.statsDialog = $('<div>').append(self.statsTableContainer);
         self.statsDialog
             .dialog({
                 width: '70%',
                 maxHeight: 520,
                 buttons: {
-                    Ok: function () {
+                    Close: function () {
                         $(this).dialog('close')
                     }
                 },
-                close: function() {$(this).remove()}
+                close: function () {$(this).remove()}
             })
             .dialog('open');
     }
-    else return self.statusTableContainer
+    else return self.statsTableContainer
 
 }

@@ -49,12 +49,7 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     );
 
     self.editorDialog.dialog({
-        autoOpen: false,
-        modal: true,
-        show: true,
-        hide: true,
         width: 900,
-        dialogClass: 'no_title',
         closeOnEscape: false,
         buttons: {
             Save: function () {

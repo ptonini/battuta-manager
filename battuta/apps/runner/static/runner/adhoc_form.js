@@ -24,6 +24,10 @@ $(document).ready(function () {
     var adhocForm = $('#adhoc_form');
     var patternEditor = $('#pattern_editor');
 
+    var pattern, disablePatternField, userId;
+
+    $('#command_form_container').html(new CommandForm(pattern, disablePatternField, userId));
+
     if (window.location.href.split('/').indexOf('inventory') > -1) {
         hostsField.attr('disabled', 'disabled').val($('#header_node_name').html());
         patternEditor.prop('disabled', true)
@@ -46,7 +50,7 @@ $(document).ready(function () {
             url: '/runner/adhoc/',
             type: 'GET',
             dataSrc: '',
-            data: {list: hostsField.val()}
+            data: {list: ''}
         },
         rowCallback: function (row, data) {
             prettyBoolean($(row).find('td:eq(3)'), data[3]);
