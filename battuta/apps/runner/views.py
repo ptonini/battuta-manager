@@ -168,9 +168,9 @@ class AdHocView(BaseView):
 
         if 'list' in request.GET:
             data = list()
-            for task in AdHocTask.objects.all():
-                if request.GET['list'] == '' or request.GET['list'] == task.hosts:
-                    data.append([task.hosts, task.module, task.arguments, task.become, task.id])
+            for task in AdHocTask.objects.all().values():
+                if request.GET['list'] == '' or request.GET['list'] == task['hosts']:
+                    data.append(task)
 
         elif 'term' in request.GET:
             data = list()
@@ -216,15 +216,17 @@ class AdHocView(BaseView):
     @staticmethod
     def post(request):
 
-        adhoc = AdHocTask()
-        if 'id' in request.POST:
+        if request.POST['id']:
             adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
+        else:
+            adhoc = AdHocTask()
+
         form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
         if request.POST['action'] == 'save':
             if form.is_valid():
-                form.save(commit=True)
-                data = {'result': 'ok'}
+                saved_task = form.save(commit=True)
+                data = {'result': 'ok', 'id': saved_task.id}
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
         elif request.POST['action'] == 'delete':

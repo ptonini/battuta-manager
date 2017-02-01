@@ -17,7 +17,7 @@ var divCol11 = $('<div>').attr('class', 'col-md-11');
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
 // Bootstrap tables
-var baseTable = $('<table>').attr('class', 'table-condensed table-hover table-striped')
+var baseTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
 
 // Form groups
 var divFormGroup = $('<div>').attr('class', 'form-group');
@@ -104,7 +104,7 @@ $.extend($.fn.dataTable.defaults, {
 // bootstrapGrowl
 $.extend($.bootstrapGrowl.default_options, {
     align: 'center',
-    delay: 2500,
+    delay: 500,
     allow_dismiss: true,
     width: 'auto',
     offset: {from: 'bottom', amount: function () {return (window.innerHeight / 2)}}
@@ -242,4 +242,8 @@ function gatherFacts(nodeName, finishCallback) {
     }, 1000)
 }
 
+function toggleButton (event) {
+    event.preventDefault();
+    $(this).toggleClass('checked_button');
+}
 jQuery.fn.reverse = [].reverse;

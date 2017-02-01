@@ -4,8 +4,6 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
     // Check if passwords are needed
     if (askPassword.user || askPassword.sudo) {
 
-        console.log(askPassword);
-
         self.userPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askPassword.user));
         self.userPassword = passInputField.clone();
         self.execUser = $('<i>').html(username);
@@ -31,7 +29,7 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
                     Run: function () {
                         $(this).dialog('close');
                         postData.remote_pass = self.userPassword.val();
-                        if (sudoPassword.val()) postData.become_pass = self.sudoPassword.val();
+                        if (self.sudoPassword.val()) postData.become_pass = self.sudoPassword.val();
                         else postData.become_pass = self.userPassword.val();
                         self._postJob(postData, sameWindow)
                     },

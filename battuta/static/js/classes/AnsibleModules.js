@@ -1,8 +1,6 @@
 function AnsibleModules(name, fieldsContainer, moduleReference) {
     var self = this;
 
-    var divCol1Sudo = divCol1.clone().addClass('text-right').attr('style', 'margin-top: 18px');
-
     self.name = name;
     self.fieldsContainer = fieldsContainer;
 
@@ -45,17 +43,13 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
     switch (self.name) {
         case 'ping':
             self.fieldsContainer.append(
-                divRow.clone().append(
-                    divCol5.clone().attr('style', 'margin-bottom: 15px;').append(self.sudoButton)
-                )
+                divCol12.clone().addClass('labelless_button').append(self.sudoButton)
             );
             break;
         case 'shell':
             self.fieldsContainer.append(
-                divRow.clone().append(
-                    divCol4.clone().append(self.argumentsGroup),
-                    divCol1Sudo.clone().append(self.sudoButton)
-                )
+                divCol10.clone().append(self.argumentsGroup),
+                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
             );
             break;
         case 'service':
@@ -67,62 +61,54 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             );
 
             self.fieldsContainer.append(
-                divRow.clone().append(
-                    divCol5.clone().append(
-                        divFormGroup.clone().append(
-                            $('<label>').html('Name').append(textInputField.clone().attr('data-parameter', 'name'))
-                        )
+                divCol8.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Name').append(textInputField.clone().attr('data-parameter', 'name'))
                     )
-
                 ),
-                divRow.clone().append(
-                    divCol2.clone().append(divFormGroup.clone().append(self.stateSelectGroup)),
-                    divCol2.clone().append(
-                        divFormGroup.clone().append(
-                            $('<label>').html('Enabled').append(
-                                selectField.clone().attr('data-parameter', 'enabled').append(
-                                    $('<option>').attr('value', 'yes').html('Yes'),
-                                    $('<option>').attr('value', 'no').html('No')
-                                )
+                divCol4.clone().append(divFormGroup.clone().append(self.stateSelectGroup)),
+
+                divCol10.clone().append(self.argumentsGroup),
+                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton),
+
+                divCol4.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Enabled').append(
+                            selectField.clone().attr('data-parameter', 'enabled').append(
+                                $('<option>').attr('value', 'yes').html('Yes'),
+                                $('<option>').attr('value', 'no').html('No')
                             )
                         )
-                    ),
-                    divCol1Sudo.clone().append(self.sudoButton)
-                ),
-                divRow.clone().append(divCol5.clone().append(self.argumentsGroup))
+                    )
+                )
             );
             break;
         case 'copy':
             self.fileSourceField.autocomplete({source: '?type=file'});
             self.fieldsContainer.append(
-                divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
-                divRow.clone().append(divCol5.clone().append(self.fileDestGroup)),
-                divRow.clone().append(
-                    divCol4.clone().append(self.argumentsGroup),
-                    divCol1Sudo.clone().append(self.sudoButton)
-                )
+                divCol12.clone().append(self.fileSourceGroup),
+                divCol12.clone().append(self.fileDestGroup),
+                divCol10.clone().append(self.argumentsGroup),
+                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+
             );
             break;
         case 'unarchive':
             self.fileSourceField.autocomplete({source: '?type=archive'});
             self.fieldsContainer.append(
-                divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
-                divRow.clone().append(divCol5.clone().append(self.fileDestGroup)),
-                divRow.clone().append(
-                    divCol4.clone().append(self.argumentsGroup),
-                    divCol1Sudo.clone().append(self.sudoButton)
-                )
+                divCol12.clone().append(self.fileSourceGroup),
+                divCol12.clone().append(self.fileDestGroup),
+                divCol10.clone().append(self.argumentsGroup),
+                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
             );
             break;
         case 'script':
             self.fileSourceField.autocomplete({source: '?type=file'});
             self.fileSourceLabel.html('Script');
             self.fieldsContainer.append(
-                divRow.clone().append(divCol5.clone().append(self.fileSourceGroup)),
-                divRow.clone().append(
-                    divCol4.clone().append(self.argumentsGroup),
-                    divCol1Sudo.clone().append(self.sudoButton)
-                )
+                divCol12.clone().append(self.fileSourceGroup),
+                divCol10.clone().append(self.argumentsGroup),
+                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
             );
             break;
         case 'file':
@@ -136,18 +122,16 @@ function AnsibleModules(name, fieldsContainer, moduleReference) {
             );
 
             self.fieldsContainer.append(
-                divRow.clone().append(
-                    divCol3.clone().append(
-                        divFormGroup.clone().append(
-                            $('<label>').html('Path').append(textInputField.clone().attr('data-parameter', 'path'))
-                        )
-                    ),
-                    divCol2.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup))
+
+                divCol8.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Path').append(textInputField.clone().attr('data-parameter', 'path'))
+                    )
                 ),
-                divRow.clone().append(
-                    divCol4.clone().append(self.argumentsGroup),
-                    divCol1Sudo.clone().append(self.sudoButton)
-                )
+                divCol4.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup)),
+                divCol10.clone().append(self.argumentsGroup),
+                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+
             );
             break;
     }
@@ -164,7 +148,7 @@ AnsibleModules.listModules = function () {
         'setup',
         'unarchive',
         'file'
-    ]
+    ].sort()
 };
 
 AnsibleModules.prototype.isSudo = function () {
