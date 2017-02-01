@@ -14,6 +14,4 @@ $(document).ready(function () {
         new AdHocForm(userId, 'dialog', pattern, {id: null, saveCallback: adHocTable.reload})
     });
 
-
-
 });
