@@ -1,4 +1,4 @@
-function AdHocForm (userId, pattern, type, task, container) {
+function AdHocTasks (userId, pattern, type, task, container) {
     var self = this;
 
     self.type = type;
@@ -55,7 +55,7 @@ function AdHocForm (userId, pattern, type, task, container) {
     else if (self.type == 'dialog') self.adhocDialog.dialog('open');
 }
 
-AdHocForm.modules = [
+AdHocTasks.modules = [
     'copy',
     'ec2_facts',
     'ping',
@@ -67,7 +67,71 @@ AdHocForm.modules = [
     'file'
 ];
 
-AdHocForm.prototype._buildForm = function () {
+AdHocTasks.jsonToString = function (dataObj) {
+    var dataString = '';
+
+    Object.keys(dataObj).forEach(function (key) {
+        if (key != 'otherArgs' && dataObj[key]) dataString += key + '=' + dataObj[key] + ' ';
+    });
+
+    return dataString + dataObj['otherArgs']
+};
+
+AdHocTasks.prototype._submitForm = function () {
+    var self = this;
+    var become = self.isSudo.hasClass('checked_button');
+    var cred = $('option:selected', self.credentialsSelector).data();
+
+    var askPassword = {
+        user: (!cred.password && cred.ask_pass && !cred.rsa_key),
+        sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
+    };
+    var arguments;
+
+    if (self.type == 'dialog') {
+        var argsObj = self._formToJson();
+
+        if (self.action == 'save') arguments = JSON.stringify(argsObj);
+        else if (self.action == 'run') arguments = AdHocTasks.jsonToString(argsObj);
+    }
+
+    else if (self.type == 'command') arguments = self.argumentsField.val();
+
+    var postData = {
+        type: 'adhoc',
+        action: self.action,
+        module: self.module,
+        name: self.name,
+        cred: cred,
+        hosts: self.patternField.val(),
+        become: become,
+        arguments: arguments,
+        id: self.task.id
+    };
+
+    if (self.action == 'run') new AnsibleRunner(postData, askPassword, cred.username);
+
+    else if (self.action == 'save') {
+        $.ajax({
+            url: '/runner/adhoc/',
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
+            success: function (data) {
+                if (data.result == 'ok') {
+                    if (self.task.saveCallback) self.task.saveCallback();
+                    self.task.id = data.id;
+                    self.formHeader.html('Edit task');
+                    $.bootstrapGrowl('Task saved', {type: 'success'});
+                }
+                else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+            }
+        });
+    }
+
+};
+
+AdHocTasks.prototype._buildForm = function () {
     var self = this;
 
     if (self.type == 'command') {
@@ -101,7 +165,7 @@ AdHocForm.prototype._buildForm = function () {
         else self.formHeader.html('Create task');
 
         self.moduleSelector = selectField.clone();
-        $.each(AdHocForm.modules.sort(), function (index, value) {
+        $.each(AdHocTasks.modules.sort(), function (index, value) {
             self.moduleSelector.append($('<option>').attr('value', value).append(value))
         });
 
@@ -173,61 +237,7 @@ AdHocForm.prototype._buildForm = function () {
 
 };
 
-AdHocForm.prototype._submitForm = function () {
-    var self = this;
-    var become = self.isSudo.hasClass('checked_button');
-    var cred = $('option:selected', self.credentialsSelector).data();
-
-    var askPassword = {
-        user: (!cred.password && cred.ask_pass && !cred.rsa_key),
-        sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
-    };
-    var arguments;
-
-    if (self.type == 'dialog') {
-        var argsArray = self._formToJson();
-
-        if (self.action == 'save') arguments = JSON.stringify(argsArray[0]);
-        else if (self.action == 'run') arguments = argsArray[1];
-    }
-
-    else if (self.type == 'command') arguments = self.argumentsField.val();
-
-    var postData = {
-        type: 'adhoc',
-        action: self.action,
-        module: self.module,
-        name: self.name,
-        cred: cred,
-        hosts: self.patternField.val(),
-        become: become,
-        arguments: arguments,
-        id: self.task.id
-    };
-
-    if (self.action == 'run') new AnsibleRunner(postData, askPassword, cred.username);
-
-    else if (self.action == 'save') {
-        $.ajax({
-            url: '/runner/adhoc/',
-            type: 'POST',
-            dataType: 'json',
-            data: postData,
-            success: function (data) {
-                if (data.result == 'ok') {
-                    if (self.task.saveCallback) self.task.saveCallback();
-                    self.task.id = data.id;
-                    self.formHeader.html('Edit task');
-                    $.bootstrapGrowl('Task saved', {type: 'success'});
-                }
-                else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-            }
-        });
-    }
-
-};
-
-AdHocForm.prototype._buildModuleFields = function () {
+AdHocTasks.prototype._buildModuleFields = function () {
     var self = this;
 
     var moduleReferenceLink = 'http://docs.ansible.com/ansible/'+ self.name + '_module.html';
@@ -355,7 +365,7 @@ AdHocForm.prototype._buildModuleFields = function () {
     }
 };
 
-AdHocForm.prototype._formToJson = function () {
+AdHocTasks.prototype._formToJson = function () {
     var self = this;
 
     var jsonData = {otherArgs: self.argumentsField.val()};
@@ -373,37 +383,27 @@ AdHocForm.prototype._formToJson = function () {
             });
 
     }
-    return [jsonData, AdHocForm.jsonToString(jsonData)];
+    return [jsonData, AdHocTasks.jsonToString(jsonData)];
 };
 
-AdHocForm.prototype._jsonToForm = function (task) {
+AdHocTasks.prototype._jsonToForm = function () {
     var self = this;
 
-    self.isSudo.toggleClass('checked_button', task.become);
+    self.isSudo.toggleClass('checked_button', self.task.become);
     self.argumentsField.val(task.arguments.otherArgs);
 
     switch (self.name) {
         case 'script':
-            self.fileSourceField.val(task.arguments.script);
+            self.fileSourceField.val(self.task.arguments.script);
             break;
 
         default:
-            Object.keys(task.arguments).forEach(function (key) {
+            Object.keys(self.task.arguments).forEach(function (key) {
                 var formField = self.moduleFieldsContainer.find("[data-parameter='" + key + "']");
-                if (formField.length > 0) formField.val(task.arguments[key]);
+                if (formField.length > 0) formField.val(self.task.arguments[key]);
             });
 
     }
-};
-
-AdHocForm.jsonToString = function (dataObj) {
-    var dataString = '';
-
-    Object.keys(dataObj).forEach(function (key) {
-        if (key != 'otherArgs' && dataObj[key]) dataString += key + '=' + dataObj[key] + ' ';
-    });
-
-    return dataString + dataObj['otherArgs']
 };
 
 

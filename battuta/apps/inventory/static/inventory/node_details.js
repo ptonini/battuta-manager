@@ -433,7 +433,7 @@ $(document).ready(function () {
         });
     });
 
-    new AdHocForm(userId, nodeName, 'command', {id: null}, $('#command_form_container'));
+    new AdHocTasks(userId, nodeName, 'command', {id: null}, $('#command_form_container'));
 
     new AdHohTaskTable(userId, nodeName, $('#adhoc_table_container'))
 });

@@ -5,7 +5,7 @@ function AdHohTaskTable(userId, pattern, container) {
         $('<h4>').html('Saved tasks').append(
             spanRight.clone().append(
                 smButton.clone().html('Create task').click(function () {
-                    new AdHocForm(userId, pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
+                    new AdHocTasks(userId, pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
                 })
             )
         ),
@@ -31,7 +31,7 @@ function AdHohTaskTable(userId, pattern, container) {
             {class: 'col-md-2', title: 'sudo', data: 'become'}
         ],
         rowCallback: function (row, data) {
-            var arguments = AdHocForm.jsonToString(data.arguments);
+            var arguments = AdHocTasks.jsonToString(data.arguments);
 
             $(row).find('td:eq(2)').html(arguments).attr('title', arguments);
             $(row).find('td:eq(3)').append(
@@ -40,7 +40,7 @@ function AdHohTaskTable(userId, pattern, container) {
                     spanGlyph.clone().addClass('glyphicon-play-circle btn-incell').attr('title', 'Load').click(function () {
                         var task = data;
                         task.saveCallback = self.table.DataTable().ajax.reload;
-                        new AdHocForm(userId, pattern, 'dialog', task);
+                        new AdHocTasks(userId, pattern, 'dialog', task);
                     }),
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
                         new DeleteDialog(function () {

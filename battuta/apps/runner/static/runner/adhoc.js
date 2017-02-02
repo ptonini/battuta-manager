@@ -4,7 +4,7 @@ $(document).ready(function () {
 
     var userId = sessionStorage.getItem('user_id');
 
-    new AdHocForm(userId, '', 'command', {id: null}, $('#command_form_container'));
+    new AdHocTasks(userId, '', 'command', {id: null}, $('#command_form_container'));
 
     new AdHohTaskTable(userId, '', $('#adhoc_table_container'));
 
