@@ -247,4 +247,5 @@ function toggleButton (event) {
     event.preventDefault();
     $(this).toggleClass('checked_button');
 }
+
 jQuery.fn.reverse = [].reverse;

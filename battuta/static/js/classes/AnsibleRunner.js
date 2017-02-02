@@ -6,14 +6,13 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
 
         self.userPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askPassword.user));
         self.userPassword = passInputField.clone();
-        self.execUser = $('<i>').html(username);
 
         self.sudoPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askPassword.sudo));
         self.sudoPassword = passInputField.clone();
 
-        self.passwordDialog = $('<div>').append(
+        self.passwordDialog = $('<div>').attr('class', 'small_dialog').append(
             self.userPasswordGroup.append(
-                $('<label>').html('Password for user ').append(self.execUser, self.userPassword)
+                $('<label>').html('Password for user ').append($('<i>').html(username), self.userPassword)
             ),
             self.sudoPasswordGroup.append(
                 $('<label>').html('Sudo password').append(

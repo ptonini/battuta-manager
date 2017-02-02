@@ -1,9 +1,8 @@
-function AdHocForm (userId, type, pattern, task) {
+function AdHocForm (userId, pattern, type, task, container) {
     var self = this;
 
     self.type = type;
     self.task = task;
-    self.action = 'run';
 
     self.formHeader = $('<h4>');
 
@@ -27,15 +26,18 @@ function AdHocForm (userId, type, pattern, task) {
     );
 
     self.argumentsField = textInputField.clone();
-    self.isSudo = smButton.clone().html('Sudo').click(toggleButton);
+    self.isSudo = smButton.clone().html('Sudo').attr('title', 'Run with sudo').click(toggleButton);
     self.credentialsSelector = selectField.clone();
 
     Credentials.buildSelectionBox(userId, self.credentialsSelector);
 
-    self.adhocForm = $('<form>').append(self.formHeader, self._buildForm()).submit(function (event) {
+    self.adhocForm = $('<form>').submit(function (event) {
         event.preventDefault();
         self._submitForm()
     });
+
+    self.adhocForm.append(self.formHeader);
+    self.adhocForm.append(self._buildForm());
 
     self.adhocForm.find('input').keypress(function (event) {
         if (event.keyCode == 13) {
@@ -49,7 +51,8 @@ function AdHocForm (userId, type, pattern, task) {
         self.patternEditorButton.prop('disabled', true)
     }
 
-    if (self.type == 'command') return self.adhocForm;
+    if (self.type == 'command') container.append(self.adhocForm);
+    else if (self.type == 'dialog') self.adhocDialog.dialog('open');
 }
 
 AdHocForm.modules = [
@@ -62,7 +65,7 @@ AdHocForm.modules = [
     'setup',
     'unarchive',
     'file'
-]
+];
 
 AdHocForm.prototype._buildForm = function () {
     var self = this;
@@ -73,6 +76,7 @@ AdHocForm.prototype._buildForm = function () {
         self.runCommand = smButton.clone().html('Run');
         self.name ='[adhoc task] shell';
         self.module = 'shell';
+        self.action = 'run';
 
         return divRow.clone().append(
             divCol3.clone().append(self.patternFieldGroup),
@@ -97,20 +101,19 @@ AdHocForm.prototype._buildForm = function () {
         else self.formHeader.html('Create task');
 
         self.moduleSelector = selectField.clone();
-        $.each(AdHocForm.modules, function (index, value) {
+        $.each(AdHocForm.modules.sort(), function (index, value) {
             self.moduleSelector.append($('<option>').attr('value', value).append(value))
         });
 
         self.moduleSelector.change(function () {
             self.name = this.value;
             self.module = this.value;
-            self.moduleFieldsContainer.html(self._buildModuleFields());
-            //self.currentModule = new AnsibleModules(self.name, self.optionalFields, self.moduleReferenceLink);
+            self.moduleFieldsContainer.empty().html(self._buildModuleFields());
         });
 
         self.moduleReferenceLink = $('<small>').attr('class', 'reference_link').html('module reference');
 
-        self.moduleFieldsContainer = divCol12.clone().css({
+        self.moduleFieldsContainer = divRow.clone().css({
             height: window.innerHeight * .6,
             'max-height': '320px',
             'overflow-y': 'auto',
@@ -125,7 +128,7 @@ AdHocForm.prototype._buildForm = function () {
                         $('<label>').html('Module').append(self.moduleSelector)
                     )
                 ),
-                self.moduleFieldsContainer
+                divCol12.clone().append(self.moduleFieldsContainer)
             ),
             divRow.clone().append(
                 divCol4.clone().append($('<label>').html('Credentials').append(self.credentialsSelector)),
@@ -133,19 +136,13 @@ AdHocForm.prototype._buildForm = function () {
             )
         );
 
-        self.adhocDialog = largeDialog.clone();
-        self.adhocDialog
-            .append(
-                $('<div>').append(
-                    self.formHeader.html(self.formTitle),
-                    self.adhocForm
-                )
-            )
-            .dialog({
+        self.adhocDialog = largeDialog.clone().append(self.adhocForm);
+        self.adhocDialog.dialog({
                 width: 600,
                 closeOnEscape: false,
                 buttons: {
                     Run: function () {
+                        self.action = 'run';
                         self.adhocForm.submit();
                     },
                     Save: function () {
@@ -163,29 +160,22 @@ AdHocForm.prototype._buildForm = function () {
                     }
                 },
                 close: function() {$(this).remove()}
-            })
-            .dialog('open');
+            });
+
 
         if (self.task.id) {
             self.patternField.val(self.task.hosts);
             self.moduleSelector.val(self.task.module).change();
-            self.currentModule.loadForm(self.task.arguments, self.task.become);
+            self._jsonToForm(self.task);
         }
         else self.moduleSelector.val('shell').change();
-
-        self.adhocForm.find('input').keypress(function (event) {
-            if (event.keyCode == 13) {
-                event.preventDefault();
-                $(this).submit()
-            }
-        });
     }
 
 };
 
 AdHocForm.prototype._submitForm = function () {
     var self = this;
-    var become;
+    var become = self.isSudo.hasClass('checked_button');
     var cred = $('option:selected', self.credentialsSelector).data();
 
     var askPassword = {
@@ -195,15 +185,13 @@ AdHocForm.prototype._submitForm = function () {
     var arguments;
 
     if (self.type == 'dialog') {
-        become = self.currentModule.sudoButton.hasClass('checked_button');
-        self.module = self.currentModule.name;
-        arguments = self.currentModule.saveForm();
+        var argsArray = self._formToJson();
+
+        if (self.action == 'save') arguments = JSON.stringify(argsArray[0]);
+        else if (self.action == 'run') arguments = argsArray[1];
     }
-    else if (self.type == 'command') {
-        become = self.isSudo.hasClass('checked_button');
-        self.module = 'shell';
-        arguments = self.commandField.val();
-    }
+
+    else if (self.type == 'command') arguments = self.argumentsField.val();
 
     var postData = {
         type: 'adhoc',
@@ -255,6 +243,8 @@ AdHocForm.prototype._buildModuleFields = function () {
         )
     );
 
+    self.isSudo.off().click(toggleButton);
+
     self.fileDestGroup = divFormGroup.clone().append(
         $('<label>').html('Destination').append(textInputField.clone().attr('data-parameter', 'dest'))
     );
@@ -262,30 +252,22 @@ AdHocForm.prototype._buildModuleFields = function () {
     self.stateSelect = selectField.clone().attr('data-parameter', 'state');
     self.stateSelectGroup = divFormGroup.clone().append($('<label>').html('State').append(self.stateSelect));
 
-    self.sudoButton = smButton.clone().attr('title', 'Run with sudo').html('Sudo').click(function (event) {
-        event.preventDefault();
-        $(this).toggleClass('checked_button')
-    });
-
-    self.argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(self.arguments));
+    self.argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(self.argumentsField));
 
     self.moduleReferenceLink.show()
         .attr('title', moduleReferenceLink)
         .click(function () {window.open(moduleReferenceLink)});
 
-
-    self.fieldsContainer.empty();
-
     switch (self.name) {
         case 'ping':
-            self.fieldsContainer.append(
-                divCol12.clone().addClass('labelless_button').append(self.sudoButton)
+            self.moduleFieldsContainer.append(
+                divCol12.clone().addClass('labelless_button').append(self.isSudo)
             );
             break;
         case 'shell':
-            self.fieldsContainer.append(
+            self.moduleFieldsContainer.append(
                 divCol10.clone().append(self.argumentsGroup),
-                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+                divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
             );
             break;
         case 'service':
@@ -296,7 +278,7 @@ AdHocForm.prototype._buildModuleFields = function () {
                 $('<option>').attr('value', 'reloaded').html('Reloaded')
             );
 
-            self.fieldsContainer.append(
+            self.moduleFieldsContainer.append(
                 divCol8.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Name').append(textInputField.clone().attr('data-parameter', 'name'))
@@ -305,7 +287,7 @@ AdHocForm.prototype._buildModuleFields = function () {
                 divCol4.clone().append(divFormGroup.clone().append(self.stateSelectGroup)),
 
                 divCol10.clone().append(self.argumentsGroup),
-                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton),
+                divCol2.clone().addClass('text-right labelless_button').append(self.isSudo),
 
                 divCol4.clone().append(
                     divFormGroup.clone().append(
@@ -321,30 +303,30 @@ AdHocForm.prototype._buildModuleFields = function () {
             break;
         case 'copy':
             self.fileSourceField.autocomplete({source: '?type=file'});
-            self.fieldsContainer.append(
+            self.moduleFieldsContainer.append(
                 divCol12.clone().append(self.fileSourceGroup),
                 divCol12.clone().append(self.fileDestGroup),
                 divCol10.clone().append(self.argumentsGroup),
-                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+                divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
 
             );
             break;
         case 'unarchive':
             self.fileSourceField.autocomplete({source: '?type=archive'});
-            self.fieldsContainer.append(
+            self.moduleFieldsContainer.append(
                 divCol12.clone().append(self.fileSourceGroup),
                 divCol12.clone().append(self.fileDestGroup),
                 divCol10.clone().append(self.argumentsGroup),
-                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+                divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
             );
             break;
         case 'script':
             self.fileSourceField.autocomplete({source: '?type=file'});
             self.fileSourceLabel.html('Script');
-            self.fieldsContainer.append(
+            self.moduleFieldsContainer.append(
                 divCol12.clone().append(self.fileSourceGroup),
                 divCol10.clone().append(self.argumentsGroup),
-                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+                divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
             );
             break;
         case 'file':
@@ -357,7 +339,7 @@ AdHocForm.prototype._buildModuleFields = function () {
                 $('<option>').attr('value', 'absent').html('Absent')
             );
 
-            self.fieldsContainer.append(
+            self.moduleFieldsContainer.append(
 
                 divCol8.clone().append(
                     divFormGroup.clone().append(
@@ -366,9 +348,62 @@ AdHocForm.prototype._buildModuleFields = function () {
                 ),
                 divCol4.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup)),
                 divCol10.clone().append(self.argumentsGroup),
-                divCol2.clone().addClass('text-right labelless_button').append(self.sudoButton)
+                divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
 
             );
             break;
     }
 };
+
+AdHocForm.prototype._formToJson = function () {
+    var self = this;
+
+    var jsonData = {otherArgs: self.argumentsField.val()};
+
+    switch (self.name) {
+        case 'script':
+            jsonData.script = ' ' + self.fileSourceField.val();
+            break;
+
+        default:
+            $.each(self.moduleFieldsContainer.find("[data-parameter]"), function (index, value) {
+                if ($(value).val()) {
+                    jsonData[$(value).attr('data-parameter')] = $(value).val();
+                }
+            });
+
+    }
+    return [jsonData, AdHocForm.jsonToString(jsonData)];
+};
+
+AdHocForm.prototype._jsonToForm = function (task) {
+    var self = this;
+
+    self.isSudo.toggleClass('checked_button', task.become);
+    self.argumentsField.val(task.arguments.otherArgs);
+
+    switch (self.name) {
+        case 'script':
+            self.fileSourceField.val(task.arguments.script);
+            break;
+
+        default:
+            Object.keys(task.arguments).forEach(function (key) {
+                var formField = self.moduleFieldsContainer.find("[data-parameter='" + key + "']");
+                if (formField.length > 0) formField.val(task.arguments[key]);
+            });
+
+    }
+};
+
+AdHocForm.jsonToString = function (dataObj) {
+    var dataString = '';
+
+    Object.keys(dataObj).forEach(function (key) {
+        if (key != 'otherArgs' && dataObj[key]) dataString += key + '=' + dataObj[key] + ' ';
+    });
+
+    return dataString + dataObj['otherArgs']
+};
+
+

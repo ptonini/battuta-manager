@@ -170,6 +170,7 @@ class AdHocView(BaseView):
             data = list()
             for task in AdHocTask.objects.all().values():
                 if request.GET['list'] == '' or request.GET['list'] == task['hosts']:
+                    task['arguments'] = json.loads(task['arguments'])
                     data.append(task)
 
         elif 'term' in request.GET:

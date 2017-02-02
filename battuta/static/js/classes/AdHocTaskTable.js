@@ -1,15 +1,20 @@
-function AdHohTaskTable(pattern, userId) {
+function AdHohTaskTable(userId, pattern, container) {
     var self = this;
 
-    self.header = $('<h4>').html('Saved tasks').css('margin-bottom', '30px').append(
-        spanRight.clone().append(
-            smButton.clone().html('Create task').click(function () {
-                new AdHocForm(userId, 'dialog', pattern, {id: null, saveCallback: self.table.DataTable().ajax.reload})
-            })
-        )
+    container.append(
+        $('<h4>').html('Saved tasks').append(
+            spanRight.clone().append(
+                smButton.clone().html('Create task').click(function () {
+                    new AdHocForm(userId, pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
+                })
+            )
+        ),
+        $('<br>')
     );
 
     self.table = baseTable.clone();
+
+    container.append(self.table);
 
     self.table.DataTable({
         pageLength: 50,
@@ -26,12 +31,16 @@ function AdHohTaskTable(pattern, userId) {
             {class: 'col-md-2', title: 'sudo', data: 'become'}
         ],
         rowCallback: function (row, data) {
+            var arguments = AdHocForm.jsonToString(data.arguments);
+
+            $(row).find('td:eq(2)').html(arguments).attr('title', arguments);
             $(row).find('td:eq(3)').append(
                 $('<span>').css('float', 'right').append(
+                    prettyBoolean($(row).find('td:eq(3)'), data.become),
                     spanGlyph.clone().addClass('glyphicon-play-circle btn-incell').attr('title', 'Load').click(function () {
                         var task = data;
                         task.saveCallback = self.table.DataTable().ajax.reload;
-                        new AdHocForm(userId, 'dialog', pattern, task);
+                        new AdHocForm(userId, pattern, 'dialog', task);
                     }),
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
                         new DeleteDialog(function () {
@@ -52,6 +61,5 @@ function AdHohTaskTable(pattern, userId) {
         }
     });
 
-    return $('<div>').append(self.header, self.table)
 }
 

@@ -4,8 +4,8 @@ $(document).ready(function () {
 
     var userId = sessionStorage.getItem('user_id');
 
-    $('#adhoc_table_container').html(new AdHohTaskTable('', userId));
+    new AdHocForm(userId, '', 'command', {id: null}, $('#command_form_container'));
 
-    $('#command_form_container').html(new AdHocForm(userId, 'command', '', {id: null}));
+    new AdHohTaskTable(userId, '', $('#adhoc_table_container'));
 
 });
