@@ -383,14 +383,14 @@ AdHocTasks.prototype._formToJson = function () {
             });
 
     }
-    return [jsonData, AdHocTasks.jsonToString(jsonData)];
+    return jsonData;
 };
 
 AdHocTasks.prototype._jsonToForm = function () {
     var self = this;
 
     self.isSudo.toggleClass('checked_button', self.task.become);
-    self.argumentsField.val(task.arguments.otherArgs);
+    self.argumentsField.val(self.task.arguments.otherArgs);
 
     switch (self.name) {
         case 'script':
