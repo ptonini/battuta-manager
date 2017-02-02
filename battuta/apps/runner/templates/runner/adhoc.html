@@ -1,11 +1,24 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
-{% block content %}
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'js/classes/AnsibleModules.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/Credentials.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/AdHocTaskTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/SelectNodesDialog.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/AdHocForm.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
-    <script>document.title = 'Battuta - AdHoc';</script>
+    <script type="text/javascript" src="{% static 'runner/adhoc.js' %}"></script>
+{% endblock %}
+{% block content %}
+    <script></script>
     <h3>Ad-Hoc tasks</h3>
     <div class="row">
-        <div class="col-md-12">{% include 'runner/adhoc_form.html' %}</div>
+        <div id="command_form_container" class="col-md-12"></div>
+        <div class="col-md-12"><hr></div>
+        <div id="adhoc_table_container" class="col-md-12"></div>
     </div>
 
 {% endblock %}

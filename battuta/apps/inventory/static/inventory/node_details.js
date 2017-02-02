@@ -172,6 +172,7 @@ $(document).ready(function () {
     var variableTable = $('#variable_table');
     var nodeDescriptionHeader = $('#node_description_header');
     var cancelVarEdit = $('#cancel_var_edit');
+    var userId = sessionStorage.getItem('user_id');
 
     document.title = 'Battuta - ' + nodeName;
 
@@ -427,7 +428,13 @@ $(document).ready(function () {
 
     // Gather facts on node
     $('#gather_facts').click(function() {
-        gatherFacts(nodeName, function () {if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts)});
+        gatherFacts(nodeName, function () {
+            if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts)
+        });
     });
+
+    $('#adhoc_table_container').html(new AdHohTaskTable(nodeName, userId));
+
+    $('#command_form_container').html(new AdHocForm(userId, 'command', nodeName, {id: null}));
     
 });
