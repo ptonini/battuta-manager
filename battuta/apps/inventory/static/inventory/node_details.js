@@ -14,7 +14,7 @@ function alterRelation(relation, selection, action) {
 
 function clearVariableForm() {
     $('#cancel_var_edit').hide();
-    $('#variable_form').removeData('id').find('input').val('');
+    $('#variable_form').removeData('id');
     $('#key').focus();
     $('#var_form_label').html('Add variable');
 }
@@ -263,12 +263,8 @@ $(document).ready(function () {
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                         .click(function() {
-                            cancelVarEdit.show();
-                            $('#variable_form').data('id', data[3]);
-                            $('#var_form_label').html('Edit variable');
-                            $('#key').val(data[0]);
-                            $('#value').val(data[1]).focus();
-                            window.location.href = '#';
+                            var variable = {key: data[0], value: data[1], id: data[2]};
+                            new Variables(variable, 'dialog', nodeName, nodeType, variableTable.DataTable().ajax.reload)
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-trash btn-incell',  title: 'Delete'})
@@ -432,6 +428,8 @@ $(document).ready(function () {
             if (nodeType == 'host') submitRequest('GET', {action: 'facts'}, loadFacts)
         });
     });
+
+    new Variables({id: null}, 'add', nodeName, nodeType, variableTable.DataTable().ajax.reload, $('#variable_form_container'));
 
     new AdHocTasks(userId, nodeName, 'command', {id: null}, $('#command_form_container'));
 

@@ -12,6 +12,8 @@ h5 {font-size: 11pt; color: #525252}
 
 th, h4 {color: #525252}
 
+textarea {resize: vertical}
+
 a, label, .glyphicon {color: #777}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}

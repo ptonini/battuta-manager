@@ -3,11 +3,9 @@ function AdHocTasks (userId, pattern, type, task, container) {
 
     self.type = type;
     self.task = task;
-
     self.formHeader = $('<h4>');
 
     self.patternField = textInputField.clone();
-
     self.patternEditorButton = smButton.clone()
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
@@ -15,7 +13,6 @@ function AdHocTasks (userId, pattern, type, task, container) {
             event.preventDefault();
             new PatternBuilder(self.patternField)
         });
-
     self.patternFieldGroup = divFormGroup.clone().append(
         $('<label>').html('Hosts').append(
             divInputGroup.clone().append(
@@ -24,7 +21,6 @@ function AdHocTasks (userId, pattern, type, task, container) {
             )
         )
     );
-
     self.argumentsField = textInputField.clone();
     self.isSudo = smButton.clone().html('Sudo').attr('title', 'Run with sudo').click(toggleButton);
     self.credentialsSelector = selectField.clone();
@@ -37,7 +33,8 @@ function AdHocTasks (userId, pattern, type, task, container) {
     });
 
     self.adhocForm.append(self.formHeader);
-    self.adhocForm.append(self._buildForm());
+
+    self._buildForm();
 
     self.adhocForm.find('input').keypress(function (event) {
         if (event.keyCode == 13) {
@@ -67,6 +64,37 @@ AdHocTasks.modules = [
     'file'
 ];
 
+AdHocTasks.copyTask = function (task, copyCallback) {
+    task.action = 'save';
+    task.id = '';
+    task.arguments = JSON.stringify(task.arguments);
+    AdHocTasks.postTask(task, copyCallback)
+};
+
+AdHocTasks.saveTask = function (task, saveCallback) {
+    task.action = 'save';
+    task.arguments = JSON.stringify(task.arguments);
+    AdHocTasks.postTask(task, saveCallback)
+};
+
+AdHocTasks.deleteTask = function (task, deleteCallback) {
+    task.action = 'delete';
+    AdHocTasks.postTask(task, deleteCallback)
+};
+
+AdHocTasks.postTask = function (task, postCallback) {
+    $.ajax({
+        url: '/runner/adhoc/',
+        type: 'POST',
+        dataType: 'json',
+        data: task,
+        success: function (data) {
+            if (data.result == 'ok') if (postCallback) postCallback();
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+        }
+    });
+};
+
 AdHocTasks.jsonToString = function (dataObj) {
     var dataString = '';
 
@@ -79,6 +107,7 @@ AdHocTasks.jsonToString = function (dataObj) {
 
 AdHocTasks.prototype._submitForm = function () {
     var self = this;
+
     var become = self.isSudo.hasClass('checked_button');
     var cred = $('option:selected', self.credentialsSelector).data();
 
@@ -91,15 +120,14 @@ AdHocTasks.prototype._submitForm = function () {
     if (self.type == 'dialog') {
         var argsObj = self._formToJson();
 
-        if (self.action == 'save') arguments = JSON.stringify(argsObj);
-        else if (self.action == 'run') arguments = AdHocTasks.jsonToString(argsObj);
+        if (self.action == 'run') arguments = AdHocTasks.jsonToString(argsObj);
+        else if (self.action == 'save') arguments = argsObj;
     }
 
     else if (self.type == 'command') arguments = self.argumentsField.val();
 
-    var postData = {
+    var task = {
         type: 'adhoc',
-        action: self.action,
         module: self.module,
         name: self.name,
         cred: cred,
@@ -109,26 +137,13 @@ AdHocTasks.prototype._submitForm = function () {
         id: self.task.id
     };
 
-    if (self.action == 'run') new AnsibleRunner(postData, askPassword, cred.username);
+    if (self.action == 'run') new AnsibleRunner(task, askPassword, cred.username);
 
-    else if (self.action == 'save') {
-        $.ajax({
-            url: '/runner/adhoc/',
-            type: 'POST',
-            dataType: 'json',
-            data: postData,
-            success: function (data) {
-                if (data.result == 'ok') {
-                    if (self.task.saveCallback) self.task.saveCallback();
-                    self.task.id = data.id;
-                    self.formHeader.html('Edit task');
-                    $.bootstrapGrowl('Task saved', {type: 'success'});
-                }
-                else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-            }
-        });
-    }
-
+    else if (self.action == 'save') AdHocTasks.saveTask(task, function () {
+        self.task.saveCallback();
+        self.formHeader.html('Edit task');
+        $.bootstrapGrowl('Task saved', {type: 'success'})
+    });
 };
 
 AdHocTasks.prototype._buildForm = function () {
@@ -142,20 +157,22 @@ AdHocTasks.prototype._buildForm = function () {
         self.module = 'shell';
         self.action = 'run';
 
-        return divRow.clone().append(
-            divCol3.clone().append(self.patternFieldGroup),
-            divCol6.clone().append(
-                divFormGroup.clone().append(
-                    $('<label>').html('Command').append(
-                        divInputGroup.clone().append(
-                            self.argumentsField,
-                            spanBtnGroup.clone().append(self.isSudo)
+        self.adhocForm.append(
+            divRow.clone().append(
+                divCol3.clone().append(self.patternFieldGroup),
+                divCol6.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Command').append(
+                            divInputGroup.clone().append(
+                                self.argumentsField,
+                                spanBtnGroup.clone().append(self.isSudo)
+                            )
                         )
                     )
-                )
-            ),
-            divCol2.clone().append($('<label>').html('Credentials').append(self.credentialsSelector)),
-            divCol1.clone().addClass('text-right labelless_button').append(self.runCommand)
+                ),
+                divCol2.clone().append($('<label>').html('Credentials').append(self.credentialsSelector)),
+                divCol1.clone().addClass('text-right labelless_button').append(self.runCommand)
+            )
         )
     }
 
@@ -212,12 +229,6 @@ AdHocTasks.prototype._buildForm = function () {
                     Save: function () {
                         self.action = 'save';
                         self.adhocForm.submit();
-                    },
-                    Copy: function () {
-                        self.action = 'save';
-                        self.task.id = null;
-                        self.adhocForm.submit();
-                        $(this).dialog('close');
                     },
                     Close: function () {
                         $(this).dialog('close');

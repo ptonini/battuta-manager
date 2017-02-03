@@ -440,7 +440,7 @@ class VariablesView(View):
     def post(request, node_type, node_name):
         node = NodeDetailsView.build_node(node_type, node_name)
 
-        if 'id' in request.POST:
+        if request.POST['id'] in request.POST:
             variable = get_object_or_404(Variable, pk=request.POST['id'])
         else:
             variable = Variable()

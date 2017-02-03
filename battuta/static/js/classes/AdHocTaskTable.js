@@ -1,6 +1,8 @@
 function AdHohTaskTable(userId, pattern, container) {
     var self = this;
 
+    self.table = baseTable.clone();
+
     container.append(
         $('<h4>').html('Saved tasks').append(
             spanRight.clone().append(
@@ -9,12 +11,9 @@ function AdHohTaskTable(userId, pattern, container) {
                 })
             )
         ),
-        $('<br>')
+        $('<br>'),
+        self.table
     );
-
-    self.table = baseTable.clone();
-
-    container.append(self.table);
 
     self.table.DataTable({
         pageLength: 50,
@@ -35,25 +34,18 @@ function AdHohTaskTable(userId, pattern, container) {
 
             $(row).find('td:eq(2)').html(arguments).attr('title', arguments);
             $(row).find('td:eq(3)').append(
-                $('<span>').css('float', 'right').append(
+                spanRight.clone().append(
                     prettyBoolean($(row).find('td:eq(3)'), data.become),
                     spanGlyph.clone().addClass('glyphicon-play-circle btn-incell').attr('title', 'Load').click(function () {
-                        var task = data;
-                        task.saveCallback = self.table.DataTable().ajax.reload;
-                        new AdHocTasks(userId, pattern, 'dialog', task);
+                        data.saveCallback = self.table.DataTable().ajax.reload;
+                        new AdHocTasks(userId, pattern, 'dialog', data);
+                    }),
+                    spanGlyph.clone().addClass('glyphicon-duplicate btn-incell').attr('title', 'Copy').click(function () {
+                        AdHocTasks.copyTask(data, self.table.DataTable().ajax.reload);
                     }),
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
                         new DeleteDialog(function () {
-                            $.ajax({
-                                url: '/runner/adhoc/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: {action: 'delete', id: data.id},
-                                success: function () {
-                                    self.table.DataTable().ajax.reload();
-                                    $.bootstrapGrowl('Task deleted', {type: 'success'});
-                                }
-                            });
+                            AdHocTasks.deleteTask(data, self.table.DataTable().ajax.reload);
                         })
                     })
                 )
@@ -62,4 +54,3 @@ function AdHohTaskTable(userId, pattern, container) {
     });
 
 }
-

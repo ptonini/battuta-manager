@@ -4,6 +4,7 @@
     <script type="text/javascript" src="{% static 'js/classes/AdHocTasks.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AdHocTaskTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/Variables.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/CopyVariables.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Credentials.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
@@ -69,7 +70,8 @@
         <div id="variables_tab" class="tab-pane fade">
             <div class="row">
                 <div class="col-md-12">
-                    <h4 id="var_form_label">Add variable</h4>
+                    <div id="variable_form_container"></div>
+                    {% comment %}<h4 id="var_form_label">Add variable</h4>
                     <form id="variable_form" class="form-inline" method="post">
                         <input type="hidden" id="variable_id" value="{{ variable_id }}">
                         <div class="form-group">
@@ -90,7 +92,7 @@
                                 <span class="glyphicon glyphicon-duplicate"></span>
                             </button>
                         </span>
-                    </form>
+                    </form>{% endcomment %}
                     <br>
                     <h4>Variables</h4>
                     <table id="variable_table" class="table table-condensed table-hover table-striped">
