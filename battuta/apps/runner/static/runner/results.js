@@ -307,13 +307,13 @@ $(document).ready(function () {
     else loadResults(0);
 
     // Enable/disable auto scroll
-    autoScroll.click(function() {
+    autoScroll.click(function () {
         autoScroll.toggleClass('checked_button');
         if (autoScroll.hasClass('checked_button')) sessionStorage.setItem('auto_scroll', true);
         else sessionStorage.removeItem('auto_scroll');
     });
 
-    $('.run_again').click(function() {
+    $('.run_again').click(function () {
         var runner = JSON.parse(sessionStorage.getItem('runner'));
 
         if (runner.stats && runner.stats.length > 0) {

@@ -27,16 +27,16 @@ function AdHocTasks (userId, pattern, type, task, container) {
 
     Credentials.buildSelectionBox(userId, self.credentialsSelector);
 
-    self.adhocForm = $('<form>').submit(function (event) {
+    self.form = $('<form>').submit(function (event) {
         event.preventDefault();
         self._submitForm()
     });
 
-    self.adhocForm.append(self.formHeader);
+    self.form.append(self.formHeader);
 
     self._buildForm();
 
-    self.adhocForm.find('input').keypress(function (event) {
+    self.form.find('input').keypress(function (event) {
         if (event.keyCode == 13) {
             event.preventDefault();
             $(this).submit()
@@ -48,8 +48,8 @@ function AdHocTasks (userId, pattern, type, task, container) {
         self.patternEditorButton.prop('disabled', true)
     }
 
-    if (self.type == 'command') container.append(self.adhocForm);
-    else if (self.type == 'dialog') self.adhocDialog.dialog('open');
+    if (self.type == 'command') container.append(self.form);
+    else if (self.type == 'dialog') self.dialog.dialog('open');
 }
 
 AdHocTasks.modules = [
@@ -157,7 +157,7 @@ AdHocTasks.prototype._buildForm = function () {
         self.module = 'shell';
         self.action = 'run';
 
-        self.adhocForm.append(
+        self.form.append(
             divRow.clone().append(
                 divCol3.clone().append(self.patternFieldGroup),
                 divCol6.clone().append(
@@ -201,7 +201,7 @@ AdHocTasks.prototype._buildForm = function () {
             'margin-top': '10px'
         });
 
-        self.adhocForm.append(
+        self.form.append(
             divRow.clone().append(
                 divCol8.clone().append(self.patternFieldGroup),
                 divCol4.clone().append(
@@ -217,18 +217,18 @@ AdHocTasks.prototype._buildForm = function () {
             )
         );
 
-        self.adhocDialog = largeDialog.clone().append(self.adhocForm);
-        self.adhocDialog.dialog({
+        self.dialog = largeDialog.clone().append(self.form);
+        self.dialog.dialog({
                 width: 600,
                 closeOnEscape: false,
                 buttons: {
                     Run: function () {
                         self.action = 'run';
-                        self.adhocForm.submit();
+                        self.form.submit();
                     },
                     Save: function () {
                         self.action = 'save';
-                        self.adhocForm.submit();
+                        self.form.submit();
                     },
                     Close: function () {
                         $(this).dialog('close');

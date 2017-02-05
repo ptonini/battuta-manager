@@ -1,7 +1,7 @@
 function AdHohTaskTable(userId, pattern, container) {
     var self = this;
 
-    self.table = baseTable.clone();
+    self.table = baseTable.clone().attr('id', 'adhoc_task_table');
 
     container.append(
         $('<h4>').html('Saved tasks').append(
@@ -51,6 +51,8 @@ function AdHohTaskTable(userId, pattern, container) {
                 )
             )
         }
+
     });
 
+    return self.table
 }

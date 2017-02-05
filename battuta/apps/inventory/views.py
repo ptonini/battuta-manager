@@ -400,11 +400,11 @@ class VariablesView(View):
         inventory = AnsibleInventory()
 
         for var in node.variable_set.all():
-            variables[var.key] = [{'value': var.value, 'source': '', 'id': var.id}]
+            variables[var.key] = [{'key': var.key, 'value': var.value, 'source': '', 'id': var.id, 'primary': True}]
 
         for ancestor in node.ancestors:
             for var in ancestor.variable_set.all():
-                var_dict = {'value': var.value, 'source': var.group.name, 'id': var.group.id}
+                var_dict = {'key': var.key, 'value': var.value, 'source': var.group.name, 'id': var.group.id, 'primary': False}
                 if var.key in variables:
                     variables[var.key].append(var_dict)
                 else:
@@ -412,35 +412,32 @@ class VariablesView(View):
 
         data = list()
         for key, values in variables.iteritems():
-            from_node = False
+
             value_list = list()
+            primary_count = len([value for value in values if value['primary']])
 
-            for value in values:
+            if primary_count == 1:
+                value_list = values
 
-                if value['source'] == '':
-                    from_node = True
-                    value_list.append([key, value['value'], value['source'], value['id'], True])
-                else:
-                    value_list.append([key, value['value'], value['source'], value['id'], False])
+            elif primary_count == 0 and len(values) == 1:
+                values[0]['primary'] = True
+                value_list = values
 
-            if len([value for value in value_list if value[2] != '']) > 1 and not from_node:
-
+            elif primary_count == 0 and len(values) > 1:
                 actual_value = inventory.get_variable(key, node)
-
-                for value in value_list:
-                    if value[1] == actual_value:
-                        value[4] = True
-                        break
-
+                for value in values:
+                    if value['value'] == actual_value:
+                        value['primary'] = True
+                    value_list.append(value)
             data += value_list
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
     @staticmethod
     def post(request, node_type, node_name):
         node = NodeDetailsView.build_node(node_type, node_name)
 
-        if request.POST['id'] in request.POST:
+        if request.POST['id']:
             variable = get_object_or_404(Variable, pk=request.POST['id'])
         else:
             variable = Variable()
@@ -456,10 +453,10 @@ class VariablesView(View):
                 else:
                     data = {'result': 'fail', 'msg': str(form.errors)}
 
-            elif request.POST['action'] == 'del':
+            elif request.POST['action'] == 'delete':
                 variable = get_object_or_404(Variable, pk=request.POST['id'])
                 variable.delete()
-                data = {'result': 'OK'}
+                data = {'result': 'ok'}
 
             elif request.POST['action'] == 'copy':
                 source = NodeDetailsView.build_node(request.POST['source_type'], request.POST['source_name'])

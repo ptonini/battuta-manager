@@ -12,13 +12,6 @@ function alterRelation(relation, selection, action) {
     });
 }
 
-function clearVariableForm() {
-    $('#cancel_var_edit').hide();
-    $('#variable_form').removeData('id');
-    $('#key').focus();
-    $('#var_form_label').html('Add variable');
-}
-
 function loadFacts(data) {
     var divRow = $('<div>').attr('class', 'row');
     var divCol6 = $('<div>').attr('class', 'col-md-6 col-xs-6');
@@ -169,9 +162,7 @@ $(document).ready(function () {
     
     var nodeName = $('#header_node_name').html();
     var nodeType = $('#header_node_type').html();
-    var variableTable = $('#variable_table');
     var nodeDescriptionHeader = $('#node_description_header');
-    var cancelVarEdit = $('#cancel_var_edit');
     var userId = sessionStorage.getItem('user_id');
 
     document.title = 'Battuta - ' + nodeName;
@@ -251,155 +242,6 @@ $(document).ready(function () {
         });
     });
 
-    // Build variables table
-    variableTable.DataTable({
-        order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-        pageLength: 100,
-        ajax: {url: 'vars/', dataSrc: ''},
-        rowCallback: function(row, data) {
-
-            if (data[2] == '') {
-                $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
-                    $('<span>')
-                        .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
-                        .click(function() {
-                            var variable = {key: data[0], value: data[1], id: data[2]};
-                            new Variables(variable, 'dialog', nodeName, nodeType, variableTable.DataTable().ajax.reload)
-                        }),
-                    $('<span>')
-                        .attr({class: 'glyphicon glyphicon-trash btn-incell',  title: 'Delete'})
-                        .click(function () {
-                            new DeleteDialog(function () {
-                                $.ajax({
-                                    url: 'vars/',
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: {action: 'del', id: data[3]},
-                                    success: function() {variableTable.DataTable().ajax.reload()}
-                                });
-                            })
-                        })
-                )
-            }
-            else {
-                $(row).find('td:eq(2)')
-                    .css('cursor', 'pointer')
-                    .html(data[2].italics())
-                    .attr('title', 'Open ' + data[2])
-                    .click(function() {window.open('/inventory/group/' + data[2], '_self')});
-            }
-        },
-        drawCallback: function() {
-            var table = this;
-            var variableKeys = table.api().columns(0).data()[0];
-            var duplicates = {};
-
-            table.api().rows().every(function () {
-
-                if (this.child.isShown()) this.child.hide();
-
-                var rowKey = this.data()[0];
-                var isMain = this.data()[4];
-                var rowData = [this.data(), this.node()];
-                var keyIndexes = [];
-                var i = -1;
-
-                while ((i = variableKeys.indexOf(rowKey, i+1)) != -1) keyIndexes.push(i);
-
-                if (keyIndexes.length > 1)  {
-
-                    if (duplicates.hasOwnProperty(rowKey)) {
-                        if (isMain) duplicates[rowKey].hasMainValue = true;
-                        duplicates[rowKey].values.push(rowData);
-                    }
-                    else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
-                }
-            });
-
-            Object.keys(duplicates).forEach(function (key) {
-
-                if (duplicates[key].hasMainValue) {
-
-                    var mainValue = null;
-                    var rowArray = [];
-
-                    $.each(duplicates[key]['values'], function (index, value) {
-                        if (value[0][4]) mainValue = value;
-                        else {
-                            var newRow = $(value[1]).clone().css('color', '#777');
-                            newRow.find('td:eq(2)').click(function() {
-                                window.open('/inventory/group/' + value[0][2], '_self')
-                            });
-                            rowArray.push(newRow);
-                            $(value[1]).remove()
-                        }
-                    });
-
-                    if (mainValue) {
-
-                        var rowApi = table.DataTable().row(mainValue[1]);
-
-                        $(mainValue[1]).find('td:eq(0)').html('').append(
-                            $('<span>').html(mainValue[0][0]),
-                            $('<span>')
-                                .attr('class', 'glyphicon glyphicon-plus-sign btn-incell')
-                                .off()
-                                .click(function () {
-                                    if (rowApi.child.isShown()) {
-                                        $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
-                                        $(mainValue[1]).css('font-weight', 'normal');
-                                        rowApi.child.hide()
-                                    }
-                                    else {
-                                        $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                                        $(mainValue[1]).css('font-weight', 'bold');
-                                        rowApi.child(rowArray).show();
-                                    }
-                                })
-
-                        );
-
-                    }
-                }
-
-            });
-        }
-    });
-
-    // Submit variable form
-    $('#variable_form').submit(function(event) {
-        event.preventDefault();
-        switch ($(document.activeElement).attr('id')) {
-            case 'cancel_var_edit':
-                clearVariableForm();
-                break;
-            case 'copy_variables':
-                clearVariableForm();
-                new CopyVariables(function() {variableTable.DataTable().ajax.reload()});
-                break;
-            default:
-                $.ajax({
-                    url: 'vars/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action: 'save',
-                        id: $('#variable_form').data('id'),
-                        key: $('#key').val(),
-                        value: $('#value').val()
-                    },
-                    success: function(data) {
-                        if (data.result == 'ok') {
-                            variableTable.DataTable().ajax.reload();
-                            clearVariableForm();
-                            $.bootstrapGrowl('Variable saved', {type: 'success'});
-                        }
-                        else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-                    }
-                });
-        }
-    });
-
     // Edit node
     $('#edit_node').click(function() {
         new NodeDialog('edit', nodeName, nodeDescription, nodeType, function (data) {
@@ -429,7 +271,11 @@ $(document).ready(function () {
         });
     });
 
-    new Variables({id: null}, 'add', nodeName, nodeType, variableTable.DataTable().ajax.reload, $('#variable_form_container'));
+    var variableTable = new VariableTable(nodeName, nodeType, $('#variable_table_container'));
+
+    var saveVariableCallback = function () {variableTable.reloadTable()};
+
+    new Variables({id: null}, 'add', nodeName, nodeType, saveVariableCallback, $('#variable_form_container'));
 
     new AdHocTasks(userId, nodeName, 'command', {id: null}, $('#command_form_container'));
 

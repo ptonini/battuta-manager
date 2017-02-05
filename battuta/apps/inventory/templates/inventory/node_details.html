@@ -5,6 +5,7 @@
     <script type="text/javascript" src="{% static 'js/classes/AdHocTaskTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Variables.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/VariableTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/CopyVariables.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Credentials.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
@@ -69,42 +70,9 @@
         </div>
         <div id="variables_tab" class="tab-pane fade">
             <div class="row">
-                <div class="col-md-12">
-                    <div id="variable_form_container"></div>
-                    {% comment %}<h4 id="var_form_label">Add variable</h4>
-                    <form id="variable_form" class="form-inline" method="post">
-                        <input type="hidden" id="variable_id" value="{{ variable_id }}">
-                        <div class="form-group">
-                            <label for="key" class="sr-only requiredField">Key</label>
-                            <input class="textinput form-control input-sm"
-                                   placeholder="Key" id="key" type="text" style="width: 200px">
-                        </div>
-                        <div class="form-group">
-                            <label for="value" class="sr-only requiredField">Value</label>
-                            <input class="textinput form-control input-sm"
-                                   id="value" placeholder="Value" type="text" style="width: 400px">
-                        </div>
-                        <button type="submit" id="save_variable" class="btn btn-default btn-sm">Save</button>
-                        <button type="submit" id="cancel_var_edit" class="btn btn-default btn-sm"
-                                style="display: none">Cancel</button>
-                        <span class="pull-right">
-                            <button type="submit" id="copy_variables" class="btn btn-default btn-sm" title="Copy from node">
-                                <span class="glyphicon glyphicon-duplicate"></span>
-                            </button>
-                        </span>
-                    </form>{% endcomment %}
-                    <br>
-                    <h4>Variables</h4>
-                    <table id="variable_table" class="table table-condensed table-hover table-striped">
-                        <thead>
-                        <tr>
-                            <th class="col-md-3">key</th>
-                            <th class="col-md-7">value</th>
-                            <th class="col-md-2">source</th>
-                        </tr>
-                        </thead>
-                    </table>
-                </div>
+                <div id="variable_form_container" class="col-md-12"></div>
+                <div class="col-md-12"><br></div>
+                <div id="variable_table_container" class="col-md-12"></div>
             </div>
         </div>
         <div id="adhoc_tab" class="tab-pane fade">
