@@ -360,12 +360,14 @@ class NodeDetailsView(View):
 
             elif request.GET['action'] == 'descendants':
 
-                data = {'result': 'ok',
-                        'groups': [[group.name, group.id] for group in node.group_descendants],
-                        'hosts': [[host.name, host.id] for host in node.host_descendants]}
+                if request.GET['type'] == 'groups':
+                    descendants = [[group.name, group.id] for group in node.group_descendants]
+                else:
+                    descendants = [[host.name, host.id] for host in node.host_descendants]
 
-                data['groups'].sort()
-                data['hosts'].sort()
+                descendants.sort()
+
+                data = descendants
 
             else:
                 raise Http404('Invalid action')
@@ -413,23 +415,19 @@ class VariablesView(View):
         data = list()
         for key, values in variables.iteritems():
 
-            value_list = list()
             primary_count = len([value for value in values if value['primary']])
 
-            if primary_count == 1:
-                value_list = values
-
-            elif primary_count == 0 and len(values) == 1:
+            if primary_count == 0 and len(values) == 1:
                 values[0]['primary'] = True
-                value_list = values
 
             elif primary_count == 0 and len(values) > 1:
                 actual_value = inventory.get_variable(key, node)
                 for value in values:
                     if value['value'] == actual_value:
                         value['primary'] = True
-                    value_list.append(value)
-            data += value_list
+                        break
+
+            data += values
 
         return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 

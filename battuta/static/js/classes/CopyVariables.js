@@ -18,8 +18,10 @@ function CopyVariables(copyCallback) {
     self.nodeTypeDialog
         .dialog({
             width: 280,
-            buttons: {Cancel: function () {
-                $(this).dialog('close')}
+            buttons: {
+                Cancel: function () {
+                    $(this).dialog('close')
+                }
             },
             close: function() {$(this).remove()}
         })

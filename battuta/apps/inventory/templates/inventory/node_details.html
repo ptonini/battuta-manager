@@ -1,17 +1,6 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block scripts %}
-    <script type="text/javascript" src="{% static 'js/classes/AdHocTasks.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/AdHocTaskTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Variables.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/VariableTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/CopyVariables.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Credentials.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/SelectNodesDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'inventory/node_details.js' %}"></script>
 {% endblock %}
 {% block content %}
@@ -37,35 +26,14 @@
                     <button id="delete_node" class="btn btn-default btn-xs" title="Remove">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
-                    <hr>
-                    {% if node.type == 'host' %}
-                        <h4>Host information</h4>
-                        <div id="facts_container"></div>
-                        <br>
-                        <div>
-                            <button class="btn btn-default btn-xs" id="open_facts" type="button" data-toggle="collapse"
-                                    data-target="#all_facts_container" aria-controls="all_facts_container"
-                                    aria-expanded="false" style="display: none">Show facts</button>
-                            <button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button>
-                        </div>
-                        <br>
-                        <div class="collapse" id="all_facts_container"></div>
-                    {% elif node.type == 'group' %}
-                        <h4>Descendants</h4>
-                        <div id="descendants_container" style="margin: 10px"></div>
-                        <div><button class="btn btn-default btn-xs" id="gather_facts">Gather facts</button></div>
-                    {% endif %}
                 </div>
+                <div class="col-md-12"><hr></div>
+                <div id="node_info_container" class="col-md-12"></div>
             </div>
         </div>
         <div id="relationships_tab" class="tab-pane fade">
             <div class="row">
-                <div class="col-md-12">
-                    {% for relation in node.relations %}
-                        <div class="relation_div" data-relation="{{ relation }}"></div>
-                        <hr>
-                    {% endfor %}
-                </div>
+                <div id="relationships_container" class="col-md-12"></div>
             </div>
         </div>
         <div id="variables_tab" class="tab-pane fade">

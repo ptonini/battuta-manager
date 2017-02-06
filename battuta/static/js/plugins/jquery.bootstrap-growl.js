@@ -22,7 +22,7 @@
                 amount: options.top_offset
             };
         }
-        if (options.offset.amount instanceof Function) offsetAmount = options.offset.amount();
+        if (options.offset.amount instanceof Function) offsetAmount = options.offset.amount($alert);
         else offsetAmount = options.offset.amount;
         $(".bootstrap-growl").each(function () {
             return offsetAmount = Math.max(offsetAmount, parseInt($(this).css(options.offset.from)) + $(this).outerHeight() + options.stackup_spacing);

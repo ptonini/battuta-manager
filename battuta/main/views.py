@@ -57,6 +57,7 @@ class MainView(View):
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
+
 class SearchView(View):
     @staticmethod
     def get(request, pattern):

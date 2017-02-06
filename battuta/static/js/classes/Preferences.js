@@ -14,19 +14,21 @@ function Preferences()  {
             Ok: function() {
                 $(this).dialog('close');
                 $.each(self.defaultValues, function (index, item) {$('#item_' + item[0] ).val(item[1])});
-                self.savePreferences(function () {
+
+                self.saveCallback = function () {
                     setTimeout(function () {
                         $.bootstrapGrowl('Preferences restored', {type: 'success'})
                     }, 500);
-                })
+                };
+                self._savePreferences()
             },
             Cancel: function() {$(this).dialog('close')}
         }
     });
 
-    self.prefsDialog = largeDialog.append(
+    self.prefsDialog = largeDialog.clone().append(
         divRow.clone().append(
-            divCol12.append(
+            divCol12.clone().append(
                 $('<h3>').css('margin-bottom', '20px').append(
                     $('<span>').html('Preferences'),
                     $('<span>').css('float', 'right').append(
@@ -44,17 +46,21 @@ function Preferences()  {
         width: 800,
         buttons: {
             Reload: function() {
-                self.buildContainer(function () {
+                self._buildContainer(function () {
                     $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
                 })
             },
             Save: function() {
-                self.savePreferences(function () {
+
+                self.saveCallback(function () {
                     var alertOptions = {type: 'success', close_callback: function () {window.location.reload(true)}};
                     $.bootstrapGrowl('Preferences saved', alertOptions);
-                })
+                });
+                self._savePreferences()
             },
-            Cancel: function () {$(this).dialog('close')}
+            Cancel: function () {
+                $(this).dialog('close')
+            }
         },
         close: function () {
             $(this).remove();
@@ -62,7 +68,7 @@ function Preferences()  {
         }
     });
 
-    self.buildContainer(function() {self.prefsDialog.dialog('open')});
+    self._buildContainer();
 }
 
 Preferences.getPreferences = function () {
@@ -95,7 +101,7 @@ Preferences.validateItemDataType = function (dataType, dataValue) {
     return result
 };
 
-Preferences.prototype.buildContainer = function (buildCallback) {
+Preferences.prototype._buildContainer = function () {
     var self = this;
 
     var booleanField = $('<select>').addClass('select form-control input-sm').append(
@@ -167,12 +173,12 @@ Preferences.prototype.buildContainer = function (buildCallback) {
                 $('#item_' + item[0] ).val(item[1])
             });
 
-            if (buildCallback) buildCallback()
+            self.prefsDialog.dialog('open')
         }
     })
 };
 
-Preferences.prototype.savePreferences = function (saveCallback) {
+Preferences.prototype._savePreferences = function () {
     var self = this;
 
     var itemValues = {};
@@ -193,7 +199,7 @@ Preferences.prototype.savePreferences = function (saveCallback) {
             dataType: 'json',
             success: function() {
                 Preferences.getPreferences();
-                if (saveCallback) saveCallback()
+                if (self.saveCallback) self.saveCallback()
             }
         })
     }

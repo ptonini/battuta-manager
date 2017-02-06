@@ -137,7 +137,10 @@ AdHocTasks.prototype._submitForm = function () {
         id: self.task.id
     };
 
-    if (self.action == 'run') new AnsibleRunner(task, askPassword, cred.username);
+    if (self.action == 'run') {
+        task.action = 'run';
+        new AnsibleRunner(task, askPassword, cred.username);
+    }
 
     else if (self.action == 'save') AdHocTasks.saveTask(task, function () {
         self.task.saveCallback();

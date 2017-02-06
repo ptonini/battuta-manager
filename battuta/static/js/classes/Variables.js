@@ -26,13 +26,13 @@ function Variables(variable, type, nodeName, nodeType, saveCallback, container) 
         }
     });
 
+
     if (self.type == 'add') container.append(self.form);
     else if (self.type == 'dialog') self.dialog.dialog('open');
 }
 
 Variables.prototype._buildForm = function () {
     var self = this;
-
     if (self.type == 'add') {
         self.formHeader.html('Add variable');
         self.valueField = textInputField.clone();
@@ -91,6 +91,7 @@ Variables.prototype._buildForm = function () {
 
 Variables.prototype._submitForm = function () {
     var self = this;
+    var submitCallback;
 
     var variable = {
         key: self.keyField.val(),
@@ -98,18 +99,18 @@ Variables.prototype._submitForm = function () {
         id: self.var.id
     };
 
-    if (self.type = 'add') {
-        var submitCallback = function () {
-            self.saveCallback();
-            self.form.find('input').val('');
-            self.keyField.focus();
-        }
-    }
-    else submitCallback = self.saveCallback;
+    if (self.type == 'add') submitCallback = function () {
+        self.saveCallback();
+        self.form.find('input').val('');
+        self.keyField.focus();
+    };
 
+    else submitCallback = function () {
+        self.saveCallback();
+        self.dialog.dialog('close');
+    };
 
     Variables.saveVariable(variable, self.nodeName, self.nodeType, submitCallback);
-
 
 };
 

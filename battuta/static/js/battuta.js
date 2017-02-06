@@ -43,7 +43,7 @@ var smallDialog = $('<div>').attr('class', 'small_dialog');
 var submitErrorAlert = $('<div>').attr('class', 'large-alert').html($('<h5>').html('Submit error:'));
 var spanGlyph = $('<span>').attr('class', 'glyphicon');
 var spanRight = $('<span>').css('float', 'right');
-
+var divWell = $('<div>').attr('class', 'well');
 
 // AJAX settings ///////////////////////
 
@@ -108,7 +108,16 @@ $.extend($.bootstrapGrowl.default_options, {
     delay: 500,
     allow_dismiss: true,
     width: 'auto',
-    offset: {from: 'bottom', amount: function () {return (window.innerHeight / 2)}}
+    offset: {
+        from: 'bottom',
+        amount: function (alert) {
+            var tempAlert = alert.clone().css('visibility', 'hidden');
+            $('body').append(tempAlert);
+            var offset = (window.innerHeight - tempAlert.height()) / 2;
+            tempAlert.remove();
+            return offset
+        }
+    }
 });
 var failedAlertOptions = {type: 'danger', delay: 3000};
 
