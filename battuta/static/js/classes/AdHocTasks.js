@@ -278,7 +278,7 @@ AdHocTasks.prototype._buildModuleFields = function () {
 
     self.argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(self.argumentsField));
 
-    self.moduleReferenceLink.show()
+    self.moduleReferenceLink.show().off()
         .attr('title', moduleReferenceLink)
         .click(function () {window.open(moduleReferenceLink)});
 

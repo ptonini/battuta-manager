@@ -46,16 +46,24 @@ function Preferences()  {
         width: 800,
         buttons: {
             Reload: function() {
-                self._buildContainer(function () {
+
+                self.buildCallback = function () {
                     $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
-                })
+                };
+
+                self._buildContainer()
             },
             Save: function() {
 
-                self.saveCallback(function () {
-                    var alertOptions = {type: 'success', close_callback: function () {window.location.reload(true)}};
-                    $.bootstrapGrowl('Preferences saved', alertOptions);
-                });
+                self.saveCallback = function () {
+                    $.bootstrapGrowl('Preferences saved', {
+                        type: 'success',
+                        close_callback: function () {
+                            window.location.reload(true)
+                        }
+                    });
+                };
+
                 self._savePreferences()
             },
             Cancel: function () {
@@ -173,7 +181,9 @@ Preferences.prototype._buildContainer = function () {
                 $('#item_' + item[0] ).val(item[1])
             });
 
-            self.prefsDialog.dialog('open')
+            self.prefsDialog.dialog('open');
+
+            if (self.buildCallback) self.buildCallback();
         }
     })
 };
