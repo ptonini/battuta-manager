@@ -26,15 +26,15 @@ HostFacts.prototype.loadFacts = function () {
             else self.container.append(self.gatherFactsButton)
         }
     });
-}
+};
 
 HostFacts.prototype._buildFacts = function (facts) {
     var self = this;
 
-    var divCol4L = divCol4.clone().addClass('col-xs-4 report_field_left');
-    var divCol8R = divCol4.clone().addClass('col-xs-8 report_field_right truncate-text');
-    var divFactsCol6 = divCol6.clone().addClass('col-xs-6').css('margin-bottom', '15px');
-    var divFactsCol8 = divCol8.clone().addClass('col-xs-8').css('margin-bottom', '15px');
+    var divCol4L = divCol4.clone().addClass('report_field_left');
+    var divCol8R = divCol8.clone().addClass('report_field_right truncate-text');
+    var divFactsCol6 = divCol6.clone().css('margin-bottom', '15px');
+    var divFactsCol8 = divCol8.clone().css('margin-bottom', '15px');
 
 
     self.os = facts.os_family + ' - ' + facts.distribution + ' ' + facts.distribution_version;
@@ -75,16 +75,13 @@ HostFacts.prototype._buildFacts = function (facts) {
                 divCol4L.clone().append('Full hostname:'), divCol8R.clone().append(facts.fqdn)
             ),
             divRowEqHeight.clone().append(
-                divCol4L.clone().append('Processor:'),
-                divCol8R.clone().append(facts.processor[1])
+                divCol4L.clone().append('Processor:'), divCol8R.clone().append(facts.processor[1])
             ),
             divRowEqHeight.clone().append(
-                divCol4L.clone().append('Cores:'),
-                divCol8R.clone().append(facts.processor_count )
+                divCol4L.clone().append('Cores:'), divCol8R.clone().append(facts.processor_count )
             ),
             divRowEqHeight.clone().append(
-                divCol4L.clone().append('RAM Memory'),
-                divCol8R.clone().append(humanBytes(facts.memtotal_mb, 'MB'))
+                divCol4L.clone().append('RAM Memory'), divCol8R.clone().append(humanBytes(facts.memtotal_mb, 'MB'))
             ),
             divRowEqHeight.clone().append(
                 divCol4L.clone().append('System:'), divCol8R.clone().append(facts.system)
@@ -102,16 +99,13 @@ HostFacts.prototype._buildFacts = function (facts) {
                     divCol4L.clone().append('EC2 hostname:'), divCol8R.clone().append(facts.ec2_hostname)
                 ),
                 divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 public address:'),
-                    divCol8R.clone().append(facts.ec2_public_ipv4)
+                    divCol4L.clone().append('EC2 public address:'), divCol8R.clone().append(facts.ec2_public_ipv4)
                 ),
                 divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 instance type:'),
-                    divCol8R.clone().append(facts.ec2_instance_type)
+                    divCol4L.clone().append('EC2 instance type:'), divCol8R.clone().append(facts.ec2_instance_type)
                 ),
                 divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 instance id:'),
-                    divCol8R.clone().append(facts.ec2_instance_id)
+                    divCol4L.clone().append('EC2 instance id:'), divCol8R.clone().append(facts.ec2_instance_id)
                 ),
                 divRowEqHeight.clone().append(
                     divCol4L.clone().append('EC2 avaliability zone:'),
@@ -124,7 +118,8 @@ HostFacts.prototype._buildFacts = function (facts) {
     self.allFactsContainer = divWell.clone().hide().JSONView(facts, {'collapsed': true});
 
     self.showFactsButton = xsButton.clone().html('Show facts').css('margin-right', '5px').click(function () {
-        $(this).toggleClass('checked_button');
+        if ($(this).html() == 'Show facts') $(this).html('Hide facts');
+        else $(this).html('Show facts');
         self.allFactsContainer.toggle();
     });
 
@@ -140,7 +135,7 @@ HostFacts.prototype._buildFacts = function (facts) {
             divCol12.clone().append(self.allFactsContainer)
         )
     );
-}
+};
 
 
 

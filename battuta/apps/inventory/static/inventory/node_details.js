@@ -23,15 +23,6 @@ $(document).ready(function () {
 
     var variableTable = new VariableTable(nodeName, nodeType, $('#variable_table_container'));
 
-    function saveVariableCallback() {
-        variableTable.reloadTable()
-    }
-
-    function alterRelationCallback() {
-        variableTable.reloadTable();
-        if (typeof descendants !== 'undefined') descendants.reload()
-    }
-
     new Relationships(nodeName, nodeType, alterRelationCallback, $('#relationships_container'));
 
     new Variables({id: null}, 'add', nodeName, nodeType, saveVariableCallback, $('#variable_form_container'));
@@ -55,4 +46,13 @@ $(document).ready(function () {
             });
         })
     });
+
+    function saveVariableCallback() {
+        variableTable.reloadTable()
+    }
+
+    function alterRelationCallback() {
+        variableTable.reloadTable();
+        if (typeof descendants !== 'undefined') descendants.reload()
+    }
 });

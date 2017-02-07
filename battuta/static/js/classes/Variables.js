@@ -49,8 +49,9 @@ Variables.prototype._buildForm = function () {
             divRow.clone().append(
                 divCol3.clone().append($('<label>').html('Key').append(self.keyField)),
                 divCol6.clone().append($('<label>').html('Value').append(self.valueField)),
-                divCol1.clone().addClass('labelless_button').append(self.saveButton),
-                divCol2.clone().addClass('text-right labelless_button').append(self.copyButton)
+                divCol3.clone().addClass('labelless_button').append(
+                    self.saveButton, spanRight.clone().append(self.copyButton)
+                )
             )
         );
     }

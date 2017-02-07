@@ -1,9 +1,9 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
-{% block content %}
-    <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
+{% block scripts %}
     <script type="text/javascript" src="{% static 'inventory/nodes.js' %}"></script>
+{% endblock%}
+{% block content %}
     <input id="node_type" type="hidden" value="{{ node_type }}">
     <div class="row">
         <div class="col-md-12">

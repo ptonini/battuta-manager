@@ -26,7 +26,7 @@ small.label_link {float: right; cursor: pointer}
 
 .report_field_left {padding: 0 0 0 15px}
 
-.report_field_right {padding: 0 15px 0 0}
+.report_field_right {padding: 0 15px 0 5px}
 
 .reference_link {color: #777; float: right; cursor: pointer; padding-top: 32px}
 

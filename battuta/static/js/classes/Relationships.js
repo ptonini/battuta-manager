@@ -87,4 +87,4 @@ Relationships.prototype.alterRelation = function (relation, selection, action) {
             self.alterRelationCallback()
         }
     });
-}
+};
