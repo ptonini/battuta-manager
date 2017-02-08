@@ -15,28 +15,53 @@ from pytz import timezone, utc
 from apps.preferences.functions import get_preferences
 
 
+class FilesView(View):
+
+    @staticmethod
+    def get(request):
+        return render(request, 'fileman/files.html', {'user': request.user})
+
+
 class FileManagerView(View):
-    root_dir = None
-    html_template = None
-    is_user = False
 
-    def get(self, request):
+    @staticmethod
+    def set_root(root, request):
 
-        data = None
+        root_dir = None
 
-        if self.is_user:
-            self.root_dir = os.path.join(self.root_dir, request.user.username)
+        if root == 'files':
+            root_dir = settings.FILES_PATH
+        elif root == 'roles':
+            root_dir = settings.ROLES_PATH
+        else:
+            temp_list = root.split('?')
+            if temp_list[0] == 'user':
+                root_dir = os.path.join(settings.USERDATA_PATH, request.user.username)
 
-        if 'list' in request.GET:
+        if root_dir and not os.path.exists(root_dir):
+            os.makedirs(root_dir)
+
+        return root_dir
+
+    @staticmethod
+    def get(request, root, action):
+
+        root_dir = FileManagerView.set_root(root, request)
+        prefs = get_preferences()
+
+        if not root_dir:
+            raise Http404('Invalid root')
+
+        if action == 'list':
 
             tz = timezone(request.user.userdata.timezone)
-            prefs = get_preferences()
-
-            if not os.path.exists(self.root_dir):
-                os.makedirs(self.root_dir)
-
             data = list()
-            directory = os.path.join(self.root_dir, request.GET['list'])
+
+            if request.GET['folder']:
+                directory = os.path.join(root_dir, request.GET['folder'])
+            else:
+                directory = root_dir
+
             for base_name in os.listdir(directory):
 
                 full_path = os.path.join(directory, base_name)
@@ -51,23 +76,32 @@ class FileManagerView(View):
 
                 file_size = os.path.getsize(full_path)
                 file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-
                 utc_timestamp = utc.localize(file_timestamp)
-                local_timestamp = utc_timestamp.astimezone(tz).strftime(prefs['date_format'])
 
-                data.append([base_name, file_mime_type, file_size, local_timestamp, ''])
+                data.append({'name': base_name,
+                             'type': file_mime_type,
+                             'size': file_size,
+                             'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
+                             'root': root})
 
-        elif 'edit' in request.GET:
+        elif action == 'edit':
 
-            full_path = os.path.join(self.root_dir, request.GET['current_dir'], request.GET['edit'])
+            full_path = os.path.join(root_dir, request.GET['folder'], request.GET['file'])
 
             if os.path.exists(full_path):
-                with open(full_path, 'r') as text_file:
-                    data = {'result': 'ok', 'text': text_file.read()}
+                if os.path.isfile(full_path):
+                    if os.stat(full_path).st_size <= prefs['max_edit_size']:
+                        with open(full_path, 'r') as text_file:
+                            data = {'result': 'ok', 'text': text_file.read()}
+                    else:
+                        data = {'result': 'fail',
+                                'msg': 'The file is larger than ' + str(prefs['max_edit_size']) + 'kb'}
+                else:
+                    data = {'result': 'fail', 'msg': 'Target is not a file'}
             else:
                 data = {'result': 'fail', 'msg': 'The file was not found'}
 
-        elif 'exists' in request.GET:
+        elif action == 'exists':
 
             if request.GET['type'] == 'directory':
                 check_method = os.path.isdir
@@ -76,21 +110,21 @@ class FileManagerView(View):
             else:
                 raise Http404('Invalid object type')
 
-            if check_method(os.path.join(self.root_dir, request.GET['exists'])):
+            if check_method(os.path.join(root_dir, request.GET['folder'])):
                 data = {'result': 'ok'}
             else:
                 data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
 
-        elif 'download' in request.GET:
+        elif action == 'download':
 
-            full_path = os.path.join(self.root_dir, request.GET['current_dir'], request.GET['download'])
+            full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
 
             if os.path.isfile(full_path):
                 target = full_path
                 delete_after = False
 
             else:
-                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['download']), 'zip', full_path)
+                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['name']), 'zip', full_path)
                 delete_after = True
 
             stream = StreamingHttpResponse((line for line in open(target, 'r')))
@@ -102,80 +136,78 @@ class FileManagerView(View):
 
             return stream
 
-        if data is None:
-            return render(request, self.html_template, {'user': request.user})
         else:
-            return HttpResponse(json.dumps(data), content_type='application/json')
+            raise Http404('Invalid action')
 
-    def post(self, request):
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
-        if self.is_user:
-            self.root_dir = os.path.join(self.root_dir, request.user.username)
+    @staticmethod
+    def post(request, root, action):
 
-        full_path = os.path.join(self.root_dir, request.POST['current_dir'], request.POST['base_name'])
+        root_dir = FileManagerView.set_root(root, request)
 
-        if 'old_base_name' in request.POST:
-            old_full_path = os.path.join(self.root_dir, request.POST['current_dir'], request.POST['old_base_name'])
-        else:
-            old_full_path = None
+        full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
+        new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])
 
-        if request.POST['action'] == 'save':
+        if action == 'save':
 
-            if full_path != old_full_path and os.path.exists(full_path):
-                data = {'result': 'fail', 'msg': 'This name is already in use'}
-            else:
+            if full_path == new_path or not os.path.exists(new_path):
+
                 try:
-                    with open(full_path, 'w') as f:
+                    with open(new_path, 'w') as f:
                         f.write(request.POST['text'].encode('utf8'))
+                        data = {'result': 'ok'}
                 except Exception as e:
                     data = {'result': 'fail', 'msg': str(e)}
-                else:
-                    if full_path != old_full_path:
-                        try:
-                            os.remove(old_full_path)
-                        except os.error:
-                            pass
-                    data = {'result': 'ok'}
 
-        elif request.POST['action'] == 'rename':
+                if full_path != new_path:
+                    try:
+                        os.remove(full_path)
+                    except os.error:
+                        pass
 
-            if os.path.exists(full_path):
+            else:
+                data = {'result': 'fail', 'msg': 'This filename is already in use'}
+
+        elif action == 'rename':
+
+            if os.path.exists(new_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
-                os.rename(old_full_path, full_path)
+                os.rename(full_path, new_path)
                 data = {'result': 'ok'}
 
-        elif request.POST['action'] == 'create':
+        elif action == 'create':
 
-            if os.path.exists(full_path):
+            if os.path.exists(new_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
                 if request.POST['is_directory'] == 'true':
-                    os.makedirs(full_path)
+                    os.makedirs(new_path)
                 else:
-                    open(full_path, 'a').close()
+                    open(new_path, 'a').close()
 
                 data = {'result': 'ok'}
 
-        elif request.POST['action'] == 'copy':
+        elif action == 'copy':
 
-            if os.path.exists(full_path):
+            if os.path.exists(new_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
-                if os.path.isfile(old_full_path):
-                    shutil.copy(old_full_path, full_path)
+                if os.path.isfile(full_path):
+                    shutil.copy(full_path, new_path)
                 else:
-                    shutil.copytree(old_full_path, full_path)
+                    shutil.copytree(full_path, new_path)
 
                 data = {'result': 'ok'}
 
-        elif request.POST['action'] == 'upload':
+        elif action == 'upload':
 
-            if os.path.exists(full_path):
+            if os.path.exists(new_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
                 try:
-                    with open(full_path, 'w') as f:
+                    with open(new_path, 'w') as f:
                         for chunk in request.FILES['file_data']:
                             f.write(chunk)
                 except Exception as e:
@@ -183,12 +215,12 @@ class FileManagerView(View):
                 else:
                     data = {'result': 'ok'}
 
-        elif request.POST['action'] == 'delete':
+        elif action == 'delete':
 
-            if os.path.isfile(full_path):
-                os.remove(full_path)
+            if os.path.isfile(new_path):
+                os.remove(new_path)
             else:
-                shutil.rmtree(full_path)
+                shutil.rmtree(new_path)
 
             data = {'result': 'ok'}
 
@@ -197,18 +229,3 @@ class FileManagerView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-
-class FileView(FileManagerView):
-    root_dir = settings.FILES_PATH
-    html_template = 'fileman/files.html'
-
-
-class RoleView(FileManagerView):
-    root_dir = settings.ROLES_PATH
-    html_template = 'fileman/roles.html'
-
-
-class UserFilesView(FileManagerView):
-    root_dir = settings.USERDATA_PATH
-    html_template = 'fileman/user_files.html'
-    is_user = True

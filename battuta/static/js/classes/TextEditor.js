@@ -1,34 +1,14 @@
-function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
+function TextEditor(file, closeCallback) {
     var self = this;
 
-    self.modes = [
-        ['apache_conf', 'Apache conf'],
-        ['batchfile', 'BatchFile'],
-        ['css', 'CSS'],
-        ['dockerfile', 'Dockerfile'],
-        ['gitignore', 'Gitignore'],
-        ['ini', 'INI'],
-        ['java', 'Java'],
-        ['javascript', 'JavaScript'],
-        ['json', 'JSON'],
-        ['php', 'PHP'],
-        ['powershell', 'Powershell'],
-        ['properties', 'Properties'],
-        ['python', 'Python'],
-        ['sh', 'SH'],
-        ['sql', 'SQL'],
-        ['text', 'Text'],
-        ['vbscript', 'VBScript'],
-        ['xml', 'XML'],
-        ['yaml', 'YAML']
-    ];
+    self.file = file;
 
     self.aceModeSelector = selectField.clone().append(
         $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
     );
 
     self.reloadButton = smButton.clone().attr('title', 'Reload').html(
-        $('<span>').attr('class', 'glyphicon glyphicon-refresh')
+        spanGlyph.clone().addClass('glyphicon-refresh')
     );
 
     self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.reloadButton);
@@ -38,6 +18,7 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     self.fileNameField = textInputField.clone();
 
     self.editorDialog = largeDialog.clone().append(
+        $('<h4>').html('Text Editor'),
         divRowEqHeight.clone().addClass('form-group').append(
             divCol4.clone().append($('<label>').html('File name').append(self.fileNameField)),
             divCol6.clone().append(self.buttonGroup),
@@ -53,28 +34,29 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
         closeOnEscape: false,
         buttons: {
             Save: function () {
-                var editorData = self.textEditorContainer.data();
-                var fileName = self.fileNameField.val();
-                if (fileName) {
-                    if (editorData.ext && fileName.split('.').slice(-1)[0] != editorData.ext) {
-                        fileName += '.' + editorData.ext;
+                var formName = self.fileNameField.val();
+                if (formName) {
+                    if (self.file.ext && formName.split('.').slice(-1)[0] != self.file.ext) {
+                        formName += '.' + self.file.ext;
                     }
-                    var fileDir = editorData.fileDir;
-                    var oldFileName = editorData.fileName;
-                    var postData = {
-                        action: 'save',
-                        current_dir: fileDir,
-                        old_base_name: oldFileName,
-                        base_name: fileName,
-                        text: self.textEditor.getValue()
-                    };
-                    submitRequest('POST', postData, function (data) {
-                        if (data.result == 'ok') {
-                            self.editorDialog.dialog('close');
-                            $.bootstrapGrowl(fileName + ' saved', {type: 'success'});
+
+                    self.file.new_name = formName;
+                    self.file.text = self.textEditor.getValue();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/fileman/' + self.file.root + '/save/',
+                        dataType: 'json',
+                        data: self.file,
+                        success: function (data) {
+                            if (data.result == 'ok') {
+                                self.editorDialog.dialog('close');
+                                $.bootstrapGrowl(formName + ' saved', {type: 'success'});
+                            }
+                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
                         }
-                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
-                    })
+                    });
+
                 }
                 else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
             },
@@ -86,14 +68,14 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
         close: function() {$(this).remove()}
     });
 
-    $.each(self.modes, function(index, value){
-        self.aceModeSelector.append($('<option>').attr('value', value[0]).html(value[1]))
+    $.each(TextEditor.modes, function(index, mode){
+        self.aceModeSelector.append($('<option>').attr('value', mode.name).html(mode.label))
     });
 
     self.aceModeSelector.change(function () {self.textEditor.getSession().setMode('ace/mode/' + $(this).val())});
 
     self.reloadButton.click(function () {
-        self.textEditor.setValue(self.textEditorContainer.data('text'));
+        self.textEditor.setValue(self.file.text);
         self.textEditor.selection.moveCursorFileStart();
     });
 
@@ -103,13 +85,13 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
     self.textEditor.setHighlightActiveLine(false);
     self.textEditor.setFontSize(13);
     self.textEditor.$blockScrolling = Infinity;
-    self.textEditor.setValue(text);
+    self.textEditor.setValue(self.file.text);
     self.textEditor.session.getUndoManager().reset();
     self.textEditor.selection.moveCursorFileStart();
 
     var aceMode = 'text';
-    if (!mimeType || mimeType == 'text/plain') {
-        var fileNameArray = fileName.split('.');
+    if (!self.file.type || self.file.type == 'text/plain') {
+        var fileNameArray = self.file.name.split('.');
         var fileExtension = fileNameArray[fileNameArray.length - 1];
         if (fileExtension == 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
 
@@ -122,23 +104,45 @@ function TextEditor(text, fileDir, fileName, mimeType, ext, closeCallback) {
         else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
         else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
     }
-    else if (mimeType == 'application/xml') aceMode = 'xml';
-    else if (mimeType == 'application/json') aceMode = 'json';
-    else if (mimeType == 'text/x-shellscript') aceMode = 'sh';
-    else if (mimeType == 'text/yaml') aceMode = 'yaml';
+    else if (file.type == 'application/xml') aceMode = 'xml';
+    else if (file.type == 'application/json') aceMode = 'json';
+    else if (file.type == 'text/x-shellscript') aceMode = 'sh';
+    else if (file.type == 'text/yaml') aceMode = 'yaml';
 
     self.aceModeSelector.val(aceMode);
     self.textEditor.getSession().setMode('ace/mode/' + aceMode);
 
-    if (fileName) self.fileNameField.removeAttr('placeholder').val(fileName);
+    if (self.file.name) self.fileNameField.removeAttr('placeholder').val(self.file.name);
     else {
         self.fileNameField.attr('placeholder', 'New file').val('');
-        fileName = '/invalid_name'
+        self.file.name = '/invalid_name'
     }
-    self.textEditorContainer
-        .data({text: text, fileDir: fileDir, fileName: fileName, ext: ext})
-        .css('height', window.innerHeight * .7);
+
+    self.textEditorContainer.css('height', window.innerHeight * .7);
+
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
     self.editorDialog.on('dialogclose', closeCallback).dialog('open');
     self.textEditor.focus();
 }
+
+TextEditor.modes = [
+    {name: 'apache_conf', label: 'Apache conf'},
+    {name: 'batchfile', label: 'BatchFile'},
+    {name: 'css', label: 'CSS'},
+    {name: 'dockerfile', label: 'Dockerfile'},
+    {name: 'gitignore', label: 'Gitignore'},
+    {name: 'ini', label: 'INI'},
+    {name: 'java', label: 'Java'},
+    {name: 'javascript', label: 'JavaScript'},
+    {name: 'json', label: 'JSON'},
+    {name: 'php', label: 'PHP'},
+    {name: 'powershell', label: 'Powershell'},
+    {name: 'properties', label: 'Properties'},
+    {name: 'python', label: 'Python'},
+    {name: 'sh', label: 'SH'},
+    {name: 'sql', label: 'SQL'},
+    {name: 'text', label: 'Text'},
+    {name: 'vbscript', label: 'VBScript'},
+    {name: 'xml', label: 'XML'},
+    {name: 'yaml', label: 'YAML'}
+];

@@ -181,8 +181,8 @@ AdHocTasks.prototype._buildForm = function () {
 
     else if (self.type == 'dialog') {
 
-        if (self.task.id) self.formHeader.html('Edit task');
-        else self.formHeader.html('Create task');
+        if (self.task.id) self.formHeader.html('AdHoc Task');
+        else self.formHeader.html('New AdHoc task');
 
         self.moduleSelector = selectField.clone();
         $.each(AdHocTasks.modules.sort(), function (index, value) {

@@ -1,7 +1,9 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'fileman/files.js' %}"></script>
+{% endblock %}
 {% block content %}
-    <script>document.title = 'Battuta - Files';</script>
     <h3>Files</h3>
-    {% include 'fileman/filetable.html' with root_folder='files_path' %}
+    <div id="file_table_container"></div>
 {% endblock %}

@@ -1,7 +1,9 @@
-function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
+function FileDialog(file, action, beforeCloseCallback) {
     var self = this;
 
-    self.nameFieldInput = textInputField.clone().attr('value', currentName);
+    self.file = file;
+
+    self.nameFieldInput = textInputField.clone().attr('value', self.file.name);
     self.nameField =  divCol12.clone().append(
         $('<label>').attr('class', 'text-capitalize').html(action).append(self.nameFieldInput)
     );
@@ -11,30 +13,33 @@ function FileDialog(action, currentName, currentDir, beforeCloseCallback) {
         divChkbox.clone().append($('<label>').append(self.isDirectoryInput, 'Directory'))
     );
 
-    self.fileDialogContainer = smallDialog.clone().append(self.nameField);
+    self.fileDialog = smallDialog.clone().append(self.nameField);
 
-    if (action == 'create') self.fileDialogContainer.append(self.isDirectory);
-    else if (action == 'copy') self.nameFieldInput.val(currentName + '_copy');
+    if (action == 'create') self.fileDialog.append(self.isDirectory);
+    else if (action == 'copy') self.nameFieldInput.val(self.file.name + '_copy');
 
-    self.fileDialogContainer
+    self.fileDialog
         .dialog({
             buttons: {
                 Save: function () {
-                    var newName = self.nameFieldInput.val();
-                    var postData = {
-                        action: action,
-                        base_name: newName,
-                        old_base_name: currentName,
-                        current_dir: currentDir
-                    };
+                    self.file.new_name = self.nameFieldInput.val();
+                    if (action == 'create') self.file['is_directory'] = self.isDirectoryInput.is(':checked');
 
-                    if (action == 'create') postData['is_directory'] = self.isDirectoryInput.is(':checked');
+                    if (self.file.new_name && self.file.new_name != self.file.name) {
 
-                    if (newName && newName != currentName) {
-                        submitRequest('POST', postData, function(data) {
-                            if (data.result == 'ok') self.fileDialogContainer.dialog('close');
-                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
-                        })
+                        $.ajax({
+                            type: 'POST',
+                            url: '/fileman/' + self.file.root + '/' + action + '/',
+                            dataType: 'json',
+                            data: self.file,
+                            success: function (data) {
+                                if (data.result == 'ok') {
+                                    self.fileDialog.dialog('close');
+                                    $.bootstrapGrowl(self.file.new_name + ' saved', {type: 'success'});
+                                }
+                                else $.bootstrapGrowl(data.msg, failedAlertOptions);
+                            }
+                        });
                     }
                 },
                 Cancel: function() {$(this).dialog('close')}

@@ -105,7 +105,7 @@ $.extend($.fn.dataTable.defaults, {
 // bootstrapGrowl
 $.extend($.bootstrapGrowl.default_options, {
     align: 'center',
-    delay: 500,
+    delay: 1000,
     allow_dismiss: true,
     width: 'auto',
     offset: {
