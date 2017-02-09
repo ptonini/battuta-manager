@@ -11,7 +11,8 @@ function TextEditor(file, closeCallback) {
         spanGlyph.clone().addClass('glyphicon-refresh')
     );
 
-    self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.reloadButton);
+
+    self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.createButton, self.uploadButton);
 
     self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey');
 

@@ -1,4 +1,4 @@
-function RoleDialog(beforeCloseCallback) {
+function RoleDialog(fileTable) {
     var self = this;
 
     self.roleNameField = textInputField.clone().css('margin-bottom', '10px');
@@ -50,44 +50,65 @@ function RoleDialog(beforeCloseCallback) {
         .dialog({
             buttons: {
                 Save: function() {
-                    if (self.roleNameField.val()) {
-                        submitRequest('POST', {
-                            action: 'create',
-                            current_dir: '',
-                            base_name: self.roleNameField.val(),
-                            is_directory: true,
-                            is_executable: false
-                        }, function(data) {
+
+                    var roleName = self.roleNameField.val();
+
+                    if (roleName) $.ajax({
+                        type: 'POST',
+                        url: '/fileman/roles/create/',
+                        dataType: 'json',
+                        data: {
+                            name: roleName,
+                            new_name: roleName,
+                            folder: '',
+                            is_directory: true
+                        },
+                        success: function (data) {
                             if (data.result == 'ok') {
-                                $('input:checked').each(function(index, input) {
-                                    submitRequest('POST', {
-                                        action: 'create',
-                                        current_dir: self.roleNameField.val(),
-                                        base_name: $(this).val(),
-                                        is_directory: true,
-                                        is_executable: false
-                                    }, function () {
-                                        if ($(input).data('main')) {
-                                            submitRequest('POST', {
-                                                action: 'create',
-                                                current_dir: self.roleNameField.val() + '/' + $(input).val(),
-                                                base_name: 'main.yml',
-                                                is_directory: false,
-                                                is_executable: false
-                                            });
+                                $('input:checked').each(function (index, input) {
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '/fileman/roles/create/',
+                                        dataType: 'json',
+                                        data: {
+                                            name: $(this).val(),
+                                            new_name: $(this).val(),
+                                            folder: roleName,
+                                            is_directory: true
+                                        },
+                                        success: function () {
+                                            if ($(input).data('main')) $.ajax({
+                                                type: 'POST',
+                                                url: '/fileman/roles/create/',
+                                                dataType: 'json',
+                                                data: {
+                                                    name: 'main.yml',
+                                                    new_name: 'main.yml',
+                                                    folder: roleName + '/' + $(input).val(),
+                                                    is_directory: false
+                                                }
+                                            })
                                         }
                                     });
                                 });
+
+                                fileTable.setFolder(roleName);
                                 self.roleDialog.dialog('close');
+                                $.bootstrapGrowl('Role ' + roleName + ' created', {type: 'success'});
                             }
+
                             else $.bootstrapGrowl(data.msg, failedAlertOptions);
-                        })
-                    }
+                        }
+                    });
+
+                    else $.bootstrapGrowl('Please enter a role name', {type: 'warning'})
                 },
-                Cancel: function() {$(this).dialog('close')}
+                Cancel: function() {
+                    $(this).dialog('close')}
             },
-            beforeClose: function() {beforeCloseCallback()},
-            close: function() {$(this).remove()}
+            close: function() {
+                $(this).remove()
+            }
         })
         .dialog('open');
 }

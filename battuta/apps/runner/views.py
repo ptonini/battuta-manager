@@ -22,6 +22,13 @@ from apps.users.models import Credential
 from apps.preferences.functions import get_preferences
 
 
+class RolesView(View):
+
+    @staticmethod
+    def get(request):
+        return render(request, 'runner/roles.html', {'user': request.user})
+
+
 class BaseView(View):
     def __init__(self):
         super(BaseView, self).__init__()

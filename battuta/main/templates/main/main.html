@@ -80,7 +80,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="{% url 'runner:adhoc' %}">Ad-Hoc</a></li>
                             <li><a href="{% url 'runner:playbooks' %}">Playbooks</a></li>
-                            <li><a href="{% url 'fileman:files' %}">Roles</a></li>
+                            <li><a href="{% url 'runner:roles' %}">Roles</a></li>
                             <li class="divider"></li>
                             <li><a href="{% url 'runner:history' %}">History</a></li>
                         </ul>
@@ -95,7 +95,7 @@
                                 <li class="divider"></li>
                             {% endif %}
                             <li><a href="{% url 'users:view' %}?user_id={{ user.id }}">User profile</a></li>
-                            <li><a href="{% url 'fileman:files' %}">User files</a></li>
+                            <li><a href="{% url 'users:files' %}">User files</a></li>
                         </ul>
                     </li>
                 </ul>

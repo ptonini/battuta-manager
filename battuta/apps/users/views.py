@@ -109,6 +109,13 @@ class UserView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+class UserFilesView(View):
+
+    @staticmethod
+    def get(request):
+        return render(request, 'users/user_files.html', {'user': request.user})
+
+
 class CredentialView(View):
 
     @staticmethod

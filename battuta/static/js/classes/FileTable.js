@@ -24,7 +24,7 @@ function FileTable(root, container) {
                 .off()
                 .focus()
                 .val(self.folder)
-                .css('width', self.breadCrumb.width() * .75 + 'px')
+                .css('width', self.breadCrumb.width() * .90 + 'px')
                 .keypress(function (event) {
                     if (event.keyCode == 13) {
                         var fieldValue = self.pathInputField.val();
@@ -54,9 +54,27 @@ function FileTable(root, container) {
 
     self.breadCrumb = breadcrumb.clone().attr('id', 'path_links').append(self.rootPath, self.editPath);
 
+    self.createButton = smButton.clone()
+        .attr('title', 'Create')
+        .html(spanGlyph.clone().addClass('glyphicon-asterisk'))
+        .click(function () {
+            var newFile = {name: '', root: self.root, folder: self.folder};
+            new FileDialog(newFile, 'create', self.table.DataTable().ajax.reload);
+        });
+
+    self.uploadButton = smButton.clone()
+        .attr('title', 'Upload')
+        .html(spanGlyph.clone().addClass('glyphicon-upload'))
+        .click(function () {
+            new UploadDialog(self.folder, self.root, self.table.DataTable().ajax.reload);
+        });
+
+    self.buttonGroup = divBtnGroup.clone().append(self.createButton, self.uploadButton);
+
     self.container.append(
         divRowEqHeight.clone().append(
-            divCol10.clone().css('margin-top', '18px').append(self.breadCrumb)
+            divCol10.clone().css('margin-top', '18px').append(self.breadCrumb),
+            divCol2.clone().addClass('text-right').css('margin-top', '18px').append(self.buttonGroup)
         ),
         divRow.clone().append(
             divCol12.clone().css('margin-top', '18px').append(self.table)
@@ -73,9 +91,7 @@ function FileTable(root, container) {
             }
         });
     }
-    else {
-        self._buildTable()
-    }
+    else self._buildTable()
 }
 
 FileTable.editableTypes = [
@@ -212,4 +228,19 @@ FileTable.prototype._buildBreadcrumbs = function () {
                 })
         )
     });
+};
+
+FileTable.prototype.addButtons = function (buttons) {
+    var self = this;
+
+    $.each(buttons.reverse(), function (index, button) {
+        self.buttonGroup.prepend(button)
+    });
+};
+
+FileTable.prototype.setFolder = function (folder) {
+    var self = this;
+
+    self.folder = folder;
+    self.table.DataTable().ajax.reload()
 };

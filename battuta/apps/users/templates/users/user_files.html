@@ -4,14 +4,14 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - Files';
+            document.title = 'Battuta - {{ user }} files';
 
-            new FileTable('files', $('#file_table_container'))
+            new FileTable('user', $('#file_table_container'))
 
         });
     </script>
 {% endblock %}
 {% block content %}
-    <h3>Files</h3>
+    <h3>{{ user }} files</h3>
     <div id="file_table_container"></div>
 {% endblock %}

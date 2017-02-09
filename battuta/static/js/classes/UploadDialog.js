@@ -1,4 +1,4 @@
-function UploadDialog(baseDir, beforeCloseCallback) {
+function UploadDialog(folder, root, beforeCloseCallback) {
     var self = this;
 
     self.uploadField = fileInputField.clone();
@@ -9,16 +9,16 @@ function UploadDialog(baseDir, beforeCloseCallback) {
 
     self.uploadField
         .fileinput({
-            uploadUrl: window.location.href,
+            uploadUrl: '/fileman/' + root + '/upload/',
             uploadAsync: true,
             uploadExtraData: function () {
-                var baseName = '';
+                var fileName = '';
                 var fileStack = self.uploadField.fileinput('getFileStack');
-                if (fileStack.length == 1) baseName = fileStack[0].name;
+                if (fileStack.length == 1) fileName = fileStack[0].name;
                 return {
-                    action: 'upload',
-                    base_name: baseName,
-                    current_dir: baseDir,
+                    name: fileName,
+                    new_name: fileName,
+                    folder: folder,
                     csrfmiddlewaretoken: getCookie('csrftoken')
                 }
             },

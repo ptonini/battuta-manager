@@ -1,0 +1,25 @@
+{% extends 'main/main.html' %}
+{% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            document.title = 'Battuta - Roles';
+
+            var fileTable = new FileTable('roles', $('#file_table_container'));
+
+            var buttons = [
+                smButton.clone().html('Add role').click(function () {
+                    new RoleDialog(fileTable)
+                })
+            ];
+
+            fileTable.addButtons(buttons)
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <h3>Roles</h3>
+    <div id="file_table_container"></div>
+{% endblock %}

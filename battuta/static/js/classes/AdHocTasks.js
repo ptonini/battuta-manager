@@ -261,7 +261,7 @@ AdHocTasks.prototype._buildModuleFields = function () {
     self.fileSourceGroup = divFormGroup.clone().append(
         $('<label>').html(self.fileSourceLabel).append(
             $('<small>').attr('class', 'label_link').html('upload files').click(function () {
-                window.open('/fileman/files', '_blank');
+                window.open('/fileman/', '_blank');
             }),
             self.fileSourceField
         )
