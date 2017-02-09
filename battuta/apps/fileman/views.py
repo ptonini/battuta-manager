@@ -86,7 +86,7 @@ class FileManagerView(View):
 
         elif action == 'edit':
 
-            full_path = os.path.join(root_dir, request.GET['folder'], request.GET['file'])
+            full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
 
             if os.path.exists(full_path):
                 if os.path.isfile(full_path):
@@ -110,7 +110,7 @@ class FileManagerView(View):
             else:
                 raise Http404('Invalid object type')
 
-            if check_method(os.path.join(root_dir, request.GET['folder'])):
+            if check_method(os.path.join(root_dir, request.GET['name'])):
                 data = {'result': 'ok'}
             else:
                 data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}

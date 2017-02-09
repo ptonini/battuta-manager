@@ -7,52 +7,56 @@ function FileTable(root, container) {
 
     self.table = baseTable.clone().attr('id', 'file_table');
 
-    /*self.pathInputField = $('<input>')
-        .attr('id', 'path_input')
-        .css({width: $(this).closest('.breadcrumb').width() * .75 + 'px'})
-        .val(self.folder)
-        .keypress(function (event) {
-            if (event.keyCode == 13) {
-                var editPathVal = $(this).val();
-                if (editPathVal.charAt(editPathVal.length - 1) == '/') {
-                    editPathVal = editPathVal.substr(0, editPathVal.length - 1)
-                }
-                $.ajax({
-                    data: {exists: editPathVal, type: 'directory'},
-                    success: function (data) {
-                        if (data.result == 'ok') {
-                            sessionStorage.setItem('folder', editPathVal);
-                            fileTable.DataTable().ajax.reload();
-                        }
-                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
-                    }
-                });
-            }
-        });
+    self.pathInputField = $('<input>').attr('id', 'path_input');
 
+    self.editPathIcon = spanGlyph.clone().addClass('glyphicon-edit').attr('title', 'Edit path');
 
-    self.editPath = $('<li>').attr('id', 'edit_path')
-        .append(spanGlyph.clone().addClass('glyphicon-edit').attr('title', 'Edit path'))
-        .click(function () {
-
-        $(this).children('span').toggleClass('checked_button');
-
-        if ($(this).parent().find('#path_input').length == 0) {
-            $('.path_link').remove();
-            $(this).after($('<li>').attr('class', 'path_link').append(self.pathInputField));
-            self.pathInputField.focus()
+    self.editPath = $('<li>').attr('id', 'edit_path').append(self.editPathIcon).click(function () {
+        $('.path_link').remove();
+        if (self.editPathIcon.hasClass('checked_button')) {
+            self.editPathIcon.removeClass('checked_button');
+            self._buildBreadcrumbs()
         }
-        //else buildBreadcrumbs('#file_table')
-    })*/
+        else {
+            self.editPathIcon.addClass('checked_button');
+            self.breadCrumb.append($('<li>').attr('class', 'path_link').append(self.pathInputField));
+            self.pathInputField
+                .off()
+                .focus()
+                .val(self.folder)
+                .css('width', self.breadCrumb.width() * .75 + 'px')
+                .keypress(function (event) {
+                    if (event.keyCode == 13) {
+                        var fieldValue = self.pathInputField.val();
+                        if (fieldValue.charAt(fieldValue.length - 1) == '/') {
+                            fieldValue = fieldValue.substr(0, fieldValue.length - 1)
+                        }
+                        $.ajax({
+                            url: '/fileman/' + self.root + '/exists/',
+                            data: {name: fieldValue, type: 'directory'},
+                            success: function (data) {
+                                if (data.result == 'ok') {
+                                    self.folder = fieldValue;
+                                    self.table.DataTable().ajax.reload();
+                                }
+                                else $.bootstrapGrowl(data.msg, failedAlertOptions);
+                            }
+                        });
+                    }
+                })
+        }
+    });
 
+    self.rootPath = $('<li>').attr('id', 'root_path').html('&lt;root&gt;').click(function () {
+        self.folder = '';
+        self.table.DataTable().ajax.reload()
+    });
 
-    self.breadCrumbs = $('<ol>').attr({id: 'path_links', class: 'breadcrumb'}).append(
-        $('<li>').attr('id', 'root_path').html('&lt;root&gt;')
-    );
+    self.breadCrumb = breadcrumb.clone().attr('id', 'path_links').append(self.rootPath, self.editPath);
 
     self.container.append(
         divRowEqHeight.clone().append(
-            divCol10.clone().css('margin-top', '18px').append(self.breadCrumbs)
+            divCol10.clone().css('margin-top', '18px').append(self.breadCrumb)
         ),
         divRow.clone().append(
             divCol12.clone().css('margin-top', '18px').append(self.table)
@@ -152,7 +156,9 @@ FileTable.prototype._buildTable = function () {
                             window.open('/fileman/' + self.root + '/download/?name=' + object.name + '&folder=' + object.folder, '_self')
                         }),
                     spanGlyph.clone()
-                        .addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+                        .addClass('glyphicon-trash btn-incell')
+                        .attr('title', 'Delete')
+                        .click(function () {
                             object.new_name = object.name;
                             new DeleteDialog(function () {
                                 $.ajax({
@@ -175,34 +181,35 @@ FileTable.prototype._buildTable = function () {
             );
         },
         drawCallback: function () {
-             var table = this;
-             //buildBreadcrumbs(table);
-             //$(table).find('tr.directory_row').reverse().each(function () {self.table.prepend($(this))});
+             self._buildBreadcrumbs();
+             self.table.find('tr.directory_row').reverse().each(function (index, row) {
+                 self.table.prepend($(row))
+             });
         }
     });
 
 };
 
-/*
-function buildBreadcrumbs(table) {
-    var currentDir = sessionStorage.getItem('current_dir');
+FileTable.prototype._buildBreadcrumbs = function () {
+    var self = this;
+
     $('.path_link').remove();
-    $('#edit_path').children('span').removeClass('checked_button');
-    if (currentDir) $.each(currentDir.split('/'), function (index, value) {
-        $('#path_links').append(
+    self.editPathIcon.removeClass('checked_button');
+    if (self.folder) $.each(self.folder.split('/'), function (index, value) {
+        self.breadCrumb.append(
             $('<li>')
                 .attr({id: 'path_link_' + index, class: 'path_link'})
                 .html(value)
                 .click(function () {
-                    var nextDir = '';
+                    var nextFolder = '';
                     for (var i = 0; i <= index; i++) {
-                        nextDir += $('#path_link_' + i).html();
-                        if (i < index) nextDir += '/'
+                        nextFolder += $('#path_link_' + i).html();
+                        if (i < index) nextFolder += '/'
                     }
                     $(this).nextAll('.path_link').remove();
-                    sessionStorage.setItem('current_dir', nextDir);
-                    $(table).DataTable().ajax.reload();
+                    self.folder = nextFolder;
+                    self.table.DataTable().ajax.reload();
                 })
         )
     });
-}*/
+};

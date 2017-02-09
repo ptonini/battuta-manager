@@ -266,30 +266,6 @@ DEFAULT_PREFERENCES = [
                 'value': '65536',
                 'data_type': 'number',
                 'description': 'Maximum file size for the text editor'
-            },
-            {
-                'name': 'default_timezone',
-                'value': 'America/Sao_Paulo',
-                'data_type': 'str',
-                'description': 'Default timezone'
-            },
-            {
-                'name': 'password_placeholder',
-                'value': '__hidden__',
-                'data_type': 'str',
-                'description': ''
-            },
-            {
-                'name': 'single_job_window',
-                'value': 'no',
-                'data_type': 'bool',
-                'description': 'Open jobs in single window'
-            },
-            {
-                'name': 'show_hidden_files',
-                'value': 'no',
-                'data_type': 'bool',
-                'description': 'Show hidden files and folders'
             }
         ]
     },

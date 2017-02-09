@@ -44,6 +44,7 @@ var submitErrorAlert = $('<div>').attr('class', 'large-alert').html($('<h5>').ht
 var spanGlyph = $('<span>').attr('class', 'glyphicon');
 var spanRight = $('<span>').css('float', 'right');
 var divWell = $('<div>').attr('class', 'well');
+var breadcrumb = $('<ol>').attr('class', 'breadcrumb');
 
 // AJAX settings ///////////////////////
 
