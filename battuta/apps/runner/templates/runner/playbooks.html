@@ -1,17 +1,56 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            document.title = 'Battuta - Playbooks';
+
+            var playbookTable = new FileTable('playbooks', nameCellFormater, $('#playbook_table_container'));
+
+            var buttons = [
+                smButton.clone().html('New playbook').click(function () {
+                    $.ajax({
+                        url: '/static/templates/playbook_template.yml',
+                        success: function (data) {
+                            var file = {
+                                name: '',
+                                ext: 'yml',
+                                root: 'playbooks',
+                                folder: playbookTable.getFolder(),
+                                text: data
+                            };
+                            new TextEditor(file, function () {
+                                playbookTable.reload()
+                            })
+                        }
+                    });
+                })
+            ];
+
+            playbookTable.removeDefaultButtons();
+            playbookTable.addButtons(buttons);
+
+            function nameCellFormater(cell, file) {
+                cell.css('cursor', 'pointer');
+
+                if (file.is_valid) cell.click(function () {
+                    new Playbook(file)
+                });
+                else cell.css('color', 'red').click(function () {
+                    var message = preLargeAlert.clone().html(file.error);
+                    $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+                })
+            }
+        });
+    </script>
+{% endblock %}
 {% block content %}
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
-    <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Credentials.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/SelectNodesDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/TextEditor.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'runner/playbooks.js' %}"></script>
     <h3>Playbooks</h3>
-    <div class="row row-eq-height">
+    <div class="row">
+        <div id="playbook_table_container" class="col-md-12"></div>
+    </div>
+   {% comment %} <div class="row row-eq-height">
         <div class="col-md-6">
             <h4>
                 <span>Playbook list</span>
@@ -103,5 +142,5 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>{% endcomment %}
 {% endblock %}

@@ -1,13 +1,69 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block scripts %}
-    <script type="text/javascript" src="{% static 'inventory/node_details.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var nodeName = '{{ node.name }}';
+            var nodeType = '{{ node.type }}';
+            var nodeDescriptionHeader = $('#node_description_header');
+            var userId = sessionStorage.getItem('user_id');
+
+            document.title = 'Battuta - ' + nodeName;
+
+            var nodeDescription = nodeDescriptionHeader.html();
+            if (!nodeDescription) nodeDescriptionHeader.html($('<small>').html('<i>No description available</i>'));
+
+            // Format page to 'all' group
+            if (nodeName == 'all') {
+                $('.node_tabs').remove();
+                $('#info_tab').removeClass('in active');
+                $('#variables_tab').addClass('in active')
+            }
+            else rememberSelectedTab($('ul.node_tabs').attr('id'));
+
+            if (nodeType == 'group') var descendants = new Descendants(nodeName, $('#node_info_container'));
+            else new HostFacts(nodeName, $('#node_info_container'));
+
+            var variableTable = new VariableTable(nodeName, nodeType, $('#variable_table_container'));
+
+            new Relationships(nodeName, nodeType, alterRelationCallback, $('#relationships_container'));
+
+            new Variables({id: null}, 'add', nodeName, nodeType, saveVariableCallback, $('#variable_form_container'));
+
+            new AdHocTasks(userId, nodeName, 'command', {id: null}, $('#command_form_container'));
+
+            new AdHohTaskTable(userId, nodeName, $('#adhoc_table_container'));
+
+            // Edit node
+            $('#edit_node').click(function() {
+                new NodeDialog('edit', nodeName, nodeDescription, nodeType, function (data) {
+                    window.open('/inventory/' + nodeType + '/' + data.name, '_self')
+                });
+            });
+
+            // Delete node
+            $('#delete_node').click(function() {
+                new DeleteDialog(function () {
+                    submitRequest('POST', {action: 'delete'}, function() {
+                        window.open('/inventory/' + nodeType + 's', '_self')
+                    });
+                })
+            });
+
+            function saveVariableCallback() {
+                variableTable.reloadTable()
+            }
+
+            function alterRelationCallback() {
+                variableTable.reloadTable();
+                if (typeof descendants !== 'undefined') descendants.reload()
+            }
+        });
+    </script>
 {% endblock %}
 {% block content %}
-    <h3>
-        <small><span id="header_node_type">{{ node.type }}</span></small>
-        <span id="header_node_name">{{ node.name }}</span>
-    </h3>
+    <h3><small>{{ node.type }}</small>{{ node.name }}</h3>
     <ul id="{{ node.type }}_{{ node.id }}_tabs" class="nav nav-tabs node_tabs">
         <li class="active"><a data-toggle="tab" href="#info_tab">Info</a></li>
         <li><a data-toggle="tab" href="#relationships_tab">Relationships</a></li>

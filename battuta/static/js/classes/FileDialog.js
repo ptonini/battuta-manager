@@ -1,4 +1,4 @@
-function FileDialog(file, action, beforeCloseCallback) {
+function FileDialog(file, action, postCallback) {
     var self = this;
 
     self.file = file;
@@ -35,6 +35,7 @@ function FileDialog(file, action, beforeCloseCallback) {
                             success: function (data) {
                                 if (data.result == 'ok') {
                                     self.fileDialog.dialog('close');
+                                    postCallback();
                                     $.bootstrapGrowl(self.file.new_name + ' saved', {type: 'success'});
                                 }
                                 else $.bootstrapGrowl(data.msg, failedAlertOptions);
@@ -44,7 +45,6 @@ function FileDialog(file, action, beforeCloseCallback) {
                 },
                 Cancel: function() {$(this).dialog('close')}
             },
-            beforeClose: function() {beforeCloseCallback()},
             close: function() {$(this).remove()}
         })
         .keypress(function (event) {

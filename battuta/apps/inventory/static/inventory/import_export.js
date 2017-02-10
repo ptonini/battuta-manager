@@ -36,7 +36,7 @@ $(document).ready(function () {
             importFile.fileinput('clear').fileinput('enable');
             importFileButton.prop('disabled', true);
             if (data.response.result == 'ok') {
-                var alertMessage = $('<div>').attr('class', 'large-alert').append(
+                var alertMessage = divLargeAlert.clone().append(
                     $('<h5>').append('Import successful:'),
                     $('<ul>').append(
                         $('<li>').html('Hosts added: ' + data.response.added_hosts),

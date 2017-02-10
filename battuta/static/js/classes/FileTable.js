@@ -1,8 +1,9 @@
-function FileTable(root, container) {
+function FileTable(root, nameCellFormater, container) {
     var self = this;
 
     self.root = root;
     self.folder = '';
+    self.nameCellFormater = nameCellFormater;
     self.container = container;
 
     self.table = baseTable.clone().attr('id', 'file_table');
@@ -132,6 +133,7 @@ FileTable.prototype._buildTable = function () {
                     self.folder = nextFolder;
                     self.table.DataTable().ajax.reload();
                 });
+            else if (self.nameCellFormater) self.nameCellFormater($(row).find('td:eq(0)'), object);
 
             $(row).find('td:eq(2)').html(humanBytes(object.size));
 
@@ -243,4 +245,23 @@ FileTable.prototype.setFolder = function (folder) {
 
     self.folder = folder;
     self.table.DataTable().ajax.reload()
+};
+
+FileTable.prototype.getFolder = function () {
+    var self = this;
+
+    return self.folder;
+};
+
+FileTable.prototype.reload = function () {
+    var self = this;
+
+    self.table.DataTable().ajax.reload()
+};
+
+FileTable.prototype.removeDefaultButtons = function () {
+    var self = this;
+
+    self.createButton.remove();
+    self.uploadButton.remove();
 };

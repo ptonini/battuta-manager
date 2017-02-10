@@ -1,4 +1,4 @@
-function TextEditor(file, closeCallback) {
+function TextEditor(file, saveCallback) {
     var self = this;
 
     self.file = file;
@@ -10,7 +10,6 @@ function TextEditor(file, closeCallback) {
     self.reloadButton = smButton.clone().attr('title', 'Reload').html(
         spanGlyph.clone().addClass('glyphicon-refresh')
     );
-
 
     self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.createButton, self.uploadButton);
 
@@ -51,6 +50,7 @@ function TextEditor(file, closeCallback) {
                         data: self.file,
                         success: function (data) {
                             if (data.result == 'ok') {
+                                if (saveCallback) saveCallback();
                                 self.editorDialog.dialog('close');
                                 $.bootstrapGrowl(formName + ' saved', {type: 'success'});
                             }
@@ -63,7 +63,7 @@ function TextEditor(file, closeCallback) {
             },
             Cancel: function () {
                 $(this).dialog('close');
-                $('div.ui-dialog-buttonpane').css('border-top', '');
+                //$('div.ui-dialog-buttonpane').css('border-top', '');
             }
         },
         close: function() {$(this).remove()}
@@ -113,16 +113,16 @@ function TextEditor(file, closeCallback) {
     self.aceModeSelector.val(aceMode);
     self.textEditor.getSession().setMode('ace/mode/' + aceMode);
 
-    if (self.file.name) self.fileNameField.removeAttr('placeholder').val(self.file.name);
-    else {
-        self.fileNameField.attr('placeholder', 'New file').val('');
-        self.file.name = '/invalid_name'
-    }
+    if (self.file.name) self.fileNameField.val(self.file.name)//.removeAttr('placeholder');
+    //else {
+    //    self.fileNameField.attr('placeholder', 'New file').val('');
+    //    self.file.name = '/invalid_name'
+    //}
 
     self.textEditorContainer.css('height', window.innerHeight * .7);
 
     $('div.ui-dialog-buttonpane').css('border-top', 'none');
-    self.editorDialog.on('dialogclose', closeCallback).dialog('open');
+    self.editorDialog.dialog('open');
     self.textEditor.focus();
 }
 

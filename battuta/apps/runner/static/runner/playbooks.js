@@ -41,7 +41,7 @@ function loadPlaybook(data) {
         buildArgsSelectionBox();
     }
     else {
-        var message = $('<pre>').attr('class', 'large-alert').html(data.msg);
+        var message = preLargeAlert.clone().html(data.msg);
         $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
     }
 }

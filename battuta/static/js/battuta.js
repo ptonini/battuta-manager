@@ -40,11 +40,15 @@ var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
 var largeDialog = $('<div>').attr('class', 'large_dialog');
 var smallDialog = $('<div>').attr('class', 'small_dialog');
 
-var submitErrorAlert = $('<div>').attr('class', 'large-alert').html($('<h5>').html('Submit error:'));
+// Other element templates
 var spanGlyph = $('<span>').attr('class', 'glyphicon');
 var spanRight = $('<span>').css('float', 'right');
 var divWell = $('<div>').attr('class', 'well');
 var breadcrumb = $('<ol>').attr('class', 'breadcrumb');
+var divLargeAlert = $('<div>').attr('class', 'large-alert');
+var preLargeAlert = $('<pre>').attr('class', 'large-alert');
+var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
+
 
 // AJAX settings ///////////////////////
 

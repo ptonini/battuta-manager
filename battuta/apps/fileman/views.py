@@ -5,6 +5,7 @@ import magic
 import ntpath
 import tempfile
 import datetime
+import yaml
 
 from django.shortcuts import render
 from django.views.generic import View
@@ -25,6 +26,18 @@ class FilesView(View):
 class FileManagerView(View):
 
     @staticmethod
+    def validator(root, full_path):
+        if root == 'playbooks':
+            with open(full_path, 'r') as yaml_file:
+                try:
+                    yaml.load(yaml_file.read())
+                    return True, None
+                except yaml.YAMLError as e:
+                    return False, type(e).__name__ + ': ' + e.__str__()
+        else:
+            return True
+
+    @staticmethod
     def set_root(root, request):
 
         root_dir = None
@@ -33,6 +46,8 @@ class FileManagerView(View):
             root_dir = settings.FILES_PATH
         elif root == 'roles':
             root_dir = settings.ROLES_PATH
+        elif root == 'playbooks':
+            root_dir = settings.PLAYBOOK_PATH
         else:
             temp_list = root.split('?')
             if temp_list[0] == 'user':
@@ -71,8 +86,11 @@ class FileManagerView(View):
 
                 if os.path.isfile(full_path):
                     file_mime_type = magic.from_file(full_path, mime='true')
+                    is_valid, error = FileManagerView.validator(root, full_path)
                 else:
                     file_mime_type = 'directory'
+                    is_valid = True
+                    error = None
 
                 file_size = os.path.getsize(full_path)
                 file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
@@ -82,7 +100,9 @@ class FileManagerView(View):
                              'type': file_mime_type,
                              'size': file_size,
                              'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
-                             'root': root})
+                             'root': root,
+                             'is_valid': is_valid,
+                             'error': error})
 
         elif action == 'edit':
 
