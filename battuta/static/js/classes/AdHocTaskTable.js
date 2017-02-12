@@ -1,4 +1,4 @@
-function AdHohTaskTable(userId, pattern, container) {
+function AdHohTaskTable(pattern, container) {
     var self = this;
 
     self.table = baseTable.clone().attr('id', 'adhoc_task_table');
@@ -7,7 +7,7 @@ function AdHohTaskTable(userId, pattern, container) {
         $('<h4>').html('Saved tasks').append(
             spanRight.clone().append(
                 smButton.clone().html('Create task').click(function () {
-                    new AdHocTasks(userId, pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
+                    new AdHocTasks(pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
                 })
             )
         ),
@@ -38,7 +38,7 @@ function AdHohTaskTable(userId, pattern, container) {
                     prettyBoolean($(row).find('td:eq(3)'), data.become),
                     spanGlyph.clone().addClass('glyphicon-play-circle btn-incell').attr('title', 'Load').click(function () {
                         data.saveCallback = self.table.DataTable().ajax.reload;
-                        new AdHocTasks(userId, pattern, 'dialog', data);
+                        new AdHocTasks(pattern, 'dialog', data);
                     }),
                     spanGlyph.clone().addClass('glyphicon-duplicate btn-incell').attr('title', 'Copy').click(function () {
                         AdHocTasks.copyTask(data, self.table.DataTable().ajax.reload);

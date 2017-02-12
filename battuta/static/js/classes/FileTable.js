@@ -5,6 +5,7 @@ function FileTable(root, nameCellFormater, container) {
     self.folder = '';
     self.nameCellFormater = nameCellFormater;
     self.container = container;
+    self.createFolderOnly = false;
 
     self.table = baseTable.clone().attr('id', 'file_table');
 
@@ -72,6 +73,19 @@ function FileTable(root, nameCellFormater, container) {
 
     self.buttonGroup = divBtnGroup.clone().append(self.createButton, self.uploadButton);
 
+    self.previousFolderRow = $('<tr>').attr('role', 'row').append(
+        $('<td>').html('<strong>..</strong>').css('cursor', 'pointer').click(function () {
+            self.folder = self.previousFolder;
+            var folderArray = self.previousFolder.split('/');
+            folderArray.pop();
+            self.previousFolder = folderArray.join('/');
+            self.table.DataTable().ajax.reload()
+        }),
+        $('<td>'),
+        $('<td>'),
+        $('<td>')
+    );
+
     self.container.append(
         divRowEqHeight.clone().append(
             divCol10.clone().css('margin-top', '18px').append(self.breadCrumb),
@@ -122,15 +136,20 @@ FileTable.prototype._buildTable = function () {
         order: [[0, 'asc']],
         rowCallback: function (row, object) {
 
-            object.folder = self.folder;
+            //object.folder = self.folder;
 
             if (object.type == 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                 .css({'cursor': 'pointer', 'font-weight': '700'})
                 .off('click')
                 .click(function () {
-                    if (object.folder) var nextFolder = object.folder + '/' + object.name;
-                    else nextFolder = object.name;
-                    self.folder = nextFolder;
+                    if (object.folder) {
+                        self.folder = object.folder + '/' + object.name;
+                        self.previousFolder = object.folder
+                    }
+                    else {
+                        self.folder = object.name;
+                        self.previousFolder = '';
+                    }
                     self.table.DataTable().ajax.reload();
                 });
             else if (self.nameCellFormater) self.nameCellFormater($(row).find('td:eq(0)'), object);
@@ -143,13 +162,12 @@ FileTable.prototype._buildTable = function () {
                     spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
                         if (FileTable.editableTypes.indexOf(object.type) > -1) {
                             $.ajax({
-                                url: '/fileman/' + self.root + '/edit',
+                                url: '/fileman/' + self.root + '/read/',
                                 dataType: 'json',
                                 data: object,
                                 success: function (data) {
                                     if (data.result == 'ok') {
                                         object.text = data.text;
-                                        object.ext = '';
                                         new TextEditor(object, self.table.DataTable().ajax.reload);
                                     }
                                     else {
@@ -199,10 +217,16 @@ FileTable.prototype._buildTable = function () {
             );
         },
         drawCallback: function () {
+
              self._buildBreadcrumbs();
              self.table.find('tr.directory_row').reverse().each(function (index, row) {
                  self.table.prepend($(row))
              });
+
+             if (self.folder) {
+                 $('.dataTables_empty').parent().remove();
+                 self.table.prepend(self.previousFolderRow)
+             }
         }
     });
 
@@ -257,11 +281,4 @@ FileTable.prototype.reload = function () {
     var self = this;
 
     self.table.DataTable().ajax.reload()
-};
-
-FileTable.prototype.removeDefaultButtons = function () {
-    var self = this;
-
-    self.createButton.remove();
-    self.uploadButton.remove();
 };

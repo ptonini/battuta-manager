@@ -7,7 +7,6 @@
             var nodeName = '{{ node.name }}';
             var nodeType = '{{ node.type }}';
             var nodeDescriptionHeader = $('#node_description_header');
-            var userId = sessionStorage.getItem('user_id');
 
             document.title = 'Battuta - ' + nodeName;
 
@@ -31,9 +30,9 @@
 
             new Variables({id: null}, 'add', nodeName, nodeType, saveVariableCallback, $('#variable_form_container'));
 
-            new AdHocTasks(userId, nodeName, 'command', {id: null}, $('#command_form_container'));
+            new AdHocTasks(nodeName, 'command', {id: null}, $('#command_form_container'));
 
-            new AdHohTaskTable(userId, nodeName, $('#adhoc_table_container'));
+            new AdHohTaskTable(nodeName, $('#adhoc_table_container'));
 
             // Edit node
             $('#edit_node').click(function() {

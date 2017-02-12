@@ -23,7 +23,7 @@ class FilesView(View):
         return render(request, 'fileman/files.html', {'user': request.user})
 
 
-class FileManagerView(View):
+class FileApiView(View):
 
     @staticmethod
     def validator(root, full_path):
@@ -35,33 +35,36 @@ class FileManagerView(View):
                 except yaml.YAMLError as e:
                     return False, type(e).__name__ + ': ' + e.__str__()
         else:
-            return True
+            return True, None
 
     @staticmethod
     def set_root(root, request):
 
         root_dir = None
+        file_types = '*'
 
         if root == 'files':
             root_dir = settings.FILES_PATH
+
         elif root == 'roles':
             root_dir = settings.ROLES_PATH
+
         elif root == 'playbooks':
             root_dir = settings.PLAYBOOK_PATH
-        else:
-            temp_list = root.split('?')
-            if temp_list[0] == 'user':
-                root_dir = os.path.join(settings.USERDATA_PATH, request.user.username)
+            file_types = ['yml', 'yaml']
+
+        elif root == 'user':
+            root_dir = os.path.join(settings.USERDATA_PATH, request.user.username)
 
         if root_dir and not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
-        return root_dir
+        return root_dir, file_types
 
     @staticmethod
     def get(request, root, action):
 
-        root_dir = FileManagerView.set_root(root, request)
+        root_dir, file_types = FileApiView.set_root(root, request)
         prefs = get_preferences()
 
         if not root_dir:
@@ -74,8 +77,10 @@ class FileManagerView(View):
 
             if request.GET['folder']:
                 directory = os.path.join(root_dir, request.GET['folder'])
+                folder = request.GET['folder']
             else:
                 directory = root_dir
+                folder = ''
 
             for base_name in os.listdir(directory):
 
@@ -84,11 +89,14 @@ class FileManagerView(View):
                 if not prefs['show_hidden_files'] and base_name.startswith('.'):
                     continue
 
+                if file_types != '*' and base_name.split('.')[-1] not in file_types:
+                    continue
+
                 if os.path.isfile(full_path):
-                    file_mime_type = magic.from_file(full_path, mime='true')
-                    is_valid, error = FileManagerView.validator(root, full_path)
+                    file_type = magic.from_file(full_path, mime='true')
+                    is_valid, error = FileApiView.validator(root, full_path)
                 else:
-                    file_mime_type = 'directory'
+                    file_type = 'directory'
                     is_valid = True
                     error = None
 
@@ -97,14 +105,15 @@ class FileManagerView(View):
                 utc_timestamp = utc.localize(file_timestamp)
 
                 data.append({'name': base_name,
-                             'type': file_mime_type,
+                             'type': file_type,
                              'size': file_size,
                              'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
                              'root': root,
+                             'folder': folder,
                              'is_valid': is_valid,
                              'error': error})
 
-        elif action == 'edit':
+        elif action == 'read':
 
             full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
 
@@ -112,6 +121,7 @@ class FileManagerView(View):
                 if os.path.isfile(full_path):
                     if os.stat(full_path).st_size <= prefs['max_edit_size']:
                         with open(full_path, 'r') as text_file:
+
                             data = {'result': 'ok', 'text': text_file.read()}
                     else:
                         data = {'result': 'fail',
@@ -164,10 +174,13 @@ class FileManagerView(View):
     @staticmethod
     def post(request, root, action):
 
-        root_dir = FileManagerView.set_root(root, request)
+        root_dir, file_types = FileApiView.set_root(root, request)
 
         full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
         new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])
+
+        if file_types != '*' and new_path.split('.')[-1] not in file_types:
+            new_path += '.' + file_types[0]
 
         if action == 'save':
 
@@ -202,7 +215,7 @@ class FileManagerView(View):
             if os.path.exists(new_path):
                 data = {'result': 'fail', 'msg': 'This name is already in use'}
             else:
-                if request.POST['is_directory'] == 'true':
+                if request.POST['is_folder'] == 'true':
                     os.makedirs(new_path)
                 else:
                     open(new_path, 'a').close()

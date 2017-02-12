@@ -4,7 +4,7 @@ from django.views.generic import View
 from django.http import HttpResponse, Http404
 
 from models import Item
-from . import DefaultPrefs
+from main import DefaultPrefs
 
 
 class PreferencesView(View):

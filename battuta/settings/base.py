@@ -114,6 +114,18 @@ DEFAULT_PREFERENCES = [
                 'value': 'no',
                 'data_type': 'bool',
                 'description': 'Open jobs in single window'
+            }
+        ]
+    },
+    {
+        'name': 'File manager preferences',
+        'description': '',
+        'items': [
+            {
+                'name': 'max_edit_size',
+                'value': '65536',
+                'data_type': 'number',
+                'description': 'Maximum file size for the text editor'
             },
             {
                 'name': 'show_hidden_files',
@@ -256,19 +268,7 @@ DEFAULT_PREFERENCES = [
                 'description': '',
             }
         ],
-    },
-    {
-        'name': 'File manager preferences',
-        'description': '',
-        'items': [
-            {
-                'name': 'max_edit_size',
-                'value': '65536',
-                'data_type': 'number',
-                'description': 'Maximum file size for the text editor'
-            }
-        ]
-    },
+    }
 ]
 
 

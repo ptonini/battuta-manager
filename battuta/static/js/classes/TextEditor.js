@@ -36,10 +36,6 @@ function TextEditor(file, saveCallback) {
             Save: function () {
                 var formName = self.fileNameField.val();
                 if (formName) {
-                    if (self.file.ext && formName.split('.').slice(-1)[0] != self.file.ext) {
-                        formName += '.' + self.file.ext;
-                    }
-
                     self.file.new_name = formName;
                     self.file.text = self.textEditor.getValue();
 
@@ -63,7 +59,6 @@ function TextEditor(file, saveCallback) {
             },
             Cancel: function () {
                 $(this).dialog('close');
-                //$('div.ui-dialog-buttonpane').css('border-top', '');
             }
         },
         close: function() {$(this).remove()}

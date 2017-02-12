@@ -1,12 +1,14 @@
-function Credentials(userId) {
+function Credentials() {
     var self = this;
 
-    divCol2 = divCol2.addClass('text-right').css('margin-top', '19px');
+    self.userId = sessionStorage.getItem('user_id');
 
-    self.userId = userId;
     self.credentialsSelector = selectField.clone().change(function () {
         self._loadForm()
     });
+
+    Credentials.buildSelectionBox(self.credentialsSelector);
+
     self.credentialsForm = $('<form>')
         .change(function () {
             self.formHasChanged = true
@@ -15,23 +17,37 @@ function Credentials(userId) {
             event.preventDefault();
             self._submitForm()
         });
+
     self.titleField = textInputField.clone();
+
     self.isSharedButton = smButton.clone().html('Shared');
+
     self.isDefaultButton = smButton.clone().html('Default');
+
     self.usernameField = textInputField.clone();
+
     self.passwordField = passInputField.clone();
+
     self.askPassButton = smButton.clone().html('Ask');
+
     self.rsaFileInput = fileInputField.clone();
+
     self.removeRsaButton = smButton.clone().html('Remove');
+
     self.sudoUserField = textInputField.clone().attr('placeholder', 'root');
+
     self.sudoPassField = passInputField.clone();
+
     self.askSudoPassButton = smButton.clone().html('Ask');
+
     self.saveButton = xsButton.clone().html('Save').css('margin-right', '5px');
+
     self.deleteButton = xsButton.clone().html('Delete');
 
     self.confirmChangesDialog = smallDialog.clone().addClass('text-center').html(
         $('<strong>').append('You have unsaved changes<br>Save now?')
     );
+
     self.confirmChangesDialog.dialog({
         buttons: {
             Yes: function () {
@@ -58,8 +74,8 @@ function Credentials(userId) {
             ),
             self.credentialsForm.append(
                 divCol8.clone().append(divFormGroup.clone().append($('<label>').html('Title').append(self.titleField))),
-                divCol2.clone().append(self.isSharedButton),
-                divCol2.clone().append(self.isDefaultButton),
+                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(self.isSharedButton),
+                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(self.isDefaultButton),
                 divCol6.clone().append(
                     divFormGroup.clone().append($('<label>').html('Username').append(self.usernameField))
                 ),
@@ -93,6 +109,7 @@ function Credentials(userId) {
             )
         )
     );
+
     self.credentialsDialog
         .dialog({
             width: 600,
@@ -109,8 +126,6 @@ function Credentials(userId) {
         })
         .dialog('open');
 
-    Credentials.buildSelectionBox(self.userId, self.credentialsSelector);
-
     self.rsaFileInput
         .fileinput({
             showPreview: false,
@@ -126,11 +141,11 @@ function Credentials(userId) {
         });
 }
 
-Credentials.buildSelectionBox = function (userId, credentials, startValue) {
+Credentials.buildSelectionBox = function (credentials, startValue) {
 
     var runner = !(window.location.href.split('/').indexOf('users') > -1);
 
-    credentials.children('option').each(function () {$(this).remove()});
+    credentials.empty();
 
     $.ajax({
         url: '/users/credentials/',
@@ -138,7 +153,7 @@ Credentials.buildSelectionBox = function (userId, credentials, startValue) {
         dataType: 'json',
         data: {
             action: 'list',
-            user_id: userId,
+            user_id: sessionStorage.getItem('user_id'),
             runner: runner
         },
         success: function (data) {
@@ -254,7 +269,7 @@ Credentials.prototype._postCredentials = function (postData) {
         contentType: false,
         success: function (data) {
             if (data.result == 'ok') {
-                Credentials.buildSelectionBox(self.userId, self.credentialsSelector, data.cred_id);
+                Credentials.buildSelectionBox(self.credentialsSelector, data.cred_id);
                 if (postData.get('action') == 'save') var message = 'Credentials saved';
                 else message = 'Credentials deleted';
                 $.bootstrapGrowl(message, {type: 'success'});

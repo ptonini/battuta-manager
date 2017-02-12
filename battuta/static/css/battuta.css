@@ -141,7 +141,7 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 .labelless_button {margin-top: 19px}
 
 /* Settings for small dialogs */
-.small_dialog, #password_dialog {padding: 20px !important;}
+.small_dialog {padding: 20px !important;}
 
 /* Settings for large dialogs */
 .large_dialog {overflow-x: hidden !important;}

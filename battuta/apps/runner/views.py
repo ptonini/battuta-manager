@@ -1,7 +1,6 @@
 import json
 import psutil
 import os
-import yaml
 import ast
 import magic
 
@@ -26,7 +25,14 @@ class RolesView(View):
 
     @staticmethod
     def get(request):
-        return render(request, 'runner/roles.html', {'user': request.user})
+        return render(request, 'runner/roles.html')
+
+
+class PlaybooksView(View):
+
+    @staticmethod
+    def get(request):
+        return render(request, 'runner/playbooks.html')
 
 
 class BaseView(View):
@@ -245,95 +251,31 @@ class AdHocView(BaseView):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class PlaybookView(BaseView):
-    playbook_path = settings.PLAYBOOK_PATH
+class PlayArgsView(BaseView):
 
-    def load_playbook(self, filename):
-        with open(os.path.join(self.playbook_path, filename), 'r') as yaml_file:
-            data = {'text': yaml_file.read()}
-            try:
-                data['filename'] = filename
-                data['dict'] = yaml.load(data['text'])
-                data['is_valid'] = True
-                data['sudo'] = False
-                for play in data['dict']:
-                    if 'become' in play and play['become']:
-                        data['sudo'] = True
-            except yaml.YAMLError as e:
-                data['is_valid'] = False
-                data['msg'] = type(e).__name__ + ': ' + e.__str__()
-            return data
+    @staticmethod
+    def get(request, playbook, action):
 
-    def get(self, request):
-        if 'action' not in request.GET:
-            self.context['user'] = request.user
-            return render(request, 'runner/playbooks.html', self.context)
+        if action == 'list':
+            data = list()
+            for args in PlaybookArgs.objects.filter(playbook=playbook).values():
+                data.append(args)
         else:
-            if request.GET['action'] == 'get_list':
-                data = list()
-                for root, dirs, files in os.walk(self.playbook_path):
-                    for filename in files:
-                        if filename.split('.')[-1] == 'yml':
-                            playbook_data = self.load_playbook(filename)
-                            data.append([filename, playbook_data['is_valid']])
-            else:
-                if request.GET['action'] == 'get_one':
-                    data = self.load_playbook(request.GET['playbook_file'])
-                    data['result'] = 'ok'
-                elif request.GET['action'] == 'get_args':
-                    data = list()
-                    for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook_file']).values():
-                        data.append(args)
-                else:
-                    raise Http404('Invalid action')
-            return HttpResponse(json.dumps(data), content_type='application/json')
+            raise Http404('Invalid action')
 
-    def post(self, request):
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
-        # Save playbook
-        if request.POST['action'] == 'save':
+    @staticmethod
+    def post(request, playbook, action):
 
-            old_full_path = os.path.join(self.playbook_path, request.POST['current_dir'], request.POST['old_base_name'])
-            full_path = os.path.join(self.playbook_path, request.POST['current_dir'], request.POST['base_name'])
-
-            if full_path != old_full_path and os.path.exists(full_path):
-                data = {'result': 'fail', 'msg': 'This name is already in use'}
-            else:
-                try:
-                    with open(full_path, 'w') as f:
-                        f.write(request.POST['text'].encode('utf8'))
-                except Exception as e:
-                    data = {'result': 'fail', 'msg': e}
-                else:
-                    if full_path != old_full_path:
-                        try:
-                            os.remove(old_full_path)
-                        except os.error:
-                            pass
-                        for args in PlaybookArgs.objects.filter(playbook=request.POST['old_base_name']):
-                            args.playbook = request.POST['base_name']
-                            args.save()
-
-                    data = self.load_playbook(request.POST['base_name'])
-                    data['result'] = 'ok'
-
-        elif request.POST['action'] == 'delete':
-            try:
-                os.remove(os.path.join(settings.PLAYBOOK_PATH, request.POST['playbook_file']))
-            except os.error:
-                pass
-            for args in PlaybookArgs.objects.filter(playbook=request.POST['playbook_file']):
-                args.delete()
-            data = {'result': 'ok'}
-
-        # Save or create playbook arguments object
-        elif request.POST['action'] == 'save_args':
+        # Save playbook arguments
+        if action == 'save':
 
             # Create new playbook arguments object if no id is supplied
             if 'id' in request.POST:
                 args = get_object_or_404(PlaybookArgs, pk=request.POST['id'])
             else:
-                args = PlaybookArgs(playbook=request.POST['playbook'])
+                args = PlaybookArgs(playbook=playbook)
             form = PlaybookArgsForm(request.POST or None, instance=args)
 
             # Validate form data and save object
@@ -344,7 +286,7 @@ class PlaybookView(BaseView):
                 data = {'result': 'fail', 'msg': str(form.errors)}
 
         # Delete playbook arguments
-        elif request.POST['action'] == 'del_args':
+        elif action == 'delete':
             try:
                 args = PlaybookArgs(pk=request.POST['id'])
                 args.delete()

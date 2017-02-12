@@ -1,11 +1,13 @@
-function AdHocTasks (userId, pattern, type, task, container) {
+function AdHocTasks (pattern, type, task, container) {
     var self = this;
 
     self.type = type;
     self.task = task;
+
     self.formHeader = $('<h4>');
 
     self.patternField = textInputField.clone();
+
     self.patternEditorButton = smButton.clone()
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
@@ -13,6 +15,7 @@ function AdHocTasks (userId, pattern, type, task, container) {
             event.preventDefault();
             new PatternBuilder(self.patternField)
         });
+
     self.patternFieldGroup = divFormGroup.clone().append(
         $('<label>').html('Hosts').append(
             divInputGroup.clone().append(
@@ -21,11 +24,14 @@ function AdHocTasks (userId, pattern, type, task, container) {
             )
         )
     );
+
     self.argumentsField = textInputField.clone();
+
     self.isSudo = smButton.clone().html('Sudo').attr('title', 'Run with sudo').click(toggleButton);
+
     self.credentialsSelector = selectField.clone();
 
-    Credentials.buildSelectionBox(userId, self.credentialsSelector);
+    Credentials.buildSelectionBox(self.credentialsSelector);
 
     self.form = $('<form>').submit(function (event) {
         event.preventDefault();
@@ -257,7 +263,9 @@ AdHocTasks.prototype._buildModuleFields = function () {
     var moduleReferenceLink = 'http://docs.ansible.com/ansible/'+ self.name + '_module.html';
 
     self.fileSourceLabel = $('<span>').html('Source');
+
     self.fileSourceField = textInputField.clone().attr('data-parameter', 'src');
+
     self.fileSourceGroup = divFormGroup.clone().append(
         $('<label>').html(self.fileSourceLabel).append(
             $('<small>').attr('class', 'label_link').html('upload files').click(function () {
@@ -274,6 +282,7 @@ AdHocTasks.prototype._buildModuleFields = function () {
     );
 
     self.stateSelect = selectField.clone().attr('data-parameter', 'state');
+
     self.stateSelectGroup = divFormGroup.clone().append($('<label>').html('State').append(self.stateSelect));
 
     self.argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(self.argumentsField));
@@ -397,6 +406,7 @@ AdHocTasks.prototype._formToJson = function () {
             });
 
     }
+
     return jsonData;
 };
 
@@ -404,6 +414,7 @@ AdHocTasks.prototype._jsonToForm = function () {
     var self = this;
 
     self.isSudo.toggleClass('checked_button', self.task.become);
+
     self.argumentsField.val(self.task.arguments.otherArgs);
 
     switch (self.name) {

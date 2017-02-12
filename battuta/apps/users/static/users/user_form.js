@@ -94,7 +94,7 @@ $(document).ready(function () {
     // Open credentials dialog
     $('#open_cred_dialog').click(function (event) {
         event.preventDefault();
-        new Credentials($('#user_id').val());
+        new Credentials();
     });
 
 });

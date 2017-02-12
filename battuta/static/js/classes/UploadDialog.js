@@ -1,9 +1,9 @@
-function UploadDialog(folder, root, beforeCloseCallback) {
+function UploadDialog(folder, root, uploadCallback) {
     var self = this;
 
     self.uploadField = fileInputField.clone();
 
-    self.uploadDialogContainer = smallDialog.clone().append(
+    self.uploadDialog = smallDialog.clone().append(
         $('<label>').html('Select file').append(self.uploadField)
     );
 
@@ -12,12 +12,10 @@ function UploadDialog(folder, root, beforeCloseCallback) {
             uploadUrl: '/fileman/' + root + '/upload/',
             uploadAsync: true,
             uploadExtraData: function () {
-                var fileName = '';
-                var fileStack = self.uploadField.fileinput('getFileStack');
-                if (fileStack.length == 1) fileName = fileStack[0].name;
+                var file = self.uploadField.fileinput('getFileStack')[0];
                 return {
-                    name: fileName,
-                    new_name: fileName,
+                    name: file.name,
+                    new_name: file.name,
                     folder: folder,
                     csrfmiddlewaretoken: getCookie('csrftoken')
                 }
@@ -31,22 +29,28 @@ function UploadDialog(folder, root, beforeCloseCallback) {
             browseClass: 'btn btn-default btn-sm',
             progressClass: 'progress-bar progress-bar-success active'
         })
-        .on('fileuploaded', function(event, data) {
-            self.uploadDialogContainer.dialog('close');
+        .on('fileuploaded', function (event, data) {
+            self.uploadDialog.dialog('close');
             if (data.response.result == 'fail') $.bootstrapGrowl(data.response.msg, failedAlertOptions);
+            else if (uploadCallback) uploadCallback()
         });
 
-    self.uploadDialogContainer
+    self.uploadDialog
         .dialog({
             buttons: {
-                Upload: function () {self.uploadField.fileinput('upload')},
-                Cancel: function () {$(this).dialog('close')}
+                Upload: function () {
+                    self.uploadField.fileinput('upload')
+                },
+                Cancel: function () {
+                    $(this).dialog('close')
+                }
             },
-            beforeClose: function () {beforeCloseCallback()},
-            close: function () {$(this).remove()}
+            close: function () {
+                $(this).remove()
+            }
         })
         .keypress(function (event) {
-            if (event.keyCode == 13) $('.ui-button-text:contains("Upload")').parent('button').click()
+            if (event.keyCode == 13) self.uploadField.fileinput('upload')
         })
         .dialog('open');
 }

@@ -1,4 +1,4 @@
-from . import DefaultPrefs
+from main import DefaultPrefs
 from models import Item
 
 

@@ -8,22 +8,22 @@ function FileDialog(file, action, postCallback) {
         $('<label>').attr('class', 'text-capitalize').html(action).append(self.nameFieldInput)
     );
 
-    self.isDirectoryInput = chkboxInput.clone();
-    self.isDirectory = divCol12.clone().append(
-        divChkbox.clone().append($('<label>').append(self.isDirectoryInput, 'Directory'))
+    self.isFolderInput = chkboxInput.clone();
+    self.isFolderLabel = divCol12.clone().append(
+        divChkbox.clone().append($('<label>').append(self.isFolderInput, ' folder'))
     );
 
     self.fileDialog = smallDialog.clone().append(self.nameField);
 
-    if (action == 'create') self.fileDialog.append(self.isDirectory);
-    else if (action == 'copy') self.nameFieldInput.val(self.file.name + '_copy');
+    if (action == 'create') self.fileDialog.append(self.isFolderLabel);
+    else if (action == 'copy') self.nameFieldInput.val('copy_' + self.file.name);
 
     self.fileDialog
         .dialog({
             buttons: {
                 Save: function () {
                     self.file.new_name = self.nameFieldInput.val();
-                    if (action == 'create') self.file['is_directory'] = self.isDirectoryInput.is(':checked');
+                    if (action == 'create') self.file['is_folder'] = self.isFolderInput.is(':checked');
 
                     if (self.file.new_name && self.file.new_name != self.file.name) {
 
@@ -35,7 +35,7 @@ function FileDialog(file, action, postCallback) {
                             success: function (data) {
                                 if (data.result == 'ok') {
                                     self.fileDialog.dialog('close');
-                                    postCallback();
+                                    if (postCallback) postCallback();
                                     $.bootstrapGrowl(self.file.new_name + ' saved', {type: 'success'});
                                 }
                                 else $.bootstrapGrowl(data.msg, failedAlertOptions);
@@ -43,9 +43,13 @@ function FileDialog(file, action, postCallback) {
                         });
                     }
                 },
-                Cancel: function() {$(this).dialog('close')}
+                Cancel: function() {
+                    $(this).dialog('close')
+                }
             },
-            close: function() {$(this).remove()}
+            close: function() {
+                $(this).remove()
+            }
         })
         .keypress(function (event) {
             var thisDialog = this;
