@@ -23,7 +23,7 @@ class FilesView(View):
         return render(request, 'fileman/files.html', {'user': request.user})
 
 
-class FileApiView(View):
+class FileManagerView(View):
 
     @staticmethod
     def validator(root, full_path):
@@ -64,7 +64,7 @@ class FileApiView(View):
     @staticmethod
     def get(request, root, action):
 
-        root_dir, file_types = FileApiView.set_root(root, request)
+        root_dir, file_types = FileManagerView.set_root(root, request)
         prefs = get_preferences()
 
         if not root_dir:
@@ -94,7 +94,7 @@ class FileApiView(View):
 
                 if os.path.isfile(full_path):
                     file_type = magic.from_file(full_path, mime='true')
-                    is_valid, error = FileApiView.validator(root, full_path)
+                    is_valid, error = FileManagerView.validator(root, full_path)
                 else:
                     file_type = 'directory'
                     is_valid = True
@@ -174,7 +174,7 @@ class FileApiView(View):
     @staticmethod
     def post(request, root, action):
 
-        root_dir, file_types = FileApiView.set_root(root, request)
+        root_dir, file_types = FileManagerView.set_root(root, request)
 
         full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
         new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])

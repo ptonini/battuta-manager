@@ -87,12 +87,12 @@ function FileTable(root, nameCellFormater, container) {
     );
 
     self.container.append(
-        divRowEqHeight.clone().append(
-            divCol10.clone().css('margin-top', '18px').append(self.breadCrumb),
-            divCol2.clone().addClass('text-right').css('margin-top', '18px').append(self.buttonGroup)
+        divRowEqHeight.clone().css('margin-top', '18px').append(
+            divCol10.clone().append(self.breadCrumb),
+            divCol2.clone().addClass('text-right').css('margin', 'auto').append(self.buttonGroup)
         ),
-        divRow.clone().append(
-            divCol12.clone().css('margin-top', '18px').append(self.table)
+        divRow.clone().css('margin-top', '18px').append(
+            divCol12.clone().append(self.table)
         )
     );
 

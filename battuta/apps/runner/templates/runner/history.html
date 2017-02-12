@@ -1,22 +1,18 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            document.title = 'Battuta - Runner history';
+
+            new RunnerHistoryTable($('#history_table_container'))
+
+        });
+    </script>
+{% endblock %}
 {% block content %}
-    <script type="text/javascript" src="{% static 'runner/history.js' %}"></script>
     <h3>Runner history</h3>
     <br>
-    <div class="row">
-        <div class="col-md-12">
-            <table id="runner_table" class="result_table table table-condensed table-hover table-striped">
-                <thead>
-                <tr>
-                    <th class="col-md-2">run date</th>
-                    <th class="col-md-2">user</th>
-                    <th class="col-md-2">name</th>
-                    <th class="col-md-2">hosts/subset</th>
-                    <th class="col-md-2">status</th>
-                </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
+    <div id="history_table_container"></div>
 {% endblock %}

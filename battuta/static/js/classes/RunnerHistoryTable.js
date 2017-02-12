@@ -1,9 +1,21 @@
-$(document).ready(function () {
+function RunnerHistoryTable(container) {
+    var self = this;
 
-    document.title = 'Battuta - Runner history';
-    
-    // Build entity adhoc table
-    $('#runner_table').DataTable({
+    self.container = container;
+
+    self.table = baseTable.clone();
+
+    self.container.append(self.table);
+
+    self.table.DataTable({
+        ajax: {url: '/runner/history/list/'},
+        columns: [
+            {class: 'col-md-2', title: 'run data'},
+            {class: 'col-md-2', title: 'user'},
+            {class: 'col-md-2', title: 'name'},
+            {class: 'col-md-2', title: 'hosts/subset'},
+            {class: 'col-md-2', title: 'status'}
+        ],
         pageLength: 10,
         serverSide: true,
         processing: true,
@@ -26,11 +38,9 @@ $(document).ready(function () {
                     $(row).css('color', 'gray');
                     break;
             }
-            $(row)
-                .css('cursor','pointer')
-                .click(function () {
-                    popupCenter('/runner/result/' + data[5] + '/', data[5], 1000);
-                })
+            $(row).css('cursor','pointer').click(function () {
+                popupCenter('/runner/result/' + data[5] + '/', data[5], 1000);
+            })
         }
     });
-});
+}

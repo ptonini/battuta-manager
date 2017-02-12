@@ -6,7 +6,7 @@
 
             var nodeName = '{{ node.name }}';
             var nodeType = '{{ node.type }}';
-            var nodeDescriptionHeader = $('#node_description_header');
+            var nodeDescriptionHeader = $('#node_description_header').html('{{ node.description }}');
 
             document.title = 'Battuta - ' + nodeName;
 

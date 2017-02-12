@@ -35,6 +35,13 @@ class PlaybooksView(View):
         return render(request, 'runner/playbooks.html')
 
 
+class HistoryView(View):
+
+    @staticmethod
+    def get(request):
+        return render(request, "runner/history.html")
+
+
 class BaseView(View):
     def __init__(self):
         super(BaseView, self).__init__()
@@ -300,12 +307,11 @@ class PlayArgsView(BaseView):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class HistoryView(BaseView):
-    def get(self, request):
-        if 'draw' not in request.GET:
-            self.context['user'] = request.user
-            return render(request, "runner/history.html", self.context)
-        else:
+class HistoryApiView(BaseView):
+
+    def get(self, request, action):
+
+        if action == 'list':
 
             # Build queryset
             if request.user.is_superuser:
@@ -337,7 +343,10 @@ class HistoryView(BaseView):
 
                 handler.add_and_filter_row(row)
 
-            return HttpResponse(handler.build_response(), content_type="application/json")
+        else:
+            raise Http404('Invalid action')
+
+        return HttpResponse(handler.build_response(), content_type="application/json")
 
 
 class ResultView(BaseView):
