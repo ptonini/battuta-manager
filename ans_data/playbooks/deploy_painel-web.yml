@@ -2,5 +2,11 @@
 - name: Deploy M2M Painel Web
   hosts: m2m-painel-web:!znh
   become: yes
+  vars:
+    mode: deploy
+
   roles: 
-    - m2m-painel-web
+    - role: nginx 
+      when: mode == 'install'
+        
+    - role: m2m-painel-web

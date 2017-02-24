@@ -1,7 +1,13 @@
 ---
 - name: Deploy M2M SSO WebApp
   gather_facts: False
-  hosts: m2m-sso-web:!znh
+  hosts: m2m-sso-web
   become: yes
+  vars:
+    mode: deploy
+  
   roles: 
-    - m2m-sso-web
+    - role: nginx 
+      when: mode == 'install'
+    
+    - role: m2m-sso-web

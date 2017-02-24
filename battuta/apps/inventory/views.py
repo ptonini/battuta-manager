@@ -435,7 +435,7 @@ class VariablesView(View):
     def post(request, node_type, node_name):
         node = NodeDetailsView.build_node(node_type, node_name)
 
-        if request.POST['id']:
+        if 'id' in request.POST and request.POST['id']:
             variable = get_object_or_404(Variable, pk=request.POST['id'])
         else:
             variable = Variable()
@@ -457,8 +457,11 @@ class VariablesView(View):
                 data = {'result': 'ok'}
 
             elif request.POST['action'] == 'copy':
+                print request.POST
                 source = NodeDetailsView.build_node(request.POST['source_type'], request.POST['source_name'])
+                print source
                 for source_var in source.variable_set.all():
+                    print source_var.value, source_var.key
                     var, created = node.variable_set.get_or_create(key=source_var.key)
                     var.value = source_var.value
                     var.save()

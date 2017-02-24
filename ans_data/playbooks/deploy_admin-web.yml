@@ -2,6 +2,12 @@
 - name: Deploy M2M Admin WebApp
   gather_facts: False
   hosts: m2m-admin-web:!znh
-  sudo: yes
+  become: yes
+  vars:
+    mode: 'deploy'
+    
   roles: 
-    - m2m-admin-web
+    - role: nginx 
+      when: mode == 'install'
+    
+    - role: m2m-admin-web

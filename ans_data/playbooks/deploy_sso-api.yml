@@ -1,6 +1,6 @@
 ---
 - name: Deploy SSO API
-  hosts: m2m-sso-api:!znh
+  hosts: m2m-sso-api
   become: yes
   vars:
       mode: deploy

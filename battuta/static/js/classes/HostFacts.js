@@ -3,6 +3,7 @@ function HostFacts(host, container) {
 
     self.host = host;
     self.container = container;
+    self.useEc2Facts = sessionStorage.getItem('use_ec2_facts') == 'true'
 
     self.gatherFactsButton = xsButton.clone().html('Gather facts').click(function () {
         gatherFacts(self.host, function () {
@@ -22,6 +23,7 @@ HostFacts.prototype.loadFacts = function () {
         data: {action: 'facts'},
         dataType: 'json',
         success: function (data) {
+            console.log(data);
             if (data.result == 'ok') self._buildFacts(data.facts);
             else self.container.append(self.gatherFactsButton)
         }
@@ -92,28 +94,50 @@ HostFacts.prototype._buildFacts = function (facts) {
         )
     );
 
-    if (sessionStorage.getItem('use_ec2_facts') == 'true' && facts.hasOwnProperty('ec2_hostname')) {
-        self.factsRow.append(
-            divFactsCol6.clone().append(
-                divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 hostname:'), divCol8R.clone().append(facts.ec2_hostname)
-                ),
-                divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 public address:'), divCol8R.clone().append(facts.ec2_public_ipv4)
-                ),
-                divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 instance type:'), divCol8R.clone().append(facts.ec2_instance_type)
-                ),
-                divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 instance id:'), divCol8R.clone().append(facts.ec2_instance_id)
-                ),
-                divRowEqHeight.clone().append(
-                    divCol4L.clone().append('EC2 avaliability zone:'),
-                    divCol8R.clone().append(facts.ec2_placement_availability_zone)
-                )
+    if (facts.virtualization_role == 'host') self.factsRow.append(
+        divFactsCol6.clone().append(
+            divRowEqHeight.clone().append(
+                divCol4L.clone().append('System vendor:'), divCol8R.clone().append(facts.system_vendor)
+            ),
+            divRowEqHeight.clone().append(
+                divCol4L.clone().append('Product name:'), divCol8R.clone().append(facts.product_name)
+            ),
+            divRowEqHeight.clone().append(
+                divCol4L.clone().append('Product serial:'), divCol8R.clone().append(facts.product_serial)
+            ),
+            divRowEqHeight.clone().append(
+                divCol4L.clone().append('Form factor:'), divCol8R.clone().append(facts.form_factor)
             )
         )
+    )
+
+    else if (facts.virtualization_role == 'guest') {
+
+        if (self.useEc2Facts == 'true' && facts.hasOwnProperty('ec2_hostname')) {
+            self.factsRow.append(
+                divFactsCol6.clone().append(
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('EC2 hostname:'), divCol8R.clone().append(facts.ec2_hostname)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('EC2 public address:'), divCol8R.clone().append(facts.ec2_public_ipv4)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('EC2 instance type:'), divCol8R.clone().append(facts.ec2_instance_type)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('EC2 instance id:'), divCol8R.clone().append(facts.ec2_instance_id)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('EC2 avaliability zone:'),
+                        divCol8R.clone().append(facts.ec2_placement_availability_zone)
+                    )
+                )
+            )
+        }
     }
+
+
 
     self.allFactsContainer = divWell.clone().hide().JSONView(facts, {'collapsed': true});
 

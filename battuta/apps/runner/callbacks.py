@@ -223,12 +223,16 @@ class BattutaCallback(CallbackBase):
 
             new_facts = response['ansible_facts']
 
-            for key in new_facts:
-                new_key = key
-                if 'ansible_' in key:
-                    new_key = key[8:]
+            if 'machine_id' in facts and 'ansible_machine_id' in new_facts:
+                if facts['machine_id'] != new_facts['ansible_machine_id']:
+                    facts = dict()
 
-                facts[new_key] = new_facts[key]
+            for key in new_facts:
+
+                if 'ansible_' in key:
+                    facts[key[8:]] = new_facts[key]
+                else:
+                    facts[key] = new_facts[key]
 
             sql_query = 'UPDATE inventory_host SET facts=%s WHERE name=%s'
             self._run_query_on_db('update', sql_query, (json.dumps(facts), host))

@@ -1,6 +1,6 @@
 ---
 - name: Deploy M2M Adapter
-  hosts: m2m-adapter:!znh
+  hosts: m2m-adapter
   become: yes
   vars:
       mode: deploy
