@@ -11,14 +11,14 @@ function TextEditor(file, saveCallback) {
         spanGlyph.clone().addClass('glyphicon-refresh')
     );
 
-    self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.createButton, self.uploadButton);
+    self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.reloadButton);
 
     self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey');
 
     self.fileNameField = textInputField.clone();
 
     self.editorDialog = largeDialog.clone().append(
-        $('<h4>').html('Text Editor'),
+        //$('<h5>').html('Text Editor'),
         divRowEqHeight.clone().addClass('form-group').append(
             divCol4.clone().append($('<label>').html('File name').append(self.fileNameField)),
             divCol6.clone().append(self.buttonGroup),
@@ -41,7 +41,7 @@ function TextEditor(file, saveCallback) {
 
                     $.ajax({
                         type: 'POST',
-                        url: '/fileman/' + self.file.root + '/save/',
+                        url: '/files/' + self.file.root + '/save/',
                         dataType: 'json',
                         data: self.file,
                         success: function (data) {

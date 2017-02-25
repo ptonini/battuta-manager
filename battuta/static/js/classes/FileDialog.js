@@ -29,7 +29,7 @@ function FileDialog(file, action, postCallback) {
 
                         $.ajax({
                             type: 'POST',
-                            url: '/fileman/' + self.file.root + '/' + action + '/',
+                            url: '/files/' + self.file.root + '/' + action + '/',
                             dataType: 'json',
                             data: self.file,
                             success: function (data) {

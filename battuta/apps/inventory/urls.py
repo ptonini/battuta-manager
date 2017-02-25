@@ -18,4 +18,7 @@ urlpatterns = [
 
     url(r'^(?P<node_type>(host|group))/(?P<node_name>[a-zA-Z0-9-._]+)/(?P<relationship>(parents|children|members))/$',
         login_required(views.RelationsView.as_view()), name='relations'),
+
+
+    url(r'^(?P<node_type_plural>(hosts|groups))/(?P<action>[a-z]+)/$', login_required(views.NodesApiView.as_view())),
 ]

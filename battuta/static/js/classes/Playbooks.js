@@ -109,7 +109,7 @@ function Playbook(playbook) {
     self.playbookDialog = largeDialog.clone();
 
     $.ajax({
-        url: '/fileman/playbooks/read/',
+        url: '/files/playbooks/read/',
         dataType: 'json',
         data: self.playbook,
         success: function (data) {
@@ -126,12 +126,14 @@ function Playbook(playbook) {
 Playbook.prototype._buildForm = function () {
     var self = this;
 
-    self.requiresSudoAlert = $('<small>').html('requires sudo').toggleClass('hidden', !self._requiresSudo());
+    self.requiresSudoAlert = spanRight.clone()
+        .html('requires sudo')
+        .css('font-size', 'x-small')
+        .toggleClass('hidden', !self._requiresSudo());
 
     self.playbookDialog.append(
-        divRowEqHeight.clone().append(
-            divCol8.clone().html($('<h4>').append(self.playbook.name)),
-            divCol4.clone().addClass('text-right').css('margin', 'auto').append(self.requiresSudoAlert)
+        divRow.clone().append(
+            divCol12.clone().html($('<h4>').append(self.playbook.name, self.requiresSudoAlert))
         ),
         divRow.clone().append(
             divCol12.clone().append(

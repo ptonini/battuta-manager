@@ -49,26 +49,30 @@ function AnsibleRunner(postData, askPassword, username, sameWindow) {
 }
 
 // Post Ansible Job
-AnsibleRunner.prototype._postJob = function (postData, sameWindow) {
-    $.ajax({
-        url: '/runner/',
-        type: 'POST',
-        dataType: 'json',
-        data: postData,
-        success: function (data) {
-            if (data.result == 'ok') {
-                if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
-                if (sameWindow) window.open('/runner/result/' + data.runner_id + '/', '_self');
-                else {
-                    var windowTitle;
-                    if (sessionStorage.getItem('single_job_window') == 'true') windowTitle = 'battuta_result_window';
-                    else windowTitle = data.runner_id;
-                    popupCenter('/runner/result/' + data.runner_id + '/', windowTitle, 1000);
+AnsibleRunner.prototype = {
+
+    _postJob: function (postData, sameWindow) {
+        $.ajax({
+            url: '/runner/',
+            type: 'POST',
+            dataType: 'json',
+            data: postData,
+            success: function (data) {
+                if (data.result == 'ok') {
+                    if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
+                    if (sameWindow) window.open('/runner/result/' + data.runner_id + '/', '_self');
+                    else {
+                        var windowTitle;
+                        if (sessionStorage.getItem('single_job_window') == 'true') windowTitle = 'battuta_result_window';
+                        else windowTitle = data.runner_id;
+                        popupCenter('/runner/result/' + data.runner_id + '/', windowTitle, 1000);
+                    }
                 }
+                else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
             }
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-        }
-    });
+        });
+    }
+
 };
 
 

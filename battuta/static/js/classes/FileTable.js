@@ -34,7 +34,7 @@ function FileTable(root, nameCellFormater, container) {
                             fieldValue = fieldValue.substr(0, fieldValue.length - 1)
                         }
                         $.ajax({
-                            url: '/fileman/' + self.root + '/exists/',
+                            url: '/files/' + self.root + '/exists/',
                             data: {name: fieldValue, type: 'directory'},
                             success: function (data) {
                                 if (data.result == 'ok') {
@@ -98,7 +98,7 @@ function FileTable(root, nameCellFormater, container) {
 
     if (self.folder) {
         $.ajax({
-            url: '/fileman/' + self.root + '/exists',
+            url: '/files/' + self.root + '/exists',
             data: {folder: self.folder, type: 'directory'},
             success: function (data) {
                 if (data.result == 'failed') self.folder = '';
@@ -121,7 +121,7 @@ FileTable.prototype._buildTable = function () {
 
     self.table.DataTable({
         ajax: {
-            url: '/fileman/' + self.root + '/list/',
+            url: '/files/' + self.root + '/list/',
             dataSrc: '',
             data: function (d) {
                 d.folder = self.folder
@@ -135,8 +135,6 @@ FileTable.prototype._buildTable = function () {
         ],
         order: [[0, 'asc']],
         rowCallback: function (row, object) {
-
-            //object.folder = self.folder;
 
             if (object.type == 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                 .css({'cursor': 'pointer', 'font-weight': '700'})
@@ -162,7 +160,7 @@ FileTable.prototype._buildTable = function () {
                     spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
                         if (FileTable.editableTypes.indexOf(object.type) > -1) {
                             $.ajax({
-                                url: '/fileman/' + self.root + '/read/',
+                                url: '/files/' + self.root + '/read/',
                                 dataType: 'json',
                                 data: object,
                                 success: function (data) {
@@ -189,7 +187,7 @@ FileTable.prototype._buildTable = function () {
                         .addClass('glyphicon-download-alt btn-incell')
                         .attr('title', 'Download ' + object.name)
                         .click(function () {
-                            window.open('/fileman/' + self.root + '/download/?name=' + object.name + '&folder=' + object.folder, '_self')
+                            window.open('/files/' + self.root + '/download/?name=' + object.name + '&folder=' + object.folder, '_self')
                         }),
                     spanGlyph.clone()
                         .addClass('glyphicon-trash btn-incell')
@@ -199,7 +197,7 @@ FileTable.prototype._buildTable = function () {
                             new DeleteDialog(function () {
                                 $.ajax({
                                     type: 'POST',
-                                    url: '/fileman/' + self.root + '/delete/',
+                                    url: '/files/' + self.root + '/delete/',
                                     dataType: 'json',
                                     data: object,
                                     success: function (data) {
@@ -227,6 +225,8 @@ FileTable.prototype._buildTable = function () {
                  $('.dataTables_empty').parent().remove();
                  self.table.prepend(self.previousFolderRow)
              }
+
+             self.table.DataTable().search('');
         }
     });
 

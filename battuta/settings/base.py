@@ -22,7 +22,7 @@ INSTALLED_APPS = (
     'apps.inventory',
     'apps.users',
     'apps.runner',
-    'apps.fileman',
+    'apps.files',
     'apps.preferences'
 )
 

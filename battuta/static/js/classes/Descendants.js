@@ -3,7 +3,7 @@ function Descendants (group, container) {
 
     self.group = group;
 
-    var listOptions = {
+    self.listOptions = {
         headerTag: '<h5>',
         showTitle: true,
         hideIfEmpty: true,
@@ -22,12 +22,12 @@ function Descendants (group, container) {
         }
     };
 
-    self.groupList = $('<div>').data('nodeType', 'group').DynamicList($.extend({}, listOptions, {
+    self.groupList = $('<div>').data('nodeType', 'group').DynamicList($.extend({}, self.listOptions, {
         listTitle: 'Groups',
         ajaxUrl: '/inventory/group/' + self.group + '/?action=descendants&type=groups'
     }));
 
-    self.hostList = $('<div>').data('nodeType', 'host').DynamicList($.extend({}, listOptions, {
+    self.hostList = $('<div>').data('nodeType', 'host').DynamicList($.extend({}, self.listOptions, {
         listTitle: 'Hosts',
         ajaxUrl: '/inventory/group/' + self.group + '/?action=descendants&type=hosts'
     }));

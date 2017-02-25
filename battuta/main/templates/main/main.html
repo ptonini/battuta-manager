@@ -19,6 +19,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/b-1.2.4/b-flash-1.2.4/b-html5-1.2.4/datatables.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.3.2/js/fileinput.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
@@ -37,6 +38,8 @@
     <script type="text/javascript" src="{% static 'js/classes/FileDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/FileTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/NodeTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/NodeGrid.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/HostFacts.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Playbooks.js' %}"></script>
@@ -89,7 +92,7 @@
                             <li><a href="{% url 'runner:history' %}">History</a></li>
                         </ul>
                     </li>
-                    <li><a href="{% url 'fileman:files' %}">Files</a></li>
+                    <li><a href="{% url 'files:files' %}">Files</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
                         <ul class="dropdown-menu">

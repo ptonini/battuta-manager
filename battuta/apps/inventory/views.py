@@ -12,8 +12,6 @@ from . import AnsibleInventory
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
-from apps.preferences.functions import get_preferences
-
 # Create built-in group 'all' if not exists
 Group.objects.get_or_create(name='all')
 
@@ -208,77 +206,109 @@ class NodesView(View):
 
     @staticmethod
     def get(request, node_type_plural):
+        context = {'node_type': node_type_plural[:-1], 'node_type_plural': node_type_plural}
+        return render(request, 'inventory/nodes.html', context)
+
+
+class NodesApiView(View):
+
+    @staticmethod
+    def get(request, node_type_plural, action):
+
         node_type = node_type_plural[:-1]
-        prefs = get_preferences()
-        if 'action' not in request.GET:
-            context = {'node_type': node_type, 'node_type_plural': node_type_plural}
-            return render(request, 'inventory/nodes.html', context)
-        else:
+
+        if action == 'list':
             data = list()
-            if request.GET['action'] == 'host_table':
+
+            if node_type == 'host':
+
                 for host in Host.objects.all():
+
+                    host_info = {
+                        'name': host.name,
+                        'id': host.id,
+                        'address': '',
+                        'cores': '',
+                        'memory': '',
+                        'disc': '',
+                        'public_address': '',
+                        'instance_type': ''
+                    }
+
                     if host.facts:
-                        row = [host.name]
+
                         facts = json.loads(host.facts)
-                        if prefs['use_ec2_facts']:
 
-                            row.append(facts['default_ipv4']['address'])
+                        if 'default_ipv4' in facts and 'address' in facts['default_ipv4']:
+                            host_info['address'] = facts['default_ipv4']['address']
 
-                            if 'ec2_public_ipv4' in facts:
-                                row.append(facts['ec2_public_ipv4'])
-                            else:
-                                row.append('')
+                        if 'processor_count' in facts:
+                            host_info['cores'] = facts['processor_count']
 
-                            if 'ec2_instance_type' in facts:
-                                row.append(facts['ec2_instance_type'])
-                            else:
-                                row.append('')
+                        if 'memtotal_mb' in facts:
+                            host_info['memory'] = facts['memtotal_mb']
 
-                            row.append(facts['processor_count'])
-                            row.append(facts['memtotal_mb'])
-                            row.append(facts['mounts'][0]['size_total'])
-                            data.append(row)
-                        else:
-                            data.append([host.name,
-                                         facts['default_ipv4']['address'],
-                                         facts['processor_count'],
-                                         facts['memtotal_mb'],
-                                         facts['mounts'][0]['size_total']])
-                    else:
-                        if prefs['use_ec2_facts']:
-                            data.append([host.name, '', '', '', '', '', ''])
-                        else:
-                            data.append([host.name, '', '', '', ''])
-            elif request.GET['action'] == 'group_table':
+                        if 'mounts' in facts:
+                            host_info['disc'] = 0
+                            for mount in facts['mounts']:
+                                host_info['disc'] += mount['size_total']
+
+                        if 'ec2_public_ipv4' in facts:
+                            host_info['public_address'] = facts['ec2_public_ipv4']
+
+                        if 'ec2_instance_type' in facts:
+                            host_info['instance_type'] = facts['ec2_instance_type']
+
+                    data.append(host_info)
+
+            elif node_type == 'group':
+
                 for group in Group.objects.all():
-                    data.append([group.name,
-                                 group.description,
-                                 len(group.members.all()),
-                                 len(group.group_set.all()),
-                                 len(group.children.all()),
-                                 len(group.variable_set.all()),
-                                 group.id])
-            else:
-                raise Http404('Invalid action')
+
+                    data.append({
+                        'name': group.name,
+                        'id': group.id,
+                        'description': group.description,
+                        'members': len(group.members.all()),
+                        'parents': len(group.group_set.all()),
+                        'children': len(group.children.all()),
+                        'variables': len(group.variable_set.all()),
+                    })
+
+        else:
+            raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
-    def post(request, node_type_plural):
+    def post(request, node_type_plural, action):
+
         node_type = node_type_plural[:-1]
-        if request.POST['action'] == 'delete':
+
+        if action == 'delete':
+
             if node_type == 'host':
                 node_class = Host
+
             elif node_type == 'group':
                 node_class = Group
+
             else:
                 raise Http404('Invalid node type')
+
             for node_id in request.POST.getlist('selection[]'):
+
                 node = get_object_or_404(node_class, pk=node_id)
+
                 if node.type == 'host' or node.name != 'all':
+
                     node.delete()
+
             data = {'result': 'ok'}
+
         else:
             raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
