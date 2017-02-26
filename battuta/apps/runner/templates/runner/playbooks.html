@@ -28,7 +28,7 @@
                 cell.css('cursor', 'pointer');
 
                 if (file.is_valid) cell.off().click(function () {
-                    new Playbook(file)
+                    new PlaybookForm(file)
                 });
                 else cell.css('color', 'red').off().click(function () {
                     var message = preLargeAlert.clone().html(file.error);

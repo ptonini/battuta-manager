@@ -16,14 +16,14 @@ from pytz import timezone, utc
 from apps.preferences.functions import get_preferences
 
 
-class FilesView(View):
+class PageView(View):
 
     @staticmethod
     def get(request):
         return render(request, 'fileman/files.html', {'user': request.user})
 
 
-class FilesApiView(View):
+class FilesView(View):
 
     @staticmethod
     def validator(root, full_path):
@@ -64,7 +64,7 @@ class FilesApiView(View):
     @staticmethod
     def get(request, root, action):
 
-        root_dir, file_types = FilesApiView.set_root(root, request)
+        root_dir, file_types = FilesView.set_root(root, request)
         prefs = get_preferences()
 
         if not root_dir:
@@ -94,7 +94,7 @@ class FilesApiView(View):
 
                 if os.path.isfile(full_path):
                     file_type = magic.from_file(full_path, mime='true')
-                    is_valid, error = FilesApiView.validator(root, full_path)
+                    is_valid, error = FilesView.validator(root, full_path)
                 else:
                     file_type = 'directory'
                     is_valid = True
@@ -174,7 +174,7 @@ class FilesApiView(View):
     @staticmethod
     def post(request, root, action):
 
-        root_dir, file_types = FilesApiView.set_root(root, request)
+        root_dir, file_types = FilesView.set_root(root, request)
 
         full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
         new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])

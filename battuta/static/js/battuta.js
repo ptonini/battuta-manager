@@ -186,14 +186,14 @@ function humanBytes(value, suffix) {
         suffix = ' MB';
         value = value / 1048576
     }
-    else if (value > 1073741824 && value <= 1099511627776) {
+    else if (value > 1073741824 /*&& value <= 1099511627776*/) {
         suffix = ' GB';
         value = value / 1073741824
     }
-    else if (value > 1099511627776 && value <= 1125899906842624) {
-        suffix = ' TB';
-        value = value / 1099511627776
-    }
+    //else if (value > 1099511627776 && value <= 1125899906842624) {
+    //    suffix = ' TB';
+    //    value = value / 1099511627776
+    //}
     return Math.ceil(value) + suffix
 }
 

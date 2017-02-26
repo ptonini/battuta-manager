@@ -397,10 +397,10 @@ $(document).ready(function () {
         var runner = JSON.parse(sessionStorage.getItem('runner'));
         if (runner) {
             $.ajax({
-                url: '/runner/',
+                url: '/runner/kill/',
                 type: 'POST',
                 dataType: 'json',
-                data: {action: 'kill', runner_id: runner.id},
+                data: {runner_id: runner.id},
                 success: function (data) {
                     if (data.result == 'fail') $.bootstrapGrowl(data.msg, failedAlertOptions)
                 }

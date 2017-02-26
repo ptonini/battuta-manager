@@ -1,4 +1,4 @@
-function AdHocTasks (pattern, type, task, container) {
+function AdHocTaskForm (pattern, type, task, container) {
     var self = this;
 
     self.type = type;
@@ -58,27 +58,30 @@ function AdHocTasks (pattern, type, task, container) {
     else if (self.type == 'dialog') self.dialog.dialog('open');
 }
 
-AdHocTasks.copyTask = function (task, copyCallback) {
-    task.action = 'save';
+AdHocTaskForm.copyTask = function (task, copyCallback) {
+
     task.id = '';
+
     task.arguments = JSON.stringify(task.arguments);
-    AdHocTasks.postTask(task, copyCallback)
+
+    AdHocTaskForm.postTask(task, 'save', copyCallback)
 };
 
-AdHocTasks.saveTask = function (task, saveCallback) {
-    task.action = 'save';
+AdHocTaskForm.saveTask = function (task, saveCallback) {
+
     task.arguments = JSON.stringify(task.arguments);
-    AdHocTasks.postTask(task, saveCallback)
+
+    AdHocTaskForm.postTask(task, 'save', saveCallback)
 };
 
-AdHocTasks.deleteTask = function (task, deleteCallback) {
-    task.action = 'delete';
-    AdHocTasks.postTask(task, deleteCallback)
+AdHocTaskForm.deleteTask = function (task, deleteCallback) {
+
+    AdHocTaskForm.postTask(task, 'delete', deleteCallback)
 };
 
-AdHocTasks.postTask = function (task, postCallback) {
+AdHocTaskForm.postTask = function (task, action, postCallback) {
     $.ajax({
-        url: '/runner/adhoc/',
+        url: '/runner/adhoc/' + action + '/',
         type: 'POST',
         dataType: 'json',
         data: task,
@@ -89,7 +92,7 @@ AdHocTasks.postTask = function (task, postCallback) {
     });
 };
 
-AdHocTasks.jsonToString = function (dataObj) {
+AdHocTaskForm.jsonToString = function (dataObj) {
     var dataString = '';
 
     Object.keys(dataObj).forEach(function (key) {
@@ -99,7 +102,7 @@ AdHocTasks.jsonToString = function (dataObj) {
     return dataString + dataObj['otherArgs']
 };
 
-AdHocTasks.modules = [
+AdHocTaskForm.modules = [
     'copy',
     'ec2_facts',
     'ping',
@@ -111,24 +114,17 @@ AdHocTasks.modules = [
     'file'
 ];
 
-AdHocTasks.prototype = {
+AdHocTaskForm.prototype = {
 
     _submitForm: function () {
         var self = this;
 
-        var become = self.isSudo.hasClass('checked_button');
-        var cred = $('option:selected', self.credentialsSelector).data();
-
-        var askPassword = {
-            user: (!cred.password && cred.ask_pass && !cred.rsa_key),
-            sudo: (become && !cred.sudo_pass && cred.ask_sudo_pass)
-        };
         var arguments;
 
         if (self.type == 'dialog') {
             var argsObj = self._formToJson();
 
-            if (self.action == 'run') arguments = AdHocTasks.jsonToString(argsObj);
+            if (self.action == 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
             else if (self.action == 'save') arguments = argsObj;
         }
 
@@ -138,19 +134,15 @@ AdHocTasks.prototype = {
             type: 'adhoc',
             module: self.module,
             name: self.name,
-            cred: cred,
             hosts: self.patternField.val(),
-            become: become,
+            become: self.isSudo.hasClass('checked_button'),
             arguments: arguments,
             id: self.task.id
         };
 
-        if (self.action == 'run') {
-            task.action = 'run';
-            new AnsibleRunner(task, askPassword, cred.username);
-        }
+        if (self.action == 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
 
-        else if (self.action == 'save') AdHocTasks.saveTask(task, function () {
+        else if (self.action == 'save') AdHocTaskForm.saveTask(task, function () {
             self.task.saveCallback();
             self.formHeader.html('Edit task');
             $.bootstrapGrowl('Task saved', {type: 'success'})
@@ -193,7 +185,7 @@ AdHocTasks.prototype = {
             else self.formHeader.html('New AdHoc task');
 
             self.moduleSelector = selectField.clone();
-            $.each(AdHocTasks.modules.sort(), function (index, value) {
+            $.each(AdHocTaskForm.modules.sort(), function (index, value) {
                 self.moduleSelector.append($('<option>').attr('value', value).append(value))
             });
 

@@ -23,7 +23,7 @@ class PlaybookArgs(models.Model):
 
 class Runner(models.Model):
     user = models.ForeignKey(User)
-    cred = models.ForeignKey(Credential)
+    cred = models.ForeignKey(Credential, blank=True, null=True)
     is_running = models.BooleanField(default=False)
     type = models.CharField(max_length=16, choices=(('playbook', 'playbook'),
                                                     ('adhoc', 'adhoc'),

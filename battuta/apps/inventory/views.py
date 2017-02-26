@@ -13,7 +13,7 @@ from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
 # Create built-in group 'all' if not exists
-Group.objects.get_or_create(name='all')
+# Group.objects.get_or_create(name='all')
 
 
 class InventoryView(View):

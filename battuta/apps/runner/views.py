@@ -21,71 +21,68 @@ from apps.users.models import Credential
 from apps.preferences.functions import get_preferences
 
 
-class RolesView(View):
+class PageView(View):
 
     @staticmethod
-    def get(request):
-        return render(request, 'runner/roles.html')
+    def get(request, **kwargs):
+
+        if kwargs['page'] == 'roles':
+
+            return render(request, 'runner/roles.html')
+
+        elif kwargs['page'] == 'playbooks':
+
+            return render(request, 'runner/playbooks.html')
+
+        elif kwargs['page'] == 'adhoc':
+
+            return render(request, 'runner/adhoc.html')
+
+        elif kwargs['page'] == 'history':
+
+            return render(request, "runner/history.html")
 
 
-class PlaybooksView(View):
+class RunnerView(View):
 
     @staticmethod
-    def get(request):
-        return render(request, 'runner/playbooks.html')
+    def post(request, action):
 
-
-class HistoryView(View):
-
-    @staticmethod
-    def get(request):
-        return render(request, "runner/history.html")
-
-
-class BaseView(View):
-    def __init__(self):
-        super(BaseView, self).__init__()
-        self.prefs = get_preferences()
-        self.context = dict()
-
-
-class RunnerView(BaseView):
-    def post(self, request):
+        prefs = get_preferences()
 
         # Run job
-        if request.POST['action'] == 'run':
+        if action == 'run':
             data = None
             run_data = dict(request.POST.iteritems())
 
             # Add credentials to run data
-            if 'cred' in run_data:
-                cred = get_object_or_404(Credential, pk=run_data['cred'])
-            else:
+            if run_data['cred'] == '0':
                 cred = request.user.userdata.default_cred
+                run_data['cred'] = None
+            else:
+                cred = get_object_or_404(Credential, pk=run_data['cred'])
                 run_data['cred'] = cred.id
 
-            # run_data['username'] = request.user.username
-            #
-            # if cred.username == request.user.username:
-            #     run_data['username'] += ' ({0})'.format(cred.username)
+            if not run_data['remote_user']:
+                run_data['remote_user'] = cred.username
 
-            run_data['remote_username'] = cred.username
-
-            if 'remote_pass' not in run_data:
+            if not run_data['remote_pass']:
                 run_data['remote_pass'] = cred.password
 
-            if 'become_pass' not in run_data:
+            if not run_data['become_user']:
+                run_data['become_user'] = cred.sudo_user
+
+            if not run_data['become_pass']:
                 if cred.sudo_pass:
                     run_data['become_pass'] = cred.sudo_pass
                 else:
-                    run_data['become_pass'] = cred.password
-
-            if cred.sudo_user:
-                run_data['become_user'] = cred.sudo_user
+                    run_data['become_pass'] = run_data['remote_pass']
 
             if cred.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.USERDATA_PATH, str(request.user.username),
-                                                   '.ssh', cred.rsa_key)
+                run_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
+                                                   str(request.user.username),
+                                                   '.ssh',
+                                                   cred.rsa_key)
 
             # Execute playbook
             if run_data['type'] == 'playbook':
@@ -121,7 +118,7 @@ class RunnerView(BaseView):
 
                 tasks = [{'action': {'module': 'setup'}}]
 
-                if self.prefs['use_ec2_facts']:
+                if prefs['use_ec2_facts']:
                     tasks.append({'action': {'module': 'ec2_facts'}})
 
                 run_data['name'] = 'Gather facts'
@@ -143,7 +140,7 @@ class RunnerView(BaseView):
                     runner.status = 'created'
                     runner.is_running = True
                     setattr(runner, 'data', run_data)
-                    setattr(runner, 'prefs', self.prefs)
+                    setattr(runner, 'prefs', prefs)
                     runner.save()
                     try:
                         p = Process(target=play_runner, args=(runner,))
@@ -157,7 +154,8 @@ class RunnerView(BaseView):
                     data = {'result': 'fail', 'msg': str(runner_form.errors)}
 
         # Kill job
-        elif request.POST['action'] == 'kill':
+        elif action == 'kill':
+
             runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
             try:
                 process = psutil.Process(runner.pid)
@@ -175,25 +173,33 @@ class RunnerView(BaseView):
                 runner.status = 'canceled'
                 runner.is_running = False
                 runner.save()
+
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class AdHocView(BaseView):
-    def get(self, request):
-        prefs = get_preferences()
-        data = None
+class AdHocView(View):
 
-        if 'list' in request.GET:
+    @staticmethod
+    def get(request, action):
+
+        if action == 'list':
+
             data = list()
+
             for task in AdHocTask.objects.all().values():
-                if request.GET['list'] == '' or request.GET['list'] == task['hosts']:
+
+                if request.GET['pattern'] == '' or request.GET['pattern'] == task['hosts']:
+
                     task['arguments'] = json.loads(task['arguments'])
+
                     data.append(task)
 
         elif 'term' in request.GET:
+            prefs = get_preferences()
             data = list()
             file_sources = [
                 [settings.FILES_PATH, '{{files_path}}', [], False],
@@ -228,37 +234,51 @@ class AdHocView(BaseView):
 
                         data.append({'value': os.path.join(relative_path, file_name)})
 
-        if data is None:
-            self.context['user'] = request.user
-            return render(request, "runner/adhoc.html", self.context)
         else:
-            return HttpResponse(json.dumps(data), content_type="application/json")
+
+            raise Http404('Invalid action')
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
-    def post(request):
+    def post(request, action):
 
         if request.POST['id']:
+
             adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
+
         else:
+
             adhoc = AdHocTask()
 
         form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
-        if request.POST['action'] == 'save':
+        if action == 'save':
+
             if form.is_valid():
+
                 saved_task = form.save(commit=True)
+
                 data = {'result': 'ok', 'id': saved_task.id}
+
             else:
+
                 data = {'result': 'fail', 'msg': str(form.errors)}
-        elif request.POST['action'] == 'delete':
+
+        elif action == 'delete':
+
             adhoc.delete()
+
             data = {'result': 'ok'}
+
         else:
+
             raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class PlayArgsView(BaseView):
+class PlaybookView(View):
 
     @staticmethod
     def get(request, playbook, action):
@@ -307,11 +327,14 @@ class PlayArgsView(BaseView):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class HistoryApiView(BaseView):
+class HistoryView(View):
 
-    def get(self, request, action):
+    @staticmethod
+    def get(request, action):
 
         if action == 'list':
+
+            prefs = get_preferences()
 
             # Build queryset
             if request.user.is_superuser:
@@ -334,7 +357,7 @@ class HistoryApiView(BaseView):
                     else:
                         target = None
 
-                row = [runner.created_on.astimezone(tz).strftime(self.prefs['date_format']),
+                row = [runner.created_on.astimezone(tz).strftime(prefs['date_format']),
                        runner.user.username,
                        runner.name,
                        target,
@@ -343,10 +366,19 @@ class HistoryApiView(BaseView):
 
                 handler.add_and_filter_row(row)
 
+            data = handler.build_response()
+
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(handler.build_response(), content_type="application/json")
+        return HttpResponse(data, content_type="application/json")
+
+
+class BaseView(View):
+    def __init__(self):
+        super(BaseView, self).__init__()
+        self.prefs = get_preferences()
+        self.context = dict()
 
 
 class ResultView(BaseView):

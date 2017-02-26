@@ -14,6 +14,14 @@
 
             var nodeGrid = new NodeGrid(nodeType, 'open', reloadInfo, $('#node_grid_container'));
 
+            $('#download_table').click(function () {
+                nodeTable.download()
+            });
+
+            $('#update_facts').click(function () {
+                gatherFacts('all', reloadInfo)
+            });
+
             $('#delete_mode').click(function () {
                 $(this).toggleClass('checked_button');
                 $('#delete_button').toggle();
@@ -34,14 +42,6 @@
                         success: reloadInfo
                     })
                 })
-            });
-
-            $('#download_table').click(function () {
-                nodeTable.download()
-            });
-
-            $('#update_facts').click(function () {
-                gatherFacts('all', reloadInfo)
             });
 
             function reloadInfo() {

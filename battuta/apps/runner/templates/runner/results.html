@@ -34,10 +34,10 @@
         </div>
     </header>
 {% endblock %}
-{% block content %}
-    <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Statistics.js' %}"></script>
+{% block scripts %}
     <script src="{% static 'runner/results.js' %}"></script>
+{% endblock %}
+{% block content %}
     <div id="runner_result">
         <br class="hidden-print">
         <h4 class="visible-print-block" style="margin-top: 20px; display: none"><strong>{{ runner.name }}</strong></h4>

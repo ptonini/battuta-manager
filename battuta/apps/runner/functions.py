@@ -69,7 +69,7 @@ def play_runner(runner):
     if 'become' not in runner.data:
         runner.data['become'] = c.DEFAULT_BECOME
 
-    if 'become_user' not in runner.data:
+    if not runner.data['become_user']:
         runner.data['become_user'] = c.DEFAULT_BECOME_USER
 
     if 'become_method' not in runner.data:
@@ -96,7 +96,7 @@ def play_runner(runner):
     options = AnsibleOptions(connection=runner.data['connection'],
                              module_path=runner.data['module_path'],
                              forks=runner.data['forks'],
-                             remote_user=runner.data['remote_username'],
+                             remote_user=runner.data['remote_user'],
                              private_key_file=runner.data['rsa_key'],
                              ssh_common_args=None,
                              ssh_extra_args=None,

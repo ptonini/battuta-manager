@@ -1,4 +1,4 @@
-function Playbook(playbook) {
+function PlaybookForm(playbook) {
     var self = this;
 
     self.playbook = playbook;
@@ -9,7 +9,7 @@ function Playbook(playbook) {
             case 'Save':
                 if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
                     $.ajax({
-                        url: '/runner/playargs/' + self.playbook.name + '/save/',
+                        url: '/runner/playbooks/' + self.playbook.name + '/save/',
                         type: 'POST',
                         dataType: 'json',
                         data: {
@@ -35,7 +35,7 @@ function Playbook(playbook) {
             case 'Delete':
                 new DeleteDialog(function() {
                     $.ajax({
-                        url: '/runner/playargs/' + self.playbook.name + '/delete/',
+                        url: '/runner/playbooks/' + self.playbook.name + '/delete/',
                         type: 'POST',
                         dataType: 'json',
                         data: self.loadedArgs,
@@ -78,7 +78,7 @@ function Playbook(playbook) {
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
         .click(function (event) {
             event.preventDefault();
-            new PatternBuilder(self.patternField)
+            new PatternBuilder(self.limitField)
         });
 
     self.limitFieldGroup = divFormGroup.clone().append(
@@ -123,80 +123,75 @@ function Playbook(playbook) {
 
 }
 
-Playbook.prototype._buildForm = function () {
-    var self = this;
+PlaybookForm.prototype = {
 
-    self.requiresSudoAlert = spanRight.clone()
-        .html('requires sudo')
-        .css('font-size', 'x-small')
-        .toggleClass('hidden', !self._requiresSudo());
+    _buildForm: function () {
+        var self = this;
 
-    self.playbookDialog.append(
-        divRow.clone().append(
-            divCol12.clone().html($('<h4>').append(self.playbook.name, self.requiresSudoAlert))
-        ),
-        divRow.clone().append(
-            divCol12.clone().append(
-                divFormGroup.clone().append($('<label>').html('Saved arguments').append(self.argumentsSelector))
-            )
-        ),
-        self.form.append(
+        self.requiresSudoAlert = spanRight.clone()
+            .html('requires sudo')
+            .css('font-size', 'x-small')
+            .toggleClass('hidden', !self._requiresSudo());
+
+        self.playbookDialog.append(
             divRow.clone().append(
-                divCol9.clone().append(self.limitFieldGroup),
-                divCol3.clone().addClass('text-right').css('margin-top', '19px').append(self.checkButton),
-                divCol6.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Tags').append(self.tagsField))
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Skip tags').append(self.skipTagsField))
-                ),
+                divCol12.clone().html($('<h4>').append(self.playbook.name, self.requiresSudoAlert))
+            ),
+            divRow.clone().append(
                 divCol12.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Extra vars').append(self.extraVarsField))
-                ),
-                divCol12.clone().append(self.saveButton, self.deleteButton),
-                divCol6.clone().css('margin-top', '18px').append(
-                    $('<label>').html('Credentials').append(self.credentialsSelector)
+                    divFormGroup.clone().append($('<label>').html('Saved arguments').append(self.argumentsSelector))
+                )
+            ),
+            self.form.append(
+                divRow.clone().append(
+                    divCol9.clone().append(self.limitFieldGroup),
+                    divCol3.clone().addClass('text-right').css('margin-top', '19px').append(self.checkButton),
+                    divCol6.clone().append(
+                        divFormGroup.clone().append($('<label>').html('Tags').append(self.tagsField))
+                    ),
+                    divCol6.clone().append(
+                        divFormGroup.clone().append($('<label>').html('Skip tags').append(self.skipTagsField))
+                    ),
+                    divCol12.clone().append(
+                        divFormGroup.clone().append($('<label>').html('Extra vars').append(self.extraVarsField))
+                    ),
+                    divCol12.clone().append(self.saveButton, self.deleteButton),
+                    divCol6.clone().css('margin-top', '18px').append(
+                        $('<label>').html('Credentials').append(self.credentialsSelector)
+                    )
                 )
             )
-        )
+        );
 
-    );
-
-    self.playbookDialog
-        .dialog({
-            width: 480,
-            buttons: {
-                Run: function () {
-                    var cred = $('option:selected', self.credentialsSelector).data();
-                    var askPassword = {
-                        user: (!cred.password && cred.ask_pass && !cred.rsa_key),
-                        sudo: (self._requiresSudo() && !cred.sudo_pass && cred.ask_sudo_pass)
-                    };
-                    var postData = {
-                        action: 'run',
-                        type: 'playbook',
-                        cred: cred.id,
-                        playbook: self.playbook.name,
-                        check: self.checkButton.hasClass('checked_button'),
-                        subset: self.limitField.val(),
-                        tags: self.tagsField.val(),
-                        skip_tags: self.skipTagsField.val(),
-                        extra_vars: self.extraVarsField.val()
-                    };
-                    new AnsibleRunner(postData, askPassword, cred.username);
+        self.playbookDialog
+            .dialog({
+                width: 480,
+                buttons: {
+                    Run: function () {
+                        var postData = {
+                            type: 'playbook',
+                            playbook: self.playbook.name,
+                            become: self._requiresSudo(),
+                            check: self.checkButton.hasClass('checked_button'),
+                            subset: self.limitField.val(),
+                            tags: self.tagsField.val(),
+                            skip_tags: self.skipTagsField.val(),
+                            extra_vars: self.extraVarsField.val()
+                        };
+                        new AnsibleRunner(postData, $('option:selected', self.credentialsSelector).data());
+                    },
+                    Cancel: function () {
+                        $(this).dialog('close');
+                    }
                 },
-                Cancel: function () {
-                    $(this).dialog('close');
+                close: function () {
+                    $(this).remove()
                 }
-            },
-            close: function() {
-                $(this).remove()
-            }
-        })
-        .dialog('open');
-};
+            })
+            .dialog('open');
+    },
 
-Playbook.prototype._requiresSudo = function () {
+    _requiresSudo: function () {
     var self = this;
 
     var trueValues = ['true', 'yes', '1'];
@@ -207,30 +202,31 @@ Playbook.prototype._requiresSudo = function () {
     });
 
     return requireSudo
-};
+},
 
-Playbook.prototype._buildArgumentsSelector = function (selectedValue) {
-    var self = this;
+    _buildArgumentsSelector: function (selectedValue) {
+        var self = this;
 
-    self.argumentsSelector.empty();
+        self.argumentsSelector.empty();
 
-    $.ajax({
-        url: '/runner/playargs/' + self.playbook.name + '/list/',
-        dataType: 'json',
-        success: function (data) {
-            $.each(data, function (index, args) {
-                var optionLabel = [];
-                if (args.subset) optionLabel.push('--limit ' + args.subset);
-                if (args.tags) optionLabel.push('--tags ' + args.tags);
-                if (args.skip_tags) optionLabel.push('--skip_tags ' + args.skip_tags);
-                if (args.extra_vars) optionLabel.push('--extra_vars "' + args.extra_vars + '"');
-                self.argumentsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
-            });
+        $.ajax({
+            url: '/runner/playbooks/' + self.playbook.name + '/list/',
+            dataType: 'json',
+            success: function (data) {
+                $.each(data, function (index, args) {
+                    var optionLabel = [];
+                    if (args.subset) optionLabel.push('--limit ' + args.subset);
+                    if (args.tags) optionLabel.push('--tags ' + args.tags);
+                    if (args.skip_tags) optionLabel.push('--skip_tags ' + args.skip_tags);
+                    if (args.extra_vars) optionLabel.push('--extra_vars "' + args.extra_vars + '"');
+                    self.argumentsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
+                });
 
-            self.argumentsSelector.append($('<option>').html('new').val('new'));
-            if (selectedValue) self.argumentsSelector.val(selectedValue);
-            self.argumentsSelector.change();
-        }
-    });
+                self.argumentsSelector.append($('<option>').html('new').val('new'));
+                if (selectedValue) self.argumentsSelector.val(selectedValue);
+                self.argumentsSelector.change();
+            }
+        });
+    }
+}
 
-};
