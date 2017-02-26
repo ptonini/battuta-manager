@@ -20,7 +20,6 @@ HostFacts.prototype = {
 
         $.ajax({
             url: '/inventory/host/' + self.host,
-            type: 'GET',
             data: {action: 'facts'},
             dataType: 'json',
             success: function (data) {
@@ -70,7 +69,9 @@ HostFacts.prototype = {
                 {class: 'col-md-2', title: 'type', data: 'fstype'},
                 {class: 'col-md-3', title: 'options', data: 'options'}
             ],
-            rowCallback: function(row, data) {$(row).find('td:eq(2)').html(humanBytes(data.size_total))}
+            rowCallback: function(row, data) {
+                $(row).find('td:eq(2)').html(humanBytes(data.size_total))
+            }
         });
 
         self.factsRow = divRow.clone().append(
@@ -122,13 +123,16 @@ HostFacts.prototype = {
                             divCol4L.clone().append('EC2 hostname:'), divCol8R.clone().append(facts.ec2_hostname)
                         ),
                         divRowEqHeight.clone().append(
-                            divCol4L.clone().append('EC2 public address:'), divCol8R.clone().append(facts.ec2_public_ipv4)
+                            divCol4L.clone().append('EC2 public address:'),
+                            divCol8R.clone().append(facts.ec2_public_ipv4)
                         ),
                         divRowEqHeight.clone().append(
-                            divCol4L.clone().append('EC2 instance type:'), divCol8R.clone().append(facts.ec2_instance_type)
+                            divCol4L.clone().append('EC2 instance type:'),
+                            divCol8R.clone().append(facts.ec2_instance_type)
                         ),
                         divRowEqHeight.clone().append(
-                            divCol4L.clone().append('EC2 instance id:'), divCol8R.clone().append(facts.ec2_instance_id)
+                            divCol4L.clone().append('EC2 instance id:'),
+                            divCol8R.clone().append(facts.ec2_instance_id)
                         ),
                         divRowEqHeight.clone().append(
                             divCol4L.clone().append('EC2 avaliability zone:'),
