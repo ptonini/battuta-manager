@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^import/$', views.ImportExportView.as_view(), name='import_export'),
 
     url(r'^(?P<node_type_plural>(hosts|groups))/$', login_required(views.NodesView.as_view()), name='nodes'),
+    url(r'^(?P<node_type_plural>(hosts|groups))/(?P<action>[a-z]+)/$', login_required(views.NodesApiView.as_view())),
 
     url(r'^(?P<node_type>(host|group))/(?P<node_name>[a-zA-Z0-9-._]+)/$',
         login_required(views.NodeDetailsView.as_view()), name='node_details'),
@@ -20,5 +21,5 @@ urlpatterns = [
         login_required(views.RelationsView.as_view()), name='relations'),
 
 
-    url(r'^(?P<node_type_plural>(hosts|groups))/(?P<action>[a-z]+)/$', login_required(views.NodesApiView.as_view())),
+
 ]

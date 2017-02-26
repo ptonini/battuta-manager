@@ -41,7 +41,7 @@ function Relationships(nodeName, nodeType, alterRelationCallback, container) {
                     $('<span>').css({float: 'right', margin: '7px 0', 'font-size': '15px'})
                         .attr({class: 'glyphicon glyphicon-remove-circle', title: 'Remove'})
                         .click(function () {
-                            self.alterRelation(relation, [id], 'remove')
+                            self._alterRelation(relation, [id], 'remove')
                         })
                 )
             },
@@ -52,7 +52,7 @@ function Relationships(nodeName, nodeType, alterRelationCallback, container) {
                     selectNodesDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
                     selectNodesDialog.dialog('option', 'buttons', {
                         Add: function () {
-                            self.alterRelation(relation, selectNodesDialog.DynamicList('getSelected', 'id'), 'add');
+                            self._alterRelation(relation, selectNodesDialog.DynamicList('getSelected', 'id'), 'add');
                             $(this).dialog('close');
                         },
                         Cancel: function () {
@@ -74,17 +74,20 @@ function Relationships(nodeName, nodeType, alterRelationCallback, container) {
     })
 }
 
-Relationships.prototype.alterRelation = function (relation, selection, action) {
-    var self = this;
+Relationships.prototype = {
 
-    $.ajax({
-        url: '/inventory/' + self.nodeType + '/' + self.nodeName + '/' +  relation + '/',
-        type: 'POST',
-        dataType: 'json',
-        data: {selection: selection, action: action},
-        success: function () {
-            self[relation].DynamicList('load');
-            self.alterRelationCallback()
-        }
-    });
+    _alterRelation: function (relation, selection, action) {
+        var self = this;
+
+        $.ajax({
+            url: '/inventory/' + self.nodeType + '/' + self.nodeName + '/' +  relation + '/',
+            type: 'POST',
+            dataType: 'json',
+            data: {selection: selection, action: action},
+            success: function () {
+                self[relation].DynamicList('load');
+                self.alterRelationCallback()
+            }
+        });
+    }
 };

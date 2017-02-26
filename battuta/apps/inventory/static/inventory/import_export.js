@@ -41,7 +41,7 @@ $(document).ready(function () {
                     $('<ul>').append(
                         $('<li>').html('Hosts added: ' + data.response.added_hosts),
                         $('<li>').html('Groups added: ' + data.response.added_groups),
-                        $('<li>').html('Variables added: ' + data.response.added_vars)
+                        $('<li>').html('VariableForm added: ' + data.response.added_vars)
                     )
                 );
                 $.bootstrapGrowl(alertMessage, {type: 'success', delay: 0});

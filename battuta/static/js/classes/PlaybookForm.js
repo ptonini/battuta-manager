@@ -168,17 +168,7 @@ PlaybookForm.prototype = {
                 width: 480,
                 buttons: {
                     Run: function () {
-                        var postData = {
-                            type: 'playbook',
-                            playbook: self.playbook.name,
-                            become: self._requiresSudo(),
-                            check: self.checkButton.hasClass('checked_button'),
-                            subset: self.limitField.val(),
-                            tags: self.tagsField.val(),
-                            skip_tags: self.skipTagsField.val(),
-                            extra_vars: self.extraVarsField.val()
-                        };
-                        new AnsibleRunner(postData, $('option:selected', self.credentialsSelector).data());
+                        self._runPlaybook()
                     },
                     Cancel: function () {
                         $(this).dialog('close');
@@ -189,6 +179,29 @@ PlaybookForm.prototype = {
                 }
             })
             .dialog('open');
+
+        self.form.find('input').keypress(function (event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                self._runPlaybook()
+            }
+        });
+    },
+
+    _runPlaybook: function () {
+        var self = this;
+
+        var postData = {
+            type: 'playbook',
+            playbook: self.playbook.name,
+            become: self._requiresSudo(),
+            check: self.checkButton.hasClass('checked_button'),
+            subset: self.limitField.val(),
+            tags: self.tagsField.val(),
+            skip_tags: self.skipTagsField.val(),
+            extra_vars: self.extraVarsField.val()
+        };
+        new AnsibleRunner(postData, $('option:selected', self.credentialsSelector).data());
     },
 
     _requiresSudo: function () {

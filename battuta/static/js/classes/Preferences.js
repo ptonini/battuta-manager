@@ -205,7 +205,7 @@ Preferences.prototype._savePreferences = function () {
         $.ajax({
             url: '/preferences/',
             type: 'POST',
-            data: {action: 'save', item_values: JSON.stringify(itemValues)},
+            data: {item_values: JSON.stringify(itemValues)},
             dataType: 'json',
             success: function() {
                 Preferences.getPreferences();

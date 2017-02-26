@@ -50,7 +50,7 @@ CopyVariables.prototype._openSelectNodeDialog = function(sourceNodeType) {
                 data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
                 success: function () {
                     selectNodeDialog.dialog('close');
-                    $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
+                    $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
                     if (self.copyCallback) self.copyCallback()
                 }
             });

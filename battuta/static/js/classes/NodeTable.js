@@ -34,7 +34,7 @@ function NodeTable(nodeType, addCallback, container) {
         {class: 'col-md-1', title: 'Members', data: 'members'},
         {class: 'col-md-1', title: 'Parents', data: 'parents'},
         {class: 'col-md-1', title: 'Children', data: 'children'},
-        {class: 'col-md-1', title: 'Variables', data: 'variables'}
+        {class: 'col-md-1', title: 'VariableForm', data: 'variables'}
     ];
 
 

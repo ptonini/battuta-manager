@@ -15,22 +15,19 @@ class PreferencesView(View):
         data = dict()
         data['default'] = DefaultPrefs().get_schema()
         data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request):
-        if 'action' in request.POST:
-            if request.POST['action'] == 'save':
-                for key, value in json.loads(request.POST['item_values']).iteritems():
-                    if value == DefaultPrefs().get_value(key):
-                        Item.objects.filter(name=key).delete()
-                    else:
-                        item, created = Item.objects.get_or_create(name=key)
-                        item.value = value
-                        item.save()
-                data = {'result': 'ok'}
+
+        for key, value in json.loads(request.POST['item_values']).iteritems():
+            if value == DefaultPrefs().get_value(key):
+                Item.objects.filter(name=key).delete()
             else:
-                raise Http404('Invalid action')
-        else:
-            raise Http404('Invalid request')
+                item, created = Item.objects.get_or_create(name=key)
+                item.value = value
+                item.save()
+        data = {'result': 'ok'}
+
         return HttpResponse(json.dumps(data), content_type="application/json")

@@ -1,4 +1,4 @@
-function Variables(variable, type, nodeName, nodeType, saveCallback, container) {
+function VariableForm(variable, type, nodeName, nodeType, saveCallback, container) {
     var self = this;
 
     self.var = variable;
@@ -31,7 +31,44 @@ function Variables(variable, type, nodeName, nodeType, saveCallback, container) 
     else if (self.type == 'dialog') self.dialog.dialog('open');
 }
 
-Variables.prototype._buildForm = function () {
+VariableForm.saveVariable = function (variable, nodeName, nodeType, saveCallback) {
+
+    var successCallback = function () {
+        saveCallback();
+        $.bootstrapGrowl('Variable saved', {type: 'success'})
+    };
+    variable.action = 'save';
+    VariableForm.postVariable(variable, nodeName, nodeType, successCallback)
+};
+
+VariableForm.deleteVariable = function (variable, nodeName, nodeType, deleteCallback) {
+
+    var successCallback = function () {
+        deleteCallback();
+        $.bootstrapGrowl('Variable deleted', {type: 'success'})
+    };
+    variable.action = 'delete';
+    VariableForm.postVariable(variable, nodeName, nodeType, successCallback)
+};
+
+VariableForm.postVariable = function (variable, nodeName, nodeType, successCallback) {
+    $.ajax({
+        url: '/inventory/' + nodeType + '/' + nodeName + '/vars/',
+        type: 'POST',
+        dataType: 'json',
+        data: variable,
+        success: function(data) {
+            if (data.result == 'ok')  {
+                if (successCallback) successCallback()
+            }
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+        }
+    });
+};
+
+VariableForm.prototype = {
+
+    _buildForm: function () {
     var self = this;
     if (self.type == 'add') {
         self.formHeader.html('Add variable');
@@ -88,9 +125,9 @@ Variables.prototype._buildForm = function () {
             close: function() {$(this).remove()}
         });
     }
-};
+},
 
-Variables.prototype._submitForm = function () {
+    _submitForm: function () {
     var self = this;
     var submitCallback;
 
@@ -111,41 +148,7 @@ Variables.prototype._submitForm = function () {
         self.dialog.dialog('close');
     };
 
-    Variables.saveVariable(variable, self.nodeName, self.nodeType, submitCallback);
+    VariableForm.saveVariable(variable, self.nodeName, self.nodeType, submitCallback);
 
-};
-
-Variables.saveVariable = function (variable, nodeName, nodeType, saveCallback) {
-
-    var successCallback = function () {
-        saveCallback();
-        $.bootstrapGrowl('Variable saved', {type: 'success'})
-    };
-    variable.action = 'save';
-    Variables.postVariable(variable, nodeName, nodeType, successCallback)
-};
-
-Variables.deleteVariable = function (variable, nodeName, nodeType, deleteCallback) {
-
-    var successCallback = function () {
-        deleteCallback();
-        $.bootstrapGrowl('Variable deleted', {type: 'success'})
-    };
-    variable.action = 'delete';
-    Variables.postVariable(variable, nodeName, nodeType, successCallback)
-};
-
-Variables.postVariable = function (variable, nodeName, nodeType, successCallback) {
-    $.ajax({
-        url: '/inventory/' + nodeType + '/' + nodeName + '/vars/',
-        type: 'POST',
-        dataType: 'json',
-        data: variable,
-        success: function(data) {
-            if (data.result == 'ok')  {
-                if (successCallback) successCallback()
-            }
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-        }
-    });
-};
+},
+}

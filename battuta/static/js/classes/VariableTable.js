@@ -5,7 +5,7 @@ function VariableTable(nodeName, nodeType, container) {
 
     self.table = baseTable.clone().attr('id', self.tableId);
 
-    container.append($('<h4>').html('Variables'), self.table);
+    container.append($('<h4>').html('VariableForm'), self.table);
 
     self.table.DataTable({
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
@@ -22,13 +22,13 @@ function VariableTable(nodeName, nodeType, container) {
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                         .click(function () {
-                            new Variables(variable, 'dialog', nodeName, nodeType, self.table.DataTable().ajax.reload)
+                            new VariableForm(variable, 'dialog', nodeName, nodeType, self.table.DataTable().ajax.reload)
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
                         .click(function () {
                             new DeleteDialog(function () {
-                                Variables.deleteVariable(variable, nodeName, nodeType, self.table.DataTable().ajax.reload)
+                                VariableForm.deleteVariable(variable, nodeName, nodeType, self.table.DataTable().ajax.reload)
                             })
                         })
                 )

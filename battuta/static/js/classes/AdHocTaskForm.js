@@ -12,7 +12,6 @@ function AdHocTaskForm (pattern, type, task, container) {
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
         .click(function (event) {
-            event.preventDefault();
             new PatternBuilder(self.patternField)
         });
 
@@ -42,12 +41,6 @@ function AdHocTaskForm (pattern, type, task, container) {
 
     self._buildForm();
 
-    self.form.find('input').keypress(function (event) {
-        if (event.keyCode == 13) {
-            event.preventDefault();
-            $(this).submit()
-        }
-    });
 
     if (pattern) {
         self.patternField.val(pattern).prop('disabled', true);
@@ -176,7 +169,15 @@ AdHocTaskForm.prototype = {
                     divCol2.clone().append($('<label>').html('Credentials').append(self.credentialsSelector)),
                     divCol1.clone().addClass('text-right labelless_button').append(self.runCommand)
                 )
-            )
+            );
+
+            self.form.find('input').keypress(function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    self.form.submit();
+                }
+            });
+
         }
 
         else if (self.type == 'dialog') {
@@ -193,6 +194,14 @@ AdHocTaskForm.prototype = {
                 self.name = this.value;
                 self.module = this.value;
                 self.moduleFieldsContainer.empty().html(self._buildModuleFields());
+                self.form.find('input').keypress(function (event) {
+                    if (event.keyCode == 13) {
+                        event.preventDefault();
+                        self.action = 'run';
+                        self.form.submit();
+                    }
+                });
+
             });
 
             self.moduleReferenceLink = $('<small>').attr('class', 'reference_link').html('module reference');
@@ -248,7 +257,6 @@ AdHocTaskForm.prototype = {
             }
             else self.moduleSelector.val('shell').change();
         }
-
     },
 
     _buildModuleFields: function () {
