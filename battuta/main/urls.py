@@ -10,6 +10,6 @@ urlpatterns = [
     url(r'^inventory/', include('apps.inventory.urls', namespace='inventory')),
     url(r'^runner/', include('apps.runner.urls', namespace='runner')),
     url(r'^users/', include('apps.users.urls', namespace='users')),
-    url(r'^files/', include('apps.files.urls', namespace='files'))
+    url(r'^files/', include('apps.files.urls', namespace='files')),
     url(r'^preferences/', include('apps.preferences.urls', namespace='preferences')),
 ]

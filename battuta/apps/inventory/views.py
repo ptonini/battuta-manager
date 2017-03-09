@@ -326,6 +326,7 @@ class NodeDetailsView(View):
             node_class = Group
             node_form_class = GroupForm
         else:
+            print node_type
             raise Http404('Invalid node type')
 
         ancestors = list()
@@ -370,7 +371,8 @@ class NodeDetailsView(View):
 
         return node
 
-    def get(self, request, node_name, node_type):
+    def get(self, request, node_type, node_name):
+
         node = self.build_node(node_type, node_name)
 
         if 'action' not in request.GET:
