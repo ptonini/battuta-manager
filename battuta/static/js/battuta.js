@@ -24,6 +24,7 @@ var divFormGroup = $('<div>').attr('class', 'form-group');
 var divInputGroup = $('<div>').attr('class', 'input-group');
 var divBtnGroup = $('<div>').attr('class', 'btn-group');
 var divChkbox =  $('<div>').attr('type', 'checkbox');
+var divRadio = $('<div>').attr('class', 'radio');
 var spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
 
 // Input elements
@@ -33,6 +34,7 @@ var textAreaField = $('<textarea>').attr('class', 'textarea form-control input-s
 var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
 var fileInputField = $('<input>').attr({class: 'input-file', type: 'file'});
 var chkboxInput =  $('<input>').attr('type', 'checkbox');
+var radioInput =  $('<input>').attr('type', 'radio');
 var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
 var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
 

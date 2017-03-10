@@ -22,4 +22,3 @@ urlpatterns = [
     url(r'^adhoc/([a-z]+)/$', login_required(views.AdHocView.as_view())),
 
 ]
-

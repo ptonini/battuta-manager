@@ -1,49 +1,20 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            new ImportInventory($('#import_form_container'));
+
+            new ExportInventory($('#export_form_container'))
+
+        })
+    </script>
+{% endblock %}
 {% block content %}
-    <script src="{% static 'inventory/import_export.js' %}"></script>
     <div class="row">
-        <div class="col-md-12"><h4>Import from:</h4></div>
-        <div class="col-md-12">
-            <div class="form-group">
-                <div class="radio">
-                    <label><input type="radio" name="import_file_type" value="csv" checked>CSV file</label>
-                </div>
-                <div class="radio">
-                    <label><input type="radio" name="import_file_type" value="json">JSON file</label>
-                </div>
-                <div class="radio" disabled>
-                    <label><input type="radio" name="import_file_type" value="zip" disabled>Ansible inventory</label>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="import_file" class="requiredField">Select file</label>
-                <input class="input-file" type="file" id="import_file">
-            </div>
-        </div>
-        <div class="col-md-12">
-            <button id="import_file_button" class="btn btn-default btn-xs" disabled>Import</button>
-        </div>
+        <div id="import_form_container" class="col-md-12"></div>
         <div class="col-md-12"><hr></div>
-        <div class="col-md-12"><h4>Export to:</h4></div>
-        <div class="col-md-12">
-            <div class="form-group">
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="export_file_type" value="json" checked>JSON file
-                    </label>
-                </div>
-                <div class="radio" disabled>
-                    <label>
-                        <input type="radio" name="export_file_type" value="zip" disabled>Ansible inventory
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-12">
-            <button id="export_file_button" class="btn btn-default btn-xs">Export</button>
-        </div>
+        <div id="export_form_container" class="col-md-12"></div>
     </div>
 {% endblock %}
