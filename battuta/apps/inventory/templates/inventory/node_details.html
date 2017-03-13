@@ -6,12 +6,13 @@
 
             var nodeName = '{{ node.name }}';
             var nodeType = '{{ node.type }}';
-            var nodeDescriptionHeader = $('#node_description_header').html('{{ node.description }}');
+            var nodeDescription = '{{ node.description }}';
+            var nodeDescriptionHeader = $('#node_description_header');
 
             document.title = 'Battuta - ' + nodeName;
 
-            var nodeDescription = nodeDescriptionHeader.html();
-            if (!nodeDescription) nodeDescriptionHeader.html($('<small>').html('<i>No description available</i>'));
+            if (nodeDescription) nodeDescriptionHeader.html(nodeDescription);
+            else nodeDescriptionHeader.html($('<small>').html('<i>No description available</i>'));
 
             // Format page to 'all' group
             if (nodeName == 'all') {

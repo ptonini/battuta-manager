@@ -1,5 +1,8 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
+{% block scripts %}
+    <script src="{% static 'runner/results.js' %}"></script>
+{% endblock %}
 {% block header %}
     <header class="navbar navbar-default navbar-fixed-top">
         <div class="container">
@@ -33,9 +36,6 @@
             </div>
         </div>
     </header>
-{% endblock %}
-{% block scripts %}
-    <script src="{% static 'runner/results.js' %}"></script>
 {% endblock %}
 {% block content %}
     <div id="runner_result">
