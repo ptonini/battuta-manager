@@ -37,6 +37,8 @@ var chkboxInput =  $('<input>').attr('type', 'checkbox');
 var radioInput =  $('<input>').attr('type', 'radio');
 var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
 var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
+var navBarBtn = $('<button>').attr('class', 'btn btn-default btn-xs navbar-btn');
+
 
 // Dialogs
 var largeDialog = $('<div>').attr('class', 'large_dialog');

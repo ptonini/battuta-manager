@@ -56,12 +56,12 @@ class RunnerView(View):
             run_data = dict(request.POST.iteritems())
 
             # Add credentials to run data
-            if run_data['cred'] == '0':
+            if 'cred' not in run_data or run_data['cred'] == '0':
                 cred = request.user.userdata.default_cred
-                run_data['cred'] = None
             else:
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
-                run_data['cred'] = cred.id
+
+            run_data['cred'] = cred.id
 
             if not run_data['remote_user']:
                 run_data['remote_user'] = cred.username
@@ -390,6 +390,7 @@ class ResultView(BaseView):
             runner.created_on = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
             self.context['runner'] = runner
             return render(request, "runner/results.html", self.context)
+
         else:
             if request.GET['action'] == 'status':
 

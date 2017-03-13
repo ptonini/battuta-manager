@@ -2,15 +2,28 @@
 {% load staticfiles %}
 {% block scripts %}
     <script src="{% static 'runner/results.js' %}"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var runnerId = '{{ runner.id }}';
+
+            new RunnerResults(runnerId, $('#result_container_header'))
+
+        });
+    </script>
+
 {% endblock %}
 {% block header %}
-    <header class="navbar navbar-default navbar-fixed-top">
+    <header id="result_container_header" class="navbar navbar-default navbar-fixed-top">
         <div class="container">
+
+            {% comment %}
+
             <div class="navbar-header">
                 <span class="navbar-brand">
                     {{ runner.name }}
-                    <small id="runner_status" data-is_running="{{ runner.is_running|lower }}"
-                           style="margin-left: 20px">{{ runner.status }}</small>
+                    <small id="runner_status" data-is_running="{{ runner.is_running|lower }}" style="margin-left: 20px">{{ runner.status }}</small>
                     <span id="running_gif" style="display: none;">
                         <img src="{% static 'images/waiting-small.gif' %}">
                     </span>
@@ -23,17 +36,25 @@
                 </button>
             </div>
             <div class="navbar-right">
-                <button id="auto_scroll" class="btn btn-default btn-xs navbar-btn"
-                        style="display: none;">Auto scroll</button>
-                <button id="cancel_runner" class="btn btn-danger btn-xs navbar-btn"
-                        style="display: none;">Cancel</button>
                 <button id="show_stats" class="btn btn-default btn-xs btn-icon navbar-btn" style="display: none;">
                     <span class="glyphicon glyphicon-list" title="Statistics"></span>
                 </button>
+
                 <button id="print_report" class="btn btn-default btn-xs btn-icon navbar-btn" style="display: none;">
                     <span class="glyphicon glyphicon-print" title="Print"></span>
                 </button>
+
+                <button id="cancel_runner" class="btn btn-default btn-xs btn-icon navbar-btn" style="display: none;">
+                    <span class="glyphicon glyphicon-remove" title="Cancel" style="color: red"></span>
+                </button>
+
+                <button id="auto_scroll" class="btn btn-default btn-xs navbar-btn" style="display: none;">Auto scroll</button>
+
             </div>
+
+            {% endcomment %}
+
+
         </div>
     </header>
 {% endblock %}
