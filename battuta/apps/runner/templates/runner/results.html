@@ -1,125 +1,23 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
 {% block scripts %}
-    <script src="{% static 'runner/results.js' %}"></script>
-
     <script type="text/javascript">
         $(document).ready(function () {
 
             var runnerId = '{{ runner.id }}';
 
-            new RunnerResults(runnerId, $('#result_container_header'))
+            new RunnerResults(runnerId, $('#result_header'), $('#info_container'), $('#result_container'))
 
         });
     </script>
-
 {% endblock %}
 {% block header %}
-    <header id="result_container_header" class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-
-            {% comment %}
-
-            <div class="navbar-header">
-                <span class="navbar-brand">
-                    {{ runner.name }}
-                    <small id="runner_status" data-is_running="{{ runner.is_running|lower }}" style="margin-left: 20px">{{ runner.status }}</small>
-                    <span id="running_gif" style="display: none;">
-                        <img src="{% static 'images/waiting-small.gif' %}">
-                    </span>
-                </span>
-                <button id="rerun_playbook" class="btn btn-default btn-xs navbar-btn btn-icon run_again" style="display: none;">
-                    <span class="glyphicon glyphicon-repeat" title="Rerun playbook"></span>
-                </button>
-                <button id="retry_failed" class="btn btn-default btn-xs navbar-btn btn-icon run_again" style="display: none;">
-                    <span class="glyphicon glyphicon-repeat" style="color: red" title="Retry failed hosts"></span>
-                </button>
-            </div>
-            <div class="navbar-right">
-                <button id="show_stats" class="btn btn-default btn-xs btn-icon navbar-btn" style="display: none;">
-                    <span class="glyphicon glyphicon-list" title="Statistics"></span>
-                </button>
-
-                <button id="print_report" class="btn btn-default btn-xs btn-icon navbar-btn" style="display: none;">
-                    <span class="glyphicon glyphicon-print" title="Print"></span>
-                </button>
-
-                <button id="cancel_runner" class="btn btn-default btn-xs btn-icon navbar-btn" style="display: none;">
-                    <span class="glyphicon glyphicon-remove" title="Cancel" style="color: red"></span>
-                </button>
-
-                <button id="auto_scroll" class="btn btn-default btn-xs navbar-btn" style="display: none;">Auto scroll</button>
-
-            </div>
-
-            {% endcomment %}
-
-
-        </div>
-    </header>
+    <header id="result_header" class="navbar navbar-default navbar-fixed-top"></header>
 {% endblock %}
 {% block content %}
+    <div id="info_container"></div>
     <div id="runner_result">
-        <br class="hidden-print">
-        <h4 class="visible-print-block" style="margin-top: 20px; display: none"><strong>{{ runner.name }}</strong></h4>
-        <div class="row">
-            <div class="col-md-4 col-xs-6">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">User:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.user }}</strong></div>
-                </div>
-            </div>
-            <div class="col-md-4 col-xs-6 playbook_only">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">Subset:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.subset }}">
-                        <strong>{{ runner.subset }}</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-xs-6 playbook_only">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">Tags:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.tags }}">
-                        <strong>{{ runner.tags }}</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-md-push-8 col-xs-6 playbook_only">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">Skip tags:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.skip_tags }}">
-                        <strong>{{ runner.skip_tags }}</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-xs-6 playbook_only">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">Extra vars:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text" title="{{ runner.extra_vars }}">
-                        <strong>{{ runner.extra_vars }}</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-md-pull-8 col-xs-6 playbook_only">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">Check:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right truncate-text">
-                        <strong>{{ runner.check|lower }}</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4 col-xs-6">
-                <div class="row">
-                    <div class="col-md-3 col-xs-3 report_field_left">Run date:</div>
-                    <div class="col-md-9 col-xs-9 report_field_right"><strong>{{ runner.created_on }}</strong></div>
-                </div>
-            </div>
-        </div>
+        <div id="info_container"></div>
         <div id="result_container"></div>
-        <div id="stats_container"></div>
     </div>
-
 {% endblock %}

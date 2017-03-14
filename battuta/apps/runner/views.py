@@ -386,16 +386,20 @@ class ResultView(BaseView):
         runner = get_object_or_404(Runner, pk=runner_id)
 
         if 'action' not in request.GET:
-            tz = timezone(runner.user.userdata.timezone)
-            runner.created_on = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
+
             self.context['runner'] = runner
             return render(request, "runner/results.html", self.context)
 
         else:
             if request.GET['action'] == 'status':
 
+                tz = timezone(runner.user.userdata.timezone)
+
                 # Convert runner object to dict
                 data = model_to_dict(runner)
+
+                data['username'] = runner.user.username
+                data['created_on'] = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
 
                 # Convert status string to dict
                 if runner.stats:
