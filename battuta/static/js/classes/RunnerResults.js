@@ -1,24 +1,13 @@
-function RunnerResults(runnerId, headerContainer, infoContainer, resultContainer) {
+function RunnerResults(runnerId, headerContainer, resultContainer) {
     var self = this;
 
     self.divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');
     self.divColInfoLeft = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
     self.divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
-    self.taskTable =  baseTable.clone().append(
-        $('<thead>').append(
-            $('<tr>').append(
-                $('<th>').attr('class', 'col-md-3').html('host'),
-                $('<th>').attr('class', 'col-md-2').html('status'),
-                $('<th>').attr('class', 'col-md-7').html('message')
-            )
-        )
-    );
 
     self.runnerId = runnerId;
 
     self.headerContainer = headerContainer;
-
-    self.infoContainer = infoContainer;
 
     self.resultContainer = resultContainer;
 
@@ -49,6 +38,7 @@ function RunnerResults(runnerId, headerContainer, infoContainer, resultContainer
     self.autoScrollButton = navBarBtn.clone().addClass('checked_button').html('Auto scroll');
 
     self._getRunnerData(function () {
+        document.title = self.runner.name;
         self._buildHeader();
         self._buildInfo();
         self._buildResults();
@@ -57,63 +47,20 @@ function RunnerResults(runnerId, headerContainer, infoContainer, resultContainer
 
 }
 
-
 RunnerResults.prototype = {
 
     _getRunnerData: function (successCallback) {
         var self = this;
 
         $.ajax({
-            url: '/runner/result/' + self.runnerId,
+            url: '/runner/result/' + self.runnerId + '/',
             data: {action: 'status'},
             success: function (runner) {
                 console.log(runner);
-                document.title = runner.name;
                 self.runner = runner;
-                successCallback()
+                if (successCallback) successCallback()
             }
         })
-    },
-
-    _formatResults: function () {
-        var self = this;
-
-        switch (self.runner.status) {
-            case 'running':
-                self.runnerStatusContainer.css('color', 'blue');
-                break;
-            case 'finished':
-                self.runnerStatusContainer.css('color', 'green');
-                break;
-            case 'finished with errors':
-                self.runnerStatusContainer.css('color', 'orange');
-                break;
-            case 'failed':
-                self.runnerStatusContainer.css('color', 'red');
-                break;
-            case 'canceled':
-                self.runnerStatusContainer.css('color', 'gray');
-                break;
-        }
-
-        if (self.runner.is_running) {
-            self.printButton.hide();
-            self.statsButton.hide();
-            self.rerunButton.hide();
-        }
-        else {
-            self.printButton.show();
-            self.statsButton.show();
-            self.rerunButton.show();
-            self.runnerCogContainer.hide();
-            self.autoScrollButton.hide();
-            self.cancelButton.hide();
-        }
-
-        if (self.runner.type != 'playbook') {
-            self.playbookOnlyFields.hide();
-            self.rerunButton.remove()
-        }
     },
 
     _buildHeader: function () {
@@ -177,8 +124,7 @@ RunnerResults.prototype = {
                 )
             )
         );
-
-        self.infoContainer.css('padding-top', '50px').append(
+        self.resultContainer.css('padding-top', '50px').append(
             divRow.clone().css('margin-top', '15px').append(
                 self.divColInfo.clone().append(
                     divRow.clone().append(
@@ -218,9 +164,9 @@ RunnerResults.prototype = {
                 if (!self.playContainers.hasOwnProperty(play.id)) {
 
                     // Set playbook only elements
-                    if (self.runner.type == 'playbook') {
+                    if (self.runner.type == 'playbook' || self.runner.type == 'gather_facts') {
                         var separator = $('<hr>');
-                        var headerFirstLine = divCol12.clone().html('<h4>' + play.name + '</h4>');
+                        var headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
                         var headerLastLine = divCol12.clone().html('Tasks:');
                     }
                     else {
@@ -229,7 +175,7 @@ RunnerResults.prototype = {
                         headerLastLine = $('<br>');
                     }
 
-                    self.playContainers[play.id] = $('<div>').attr('id', 'play_' + play.id);
+                    self.playContainers[play.id] = $('<div>');
 
                     self.playContainers[play.id].append(
                         separator,
@@ -262,47 +208,174 @@ RunnerResults.prototype = {
                         if (!self.taskContainers.hasOwnProperty(task.id)) {
 
                             self.taskContainers[task.id] = {
-                                element: divRow.clone(),
-                                counter: $('<span>').html('0')
+                                header: divRow.clone(),
+                                counter: $('<span>').html('(0 of ' + task.host_count + ')')
                             };
 
-                            var taskTitle = $('<span>').append(
+                            self.taskContainers[task.id].title = $('<span>').append(
                                 $('<strong>').css('margin-right', '5px').html(task.name),
-                                '(',
-                                self.taskContainers[task.id].counter,
-                                ' of ' + task.host_count + ')'
+                                self.taskContainers[task.id].counter
                             );
 
-                            if (self.runner.type == 'playbook') {
-                                self.taskContainers[task.id].element.append(
-                                    divCol12.clone().css('margin-top', '10px').html(taskTitle)
+                            if (self.runner.type == 'playbook' || self.runner.type == 'gather_facts') {
+                                self.taskContainers[task.id].header.append(
+                                    divCol12.clone()
+                                        .css('margin-top', '10px')
+                                        .html(self.taskContainers[task.id].title)
                                 )
                             }
-                            else if (self.runner.type == 'adhoc'){
-                                self.taskContainers[task.id].element.append(
+                            else if (self.runner.type == 'adhoc') {
+                                self.taskContainers[task.id].header.append(
                                     self.divColInfo.clone().append(
                                         divRow.clone().append(
                                             self.divColInfoLeft.clone().html('Task:'),
-                                            self.divColInfoRight.clone().css('font-weight', 'normal').html(taskTitle)
+                                            self.divColInfoRight.clone()
+                                                .css('font-weight', 'normal')
+                                                .html(self.taskContainers[task.id].title)
                                         )
                                     )
                                 )
                             }
 
-                            self.playContainers[play.id].append(self.taskContainers[task.id].element);
+                            if (task.module == 'include') {
 
-                            self.taskContainers[task.id].counter.html(task.host_count)
+                                self.taskContainers[task.id].table = null;
+                                self.taskContainers[task.id].counter.remove()
+                            }
+                            else {
 
+                                var taskTable = baseTable.clone();
+                                taskTable.DataTable({
+                                    paginate: false,
+                                    searching: false,
+                                    info: false,
+                                    ajax: {
+                                        url: '/runner/result/' + self.runnerId + '/',
+                                        dataSrc: 'results',
+                                        data: {action: 'task_results', task_id: task.id}
+                                    },
+                                    columns: [
+                                        {class: 'col-md-3', title: 'host', data: 'host'},
+                                        {class: 'col-md-2', title: 'status', data: 'status'},
+                                        {class: 'col-md-7', title: 'message', data: 'message'}
+                                    ],
+                                    rowCallback: function (row, data) {
 
+                                        switch (data.status) {
+                                            case 'unreachable':
+                                                $(row).css('color', 'gray');
+                                                break;
+                                            case 'changed':
+                                                $(row).css('color', 'orange');
+                                                break;
+                                            case 'ok':
+                                                $(row).css('color', 'green');
+                                                break;
+                                            case 'error':
+                                            case 'failed':
+                                                $(row).css('color', 'red');
+                                                break;
+                                        }
+
+                                        var rowApi = this.api().row(row);
+
+                                        var jsonContainer = $('<div>')
+                                            .attr('class', 'well')
+                                            .JSONView(data.response, {'collapsed': true});
+
+                                        $(row).css('cursor', 'pointer').click(function () {
+
+                                            if (rowApi.child.isShown()) {
+                                                $(row).css('font-weight', 'normal');
+                                                rowApi.child.hide()
+                                            }
+
+                                            else {
+                                                rowApi.child(jsonContainer).show();
+                                                $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                            }
+                                        })
+
+                                    },
+                                    drawCallback: function () {
+                                        var counter = '(' + this.api().rows().count() + ' of ' + task.host_count + ')';
+                                        self.taskContainers[task.id].counter.html(counter);
+                                    }
+                                });
+                            }
+
+                            if (self.runner.is_running) {
+                                var intervalId = setInterval(function () {
+                                    self._updateResultTable(intervalId, taskTable)
+                                }, 1000)
+                            }
+
+                            self.playContainers[play.id].append(self.taskContainers[task.id].header, taskTable);
                         }
-
                     })
                 }
-
-
-
             })
         }
+    },
 
+    _formatResults: function () {
+        var self = this;
+
+        switch (self.runner.status) {
+            case 'running':
+                self.runnerStatusContainer.css('color', 'blue');
+                break;
+            case 'finished':
+                self.runnerStatusContainer.css('color', 'green');
+                break;
+            case 'finished with errors':
+                self.runnerStatusContainer.css('color', 'orange');
+                break;
+            case 'failed':
+                self.runnerStatusContainer.css('color', 'red');
+                break;
+            case 'canceled':
+                self.runnerStatusContainer.css('color', 'gray');
+                break;
+        }
+
+        if (self.runner.is_running) {
+            self.printButton.hide();
+            self.statsButton.hide();
+            self.rerunButton.hide();
+        }
+        else {
+            self.printButton.show();
+            self.statsButton.show();
+            self.rerunButton.show();
+            self.runnerCogContainer.hide();
+            self.autoScrollButton.hide();
+            self.cancelButton.hide();
+        }
+
+        if (self.runner.type != 'playbook') {
+            self.playbookOnlyFields.hide();
+            self.rerunButton.remove()
+        }
+    },
+
+    _updateResultTable: function (intervalId, taskTable) {
+        var self = this;
+
+        var task = taskTable.DataTable().ajax.json();
+
+        taskTable.DataTable().ajax.reload(null, false);
+
+        // Hide table if host count is 0
+        if (host_count == 0) {
+            taskTable.hide();
+            clearInterval(intervalId)
+        }
+
+        if (self.runner.status == 'canceled' ||
+            task.host_count == taskTable.DataTable().rows().count() ||
+            task.is_handler && !self.runner.is_running) {
+            clearInterval(intervalId);
+        }
     }
 };

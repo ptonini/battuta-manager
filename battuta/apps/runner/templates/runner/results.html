@@ -6,7 +6,7 @@
 
             var runnerId = '{{ runner.id }}';
 
-            new RunnerResults(runnerId, $('#result_header'), $('#info_container'), $('#result_container'))
+            var results = new RunnerResults(runnerId, $('#result_header'), $('#result_container'))
 
         });
     </script>
@@ -15,9 +15,5 @@
     <header id="result_header" class="navbar navbar-default navbar-fixed-top"></header>
 {% endblock %}
 {% block content %}
-    <div id="info_container"></div>
-    <div id="runner_result">
-        <div id="info_container"></div>
-        <div id="result_container"></div>
-    </div>
+    <div id="result_container"></div>
 {% endblock %}

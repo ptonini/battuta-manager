@@ -412,13 +412,18 @@ class ResultView(BaseView):
                     data['plays'].append(play)
 
             elif request.GET['action'] == 'task_results':
+
                 task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
-                data = list()
-                for result in task.runnerresult_set.all():
-                    data.append([result.host,
-                                 result.status,
-                                 result.message,
-                                 json.loads(result.response)])
+
+                data = model_to_dict(task)
+                data['results'] = list()
+
+                for result in task.runnerresult_set.all().values():
+                    result['response'] = json.loads(result['response'])
+                    data['results'].append(result)
+
             else:
+
                 raise Http404('Invalid action')
+
             return HttpResponse(json.dumps(data), content_type="application/json")
