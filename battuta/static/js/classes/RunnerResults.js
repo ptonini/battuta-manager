@@ -17,8 +17,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
     self.rerunButton = navBarBtn.clone()
         .attr('title', 'Run playbook again')
-        .addClass('btn-icon')
-        .html(spanGlyph.clone().addClass('glyphicon-repeat'));
+        .addClass('btn-icon')        .html(spanGlyph.clone().addClass('glyphicon-repeat'));
 
     self.statsButton = navBarBtn.clone()
         .attr('title', 'Statistics')
@@ -43,6 +42,15 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
         self._buildInfo();
         self._buildResults();
         self._formatResults();
+        if (self.runner.is_running) var intervalId = setInterval(function () {
+            self._getRunnerData(function () {
+                if (self.runner.is_running) {
+                    self._buildResults();
+                    self._formatResults();
+                }
+                else clearInterval(intervalId)
+            });
+        })
     })
 
 }
@@ -362,9 +370,9 @@ RunnerResults.prototype = {
     _updateResultTable: function (intervalId, taskTable) {
         var self = this;
 
-        var task = taskTable.DataTable().ajax.json();
-
         taskTable.DataTable().ajax.reload(null, false);
+
+        var task = taskTable.DataTable().ajax.json();
 
         // Hide table if host count is 0
         if (host_count == 0) {
