@@ -38,11 +38,12 @@
     <script type="text/javascript" src="{% static 'js/classes/ExportInventory.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/FileDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/FileTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/HostFacts.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/ImportInventory.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/MainMenu.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NodeDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NodeTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NodeGrid.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/HostFacts.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/PlaybookForm.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Preferences.js' %}"></script>
@@ -56,7 +57,13 @@
     <script type="text/javascript" src="{% static 'js/classes/UploadDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/VariableForm.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/VariableTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'main/main.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            new MainMenu($('#menu_container'))
+
+        })
+    </script>
     {% block scripts %}{% endblock %}
     <meta charset="utf-8">
     <meta http-equiv='cache-control' content='no-cache'>
@@ -73,29 +80,12 @@
     <header class="navbar navbar-default">
         <div class="container">
             <div class="navbar-header"><a class="navbar-brand" href="{% url 'main' %}">Battuta</a></div>
+            <div id="menu_container"></div>
             {% if user.is_authenticated %}
                 <input id="is_authenticated" type="hidden" value="true">
+
                 <ul class="nav navbar-nav">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{% url 'inventory:nodes' 'hosts' %}">Hosts</a></li>
-                            <li><a href="{% url 'inventory:nodes' 'groups' %}">Groups</a></li>
-                            <li class="divider"></li>
-                            <li><a href="{% url 'inventory:import_export' %}">Import/Export</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{% url 'runner:adhoc' %}">Ad-Hoc</a></li>
-                            <li><a href="{% url 'runner:playbooks' %}">Playbooks</a></li>
-                            <li><a href="{% url 'runner:roles' %}">Roles</a></li>
-                            <li class="divider"></li>
-                            <li><a href="{% url 'runner:history' %}">History</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="{% url 'files:files' %}">Files</a></li>
+
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
                         <ul class="dropdown-menu">
@@ -138,6 +128,9 @@
                         </form>
                     </li>
                 </ul>
+
+
+
             {% else %}
                 <ul class="nav navbar-nav navbar-right">
                     <li>

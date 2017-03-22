@@ -51,6 +51,9 @@ var divWell = $('<div>').attr('class', 'well');
 var breadcrumb = $('<ol>').attr('class', 'breadcrumb');
 var divLargeAlert = $('<div>').attr('class', 'large-alert');
 var preLargeAlert = $('<pre>').attr('class', 'large-alert');
+var liDropdown = $('<li>').attr('class', 'dropdown');
+var liDropdownAnchor = $('<a>').attr({href: '#', class: 'dropdown-toggle', 'data-toggle': 'dropdown'});
+var ulDropdownMenu = $('<ul>').attr('class', 'dropdown-menu');
 var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
 
 
