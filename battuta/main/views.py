@@ -39,7 +39,7 @@ class MainView(View):
 
     @staticmethod
     def post(request):
-        if request.POST['action'] == 'Login':
+        if request.POST['action'] == 'login':
             user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
             if user:
                 if user.is_active:
@@ -50,7 +50,7 @@ class MainView(View):
                     data = {'result': 'fail', 'msg': 'Account disabled'}
             else:
                 data = {'result': 'fail', 'msg': 'Invalid login'}
-        elif request.POST['action'] == 'Logout':
+        elif request.POST['action'] == 'logout':
             logout(request)
             data = {'result': 'ok'}
         else:

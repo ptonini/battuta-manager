@@ -35,16 +35,16 @@ var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'p
 var fileInputField = $('<input>').attr({class: 'input-file', type: 'file'});
 var chkboxInput =  $('<input>').attr('type', 'checkbox');
 var radioInput =  $('<input>').attr('type', 'radio');
-var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
-var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
-var navBarBtn = $('<button>').attr('class', 'btn btn-default btn-xs navbar-btn');
-
 
 // Dialogs
 var largeDialog = $('<div>').attr('class', 'large_dialog');
 var smallDialog = $('<div>').attr('class', 'small_dialog');
 
 // Other element templates
+var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
+var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
+var navBarBtn = $('<button>').attr('class', 'btn btn-default btn-xs navbar-btn');
+var navBarAnchorBtn = $('<a>').css('cursor', 'pointer');
 var spanGlyph = $('<span>').attr('class', 'glyphicon');
 var spanRight = $('<span>').css('float', 'right');
 var divWell = $('<div>').attr('class', 'well');

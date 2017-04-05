@@ -60,7 +60,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            new MainMenu($('#menu_container'))
+            new MainMenu('{{ user.is_authenticated }}', '{{ user.is_superuser }}', $('#menu_container'))
 
         })
     </script>
@@ -78,80 +78,8 @@
 <body>
 {% block header %}
     <header class="navbar navbar-default">
-        <div class="container">
-            <div class="navbar-header"><a class="navbar-brand" href="{% url 'main' %}">Battuta</a></div>
-            <div id="menu_container"></div>
-            {% if user.is_authenticated %}
-                <input id="is_authenticated" type="hidden" value="true">
-
-                <ul class="nav navbar-nav">
-
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
-                        <ul class="dropdown-menu">
-                            {% if user.is_superuser %}
-                                <li><a href="{% url 'users:new' %}">New user</a></li>
-                                <li><a href="{% url 'users:list' %}">List users</a></li>
-                                <li class="divider"></li>
-                            {% endif %}
-                            <li><a href="{% url 'users:view' %}?user_id={{ user.id }}">User profile</a></li>
-                            <li><a href="{% url 'users:files' %}">User files</a></li>
-                        </ul>
-                    </li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    {% if user.is_superuser %}
-                        <li>
-                            <a id="open_prefs" data-toggle="tooltip" title="Preferences">
-                                <span class="glyphicon glyphicon-cog"></span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    <li>
-                        <form id="search_form" class="navbar-form">
-                            <div class="input-group">
-                                <input type="text" title="Search" id="searchbox"
-                                       class="form-control input-sm" name="search_pattern">
-                                <span class="input-group-btn">
-                                    <button type="submit" class="btn btn-default btn-sm">
-                                        <span class="glyphicon glyphicon-search"></span>
-                                    </button>
-                                </span>
-                            </div>
-                        </form>
-                    </li>
-                    <li>
-                        <form id="login_form" class="navbar-form">
-                            <button type="submit" id="user_login" title="Logout" class="btn btn-link">
-                                <span class="glyphicon glyphicon-log-out"></span>
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-
-
-
-            {% else %}
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <form id="login_form" class="navbar-form">
-                            <div class="form-group">
-                                <label for="login_username" class="sr-only requiredField">Username</label>
-                                <input class="textinput textInput form-control input-sm"
-                                       id="login_username" placeholder="Username" type="text">
-                            </div>
-                            <div class="form-group">
-                                <label for="login_password" class="sr-only requiredField">Password</label>
-                                <input class="textinput textInput form-control input-sm"
-                                       id="login_password" placeholder="Password" type="password">
-                            </div>
-                            <button type="submit" id="user_login" title="Login" class="btn btn-link">
-                                <span class="glyphicon glyphicon-log-in"></span>
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            {% endif %}
+        <div id="menu_container" class="container">
+            <div class="navbar-header"><a class="navbar-brand" href="/">Battuta</a></div>
         </div>
     </header>
 {% endblock %}

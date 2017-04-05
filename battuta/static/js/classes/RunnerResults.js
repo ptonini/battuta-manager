@@ -180,12 +180,12 @@ RunnerResults.prototype = {
                         self.runnerCogContainer
                     )
                 ),
-                $('<div>').attr('class','navbar-right').append(
-                    self.cancelButton,
-                    self.autoScrollButton,
-                    self.rerunButton,
-                    self.statsButton,
-                    self.printButton
+                $('<ul>').attr('class','nav navbar-nav navbar-right').append(
+                    $('<li>').html(self.cancelButton),
+                    $('<li>').html(self.autoScrollButton),
+                    $('<li>').html(self.rerunButton),
+                    $('<li>').html(self.statsButton),
+                    $('<li>').html(self.printButton)
                 )
             )
         )
