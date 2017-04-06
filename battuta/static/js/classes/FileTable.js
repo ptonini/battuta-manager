@@ -111,9 +111,8 @@ function FileTable(root, nameCellFormater, container) {
 
 FileTable.editableTypes = [
     'inode/x-empty',
-    'text/plain',
-    'text/x-shellscript',
-    'application/xml'
+    'application/xml',
+    'application/json'
 ];
 
 FileTable.prototype = {
@@ -160,7 +159,8 @@ FileTable.prototype = {
                     $('<span>').html(object.modified).attr('title', object.modified),
                     spanRight.clone().append(
                         spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
-                            if (FileTable.editableTypes.indexOf(object.type) > -1) {
+
+                            if (object.type.split('/')[0] == 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
                                 $.ajax({
                                     url: '/files/' + self.root + '/read/',
                                     dataType: 'json',

@@ -5,6 +5,8 @@ function MainMenu(is_authenticated, is_superuser, container) {
 
     self.is_superuser = (is_superuser == 'True');
 
+    if (self.is_authenticated) Preferences.getPreferences();
+
     self.usersDropdownMenu = ulDropdownMenu.clone().append(
         $('<li>').append(
             $('<a>').attr('href', '/users/view/').html('User profile'),
@@ -43,21 +45,25 @@ function MainMenu(is_authenticated, is_superuser, container) {
         )
     );
 
-    self.preferencesButton = navBarAnchorBtn.clone()
+    self.preferencesButton = $('<button>').attr('class', 'btn btn-link')
         .attr('title', 'Preferences')
         .append(spanGlyph.clone().addClass('glyphicon-cog'))
         .click(function () {
             new Preferences()
         });
 
-    self.searchBox = $('<form>')
+    self.searchBox = textInputField.clone().attr('title', 'Search');
+
+    self.searchForm = $('<form>')
         .attr('class', 'navbar-form')
         .submit(function (event) {
-            event.preventDefault()
+            event.preventDefault();
+            var pattern = self.searchBox.val();
+            if (pattern) window.open('/search/' + pattern, '_self')
         })
         .append(
             $('<div>').attr('class', 'input-group').append(
-                textInputField.clone().attr('title', 'Search'),
+                self.searchBox,
                 spanBtnGroup.clone().append(
                     smButton.clone().html(spanGlyph.clone().addClass('glyphicon-search'))
                 )
@@ -84,26 +90,19 @@ function MainMenu(is_authenticated, is_superuser, container) {
         $('<li>').append(self.loginForm)
     );
 
-    self.rightMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
-        $('<li>').html(self.searchBox)
+    self.searchMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
+        $('<li>').html(self.searchForm)
     );
 
-    if (self.is_superuser) {
-
-        self.usersDropdownMenu.children('li').first().prepend(
-            $('<a>').attr('href', '/users/new/').html('New users'),
-            $('<a>').attr('href', '/users/list/').html('List users'),
-            $('<li>').attr('class', 'divider'));
-
-        self.rightMenu.prepend($('<li>').html(self.preferencesButton))
-
-    }
+    self.preferencesMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
+        $('<li>').css('margin', '8px 0').html(self.preferencesButton)
+    );
 
     if (self.is_authenticated) {
 
         self.loginForm.append(self.logoutButton);
 
-        container.append(self.mainMenu, self.loginMenu, self.rightMenu);
+        container.append(self.mainMenu, self.loginMenu, self.searchMenu);
 
     }
 
@@ -116,6 +115,17 @@ function MainMenu(is_authenticated, is_superuser, container) {
         );
 
         container.append(self.loginMenu);
+    }
+
+    if (self.is_superuser) {
+
+        self.usersDropdownMenu.children('li').first().prepend(
+            $('<a>').attr('href', '/users/new/').html('New users'),
+            $('<a>').attr('href', '/users/list/').html('List users'),
+            $('<li>').attr('class', 'divider'));
+
+        container.append(self.preferencesMenu)
+
     }
 
 }
@@ -143,12 +153,13 @@ MainMenu.prototype = {
             success: function (data) {
                 if (data.result == 'ok') window.open('/', '_self');
                 else if (data.result == 'fail') {
-                    $('#id_password').val('');
+                    self.loginFormPassField.val('');
                     $.bootstrapGrowl(data.msg, failedAlertOptions);
                 }
             }
         });
     }
+
 };
 
 

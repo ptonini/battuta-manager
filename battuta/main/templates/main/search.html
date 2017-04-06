@@ -1,7 +1,16 @@
 {% extends 'main/main.html' %}
 {% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            new SearchResults('group', '{{  pattern }}', $('#group_results'));
+            new SearchResults('host', '{{ pattern }}', $('#host_results'));
+
+        })
+    </script>
+{% endblock %}
 {% block content %}
-    <script src="{% static 'main/search.js' %}"></script>
     <div id="search_results">
         <br>
         <h3>Search results for '<span>{{ pattern }}</span>':</h3>

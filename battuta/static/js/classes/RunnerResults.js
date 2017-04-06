@@ -87,7 +87,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
     self.cancelButton = navBarBtn.clone()
         .attr('title', 'Cancel')
         .addClass('btn-icon')
-        .html(spanGlyph.clone().addClass('glyphicon-remove').css('color', 'red'))
+        .html(spanGlyph.clone().css('margin', '2px').addClass('glyphicon-remove').css('color', 'red'))
         .click(function cancelJob() {
             $.ajax({
                 url: '/runner/kill/',

@@ -44,7 +44,6 @@ var smallDialog = $('<div>').attr('class', 'small_dialog');
 var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
 var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
 var navBarBtn = $('<button>').attr('class', 'btn btn-default btn-xs navbar-btn');
-var navBarAnchorBtn = $('<a>').css('cursor', 'pointer');
 var spanGlyph = $('<span>').attr('class', 'glyphicon');
 var spanRight = $('<span>').css('float', 'right');
 var divWell = $('<div>').attr('class', 'well');

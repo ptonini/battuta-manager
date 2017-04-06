@@ -86,6 +86,7 @@ function TextEditor(file, saveCallback) {
     self.textEditor.selection.moveCursorFileStart();
 
     var aceMode = 'text';
+
     if (!self.file.type || self.file.type == 'text/plain') {
         var fileNameArray = self.file.name.split('.');
         var fileExtension = fileNameArray[fileNameArray.length - 1];
@@ -104,15 +105,12 @@ function TextEditor(file, saveCallback) {
     else if (file.type == 'application/json') aceMode = 'json';
     else if (file.type == 'text/x-shellscript') aceMode = 'sh';
     else if (file.type == 'text/yaml') aceMode = 'yaml';
+    else if (file.type == 'text/x-python') aceMode = 'python';
 
     self.aceModeSelector.val(aceMode);
     self.textEditor.getSession().setMode('ace/mode/' + aceMode);
 
-    if (self.file.name) self.fileNameField.val(self.file.name)//.removeAttr('placeholder');
-    //else {
-    //    self.fileNameField.attr('placeholder', 'New file').val('');
-    //    self.file.name = '/invalid_name'
-    //}
+    if (self.file.name) self.fileNameField.val(self.file.name);
 
     self.textEditorContainer.css('height', window.innerHeight * .7);
 
