@@ -17,12 +17,16 @@ function Preferences()  {
                     $('#item_' + item[0] ).val(item[1])
                 });
 
-                self.saveCallback = function () {
+                self._savePreferences(function () {
                     setTimeout(function () {
-                        $.bootstrapGrowl('Preferences restored', {type: 'success'})
+                        $.bootstrapGrowl('Preferences restored', {
+                            type: 'success',
+                            close_callback: function () {
+                                window.location.reload(true)
+                            }
+                        })
                     }, 500);
-                };
-                self._savePreferences()
+                })
             },
             Cancel: function() {
                 $(this).dialog('close')
@@ -59,16 +63,15 @@ function Preferences()  {
             },
             Save: function() {
 
-                self.saveCallback = function () {
+                self._savePreferences(function () {
                     $.bootstrapGrowl('Preferences saved', {
                         type: 'success',
                         close_callback: function () {
                             window.location.reload(true)
                         }
                     });
-                };
+                })
 
-                self._savePreferences()
             },
             Cancel: function () {
                 $(this).dialog('close')
@@ -207,7 +210,7 @@ Preferences.prototype = {
         })
     },
 
-    _savePreferences: function () {
+    _savePreferences: function (saveCallback) {
         var self = this;
         var itemValues = {};
         var noError = true;
@@ -229,7 +232,7 @@ Preferences.prototype = {
                 dataType: 'json',
                 success: function() {
                     Preferences.getPreferences();
-                    if (self.saveCallback) self.saveCallback()
+                    if (saveCallback) saveCallback()
                 }
             })
         }
