@@ -111,7 +111,7 @@ DEFAULT_PREFERENCES = [
             },
             {
                 'name': 'single_job_window',
-                'value': 'no',
+                'value': False,
                 'data_type': 'bool',
                 'description': 'Open jobs in single window'
             }
@@ -123,13 +123,13 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'max_edit_size',
-                'value': '65536',
+                'value': 65536,
                 'data_type': 'number',
                 'description': 'Maximum file size for the text editor'
             },
             {
                 'name': 'show_hidden_files',
-                'value': 'no',
+                'value': False,
                 'data_type': 'bool',
                 'description': 'Show hidden files and folders'
             }
@@ -147,7 +147,7 @@ DEFAULT_PREFERENCES = [
             },
             {
                 'name': 'use_ec2_facts',
-                'value': 'yes',
+                'value': True,
                 'data_type': 'bool',
                 'description': '',
             }
@@ -159,7 +159,7 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'truncate_responses',
-                'value': 'yes',
+                'value': True,
                 'data_type': 'bool',
                 'description': '',
 
@@ -185,25 +185,25 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'node_list_min_columns',
-                'value': '1',
+                'value': 1,
                 'data_type': 'number',
                 'description': 'Minimum columns for open node list',
             },
             {
                 'name': 'node_list_max_columns',
-                'value': '5',
+                'value': 5,
                 'data_type': 'number',
                 'description': 'Maximum columns for open node list',
             },
             {
                 'name': 'node_list_break_point',
-                'value': '5',
+                'value': 5,
                 'data_type': 'number',
                 'description': 'Open node list column break point',
             },
             {
                 'name': 'node_list_max_column_width',
-                'value': '30',
+                'value': 30,
                 'data_type': 'number',
                 'description': '',
             }
@@ -215,25 +215,25 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'node_list_modal_min_columns',
-                'value': '3',
+                'value': 3,
                 'data_type': 'number',
                 'description': 'Minimum columns for modal node list',
             },
             {
                 'name': 'node_list_modal_max_columns',
-                'value': '6',
+                'value': 6,
                 'data_type': 'number',
                 'description': 'Maximum columns for modal node list',
             },
             {
                 'name': 'node_list_modal_break_point',
-                'value': '9',
+                'value': 9,
                 'data_type': 'number',
                 'description': 'Modal node list column break point',
             },
             {
                 'name': 'node_list_modal_max_column_width',
-                'value': '100',
+                'value': 100,
                 'data_type': 'number',
                 'description': '',
             }
@@ -245,25 +245,25 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'relation_list_min_columns',
-                'value': '1',
+                'value': 1,
                 'data_type': 'number',
                 'description': 'Minimum columns for relation list',
             },
             {
                 'name': 'relation_list_max_columns',
-                'value': '5',
+                'value': 5,
                 'data_type': 'number',
                 'description': 'Maximum columns for relation list',
             },
             {
                 'name': 'relation_list_break_point',
-                'value': '5',
+                'value': 5,
                 'data_type': 'number',
                 'description': 'Relation list column break point',
             },
             {
                 'name': 'relation_list_max_column_width',
-                'value': '30',
+                'value': 30,
                 'data_type': 'number',
                 'description': '',
             }

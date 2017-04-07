@@ -4,7 +4,7 @@ function HostFacts(host, container) {
     self.host = host;
     self.container = container;
 
-    self.gatherFactsButton = xsButton.clone().html('Gather facts').click(function () {
+    self.gatherFactsButton = btnXsmall.clone().html('Gather facts').click(function () {
         gatherFacts(self.host, function () {
             self.loadFacts()
         });
@@ -145,7 +145,7 @@ HostFacts.prototype = {
 
         self.allFactsContainer = divWell.clone().hide().JSONView(facts, {'collapsed': true});
 
-        self.showFactsButton = xsButton.clone().html('Show facts').css('margin-right', '5px').click(function () {
+        self.showFactsButton = btnXsmall.clone().html('Show facts').css('margin-right', '5px').click(function () {
             if ($(this).html() == 'Show facts') $(this).html('Hide facts');
             else $(this).html('Show facts');
             self.allFactsContainer.toggle();

@@ -56,7 +56,7 @@ function FileTable(root, nameCellFormater, container) {
 
     self.breadCrumb = breadcrumb.clone().attr('id', 'path_links').append(self.rootPath, self.editPath);
 
-    self.createButton = smButton.clone()
+    self.createButton = btnSmall.clone()
         .attr('title', 'Create')
         .html(spanGlyph.clone().addClass('glyphicon-asterisk'))
         .click(function () {
@@ -64,7 +64,7 @@ function FileTable(root, nameCellFormater, container) {
             new FileDialog(newFile, 'create', self.table.DataTable().ajax.reload);
         });
 
-    self.uploadButton = smButton.clone()
+    self.uploadButton = btnSmall.clone()
         .attr('title', 'Upload')
         .html(spanGlyph.clone().addClass('glyphicon-upload'))
         .click(function () {

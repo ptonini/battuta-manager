@@ -20,29 +20,29 @@ function Credentials() {
 
     self.titleField = textInputField.clone();
 
-    self.isSharedButton = smButton.clone().html('Shared');
+    self.isSharedButton = btnSmall.clone().html('Shared');
 
-    self.isDefaultButton = smButton.clone().html('Default');
+    self.isDefaultButton = btnSmall.clone().html('Default');
 
     self.usernameField = textInputField.clone();
 
     self.passwordField = passInputField.clone();
 
-    self.askPassButton = smButton.clone().html('Ask');
+    self.askPassButton = btnSmall.clone().html('Ask');
 
     self.rsaFileInput = fileInputField.clone();
 
-    self.removeRsaButton = smButton.clone().html('Remove');
+    self.removeRsaButton = btnSmall.clone().html('Remove');
 
     self.sudoUserField = textInputField.clone().attr('placeholder', 'root');
 
     self.sudoPassField = passInputField.clone();
 
-    self.askSudoPassButton = smButton.clone().html('Ask');
+    self.askSudoPassButton = btnSmall.clone().html('Ask');
 
-    self.saveButton = xsButton.clone().html('Save').css('margin-right', '5px');
+    self.saveButton = btnXsmall.clone().html('Save').css('margin-right', '5px');
 
-    self.deleteButton = xsButton.clone().html('Delete');
+    self.deleteButton = btnXsmall.clone().html('Delete');
 
     self.confirmChangesDialog = smallDialog.clone().addClass('text-center').html(
         $('<strong>').append('You have unsaved changes<br>Save now?')

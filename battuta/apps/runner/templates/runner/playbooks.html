@@ -9,7 +9,7 @@
             var playbookTable = new FileTable('playbooks', nameCellFormatter, $('#playbook_table_container'));
 
             var buttons = [
-                smButton.clone().html('New playbook').click(function () {
+                btnSmall.clone().html('New playbook').click(function () {
                     $.ajax({
                         url: '/static/templates/playbook_template.yml',
                         success: function (data) {

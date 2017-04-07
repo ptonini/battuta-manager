@@ -73,7 +73,7 @@ function PlaybookForm(playbook) {
 
     self.limitField = textInputField.clone();
 
-    self.patternEditorButton = smButton.clone()
+    self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
         .click(function (event) {
@@ -90,7 +90,7 @@ function PlaybookForm(playbook) {
         )
     );
 
-    self.checkButton = smButton.clone().html('Check');
+    self.checkButton = btnSmall.clone().html('Check');
 
     self.tagsField = textInputField.clone();
 
@@ -98,9 +98,9 @@ function PlaybookForm(playbook) {
 
     self.extraVarsField = textInputField.clone();
 
-    self.saveButton = xsButton.clone().html('Save').css('margin-right', '5px');
+    self.saveButton = btnXsmall.clone().html('Save').css('margin-right', '5px');
 
-    self.deleteButton = xsButton.clone().html('Delete');
+    self.deleteButton = btnXsmall.clone().html('Delete');
 
     self.credentialsSelector = selectField.clone();
 

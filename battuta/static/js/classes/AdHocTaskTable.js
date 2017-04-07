@@ -8,7 +8,7 @@ function AdHohTaskTable(pattern, container) {
     container.append(
         $('<h4>').html('Saved tasks').append(
             spanRight.clone().append(
-                smButton.clone().html('Create task').click(function () {
+                btnSmall.clone().html('Create task').click(function () {
                     new AdHocTaskForm(self.pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
                 })
             )

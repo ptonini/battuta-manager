@@ -45,7 +45,7 @@ function MainMenu(is_authenticated, is_superuser, container) {
         )
     );
 
-    self.preferencesButton = $('<button>').attr('class', 'btn btn-link')
+    self.preferencesButton = btnNavbarGlyph.clone()
         .attr('title', 'Preferences')
         .append(spanGlyph.clone().addClass('glyphicon-cog'))
         .click(function () {
@@ -65,7 +65,7 @@ function MainMenu(is_authenticated, is_superuser, container) {
             $('<div>').attr('class', 'input-group').append(
                 self.searchBox,
                 spanBtnGroup.clone().append(
-                    smButton.clone().html(spanGlyph.clone().addClass('glyphicon-search'))
+                    btnSmall.clone().html(spanGlyph.clone().addClass('glyphicon-search'))
                 )
             )
         );
@@ -86,23 +86,19 @@ function MainMenu(is_authenticated, is_superuser, container) {
         self.submitLoginForm(event)
     });
 
-    self.loginMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
+    self.rightMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
         $('<li>').append(self.loginForm)
     );
 
-    self.searchMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
-        $('<li>').html(self.searchForm)
-    );
-
-    self.preferencesMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
-        $('<li>').css('margin', '8px 0').html(self.preferencesButton)
-    );
+    container.append(self.rightMenu);
 
     if (self.is_authenticated) {
 
         self.loginForm.append(self.logoutButton);
 
-        container.append(self.mainMenu, self.loginMenu, self.searchMenu);
+        self.rightMenu.prepend($('<li>').html(self.searchForm));
+
+        container.append(self.mainMenu);
 
     }
 
@@ -114,17 +110,17 @@ function MainMenu(is_authenticated, is_superuser, container) {
             self.loginButton
         );
 
-        container.append(self.loginMenu);
     }
 
     if (self.is_superuser) {
 
         self.usersDropdownMenu.children('li').first().prepend(
-            $('<a>').attr('href', '/users/new/').html('New users'),
+            $('<a>').attr('href', '/users/new/').html('New user'),
             $('<a>').attr('href', '/users/list/').html('List users'),
-            $('<li>').attr('class', 'divider'));
+            $('<li>').attr('class', 'divider')
+        );
 
-        container.append(self.preferencesMenu)
+        self.rightMenu.prepend($('<li>').html(self.preferencesButton))
 
     }
 

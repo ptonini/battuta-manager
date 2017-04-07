@@ -3,11 +3,11 @@ function CopyVariables(copyCallback) {
 
     if (copyCallback) self.copyCallback = copyCallback;
 
-    self.hostsButton = xsButton.clone().css('margin-right', '20px').html('Hosts').click(function() {
+    self.hostsButton = btnXsmall.clone().css('margin-right', '20px').html('Hosts').click(function() {
         self._openSelectNodeDialog('host')
     });
 
-    self.groupsButton = xsButton.clone().html('Groups').click(function() {
+    self.groupsButton = btnXsmall.clone().html('Groups').click(function() {
         self._openSelectNodeDialog('group')
     });
 

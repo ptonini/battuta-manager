@@ -41,9 +41,9 @@ var largeDialog = $('<div>').attr('class', 'large_dialog');
 var smallDialog = $('<div>').attr('class', 'small_dialog');
 
 // Other element templates
-var smButton = $('<button>').attr('class', 'btn btn-default btn-sm');
-var xsButton = $('<button>').attr('class', 'btn btn-default btn-xs');
-var navBarBtn = $('<button>').attr('class', 'btn btn-default btn-xs navbar-btn');
+var btnSmall = $('<button>').attr('class', 'btn btn-default btn-sm');
+var btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
+var btnNavbarGlyph = $('<button>').attr('class', 'btn btn-link navbar-btn');
 var spanGlyph = $('<span>').attr('class', 'glyphicon');
 var spanRight = $('<span>').css('float', 'right');
 var divWell = $('<div>').attr('class', 'well');
@@ -192,14 +192,11 @@ function humanBytes(value, suffix) {
         suffix = ' MB';
         value = value / 1048576
     }
-    else if (value > 1073741824 /*&& value <= 1099511627776*/) {
+    else if (value > 1073741824) {
         suffix = ' GB';
         value = value / 1073741824
     }
-    //else if (value > 1099511627776 && value <= 1125899906842624) {
-    //    suffix = ' TB';
-    //    value = value / 1099511627776
-    //}
+
     return Math.ceil(value) + suffix
 }
 
@@ -215,7 +212,7 @@ function popupCenter(url, title, w) {
     var height = window.innerHeight
         ? window.innerHeight : document.documentElement.clientHeight
         ? document.documentElement.clientHeight : screen.height;
-    var h = height - 100;
+    var h = height - 50;
     var left = ((width / 2) - (w / 2)) + dualScreenLeft;
     var top = ((height / 2) - (h / 2)) + dualScreenTop;
     var newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left

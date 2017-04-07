@@ -73,8 +73,8 @@ VariableForm.prototype = {
     if (self.type == 'add') {
         self.formHeader.html('Add variable');
         self.valueField = textInputField.clone();
-        self.saveButton = smButton.clone().html('Save');
-        self.copyButton = smButton.clone()
+        self.saveButton = btnSmall.clone().html('Save');
+        self.copyButton = btnSmall.clone()
             .attr('title', 'Copy from nde')
             .append(spanGlyph.clone().addClass('glyphicon-duplicate'))
             .click(function (event) {

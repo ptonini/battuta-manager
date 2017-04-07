@@ -8,7 +8,7 @@ function AdHocTaskForm (pattern, type, task, container) {
 
     self.patternField = textInputField.clone();
 
-    self.patternEditorButton = smButton.clone()
+    self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
         .click(function (event) {
@@ -26,7 +26,7 @@ function AdHocTaskForm (pattern, type, task, container) {
 
     self.argumentsField = textInputField.clone();
 
-    self.isSudo = smButton.clone().html('Sudo').attr('title', 'Run with sudo').click(toggleButton);
+    self.isSudo = btnSmall.clone().html('Sudo').attr('title', 'Run with sudo').click(toggleButton);
 
     self.credentialsSelector = selectField.clone();
 
@@ -148,7 +148,7 @@ AdHocTaskForm.prototype = {
         if (self.type == 'command') {
 
             self.formHeader.html('Run command');
-            self.runCommand = smButton.clone().html('Run');
+            self.runCommand = btnSmall.clone().html('Run');
             self.name ='[adhoc task] shell';
             self.module = 'shell';
             self.action = 'run';

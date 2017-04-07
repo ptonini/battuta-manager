@@ -17,12 +17,12 @@ function PatternBuilder(patternField) {
         divRow.clone().append(
             divCol2.clone().html('Select:'),
             divCol2.clone().append(
-                xsButton.clone().html('Groups').click(function () {
+                btnXsmall.clone().html('Groups').click(function () {
                     self._selectNodes('group', 'sel', ':')
                 })
             ),
             divCol8.clone().append(
-                xsButton.clone().html('Hosts').click(function () {
+                btnXsmall.clone().html('Hosts').click(function () {
                     self._selectNodes('host', 'sel', ':')
                 })
             )
@@ -30,12 +30,12 @@ function PatternBuilder(patternField) {
         divRow.clone().append(
             divCol2.clone().html('and:'),
             divCol2.clone().append(
-                xsButton.clone().html('Groups').click(function () {
+                btnXsmall.clone().html('Groups').click(function () {
                     self._selectNodes('group', 'and', ':&')
                 })
             ),
             divCol8.clone().append(
-                xsButton.clone().html('Hosts').click(function () {
+                btnXsmall.clone().html('Hosts').click(function () {
                     self._selectNodes('host', 'and', ':&')
                 })
             )
@@ -43,12 +43,12 @@ function PatternBuilder(patternField) {
         divRow.clone().append(
             divCol2.clone().html('exclude:'),
             divCol2.clone().append(
-                xsButton.clone().html('Groups').click(function () {
+                btnXsmall.clone().html('Groups').click(function () {
                     self._selectNodes('group', 'exc', ':!')
                 })
             ),
             divCol8.clone().append(
-                xsButton.clone().html('Hosts').click(function () {
+                btnXsmall.clone().html('Hosts').click(function () {
                     self._selectNodes('host', 'exc', ':!')
                 })
             )

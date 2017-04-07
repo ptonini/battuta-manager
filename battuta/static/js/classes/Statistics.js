@@ -3,6 +3,7 @@ function Statistics(data, modal) {
 
     self.statsTable = baseTable.clone();
     self.statsTable.DataTable({
+        paging: false,
         data: data,
         columns: [
             {class: 'col-md-3', title: 'host'},
@@ -17,11 +18,13 @@ function Statistics(data, modal) {
     self.statsTableContainer = $('<div>').append($('<h4>').html('Statistics'), self.statsTable);
 
     if (modal) {
+
+        self.statsTable.wrap('<div style="overflow-y: auto; max-height: 360px">');
         self.statsDialog = $('<div>').append(self.statsTableContainer);
         self.statsDialog
             .dialog({
                 width: '70%',
-                maxHeight: 520,
+                maxWidth: 800,
                 buttons: {
                     Close: function () {
                         $(this).dialog('close')
@@ -31,6 +34,6 @@ function Statistics(data, modal) {
             })
             .dialog('open');
     }
-    else return self.statsTableContainer
+    else return self.statsTableContainer.css('margin-top', '20px')
 
 }

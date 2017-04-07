@@ -1,7 +1,7 @@
 function ImportInventory(container) {
     var self = this;
 
-    self.importButton = xsButton.clone().prop('disabled', true).html('Import');
+    self.importButton = btnXsmall.clone().prop('disabled', true).html('Import');
 
     self.fileInput = fileInputField.clone();
 

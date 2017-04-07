@@ -56,10 +56,6 @@ li.path_link, #root_path, #edit_path {cursor: pointer}
 
 /* Navbar options ********************/
 
-header.navbar button.btn-icon {background-color: #F8F8F8; border: transparent}
-
-header.navbar button.btn-icon:hover {background-color: #e6e6e6}
-
 header.navbar .dropdown-menu {font-size: small}
 
 

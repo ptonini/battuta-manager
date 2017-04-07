@@ -70,7 +70,7 @@ function NodeTable(nodeType, addCallback, container) {
 
         drawCallback: function() {
             $('div.toolbar').css('float', 'left').html(
-                xsButton.clone().html('Add '+ nodeType).click(function () {
+                btnXsmall.clone().html('Add '+ nodeType).click(function () {
                     new NodeDialog('add', null, null, nodeType, addCallback);
                 })
             );

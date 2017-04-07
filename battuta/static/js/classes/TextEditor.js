@@ -7,7 +7,7 @@ function TextEditor(file, saveCallback) {
         $('<option>').attr({value: '', disabled: '', selected: '', hidden: ''})
     );
 
-    self.reloadButton = smButton.clone().attr('title', 'Reload').html(
+    self.reloadButton = btnSmall.clone().attr('title', 'Reload').html(
         spanGlyph.clone().addClass('glyphicon-refresh')
     );
 

@@ -15,9 +15,8 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
         .css('margin', '5px')
         .html($('<img>').attr('src', '/static/images/waiting-small.gif'));
 
-    self.rerunButton = navBarBtn.clone()
+    self.rerunButton = btnNavbarGlyph.clone()
         .attr('title', 'Run playbook again')
-        .addClass('btn-icon')
         .html(spanGlyph.clone().addClass('glyphicon-repeat'))
         .click(function rerunPlaybook() {
 
@@ -50,17 +49,15 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
         });
 
-    self.statsButton = navBarBtn.clone()
+    self.statsButton = btnNavbarGlyph.clone()
         .attr('title', 'Statistics')
-        .addClass('btn-icon')
         .html(spanGlyph.clone().addClass('glyphicon-list'))
         .click(function showStatsDialog() {
             new Statistics(self.runner.stats, true)
         });
 
-    self.printButton = navBarBtn.clone()
+    self.printButton = btnNavbarGlyph.clone()
         .attr('title', 'Print')
-        .addClass('btn-icon')
         .html(spanGlyph.clone().addClass('glyphicon-print'))
         .click(function printReport() {
 
@@ -84,10 +81,9 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
             document.title = pageTitle
         });
 
-    self.cancelButton = navBarBtn.clone()
+    self.cancelButton = btnNavbarGlyph.clone()
         .attr('title', 'Cancel')
-        .addClass('btn-icon')
-        .html(spanGlyph.clone().css('margin', '2px').addClass('glyphicon-remove').css('color', 'red'))
+        .html(spanGlyph.clone().addClass('glyphicon-remove').css('color', 'red'))
         .click(function cancelJob() {
             $.ajax({
                 url: '/runner/kill/',
@@ -101,10 +97,10 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
             })
         });
 
-    self.autoScrollButton = navBarBtn.clone()
+    self.autoScrollButton = btnNavbarGlyph.clone()
         .attr('title', 'Auto scroll')
         .addClass('checked_button')
-        .html(spanGlyph.clone().css('margin', '2px').addClass('glyphicon-triangle-bottom'))
+        .html(spanGlyph.clone().addClass('glyphicon-triangle-bottom'))
         .click(function toggleAutoScroll() {
             $(this).toggleClass('checked_button');
             self.autoScroll = $(this).hasClass('checked_button');
@@ -488,8 +484,8 @@ RunnerResults.prototype = {
         if (self.runner.status == 'canceled' ||
             task.host_count == taskTable.DataTable().rows().count() ||
             task.is_handler && !self.runner.is_running) {
-            clearInterval(intervalId);
-        }
+                clearInterval(intervalId);
+            }
     }
 
 };
