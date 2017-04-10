@@ -15,6 +15,51 @@ from .forms import UserForm, UserDataForm, CredentialForm
 from apps.preferences.functions import get_preferences
 
 
+class PageView(View):
+
+    @staticmethod
+    def get(request, **kwargs):
+
+        if kwargs['page'] == 'files':
+
+            return render(request, 'users/files.html', {'user': request.user})
+
+        elif kwargs['page'] == 'list':
+
+            return render(request, 'users/list.html', {'user': request.user})
+
+
+class UsersApiView(View):
+
+    @staticmethod
+    def get(request, action):
+
+        prefs = get_preferences()
+
+        if action == 'list':
+
+            data = list()
+
+            for user in User.objects.all():
+
+                user_dict = model_to_dict(user)
+
+                tz = timezone(user.userdata.timezone)
+
+                user_dict['date_joined'] = user.date_joined.astimezone(tz).strftime(prefs['date_format'])
+
+                if user.last_login is not None:
+                    user_dict['last_login'] = user.last_login.astimezone(tz).strftime(prefs['date_format'])
+
+                user_dict.pop('password', None)
+
+                data.append(user_dict)
+        else:
+            raise Http404('Invalid action')
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
 class UserView(View):
 
     @staticmethod
@@ -107,13 +152,6 @@ class UserView(View):
         else:
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
-
-
-class UserFilesView(View):
-
-    @staticmethod
-    def get(request):
-        return render(request, 'users/user_files.html', {'user': request.user})
 
 
 class CredentialView(View):

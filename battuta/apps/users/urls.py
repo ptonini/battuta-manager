@@ -5,9 +5,18 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^files/$', login_required(views.UserFilesView.as_view()), name='files'),
-    url(r'^view/$', login_required(views.UserView.as_view()), kwargs={'page': 'view'}, name='view'),
+
+    url(r'^list/$', login_required(views.PageView.as_view()), kwargs={'page': 'list'}),
+    url(r'^files/$', login_required(views.PageView.as_view()), kwargs={'page': 'files'}),
+
+
+    url(r'^api/([a-z]+)/$', login_required(views.UsersApiView.as_view())),
+
+
+
     url(r'^new/$', login_required(views.UserView.as_view()), kwargs={'page': 'new'}, name='new'),
-    url(r'^list/$', login_required(views.UserView.as_view()), kwargs={'page': 'list'}, name='list'),
+
+    url(r'^view/$', login_required(views.UserView.as_view()), kwargs={'page': 'view'}, name='view'),
+
     url(r'^credentials/$', login_required(views.CredentialView.as_view()), name='credentials'),
 ]
