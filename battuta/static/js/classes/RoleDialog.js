@@ -55,7 +55,7 @@ function RoleDialog(fileTable) {
 
                     if (roleName) $.ajax({
                         type: 'POST',
-                        url: '/files/roles/create/',
+                        url: filesApiPath + 'roles/create/',
                         dataType: 'json',
                         data: {
                             name: roleName,
@@ -68,7 +68,7 @@ function RoleDialog(fileTable) {
                                 $('input:checked').each(function (index, input) {
                                     $.ajax({
                                         type: 'POST',
-                                        url: '/files/roles/create/',
+                                        url: filesApiPath + 'roles/create/',
                                         dataType: 'json',
                                         data: {
                                             name: $(this).val(),
@@ -79,7 +79,7 @@ function RoleDialog(fileTable) {
                                         success: function () {
                                             if ($(input).data('main')) $.ajax({
                                                 type: 'POST',
-                                                url: '/files/roles/create/',
+                                                url: filesApiPath + 'roles/create/',
                                                 dataType: 'json',
                                                 data: {
                                                     name: 'main.yml',

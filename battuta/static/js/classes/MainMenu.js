@@ -38,7 +38,7 @@ function MainMenu(is_authenticated, is_superuser, container) {
                 )
             )
         ),
-        $('<li>').append($('<a>').attr('href', '/files/').html('Files')),
+        $('<li>').append($('<a>').attr('href', filesPath).html('Files')),
         liDropdown.clone().append(
             liDropdownAnchor.clone().html('Users'),
             self.usersDropdownMenu

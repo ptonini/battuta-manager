@@ -41,7 +41,7 @@ function TextEditor(file, saveCallback) {
 
                     $.ajax({
                         type: 'POST',
-                        url: '/files/' + self.file.root + '/save/',
+                        url: filesApiPath + self.file.root + '/save/',
                         dataType: 'json',
                         data: self.file,
                         success: function (data) {

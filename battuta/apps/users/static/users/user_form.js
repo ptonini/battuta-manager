@@ -4,13 +4,14 @@ $(document).ready(function () {
     var userTimezone = $('#user_timezone');
     var addPassword1 = $('#add_password1');
     var addPassword2 = $('#add_password2');
+    var page;
 
     if (window.location.href.split('/').indexOf('new') == -1) {
         page = 'view';
         document.title = 'Battuta - ' + $('h3').html();
     }
     else {
-        var page = 'new';
+        page = 'new';
         document.title = 'Battuta - New user';
     }
 

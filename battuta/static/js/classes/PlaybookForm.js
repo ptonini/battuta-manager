@@ -109,7 +109,7 @@ function PlaybookForm(playbook) {
     self.playbookDialog = largeDialog.clone();
 
     $.ajax({
-        url: '/files/playbooks/read/',
+        url: filesApiPath + 'playbooks/read/',
         dataType: 'json',
         data: self.playbook,
         success: function (data) {

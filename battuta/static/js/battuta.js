@@ -1,3 +1,7 @@
+// Django apps root paths
+var filesPath = '/files/';
+var filesApiPath = '/files/api/';
+
 // jQuery elements templates /////////////
 
 // Bootstrap Grip

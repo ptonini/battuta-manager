@@ -9,7 +9,7 @@ function UploadDialog(folder, root, uploadCallback) {
 
     self.uploadField
         .fileinput({
-            uploadUrl: '/files/' + root + '/upload/',
+            uploadUrl: filesApiPath + root + '/upload/',
             uploadAsync: true,
             uploadExtraData: function () {
                 var file = self.uploadField.fileinput('getFileStack')[0];

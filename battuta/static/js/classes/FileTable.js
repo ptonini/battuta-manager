@@ -34,7 +34,7 @@ function FileTable(root, nameCellFormater, container) {
                             fieldValue = fieldValue.substr(0, fieldValue.length - 1)
                         }
                         $.ajax({
-                            url: '/files/' + self.root + '/exists/',
+                            url: filesApiPath+ self.root + '/exists/',
                             data: {name: fieldValue, type: 'directory'},
                             success: function (data) {
                                 if (data.result == 'ok') {
@@ -98,7 +98,7 @@ function FileTable(root, nameCellFormater, container) {
 
     if (self.folder) {
         $.ajax({
-            url: '/files/' + self.root + '/exists',
+            url: filesApiPath + self.root + '/exists/',
             data: {folder: self.folder, type: 'directory'},
             success: function (data) {
                 if (data.result == 'failed') self.folder = '';
@@ -122,7 +122,7 @@ FileTable.prototype = {
 
         self.table.DataTable({
             ajax: {
-                url: '/files/' + self.root + '/list/',
+                url: filesApiPath + self.root + '/list/',
                 dataSrc: '',
                 data: function (d) {
                     d.folder = self.folder
@@ -162,7 +162,7 @@ FileTable.prototype = {
 
                             if (object.type.split('/')[0] == 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
                                 $.ajax({
-                                    url: '/files/' + self.root + '/read/',
+                                    url: filesApiPath + self.root + '/read/',
                                     dataType: 'json',
                                     data: object,
                                     success: function (data) {
@@ -199,7 +199,7 @@ FileTable.prototype = {
                                 new DeleteDialog(function () {
                                     $.ajax({
                                         type: 'POST',
-                                        url: '/files/' + self.root + '/delete/',
+                                        url: filesApiPath + self.root + '/delete/',
                                         dataType: 'json',
                                         data: object,
                                         success: function (data) {
