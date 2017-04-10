@@ -41,19 +41,13 @@ function ImportInventory(container) {
 
     self.fileInput
         .fileinput({
-            uploadUrl: '/inventory/import/',
+            uploadUrl: inventoryApiPath + 'import/',
             uploadAsync: true,
             uploadExtraData: function () {
-                return {
-                    action: 'import',
-                    type: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                    csrfmiddlewaretoken: getCookie('csrftoken')
-                }
+                return {format: $('input[type="radio"][name="import_file_type"]:checked').val()}
             },
             ajaxSettings: function () {
-                return {
-                    headers: {'X-CSRFToken': getCookie('csrftoken')}
-                }
+                return {headers: {'X-CSRFToken': getCookie('csrftoken')}}
             },
             showPreview: false,
             showRemove: false,
@@ -63,7 +57,7 @@ function ImportInventory(container) {
             captionClass: 'form-control input-sm',
             browseClass: 'btn btn-default btn-sm'
         })
-        .on('fileuploaded', function(event, data) {
+        .on('fileuploaded', function (event, data) {
             self.fileInput.fileinput('clear').fileinput('enable');
             self.importButton.prop('disabled', true);
             if (data.response.result == 'ok') {
@@ -79,10 +73,12 @@ function ImportInventory(container) {
             }
             else $.bootstrapGrowl(data.response.msg, failedAlertOptions);
         })
-        .on('fileloaded', function() {
+        .on('fileloaded', function () {
             self.importButton
                 .prop('disabled', false)
                 .off('click')
-                .click(function() {self.fileInput.fileinput('upload')});
+                .click(function () {
+                    self.fileInput.fileinput('upload')
+                });
         });
 }

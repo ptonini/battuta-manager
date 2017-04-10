@@ -41,7 +41,7 @@ function NodeTable(nodeType, addCallback, container) {
     self.table.DataTable({
         paging: false,
         ajax: {
-            url: '/inventory/' + nodeType + 's/list/',
+            url: inventoryApiPath + nodeType + 's/list/',
             type: 'GET',
             dataSrc: ''
         },
@@ -53,7 +53,7 @@ function NodeTable(nodeType, addCallback, container) {
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
-                    window.open('/inventory/' + self.type + '/' + data.name, '_self')
+                    window.open(inventoryPath + self.type + '/' + data.name, '_self')
                 });
 
             if (self.type == 'host') {

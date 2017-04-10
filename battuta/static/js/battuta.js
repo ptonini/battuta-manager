@@ -2,6 +2,9 @@
 var filesPath = '/files/';
 var filesApiPath = '/files/api/';
 
+var inventoryPath = '/inventory/';
+var inventoryApiPath = '/inventory/api/';
+
 // jQuery elements templates /////////////
 
 // Bootstrap Grip

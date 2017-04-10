@@ -22,10 +22,14 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
-        formatItem: function(listItem) {
-            listItem.click(function() {window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')});
+        formatItem: function (listItem) {
+            listItem.click(function () {
+                window.open(inventoryPath + nodeType + '/' + $(this).data('value'), '_self')
+            });
         },
-        addButtonAction: function() {new NodeDialog('add', null, null, nodeType, addCallback)}
+        addButtonAction: function () {
+            new NodeDialog('add', null, null, nodeType, addCallback)
+        }
     });
 
     else Object.assign(self.gridOptions, {itemToggle: true});
