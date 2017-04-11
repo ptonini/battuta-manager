@@ -21,11 +21,10 @@ function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
             buttons: {
                 Save: function() {
                     $.ajax({
-                        url: '/inventory/' + nodeType + '/' + nodeName + '/',
+                        url: inventoryApiPath + nodeType + '/' + nodeName + '/save/',
                         type: 'POST',
                         dataType: 'json',
                         data: {
-                            action: 'save',
                             name: self.nameFieldInput .val(),
                             description: self.descriptionField.val()
                         },

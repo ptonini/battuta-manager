@@ -10,7 +10,7 @@ function VariableTable(nodeName, nodeType, container) {
     self.table.DataTable({
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
         pageLength: 100,
-        ajax: {url: '/inventory/' + nodeType + '/' + nodeName + '/vars', dataSrc: ''},
+        ajax: {url: inventoryApiPath + nodeType + '/' + nodeName + '/vars/list/', dataSrc: ''},
         columns: [
             {class: 'col-md-3', title: 'key', data: 'key'},
             {class: 'col-md-7', title: 'value', data: 'value'},

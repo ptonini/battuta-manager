@@ -15,7 +15,7 @@ function SearchResults(type, pattern, container) {
         ajaxUrl: inventoryApiPath + 'search/?type=' + type + '&pattern=' + pattern,
         formatItem: function (listItem) {
             listItem.click(function () {
-                window.open(inventoryPath + type + '/' + $(this).data('value'), '_self')
+                window.open(inventoryPath + type + '/' + $(this).data('value') + '/', '_self')
             });
         }
     });

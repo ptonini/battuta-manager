@@ -53,7 +53,7 @@ VariableForm.deleteVariable = function (variable, nodeName, nodeType, deleteCall
 
 VariableForm.postVariable = function (variable, nodeName, nodeType, successCallback) {
     $.ajax({
-        url: '/inventory/' + nodeType + '/' + nodeName + '/vars/',
+        url: inventoryApiPath + nodeType + '/' + nodeName + '/vars/' + self.action + '/',
         type: 'POST',
         dataType: 'json',
         data: variable,
@@ -128,27 +128,27 @@ VariableForm.prototype = {
 },
 
     _submitForm: function () {
-    var self = this;
-    var submitCallback;
+        var self = this;
+        var submitCallback;
 
-    var variable = {
-        key: self.keyField.val(),
-        value: self.valueField.val(),
-        id: self.var.id
-    };
+        var variable = {
+            key: self.keyField.val(),
+            value: self.valueField.val(),
+            id: self.var.id
+        };
 
-    if (self.type == 'add') submitCallback = function () {
-        self.saveCallback();
-        self.form.find('input').val('');
-        self.keyField.focus();
-    };
+        if (self.type == 'add') submitCallback = function () {
+            self.saveCallback();
+            self.form.find('input').val('');
+            self.keyField.focus();
+        };
 
-    else submitCallback = function () {
-        self.saveCallback();
-        self.dialog.dialog('close');
-    };
+        else submitCallback = function () {
+            self.saveCallback();
+            self.dialog.dialog('close');
+        };
 
-    VariableForm.saveVariable(variable, self.nodeName, self.nodeType, submitCallback);
+        VariableForm.saveVariable(variable, self.nodeName, self.nodeType, submitCallback);
 
-},
-}
+    }
+};

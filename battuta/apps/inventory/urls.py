@@ -18,8 +18,7 @@ urlpatterns = [
 
     url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/([a-z]+)/$', login_required(views.NodeView.as_view())),
 
-
-    url(r'^(host|group)/([a-zA-Z0-9-._]+)/vars/$', login_required(views.VariablesView.as_view())),
+    url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/vars/([a-z]+)/$', login_required(views.VariablesView.as_view())),
 
     url(r'^(host|group)/([a-zA-Z0-9-._]+)/(parents|children|members)/$', login_required(views.RelationsView.as_view())),
 

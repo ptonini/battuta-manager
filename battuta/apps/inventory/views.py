@@ -291,16 +291,17 @@ class NodeView(View):
 
     @staticmethod
     def build_node(node_type, node_name):
-        print node_type, node_name
+
         # Get classes based on node type
         if node_type == 'host':
             node_class = Host
             node_form_class = HostForm
+
         elif node_type == 'group':
             node_class = Group
             node_form_class = GroupForm
+
         else:
-            print node_type
             raise Http404('Invalid node type')
 
         ancestors = list()
@@ -381,66 +382,90 @@ class NodeView(View):
             raise Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
-    def post(self, request, node_name, node_type):
+    def post(self, request, node_type, node_name, action):
         node = self.build_node(node_type, node_name)
 
-        if request.POST['action'] == 'save':
+        if action == 'save':
+
             form = node.form_class(request.POST or None, instance=node)
+
             if form.is_valid():
+
                 node = form.save(commit=True)
+
                 data = {'result': 'ok', 'name': node.name, 'type': node.type}
+
             else:
                 data = {'result': 'fail', 'msg': str(form.errors)}
-        elif request.POST['action'] == 'delete':
+
+        elif action == 'delete':
+
             if node.type == 'host' or node.name != 'all':
+
                 node.delete()
+
             data = {'result': 'ok'}
+
         else:
             raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 class VariablesView(View):
 
     @staticmethod
-    def get(request, node_type, node_name):
+    def get(request, node_type, node_name, action):
         node = NodeView.build_node(node_type, node_name)
 
-        variables = dict()
-        inventory = AnsibleInventory()
+        if action == 'list':
+            variables = dict()
+            inventory = AnsibleInventory()
 
-        for var in node.variable_set.all():
-            variables[var.key] = [{'key': var.key, 'value': var.value, 'source': '', 'id': var.id, 'primary': True}]
+            for var in node.variable_set.all():
+                variables[var.key] = [{'key': var.key, 'value': var.value, 'source': '', 'id': var.id, 'primary': True}]
 
-        for ancestor in node.ancestors:
-            for var in ancestor.variable_set.all():
-                var_dict = {'key': var.key, 'value': var.value, 'source': var.group.name, 'id': var.group.id, 'primary': False}
-                if var.key in variables:
-                    variables[var.key].append(var_dict)
-                else:
-                    variables[var.key] = [var_dict]
+            for ancestor in node.ancestors:
 
-        data = list()
-        for key, values in variables.iteritems():
+                for var in ancestor.variable_set.all():
 
-            primary_count = len([value for value in values if value['primary']])
+                    var_dict = {'key': var.key,
+                                'value': var.value,
+                                'source': var.group.name,
+                                'id': var.group.id,
+                                'primary': False}
 
-            if primary_count == 0 and len(values) == 1:
-                values[0]['primary'] = True
+                    if var.key in variables:
 
-            elif primary_count == 0 and len(values) > 1:
-                actual_value = inventory.get_variable(key, node)
-                for value in values:
-                    if value['value'] == actual_value:
-                        value['primary'] = True
-                        break
+                        variables[var.key].append(var_dict)
 
-            data += values
+                    else:
+
+                        variables[var.key] = [var_dict]
+
+            data = list()
+            for key, values in variables.iteritems():
+
+                primary_count = len([value for value in values if value['primary']])
+
+                if primary_count == 0 and len(values) == 1:
+                    values[0]['primary'] = True
+
+                elif primary_count == 0 and len(values) > 1:
+                    actual_value = inventory.get_variable(key, node)
+                    for value in values:
+                        if value['value'] == actual_value:
+                            value['primary'] = True
+                            break
+
+                data += values
+        else:
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
-    def post(request, node_type, node_name):
+    def post(request, node_type, node_name, action):
         node = NodeView.build_node(node_type, node_name)
 
         if 'id' in request.POST and request.POST['id']:
@@ -448,36 +473,40 @@ class VariablesView(View):
         else:
             variable = Variable()
 
-        if 'action' in request.POST:
-            if request.POST['action'] == 'save':
-                post_data = dict(request.POST.iteritems())
-                post_data[node_type] = node.id
-                form = VariableForm(post_data or None, instance=variable)
-                if form.is_valid():
-                    form.save(commit=True)
-                    data = {'result': 'ok'}
-                else:
-                    data = {'result': 'fail', 'msg': str(form.errors)}
+        if action == 'save':
 
-            elif request.POST['action'] == 'delete':
-                variable = get_object_or_404(Variable, pk=request.POST['id'])
-                variable.delete()
+            post_data = dict(request.POST.iteritems())
+            post_data[node_type] = node.id
+            form = VariableForm(post_data or None, instance=variable)
+
+            if form.is_valid():
+                form.save(commit=True)
                 data = {'result': 'ok'}
 
-            elif request.POST['action'] == 'copy':
-                print request.POST
-                source = NodeView.build_node(request.POST['source_type'], request.POST['source_name'])
-                print source
-                for source_var in source.variable_set.all():
-                    print source_var.value, source_var.key
-                    var, created = node.variable_set.get_or_create(key=source_var.key)
-                    var.value = source_var.value
-                    var.save()
-                data = {'result': 'ok'}
             else:
-                raise Http404('Invalid action')
+                data = {'result': 'fail', 'msg': str(form.errors)}
+
+        elif action == 'delete':
+
+            variable.delete()
+
+            data = {'result': 'ok'}
+
+        elif action == 'copy':
+
+            source = NodeView.build_node(request.POST['source_type'], request.POST['source_name'])
+
+            for source_var in source.variable_set.all():
+
+                var, created = node.variable_set.get_or_create(key=source_var.key)
+                var.value = source_var.value
+                var.save()
+
+            data = {'result': 'ok'}
+
         else:
-            raise Http404('Invalid request')
+            raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
