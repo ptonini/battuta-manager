@@ -1,7 +1,9 @@
-function CopyVariables(copyCallback) {
+function CopyVariables(node, copyCallback) {
     var self = this;
 
-    if (copyCallback) self.copyCallback = copyCallback;
+    self.node = node;
+
+    self.copyCallback = copyCallback || null;
 
     self.hostsButton = btnXsmall.clone().css('margin-right', '20px').html('Hosts').click(function() {
         self._openSelectNodeDialog('host')
@@ -28,34 +30,37 @@ function CopyVariables(copyCallback) {
         .dialog('open');
 }
 
-CopyVariables.prototype._openSelectNodeDialog = function(sourceNodeType) {
-    var self = this;
+CopyVariables.prototype = {
 
-    self.nodeTypeDialog.dialog('close');
+    _openSelectNodeDialog: function(sourceNodeType) {
+        var self = this;
 
-    var url = '/inventory/?action=search&type=' + sourceNodeType + '&pattern=';
+        self.nodeTypeDialog.dialog('close');
 
-    var loadCallback = function (listContainer, selectNodeDialog) {
-        var currentList = listContainer.find('div.dynamic-list');
-        selectNodeDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-    };
+        var url = inventoryApiPath + 'search/?type=' + sourceNodeType + '&pattern=';
 
-    var formatItem = function (listItem, selectNodeDialog) {
-        listItem.click(function () {
-            var sourceNodeName = $(this).data('value');
-            $.ajax({
-                url: 'vars/',
-                type: 'POST',
-                dataType: 'json',
-                data: {action: 'copy', source_name: sourceNodeName, source_type: sourceNodeType},
-                success: function () {
-                    selectNodeDialog.dialog('close');
-                    $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
-                    if (self.copyCallback) self.copyCallback()
-                }
+        var loadCallback = function (listContainer, selectNodeDialog) {
+            var currentList = listContainer.find('div.dynamic-list');
+            selectNodeDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+        };
+
+        var formatItem = function (listItem, selectNodeDialog) {
+            listItem.click(function () {
+                var sourceNodeName = $(this).data('value');
+                $.ajax({
+                    url: inventoryApiPath + self.node.type + '/' + self.node.name + '/vars/copy/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {source_name: sourceNodeName, source_type: sourceNodeType},
+                    success: function () {
+                        selectNodeDialog.dialog('close');
+                        $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
+                        if (self.copyCallback) self.copyCallback()
+                    }
+                });
             });
-        });
-    };
+        };
 
-    new SelectNodesDialog(sourceNodeType, url, false, loadCallback, null, formatItem);
+        new SelectNodesDialog(sourceNodeType, url, false, loadCallback, null, formatItem);
+    }
 };

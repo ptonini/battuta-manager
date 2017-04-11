@@ -4,9 +4,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var runnerId = '{{ runner.id }}';
-
-            new RunnerResults(runnerId, $('#result_header'), $('#result_container'))
+            new RunnerResults('{{ runner_id }}', $('#result_header'), $('#result_container'))
 
         });
     </script>

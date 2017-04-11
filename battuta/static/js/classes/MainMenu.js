@@ -19,10 +19,10 @@ function MainMenu(is_authenticated, is_superuser, container) {
             liDropdownAnchor.clone().html('Inventory'),
             ulDropdownMenu.clone().append(
                 $('<li>').append(
-                    $('<a>').attr('href', '/inventory/hosts/').html('Hosts'),
-                    $('<a>').attr('href', '/inventory/groups/').html('Groups'),
+                    $('<a>').attr('href', inventoryPath + 'hosts/').html('Hosts'),
+                    $('<a>').attr('href', inventoryPath + 'groups/').html('Groups'),
                     $('<li>').attr('class', 'divider'),
-                    $('<a>').attr('href', '/inventory/import/').html('Import/Export')
+                    $('<a>').attr('href', inventoryPath + 'import/').html('Import/Export')
                 )
             )
         ),
@@ -30,11 +30,11 @@ function MainMenu(is_authenticated, is_superuser, container) {
             liDropdownAnchor.clone().html('Runner'),
             ulDropdownMenu.clone().append(
                 $('<li>').append(
-                    $('<a>').attr('href', '/runner/adhoc/').html('Ad-Hoc'),
-                    $('<a>').attr('href', '/runner/playbooks/').html('Playbooks'),
-                    $('<a>').attr('href', '/runner/roles/').html('Roles'),
+                    $('<a>').attr('href', runnerPath + 'adhoc/').html('Ad-Hoc'),
+                    $('<a>').attr('href', runnerPath + 'playbooks/').html('Playbooks'),
+                    $('<a>').attr('href', runnerPath + 'roles/').html('Roles'),
                     $('<li>').attr('class', 'divider'),
-                    $('<a>').attr('href', '/runner/history/').html('History')
+                    $('<a>').attr('href', runnerPath + 'history/').html('History')
                 )
             )
         ),

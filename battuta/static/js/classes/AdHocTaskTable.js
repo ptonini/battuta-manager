@@ -20,7 +20,7 @@ function AdHohTaskTable(pattern, container) {
     self.table.DataTable({
         pageLength: 50,
         ajax: {
-            url: '/runner/adhoc/list/',
+            url: runnerApiPath + 'adhoc/list/',
             dataSrc: '',
             data: {pattern: self.pattern}
         },

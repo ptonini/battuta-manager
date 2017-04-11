@@ -74,7 +74,7 @@ AdHocTaskForm.deleteTask = function (task, deleteCallback) {
 
 AdHocTaskForm.postTask = function (task, action, postCallback) {
     $.ajax({
-        url: '/runner/adhoc/' + action + '/',
+        url: runnerApiPath + 'adhoc/' + action + '/',
         type: 'POST',
         dataType: 'json',
         data: task,

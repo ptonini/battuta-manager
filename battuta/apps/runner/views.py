@@ -42,6 +42,10 @@ class PageView(View):
 
             return render(request, "runner/history.html")
 
+        elif kwargs['page'] == 'results':
+
+            return render(request, "runner/results.html", {'runner_id': kwargs['runner_id']})
+
 
 class RunnerView(View):
 
@@ -382,48 +386,41 @@ class BaseView(View):
 
 
 class ResultView(BaseView):
-    def get(self, request, runner_id):
+    def get(self, request, runner_id, action):
         runner = get_object_or_404(Runner, pk=runner_id)
 
-        if 'action' not in request.GET:
+        if action == 'status':
 
-            self.context['runner'] = runner
-            return render(request, "runner/results.html", self.context)
+            tz = timezone(runner.user.userdata.timezone)
+
+            # Convert runner object to dict
+            data = model_to_dict(runner)
+
+            data['username'] = runner.user.username
+            data['created_on'] = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
+
+            # Convert status string to dict
+            if runner.stats:
+                data['stats'] = ast.literal_eval(runner.stats)
+
+            # Add plays to runner data
+            data['plays'] = list()
+            for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
+                play['tasks'] = [task for task in RunnerTask.objects.filter(runner_play_id=play['id']).values()]
+                data['plays'].append(play)
+
+        elif action == 'task_results':
+
+            task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
+
+            data = model_to_dict(task)
+            data['results'] = list()
+
+            for result in task.runnerresult_set.all().values():
+                result['response'] = json.loads(result['response'])
+                data['results'].append(result)
 
         else:
-            if request.GET['action'] == 'status':
+            raise Http404('Invalid action')
 
-                tz = timezone(runner.user.userdata.timezone)
-
-                # Convert runner object to dict
-                data = model_to_dict(runner)
-
-                data['username'] = runner.user.username
-                data['created_on'] = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
-
-                # Convert status string to dict
-                if runner.stats:
-                    data['stats'] = ast.literal_eval(runner.stats)
-
-                # Add plays to runner data
-                data['plays'] = list()
-                for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
-                    play['tasks'] = [task for task in RunnerTask.objects.filter(runner_play_id=play['id']).values()]
-                    data['plays'].append(play)
-
-            elif request.GET['action'] == 'task_results':
-
-                task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
-
-                data = model_to_dict(task)
-                data['results'] = list()
-
-                for result in task.runnerresult_set.all().values():
-                    result['response'] = json.loads(result['response'])
-                    data['results'].append(result)
-
-            else:
-
-                raise Http404('Invalid action')
-
-            return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type="application/json")

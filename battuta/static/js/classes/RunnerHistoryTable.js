@@ -8,7 +8,7 @@ function RunnerHistoryTable(container) {
     self.container.append(self.table);
 
     self.table.DataTable({
-        ajax: {url: '/runner/history/list/'},
+        ajax: {url: runnerApiPath + 'history/list/'},
         columns: [
             {class: 'col-md-2', title: 'run data'},
             {class: 'col-md-2', title: 'user'},
@@ -39,7 +39,7 @@ function RunnerHistoryTable(container) {
                     break;
             }
             $(row).css('cursor','pointer').click(function () {
-                popupCenter('/runner/result/' + data[5] + '/', data[5], 1000);
+                popupCenter(runnerPath +'results/' + data[5] + '/', data[5], 1000);
             })
         }
     });

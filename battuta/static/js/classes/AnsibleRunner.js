@@ -94,19 +94,24 @@ function AnsibleRunner(postData, cred, sameWindow) {
 // Post Ansible Job
 AnsibleRunner._postJob = function (postData, sameWindow) {
         $.ajax({
-            url: '/runner/run/',
+            url: runnerApiPath + 'run/',
             type: 'POST',
             dataType: 'json',
             data: postData,
             success: function (data) {
                 if (data.result == 'ok') {
+
+                    var resultUrl = runnerPath + 'results/' + data.runner_id + '/';
+
                     if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
-                    if (sameWindow) window.open('/runner/result/' + data.runner_id + '/', '_self');
+
+                    if (sameWindow) window.open(resultUrl, '_self');
+
                     else {
                         var windowTitle;
                         if (sessionStorage.getItem('single_job_window') == 'true') windowTitle = 'battuta_result_window';
                         else windowTitle = data.runner_id;
-                        popupCenter('/runner/result/' + data.runner_id + '/', windowTitle, 1000);
+                        popupCenter(resultUrl, windowTitle, 1000);
                     }
                 }
                 else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);

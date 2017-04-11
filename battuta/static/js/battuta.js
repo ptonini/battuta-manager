@@ -1,9 +1,13 @@
 // Django apps root paths
+
 var filesPath = '/files/';
 var filesApiPath = '/files/api/';
 
 var inventoryPath = '/inventory/';
 var inventoryApiPath = '/inventory/api/';
+
+var runnerPath = '/runner/';
+var runnerApiPath = '/runner/api/';
 
 // jQuery elements templates /////////////
 
@@ -251,7 +255,7 @@ function gatherFacts(nodeName, finishCallback) {
         var runnerId = sessionStorage.getItem(runner_key);
         if (runnerId) {
             $.ajax({
-                url: '/runner/result/' + runnerId + '/',
+                url: runnerPath + 'result/' + runnerId + '/',
                 dataType: 'json',
                 data: {action: 'status'},
                 success: function (runner) {

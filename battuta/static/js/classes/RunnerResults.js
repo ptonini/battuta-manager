@@ -86,7 +86,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
         .html(spanGlyph.clone().addClass('glyphicon-remove').css('color', 'red'))
         .click(function cancelJob() {
             $.ajax({
-                url: '/runner/kill/',
+                url: runnerApiPath + 'kill/',
                 type: 'POST',
                 dataType: 'json',
                 data: {runner_id: self.runner.id},
@@ -153,8 +153,7 @@ RunnerResults.prototype = {
         var self = this;
 
         $.ajax({
-            url: '/runner/result/' + self.runnerId + '/',
-            data: {action: 'status'},
+            url: runnerApiPath + 'results/' + self.runnerId + '/status/',
             success: function (runner) {
                 self.runner = runner;
                 if (successCallback) successCallback()
@@ -339,9 +338,9 @@ RunnerResults.prototype = {
                             searching: false,
                             info: false,
                             ajax: {
-                                url: '/runner/result/' + self.runnerId + '/',
+                                url: runnerApiPath + 'results/' + self.runnerId + '/task_results/',
                                 dataSrc: 'results',
-                                data: {action: 'task_results', task_id: task.id}
+                                data: {task_id: task.id}
                             },
                             columns: [
                                 {class: 'col-md-3', title: 'host', data: 'host'},

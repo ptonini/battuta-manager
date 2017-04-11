@@ -14,7 +14,7 @@ function VariableForm(variable, type, node, saveCallback, container) {
     self.keyField = textInputField.clone();
 
     self.form = $('<form>').submit(function (event) {
-        event.preventDefault()
+        event.preventDefault();
 
         var submitCallback;
 
@@ -96,7 +96,7 @@ VariableForm.prototype = {
                 .append(spanGlyph.clone().addClass('glyphicon-duplicate'))
                 .click(function (event) {
                     event.preventDefault();
-                    new CopyVariables()
+                    new CopyVariables(self.node, self.saveCallback)
                 });
 
             self.form.append(
