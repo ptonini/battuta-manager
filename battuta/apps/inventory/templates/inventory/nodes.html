@@ -8,93 +8,11 @@
 
             document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
 
-            rememberSelectedTab($('ul.select_tabs').attr('id'));
-
-            var nodeTable = new NodeTable(nodeType, reloadInfo, $('#node_table_container'));
-
-            var nodeGrid = new NodeGrid(nodeType, 'open', reloadInfo, $('#node_grid_container'));
-
-            $('#download_table').click(function () {
-                nodeTable.download()
-            });
-
-            $('#update_facts').click(function () {
-                gatherFacts('all', reloadInfo)
-            });
-
-            $('#delete_mode').click(function () {
-                $(this).toggleClass('checked_button');
-                $('#delete_button').toggle();
-
-                if ($(this).hasClass('checked_button')) {
-                    nodeGrid = new NodeGrid(nodeType, 'delete', null, $('#node_grid_container'));
-                }
-                else nodeGrid = new NodeGrid(nodeType, 'open', reloadInfo, $('#node_grid_container'))
-            });
-
-            $('#delete_nodes').click(function() {
-                new DeleteDialog(function () {
-                    $.ajax({
-                        url: '/inventory/' + nodeType + 's/delete/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {selection: nodeGrid.getSelected()},
-                        success: reloadInfo
-                    })
-                })
-            });
-
-            function reloadInfo() {
-                nodeTable.reload();
-                nodeGrid.reload();
-            }
+            new Nodes(nodeType, $('#nodes_container'));
 
         });
     </script>
 {% endblock%}
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <h3>{{ node_type_plural|capfirst }}</h3>
-        </div>
-        <div class="col-md-12">
-            <ul id="select_{{ node_type }}_tabs" class="nav nav-tabs select_tabs">
-                <li class="active">
-                    <a data-toggle="tab" href="#table_tab"><span class="glyphicon glyphicon-list"></span></a>
-                </li>
-                <li>
-                    <a data-toggle="tab" href="#grid_tab"><span class="glyphicon glyphicon-th"></span></a>
-                </li>
-            </ul>
-
-            <div class="tab-content">
-                <div id="table_tab" class="tab-pane fade in active">
-                    <br>
-                    <div class="row">
-                        <div id="node_table_container" class="col-md-12"></div>
-                        <div class="col-md-12" style="margin-top: 20px">
-                            <button id="download_table" class="btn btn-default btn-xs" title="Download as CSV">
-                                <span class="glyphicon glyphicon-download-alt"></span>
-                            </button>
-                            <button id="update_facts" class="btn btn-default btn-xs">Update facts</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="grid_tab" class="tab-pane fade">
-                    <br>
-                    <div id="node_grid_container"></div>
-                    <div style="margin-top: 20px">
-                        <button id="delete_mode" class="btn btn-default btn-xs">Delete mode</button>
-                        <span id="delete_button" style="float: right; display: none;">
-                            <button id="delete_nodes" class="btn btn-default btn-xs">
-                                <span class="glyphicon glyphicon-trash" title="Delete"></span>
-                            </button>
-                        </span>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-    </div>
+    <div id="nodes_container"></div>
 {% endblock %}

@@ -14,7 +14,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         showFilter: true,
         headerBottomPadding: 20,
         topAlignHeader: true,
-        ajaxUrl: '/inventory/?action=search&type=' + nodeType + '&pattern='
+        ajaxUrl: inventoryApiPath + 'search/?type=' + nodeType + '&pattern='
     };
 
     if (self.mode == 'open') Object.assign(self.gridOptions, {
@@ -24,7 +24,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         addButtonTitle: 'Add ' + nodeType,
         formatItem: function (listItem) {
             listItem.click(function () {
-                window.open(inventoryPath + nodeType + '/' + $(this).data('value'), '_self')
+                window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
             });
         },
         addButtonAction: function () {

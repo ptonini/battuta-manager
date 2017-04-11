@@ -7,6 +7,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
+from django.forms import model_to_dict
 
 from . import AnsibleInventory
 from .functions import inventory_to_dict
@@ -28,6 +29,12 @@ class PageView(View):
         elif kwargs['page'] == 'nodes':
             context = {'node_type': kwargs['node_type_plural'][:-1], 'node_type_plural': kwargs['node_type_plural']}
             return render(request, 'inventory/nodes.html', context)
+
+        elif kwargs['page'] == 'node':
+            context = {'node_type': kwargs['node_type'], 'node_name': kwargs['node_name']}
+            return render(request, 'inventory/node.html', context)
+        else:
+            raise Http404('Invalid page')
 
 
 class NodesView(View):
@@ -132,19 +139,150 @@ class NodesView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class ImportView(View):
+class NodeView(View):
+    context = dict()
+
+    @staticmethod
+    def build_node(node_type, node_name):
+        print node_type, node_name
+        # Get classes based on node type
+        if node_type == 'host':
+            node_class = Host
+            node_form_class = HostForm
+        elif node_type == 'group':
+            node_class = Group
+            node_form_class = GroupForm
+        else:
+            print node_type
+            raise Http404('Invalid node type')
+
+        ancestors = list()
+        group_descendants = list()
+        host_descendants = list()
+
+        # Build node object
+        if node_name == '0':
+            node = node_class()
+        else:
+            node = get_object_or_404(node_class, name=node_name)
+            parents = node.group_set.all()
+            while len(parents) > 0:
+                step_list = list()
+                for parent in parents:
+                    if parent not in ancestors:
+                        ancestors.append(parent)
+                    for group in parent.group_set.all():
+                        step_list.append(group)
+                parents = step_list
+            if node.name != 'all':
+                ancestors.append(Group.objects.get(name='all'))
+
+            if node.type == 'group':
+                group_descendants = set()
+                children = node.children.all()
+                while len(children) > 0:
+                    step_list = set()
+                    for child in children:
+                        group_descendants.add(child)
+                        for grandchild in child.children.all():
+                            step_list.add(grandchild)
+                    children = step_list
+
+                members = {host for host in node.members.all()}
+                host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
+
+        setattr(node, 'form_class', node_form_class)
+        setattr(node, 'ancestors', ancestors)
+        setattr(node, 'group_descendants', group_descendants)
+        setattr(node, 'host_descendants', host_descendants)
+
+        return node
+
+    def get(self, request, node_type, node_name, action):
+        node = self.build_node(node_type, node_name)
+
+        if action == 'info':
+
+            node_dict = model_to_dict(node)
+            node_dict['type'] = node.type
+
+            data = {'result': 'ok', 'node': node_dict}
+
+        elif action == 'facts':
+            if node.facts:
+                data = {'result': 'ok',
+                        'name': node.name,
+                        'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))}
+            else:
+                data = {'result': 'failed'}
+
+        elif action == 'ancestors':
+            data = {'result': 'ok', 'groups': [[group.name, group.id] for group in node.ancestors]}
+
+        elif action == 'descendants':
+
+            if request.GET['type'] == 'groups':
+                descendants = [[group.name, group.id] for group in node.group_descendants]
+            else:
+                descendants = [[host.name, host.id] for host in node.host_descendants]
+
+            descendants.sort()
+
+            data = descendants
+
+        else:
+            raise Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+    def post(self, request, node_name, node_type):
+        node = self.build_node(node_type, node_name)
+
+        if request.POST['action'] == 'save':
+            form = node.form_class(request.POST or None, instance=node)
+            if form.is_valid():
+                node = form.save(commit=True)
+                data = {'result': 'ok', 'name': node.name, 'type': node.type}
+            else:
+                data = {'result': 'fail', 'msg': str(form.errors)}
+        elif request.POST['action'] == 'delete':
+            if node.type == 'host' or node.name != 'all':
+                node.delete()
+            data = {'result': 'ok'}
+        else:
+            raise Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+class InventoryView(View):
 
     @staticmethod
     def get(request, action):
 
-        if action == 'export':
+        if action == 'get':
+            data = inventory_to_dict()
+
+        elif action == 'search':
+            data = list()
+
+            if request.GET['type'] == 'host':
+                node_class = Host
+            elif request.GET['type'] == 'group':
+                node_class = Group
+            else:
+                return Http404('Invalid node type')
+
+            for node in node_class.objects.order_by('name'):
+                if node.name.find(request.GET['pattern']) > -1:
+                    data.append([node.name, node.id])
+
+        elif action == 'export':
             if request.GET['format'] == 'json':
                 data = inventory_to_dict(internal_vars=False)
             else:
                 raise Http404('Invalid format')
-        else:
-            raise Http404('Invalid action')
 
+        else:
+            return Http404('Invalid action')
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
@@ -260,181 +398,12 @@ class ImportView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
-
-
-class InventoryView(View):
-
-    @staticmethod
-    def inventory_to_dict(hosts=Host.objects.order_by('name'), internal_vars=True):
-
-        data = {'_meta': {'hostvars': dict()}}
-
-        for host in hosts:
-            if host.variable_set.all().exists() or host.description:
-
-                data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
-                if host.description and not internal_vars:
-                    data['_meta']['hostvars'][host.name]['_description'] = host.description
-
-        for group in Group.objects.order_by('name'):
-            data[group.name] = dict()
-
-            if group.members.all().exists():
-                data[group.name]['hosts'] = [host.name for host in group.members.all()]
-
-            data[group.name]['children'] = [child.name for child in group.children.all()]
-
-            data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
-
-            if group.description and not internal_vars:
-                data[group.name]['vars']['_description'] = group.description
-
-        if internal_vars:
-            data['all']['vars']['roles_path'] = settings.ROLES_PATH
-            data['all']['vars']['files_path'] = settings.FILES_PATH
-            data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
-
-        return data
-
-    def get(self, request):
-        if 'action' not in request.GET:
-            data = self.inventory_to_dict()
-
-        else:
-            data = list()
-            if request.GET['action'] == 'search':
-                if request.GET['type'] == 'host':
-                    node_class = Host
-                elif request.GET['type'] == 'group':
-                    node_class = Group
-                else:
-                    return Http404('Invalid node type')
-                for node in node_class.objects.order_by('name'):
-                    if node.name.find(request.GET['pattern']) > -1:
-                        data.append([node.name, node.id])
-            else:
-                return Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")
-
-
-class NodeDetailsView(View):
-    context = dict()
-
-    @staticmethod
-    def build_node(node_type, node_name):
-
-        # Get classes based on node type
-        if node_type == 'host':
-            node_class = Host
-            node_form_class = HostForm
-        elif node_type == 'group':
-            node_class = Group
-            node_form_class = GroupForm
-        else:
-            print node_type
-            raise Http404('Invalid node type')
-
-        ancestors = list()
-        group_descendants = list()
-        host_descendants = list()
-
-        # Build node object
-        if node_name == '0':
-            node = node_class()
-        else:
-            node = get_object_or_404(node_class, name=node_name)
-            parents = node.group_set.all()
-            while len(parents) > 0:
-                step_list = list()
-                for parent in parents:
-                    if parent not in ancestors:
-                        ancestors.append(parent)
-                    for group in parent.group_set.all():
-                        step_list.append(group)
-                parents = step_list
-            if node.name != 'all':
-                ancestors.append(Group.objects.get(name='all'))
-
-            if node.type == 'group':
-                group_descendants = set()
-                children = node.children.all()
-                while len(children) > 0:
-                    step_list = set()
-                    for child in children:
-                        group_descendants.add(child)
-                        for grandchild in child.children.all():
-                            step_list.add(grandchild)
-                    children = step_list
-
-                members = {host for host in node.members.all()}
-                host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
-
-        setattr(node, 'form_class', node_form_class)
-        setattr(node, 'ancestors', ancestors)
-        setattr(node, 'group_descendants', group_descendants)
-        setattr(node, 'host_descendants', host_descendants)
-
-        return node
-
-    def get(self, request, node_type, node_name):
-
-        node = self.build_node(node_type, node_name)
-
-        if 'action' not in request.GET:
-            self.context['node'] = node
-            return render(request, 'inventory/node_details.html', self.context)
-        else:
-            if request.GET['action'] == 'facts':
-                if node.facts:
-                    data = {'result': 'ok',
-                            'name': node.name,
-                            'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))}
-                else:
-                    data = {'result': 'failed'}
-
-            elif request.GET['action'] == 'ancestors':
-                data = {'result': 'ok', 'groups': [[group.name, group.id] for group in node.ancestors]}
-
-            elif request.GET['action'] == 'descendants':
-
-                if request.GET['type'] == 'groups':
-                    descendants = [[group.name, group.id] for group in node.group_descendants]
-                else:
-                    descendants = [[host.name, host.id] for host in node.host_descendants]
-
-                descendants.sort()
-
-                data = descendants
-
-            else:
-                raise Http404('Invalid action')
-            return HttpResponse(json.dumps(data), content_type="application/json")
-
-    def post(self, request, node_name, node_type):
-        node = self.build_node(node_type, node_name)
-
-        if request.POST['action'] == 'save':
-            form = node.form_class(request.POST or None, instance=node)
-            if form.is_valid():
-                node = form.save(commit=True)
-                data = {'result': 'ok', 'name': node.name, 'type': node.type}
-            else:
-                data = {'result': 'fail', 'msg': str(form.errors)}
-        elif request.POST['action'] == 'delete':
-            if node.type == 'host' or node.name != 'all':
-                node.delete()
-            data = {'result': 'ok'}
-        else:
-            raise Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")
-
 
 class VariablesView(View):
 
     @staticmethod
     def get(request, node_type, node_name):
-        node = NodeDetailsView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name)
 
         variables = dict()
         inventory = AnsibleInventory()
@@ -471,7 +440,7 @@ class VariablesView(View):
 
     @staticmethod
     def post(request, node_type, node_name):
-        node = NodeDetailsView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name)
 
         if 'id' in request.POST and request.POST['id']:
             variable = get_object_or_404(Variable, pk=request.POST['id'])
@@ -496,7 +465,7 @@ class VariablesView(View):
 
             elif request.POST['action'] == 'copy':
                 print request.POST
-                source = NodeDetailsView.build_node(request.POST['source_type'], request.POST['source_name'])
+                source = NodeView.build_node(request.POST['source_type'], request.POST['source_name'])
                 print source
                 for source_var in source.variable_set.all():
                     print source_var.value, source_var.key
@@ -528,7 +497,7 @@ class RelationsView(View):
         return related_set, related_class
 
     def get(self, request, node_type, node_name, relationship):
-        node = NodeDetailsView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name)
         related_set, related_class = self.get_relationships(node, relationship)
 
         if request.GET['list'] == 'related':
@@ -558,7 +527,7 @@ class RelationsView(View):
 
     def post(self, request, node_type, node_name, relationship):
 
-        node = NodeDetailsView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name)
 
         related_set, related_class = self.get_relationships(node, relationship)
 

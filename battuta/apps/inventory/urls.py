@@ -9,19 +9,15 @@ urlpatterns = [
 
     url(r'^(?P<node_type_plural>hosts|groups)/$', login_required(views.PageView.as_view()), kwargs={'page': 'nodes'}),
 
+    url(r'^(?P<node_type>host|group)/(?P<node_name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'node'}),
 
-    url(r'^api/(import|export)/$', views.ImportView.as_view()),
+
+    url(r'^api/(get|search|import|export)/$', views.InventoryView.as_view()),
 
     url(r'^api/(hosts|groups)/([a-z]+)/$', login_required(views.NodesView.as_view())),
 
+    url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/([a-z]+)/$', login_required(views.NodeView.as_view())),
 
-
-    url(r'^$', views.InventoryView.as_view()),
-
-
-    # url(r'^(hosts|groups)/$', login_required(views.NodesView.as_view())),
-
-    url(r'^(host|group)/([a-zA-Z0-9-._]+)/$', login_required(views.NodeDetailsView.as_view())),
 
     url(r'^(host|group)/([a-zA-Z0-9-._]+)/vars/$', login_required(views.VariablesView.as_view())),
 

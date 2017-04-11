@@ -53,7 +53,7 @@ function NodeTable(nodeType, addCallback, container) {
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
-                    window.open(inventoryPath + self.type + '/' + data.name, '_self')
+                    window.open(inventoryPath + self.type + '/' + data.name + '/', '_self')
                 });
 
             if (self.type == 'host') {

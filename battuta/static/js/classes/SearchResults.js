@@ -12,10 +12,10 @@ function SearchResults(type, pattern, container) {
         maxColumns: sessionStorage.getItem('node_list_max_columns'),
         breakPoint: sessionStorage.getItem('node_list_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
-        ajaxUrl: '/inventory/?action=search&type=' + type + '&pattern=' + pattern,
+        ajaxUrl: inventoryApiPath + 'search/?type=' + type + '&pattern=' + pattern,
         formatItem: function (listItem) {
             listItem.click(function () {
-                window.open('/inventory/' + type + '/' + $(this).data('value'), '_self')
+                window.open(inventoryPath + type + '/' + $(this).data('value'), '_self')
             });
         }
     });

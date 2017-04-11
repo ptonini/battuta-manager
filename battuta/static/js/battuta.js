@@ -47,6 +47,14 @@ var radioInput =  $('<input>').attr('type', 'radio');
 var largeDialog = $('<div>').attr('class', 'large_dialog');
 var smallDialog = $('<div>').attr('class', 'small_dialog');
 
+// Tabs
+var ulTabs = $('<ul>').attr('class', 'nav nav-tabs');
+var liActive = $('<li>').attr('class', 'active');
+var aTabs = $('<a>').attr('data-toggle', 'tab');
+var divTabContent =  $('<div>').attr('class', 'tab-content');
+var divActiveTab = $('<div>').attr('class', 'tab-pane fade in active');
+var divTab = $('<div>').attr('class', 'tab-pane fade');
+
 // Other element templates
 var btnSmall = $('<button>').attr('class', 'btn btn-default btn-sm');
 var btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
@@ -168,15 +176,6 @@ function rememberSelectedTab(tabId) {
 
     var activeTab = sessionStorage.getItem(keyName);
     if (activeTab) $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
-}
-
-function submitRequest(type, data, successCallback) {
-    $.ajax({
-        type: type,
-        data: data,
-        dataType: 'json',
-        success: function (data) {if (successCallback) successCallback(data)}
-    })
 }
 
 function humanBytes(value, suffix) {

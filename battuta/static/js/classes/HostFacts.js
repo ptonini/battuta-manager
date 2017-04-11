@@ -19,8 +19,7 @@ HostFacts.prototype = {
         var self = this;
 
         $.ajax({
-            url: '/inventory/host/' + self.host,
-            data: {action: 'facts'},
+            url: inventoryApiPath + 'host/' + self.host + '/facts/',
             dataType: 'json',
             success: function (data) {
                 if (data.result == 'ok') self._buildFacts(data.facts);

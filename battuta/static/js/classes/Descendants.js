@@ -1,7 +1,7 @@
-function Descendants (group, container) {
+function Descendants (node, container) {
     var self = this;
 
-    self.group = group;
+    self.group = node.name;
 
     self.listOptions = {
         headerTag: '<h5>',
@@ -17,19 +17,19 @@ function Descendants (group, container) {
         formatItem: function (listItem) {
             var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
             listItem.click(function () {
-                window.open('/inventory/' + nodeType + '/' + $(this).data('value'), '_self')
+                window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
             });
         }
     };
 
     self.groupList = $('<div>').data('nodeType', 'group').DynamicList($.extend({}, self.listOptions, {
         listTitle: 'Groups',
-        ajaxUrl: '/inventory/group/' + self.group + '/?action=descendants&type=groups'
+        ajaxUrl: inventoryApiPath + 'group/' + self.group + '/descendants/?type=groups'
     }));
 
     self.hostList = $('<div>').data('nodeType', 'host').DynamicList($.extend({}, self.listOptions, {
         listTitle: 'Hosts',
-        ajaxUrl: '/inventory/group/' + self.group + '/?action=descendants&type=hosts'
+        ajaxUrl: inventoryApiPath + 'group/' + self.group + '/descendants/?type=hosts'
     }));
 
     container.append(self.groupList, self.hostList);
