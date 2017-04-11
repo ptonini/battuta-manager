@@ -44,10 +44,10 @@ function ImportInventory(container) {
             uploadUrl: inventoryApiPath + 'import/',
             uploadAsync: true,
             uploadExtraData: function () {
-                return {format: $('input[type="radio"][name="import_file_type"]:checked').val()}
-            },
-            ajaxSettings: function () {
-                return {headers: {'X-CSRFToken': getCookie('csrftoken')}}
+                return {
+                    format: $('input[type="radio"][name="import_file_type"]:checked').val(),
+                    csrfmiddlewaretoken: getCookie('csrftoken')
+                }
             },
             showPreview: false,
             showRemove: false,

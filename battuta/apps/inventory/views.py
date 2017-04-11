@@ -6,7 +6,6 @@ import collections
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.conf import settings
 from django.forms import model_to_dict
 
 from . import AnsibleInventory
@@ -35,6 +34,154 @@ class PageView(View):
             return render(request, 'inventory/node.html', context)
         else:
             raise Http404('Invalid page')
+
+
+class InventoryView(View):
+
+    @staticmethod
+    def get(request, action):
+
+        if action == 'get':
+            data = inventory_to_dict()
+
+        elif action == 'search':
+            data = list()
+
+            if request.GET['type'] == 'host':
+                node_class = Host
+            elif request.GET['type'] == 'group':
+                node_class = Group
+            else:
+                return Http404('Invalid node type')
+
+            for node in node_class.objects.order_by('name'):
+                if node.name.find(request.GET['pattern']) > -1:
+                    data.append([node.name, node.id])
+
+        elif action == 'export':
+            if request.GET['format'] == 'json':
+                data = inventory_to_dict(internal_vars=False)
+            else:
+                raise Http404('Invalid format')
+
+        else:
+            return Http404('Invalid action')
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+    @staticmethod
+    def post(request, action):
+
+        if action == 'import':
+
+            # Create temp file and load import data
+            with tempfile.TemporaryFile() as temp:
+
+                for chunk in request.FILES['file_data']:
+                    temp.write(chunk)
+                temp.seek(0, 0)
+                data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
+
+                # Import from CSV
+                if request.POST['format'] == 'csv':
+                    csv_data = csv.reader(temp)
+                    header = next(csv_data)
+                    try:
+                        host_index = header.index('host')
+                    except ValueError:
+                        data['result'] = 'failed'
+                        data['msg'] = 'Error: could not find hosts column'
+                    else:
+                        for row in csv_data:
+                            host, created = Host.objects.get_or_create(name=row[host_index])
+                            if created:
+                                data['added_hosts'] += 1
+                            for index, cell in enumerate(row):
+                                if index != host_index and cell:
+                                    if header[index] == 'group':
+                                        group, created = Group.objects.get_or_create(name=cell)
+                                        if created:
+                                            data['added_groups'] += 1
+                                        host.group_set.add(group)
+                                        host.save()
+                                    else:
+                                        var, created = Variable.objects.get_or_create(key=header[index], host=host)
+                                        if created:
+                                            data['added_vars'] += 1
+                                        var.value = cell
+                                        var.save()
+                        data['result'] = 'ok'
+
+                # Import from JSON
+                elif request.POST['format'] == 'json':
+
+                    # Load JSON data
+                    try:
+                        json_data = json.load(temp)
+                    except ValueError:
+                        data['result'] = 'failed'
+                        data['msg'] = 'Error: File does not contain valid JSON'
+                    else:
+
+                        # Iterate over JSON data host vars
+                        for host_name, variables in json_data['_meta']['hostvars'].iteritems():
+                            host, created = Host.objects.get_or_create(name=host_name)
+                            if created:
+                                data['added_hosts'] += 1
+                            for key, value in variables.iteritems():
+                                if key == '_description':
+                                    host.description = value
+                                else:
+                                    var, created = Variable.objects.get_or_create(key=key, host=host)
+                                    if created:
+                                        data['added_vars'] += 1
+                                    var.value = value
+                                    var.save()
+                            host.save()
+                        json_data.pop('_meta', None)
+
+                        # Iterate over JSON data groups
+                        for group_name, group_dict in json_data.iteritems():
+                            group, created = Group.objects.get_or_create(name=group_name)
+                            if created:
+                                data['added_groups'] += 1
+
+                            # Iterate over group children
+                            if 'children' in group_dict:
+                                for child_name in group_dict['children']:
+                                    child, created = Group.objects.get_or_create(name=child_name)
+                                    if created:
+                                        data['added_groups'] += 1
+                                    group.children.add(child)
+
+                            # Iterate over group hosts
+                            if 'hosts' in group_dict:
+                                for host_name in group_dict['hosts']:
+                                    host, created = Host.objects.get_or_create(name=host_name)
+                                    if created:
+                                        data['added_hosts'] += 1
+                                    group.members.add(host)
+
+                            # Iterate over group vars
+                            if 'vars' in group_dict:
+                                for key, value in group_dict['vars'].iteritems():
+                                    if key == '_description':
+                                        group.description = value
+                                    else:
+                                        var, created = Variable.objects.get_or_create(key=key, group=group)
+                                        if created:
+                                            data['added_vars'] += 1
+                                        var.value = value
+                                        var.save()
+                            group.save()
+                        data['result'] = 'ok'
+
+                else:
+                    raise Http404('Invalid format')
+
+        else:
+            raise Http404('Invalid action')
+
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 class NodesView(View):
@@ -253,152 +400,6 @@ class NodeView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-class InventoryView(View):
-
-    @staticmethod
-    def get(request, action):
-
-        if action == 'get':
-            data = inventory_to_dict()
-
-        elif action == 'search':
-            data = list()
-
-            if request.GET['type'] == 'host':
-                node_class = Host
-            elif request.GET['type'] == 'group':
-                node_class = Group
-            else:
-                return Http404('Invalid node type')
-
-            for node in node_class.objects.order_by('name'):
-                if node.name.find(request.GET['pattern']) > -1:
-                    data.append([node.name, node.id])
-
-        elif action == 'export':
-            if request.GET['format'] == 'json':
-                data = inventory_to_dict(internal_vars=False)
-            else:
-                raise Http404('Invalid format')
-
-        else:
-            return Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")
-
-    @staticmethod
-    def post(request, action):
-
-        if action == 'import':
-
-            # Create temp file and load import data
-            with tempfile.TemporaryFile() as temp:
-
-                for chunk in request.FILES['file_data']:
-                    temp.write(chunk)
-                temp.seek(0, 0)
-                data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
-
-                # Import from CSV
-                if request.POST['format'] == 'csv':
-                    csv_data = csv.reader(temp)
-                    header = next(csv_data)
-                    try:
-                        host_index = header.index('host')
-                    except ValueError:
-                        data['result'] = 'failed'
-                        data['msg'] = 'Error: could not find hosts column'
-                    else:
-                        for row in csv_data:
-                            host, created = Host.objects.get_or_create(name=row[host_index])
-                            if created:
-                                data['added_hosts'] += 1
-                            for index, cell in enumerate(row):
-                                if index != host_index and cell:
-                                    if header[index] == 'group':
-                                        group, created = Group.objects.get_or_create(name=cell)
-                                        if created:
-                                            data['added_groups'] += 1
-                                        host.group_set.add(group)
-                                        host.save()
-                                    else:
-                                        var, created = Variable.objects.get_or_create(key=header[index], host=host)
-                                        if created:
-                                            data['added_vars'] += 1
-                                        var.value = cell
-                                        var.save()
-                        data['result'] = 'ok'
-
-                # Import from JSON
-                elif request.POST['format'] == 'json':
-
-                    # Load JSON data
-                    try:
-                        json_data = json.load(temp)
-                    except ValueError:
-                        data['result'] = 'failed'
-                        data['msg'] = 'Error: File does not contain valid JSON'
-                    else:
-
-                        # Iterate over JSON data host vars
-                        for host_name, variables in json_data['_meta']['hostvars'].iteritems():
-                            host, created = Host.objects.get_or_create(name=host_name)
-                            if created:
-                                data['added_hosts'] += 1
-                            for key, value in variables.iteritems():
-                                if key == '_description':
-                                    host.description = value
-                                else:
-                                    var, created = Variable.objects.get_or_create(key=key, host=host)
-                                    if created:
-                                        data['added_vars'] += 1
-                                    var.value = value
-                                    var.save()
-                            host.save()
-                        json_data.pop('_meta', None)
-
-                        # Iterate over JSON data groups
-                        for group_name, group_dict in json_data.iteritems():
-                            group, created = Group.objects.get_or_create(name=group_name)
-                            if created:
-                                data['added_groups'] += 1
-
-                            # Iterate over group children
-                            if 'children' in group_dict:
-                                for child_name in group_dict['children']:
-                                    child, created = Group.objects.get_or_create(name=child_name)
-                                    if created:
-                                        data['added_groups'] += 1
-                                    group.children.add(child)
-
-                            # Iterate over group hosts
-                            if 'hosts' in group_dict:
-                                for host_name in group_dict['hosts']:
-                                    host, created = Host.objects.get_or_create(name=host_name)
-                                    if created:
-                                        data['added_hosts'] += 1
-                                    group.members.add(host)
-
-                            # Iterate over group vars
-                            if 'vars' in group_dict:
-                                for key, value in group_dict['vars'].iteritems():
-                                    if key == '_description':
-                                        group.description = value
-                                    else:
-                                        var, created = Variable.objects.get_or_create(key=key, group=group)
-                                        if created:
-                                            data['added_vars'] += 1
-                                        var.value = value
-                                        var.save()
-                            group.save()
-                        data['result'] = 'ok'
-
-                else:
-                    raise Http404('Invalid format')
-
-        else:
-            raise Http404('Invalid action')
-
-
 class VariablesView(View):
 
     @staticmethod
@@ -436,7 +437,7 @@ class VariablesView(View):
 
             data += values
 
-        return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
     def post(request, node_type, node_name):

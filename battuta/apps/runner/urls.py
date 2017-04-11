@@ -7,11 +7,16 @@ urlpatterns = [
 
 
     url(r'^adhoc/$', login_required(views.PageView.as_view()), kwargs={'page': 'adhoc'}),
+
     url(r'^roles/$', login_required(views.PageView.as_view()), kwargs={'page': 'roles'}),
+
     url(r'^history/$', login_required(views.PageView.as_view()), kwargs={'page': 'history'}),
+
     url(r'^playbooks/$', login_required(views.PageView.as_view()), kwargs={'page': 'playbooks'}),
 
+
     url(r'^result/([0-9]+)/$', login_required(views.ResultView.as_view())),
+
 
     url(r'^(run|kill)/$', login_required(views.RunnerView.as_view())),
 
