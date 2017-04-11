@@ -13,13 +13,14 @@ function Nodes(nodeType, container) {
 
     self.downloadTableBtn = btnXsmall.clone()
         .attr('title', 'Download as CSV')
+        .css('margin-right', '5px')
         .append(spanGlyph.clone().addClass('glyphicon-download-alt'))
         .click(function () {
             self.nodeTable.download()
         });
 
     self.updateFactsBtn = btnXsmall.clone().html('Update facts').click(function () {
-        gatherFacts('all', self.reloadInfo)
+        gatherFacts('all', reloadInfo)
     });
 
     self.deleteModeBtn = btnXsmall.clone().html('Delete mode').click(function () {
@@ -29,7 +30,7 @@ function Nodes(nodeType, container) {
         if (self.deleteModeBtn.hasClass('checked_button')) {
             self.nodeGrid = new NodeGrid(self.nodeType, 'delete', null, self.gridContainer);
         }
-        else self.nodeGrid = new NodeGrid(self.nodeType, 'open', self.reloadInfo, self.gridContainer)
+        else self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, self.gridContainer)
     });
 
     self.deleteBtn = btnXsmall.clone()
@@ -42,7 +43,9 @@ function Nodes(nodeType, container) {
                     type: 'POST',
                     dataType: 'json',
                     data: {selection: self.nodeGrid.getSelected()},
-                    success: self.reloadInfo
+                    success: function () {
+                        reloadInfo()
+                    }
                 })
             })
         });
@@ -91,11 +94,11 @@ function Nodes(nodeType, container) {
         )
     );
 
-    self.nodeTable = new NodeTable(self.nodeType, self.reloadInfo, self.tableContainer);
+    self.nodeTable = new NodeTable(self.nodeType, reloadInfo, self.tableContainer);
 
-    self.nodeGrid = new NodeGrid(self.nodeType, 'open', self.reloadInfo, self.gridContainer);
+    self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, self.gridContainer);
 
-    self.reloadInfo = function () {
+    function reloadInfo() {
         self.nodeTable.reload();
         self.nodeGrid.reload();
     };

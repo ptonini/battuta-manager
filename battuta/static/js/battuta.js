@@ -244,8 +244,7 @@ function gatherFacts(nodeName, finishCallback) {
         dataType: 'json',
         data: { action: 'default'},
         success: function (cred) {
-            var askPassword = { user: (!cred.password && cred.ask_pass && !cred.rsa_key), sudo: false};
-            new AnsibleRunner(postData, askPassword, cred.username);
+            new AnsibleRunner(postData, cred);
         }
     });
     var intervalId = setInterval(function() {

@@ -1,41 +1,48 @@
-function NodeDialog(action, nodeName, nodeDescription, nodeType, saveCallback) {
+function NodeDialog(node, saveCallback) {
     var self = this;
 
-    self.nameFieldInput = textInputField.clone().val(nodeName);
-    self.descriptionField = textAreaField.clone().val(nodeDescription);
+    self.node = node;
 
-    self.nodeForm = $('<form>').append(
-        divFormGroup.clone().append($('<label>').html('Name').append(self.nameFieldInput)),
-        divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
-    );
+    if (self.node.name) self.header = 'Edit ' + self.node.name;
 
-    if (action == 'edit') self.header = 'Edit ' + nodeName;
-    else if (action == 'add') {
-        self.header = 'Add ' + nodeType;
-        nodeName = '0';
-    }
+    else self.header = 'Add ' + self.node.type;
 
-    self.nodeDialog = $('<div>').append($('<h4>').html(self.header), self.nodeForm);
-    self.nodeDialog
+    self.nameFieldInput = textInputField.clone().val(self.node.name);
+    self.descriptionField = textAreaField.clone().val(self.node.description);
+
+    self.form = $('<form>')
+        .append(
+            divFormGroup.clone().append($('<label>').html('Name').append(self.nameFieldInput)),
+            divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
+        )
+        .submit(function (event) {
+
+            event.preventDefault();
+
+            $.ajax({
+                url: inventoryApiPath + self.node.type + '/' + self.node.name + '/save/',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    name: self.nameFieldInput .val(),
+                    description: self.descriptionField.val()
+                },
+                success: function (data) {
+                    if (data.result == 'ok') {
+                        self.dialog.dialog('close');
+                        if (saveCallback) saveCallback(data);
+                    }
+                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+                }
+            });
+        });
+
+    self.dialog = $('<div>').append($('<h4>').html(self.header), self.form);
+    self.dialog
         .dialog({
             buttons: {
                 Save: function() {
-                    $.ajax({
-                        url: inventoryApiPath + nodeType + '/' + nodeName + '/save/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            name: self.nameFieldInput .val(),
-                            description: self.descriptionField.val()
-                        },
-                        success: function (data) {
-                            if (data.result == 'ok') {
-                                self.nodeDialog.dialog('close');
-                                if (saveCallback) saveCallback(data);
-                            }
-                            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-                        }
-                    });
+                    self.form.submit()
                 },
                 Cancel: function() {
                     $(this).dialog('close');

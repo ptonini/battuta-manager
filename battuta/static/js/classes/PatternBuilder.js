@@ -85,7 +85,8 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
         return
     }
 
-    var url = '/inventory/?action=search&type=' + nodeType + '&pattern=';
+    var url = inventoryApiPath + 'search/?type=' + nodeType + '&pattern=';
+
     var loadCallback = function (listContainer, dialog) {
         var currentList = listContainer.find('div.dynamic-list');
         dialog
@@ -109,7 +110,9 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
             })
     };
     var addButtonAction = function (dialog) {
-        new NodeDialog('add', null, null, nodeType, function () {dialog.DynamicList('load')})
+        new NodeDialog({name: null, description: null, type: nodeType}, function () {
+            dialog.DynamicList('load')
+        })
     };
     new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
 }

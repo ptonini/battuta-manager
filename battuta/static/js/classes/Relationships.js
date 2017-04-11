@@ -1,12 +1,12 @@
-function Relationships(nodeName, nodeType, alterRelationCallback, container) {
+function Relationships(node, alterRelationCallback, container) {
     var self = this;
 
-    self.nodeName = nodeName;
-    self.nodeType = nodeType;
+    self.node = node;
+
     self.alterRelationCallback = alterRelationCallback;
 
 
-    if (nodeType == 'group') self.relations = ['parents', 'children', 'members'];
+    if (node.type == 'group') self.relations = ['parents', 'children', 'members'];
     else self.relations = ['parents'];
 
     $.each(self.relations, function (index, relation) {
@@ -30,7 +30,7 @@ function Relationships(nodeName, nodeType, alterRelationCallback, container) {
             maxColumns: sessionStorage.getItem('relation_list_max_columns'),
             breakPoint: sessionStorage.getItem('relation_list_break_point'),
             maxColumnWidth: sessionStorage.getItem('relation_list_max_column_width'),
-            ajaxUrl: relation + '/?list=related',
+            ajaxUrl: inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/related/',
             formatItem: function (listItem) {
                 var id = listItem.data('id');
                 var name = listItem.data('value');
@@ -46,7 +46,7 @@ function Relationships(nodeName, nodeType, alterRelationCallback, container) {
                 )
             },
             addButtonAction: function () {
-                var url = relation + '/?list=not_related';
+                var url = inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
                 var loadCallback = function (listContainer, selectNodesDialog) {
                     var currentList = listContainer.find('div.dynamic-list');
                     selectNodesDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
@@ -62,11 +62,11 @@ function Relationships(nodeName, nodeType, alterRelationCallback, container) {
                     });
                 };
                 var addButtonAction = function (selectNodesDialog) {
-                    new NodeDialog('add', null, null, nodeType, function () {
+                    new NodeDialog({name: null, description: null, type: self.node.type}, function () {
                         selectNodesDialog.DynamicList('load')
                     })
                 };
-                new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
+                new SelectNodesDialog(self.node.type, url, true, loadCallback, addButtonAction, null);
             }
         });
 
@@ -80,13 +80,13 @@ Relationships.prototype = {
         var self = this;
 
         $.ajax({
-            url: '/inventory/' + self.nodeType + '/' + self.nodeName + '/' +  relation + '/',
+            url: inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/' + action + '/',
             type: 'POST',
             dataType: 'json',
-            data: {selection: selection, action: action},
+            data: {selection: selection},
             success: function () {
                 self[relation].DynamicList('load');
-                self.alterRelationCallback()
+                if (self.alterRelationCallback) self.alterRelationCallback()
             }
         });
     }

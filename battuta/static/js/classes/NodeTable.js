@@ -71,7 +71,7 @@ function NodeTable(nodeType, addCallback, container) {
         drawCallback: function() {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add '+ nodeType).click(function () {
-                    new NodeDialog('add', null, null, nodeType, addCallback);
+                    new NodeDialog({name: null, description: null, type: nodeType}, addCallback);
                 })
             );
         }

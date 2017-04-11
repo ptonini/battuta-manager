@@ -5,7 +5,7 @@ function Node(node, container) {
 
     self.container = container;
 
-    self.description = self.node.description || $('<i>').html('No description available');
+    self.description = self.node.description || $('<small>').html($('<i>').html('No description available'));
 
     self.tabsHeader = ulTabs.clone().attr('id', self.node.type + '_' + self.node.name + '_tabs');
 
@@ -14,10 +14,11 @@ function Node(node, container) {
     self.variablesTab = divTab.clone().attr('id', 'variables_tab');
 
     self.editNodeBtn = btnXsmall.clone()
+        .css('margin-right', '5px')
         .attr('title', 'Edit')
         .append(spanGlyph.clone().addClass('glyphicon-edit'))
         .click(function() {
-            new NodeDialog('edit', self.node.name, self.node.description, self.node.type, function (data) {
+            new NodeDialog(self.node, function (data) {
                 window.open(inventoryPath + self.node.type + '/' + data.name + '/', '_self')
             });
         });
@@ -65,7 +66,7 @@ function Node(node, container) {
             self.infoTab.append(
                 divRow.clone().append(
                     divCol12.clone().append(
-                        $('<h4>').css('margin-botton', '30px').html(self.description),
+                        $('<h4>').css('margin-bottom', '30px').html(self.description),
                         self.editNodeBtn,
                         self.deleteNodeBtn
                     ),
@@ -95,14 +96,14 @@ function Node(node, container) {
         )
     );
 
-    if (self.node.type == 'group') self.descendants = new Descendants(node, self.nodeInfoContainer);
-    else new HostFacts(self.node.name, self.nodeInfoContainer);
+    if (self.node.type == 'group') self.descendants = new Descendants(self.node, self.nodeInfoContainer);
+    else new HostFacts(self.node, self.nodeInfoContainer);
 
-    self.variableTable = new VariableTable(self.node.name, self.node.type, self.variableTableContainer);
+    self.variableTable = new VariableTable(self.node, self.variableTableContainer);
 
-    new Relationships(self.node.name, self.node.type, alterRelationCallback, self.relationshipsContainer);
+    new Relationships(self.node, alterRelationCallback, self.relationshipsContainer);
 
-    new VariableForm({id: null}, 'add', self.node.name, self.node.type, saveVariableCallback, self.variableFormContainer);
+    new VariableForm({id: null}, 'add', self.node, saveVariableCallback, self.variableFormContainer);
 
     new AdHocTaskForm(self.node.name, 'command', {id: null}, self.commandFormContainer);
 

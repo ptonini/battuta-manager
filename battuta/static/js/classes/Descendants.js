@@ -1,7 +1,7 @@
 function Descendants (node, container) {
     var self = this;
 
-    self.group = node.name;
+    self.node = node;
 
     self.listOptions = {
         headerTag: '<h5>',
@@ -24,12 +24,12 @@ function Descendants (node, container) {
 
     self.groupList = $('<div>').data('nodeType', 'group').DynamicList($.extend({}, self.listOptions, {
         listTitle: 'Groups',
-        ajaxUrl: inventoryApiPath + 'group/' + self.group + '/descendants/?type=groups'
+        ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=groups'
     }));
 
     self.hostList = $('<div>').data('nodeType', 'host').DynamicList($.extend({}, self.listOptions, {
         listTitle: 'Hosts',
-        ajaxUrl: inventoryApiPath + 'group/' + self.group + '/descendants/?type=hosts'
+        ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=hosts'
     }));
 
     container.append(self.groupList, self.hostList);
@@ -38,6 +38,8 @@ function Descendants (node, container) {
 
 Descendants.prototype.reload = function () {
     var self = this;
+
     self.groupList.DynamicList('load');
+
     self.hostList.DynamicList('load')
 };

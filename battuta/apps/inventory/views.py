@@ -13,9 +13,6 @@ from .functions import inventory_to_dict
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
 
-# Create built-in group 'all' if not exists
-# Group.objects.get_or_create(name='all')
-
 
 class PageView(View):
 
@@ -59,13 +56,16 @@ class InventoryView(View):
                     data.append([node.name, node.id])
 
         elif action == 'export':
+
             if request.GET['format'] == 'json':
                 data = inventory_to_dict(internal_vars=False)
+
             else:
                 raise Http404('Invalid format')
 
         else:
             return Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type="application/json")
 
     @staticmethod
@@ -309,7 +309,7 @@ class NodeView(View):
         host_descendants = list()
 
         # Build node object
-        if node_name == '0':
+        if node_name == 'null':
             node = node_class()
         else:
             node = get_object_or_404(node_class, name=node_name)
@@ -526,15 +526,17 @@ class RelationsView(View):
             raise Http404('Invalid relation: ' + relation)
         return related_set, related_class
 
-    def get(self, request, node_type, node_name, relationship):
+    def get(self, request, node_type, node_name, relationship, action):
+
         node = NodeView.build_node(node_type, node_name)
+
         related_set, related_class = self.get_relationships(node, relationship)
 
-        if request.GET['list'] == 'related':
+        if action == 'related':
 
             data = [[related.name, related.id] for related in related_set.order_by('name')]
 
-        elif request.GET['list'] == 'not_related':
+        elif action == 'not_related':
 
             candidate_set = related_class.objects.order_by('name').exclude(name='all')
 
@@ -555,17 +557,17 @@ class RelationsView(View):
 
         return HttpResponse(json.dumps(data), content_type="application/json")
 
-    def post(self, request, node_type, node_name, relationship):
+    def post(self, request, node_type, node_name, relationship, action):
 
         node = NodeView.build_node(node_type, node_name)
 
         related_set, related_class = self.get_relationships(node, relationship)
 
-        if request.POST['action'] == 'add':
+        if action == 'add':
             for selected in request.POST.getlist('selection[]'):
                 related_set.add(get_object_or_404(related_class, pk=selected))
 
-        elif request.POST['action'] == 'remove':
+        elif action == 'remove':
 
             for selected in request.POST.getlist('selection[]'):
                 related_set.remove(get_object_or_404(related_class, pk=selected))

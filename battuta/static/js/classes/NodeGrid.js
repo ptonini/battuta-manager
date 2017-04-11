@@ -28,7 +28,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
             });
         },
         addButtonAction: function () {
-            new NodeDialog('add', null, null, nodeType, addCallback)
+            new NodeDialog({name: null, description: null, type: nodeType}, addCallback)
         }
     });
 

@@ -1,11 +1,12 @@
-function HostFacts(host, container) {
+function HostFacts(node, container) {
     var self = this;
 
-    self.host = host;
+    self.node = node;
+
     self.container = container;
 
     self.gatherFactsButton = btnXsmall.clone().html('Gather facts').click(function () {
-        gatherFacts(self.host, function () {
+        gatherFacts(self.node.name, function () {
             self.loadFacts()
         });
     });
@@ -19,7 +20,7 @@ HostFacts.prototype = {
         var self = this;
 
         $.ajax({
-            url: inventoryApiPath + 'host/' + self.host + '/facts/',
+            url: inventoryApiPath + 'host/' + self.node.name + '/facts/',
             dataType: 'json',
             success: function (data) {
                 if (data.result == 'ok') self._buildFacts(data.facts);

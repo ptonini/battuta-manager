@@ -11,7 +11,7 @@ function AdHocTaskForm (pattern, type, task, container) {
     self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
-        .click(function (event) {
+        .click(function () {
             new PatternBuilder(self.patternField)
         });
 
