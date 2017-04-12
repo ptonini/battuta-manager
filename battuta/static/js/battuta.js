@@ -258,9 +258,8 @@ function gatherFacts(nodeName, finishCallback) {
         var runnerId = sessionStorage.getItem(runner_key);
         if (runnerId) {
             $.ajax({
-                url: runnerPath + 'result/' + runnerId + '/',
+                url: runnerApiPath + 'results/' + runnerId + '/status/',
                 dataType: 'json',
-                data: {action: 'status'},
                 success: function (runner) {
                     if (!runner.is_running) {
                         finishCallback();
