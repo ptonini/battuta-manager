@@ -29,7 +29,8 @@ function UserTable(container) {
                                 type: 'POST',
                                 dataType: 'json',
                                 success: function () {
-                                    self.table.DataTable().ajax.reload()
+                                    self.table.DataTable().ajax.reload();
+                                    $.bootstrapGrowl('User deleted', {type: 'success'});
                                 }
                             });
                         })

@@ -245,15 +245,15 @@ function gatherFacts(nodeName, finishCallback) {
         become_pass: '',
         runner_key: runner_key
     };
+
     $.ajax({
-        url: '/users/credentials/',
-        type: 'GET',
+        url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/default/',
         dataType: 'json',
-        data: { action: 'default'},
         success: function (cred) {
             new AnsibleRunner(postData, cred);
         }
     });
+
     var intervalId = setInterval(function() {
         var runnerId = sessionStorage.getItem(runner_key);
         if (runnerId) {

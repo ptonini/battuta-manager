@@ -21,7 +21,4 @@ urlpatterns = [
 
     url(r'^api/([a-zA-Z0-9-._]+)/creds/([a-z]+)/$', login_required(views.CredentialView.as_view())),
 
-
-
-
 ]

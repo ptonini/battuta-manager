@@ -46,8 +46,10 @@ class InventoryView(View):
 
             if request.GET['type'] == 'host':
                 node_class = Host
+
             elif request.GET['type'] == 'group':
                 node_class = Group
+
             else:
                 return Http404('Invalid node type')
 

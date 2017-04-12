@@ -26,8 +26,8 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
             });
 
             $.ajax({
-                url: '/users/credentials/',
-                data: {action: 'get_one', cred_id: self.runner.cred},
+                url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/get/',
+                data: {cred_id: self.runner.cred},
                 success: function(data) {
                     if (data.result == 'ok') {
 

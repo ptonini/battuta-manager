@@ -83,7 +83,29 @@ function MainMenu(is_authenticated, is_superuser, container) {
         .append(spanGlyph.clone().addClass('glyphicon-log-out'));
 
     self.loginForm = $('<form>').attr('class', 'navbar-form').submit(function (event) {
-        self.submitLoginForm(event)
+        event.preventDefault();
+
+        var action;
+
+        if (self.is_authenticated) action = 'logout';
+        else action = 'login';
+
+        $.ajax({
+            url: usersApiPath + action + '/',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                username: self.loginFormUserField.val(),
+                password: self.loginFormPassField.val()
+            },
+            success: function (data) {
+                if (data.result == 'ok') window.open('/', '_self');
+                else if (data.result == 'fail') {
+                    self.loginFormPassField.val('');
+                    $.bootstrapGrowl(data.msg, failedAlertOptions);
+                }
+            }
+        });
     });
 
     self.rightMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
@@ -125,38 +147,6 @@ function MainMenu(is_authenticated, is_superuser, container) {
     }
 
 }
-
-MainMenu.prototype = {
-
-    submitLoginForm: function (event) {
-        var self = this;
-        var action;
-
-        event.preventDefault();
-
-        if (self.is_authenticated) action = 'logout';
-        else action = 'login';
-
-        $.ajax({
-            url: '/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: action,
-                username: self.loginFormUserField.val(),
-                password: self.loginFormPassField.val()
-            },
-            success: function (data) {
-                if (data.result == 'ok') window.open('/', '_self');
-                else if (data.result == 'fail') {
-                    self.loginFormPassField.val('');
-                    $.bootstrapGrowl(data.msg, failedAlertOptions);
-                }
-            }
-        });
-    }
-
-};
 
 
 
