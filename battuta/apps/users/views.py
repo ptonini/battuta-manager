@@ -87,6 +87,10 @@ class UsersView(View):
         return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+class LoginView(View):
+    pass
+
+
 class UserView(View):
 
     @staticmethod

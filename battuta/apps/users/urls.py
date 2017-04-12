@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^(?P<user_name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'edit'}),
 
 
-    url(r'^api/(login|logout)/$', views.UsersView.as_view()),
+    url(r'^api/(login|logout)/$', views.LoginView.as_view()),
 
     url(r'^api/([a-zA-Z0-9-._]+)/([a-z]+)/$', login_required(views.UsersView.as_view())),
 
