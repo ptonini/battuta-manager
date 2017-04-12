@@ -8,7 +8,7 @@ function UserTable(container) {
     self.container.append(self.table);
 
     self.table.DataTable({
-        ajax: {url: '/users/api/list/', dataSrc: ''},
+        ajax: {url: usersApiPath + 'all/list/', dataSrc: ''},
         columns: [
             {class: 'col-md-4', title: 'user', data: 'username'},
             {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
@@ -17,7 +17,7 @@ function UserTable(container) {
         ],
         rowCallback: function (row, user) {
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
-                window.open('/users/view/?user_id=' + user.id, '_self')
+                window.open(usersPath + user.username + '/', '_self')
             });
             $(row).find('td:eq(3)').append(
                 prettyBoolean($(row).find('td:eq(3)'), user.is_superuser),
@@ -25,10 +25,9 @@ function UserTable(container) {
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
                         new DeleteDialog(function () {
                             $.ajax({
-                                url: '/users/view/',
+                                url: usersApiPath + user.username + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
-                                data: {action: 'delete', user_id: user.id},
                                 success: function () {
                                     self.table.DataTable().ajax.reload()
                                 }

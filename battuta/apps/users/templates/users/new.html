@@ -1,5 +1,15 @@
 {% extends 'main/main.html' %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            document.title = 'Battuta - new user';
+
+            new UserForm({username: false}, $('#user_form_container'))
+
+        });
+    </script>
+{% endblock %}
 {% block content %}
-    <h3>New user</h3>
-    {% include 'users/user_form.html' with page='new' %}
+    <div id="user_form_container"></div>
 {% endblock %}

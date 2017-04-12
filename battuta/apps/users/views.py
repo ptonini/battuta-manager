@@ -22,38 +22,65 @@ class PageView(View):
 
         if kwargs['page'] == 'files':
 
-            return render(request, 'users/files.html', {'user': request.user})
+            return render(request, 'users/files.html')
 
         elif kwargs['page'] == 'list':
 
-            return render(request, 'users/list.html', {'user': request.user})
+            return render(request, 'users/list.html')
+
+        elif kwargs['page'] == 'new':
+
+            return render(request, 'users/new.html')
+
+        elif kwargs['page'] == 'edit':
+
+            return render(request, 'users/edit.html', {'user_name': kwargs['user_name']})
 
 
-class UsersApiView(View):
+class UsersView(View):
 
     @staticmethod
-    def get(request, action):
+    def _user_to_dict(user):
 
         prefs = get_preferences()
 
+        user_dict = model_to_dict(user)
+
+        tz = timezone(user.userdata.timezone)
+
+        user_dict['date_joined'] = user.date_joined.astimezone(tz).strftime(prefs['date_format'])
+        user_dict['timezone'] = user.userdata.timezone
+
+        if user.last_login is not None:
+            user_dict['last_login'] = user.last_login.astimezone(tz).strftime(prefs['date_format'])
+
+        user_dict.pop('password', None)
+
+        return user_dict
+
+    def get(self, request, user_name, action):
+
         if action == 'list':
 
-            data = list()
+            if user_name == request.user.username or request.user.is_superuser:
 
-            for user in User.objects.all():
+                data = list()
 
-                user_dict = model_to_dict(user)
+                for user in User.objects.all():
 
-                tz = timezone(user.userdata.timezone)
+                    data.append(self._user_to_dict(user))
 
-                user_dict['date_joined'] = user.date_joined.astimezone(tz).strftime(prefs['date_format'])
+            else:
+                raise PermissionDenied
 
-                if user.last_login is not None:
-                    user_dict['last_login'] = user.last_login.astimezone(tz).strftime(prefs['date_format'])
+        elif action == 'get':
 
-                user_dict.pop('password', None)
+            if user_name == request.user.username or request.user.is_superuser:
 
-                data.append(user_dict)
+                data = {'result': 'ok', 'user': self._user_to_dict(get_object_or_404(User, username=user_name))}
+
+            else:
+                raise PermissionDenied
         else:
             raise Http404('Invalid action')
 

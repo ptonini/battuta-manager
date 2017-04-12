@@ -1,22 +1,22 @@
 {% extends 'main/main.html' %}
-{% load staticfiles %}
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - {{ node_name }}';
+            document.title = 'Battuta - {{ user_name }}';
 
             $.ajax({
-                url: inventoryApiPath + '{{ node_type }}/{{ node_name }}/info/',
+                url: usersApiPath + '{{ user_name }}/get/',
                 dataType: 'json',
                 success: function (data) {
-                    if (data.result == 'ok') new Node(data.node, $('#node_container'))
+                    if (data.result == 'ok') new UserForm(data.user, $('#user_form_container'))
                 }
             });
+
 
         });
     </script>
 {% endblock %}
 {% block content %}
-    <div id="node_container"></div>
+    <div id="user_form_container"></div>
 {% endblock %}

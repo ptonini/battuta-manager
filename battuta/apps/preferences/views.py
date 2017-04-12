@@ -17,6 +17,7 @@ class PreferencesView(View):
         if action == 'basic':
 
             data = get_preferences()
+            data['user_name'] = request.user.username
             data['user_id'] = request.user.id
             data['user_timezone'] = request.user.userdata.timezone
 

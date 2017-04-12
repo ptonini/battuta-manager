@@ -9,8 +9,8 @@ function MainMenu(is_authenticated, is_superuser, container) {
 
     self.usersDropdownMenu = ulDropdownMenu.clone().append(
         $('<li>').append(
-            $('<a>').attr('href', '/users/view/').html('User profile'),
-            $('<a>').attr('href', '/users/files/').html('User files')
+            $('<a>').attr('href', usersPath + sessionStorage.getItem('user_name') + '/').html('User profile'),
+            $('<a>').attr('href', usersPath + 'files/').html('User files')
         )
     );
 
@@ -115,8 +115,8 @@ function MainMenu(is_authenticated, is_superuser, container) {
     if (self.is_superuser) {
 
         self.usersDropdownMenu.children('li').first().prepend(
-            $('<a>').attr('href', '/users/new/').html('New user'),
-            $('<a>').attr('href', '/users/list/').html('List users'),
+            $('<a>').attr('href', usersPath + 'new/').html('New user'),
+            $('<a>').attr('href', usersPath + 'list/').html('List users'),
             $('<li>').attr('class', 'divider')
         );
 

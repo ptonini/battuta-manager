@@ -6,19 +6,6 @@ $(document).ready(function () {
     var addPassword2 = $('#add_password2');
     var page;
 
-    if (window.location.href.split('/').indexOf('new') == -1) {
-        page = 'view';
-        document.title = 'Battuta - ' + $('h3').html();
-    }
-    else {
-        page = 'new';
-        document.title = 'Battuta - New user';
-    }
-
-    // Build timezone selection box
-    timezones.timezones();
-    if (userTimezone.val() != '') timezones.val(userTimezone.val());
-    else timezones.val(sessionStorage.getItem('default_timezone'));
 
     // Save user
     $('#user_form').submit(function (event) {

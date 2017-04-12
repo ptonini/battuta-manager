@@ -9,6 +9,9 @@ var inventoryApiPath = '/inventory/api/';
 var runnerPath = '/runner/';
 var runnerApiPath = '/runner/api/';
 
+var usersPath = '/users/';
+var usersApiPath = '/users/api/';
+
 // jQuery elements templates /////////////
 
 // Bootstrap Grip
