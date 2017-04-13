@@ -74,7 +74,13 @@
             //     }, 200);
             // });
 
-            new MainMenu('{{ user.is_authenticated }}', '{{ user.is_superuser }}', $('#menu_container'))
+            {% if user.is_authenticated %}
+            var isAuthenticated = 'True';
+            {% else %}
+            var isAuthenticated = 'False';
+            {% endif %}
+
+            new MainMenu(isAuthenticated, '{{ user.is_superuser }}', $('#menu_container'))
 
         })
     </script>

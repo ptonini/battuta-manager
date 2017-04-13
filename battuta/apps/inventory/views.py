@@ -355,6 +355,8 @@ class NodeView(View):
 
             node_dict = model_to_dict(node)
             node_dict['type'] = node.type
+            node_dict.pop('members', None)
+            node_dict.pop('children', None)
 
             data = {'result': 'ok', 'node': node_dict}
 
