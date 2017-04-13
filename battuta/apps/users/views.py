@@ -45,20 +45,22 @@ class UsersView(View):
 
         prefs = get_preferences()
 
-        user_dict = user.__dict__
-
         tz = timezone(user.userdata.timezone)
 
-        user_dict['date_joined'] = user.date_joined.astimezone(tz).strftime(prefs['date_format'])
-        user_dict['timezone'] = user.userdata.timezone
+        user_dict = {
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'date_joined': user.date_joined.astimezone(tz).strftime(prefs['date_format']),
+            'timezone': user.userdata.timezone,
+            'is_active': user.is_active,
+            'is_superuser': user.is_superuser,
+            'last_login': user.last_login
+        }
 
         if user.last_login is not None:
             user_dict['last_login'] = user.last_login.astimezone(tz).strftime(prefs['date_format'])
-
-        # user_dict.pop('_state', None)
-        # user_dict.pop('_password', None)
-        # user_dict.pop('password', None)
-
 
         return user_dict
 
@@ -167,6 +169,7 @@ class UsersView(View):
 
                 else:
                     raise PermissionDenied
+
             else:
                 data = {'result': 'fail', 'msg': 'Invalid password'}
 
@@ -378,6 +381,8 @@ class CredentialView(View):
             # Raise error
             else:
                 raise Http404('Invalid action')
+
         else:
             raise PermissionDenied
+
         return HttpResponse(json.dumps(data), content_type="application/json")
