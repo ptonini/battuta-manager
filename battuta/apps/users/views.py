@@ -45,7 +45,7 @@ class UsersView(View):
 
         prefs = get_preferences()
 
-        user_dict = model_to_dict(user)
+        user_dict = user.__dict__
 
         tz = timezone(user.userdata.timezone)
 
@@ -55,7 +55,10 @@ class UsersView(View):
         if user.last_login is not None:
             user_dict['last_login'] = user.last_login.astimezone(tz).strftime(prefs['date_format'])
 
-        user_dict.pop('password', None)
+        # user_dict.pop('_state', None)
+        # user_dict.pop('_password', None)
+        # user_dict.pop('password', None)
+
 
         return user_dict
 
