@@ -182,7 +182,7 @@ class RunnerView(View):
 
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class AdHocView(View):
@@ -242,7 +242,7 @@ class AdHocView(View):
 
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
@@ -279,7 +279,7 @@ class AdHocView(View):
 
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class PlaybookView(View):
@@ -375,7 +375,7 @@ class HistoryView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(data, content_type="application/json")
+        return HttpResponse(data, content_type='application/json')
 
 
 class BaseView(View):
@@ -423,4 +423,4 @@ class ResultView(BaseView):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')

@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.conf import settings
 
 from .functions import get_preferences, get_default_value
+
 from models import Item
 
 
@@ -35,7 +36,7 @@ class PreferencesView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
@@ -55,4 +56,4 @@ class PreferencesView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')

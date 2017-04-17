@@ -6,7 +6,18 @@
 
             document.title = 'Battuta - Playbooks';
 
-            var playbookTable = new FileTable('playbooks', nameCellFormatter, $('#playbook_table_container'));
+            function nameCellFormatter(cell, file) {
+
+                cell.css('cursor', 'pointer');
+
+                if (file.is_valid) cell.off().click(function () {
+                    new PlaybookForm(file)
+                });
+                else cell.css('color', 'red').off().click(function () {
+                    var message = preLargeAlert.clone().html(file.error);
+                    $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+                })
+            }
 
             var buttons = [
                 btnSmall.clone().html('New playbook').click(function () {
@@ -22,25 +33,14 @@
                 })
             ];
 
+            var playbookTable = new FileTable('playbooks', nameCellFormatter, $('#playbook_table_container'));
+
             playbookTable.addButtons(buttons);
 
-            function nameCellFormatter(cell, file) {
-                cell.css('cursor', 'pointer');
-
-                if (file.is_valid) cell.off().click(function () {
-                    new PlaybookForm(file)
-                });
-                else cell.css('color', 'red').off().click(function () {
-                    var message = preLargeAlert.clone().html(file.error);
-                    $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
-                })
-            }
         });
     </script>
 {% endblock %}
 {% block content %}
     <h3>Playbooks</h3>
-    <div class="row">
-        <div id="playbook_table_container" class="col-md-12"></div>
-    </div>
+    <div id="playbook_table_container"></div>
 {% endblock %}

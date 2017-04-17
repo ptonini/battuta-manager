@@ -90,7 +90,7 @@ class UsersView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, user_name, action):
 
@@ -176,7 +176,7 @@ class UsersView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class LoginView(View):
@@ -208,7 +208,7 @@ class LoginView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class CredentialView(View):
@@ -273,7 +273,7 @@ class CredentialView(View):
         else:
             raise PermissionDenied
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, user_name, action):
@@ -385,4 +385,4 @@ class CredentialView(View):
         else:
             raise PermissionDenied
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')

@@ -8,10 +8,10 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
 
-from . import AnsibleInventory
-from .functions import inventory_to_dict
 from .models import Host, Group, Variable
 from .forms import HostForm, GroupForm, VariableForm
+
+from .extras.inventory import AnsibleInventory
 
 
 class PageView(View):
@@ -39,7 +39,7 @@ class InventoryView(View):
     def get(request, action):
 
         if action == 'get':
-            data = inventory_to_dict()
+            data = AnsibleInventory.to_dict()
 
         elif action == 'search':
             data = list()
@@ -60,7 +60,7 @@ class InventoryView(View):
         elif action == 'export':
 
             if request.GET['format'] == 'json':
-                data = inventory_to_dict(internal_vars=False)
+                data = AnsibleInventory.to_dict(internal_vars=False)
 
             else:
                 raise Http404('Invalid format')
@@ -68,7 +68,7 @@ class InventoryView(View):
         else:
             return Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
@@ -183,7 +183,7 @@ class InventoryView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class NodesView(View):
@@ -254,7 +254,7 @@ class NodesView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, node_type_plural, action):
@@ -285,7 +285,7 @@ class NodesView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class NodeView(View):
@@ -384,7 +384,7 @@ class NodeView(View):
 
         else:
             raise Http404('Invalid action')
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, node_type, node_name, action):
         node = self.build_node(node_type, node_name)
@@ -413,7 +413,7 @@ class NodeView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class VariablesView(View):
@@ -466,7 +466,7 @@ class VariablesView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, node_type, node_name, action):
@@ -511,7 +511,7 @@ class VariablesView(View):
         else:
             raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class RelationsView(View):
@@ -559,7 +559,7 @@ class RelationsView(View):
         else:
             raise Http404('Invalid request')
 
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, node_type, node_name, relationship, action):
 
@@ -578,4 +578,4 @@ class RelationsView(View):
 
         else:
             raise Http404('Invalid action')
-        return HttpResponse(json.dumps({'result': 'ok'}), content_type="application/json")
+        return HttpResponse(json.dumps({'result': 'ok'}), content_type='application/json')
