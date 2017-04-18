@@ -8,10 +8,9 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
 
-from .models import Host, Group, Variable
-from .forms import HostForm, GroupForm, VariableForm
-
-from .extras.inventory import AnsibleInventory
+from apps.inventory.models import Host, Group, Variable
+from apps.inventory.forms import HostForm, GroupForm, VariableForm
+from apps.inventory.extras import BattutaInventory
 
 
 class PageView(View):
@@ -39,7 +38,7 @@ class InventoryView(View):
     def get(request, action):
 
         if action == 'get':
-            data = AnsibleInventory.to_dict()
+            data = BattutaInventory.to_dict()
 
         elif action == 'search':
             data = list()
@@ -60,7 +59,7 @@ class InventoryView(View):
         elif action == 'export':
 
             if request.GET['format'] == 'json':
-                data = AnsibleInventory.to_dict(internal_vars=False)
+                data = BattutaInventory.to_dict(internal_vars=False)
 
             else:
                 raise Http404('Invalid format')
@@ -119,9 +118,11 @@ class InventoryView(View):
                     # Load JSON data
                     try:
                         json_data = json.load(temp)
+
                     except ValueError:
                         data['result'] = 'failed'
                         data['msg'] = 'Error: File does not contain valid JSON'
+
                     else:
 
                         # Iterate over JSON data host vars
@@ -175,6 +176,7 @@ class InventoryView(View):
                                         var.value = value
                                         var.save()
                             group.save()
+
                         data['result'] = 'ok'
 
                 else:
@@ -424,7 +426,7 @@ class VariablesView(View):
 
         if action == 'list':
             variables = dict()
-            inventory = AnsibleInventory()
+            inventory = BattutaInventory()
 
             for var in node.variable_set.all():
                 variables[var.key] = [{'key': var.key, 'value': var.value, 'source': '', 'id': var.id, 'primary': True}]
@@ -515,19 +517,25 @@ class VariablesView(View):
 
 
 class RelationsView(View):
+
     @staticmethod
     def get_relationships(node, relation):
+
         if relation == 'parents':
             related_set = node.group_set
             related_class = Group
+
         elif relation == 'children':
             related_set = node.children
             related_class = Group
+
         elif relation == 'members':
             related_set = node.members
             related_class = Host
+
         else:
             raise Http404('Invalid relation: ' + relation)
+
         return related_set, related_class
 
     def get(self, request, node_type, node_name, relationship, action):

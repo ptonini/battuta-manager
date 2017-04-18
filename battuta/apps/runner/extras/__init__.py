@@ -12,7 +12,7 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible import constants as c
 from django.conf import settings
 
-from .callbacks import BattutaCallback
+from apps.runner.extras.callbacks import BattutaCallback
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)

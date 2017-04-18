@@ -12,13 +12,15 @@ from django.forms import model_to_dict
 from pytz import timezone
 from multiprocessing import Process
 
-from .models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
-from .forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
-from .functions import play_runner
+from main.extras import DataTableRequestHandler
 
-from main import DataTableRequestHandler
+from apps.runner.models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
+from apps.runner.forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
+from apps.runner.extras import play_runner
+
 from apps.users.models import Credential
-from apps.preferences.functions import get_preferences
+
+from apps.preferences.extras import get_preferences
 
 
 class PageView(View):

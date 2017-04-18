@@ -5,9 +5,9 @@ from django.http import HttpResponse, Http404
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
 
-from .functions import get_preferences, get_default_value
 
-from models import Item
+from apps.preferences.models import Item
+from apps.preferences.extras import get_preferences, get_default_value
 
 
 class PreferencesView(View):

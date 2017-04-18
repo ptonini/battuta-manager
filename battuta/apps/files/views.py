@@ -13,14 +13,14 @@ from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
 from pytz import timezone, utc
 
-from apps.preferences.functions import get_preferences
+from apps.preferences.extras import get_preferences
 
 
 class PageView(View):
 
     @staticmethod
     def get(request):
-        return render(request, 'fileman/files.html', {'user': request.user})
+        return render(request, 'files/files.html', {'user': request.user})
 
 
 class FilesView(View):

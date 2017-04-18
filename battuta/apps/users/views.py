@@ -10,10 +10,10 @@ from django.forms import model_to_dict
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, login, logout
 
+from apps.users.models import User, UserData, Credential
+from apps.users.forms import UserForm, UserDataForm, CredentialForm
 
-from .models import User, UserData, Credential
-from .forms import UserForm, UserDataForm, CredentialForm
-from apps.preferences.functions import get_preferences
+from apps.preferences.extras import get_preferences
 
 
 class PageView(View):

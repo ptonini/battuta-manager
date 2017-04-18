@@ -1,5 +1,6 @@
 from django.conf import settings
-from models import Item
+
+from apps.preferences.models import Item
 
 
 def get_preferences():
