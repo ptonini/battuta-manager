@@ -7,9 +7,9 @@ function NodeTable(nodeType, addCallback, container) {
 
     container.html(self.table);
 
-    if (self.type == 'host') {
+    if (self.type === 'host') {
 
-        if (sessionStorage.getItem('use_ec2_facts') == 'true') self.columns = [
+        if (sessionStorage.getItem('use_ec2_facts') === 'true') self.columns = [
             {class: 'col-md-2', title: 'Host', data: 'name'},
             {class: 'col-md-2', title: 'Address', data: 'address'},
             {class: 'col-md-2', title: 'Public address', data: 'public_address'},
@@ -31,13 +31,13 @@ function NodeTable(nodeType, addCallback, container) {
         ];
     }
 
-    else if (self.type == 'group') self.columns = [
+    else if (self.type === 'group') self.columns = [
         {class: 'col-md-2', title: 'Group', data: 'name'},
         {class: 'col-md-4', title: 'Description', data: 'description'},
         {class: 'col-md-1', title: 'Members', data: 'members'},
         {class: 'col-md-1', title: 'Parents', data: 'parents'},
         {class: 'col-md-1', title: 'Children', data: 'children'},
-        {class: 'col-md-1', title: 'Variable', data: 'variables'},
+        {class: 'col-md-1', title: 'Variables', data: 'variables'},
         {class: 'col-md-1', title: '', defaultContent: ''}
     ];
 
@@ -57,7 +57,7 @@ function NodeTable(nodeType, addCallback, container) {
                     window.open(inventoryPath + self.type + '/' + data.name + '/', '_self')
                 });
 
-            if (self.type != 'group' || data.name != 'all') $(row).find('td:last').html(
+            if (self.type !== 'group' || data.name !== 'all') $(row).find('td:last').html(
                 spanRight.clone().append(
                     spanGlyph.clone()
                         .addClass('glyphicon-trash btn-incell')
@@ -80,8 +80,8 @@ function NodeTable(nodeType, addCallback, container) {
                 )
             );
 
-            if (self.type == 'host') {
-                if (sessionStorage.getItem('use_ec2_facts') == 'true') {
+            if (self.type === 'host') {
+                if (sessionStorage.getItem('use_ec2_facts') === 'true') {
                     if (data.memory) $(row).find('td:eq(5)').html(humanBytes(data.memory, 'MB'));
                     if (data.disc) $(row).find('td:eq(6)').html(humanBytes(data.disc))
                 }

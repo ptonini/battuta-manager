@@ -99,7 +99,7 @@ AnsibleRunner._postJob = function (postData, sameWindow) {
         dataType: 'json',
         data: postData,
         success: function (data) {
-            if (data.result == 'ok') {
+            if (data.result === 'ok') {
 
                 var resultUrl = runnerPath + 'results/' + data.runner_id + '/';
 
@@ -109,7 +109,7 @@ AnsibleRunner._postJob = function (postData, sameWindow) {
 
                 else {
                     var windowTitle;
-                    if (sessionStorage.getItem('single_job_window') == 'true') windowTitle = 'battuta_result_window';
+                    if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
                     else windowTitle = data.runner_id;
                     popupCenter(resultUrl, windowTitle, 1000);
                 }

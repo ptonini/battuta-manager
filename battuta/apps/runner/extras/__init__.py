@@ -81,11 +81,11 @@ def play_runner(runner):
         runner.data['show_skipped'] = True
         runner.data['check'] = True
 
-    if 'tags' not in runner.data or runner.data['tags'] == '':
-        runner.data['tags'] = None
+    if 'tags' not in runner.data:
+        runner.data['tags'] = ''
 
-    if 'skip_tags' not in runner.data or runner.data['skip_tags'] == '':
-        runner.data['skip_tags'] = None
+    if 'skip_tags' not in runner.data:
+        runner.data['skip_tags'] = ''
 
     if 'extra_vars' not in runner.data or runner.data['extra_vars'] == '':
         runner.data['extra_vars'] = []
@@ -164,11 +164,14 @@ def play_runner(runner):
         message = 'Invalid runner data'
 
     with db_conn as cursor:
+
         cursor.execute('SELECT failed_count FROM runner_runnerplay WHERE runner_id=%s', (runner.id,))
+
         for row in cursor.fetchall():
             if row[0] != 0:
                 status = 'finished with errors'
                 break
+
         cursor.execute('UPDATE runner_runner SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
                        (status, message, runner.id))
 
