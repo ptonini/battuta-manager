@@ -32,7 +32,7 @@ function UploadDialog(folder, root, uploadCallback) {
         .on('fileuploaded', function (event, data) {
             self.uploadDialog.dialog('close');
             if (data.response.result == 'fail') $.bootstrapGrowl(data.response.msg, failedAlertOptions);
-            else if (uploadCallback) uploadCallback()
+            else uploadCallback && uploadCallback()
         });
 
     self.uploadDialog

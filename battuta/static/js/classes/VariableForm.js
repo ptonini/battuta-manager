@@ -76,7 +76,7 @@ VariableForm.postVariable = function (variable, action, node, successCallback) {
         dataType: 'json',
         data: variable,
         success: function(data) {
-            if (data.result == 'ok') if (successCallback) successCallback();
+            if (data.result == 'ok') successCallback && successCallback();
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
         }
     });

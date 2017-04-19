@@ -66,7 +66,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
             // Adjust windows for printing
             document.title = pageTitle.replace('.yml', '');
-            self.resultContainer.css({'font-size': 'smaller', 'padding-top': '0px'})
+            self.resultContainer.css({'font-size': 'smaller', 'padding-top': '0px'});
 
             if (self.runner.stats && self.runner.stats.length > 0) self.resultContainer.append(
                 statsContainer.css('font-size', 'smaller').append(new Statistics(self.runner.stats, false))
@@ -153,7 +153,7 @@ RunnerResults.prototype = {
         var self = this;
 
         $.ajax({
-            url: runnerApiPath + 'results/' + self.runnerId + '/status/',
+            url: runnerApiPath + 'runner/' + self.runnerId + '/',
             success: function (runner) {
                 self.runner = runner;
                 if (successCallback) successCallback()
@@ -328,7 +328,7 @@ RunnerResults.prototype = {
                         )
                     }
 
-                    if (task.module == 'include') self.taskContainers[task.id].counter.remove()
+                    if (task.module == 'include') self.taskContainers[task.id].counter.remove();
 
                     else {
 
@@ -338,18 +338,17 @@ RunnerResults.prototype = {
                             searching: false,
                             info: false,
                             ajax: {
-                                url: runnerApiPath + 'results/' + self.runnerId + '/task_results/',
-                                dataSrc: 'results',
-                                data: {task_id: task.id}
+                                url: runnerApiPath + 'task/' + task.id + '/',
+                                dataSrc: 'results'
                             },
                             columns: [
                                 {class: 'col-md-3', title: 'host', data: 'host'},
                                 {class: 'col-md-2', title: 'status', data: 'status'},
                                 {class: 'col-md-7', title: 'message', data: 'message'}
                             ],
-                            rowCallback: function (row, data) {
+                            rowCallback: function (row, result) {
 
-                                switch (data.status) {
+                                switch (result.status) {
                                     case 'unreachable':
                                         $(row).css('color', 'gray');
                                         break;
@@ -367,22 +366,30 @@ RunnerResults.prototype = {
 
                                 var rowApi = this.api().row(row);
 
-                                var jsonContainer = $('<div>')
-                                    .attr('class', 'well')
-                                    .JSONView(data.response, {'collapsed': true});
-
                                 if (!self.runner.is_running) {
 
                                     $(row).css('cursor', 'pointer').click(function () {
 
                                         if (rowApi.child.isShown()) {
-                                            $(row).css('font-weight', 'normal');
+                                            $(row).empty().css('font-weight', 'normal');
                                             rowApi.child.hide()
                                         }
 
                                         else {
-                                            rowApi.child(jsonContainer).show();
-                                            $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                            $.ajax({
+                                                url: runnerApiPath + 'result/' + result.id + '/',
+                                                dataType: 'json',
+                                                success: function (data) {
+
+                                                    var jsonContainer = $('<div>')
+                                                        .attr('class', 'well')
+                                                        .JSONView(data.response, {'collapsed': true});
+
+                                                    rowApi.child(jsonContainer).show();
+                                                    $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                                }
+                                            });
+
                                         }
 
                                     })

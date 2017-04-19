@@ -35,7 +35,7 @@ function FileDialog(file, action, postCallback) {
                             success: function (data) {
                                 if (data.result == 'ok') {
                                     self.fileDialog.dialog('close');
-                                    if (postCallback) postCallback();
+                                    postCallback && postCallback();
                                     $.bootstrapGrowl(self.file.new_name + ' saved', {type: 'success'});
                                 }
                                 else $.bootstrapGrowl(data.msg, failedAlertOptions);

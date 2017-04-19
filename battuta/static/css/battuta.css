@@ -75,6 +75,7 @@ ul.ui-autocomplete {z-index: 999; max-height: 300px; overflow-y: auto; overflow-
 
 .ui-widget-content {border: none}
 
+
 /* DataTables options ****************/
 
 .table.dataTable { table-layout: fixed; border-bottom: 2px solid lightgrey}

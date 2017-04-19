@@ -19,12 +19,16 @@ urlpatterns = [
 
     url(r'^api/(run|kill)/$', login_required(views.RunnerView.as_view())),
 
+    url(r'^api/runner/([0-9]+)/$', login_required(views.RunnerView.as_view())),
+
+    url(r'^api/task/([0-9]+)/$', login_required(views.TaskView.as_view())),
+
+    url(r'^api/result/([0-9]+)/$', login_required(views.ResultView.as_view())),
+
     url(r'^api/playbooks/([a-zA-Z0-9-._]+)/([a-z]+)/$', login_required(views.PlaybookView.as_view())),
 
     url(r'^api/history/([a-z]+)/$', login_required(views.HistoryView.as_view())),
 
     url(r'^api/adhoc/([a-z]+)/$', login_required(views.AdHocView.as_view())),
-
-    url(r'^api/results/([0-9]+)/([a-z_]+)/$', login_required(views.ResultView.as_view())),
 
 ]

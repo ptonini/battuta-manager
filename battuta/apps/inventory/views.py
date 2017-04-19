@@ -2,8 +2,13 @@ import json
 import csv
 import tempfile
 import collections
+import os
+import shutil
+import ntpath
+import ConfigParser
+import yaml
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
@@ -35,7 +40,13 @@ class PageView(View):
 class InventoryView(View):
 
     @staticmethod
-    def get(request, action):
+    def _create_node_var_file(node, folder):
+        with open(os.path.join(folder, node.name), 'w+') as vars_file:
+            vars_file.write('---\n')
+            for var in node.variable_set.all():
+                vars_file.write(yaml.safe_dump({var.key: var.value}, default_flow_style=False))
+
+    def get(self, request, action):
 
         if action == 'get':
             data = BattutaInventory.to_dict()
@@ -50,7 +61,7 @@ class InventoryView(View):
                 node_class = Group
 
             else:
-                return Http404('Invalid node type')
+                raise Http404('Invalid node type')
 
             for node in node_class.objects.order_by('name'):
                 if node.name.find(request.GET['pattern']) > -1:
@@ -60,6 +71,55 @@ class InventoryView(View):
 
             if request.GET['format'] == 'json':
                 data = BattutaInventory.to_dict(internal_vars=False)
+
+            elif request.GET['format'] == 'zip':
+
+                temp_dir = tempfile.mkdtemp()
+
+                os.makedirs(os.path.join(temp_dir, 'group_vars'))
+                os.makedirs(os.path.join(temp_dir, 'host_vars'))
+
+                with open(os.path.join(temp_dir, 'hosts'), 'w+') as hosts_file:
+
+                    config = ConfigParser.ConfigParser(allow_no_value=True)
+
+                    for group in Group.objects.all():
+
+                        if len(group.members.all()) > 0:
+
+                            config.add_section(group.name)
+
+                            for host in group.members.all():
+                                config.set(group.name, host.name)
+
+                        if len(group.children.all()) > 0:
+
+                            section_name = group.name + ':children'
+
+                            config.add_section(section_name)
+
+                            for child in group.children.all():
+                                config.set(section_name, child.name)
+
+                        if len(group.variable_set.all()) > 0:
+                            self._create_node_var_file(group, os.path.join(temp_dir, 'group_vars'))
+
+                    config.write(hosts_file)
+
+                for host in Host.objects.all():
+                    if len(host.variable_set.all()) > 0:
+                        self._create_node_var_file(host, os.path.join(temp_dir, 'host_vars'))
+
+                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), 'inventory'), 'zip', temp_dir)
+
+                stream = StreamingHttpResponse((line for line in open(target, 'r')))
+                stream['Content-Length'] = os.path.getsize(target)
+                stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
+
+                os.remove(target)
+                shutil.rmtree(temp_dir)
+
+                return stream
 
             else:
                 raise Http404('Invalid format')

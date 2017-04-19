@@ -358,6 +358,7 @@ class CredentialView(View):
 
             # Delete credential
             elif request.POST['action'] == 'delete':
+
                 cred = get_object_or_404(Credential, pk=request.POST['id'])
 
                 # List users using this credential as default

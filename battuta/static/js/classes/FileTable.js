@@ -1,9 +1,9 @@
-function FileTable(root, nameCellFormater, container) {
+function FileTable(root, nameCellFormatter, container) {
     var self = this;
 
     self.root = root;
     self.folder = '';
-    self.nameCellFormater = nameCellFormater;
+    self.nameCellFormatter = nameCellFormatter;
     self.container = container;
     self.createFolderOnly = false;
 
@@ -151,7 +151,8 @@ FileTable.prototype = {
                         }
                         self.table.DataTable().ajax.reload();
                     });
-                else if (self.nameCellFormater) self.nameCellFormater($(row).find('td:eq(0)'), object);
+
+                else self.nameCellFormatter && self.nameCellFormatter($(row).find('td:eq(0)'), object);
 
                 $(row).find('td:eq(2)').html(humanBytes(object.size));
 

@@ -18,13 +18,13 @@ function SelectNodesDialog(nodeType, url, showButtons, loadCallback, addButtonAc
             maxColumnWidth: sessionStorage.getItem('node_list_modal_max_column_width'),
             ajaxUrl: url,
             loadCallback: function (listContainer) {
-                if (loadCallback) loadCallback(listContainer, self.selectDialog)
+                loadCallback && loadCallback(listContainer, self.selectDialog)
             },
             addButtonAction: function () {
-                if (addButtonAction) addButtonAction(self.selectDialog)
+                addButtonAction && addButtonAction(self.selectDialog)
             },
             formatItem: function(listItem) {
-                if (formatItem) formatItem(listItem, self.selectDialog)
+                formatItem && formatItem(listItem, self.selectDialog)
             }
         })
         .dialog({

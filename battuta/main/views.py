@@ -10,8 +10,8 @@ class PageView(View):
 
         if kwargs['page'] == 'main':
 
-            context  = {'is_authenticated': request.user.is_authenticated(),
-                        'is_superuser': request.user.is_superuser}
+            context = {'is_authenticated': request.user.is_authenticated(),
+                       'is_superuser': request.user.is_superuser}
 
             return render(request, 'main/main.html', context)
 

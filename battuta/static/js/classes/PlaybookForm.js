@@ -241,5 +241,5 @@ PlaybookForm.prototype = {
             }
         });
     }
-}
+};
 

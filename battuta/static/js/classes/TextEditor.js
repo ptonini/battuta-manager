@@ -46,7 +46,7 @@ function TextEditor(file, saveCallback) {
                         data: self.file,
                         success: function (data) {
                             if (data.result == 'ok') {
-                                if (saveCallback) saveCallback();
+                                saveCallback && saveCallback();
                                 self.editorDialog.dialog('close');
                                 $.bootstrapGrowl(formName + ' saved', {type: 'success'});
                             }

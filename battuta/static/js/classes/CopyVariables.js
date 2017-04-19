@@ -55,7 +55,7 @@ CopyVariables.prototype = {
                     success: function () {
                         selectNodeDialog.dialog('close');
                         $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
-                        if (self.copyCallback) self.copyCallback()
+                        self.copyCallback && self.copyCallback()
                     }
                 });
             });

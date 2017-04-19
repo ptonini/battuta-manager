@@ -57,7 +57,7 @@ function NodeTable(nodeType, addCallback, container) {
                     window.open(inventoryPath + self.type + '/' + data.name + '/', '_self')
                 });
 
-            if (self.type != 'group' || data.name != 'all') $(row).find('td:last').append(
+            if (self.type != 'group' || data.name != 'all') $(row).find('td:last').html(
                 spanRight.clone().append(
                     spanGlyph.clone()
                         .addClass('glyphicon-trash btn-incell')

@@ -20,6 +20,7 @@ function ExportInventory(container) {
                 });
                 break;
             case 'zip':
+                window.open(inventoryApiPath + 'export/?format=zip', '_self');
                 break
         }
     });
@@ -37,7 +38,7 @@ function ExportInventory(container) {
                     ),
                     divRadio.clone().prop('disabled', true).append(
                         $('<label>').append(
-                            radioInput.clone().attr({name: 'export_file_type', value: 'zip'}).prop('disabled', true),
+                            radioInput.clone().attr({name: 'export_file_type', value: 'zip'}).prop('disabled', false),
                             'Ansible inventory'
                         )
                     )

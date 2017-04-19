@@ -4,27 +4,33 @@
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit:400|Actor">
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery-ui.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/css/dataTables.bootstrap.min.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.3.2/css/fileinput.min.css">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-ui/themes/base/jquery-ui.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap-fileinput/css/fileinput.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-jsonview/dist/jquery.jsonview.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/font-awesome/css/font-awesome.min.css' %}"/>
+
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dynamiclist.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.bootstrap-growl.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/battuta.css' %}"/>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/dataTables.bootstrap.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/b-1.2.4/b-flash-1.2.4/b-html5-1.2.4/datatables.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/4.3.2/js/fileinput.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.8.1/js-yaml.min.js"></script>
-    <script type="text/javascript" src="{% static 'js/plugins/timezones.full.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'components/jquery/dist/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap-fileinput/js/fileinput.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/buttons.html5.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons-bs/js/buttons.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/jquery-jsonview/dist/jquery.jsonview.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/js-yaml/dist/js-yaml.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/timezones/dist/timezones.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ace.js' %}"></script>
+
     <script type="text/javascript" src="{% static 'js/plugins/jquery.bootstrap-growl.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/plugins/jquery.dynamiclist.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/battuta.js' %}"></script>
@@ -62,6 +68,7 @@
     <script type="text/javascript" src="{% static 'js/classes/UserForm.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/VariableForm.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/VariableTable.js' %}"></script>
+
     <script type="text/javascript">
         $(document).ready(function () {
 
@@ -74,13 +81,7 @@
             //     }, 200);
             // });
 
-            {% if user.is_authenticated %}
-            var isAuthenticated = 'True';
-            {% else %}
-            var isAuthenticated = 'False';
-            {% endif %}
-
-            new MainMenu(isAuthenticated, '{{ user.is_superuser }}', $('#menu_container'))
+            new MainMenu('{% if user.is_authenticated %}True{% endif %}', '{{ user.is_superuser }}', $('#menu_container'))
 
         })
     </script>

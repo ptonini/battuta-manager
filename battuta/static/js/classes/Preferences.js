@@ -232,7 +232,7 @@ Preferences.prototype = {
                 dataType: 'json',
                 success: function() {
                     Preferences.getPreferences();
-                    if (saveCallback) saveCallback()
+                    saveCallback && saveCallback()
                 }
             })
         }

@@ -30,7 +30,7 @@ function NodeDialog(node, saveCallback) {
                 success: function (data) {
                     if (data.result == 'ok') {
                         self.dialog.dialog('close');
-                        if (saveCallback) saveCallback(data);
+                        saveCallback && saveCallback(data);
                     }
                     else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
                 }

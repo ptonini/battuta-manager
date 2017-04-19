@@ -14,7 +14,7 @@ from multiprocessing import Process
 
 from main.extras import DataTableRequestHandler
 
-from apps.runner.models import AdHocTask, Runner, RunnerPlay, RunnerTask, PlaybookArgs
+from apps.runner.models import AdHocTask, Runner, RunnerPlay, RunnerTask, RunnerResult, PlaybookArgs
 from apps.runner.forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
 from apps.runner.extras import play_runner
 
@@ -50,6 +50,32 @@ class PageView(View):
 
 
 class RunnerView(View):
+
+    @staticmethod
+    def get(request, runner_id):
+        runner = get_object_or_404(Runner, pk=runner_id)
+
+        prefs = get_preferences()
+
+        tz = timezone(runner.user.userdata.timezone)
+
+        # Convert runner object to dict
+        data = model_to_dict(runner)
+
+        data['username'] = runner.user.username
+        data['created_on'] = runner.created_on.astimezone(tz).strftime(prefs['date_format'])
+
+        # Convert status string to dict
+        if runner.stats:
+            data['stats'] = ast.literal_eval(runner.stats)
+
+        # Add plays to runner data
+        data['plays'] = list()
+        for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
+            play['tasks'] = [task for task in RunnerTask.objects.filter(runner_play_id=play['id']).values()]
+            data['plays'].append(play)
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
@@ -380,49 +406,30 @@ class HistoryView(View):
         return HttpResponse(data, content_type='application/json')
 
 
-class BaseView(View):
-    def __init__(self):
-        super(BaseView, self).__init__()
-        self.prefs = get_preferences()
-        self.context = dict()
+class TaskView(View):
+
+    @staticmethod
+    def get(request, task_id):
+
+        task = get_object_or_404(RunnerTask, pk=task_id)
+
+        data = model_to_dict(task)
+        data['results'] = list()
+
+        for result in task.runnerresult_set.all().values():
+            result.pop('response', None)
+            data['results'].append(result)
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class ResultView(BaseView):
-    def get(self, request, runner_id, action):
-        runner = get_object_or_404(Runner, pk=runner_id)
+class ResultView(View):
 
-        if action == 'status':
+    @staticmethod
+    def get(request, result_id):
+        result = get_object_or_404(RunnerResult, pk=result_id)
 
-            tz = timezone(runner.user.userdata.timezone)
-
-            # Convert runner object to dict
-            data = model_to_dict(runner)
-
-            data['username'] = runner.user.username
-            data['created_on'] = runner.created_on.astimezone(tz).strftime(self.prefs['date_format'])
-
-            # Convert status string to dict
-            if runner.stats:
-                data['stats'] = ast.literal_eval(runner.stats)
-
-            # Add plays to runner data
-            data['plays'] = list()
-            for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
-                play['tasks'] = [task for task in RunnerTask.objects.filter(runner_play_id=play['id']).values()]
-                data['plays'].append(play)
-
-        elif action == 'task_results':
-
-            task = get_object_or_404(RunnerTask, pk=request.GET['task_id'])
-
-            data = model_to_dict(task)
-            data['results'] = list()
-
-            for result in task.runnerresult_set.all().values():
-                result['response'] = json.loads(result['response'])
-                data['results'].append(result)
-
-        else:
-            raise Http404('Invalid action')
+        data = model_to_dict(result)
+        data['response'] = json.loads(result.response)
 
         return HttpResponse(json.dumps(data), content_type='application/json')

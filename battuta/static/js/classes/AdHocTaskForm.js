@@ -79,7 +79,7 @@ AdHocTaskForm.postTask = function (task, action, postCallback) {
         dataType: 'json',
         data: task,
         success: function (data) {
-            if (data.result == 'ok') if (postCallback) postCallback();
+            if (data.result == 'ok') postCallback && postCallback();
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
         }
     });
