@@ -92,6 +92,12 @@ DEFAULT_PREFERENCES = [
         'description': '',
         'items': [
             {
+                'name': 'ansible_servers',
+                'value': '127.0.0.1',
+                'data_type': 'str',
+                'description': "Ansible servers allowed to use inventory (comma separated IP's)"
+            },
+            {
                 'name': 'date_format',
                 'value': '%Y-%m-%d %H:%M:%S',
                 'data_type': 'str',

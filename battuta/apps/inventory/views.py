@@ -9,6 +9,7 @@ import ConfigParser
 import yaml
 
 from django.http import HttpResponse, Http404, StreamingHttpResponse
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
@@ -17,6 +18,7 @@ from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import BattutaInventory
 
+from apps.preferences.extras import get_preferences
 
 class PageView(View):
 
@@ -41,15 +43,30 @@ class InventoryView(View):
 
     @staticmethod
     def _create_node_var_file(node, folder):
-        with open(os.path.join(folder, node.name), 'w+') as vars_file:
+        with open(os.path.join(folder, node.name + '.yml'), 'w+') as vars_file:
             vars_file.write('---\n')
             for var in node.variable_set.all():
                 vars_file.write(yaml.safe_dump({var.key: var.value}, default_flow_style=False))
 
     def get(self, request, action):
 
+        prefs = get_preferences()
+
         if action == 'get':
-            data = BattutaInventory.to_dict()
+
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+
+            if request.user.is_authenticated or ip in prefs['ansible_servers'].split(','):
+
+                data = BattutaInventory.to_dict()
+
+            else:
+                raise PermissionDenied
 
         elif action == 'search':
             data = list()
