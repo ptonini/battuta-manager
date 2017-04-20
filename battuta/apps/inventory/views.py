@@ -20,6 +20,7 @@ from apps.inventory.extras import BattutaInventory
 
 from apps.preferences.extras import get_preferences
 
+
 class PageView(View):
 
     @staticmethod

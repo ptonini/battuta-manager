@@ -330,7 +330,7 @@ RunnerResults.prototype = {
 
                     if (task.module == 'include') self.taskContainers[task.id].counter.remove();
 
-                    else {
+                    else if (task.host_count > 0) {
 
                         var taskTable = baseTable.clone();
                         taskTable.DataTable({
@@ -401,7 +401,7 @@ RunnerResults.prototype = {
                                 var task = this.api().ajax.json();
                                 var rowCount = this.api().rows().count();
 
-                                if (task) self.taskContainers[task.id].counter.html('(' + rowCount + ' of ' + task.host_count + ')');
+                                task && self.taskContainers[task.id].counter.html('(' + rowCount + ' of ' + task.host_count + ')');
 
                             }
                         });
