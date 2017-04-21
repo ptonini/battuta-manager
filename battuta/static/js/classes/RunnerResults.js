@@ -477,21 +477,27 @@ RunnerResults.prototype = {
     _updateResultTable: function (intervalId, taskTable) {
         var self = this;
 
-        taskTable.DataTable().ajax.reload(null, false);
+        if (taskTable) {
 
-        var task = taskTable.DataTable().ajax.json();
+            taskTable.DataTable().ajax.reload(null, false);
 
-        // Hide table if host count is 0
-        if (task.host_count == 0) {
-            taskTable.hide();
-            clearInterval(intervalId)
-        }
+            var task = taskTable.DataTable().ajax.json();
 
-        if (self.runner.status == 'canceled' ||
-            task.host_count == taskTable.DataTable().rows().count() ||
-            task.is_handler && !self.runner.is_running) {
+            // Hide table if host count is 0
+            if (task.host_count === 0) {
+                taskTable.hide();
+                clearInterval(intervalId)
+            }
+
+            if (self.runner.status === 'canceled' ||
+                task.host_count === taskTable.DataTable().rows().count() ||
+                task.is_handler && !self.runner.is_running) {
                 clearInterval(intervalId);
             }
+        }
+
+        else clearInterval(intervalId)
+
     }
 
 };
