@@ -12,14 +12,24 @@ class BattutaInventory:
     @staticmethod
     def to_dict(internal_vars=True):
 
-        data = {'_meta': {'hostvars': dict()}}
+        data = {
+            '_meta': {'hostvars': dict()},
+            'ungrouped': {'hosts': list()}
+        }
 
         for host in Host.objects.order_by('name'):
+
             if host.variable_set.all().exists() or host.description:
 
                 data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
+
                 if host.description and not internal_vars:
+
                     data['_meta']['hostvars'][host.name]['_description'] = host.description
+
+            if host.group_set.count() == 0 and internal_vars:
+
+                data['ungrouped']['hosts'].append(host.name)
 
         for group in Group.objects.order_by('name'):
             data[group.name] = dict()
