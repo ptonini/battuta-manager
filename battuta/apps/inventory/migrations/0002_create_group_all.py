@@ -6,8 +6,8 @@ from django.db import migrations
 
 
 def create_group_all(apps, schema_editor):
-    Group = apps('inventory', 'Group')
-    Group.objects.get_or_greate(name='all')
+    Group = apps.get_model('inventory', 'Group')
+    Group.objects.get_or_create(name='all')
 
 
 class Migration(migrations.Migration):

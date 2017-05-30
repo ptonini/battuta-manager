@@ -146,7 +146,7 @@ class UsersView(View):
 
         elif action == 'delete':
 
-            if request.user.is_superuser:
+            if request.user.is_superuser and request.user != user:
 
                 user.userdata.delete()
                 user.delete()
