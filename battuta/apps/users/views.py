@@ -184,11 +184,18 @@ class LoginView(View):
     @staticmethod
     def post(request, action):
 
+        prefs = get_preferences()
+
         if action == 'login':
 
             user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
 
             if user:
+
+                try:
+                    user.userdata
+                except UserData.DoesNotExist:
+                    UserData.objects.get_or_create(user=user, timezone=prefs['default_timezone'])
 
                 if user.is_active:
                     login(request, user)
