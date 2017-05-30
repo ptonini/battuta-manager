@@ -6,14 +6,14 @@ function Relationships(node, alterRelationCallback, container) {
     self.alterRelationCallback = alterRelationCallback;
 
 
-    if (node.type == 'group') self.relations = ['parents', 'children', 'members'];
+    if (node.type === 'group') self.relations = ['parents', 'children', 'members'];
     else self.relations = ['parents'];
 
     $.each(self.relations, function (index, relation) {
 
         var relationType;
 
-        if (relation == 'parents' || relation == 'children') relationType = 'group';
+        if (relation === 'parents' || relation === 'children') relationType = 'group';
         else relationType = 'host';
 
         self[relation] = $('<div>').DynamicList({
@@ -62,7 +62,7 @@ function Relationships(node, alterRelationCallback, container) {
                     });
                 };
                 var addButtonAction = function (selectNodesDialog) {
-                    new NodeDialog({name: null, description: null, type: self.node.type}, function () {
+                    new NodeDialog({name: null, description: null, type: relationType}, function () {
                         selectNodesDialog.DynamicList('load')
                     })
                 };
