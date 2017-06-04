@@ -1,6 +1,6 @@
 ---
 - name: Deploy M2M Monitor
-  hosts: m2m-monitoria:!znh
+  hosts: m2m-monitoria
   become: yes
   vars:
       mode: deploy
@@ -13,5 +13,5 @@
     
     - role: m2m-watchdog
       config: 'service'
-      when: mode == 'install'
+      when: (mode == 'install') or (mode == 'config')
 

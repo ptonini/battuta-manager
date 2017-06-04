@@ -21,13 +21,13 @@ var divCol1 = $('<div>').attr('class', 'col-md-1');
 var divCol2 = $('<div>').attr('class', 'col-md-2');
 var divCol3 = $('<div>').attr('class', 'col-md-3');
 var divCol4 = $('<div>').attr('class', 'col-md-4');
-var divCol5 = $('<div>').attr('class', 'col-md-5');
+// var divCol5 = $('<div>').attr('class', 'col-md-5');
 var divCol6 = $('<div>').attr('class', 'col-md-6');
-var divCol7 = $('<div>').attr('class', 'col-md-7');
+// var divCol7 = $('<div>').attr('class', 'col-md-7');
 var divCol8 = $('<div>').attr('class', 'col-md-8');
 var divCol9 = $('<div>').attr('class', 'col-md-9');
 var divCol10 = $('<div>').attr('class', 'col-md-10');
-var divCol11 = $('<div>').attr('class', 'col-md-11');
+// var divCol11 = $('<div>').attr('class', 'col-md-11');
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
 // Bootstrap tables
@@ -83,11 +83,11 @@ var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'
 // Get cookie
 function getCookie(name) {
     var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
+    if (document.cookie && document.cookie !== '') {
         var cookies = document.cookie.split(';');
         for (var i = 0; i < cookies.length; i++) {
             var cookie = jQuery.trim(cookies[i]);
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
@@ -113,7 +113,7 @@ $.ajaxSetup({
 
 // Set AJAX default error handling
 $(document).ajaxError(function (event, xhr) {
-    if (xhr.status == 500) $('body').html($('pre').html(xhr.responseText));
+    if (xhr.status === 500) $('body').html($('pre').html(xhr.responseText));
     else $('body').html(xhr.responseText);
 });
 
@@ -188,10 +188,10 @@ function rememberSelectedTab(tabId) {
 function humanBytes(value, suffix) {
 
     if (suffix) {
-        if (suffix == 'KB') value = value * 1024;
-        else if (suffix == 'MB') value = value * 1048576;
-        else if (suffix == 'GB') value = value * 1073741824;
-        else if (suffix == 'TB') value = value * 1099511627776;
+        if (suffix === 'KB') value = value * 1024;
+        else if (suffix === 'MB') value = value * 1048576;
+        else if (suffix === 'GB') value = value * 1073741824;
+        else if (suffix === 'TB') value = value * 1099511627776;
     }
     else suffix = ' B';
 
@@ -228,22 +228,21 @@ function popupCenter(url, title, w) {
     var h = height - 50;
     var left = ((width / 2) - (w / 2)) + dualScreenLeft;
     var top = ((height / 2) - (h / 2)) + dualScreenTop;
-    var newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left
-    );
+    var newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
 
     // Puts focus on the newWindow
     if (window.focus) newWindow.focus();
 }
 
 function gatherFacts(nodeName, finishCallback) {
-    var runner_key = 'runner_' + Math.random().toString(36).substring(2, 10);
+    var runnerKey = 'runner_' + Math.random().toString(36).substring(2, 10);
     var postData = {
         action: 'run',
         type: 'gather_facts',
         hosts: nodeName,
         remote_pass: '',
         become_pass: '',
-        runner_key: runner_key
+        runner_key: runnerKey
     };
 
     $.ajax({
@@ -255,7 +254,7 @@ function gatherFacts(nodeName, finishCallback) {
     });
 
     var intervalId = setInterval(function() {
-        var runnerId = sessionStorage.getItem(runner_key);
+        var runnerId = sessionStorage.getItem(runnerKey);
         if (runnerId) {
             $.ajax({
                 url: runnerApiPath + 'runner/' + runnerId + '/',

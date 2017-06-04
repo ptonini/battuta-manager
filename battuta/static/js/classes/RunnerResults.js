@@ -29,7 +29,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
                 url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/get/',
                 data: {cred_id: self.runner.cred},
                 success: function(data) {
-                    if (data.result == 'ok') {
+                    if (data.result === 'ok') {
 
                         new AnsibleRunner({
                             type: 'playbook',
@@ -91,7 +91,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
                 dataType: 'json',
                 data: {runner_id: self.runner.id},
                 success: function (data) {
-                    if (data.result == 'ok') $.bootstrapGrowl('Job canceled', {type: 'success'});
+                    if (data.result === 'ok') $.bootstrapGrowl('Job canceled', {type: 'success'});
                     else $.bootstrapGrowl(data.msg, failedAlertOptions)
                 }
             })
@@ -258,7 +258,7 @@ RunnerResults.prototype = {
             if (!self.playContainers.hasOwnProperty(play.id)) {
 
                 // Set playbook only elements
-                if (self.runner.type == 'playbook' || self.runner.type == 'gather_facts') {
+                if (self.runner.type === 'playbook' || self.runner.type === 'gather_facts') {
                     var separator = $('<hr>');
                     var headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
                     var headerLastLine = divCol12.clone().html('Tasks:');
@@ -290,7 +290,7 @@ RunnerResults.prototype = {
                 self.resultContainer.append(self.playContainers[play.id])
             }
 
-            if (play.host_count == 0) self.playContainers[play.id].append(
+            if (play.host_count ===0) self.playContainers[play.id].append(
                 $('<pre>').css('margin-top', '20px').html('No hosts matched')
             );
 
@@ -308,14 +308,14 @@ RunnerResults.prototype = {
                         self.taskContainers[task.id].counter
                     );
 
-                    if (self.runner.type == 'playbook' || self.runner.type == 'gather_facts') {
+                    if (self.runner.type === 'playbook' || self.runner.type === 'gather_facts') {
                         self.taskContainers[task.id].header.append(
                             divCol12.clone()
                                 .css('margin-top', '10px')
                                 .html(self.taskContainers[task.id].title)
                         )
                     }
-                    else if (self.runner.type == 'adhoc') {
+                    else if (self.runner.type === 'adhoc') {
                         self.taskContainers[task.id].header.append(
                             self.divColInfo.clone().append(
                                 divRow.clone().append(
@@ -328,7 +328,7 @@ RunnerResults.prototype = {
                         )
                     }
 
-                    if (task.module == 'include') self.taskContainers[task.id].counter.remove();
+                    if (task.module === 'include') self.taskContainers[task.id].counter.remove();
 
                     else if (task.host_count > 0) {
 
@@ -468,7 +468,7 @@ RunnerResults.prototype = {
 
         }
 
-        if (self.runner.type != 'playbook') {
+        if (self.runner.type !== 'playbook') {
             self.playbookOnlyFields.hide();
             self.rerunButton.remove();
         }

@@ -9,9 +9,13 @@ function PatternBuilder(patternField) {
         divRowEqHeight.clone().css('margin-bottom', '15px').append(
             divCol6.clone().append($('<h4>').html('Pattern builder')),
             divCol6.clone().addClass('text-right').css('margin', 'auto').append(
-                $('<small>').html('patterns reference').attr('class', 'reference_link').click(function () {
-                    window.open('http://docs.ansible.com/ansible/intro_patterns.html', '_blank')
-                })
+                $('<a>').attr({
+                    href: 'http://docs.ansible.com/ansible/intro_patterns.html',
+                    title: 'http://docs.ansible.com/ansible/intro_patterns.html',
+                    target: '_blank'
+                }).append(
+                    $('<small>').html('patterns reference')
+                )
             )
         ),
         divRow.clone().append(

@@ -1,22 +1,24 @@
 ---
 - name: Update m2m-worker properties
   gather_facts: no
-  hosts: m2m-worker:m2m-worker-rep:m2m-worker-sin:!znh
+  hosts: m2m-worker:m2m-worker-rep:m2m-worker-sin:m2m-adapter
   become: yes
 
   tasks:
     - name: Update worker properties
-      replace: dest=/opt/{{ item }}/config.properties
-               regexp="^clientes=.*"
-               replace="clientes={{ clientes }}"
+      replace: 
+        dest: "/opt/{{ item.service }}/config.properties"
+        regexp: "^{{ item.parameter }}=.*"
+        replace: "{{ item.parameter }}={{ clientes }}"
 
-      when: "'{{ item }}' in group_names"
+      when: "'{{ item.service }}' in group_names"
       notify:
-        - Restart {{ item }}
+        - Restart {{ item.service }}
       with_items:
-        - m2m-worker
-        - m2m-worker-rep
-        - m2m-worker-sin
+        - { service: m2m-worker, parameter: clientes }
+        - { service: m2m-worker-rep, parameter: clientes }
+        - { service: m2m-worker-sin, parameter: clientes }
+        - { service: m2m-adapter, parameter: adapter_clientes_comandos }
 
   handlers:
     - name: Restart m2m-worker
@@ -27,3 +29,6 @@
 
     - name: Restart m2m-worker-sin
       service: name=m2m-worker-sin state=restarted
+    
+    - name: Restart m2m-adapter
+      service: name=m2m-adapter state=restarted

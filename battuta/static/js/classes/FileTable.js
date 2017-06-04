@@ -28,19 +28,18 @@ function FileTable(root, nameCellFormatter, container) {
                 .val(self.folder)
                 .css('width', self.breadCrumb.width() * .90 + 'px')
                 .keypress(function (event) {
-                    if (event.keyCode == 13) {
+                    if (event.keyCode === 13) {
                         var fieldValue = self.pathInputField.val();
-                        if (fieldValue.charAt(fieldValue.length - 1) == '/') {
+                        if (fieldValue.charAt(fieldValue.length - 1) === '/') {
                             fieldValue = fieldValue.substr(0, fieldValue.length - 1)
                         }
                         $.ajax({
                             url: filesApiPath+ self.root + '/exists/',
                             data: {name: fieldValue, type: 'directory'},
                             success: function (data) {
-                                if (data.result == 'ok') {
-                                    self.folder = fieldValue;
-                                    self.table.DataTable().ajax.reload();
-                                }
+
+                                if (data.result === 'ok') self.setFolder(fieldValue);
+
                                 else $.bootstrapGrowl(data.msg, failedAlertOptions);
                             }
                         });
@@ -50,8 +49,7 @@ function FileTable(root, nameCellFormatter, container) {
     });
 
     self.rootPath = $('<li>').attr('id', 'root_path').html('&lt;root&gt;').click(function () {
-        self.folder = '';
-        self.table.DataTable().ajax.reload()
+        self.setFolder('')
     });
 
     self.breadCrumb = breadcrumb.clone().attr('id', 'path_links').append(self.rootPath, self.editPath);
@@ -75,11 +73,10 @@ function FileTable(root, nameCellFormatter, container) {
 
     self.previousFolderRow = $('<tr>').attr('role', 'row').append(
         $('<td>').html('<strong>..</strong>').css('cursor', 'pointer').click(function () {
-            self.folder = self.previousFolder;
             var folderArray = self.previousFolder.split('/');
             folderArray.pop();
             self.previousFolder = folderArray.join('/');
-            self.table.DataTable().ajax.reload()
+            self.setFolder(self.previousFolder);
         }),
         $('<td>'),
         $('<td>'),
@@ -101,7 +98,7 @@ function FileTable(root, nameCellFormatter, container) {
             url: filesApiPath + self.root + '/exists/',
             data: {folder: self.folder, type: 'directory'},
             success: function (data) {
-                if (data.result == 'failed') self.folder = '';
+                if (data.result === 'failed') self.folder = '';
                 self._buildTable()
             }
         });
@@ -137,19 +134,18 @@ FileTable.prototype = {
             order: [[0, 'asc']],
             rowCallback: function (row, object) {
 
-                if (object.type == 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
+                if (object.type === 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                     .css({'cursor': 'pointer', 'font-weight': '700'})
                     .off('click')
                     .click(function () {
                         if (object.folder) {
-                            self.folder = object.folder + '/' + object.name;
-                            self.previousFolder = object.folder
+                            self.previousFolder = object.folder;
+                            self.setFolder(object.folder + '/' + object.name)
                         }
                         else {
-                            self.folder = object.name;
                             self.previousFolder = '';
+                            self.setFolder(object.name)
                         }
-                        self.table.DataTable().ajax.reload();
                     });
 
                 else self.nameCellFormatter && self.nameCellFormatter($(row).find('td:eq(0)'), object);
@@ -161,13 +157,13 @@ FileTable.prototype = {
                     spanRight.clone().append(
                         spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
 
-                            if (object.type.split('/')[0] == 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
+                            if (object.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
                                 $.ajax({
                                     url: filesApiPath + self.root + '/read/',
                                     dataType: 'json',
                                     data: object,
                                     success: function (data) {
-                                        if (data.result == 'ok') {
+                                        if (data.result === 'ok') {
                                             object.text = data.text;
                                             new TextEditor(object, self.table.DataTable().ajax.reload);
                                         }
@@ -204,7 +200,7 @@ FileTable.prototype = {
                                         dataType: 'json',
                                         data: object,
                                         success: function (data) {
-                                            if (data.result == 'ok') {
+                                            if (data.result === 'ok') {
                                                 self.table.DataTable().ajax.reload();
                                                 $.bootstrapGrowl(object.name + ' was deleted', {type: 'success'})
                                             }
@@ -228,8 +224,6 @@ FileTable.prototype = {
                     $('.dataTables_empty').parent().remove();
                     self.table.prepend(self.previousFolderRow)
                 }
-
-                self.table.DataTable().search('');
             }
         });
 
@@ -252,8 +246,7 @@ FileTable.prototype = {
                             if (i < index) nextFolder += '/'
                         }
                         $(this).nextAll('.path_link').remove();
-                        self.folder = nextFolder;
-                        self.table.DataTable().ajax.reload();
+                        self.setFolder(nextFolder)
                     })
             )
         });
@@ -271,6 +264,7 @@ FileTable.prototype = {
         var self = this;
 
         self.folder = folder;
+        self.table.DataTable().search('');
         self.table.DataTable().ajax.reload()
     },
 
@@ -286,4 +280,4 @@ FileTable.prototype = {
         self.table.DataTable().ajax.reload()
     }
 
-}
+};

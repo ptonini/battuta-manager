@@ -7,6 +7,7 @@ import magic
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
+from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from django.forms import model_to_dict
 from pytz import timezone
@@ -89,9 +90,16 @@ class RunnerView(View):
 
             # Add credentials to run data
             if 'cred' not in run_data or run_data['cred'] == '0':
+
                 cred = request.user.userdata.default_cred
+
             else:
+
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
+
+                if cred.user != request.user and not cred.is_shared:
+
+                    raise PermissionDenied
 
             run_data['cred'] = cred.id
 
@@ -112,7 +120,7 @@ class RunnerView(View):
 
             if cred.rsa_key:
                 run_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
-                                                   str(request.user.username),
+                                                   str(cred.user.username),
                                                    '.ssh',
                                                    cred.rsa_key)
 
@@ -126,10 +134,7 @@ class RunnerView(View):
                 adhoc_form = AdHocTaskForm(run_data)
 
                 # Convert become value to boolean
-                if run_data['become'] == 'true':
-                    run_data['become'] = True
-                else:
-                    run_data['become'] = False
+                run_data['become'] = (run_data['become'] == 'true')
 
                 if adhoc_form.is_valid():
                     run_data['adhoc_task'] = {

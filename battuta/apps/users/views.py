@@ -45,6 +45,22 @@ class UsersView(View):
 
         prefs = get_preferences()
 
+        try:
+
+            user.userdata
+
+        except UserData.DoesNotExist:
+
+            UserData.objects.get_or_create(user=user, timezone=prefs['default_timezone'])
+
+        if user.userdata.default_cred is None:
+
+            cred, created = Credential.objects.get_or_create(user=user, username=user.username, title='Default')
+
+            user.userdata.default_cred = cred
+
+            user.userdata.save()
+
         tz = timezone(user.userdata.timezone)
 
         user_dict = {
@@ -184,32 +200,30 @@ class LoginView(View):
     @staticmethod
     def post(request, action):
 
-        prefs = get_preferences()
-
         if action == 'login':
 
             user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
 
             if user:
 
-                try:
-                    user.userdata
-                except UserData.DoesNotExist:
-                    UserData.objects.get_or_create(user=user, timezone=prefs['default_timezone'])
-
                 if user.is_active:
+
                     login(request, user)
+
                     data = {'result': 'ok'}
 
                 else:
+
                     data = {'result': 'fail', 'msg': 'Account disabled'}
 
             else:
+
                 data = {'result': 'fail', 'msg': 'Invalid login'}
 
         elif action == 'logout':
 
             logout(request)
+
             data = {'result': 'ok'}
 
         else:
@@ -224,10 +238,13 @@ class CredentialView(View):
     def _truncate_secure_data(cred):
 
         prefs = get_preferences()
+
         if cred['password']:
+
             cred['password'] = prefs['password_placeholder']
 
         if cred['sudo_pass']:
+
             cred['sudo_pass'] = prefs['password_placeholder']
 
         return cred
@@ -244,13 +261,7 @@ class CredentialView(View):
 
                 for cred in Credential.objects.filter(user=user).values():
 
-                    if cred['id'] == user.userdata.default_cred.id:
-
-                        cred['is_default'] = True
-
-                    else:
-
-                        cred['is_default'] = False
+                    cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
 
                     data.append(self._truncate_secure_data(cred))
 
@@ -267,11 +278,15 @@ class CredentialView(View):
                 data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
 
             elif action == 'get':
+
                 cred = get_object_or_404(Credential, pk=request.GET['cred_id'])
 
                 if request.user.is_superuser or request.user is cred.user or cred.is_shared:
+
                     data = {'result': 'ok', 'cred': self._truncate_secure_data(model_to_dict(cred))}
+
                 else:
+
                     raise PermissionDenied
 
             else:

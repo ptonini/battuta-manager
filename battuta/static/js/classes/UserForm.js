@@ -86,7 +86,7 @@ function UserForm(user, container) {
                     dataType: 'json',
                     data: postData,
                     success: function (data) {
-                        if (data.result == 'ok') {
+                        if (data.result === 'ok') {
                             if (self.user.username) $.bootstrapGrowl('User saved', {type: 'success'});
                             else window.open(usersPath + data.user.username + '/', '_self')
                         }
@@ -109,7 +109,7 @@ function UserForm(user, container) {
                 postData.username = self.usernameField.val();
                 postData.password = self.passwordField.val();
 
-                if (postData.password == self.retypePasswordField.val()) saveUser(postData);
+                if (postData.password === self.retypePasswordField.val()) saveUser(postData);
 
                 else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
             }
@@ -158,7 +158,7 @@ function UserForm(user, container) {
             };
 
             if (data.current_password) {
-                if (data.new_password && data.new_password == self.retypeNewPassword.val()) {
+                if (data.new_password && data.new_password === self.retypeNewPassword.val()) {
                     $.ajax({
                         url: usersApiPath + self.user.username + '/chgpass/',
                         type: 'POST',
@@ -166,14 +166,14 @@ function UserForm(user, container) {
                         data: data,
                         success: function (data) {
 
-                            if (data.result == 'ok') $.bootstrapGrowl('The password was changed', {type: 'success'});
+                            if (data.result === 'ok') $.bootstrapGrowl('The password was changed', {type: 'success'});
 
                             else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                         }
                     });
                 }
-                else if (data.new_password != self.retypeNewPassword.val()) {
+                else if (data.new_password !== self.retypeNewPassword.val()) {
                     $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
                 }
             }

@@ -33,7 +33,7 @@ function Node(node, container) {
                     type: 'POST',
                     dataType: 'json',
                     success: function (data) {
-                        if (data.result == 'ok') window.open(inventoryPath + self.node.type + 's/', '_self')
+                        if (data.result === 'ok') window.open(inventoryPath + self.node.type + 's/', '_self')
                     }
                 });
             })
@@ -96,7 +96,7 @@ function Node(node, container) {
         )
     );
 
-    if (self.node.type == 'group') self.descendants = new Descendants(self.node, self.nodeInfoContainer);
+    if (self.node.type === 'group') self.descendants = new Descendants(self.node, self.nodeInfoContainer);
     else new HostFacts(self.node, self.nodeInfoContainer);
 
     self.variableTable = new VariableTable(self.node, self.variableTableContainer);
@@ -118,7 +118,7 @@ function Node(node, container) {
         if (typeof self.descendants !== 'undefined') self.descendants.reload();
     }
 
-    if (self.node.name == 'all') {
+    if (self.node.name === 'all') {
         self.tabsHeader.remove();
         self.infoTab.removeClass('in active');
         self.variablesTab.addClass('in active')

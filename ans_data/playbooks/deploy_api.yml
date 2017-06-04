@@ -1,6 +1,6 @@
 ---
 - name: Deploy API
-  hosts: m2m-api:!znh
+  hosts: m2m-api
   become: yes
   vars:
       mode: deploy
@@ -19,4 +19,4 @@
     
     - role: m2m-watchdog
       config: 'service'
-      when: mode == 'install'
+      when:  (mode == 'install') or (mode == 'config')

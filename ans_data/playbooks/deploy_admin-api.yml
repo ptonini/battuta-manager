@@ -6,11 +6,4 @@
       mode: deploy
   
   roles:
-    - role: nodejs 
-      when: mode == 'install'
-
-    - role: m2m-admin-api
-
-    - role: m2m-watchdog
-      config: 'service'
-      when: mode == 'install'
+    - m2m-admin-api

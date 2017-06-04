@@ -1,6 +1,6 @@
 ---
 - name: Deploy Worker Integracao
-  hosts: m2m-worker-int:!znh
+  hosts: m2m-worker-int
   become: yes
   vars:
     mode: deploy

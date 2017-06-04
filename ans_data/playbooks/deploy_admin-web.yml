@@ -1,7 +1,7 @@
 ---
 - name: Deploy M2M Admin WebApp
   gather_facts: False
-  hosts: m2m-admin-web:!znh
+  hosts: m2m-admin-web
   become: yes
   vars:
     mode: 'deploy'

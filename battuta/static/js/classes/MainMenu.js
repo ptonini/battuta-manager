@@ -1,9 +1,9 @@
 function MainMenu(is_authenticated, is_superuser, container) {
     var self = this;
 
-    self.is_authenticated = (is_authenticated == 'True');
+    self.is_authenticated = (is_authenticated === 'True');
 
-    self.is_superuser = (is_superuser == 'True');
+    self.is_superuser = (is_superuser === 'True');
 
     if (self.is_authenticated) Preferences.getPreferences();
 
@@ -99,8 +99,8 @@ function MainMenu(is_authenticated, is_superuser, container) {
                 password: self.loginFormPassField.val()
             },
             success: function (data) {
-                if (data.result == 'ok') window.open('/', '_self');
-                else if (data.result == 'fail') {
+                if (data.result === 'ok') window.open('/', '_self');
+                else if (data.result === 'fail') {
                     self.loginFormPassField.val('');
                     $.bootstrapGrowl(data.msg, failedAlertOptions);
                 }

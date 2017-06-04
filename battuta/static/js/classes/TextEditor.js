@@ -13,7 +13,7 @@ function TextEditor(file, saveCallback) {
 
     self.buttonGroup = divBtnGroup.clone().css('margin-top', '18px').append(self.reloadButton);
 
-    self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey');
+    self.textEditorContainer = $('<div>').css('border', 'solid 1px lightgrey').attr('contenteditable', 'true');
 
     self.fileNameField = textInputField.clone();
 

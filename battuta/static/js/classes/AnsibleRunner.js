@@ -12,7 +12,7 @@ function AnsibleRunner(postData, cred, sameWindow) {
     self.askSudoUser = false;
     self.askSudoPass = false;
 
-    if (cred.id == 0) {
+    if (cred.id === 0) {
         self.askUser = true;
         self.askUserPass = true;
         //self.askSudoUser = true;
@@ -84,7 +84,7 @@ function AnsibleRunner(postData, cred, sameWindow) {
             })
             .dialog('open')
             .keypress(function (event) {
-                if (event.keyCode == 13) $('.ui-button-text:contains("Run")').parent('button').click()
+                if (event.keyCode === 13) $('.ui-button-text:contains("Run")').parent('button').click()
             })
     }
 

@@ -11,8 +11,12 @@ function AdHocTaskForm (pattern, type, task, container) {
     self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
         .html(spanGlyph.clone().addClass('glyphicon-edit'))
-        .click(function () {
+        .click(function (event) {
+
+            event.preventDefault();
+
             new PatternBuilder(self.patternField)
+
         });
 
     self.patternFieldGroup = divFormGroup.clone().append(
@@ -30,10 +34,12 @@ function AdHocTaskForm (pattern, type, task, container) {
 
     self.credentialsSelector = selectField.clone();
 
-    Credentials.buildSelectionBox(self.credentialsSelector);
+    Credentials.buildSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
 
     self.form = $('<form>').submit(function (event) {
+
         event.preventDefault();
+
         self._submitForm()
     });
 
@@ -41,14 +47,16 @@ function AdHocTaskForm (pattern, type, task, container) {
 
     self._buildForm();
 
-
     if (pattern) {
+
         self.patternField.val(pattern).prop('disabled', true);
+
         self.patternEditorButton.prop('disabled', true)
     }
 
-    if (self.type == 'command') container.append(self.form);
-    else if (self.type == 'dialog') self.dialog.dialog('open');
+    if (self.type === 'command') container.append(self.form);
+
+    else if (self.type === 'dialog') self.dialog.dialog('open');
 }
 
 AdHocTaskForm.copyTask = function (task, copyCallback) {
@@ -79,7 +87,7 @@ AdHocTaskForm.postTask = function (task, action, postCallback) {
         dataType: 'json',
         data: task,
         success: function (data) {
-            if (data.result == 'ok') postCallback && postCallback();
+            if (data.result === 'ok') postCallback && postCallback();
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
         }
     });
@@ -89,7 +97,7 @@ AdHocTaskForm.jsonToString = function (dataObj) {
     var dataString = '';
 
     Object.keys(dataObj).forEach(function (key) {
-        if (key != 'otherArgs' && dataObj[key]) dataString += key + '=' + dataObj[key] + ' ';
+        if (key !== 'otherArgs' && dataObj[key]) dataString += key + '=' + dataObj[key] + ' ';
     });
 
     return dataString + dataObj['otherArgs']
@@ -114,14 +122,14 @@ AdHocTaskForm.prototype = {
 
         var arguments;
 
-        if (self.type == 'dialog') {
+        if (self.type === 'dialog') {
             var argsObj = self._formToJson();
 
-            if (self.action == 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
-            else if (self.action == 'save') arguments = argsObj;
+            if (self.action === 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
+            else if (self.action === 'save') arguments = argsObj;
         }
 
-        else if (self.type == 'command') arguments = self.argumentsField.val();
+        else if (self.type === 'command') arguments = self.argumentsField.val();
 
         var task = {
             type: 'adhoc',
@@ -133,9 +141,9 @@ AdHocTaskForm.prototype = {
             id: self.task.id
         };
 
-        if (self.action == 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
+        if (self.action === 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
 
-        else if (self.action == 'save') AdHocTaskForm.saveTask(task, function () {
+        else if (self.action === 'save') AdHocTaskForm.saveTask(task, function () {
             self.task.saveCallback();
             self.formHeader.html('Edit task');
             $.bootstrapGrowl('Task saved', {type: 'success'})
@@ -145,7 +153,7 @@ AdHocTaskForm.prototype = {
     _buildForm: function () {
         var self = this;
 
-        if (self.type == 'command') {
+        if (self.type === 'command') {
 
             self.formHeader.html('Run command');
             self.runCommand = btnSmall.clone().html('Run');
@@ -172,7 +180,7 @@ AdHocTaskForm.prototype = {
             );
 
             self.form.find('input').keypress(function (event) {
-                if (event.keyCode == 13) {
+                if (event.keyCode === 13) {
                     event.preventDefault();
                     self.form.submit();
                 }
@@ -180,7 +188,7 @@ AdHocTaskForm.prototype = {
 
         }
 
-        else if (self.type == 'dialog') {
+        else if (self.type === 'dialog') {
 
             if (self.task.id) self.formHeader.html('AdHoc Task');
             else self.formHeader.html('New AdHoc task');
@@ -195,7 +203,7 @@ AdHocTaskForm.prototype = {
                 self.module = this.value;
                 self.moduleFieldsContainer.empty().html(self._buildModuleFields());
                 self.form.find('input').keypress(function (event) {
-                    if (event.keyCode == 13) {
+                    if (event.keyCode === 13) {
                         event.preventDefault();
                         self.action = 'run';
                         self.form.submit();
@@ -204,7 +212,9 @@ AdHocTaskForm.prototype = {
 
             });
 
-            self.moduleReferenceLink = $('<small>').attr('class', 'reference_link').html('module reference');
+            self.moduleReferenceLink = $('<a>').attr('target', '_blank').append(
+                $('<small>').html('module reference')
+            );
 
             self.moduleFieldsContainer = divRow.clone().css({
                 height: window.innerHeight * .6,
@@ -223,9 +233,9 @@ AdHocTaskForm.prototype = {
                     ),
                     divCol12.clone().append(self.moduleFieldsContainer)
                 ),
-                divRow.clone().append(
+                divRowEqHeight.clone().append(
                     divCol4.clone().append($('<label>').html('Credentials').append(self.credentialsSelector)),
-                    divCol8.clone().append(self.moduleReferenceLink)
+                    divCol8.clone().addClass('text-right').css('margin', 'auto').append(self.moduleReferenceLink)
                 )
             );
 
@@ -289,9 +299,7 @@ AdHocTaskForm.prototype = {
 
         self.argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(self.argumentsField));
 
-        self.moduleReferenceLink.show().off()
-            .attr('title', moduleReferenceLink)
-            .click(function () {window.open(moduleReferenceLink)});
+        self.moduleReferenceLink.show().attr({title: moduleReferenceLink, href: moduleReferenceLink});
 
         switch (self.name) {
             case 'ping':

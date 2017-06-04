@@ -1,6 +1,6 @@
 ---
 - name: Deploy Worker Relatorio
-  hosts: m2m-worker-rep:!znh
+  hosts: m2m-worker-rep
   become: yes
   vars:
     mode: deploy

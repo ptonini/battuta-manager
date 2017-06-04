@@ -9,7 +9,7 @@
                 url: usersApiPath + '{{ user_name }}/get/',
                 dataType: 'json',
                 success: function (data) {
-                    if (data.result == 'ok') new UserForm(data.user, $('#user_form_container'))
+                    if (data.result === 'ok') new UserForm(data.user, $('#user_form_container'))
                 }
             });
 

@@ -1,6 +1,6 @@
 ---
 - name: Deploy Worker
-  hosts: m2m-worker-sin:!znh
+  hosts: m2m-worker-sin
   become: yes
   vars:
     mode: deploy
@@ -12,4 +12,5 @@
     - role: m2m-worker-sin
     
     - role: m2m-watchdog
-      when:  mode == 'install'
+      config: 'service'
+      when: (mode == 'install') or (mode == 'config')

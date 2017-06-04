@@ -1,6 +1,6 @@
 ---
 - name: Deploy M2M Painel Web
-  hosts: m2m-painel-web:!znh
+  hosts: m2m-painel-web
   become: yes
   vars:
     mode: deploy

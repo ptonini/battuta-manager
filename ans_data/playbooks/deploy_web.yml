@@ -1,7 +1,7 @@
 ---
 - name: Deploy M2M WebApp
   gather_facts: False
-  hosts: m2m-web:!znh
+  hosts: m2m-web
   become: yes
   vars:
       mode: 'deploy'
@@ -10,7 +10,7 @@
     - role: nfs
       service_type: 'server'
       exports:
-        - '/gfs_dados 10.10.1.0/22(rw,sync,no_subtree_check,no_root_squash)'
+        - '/gfs_dados *(rw,sync,no_subtree_check,no_root_squash)'
       when: mode == 'install'
     
     - role: m2m-web

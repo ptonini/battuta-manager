@@ -21,7 +21,7 @@ function PlaybookForm(playbook) {
                             playbook: self.playbook.name
                         },
                         success: function (data) {
-                            if (data.result == 'ok') {
+                            if (data.result === 'ok') {
                                 self._buildArgumentsSelector(data.id);
                                 $.bootstrapGrowl('Arguments saved', {type: 'success'});
                             }
@@ -40,7 +40,7 @@ function PlaybookForm(playbook) {
                         dataType: 'json',
                         data: self.loadedArgs,
                         success: function (data) {
-                            if (data.result == 'ok') {
+                            if (data.result === 'ok') {
                                 self._buildArgumentsSelector();
                                 $.bootstrapGrowl('Arguments deleted', {type: 'success'});
                             }
@@ -60,8 +60,8 @@ function PlaybookForm(playbook) {
         self.loadedArgs = arguments.data();
         self.form.find('input').val('');
         self.checkButton.removeClass('checked_button');
-        self.deleteButton.toggleClass('hidden', (arguments.val() == 'new'));
-        if (arguments.val() != 'new') {
+        self.deleteButton.toggleClass('hidden', (arguments.val() === 'new'));
+        if (arguments.val() !== 'new') {
             self.limitField.val(arguments.data('subset'));
             self.tagsField.val(arguments.data('tags'));
             self.skipTagsField.val(arguments.data('skip_tags'));
@@ -104,7 +104,7 @@ function PlaybookForm(playbook) {
 
     self.credentialsSelector = selectField.clone();
 
-    Credentials.buildSelectionBox(self.credentialsSelector);
+    Credentials.buildSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
 
     self.playbookDialog = largeDialog.clone();
 
@@ -113,7 +113,7 @@ function PlaybookForm(playbook) {
         dataType: 'json',
         data: self.playbook,
         success: function (data) {
-            if (data.result == 'ok') {
+            if (data.result === 'ok') {
                 self.playbook.text = data.text;
                 self._buildForm();
             }
@@ -181,7 +181,7 @@ PlaybookForm.prototype = {
             .dialog('open');
 
         self.form.find('input').keypress(function (event) {
-            if (event.keyCode == 13) {
+            if (event.keyCode === 13) {
                 event.preventDefault();
                 self._runPlaybook()
             }

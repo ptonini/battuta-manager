@@ -9,7 +9,7 @@ function Credentials(user) {
         self._loadForm()
     });
 
-    Credentials.buildSelectionBox(self.credentialsSelector);
+    Credentials.buildSelectionBox(self.user.username, self.credentialsSelector);
 
     self.credentialsForm = $('<form>')
         .change(function () {
@@ -185,14 +185,14 @@ function Credentials(user) {
         });
 }
 
-Credentials.buildSelectionBox = function (credentials, startValue) {
+Credentials.buildSelectionBox = function (username, credentials, startValue) {
 
     var runner = (window.location.href.split('/').indexOf('users') < 0);
 
     credentials.empty();
 
     $.ajax({
-        url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/list/',
+        url: usersApiPath + username + '/creds/list/',
         dataType: 'json',
         data: {runner: runner},
         success: function (data) {
@@ -270,12 +270,18 @@ Credentials.prototype = {
             processData: false,
             contentType: false,
             success: function (data) {
-                if (data.result == 'ok') {
-                    Credentials.buildSelectionBox(self.credentialsSelector, data.cred_id);
-                    if (action == 'save') var message = 'Credentials saved';
+
+                if (data.result === 'ok') {
+
+                    Credentials.buildSelectionBox(self.user.username, self.credentialsSelector, data.cred_id);
+
+                    if (action === 'save') var message = 'Credentials saved';
+
                     else message = 'Credentials deleted';
+
                     $.bootstrapGrowl(message, {type: 'success'});
                 }
+
                 else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
             }
         });

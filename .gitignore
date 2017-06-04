@@ -2,9 +2,8 @@
 .vagrant
 *.pyc
 *.iml
-ans_data/userdata/*
-ans_data/facts/*
-ans_data/roles/*
-battuta/static/components/*
 
-
+ans_data/ansible.log
+ans_data/files/
+ans_data/userdata/
+battuta/static/components/

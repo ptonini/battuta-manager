@@ -1,6 +1,6 @@
 ---
 - name: Deploy Worker
-  hosts: m2m-worker:!znh
+  hosts: m2m-worker
   become: yes
   vars:
     mode: deploy

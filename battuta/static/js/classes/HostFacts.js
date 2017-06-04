@@ -23,7 +23,7 @@ HostFacts.prototype = {
             url: inventoryApiPath + 'host/' + self.node.name + '/facts/',
             dataType: 'json',
             success: function (data) {
-                if (data.result == 'ok') self._buildFacts(data.facts);
+                if (data.result === 'ok') self._buildFacts(data.facts);
                 else self.container.append(self.gatherFactsButton)
             }
         });
