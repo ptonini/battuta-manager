@@ -5,5 +5,7 @@
 
 ans_data/ansible.log
 ans_data/files/
+ans_data/roles/
+ans_data/playbooks
 ans_data/userdata/
 battuta/static/components/

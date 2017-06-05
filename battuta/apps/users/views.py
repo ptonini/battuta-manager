@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 
 from apps.users.models import User, UserData, Credential
 from apps.users.forms import UserForm, UserDataForm, CredentialForm
+from apps.users.extras import create_userdata
 
 from apps.preferences.extras import get_preferences
 
@@ -45,21 +46,7 @@ class UsersView(View):
 
         prefs = get_preferences()
 
-        try:
-
-            user.userdata
-
-        except UserData.DoesNotExist:
-
-            UserData.objects.get_or_create(user=user, timezone=prefs['default_timezone'])
-
-        if user.userdata.default_cred is None:
-
-            cred, created = Credential.objects.get_or_create(user=user, username=user.username, title='Default')
-
-            user.userdata.default_cred = cred
-
-            user.userdata.save()
+        create_userdata(user, prefs)
 
         tz = timezone(user.userdata.timezone)
 

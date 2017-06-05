@@ -9,6 +9,8 @@ from django.conf import settings
 from apps.preferences.models import Item
 from apps.preferences.extras import get_preferences, get_default_value
 
+from apps.users.extras import create_userdata
+
 
 class PreferencesView(View):
 
@@ -18,6 +20,9 @@ class PreferencesView(View):
         if action == 'basic':
 
             data = get_preferences()
+
+            create_userdata(request.user, data)
+
             data['user_name'] = request.user.username
             data['user_id'] = request.user.id
             data['user_timezone'] = request.user.userdata.timezone
