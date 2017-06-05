@@ -29,6 +29,6 @@ urlpatterns = [
 
     url(r'^api/history/([a-z]+)/$', login_required(views.HistoryView.as_view())),
 
-    url(r'^api/adhoc/([a-z]+)/$', login_required(views.AdHocView.as_view())),
+    url(r'^api/adhoc/([a-zA-Z]+)/$', login_required(views.AdHocView.as_view())),
 
 ]

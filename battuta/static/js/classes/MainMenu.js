@@ -79,7 +79,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
         .append(spanGlyph.clone().addClass('glyphicon-log-in'));
 
     self.logoutButton = $('<button>').attr('class', 'btn btn-link')
-        .attr('title', 'Logout')
+        .attr('title', 'Logout ' + username)
         .append(spanGlyph.clone().addClass('glyphicon-log-out'));
 
     self.loginForm = $('<form>').attr('class', 'navbar-form').submit(function (event) {

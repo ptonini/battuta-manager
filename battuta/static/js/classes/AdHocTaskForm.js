@@ -339,7 +339,7 @@ AdHocTaskForm.prototype = {
                 );
                 break;
             case 'copy':
-                self.fileSourceField.autocomplete({source: '?type=file'});
+                self.fileSourceField.autocomplete({source: runnerApiPath + 'adhoc/searchFiles/?type=file'});
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol12.clone().append(self.fileDestGroup),
@@ -349,7 +349,7 @@ AdHocTaskForm.prototype = {
                 );
                 break;
             case 'unarchive':
-                self.fileSourceField.autocomplete({source: '?type=archive'});
+                self.fileSourceField.autocomplete({source: runnerApiPath + 'adhoc/searchFiles/?type=archive'});
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol12.clone().append(self.fileDestGroup),
@@ -358,7 +358,7 @@ AdHocTaskForm.prototype = {
                 );
                 break;
             case 'script':
-                self.fileSourceField.autocomplete({source: '?type=file'});
+                self.fileSourceField.autocomplete({source: runnerApiPath + 'adhoc/searchFiles/?type=file'});
                 self.fileSourceLabel.html('Script');
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),

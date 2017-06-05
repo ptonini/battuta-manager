@@ -97,7 +97,7 @@ class RunnerView(View):
 
                 cred = get_object_or_404(Credential, pk=run_data['cred'])
 
-                if cred.user != request.user and not cred.is_shared:
+                if not request.user.is_superuser and cred.user.username != request.user.username and not cred.is_shared:
 
                     raise PermissionDenied
 
@@ -235,13 +235,13 @@ class AdHocView(View):
 
                     data.append(task)
 
-        elif 'term' in request.GET:
+        elif action == 'searchFiles':
             prefs = get_preferences()
             data = list()
             file_sources = [
-                [settings.FILES_PATH, '{{files_path}}', [], False],
-                [settings.USERDATA_PATH, '{{userdata_path}}', [], True],
-                [settings.ROLES_PATH, '{{roles_path}}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
+                [settings.FILES_PATH, '{{ files_path }}', [], False],
+                [settings.USERDATA_PATH, '{{ userdata_path }}', [], True],
+                [settings.ROLES_PATH, '{{ roles_path }}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
             ]
 
             archive_types = ['application/zip', 'application/gzip', 'application/x-tar', 'application/x-gtar']

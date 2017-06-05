@@ -369,34 +369,32 @@ RunnerResults.prototype = {
 
                                 var rowApi = this.api().row(row);
 
-                                if (!self.runner.is_running) {
+                                $(row).css('cursor', 'pointer').click(function () {
 
-                                    $(row).css('cursor', 'pointer').click(function () {
+                                    if (rowApi.child.isShown()) {
+                                        $(row).css('font-weight', 'normal');
+                                        rowApi.child.hide()
+                                    }
 
-                                        if (rowApi.child.isShown()) {
-                                            $(row).empty().css('font-weight', 'normal');
-                                            rowApi.child.hide()
-                                        }
+                                    else {
+                                        $.ajax({
+                                            url: runnerApiPath + 'result/' + result.id + '/',
+                                            dataType: 'json',
+                                            success: function (data) {
 
-                                        else {
-                                            $.ajax({
-                                                url: runnerApiPath + 'result/' + result.id + '/',
-                                                dataType: 'json',
-                                                success: function (data) {
+                                                var jsonContainer = $('<div>')
+                                                    .attr('class', 'well')
+                                                    .JSONView(data.response, {collapsed: true});
 
-                                                    var jsonContainer = $('<div>')
-                                                        .attr('class', 'well')
-                                                        .JSONView(data.response, {'collapsed': true});
+                                                rowApi.child(jsonContainer).show();
+                                                $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                            }
+                                        });
 
-                                                    rowApi.child(jsonContainer).show();
-                                                    $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
-                                                }
-                                            });
+                                    }
 
-                                        }
+                                })
 
-                                    })
-                                }
                             },
 
                             drawCallback: function () {
@@ -411,8 +409,11 @@ RunnerResults.prototype = {
                     }
 
                     if (self.runner.is_running) {
+
                         var intervalId = setInterval(function () {
+
                             self._updateResultTable(intervalId, taskTable)
+
                         }, 1000)
                     }
 
@@ -492,9 +493,7 @@ RunnerResults.prototype = {
                 clearInterval(intervalId)
             }
 
-            if (self.runner.status === 'canceled' ||
-                task.host_count === taskTable.DataTable().rows().count() ||
-                task.is_handler && !self.runner.is_running) {
+            if (self.runner.status === 'canceled' || task.host_count === taskTable.DataTable().rows().count() || task.is_handler && !self.runner.is_running) {
                 clearInterval(intervalId);
             }
         }
