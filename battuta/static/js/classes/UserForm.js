@@ -1,7 +1,7 @@
-function UserForm(user, container) {
+function UserForm(currentUser, user, container) {
     var self = this;
 
-    console.log(user);
+    self.currentUser = currentUser;
 
     self.user = user;
 
@@ -129,7 +129,7 @@ function UserForm(user, container) {
             divRow.clone().append(
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('Current password (' + sessionStorage.getItem('user_name') + ')').append(
+                        $('<label>').html('Current password (' + self.currentUser + ')').append(
                             self.currentPassword
                         )
                     )

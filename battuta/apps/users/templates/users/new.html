@@ -5,7 +5,7 @@
 
             document.title = 'Battuta - new user';
 
-            new UserForm({username: false}, $('#user_form_container'))
+            new UserForm('{{ user.username }}', {username: false}, $('#user_form_container'))
 
         });
     </script>

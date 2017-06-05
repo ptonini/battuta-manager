@@ -1,4 +1,4 @@
-function MainMenu(is_authenticated, is_superuser, container) {
+function MainMenu(username, is_authenticated, is_superuser, container) {
     var self = this;
 
     self.is_authenticated = (is_authenticated === 'True');
@@ -9,7 +9,7 @@ function MainMenu(is_authenticated, is_superuser, container) {
 
     self.usersDropdownMenu = ulDropdownMenu.clone().append(
         $('<li>').append(
-            $('<a>').attr('href', usersPath + sessionStorage.getItem('user_name') + '/').html('User profile'),
+            $('<a>').attr('href', usersPath + username + '/').html('User profile'),
             $('<a>').attr('href', usersPath + 'files/').html('User files')
         )
     );

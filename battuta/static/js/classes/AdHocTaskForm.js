@@ -40,7 +40,34 @@ function AdHocTaskForm (pattern, type, task, container) {
 
         event.preventDefault();
 
-        self._submitForm()
+        var arguments;
+
+        if (self.type === 'dialog') {
+            var argsObj = self._formToJson();
+
+            if (self.action === 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
+            else if (self.action === 'save') arguments = argsObj;
+        }
+
+        else if (self.type === 'command') arguments = self.argumentsField.val();
+
+        var task = {
+            type: 'adhoc',
+            module: self.module,
+            name: self.name,
+            hosts: self.patternField.val(),
+            become: self.isSudo.hasClass('checked_button'),
+            arguments: arguments,
+            id: self.task.id
+        };
+
+        if (self.action === 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
+
+        else if (self.action === 'save') AdHocTaskForm.saveTask(task, function () {
+            self.task.saveCallback();
+            self.formHeader.html('Edit task');
+            $.bootstrapGrowl('Task saved', {type: 'success'})
+        });
     });
 
     self.form.append(self.formHeader);
@@ -116,39 +143,6 @@ AdHocTaskForm.modules = [
 ];
 
 AdHocTaskForm.prototype = {
-
-    _submitForm: function () {
-        var self = this;
-
-        var arguments;
-
-        if (self.type === 'dialog') {
-            var argsObj = self._formToJson();
-
-            if (self.action === 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
-            else if (self.action === 'save') arguments = argsObj;
-        }
-
-        else if (self.type === 'command') arguments = self.argumentsField.val();
-
-        var task = {
-            type: 'adhoc',
-            module: self.module,
-            name: self.name,
-            hosts: self.patternField.val(),
-            become: self.isSudo.hasClass('checked_button'),
-            arguments: arguments,
-            id: self.task.id
-        };
-
-        if (self.action === 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
-
-        else if (self.action === 'save') AdHocTaskForm.saveTask(task, function () {
-            self.task.saveCallback();
-            self.formHeader.html('Edit task');
-            $.bootstrapGrowl('Task saved', {type: 'success'})
-        });
-    },
 
     _buildForm: function () {
         var self = this;

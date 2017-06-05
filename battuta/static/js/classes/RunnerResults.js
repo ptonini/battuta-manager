@@ -21,8 +21,11 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
         .click(function rerunPlaybook() {
 
             var become = false;
+
             $.each(self.runner.plays, function(index, play) {
+
                 if (play.become) become = true
+
             });
 
             $.ajax({
@@ -39,7 +42,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
                             subset: self.runner.subset,
                             tags: self.runner.tags,
                             skip_tags: self.runner.skip_tags,
-                            extra_vars: self.runner.skip_tags
+                            extra_vars: self.runner.extra_vars
                         }, data.cred, true);
 
                     }
@@ -290,7 +293,7 @@ RunnerResults.prototype = {
                 self.resultContainer.append(self.playContainers[play.id])
             }
 
-            if (play.host_count ===0) self.playContainers[play.id].append(
+            if (play.host_count === 0) self.playContainers[play.id].append(
                 $('<pre>').css('margin-top', '20px').html('No hosts matched')
             );
 

@@ -281,7 +281,7 @@ class CredentialView(View):
 
                 cred = get_object_or_404(Credential, pk=request.GET['cred_id'])
 
-                if request.user.is_superuser or request.user is cred.user or cred.is_shared:
+                if request.user.is_superuser or request.user == cred.user or cred.is_shared:
 
                     data = {'result': 'ok', 'cred': self._truncate_secure_data(model_to_dict(cred))}
 

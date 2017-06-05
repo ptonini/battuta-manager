@@ -73,7 +73,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            new MainMenu('{% if user.is_authenticated %}True{% endif %}', '{{ user.is_superuser }}', $('#menu_container'))
+            new MainMenu('{{ user.username }}', '{% if user.is_authenticated %}True{% endif %}', '{{ user.is_superuser }}', $('#menu_container'))
 
         })
     </script>
