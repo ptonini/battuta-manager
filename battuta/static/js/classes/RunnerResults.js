@@ -11,6 +11,10 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
     self.resultContainer = resultContainer;
 
+    self.footerAnchor = $('<div>');
+
+    self.resultContainer.after(self.footerAnchor);
+
     self.runnerCogContainer = $('<span>')
         .css('margin', '5px')
         .html($('<img>').attr('src', '/static/images/waiting-small.gif'));
@@ -123,16 +127,16 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
                 self._buildResults();
                 self._formatResults();
 
-                var lastRow = resultContainer.find('tbody').find('tr').last();
-
-                if (lastRow.length > 0 && self.autoScroll) $('html, body').animate({scrollTop: (lastRow.offset().top)}, 500);
+                self.autoScroll && $('html, body').animate({scrollTop: (self.footerAnchor.offset().top)}, 500);
 
                 if (!self.runner.is_running) {
 
                     clearInterval(intervalId);
 
-                    if (self.autoScroll) setTimeout(function () {
+                    self.autoScroll && setTimeout(function () {
+
                         $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
+
                     }, 2000)
                 }
 
@@ -159,7 +163,7 @@ RunnerResults.prototype = {
             url: runnerApiPath + 'runner/' + self.runnerId + '/',
             success: function (runner) {
                 self.runner = runner;
-                if (successCallback) successCallback()
+                successCallback && successCallback()
             }
         })
     },
@@ -318,6 +322,7 @@ RunnerResults.prototype = {
                                 .html(self.taskContainers[task.id].title)
                         )
                     }
+
                     else if (self.runner.type === 'adhoc') {
                         self.taskContainers[task.id].header.append(
                             self.divColInfo.clone().append(
@@ -335,7 +340,8 @@ RunnerResults.prototype = {
 
                     else if (task.host_count > 0) {
 
-                        var taskTable = baseTable.clone();
+                        var taskTable = baseTable.clone().hide();
+
                         taskTable.DataTable({
                             paginate: false,
                             searching: false,
@@ -350,6 +356,9 @@ RunnerResults.prototype = {
                                 {class: 'col-md-7', title: 'message', data: 'message'}
                             ],
                             rowCallback: function (row, result) {
+                                var table = this;
+
+                                $(table).show();
 
                                 switch (result.status) {
                                     case 'unreachable':
@@ -367,55 +376,65 @@ RunnerResults.prototype = {
                                         break;
                                 }
 
-                                var rowApi = this.api().row(row);
-
-                                $(row).css('cursor', 'pointer').click(function () {
-
-                                    if (rowApi.child.isShown()) {
-                                        $(row).css('font-weight', 'normal');
-                                        rowApi.child.hide()
-                                    }
-
-                                    else {
-                                        $.ajax({
-                                            url: runnerApiPath + 'result/' + result.id + '/',
-                                            dataType: 'json',
-                                            success: function (data) {
-
-                                                var jsonContainer = $('<div>')
-                                                    .attr('class', 'well')
-                                                    .JSONView(data.response, {collapsed: true});
-
-                                                rowApi.child(jsonContainer).show();
-                                                $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
-                                            }
-                                        });
-
-                                    }
-
-                                })
 
                             },
-
                             drawCallback: function () {
+                                var table = this;
 
-                                var task = this.api().ajax.json();
-                                var rowCount = this.api().rows().count();
+                                var task = table.api().ajax.json();
+                                var rowCount = table.api().rows().count();
 
-                                task && self.taskContainers[task.id].counter.html('(' + rowCount + ' of ' + task.host_count + ')');
+                                if (task) {
+
+                                    self.taskContainers[task.id].counter.html('(' + rowCount + ' of ' + task.host_count + ')');
+
+                                    if (!self.runner.is_running || rowCount === task.host_count) {
+
+                                        table.DataTable().rows().every(function () {
+
+                                            var rowApi = this;
+
+                                            var result = rowApi.data();
+
+                                            $(rowApi.node()).css('cursor', 'pointer').click(function () {
+
+                                                if (rowApi.child.isShown()) {
+                                                    $(rowApi.node()).css('font-weight', 'normal');
+                                                    rowApi.child.hide()
+                                                }
+
+                                                else {
+                                                    $.ajax({
+                                                        url: runnerApiPath + 'result/' + result.id + '/',
+                                                        dataType: 'json',
+                                                        success: function (data) {
+
+                                                            var jsonContainer = $('<div>')
+                                                                .attr('class', 'well')
+                                                                .JSONView(data.response, {collapsed: true});
+
+                                                            rowApi.child(jsonContainer).show();
+                                                            $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                                        }
+                                                    });
+
+                                                }
+
+                                            })
+
+                                        });
+                                    }
+                                }
 
                             }
                         });
                     }
 
-                    if (self.runner.is_running) {
+                    if (self.runner.is_running) var intervalId = setInterval(function () {
 
-                        var intervalId = setInterval(function () {
+                        self._updateResultTable(intervalId, taskTable)
 
-                            self._updateResultTable(intervalId, taskTable)
-
-                        }, 1000)
-                    }
+                    }, 1000);
 
                     self.playContainers[play.id].append(self.taskContainers[task.id].header, taskTable);
                 }
@@ -487,19 +506,14 @@ RunnerResults.prototype = {
 
             var task = taskTable.DataTable().ajax.json();
 
-            // Hide table if host count is 0
-            if (task.host_count === 0) {
-                taskTable.hide();
-                clearInterval(intervalId)
-            }
+            if (task.host_count === 0 || self.runner.status === 'canceled' || task.host_count === taskTable.DataTable().rows().count() || task.is_handler && !self.runner.is_running) {
 
-            if (self.runner.status === 'canceled' || task.host_count === taskTable.DataTable().rows().count() || task.is_handler && !self.runner.is_running) {
                 clearInterval(intervalId);
             }
         }
 
         else clearInterval(intervalId)
 
-    }
+    },
 
 };

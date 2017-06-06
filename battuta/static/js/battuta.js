@@ -122,6 +122,7 @@ $(document).ajaxError(function (event, xhr) {
 
 // DataTables
 $.fn.dataTableExt.sErrMode = 'throw';
+
 $.extend($.fn.dataTable.defaults, {
     stateSave: true,
     autoWidth: false,
