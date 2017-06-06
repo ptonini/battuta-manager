@@ -61,7 +61,7 @@ function RoleDialog(fileTable) {
                             name: roleName,
                             new_name: roleName,
                             folder: '',
-                            is_directory: true
+                            is_folder: true
                         },
                         success: function (data) {
                             if (data.result === 'ok') {
@@ -74,7 +74,7 @@ function RoleDialog(fileTable) {
                                             name: $(this).val(),
                                             new_name: $(this).val(),
                                             folder: roleName,
-                                            is_directory: true
+                                            is_folder: true
                                         },
                                         success: function () {
                                             if ($(input).data('main')) $.ajax({
@@ -85,7 +85,7 @@ function RoleDialog(fileTable) {
                                                     name: 'main.yml',
                                                     new_name: 'main.yml',
                                                     folder: roleName + '/' + $(input).val(),
-                                                    is_directory: false
+                                                    is_folder: false
                                                 }
                                             })
                                         }

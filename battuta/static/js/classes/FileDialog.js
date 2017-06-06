@@ -15,17 +15,17 @@ function FileDialog(file, action, postCallback) {
 
     self.fileDialog = smallDialog.clone().append(self.nameField);
 
-    if (action == 'create') self.fileDialog.append(self.isFolderLabel);
-    else if (action == 'copy') self.nameFieldInput.val('copy_' + self.file.name);
+    if (action === 'create') self.fileDialog.append(self.isFolderLabel);
+    else if (action === 'copy') self.nameFieldInput.val('copy_' + self.file.name);
 
     self.fileDialog
         .dialog({
             buttons: {
                 Save: function () {
                     self.file.new_name = self.nameFieldInput.val();
-                    if (action == 'create') self.file['is_folder'] = self.isFolderInput.is(':checked');
+                    if (action === 'create') self.file['is_folder'] = self.isFolderInput.is(':checked');
 
-                    if (self.file.new_name && self.file.new_name != self.file.name) {
+                    if (self.file.new_name && self.file.new_name !== self.file.name) {
 
                         $.ajax({
                             type: 'POST',
@@ -33,7 +33,7 @@ function FileDialog(file, action, postCallback) {
                             dataType: 'json',
                             data: self.file,
                             success: function (data) {
-                                if (data.result == 'ok') {
+                                if (data.result === 'ok') {
                                     self.fileDialog.dialog('close');
                                     postCallback && postCallback();
                                     $.bootstrapGrowl(self.file.new_name + ' saved', {type: 'success'});
@@ -53,7 +53,7 @@ function FileDialog(file, action, postCallback) {
         })
         .keypress(function (event) {
             var thisDialog = this;
-            if (event.keyCode == 13) {
+            if (event.keyCode === 13) {
                 $(thisDialog).parent().find('.ui-button-text:contains("Save")').parent('button').click()
             }
         })
