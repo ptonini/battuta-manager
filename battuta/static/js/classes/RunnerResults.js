@@ -396,7 +396,7 @@ RunnerResults.prototype = {
 
                                             var result = rowApi.data();
 
-                                            $(rowApi.node()).css('cursor', 'pointer').click(function () {
+                                            $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
 
                                                 if (rowApi.child.isShown()) {
                                                     $(rowApi.node()).css('font-weight', 'normal');
@@ -514,6 +514,6 @@ RunnerResults.prototype = {
 
         else clearInterval(intervalId)
 
-    },
+    }
 
 };

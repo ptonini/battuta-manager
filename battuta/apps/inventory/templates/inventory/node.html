@@ -10,7 +10,7 @@
                 url: inventoryApiPath + '{{ node_type }}/{{ node_name }}/info/',
                 dataType: 'json',
                 success: function (data) {
-                    if (data.result == 'ok') new Node(data.node, $('#node_container'))
+                    if (data.result === 'ok') new Node(data.node, $('#node_container'))
                 }
             });
 
