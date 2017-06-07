@@ -307,13 +307,10 @@ RunnerResults.prototype = {
 
                     self.taskContainers[task.id] = {
                         header: divRow.clone(),
-                        counter: $('<span>').html('(0 of ' + task.host_count + ')')
+                        title: $('<span>').append(
+                            $('<strong>').css('margin-right', '5px').html(task.name)
+                        )
                     };
-
-                    self.taskContainers[task.id].title = $('<span>').append(
-                        $('<strong>').css('margin-right', '5px').html(task.name),
-                        self.taskContainers[task.id].counter
-                    );
 
                     if (self.runner.type === 'playbook' || self.runner.type === 'gather_facts') {
                         self.taskContainers[task.id].header.append(
@@ -336,16 +333,14 @@ RunnerResults.prototype = {
                         )
                     }
 
-                    if (task.module === 'include') self.taskContainers[task.id].counter.remove();
-
-                    else if (task.host_count > 0) {
+                    if (task.module !== 'include' || task.host_count > 0) {
 
                         var taskTable = baseTable.clone().hide();
 
                         taskTable.DataTable({
                             paginate: false,
                             searching: false,
-                            info: false,
+                            //info: true,
                             ajax: {
                                 url: runnerApiPath + 'task/' + task.id + '/',
                                 dataSrc: 'results'
@@ -382,13 +377,10 @@ RunnerResults.prototype = {
                                 var table = this;
 
                                 var task = table.api().ajax.json();
-                                var rowCount = table.api().rows().count();
 
                                 if (task) {
 
-                                    self.taskContainers[task.id].counter.html('(' + rowCount + ' of ' + task.host_count + ')');
-
-                                    if (!self.runner.is_running || rowCount === task.host_count) {
+                                    if (!task.is_running || !self.runner.is_running) {
 
                                         table.DataTable().rows().every(function () {
 
@@ -506,10 +498,8 @@ RunnerResults.prototype = {
 
             var task = taskTable.DataTable().ajax.json();
 
-            if (task.host_count === 0 || self.runner.status === 'canceled' || task.host_count === taskTable.DataTable().rows().count() || task.is_handler && !self.runner.is_running) {
+            if (!task.is_running || !self.runner.is_running) clearInterval(intervalId);
 
-                clearInterval(intervalId);
-            }
         }
 
         else clearInterval(intervalId)

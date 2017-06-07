@@ -1,4 +1,5 @@
 import os
+import ast
 import MySQLdb
 
 from collections import namedtuple

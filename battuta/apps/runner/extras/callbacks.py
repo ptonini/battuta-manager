@@ -84,9 +84,14 @@ class BattutaCallback(CallbackBase):
         else:
             self._current_task_delegate_to = None
 
-        sql_query = 'INSERT INTO runner_runnertask (runner_play_id,name,module,host_count,is_handler) ' \
-                    'VALUES (%s, %s, %s, %s, %s)'
+        if self._current_task_id:
+            sql_query = 'UPDATE runner_runnertask SET is_running=FALSE WHERE id=%s'
+            self._run_query_on_db('update', sql_query, (self._current_task_id,))
+
+        sql_query = 'INSERT INTO runner_runnertask (runner_play_id,name,module,host_count,is_handler, is_running) ' \
+                    'VALUES (%s, %s, %s, %s, %s, TRUE)'
         var_tuple = (self._current_play_id, task_name, self._current_task_module, task_host_count, is_handler)
+
         self._current_task_id = self._run_query_on_db('insert', sql_query, var_tuple)
 
     def _save_result(self, host, status, message, response):
@@ -158,6 +163,11 @@ class BattutaCallback(CallbackBase):
         self._on_task_start(task, is_handler=True)
 
     def v2_playbook_on_stats(self, stats_list):
+
+        if self._current_task_id:
+            sql_query = 'UPDATE runner_runnertask SET is_running=FALSE WHERE id=%s'
+            self._run_query_on_db('update', sql_query, (self._current_task_id,))
+
         stats_dict = stats_list.__dict__
         stats_list = list()
         for key, value in stats_dict['processed'].iteritems():

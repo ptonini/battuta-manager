@@ -58,6 +58,7 @@ class RunnerTask(models.Model):
     module = models.CharField(max_length=64, blank=True, null=True)
     host_count = models.IntegerField(null=True)
     is_handler = models.BooleanField()
+    is_running = models.BooleanField(default=False)
 
 
 class RunnerResult(models.Model):
