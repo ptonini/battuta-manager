@@ -21,7 +21,7 @@ class PlaybookArgs(models.Model):
         unique_together = ('playbook', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
-class Runner(models.Model):
+class Job(models.Model):
     user = models.ForeignKey(User)
     cred = models.ForeignKey(Credential, blank=True, null=True)
     is_running = models.BooleanField(default=False)
@@ -39,30 +39,27 @@ class Runner(models.Model):
     subset = models.CharField(max_length=1024, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)
-    failed_hosts = models.TextField(max_length=4096, blank=True, null=True)
+    has_exceptions = models.BooleanField(default=False)
 
 
-class RunnerPlay(models.Model):
-    runner = models.ForeignKey(Runner)
+class Play(models.Model):
+    job = models.ForeignKey(Job)
     name = models.CharField(max_length=128)
     hosts = models.CharField(max_length=64)
     become = models.BooleanField()
     gather_facts = models.BooleanField(default=False)
-    host_count = models.IntegerField(null=True)
-    failed_count = models.IntegerField(default=0)
 
 
-class RunnerTask(models.Model):
-    runner_play = models.ForeignKey(RunnerPlay)
+class Task(models.Model):
+    play = models.ForeignKey(Play)
     name = models.CharField(max_length=128)
     module = models.CharField(max_length=64, blank=True, null=True)
-    host_count = models.IntegerField(null=True)
     is_handler = models.BooleanField()
     is_running = models.BooleanField(default=False)
 
 
-class RunnerResult(models.Model):
-    runner_task = models.ForeignKey(RunnerTask)
+class Result(models.Model):
+    task = models.ForeignKey(Task)
     host = models.CharField(max_length=64)
     status = models.CharField(max_length=32)
     message = models.TextField(max_length=32768, blank=True, null=True)

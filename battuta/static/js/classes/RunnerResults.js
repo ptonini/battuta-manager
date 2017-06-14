@@ -340,7 +340,7 @@ RunnerResults.prototype = {
                         taskTable.DataTable({
                             paginate: false,
                             searching: false,
-                            //info: true,
+                            info: true,
                             ajax: {
                                 url: runnerApiPath + 'task/' + task.id + '/',
                                 dataSrc: 'results'

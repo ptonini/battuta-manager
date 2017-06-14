@@ -1,5 +1,4 @@
 import os
-import ast
 import MySQLdb
 
 from collections import namedtuple
@@ -41,7 +40,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
                                         'syntax'])
 
 
-def play_runner(runner):
+def run_job(job):
 
     db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'],
                               settings.DATABASES['default']['USER'],
@@ -50,67 +49,67 @@ def play_runner(runner):
     db_conn.autocommit(True)
 
     with db_conn as cursor:
-        cursor.execute('UPDATE runner_runner SET status="starting", pid=%s WHERE id=%s', (os.getpid(), runner.id))
+        cursor.execute('UPDATE runner_job SET status="starting", pid=%s WHERE id=%s', (os.getpid(), job.id))
 
-    if 'show_skipped' not in runner.data:
-        runner.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
+    if 'show_skipped' not in job.data:
+        job.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
 
-    if 'connection' not in runner.data:
-        runner.data['connection'] = 'paramiko'
+    if 'connection' not in job.data:
+        job.data['connection'] = 'paramiko'
 
-    if 'module_path' not in runner.data:
-        runner.data['module_path'] = c.DEFAULT_MODULE_PATH
+    if 'module_path' not in job.data:
+        job.data['module_path'] = c.DEFAULT_MODULE_PATH
 
-    if 'forks' not in runner.data:
-        runner.data['forks'] = c.DEFAULT_FORKS
+    if 'forks' not in job.data:
+        job.data['forks'] = c.DEFAULT_FORKS
 
-    if 'rsa_key' not in runner.data:
-        runner.data['rsa_key'] = ''
+    if 'rsa_key' not in job.data:
+        job.data['rsa_key'] = ''
 
-    if 'become' not in runner.data:
-        runner.data['become'] = c.DEFAULT_BECOME
+    if 'become' not in job.data:
+        job.data['become'] = c.DEFAULT_BECOME
 
-    if not runner.data['become_user']:
-        runner.data['become_user'] = c.DEFAULT_BECOME_USER
+    if not job.data['become_user']:
+        job.data['become_user'] = c.DEFAULT_BECOME_USER
 
-    if 'become_method' not in runner.data:
-        runner.data['become_method'] = c.DEFAULT_BECOME_METHOD
+    if 'become_method' not in job.data:
+        job.data['become_method'] = c.DEFAULT_BECOME_METHOD
 
-    if 'check' not in runner.data or runner.data['check'] == 'false':
-        runner.data['check'] = False
-    elif runner.data['check'] == 'true':
-        runner.data['show_skipped'] = True
-        runner.data['check'] = True
+    if 'check' not in job.data or job.data['check'] == 'false':
+        job.data['check'] = False
+    elif job.data['check'] == 'true':
+        job.data['show_skipped'] = True
+        job.data['check'] = True
 
-    if 'tags' not in runner.data:
-        runner.data['tags'] = ''
+    if 'tags' not in job.data:
+        job.data['tags'] = ''
 
-    if 'skip_tags' not in runner.data:
-        runner.data['skip_tags'] = ''
+    if 'skip_tags' not in job.data:
+        job.data['skip_tags'] = ''
 
-    if 'extra_vars' not in runner.data or runner.data['extra_vars'] == '':
-        runner.data['extra_vars'] = []
+    if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
+        job.data['extra_vars'] = []
     else:
-        runner.data['extra_vars'] = runner.data['extra_vars'].split(' ')
+        job.data['extra_vars'] = job.data['extra_vars'].split(' ')
 
     # Create ansible options tuple
-    options = AnsibleOptions(connection=runner.data['connection'],
-                             module_path=runner.data['module_path'],
-                             forks=runner.data['forks'],
-                             remote_user=runner.data['remote_user'],
-                             private_key_file=runner.data['rsa_key'],
+    options = AnsibleOptions(connection=job.data['connection'],
+                             module_path=job.data['module_path'],
+                             forks=job.data['forks'],
+                             remote_user=job.data['remote_user'],
+                             private_key_file=job.data['rsa_key'],
                              ssh_common_args=None,
                              ssh_extra_args=None,
                              sftp_extra_args=None,
                              scp_extra_args=None,
-                             become=runner.data['become'],
-                             become_method=runner.data['become_method'],
-                             become_user=runner.data['become_user'],
+                             become=job.data['become'],
+                             become_method=job.data['become_method'],
+                             become_user=job.data['become_user'],
                              verbosity=None,
-                             check=runner.data['check'],
-                             tags=runner.data['tags'],
-                             skip_tags=runner.data['skip_tags'],
-                             extra_vars=runner.data['extra_vars'],
+                             check=job.data['check'],
+                             tags=job.data['tags'],
+                             skip_tags=job.data['skip_tags'],
+                             extra_vars=job.data['extra_vars'],
                              listhosts=None,
                              listtasks=None,
                              listtags=None,
@@ -121,22 +120,22 @@ def play_runner(runner):
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
     variable_manager.set_inventory(inventory)
     variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
-    passwords = {'conn_pass': runner.data['remote_pass'], 'become_pass': runner.data['become_pass']}
+    passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
 
-    if 'subset' in runner.data:
-        inventory.subset(runner.data['subset'])
+    if 'subset' in job.data:
+        inventory.subset(job.data['subset'])
 
     message = None
 
-    if 'playbook' in runner.data:
+    if 'playbook' in job.data:
         try:
-            pbex = PlaybookExecutor([runner.data['playbook_path']],
+            pbex = PlaybookExecutor([job.data['playbook_path']],
                                     inventory,
                                     variable_manager,
                                     loader,
                                     options,
                                     passwords)
-            pbex._tqm._stdout_callback = BattutaCallback(runner, db_conn)
+            pbex._tqm._stdout_callback = BattutaCallback(job, db_conn)
             pbex.run()
         except Exception as e:
             status = 'failed'
@@ -144,14 +143,14 @@ def play_runner(runner):
         else:
             status = 'finished'
 
-    elif 'adhoc_task' in runner.data:
-        play = Play().load(runner.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+    elif 'adhoc_task' in job.data:
+        play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
         try:
             tqm = TaskQueueManager(inventory=inventory,
                                    variable_manager=variable_manager,
                                    passwords=passwords,
                                    loader=loader,
-                                   stdout_callback=BattutaCallback(runner, db_conn),
+                                   stdout_callback=BattutaCallback(job, db_conn),
                                    options=options)
             tqm.run(play)
         except Exception as e:
@@ -166,15 +165,13 @@ def play_runner(runner):
 
     with db_conn as cursor:
 
-        cursor.execute('SELECT failed_count FROM runner_runnerplay WHERE runner_id=%s', (runner.id,))
+        cursor.execute('SELECT has_exceptions FROM runner_job WHERE id=%s', (job.id,))
 
-        for row in cursor.fetchall():
-            if row[0] != 0:
-                status = 'finished with errors'
-                break
+        if cursor.fetchone()[0]:
+            status = 'finished with errors'
 
-        cursor.execute('UPDATE runner_runner SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
-                       (status, message, runner.id))
+        cursor.execute('UPDATE runner_job SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
+                       (status, message, job.id))
 
 
 

@@ -15,9 +15,9 @@ from multiprocessing import Process
 
 from main.extras import DataTableRequestHandler
 
-from apps.runner.models import AdHocTask, Runner, RunnerPlay, RunnerTask, RunnerResult, PlaybookArgs
-from apps.runner.forms import AdHocTaskForm, RunnerForm, PlaybookArgsForm
-from apps.runner.extras import play_runner
+from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
+from apps.runner.forms import AdHocTaskForm, JobForm, PlaybookArgsForm
+from apps.runner.extras import run_job
 
 from apps.users.models import Credential
 
@@ -53,27 +53,27 @@ class PageView(View):
 class RunnerView(View):
 
     @staticmethod
-    def get(request, runner_id):
-        runner = get_object_or_404(Runner, pk=runner_id)
+    def get(request, job_id):
+        job = get_object_or_404(Job, pk=job_id)
 
         prefs = get_preferences()
 
-        tz = timezone(runner.user.userdata.timezone)
+        tz = timezone(job.user.userdata.timezone)
 
         # Convert runner object to dict
-        data = model_to_dict(runner)
+        data = model_to_dict(job)
 
-        data['username'] = runner.user.username
-        data['created_on'] = runner.created_on.astimezone(tz).strftime(prefs['date_format'])
+        data['username'] = job.user.username
+        data['created_on'] = job.created_on.astimezone(tz).strftime(prefs['date_format'])
 
         # Convert status string to dict
-        if runner.stats:
-            data['stats'] = ast.literal_eval(runner.stats)
+        if job.stats:
+            data['stats'] = ast.literal_eval(job.stats)
 
         # Add plays to runner data
         data['plays'] = list()
-        for play in RunnerPlay.objects.filter(runner_id=data['id']).values():
-            play['tasks'] = [task for task in RunnerTask.objects.filter(runner_play_id=play['id']).values()]
+        for play in Play.objects.filter(job_id=data['id']).values():
+            play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]
             data['plays'].append(play)
 
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -86,83 +86,83 @@ class RunnerView(View):
         # Run job
         if action == 'run':
             data = None
-            run_data = dict(request.POST.iteritems())
+            job_data = dict(request.POST.iteritems())
 
             # Add credentials to run data
-            if 'cred' not in run_data or run_data['cred'] == '0':
+            if 'cred' not in job_data or job_data['cred'] == '0':
 
                 cred = request.user.userdata.default_cred
 
             else:
 
-                cred = get_object_or_404(Credential, pk=run_data['cred'])
+                cred = get_object_or_404(Credential, pk=job_data['cred'])
 
                 if not request.user.is_superuser and cred.user.username != request.user.username and not cred.is_shared:
 
                     raise PermissionDenied
 
-            run_data['cred'] = cred.id
+            job_data['cred'] = cred.id
 
-            if not run_data['remote_user']:
-                run_data['remote_user'] = cred.username
+            if not job_data['remote_user']:
+                job_data['remote_user'] = cred.username
 
-            if not run_data['remote_pass']:
-                run_data['remote_pass'] = cred.password
+            if not job_data['remote_pass']:
+                job_data['remote_pass'] = cred.password
 
-            if not run_data['become_user']:
-                run_data['become_user'] = cred.sudo_user
+            if not job_data['become_user']:
+                job_data['become_user'] = cred.sudo_user
 
-            if not run_data['become_pass']:
+            if not job_data['become_pass']:
                 if cred.sudo_pass:
-                    run_data['become_pass'] = cred.sudo_pass
+                    job_data['become_pass'] = cred.sudo_pass
                 else:
-                    run_data['become_pass'] = run_data['remote_pass']
+                    job_data['become_pass'] = job_data['remote_pass']
 
             if cred.rsa_key:
-                run_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
+                job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
                                                    str(cred.user.username),
                                                    '.ssh',
                                                    cred.rsa_key)
 
             # Execute playbook
-            if run_data['type'] == 'playbook':
-                run_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, run_data['playbook'])
-                run_data['name'] = run_data['playbook']
+            if job_data['type'] == 'playbook':
+                job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['playbook'])
+                job_data['name'] = job_data['playbook']
 
             # Execute task
-            elif run_data['type'] == 'adhoc':
-                adhoc_form = AdHocTaskForm(run_data)
+            elif job_data['type'] == 'adhoc':
+                adhoc_form = AdHocTaskForm(job_data)
 
                 # Convert become value to boolean
-                run_data['become'] = (run_data['become'] == 'true')
+                job_data['become'] = (job_data['become'] == 'true')
 
                 if adhoc_form.is_valid():
-                    run_data['adhoc_task'] = {
-                        'name': run_data['name'],
-                        'hosts': run_data['hosts'],
+                    job_data['adhoc_task'] = {
+                        'name': job_data['name'],
+                        'hosts': job_data['hosts'],
                         'gather_facts': False,
                         'tasks': [{
                             'action': {
-                                'module': run_data['module'],
-                                'args': run_data['arguments']
+                                'module': job_data['module'],
+                                'args': job_data['arguments']
                             }
                         }]
                     }
                 else:
                     data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
 
-            elif run_data['type'] == 'gather_facts':
+            elif job_data['type'] == 'gather_facts':
 
                 tasks = [{'action': {'module': 'setup'}}]
 
                 if prefs['use_ec2_facts']:
                     tasks.append({'action': {'module': 'ec2_facts'}})
 
-                run_data['name'] = 'Gather facts'
-                run_data['become'] = False
-                run_data['adhoc_task'] = {
-                    'name': run_data['name'],
-                    'hosts': run_data['hosts'],
+                job_data['name'] = 'Gather facts'
+                job_data['become'] = False
+                job_data['adhoc_task'] = {
+                    'name': job_data['name'],
+                    'hosts': job_data['hosts'],
                     'gather_facts': False,
                     'tasks': tasks
                 }
@@ -170,46 +170,62 @@ class RunnerView(View):
                 raise Http404('Invalid form data')
 
             if data is None:
-                runner_form = RunnerForm(run_data)
-                if runner_form.is_valid():
-                    runner = runner_form.save(commit=False)
-                    runner.user = request.user
-                    runner.status = 'created'
-                    runner.is_running = True
-                    setattr(runner, 'data', run_data)
-                    setattr(runner, 'prefs', prefs)
-                    runner.save()
+                job_form = JobForm(job_data)
+                if job_form.is_valid():
+                    job = job_form.save(commit=False)
+                    job.user = request.user
+                    job.status = 'created'
+                    job.is_running = True
+                    setattr(job, 'data', job_data)
+                    setattr(job, 'prefs', prefs)
+                    job.save()
                     try:
-                        p = Process(target=play_runner, args=(runner,))
+                        p = Process(target=run_job, args=(job,))
                         p.start()
                     except Exception as e:
-                        runner.delete()
+                        job.delete()
                         data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
                     else:
-                        data = {'result': 'ok', 'runner_id': runner.id}
+                        data = {'result': 'ok', 'runner_id': job.id}
                 else:
-                    data = {'result': 'fail', 'msg': str(runner_form.errors)}
+                    data = {'result': 'fail', 'msg': str(job_form.errors)}
 
         # Kill job
         elif action == 'kill':
 
-            runner = get_object_or_404(Runner, pk=request.POST['runner_id'])
+            job = get_object_or_404(Job, pk=request.POST['runner_id'])
+
             try:
-                process = psutil.Process(runner.pid)
+
+                process = psutil.Process(job.pid)
+
             except psutil.NoSuchProcess:
+
                 data = {'result': 'fail', 'msg': 'Job is defunct'}
+
             except psutil.Error as e:
-                data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(runner.pid)}
+
+                data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
+
             else:
+
                 process.suspend()
+
                 for child in process.children(recursive=True):
+
                     child.kill()
+
                 process.kill()
-                data = {'result': 'ok', 'runner_id': runner.id}
+
+                data = {'result': 'ok', 'runner_id': job.id}
+
             finally:
-                runner.status = 'canceled'
-                runner.is_running = False
-                runner.save()
+
+                job.status = 'canceled'
+
+                job.is_running = False
+
+                job.save()
 
         else:
 
@@ -375,31 +391,31 @@ class HistoryView(View):
 
             # Build queryset
             if request.user.is_superuser:
-                queryset = Runner.objects.all()
+                queryset = Job.objects.all()
             else:
-                queryset = Runner.objects.filter(user=request.user)
+                queryset = Job.objects.filter(user=request.user)
 
             # Initiate handler
             handler = DataTableRequestHandler(request.GET, queryset)
 
             # Build list from queryset
             tz = timezone(request.user.userdata.timezone)
-            for runner in queryset:
-                if runner.subset:
-                    target = runner.subset
+            for job in queryset:
+                if job.subset:
+                    target = job.subset
                 else:
-                    play = runner.runnerplay_set.first()
+                    play = job.play_set.first()
                     if play:
                         target = play.hosts
                     else:
                         target = None
 
-                row = [runner.created_on.astimezone(tz).strftime(prefs['date_format']),
-                       runner.user.username,
-                       runner.name,
+                row = [job.created_on.astimezone(tz).strftime(prefs['date_format']),
+                       job.user.username,
+                       job.name,
                        target,
-                       runner.status,
-                       runner.id]
+                       job.status,
+                       job.id]
 
                 handler.add_and_filter_row(row)
 
@@ -416,12 +432,12 @@ class TaskView(View):
     @staticmethod
     def get(request, task_id):
 
-        task = get_object_or_404(RunnerTask, pk=task_id)
+        task = get_object_or_404(Task, pk=task_id)
 
         data = model_to_dict(task)
         data['results'] = list()
 
-        for result in task.runnerresult_set.all().values():
+        for result in task.result_set.all().values():
             result.pop('response', None)
             data['results'].append(result)
 
@@ -432,7 +448,7 @@ class ResultView(View):
 
     @staticmethod
     def get(request, result_id):
-        result = get_object_or_404(RunnerResult, pk=result_id)
+        result = get_object_or_404(Result, pk=result_id)
 
         data = model_to_dict(result)
         data['response'] = json.loads(result.response)

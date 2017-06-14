@@ -1,11 +1,11 @@
 from django import forms
 
-from .models import AdHocTask, PlaybookArgs, Runner
+from .models import AdHocTask, PlaybookArgs, Job
 
 
-class RunnerForm(forms.ModelForm):
+class JobForm(forms.ModelForm):
     class Meta:
-        model = Runner
+        model = Job
         fields = ['name', 'check', 'tags', 'skip_tags', 'subset', 'type', 'extra_vars', 'cred']
 
 
