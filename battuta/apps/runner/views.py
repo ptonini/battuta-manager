@@ -50,7 +50,7 @@ class PageView(View):
             return render(request, "runner/results.html", {'runner_id': kwargs['runner_id']})
 
 
-class RunnerView(View):
+class JobView(View):
 
     @staticmethod
     def get(request, job_id):
@@ -60,7 +60,7 @@ class RunnerView(View):
 
         tz = timezone(job.user.userdata.timezone)
 
-        # Convert runner object to dict
+        # Convert job object to dict
         data = model_to_dict(job)
 
         data['username'] = job.user.username
@@ -70,7 +70,7 @@ class RunnerView(View):
         if job.stats:
             data['stats'] = ast.literal_eval(job.stats)
 
-        # Add plays to runner data
+        # Add plays to job data
         data['plays'] = list()
         for play in Play.objects.filter(job_id=data['id']).values():
             play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]

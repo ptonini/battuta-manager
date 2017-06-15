@@ -114,13 +114,46 @@ DEFAULT_PREFERENCES = [
                 'value': '__hidden__',
                 'data_type': 'str',
                 'description': ''
+            }
+        ]
+    },
+    {
+        'name': 'Runner preferences',
+        'description': '',
+        'items': [
+            {
+                'name': 'show_empty_tasks',
+                'value': True,
+                'data_type': 'bool',
+                'description': 'Hide empty (no hosts) tasks in result view'
             },
             {
                 'name': 'single_job_window',
                 'value': False,
                 'data_type': 'bool',
                 'description': 'Open jobs in single window'
+            },
+            {
+                'name': 'truncate_responses',
+                'value': True,
+                'data_type': 'bool',
+                'description': '',
+
+            },
+            {
+                'name': 'truncate_msg',
+                'value': 'truncated_by_battuta',
+                'data_type': 'str',
+                'description': '',
+
+            },
+            {
+                'name': 'truncated_keys',
+                'value': 'check_results,ansible_facts',
+                'data_type': 'str',
+                'description': '',
             }
+
         ]
     },
     {
@@ -158,32 +191,6 @@ DEFAULT_PREFERENCES = [
                 'description': '',
             }
         ]
-    },
-    {
-        'name': 'Truncate large responses',
-        'description': '',
-        'items': [
-            {
-                'name': 'truncate_responses',
-                'value': True,
-                'data_type': 'bool',
-                'description': '',
-
-            },
-            {
-                'name': 'truncate_msg',
-                'value': 'truncated_by_battuta',
-                'data_type': 'str',
-                'description': '',
-
-            },
-            {
-                'name': 'truncated_keys',
-                'value': 'check_results,ansible_facts',
-                'data_type': 'str',
-                'description': '',
-            }
-        ],
     },
     {
         'name': 'Node list',

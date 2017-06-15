@@ -39,7 +39,6 @@ class Job(models.Model):
     subset = models.CharField(max_length=1024, blank=True, null=True)
     check = models.BooleanField()
     stats = models.TextField(max_length=4096, blank=True, null=True)
-    has_exceptions = models.BooleanField(default=False)
 
 
 class Play(models.Model):

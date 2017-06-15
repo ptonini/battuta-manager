@@ -9,7 +9,6 @@ urlpatterns = [
 
     url(r'^search/(?P<pattern>[a-zA-Z0-9-.]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'search'}),
 
-
     url(r'^inventory/', include('apps.inventory.urls', namespace='inventory')),
 
     url(r'^runner/', include('apps.runner.urls', namespace='runner')),

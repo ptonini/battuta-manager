@@ -1,11 +1,11 @@
-function RunnerResults(runnerId, headerContainer, resultContainer) {
+function JobResults(jobId, headerContainer, resultContainer) {
     var self = this;
 
     self.divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');
     self.divColInfoLeft = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
     self.divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
 
-    self.runnerId = runnerId;
+    self.jobId = jobId;
 
     self.headerContainer = headerContainer;
 
@@ -15,7 +15,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
     self.resultContainer.after(self.footerAnchor);
 
-    self.runnerCogContainer = $('<span>')
+    self.jobCogContainer = $('<span>')
         .css('margin', '5px')
         .html($('<img>').attr('src', '/static/images/waiting-small.gif'));
 
@@ -26,7 +26,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
             var become = false;
 
-            $.each(self.runner.plays, function(index, play) {
+            $.each(self.job.plays, function(index, play) {
 
                 if (play.become) become = true
 
@@ -34,19 +34,19 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
             $.ajax({
                 url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/get/',
-                data: {cred_id: self.runner.cred},
+                data: {cred_id: self.job.cred},
                 success: function(data) {
                     if (data.result === 'ok') {
 
                         new AnsibleRunner({
                             type: 'playbook',
-                            playbook: self.runner.name,
+                            playbook: self.job.name,
                             become: become,
-                            check: self.runner.check,
-                            subset: self.runner.subset,
-                            tags: self.runner.tags,
-                            skip_tags: self.runner.skip_tags,
-                            extra_vars: self.runner.extra_vars
+                            check: self.job.check,
+                            subset: self.job.subset,
+                            tags: self.job.tags,
+                            skip_tags: self.job.skip_tags,
+                            extra_vars: self.job.extra_vars
                         }, data.cred, true);
 
                     }
@@ -60,7 +60,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
         .attr('title', 'Statistics')
         .html(spanGlyph.clone().addClass('glyphicon-list'))
         .click(function showStatsDialog() {
-            new Statistics(self.runner.stats, true)
+            new Statistics(self.job.stats, true)
         });
 
     self.printButton = btnNavbarGlyph.clone()
@@ -75,8 +75,8 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
             document.title = pageTitle.replace('.yml', '');
             self.resultContainer.css({'font-size': 'smaller', 'padding-top': '0px'});
 
-            if (self.runner.stats && self.runner.stats.length > 0) self.resultContainer.append(
-                statsContainer.css('font-size', 'smaller').append(new Statistics(self.runner.stats, false))
+            if (self.job.stats && self.job.stats.length > 0) self.resultContainer.append(
+                statsContainer.css('font-size', 'smaller').append(new Statistics(self.job.stats, false))
             );
 
             // Open print window
@@ -96,7 +96,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
                 url: runnerApiPath + 'kill/',
                 type: 'POST',
                 dataType: 'json',
-                data: {runner_id: self.runner.id},
+                data: {runner_id: self.job.id},
                 success: function (data) {
                     if (data.result === 'ok') $.bootstrapGrowl('Job canceled', {type: 'success'});
                     else $.bootstrapGrowl(data.msg, failedAlertOptions)
@@ -113,23 +113,23 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
             self.autoScroll = $(this).hasClass('checked_button');
         });
 
-    self._getRunnerData(function () {
-        document.title = self.runner.name;
+    self._getJobData(function () {
+        document.title = self.job.name;
         self._buildHeader();
         self._buildInfo();
         self._buildResults();
         self._formatResults();
 
-        if (self.runner.is_running) var intervalId = setInterval(function () {
+        if (self.job.is_running) var intervalId = setInterval(function () {
 
-            self._getRunnerData(function () {
+            self._getJobData(function () {
 
                 self._buildResults();
                 self._formatResults();
 
                 self.autoScroll && $('html, body').animate({scrollTop: (self.footerAnchor.offset().top)}, 500);
 
-                if (!self.runner.is_running) {
+                if (!self.job.is_running) {
 
                     clearInterval(intervalId);
 
@@ -146,7 +146,7 @@ function RunnerResults(runnerId, headerContainer, resultContainer) {
 
 }
 
-RunnerResults.prototype = {
+JobResults.prototype = {
 
     autoScroll: true,
 
@@ -156,13 +156,13 @@ RunnerResults.prototype = {
 
     taskContainers: {},
 
-    _getRunnerData: function (successCallback) {
+    _getJobData: function (successCallback) {
         var self = this;
 
         $.ajax({
-            url: runnerApiPath + 'runner/' + self.runnerId + '/',
-            success: function (runner) {
-                self.runner = runner;
+            url: runnerApiPath + 'job/' + self.jobId + '/',
+            success: function (job) {
+                self.job = job;
                 successCallback && successCallback()
             }
         })
@@ -171,15 +171,15 @@ RunnerResults.prototype = {
     _buildHeader: function () {
         var self = this;
 
-        self.runnerStatusContainer = $('<small>').html(self.runner.status).css('margin-left', '20px');
+        self.jobStatusContainer = $('<small>').html(self.job.status).css('margin-left', '20px');
 
         self.headerContainer.append(
             $('<div>').attr('class', 'container').append(
                 $('<div>').attr('class', 'navbar-header').append(
                     $('<span>').attr('class', 'navbar-brand').append(
-                        self.runner.name,
-                        self.runnerStatusContainer,
-                        self.runnerCogContainer
+                        self.job.name,
+                        self.jobStatusContainer,
+                        self.jobCogContainer
                     )
                 ),
                 $('<ul>').attr('class','nav navbar-nav navbar-right').append(
@@ -201,43 +201,43 @@ RunnerResults.prototype = {
             self.divColInfo.clone().append(
                 divRow.clone().append(
                     self.divColInfoLeft.clone().html('Subset:'),
-                    self.divColInfoRight.clone().html(self.runner.subset)
+                    self.divColInfoRight.clone().html(self.job.subset)
                 )
             ),
             self.divColInfo.clone().append(
                 divRow.clone().append(
                     self.divColInfoLeft.clone().html('Tags:'),
-                    self.divColInfoRight.clone().html(self.runner.tags)
+                    self.divColInfoRight.clone().html(self.job.tags)
                 )
             ),
             self.divColInfo.clone().addClass('col-md-push-8').append(
                 divRow.clone().append(
                     self.divColInfoLeft.clone().html('Skip tags:'),
-                    self.divColInfoRight.clone().html(self.runner.skip_tags)
+                    self.divColInfoRight.clone().html(self.job.skip_tags)
                 )
             ),
             self.divColInfo.clone().append(
                 divRow.clone().append(
                     self.divColInfoLeft.clone().html('Extra vars:'),
-                    self.divColInfoRight.clone().html(self.runner.extra_vars)
+                    self.divColInfoRight.clone().html(self.job.extra_vars)
                 )
             ),
             self.divColInfo.clone().addClass('col-md-pull-8').append(
                 divRow.clone().append(
                     self.divColInfoLeft.clone().html('Check:'),
-                    self.divColInfoRight.clone().html(self.runner.check.toString())
+                    self.divColInfoRight.clone().html(self.job.check.toString())
                 )
             )
         );
         self.resultContainer.css('padding-top', self.resultContainerTopPadding).append(
             $('<h4>').attr('class', 'visible-print-block').hide().append(
-                $('<strong>').html(self.runner.name)
+                $('<strong>').html(self.job.name)
             ),
             divRow.clone().css('margin-top', '15px').append(
                 self.divColInfo.clone().append(
                     divRow.clone().append(
                         self.divColInfoLeft.clone().html('User:'),
-                        self.divColInfoRight.clone().html(self.runner.username)
+                        self.divColInfoRight.clone().html(self.job.username)
                     )
                 ),
                 self.playbookOnlyFields
@@ -246,7 +246,7 @@ RunnerResults.prototype = {
                 self.divColInfo.clone().append(
                     divRow.clone().append(
                         self.divColInfoLeft.clone().html('Run date:'),
-                        self.divColInfoRight.clone().html(self.runner.created_on)
+                        self.divColInfoRight.clone().html(self.job.created_on)
                     )
                 )
             )
@@ -256,19 +256,19 @@ RunnerResults.prototype = {
     _buildResults: function () {
         var self = this;
 
-        if (self.runner.message) self.resultContainer.empty().append(
-            $('<pre>').attr('class', 'runner_error_box').html(self.runner.message)
+        if (self.job.message) self.resultContainer.empty().append(
+            $('<pre>').attr('class', 'runner_error_box').html(self.job.message)
         );
 
-        else $.each(self.runner.plays, function (index, play) {
+        else $.each(self.job.plays, function (index, play) {
 
             if (!self.playContainers.hasOwnProperty(play.id)) {
 
                 // Set playbook only elements
-                if (self.runner.type === 'playbook' || self.runner.type === 'gather_facts') {
+                if (self.job.type === 'playbook' || self.job.type === 'gather_facts') {
                     var separator = $('<hr>');
                     var headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
-                    var headerLastLine = divCol12.clone().html('Tasks:');
+                    var headerLastLine = divCol12.clone().addClass('report_field_left').html('Tasks:');
                 }
                 else {
                     separator = null;
@@ -312,7 +312,9 @@ RunnerResults.prototype = {
                         )
                     };
 
-                    if (self.runner.type === 'playbook' || self.runner.type === 'gather_facts') {
+                    if (sessionStorage.getItem('show_empty_tasks') === 'false') self.taskContainers[task.id].header.hide();
+
+                    if (self.job.type === 'playbook' || self.job.type === 'gather_facts') {
                         self.taskContainers[task.id].header.append(
                             divCol12.clone()
                                 .css('margin-top', '10px')
@@ -320,7 +322,7 @@ RunnerResults.prototype = {
                         )
                     }
 
-                    else if (self.runner.type === 'adhoc') {
+                    else if (self.job.type === 'adhoc') {
                         self.taskContainers[task.id].header.append(
                             self.divColInfo.clone().append(
                                 divRow.clone().append(
@@ -354,6 +356,7 @@ RunnerResults.prototype = {
                                 var table = this;
 
                                 $(table).show();
+                                self.taskContainers[task.id].header.show();
 
                                 switch (result.status) {
                                     case 'unreachable':
@@ -380,7 +383,7 @@ RunnerResults.prototype = {
 
                                 if (task) {
 
-                                    if (!task.is_running || !self.runner.is_running) {
+                                    if (!task.is_running || !self.job.is_running) {
 
                                         table.DataTable().rows().every(function () {
 
@@ -422,7 +425,7 @@ RunnerResults.prototype = {
                         });
                     }
 
-                    if (self.runner.is_running) var intervalId = setInterval(function () {
+                    if (self.job.is_running) var intervalId = setInterval(function () {
 
                         self._updateResultTable(intervalId, taskTable)
 
@@ -441,7 +444,7 @@ RunnerResults.prototype = {
 
         var color;
 
-        switch (self.runner.status) {
+        switch (self.job.status) {
             case 'running':
                 color = 'blue';
                 break;
@@ -459,9 +462,9 @@ RunnerResults.prototype = {
                 break;
         }
 
-        self.runnerStatusContainer.css('color', color).html(self.runner.status);
+        self.jobStatusContainer.css('color', color).html(self.job.status);
 
-        if (self.runner.is_running) {
+        if (self.job.is_running) {
 
             self.printButton.hide();
             self.statsButton.hide();
@@ -474,16 +477,16 @@ RunnerResults.prototype = {
             self.printButton.show();
             self.rerunButton.show();
 
-            if (self.runner.stats && self.runner.stats.length > 0) self.statsButton.show();
+            if (self.job.stats && self.job.stats.length > 0) self.statsButton.show();
             else self.statsButton.hide();
 
-            self.runnerCogContainer.hide();
+            self.jobCogContainer.hide();
             self.autoScrollButton.hide();
             self.cancelButton.hide();
 
         }
 
-        if (self.runner.type !== 'playbook') {
+        if (self.job.type !== 'playbook') {
             self.playbookOnlyFields.hide();
             self.rerunButton.remove();
         }
@@ -498,7 +501,7 @@ RunnerResults.prototype = {
 
             var task = taskTable.DataTable().ajax.json();
 
-            if (!task.is_running || !self.runner.is_running) clearInterval(intervalId);
+            if (!task.is_running || !self.job.is_running) clearInterval(intervalId);
 
         }
 

@@ -11,6 +11,7 @@ class BattutaCallback(CallbackBase):
         super(BattutaCallback, self).__init__()
         self._db_conn = db_conn
         self._job = job
+        self._job.data['has_exceptions'] = False
         self._current_play_id = None
         self._current_task_id = None
         self._current_task_module = None
@@ -95,7 +96,7 @@ class BattutaCallback(CallbackBase):
 
             self._run_query_on_db('update', sql_query, (self._current_task_id,))
 
-        sql_query = 'INSERT INTO runner_task (play_id,name,module,is_handler, is_running) ' \
+        sql_query = 'INSERT INTO runner_task (play_id, name, module, is_handler, is_running) ' \
                     'VALUES (%s, %s, %s, %s, TRUE)'
 
         var_tuple = (self._current_play_id, task_name, self._current_task_module, is_handler)
@@ -201,8 +202,6 @@ class BattutaCallback(CallbackBase):
 
         stats_dict = stats_list.__dict__
 
-        has_exceptions = False
-
         stats_list = list()
 
         for key, value in stats_dict['processed'].iteritems():
@@ -219,13 +218,11 @@ class BattutaCallback(CallbackBase):
 
             if key in stats_dict['dark']:
                 row.append(stats_dict['dark'][key])
-                has_exceptions = True
             else:
                 row.append(0)
 
             if key in stats_dict['failures']:
                 row.append(stats_dict['failures'][key])
-                has_exceptions = True
             else:
                 row.append(0)
 
@@ -235,10 +232,11 @@ class BattutaCallback(CallbackBase):
                 row.append(0)
             stats_list.append(row)
 
-        sql_query = 'UPDATE runner_job SET stats=%s, has_exceptions=%s WHERE id=%s'
-        self._run_query_on_db('update', sql_query, (str(stats_list), has_exceptions, self._job.id))
+        sql_query = 'UPDATE runner_job SET stats=%s, WHERE id=%s'
+        self._run_query_on_db('update', sql_query, (str(stats_list), self._job.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
+        self._job.data['has_exceptions'] = True
         host, response = self._extract_result(result)
         message = None
         if 'msg' in response:
@@ -302,6 +300,7 @@ class BattutaCallback(CallbackBase):
             self._save_result(host, 'skipped', message, response)
 
     def v2_runner_on_unreachable(self, result):
+        self._job.data['has_exceptions'] = True
         host, response = self._extract_result(result)
         message = None
         if 'msg' in response:

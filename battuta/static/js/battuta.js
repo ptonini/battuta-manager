@@ -236,14 +236,14 @@ function popupCenter(url, title, w) {
 }
 
 function gatherFacts(nodeName, finishCallback) {
-    var runnerKey = 'runner_' + Math.random().toString(36).substring(2, 10);
+    var jobKey = 'job_' + Math.random().toString(36).substring(2, 10);
     var postData = {
         action: 'run',
         type: 'gather_facts',
         hosts: nodeName,
         remote_pass: '',
         become_pass: '',
-        runner_key: runnerKey
+        job_key: jobKey
     };
 
     $.ajax({
@@ -255,13 +255,13 @@ function gatherFacts(nodeName, finishCallback) {
     });
 
     var intervalId = setInterval(function() {
-        var runnerId = sessionStorage.getItem(runnerKey);
-        if (runnerId) {
+        var jobId = sessionStorage.getItem(jobKey);
+        if (jobId) {
             $.ajax({
-                url: runnerApiPath + 'runner/' + runnerId + '/',
+                url: runnerApiPath + 'job/' + jobId + '/',
                 dataType: 'json',
-                success: function (runner) {
-                    if (!runner.is_running) {
+                success: function (job) {
+                    if (!job.is_running) {
                         finishCallback();
                         clearInterval(intervalId)
                     }

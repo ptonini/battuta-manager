@@ -161,14 +161,13 @@ def run_job(job):
             status = 'finished'
     else:
         status = 'failed'
-        message = 'Invalid runner data'
+        message = 'Invalid job data'
+
+    if job.data['has_exceptions']:
+
+        status = 'finished with errors'
 
     with db_conn as cursor:
-
-        cursor.execute('SELECT has_exceptions FROM runner_job WHERE id=%s', (job.id,))
-
-        if cursor.fetchone()[0]:
-            status = 'finished with errors'
 
         cursor.execute('UPDATE runner_job SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
                        (status, message, job.id))

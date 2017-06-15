@@ -17,9 +17,9 @@ urlpatterns = [
     url(r'^results/(?P<runner_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'results'}),
 
 
-    url(r'^api/(run|kill)/$', login_required(views.RunnerView.as_view())),
+    url(r'^api/(run|kill)/$', login_required(views.JobView.as_view())),
 
-    url(r'^api/runner/([0-9]+)/$', login_required(views.RunnerView.as_view())),
+    url(r'^api/job/([0-9]+)/$', login_required(views.JobView.as_view())),
 
     url(r'^api/task/([0-9]+)/$', login_required(views.TaskView.as_view())),
 
