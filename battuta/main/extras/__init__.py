@@ -3,7 +3,7 @@ import json
 
 class DataTableRequestHandler:
 
-    def __init__(self, request_data, queryset):
+    def __init__(self, queryset):
 
         self._draw = int(request_data['draw'])
         self._start = int(request_data['start'])
@@ -47,11 +47,16 @@ class DataTableRequestHandler:
             index += 1
         return column_list
 
+    def _filter_queryset(self):
+        pass
+
     def add_and_filter_row(self, row):
         if not self._search['value'] or self._search['value'] in str(json.dumps(row)):
             self._filtered_result.append(row)
 
     def build_response(self):
+
+        self._filter_queryset()
 
         for col_order in self._order:
             self._filtered_result.sort(key=lambda x: x[col_order['column']], reverse=col_order['dir'] == 'desc')

@@ -13,11 +13,10 @@ from django.forms import model_to_dict
 from pytz import timezone
 from multiprocessing import Process
 
-from main.extras import DataTableRequestHandler
-
 from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
 from apps.runner.forms import AdHocTaskForm, JobForm, PlaybookArgsForm
 from apps.runner.extras import run_job
+from apps.runner.extras.handlers import JobTableHandler
 
 from apps.users.models import Credential
 
@@ -396,7 +395,7 @@ class HistoryView(View):
                 queryset = Job.objects.filter(user=request.user)
 
             # Initiate handler
-            handler = DataTableRequestHandler(request.GET, queryset)
+            handler = JobTableHandler(queryset)
 
             # Build list from queryset
             tz = timezone(request.user.userdata.timezone)
