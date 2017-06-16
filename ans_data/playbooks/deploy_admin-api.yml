@@ -1,9 +1,0 @@
----
-- name: Deploy Admin API
-  hosts: m2m-admin-api
-  become: yes
-  vars:
-      mode: deploy
-  
-  roles:
-    - m2m-admin-api

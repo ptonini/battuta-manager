@@ -1,9 +1,0 @@
----
-- name: Deploy M2M Adapter
-  hosts: m2m-adapter:!zn5-gwa-temp:!zn5-gwa-ws1:!zn4-gwa-debian
-  become: yes
-  vars:
-      mode: deploy
-      
-  roles:
-    - m2m-adapter
