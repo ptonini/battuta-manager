@@ -386,39 +386,13 @@ class HistoryView(View):
 
         if action == 'list':
 
-            prefs = get_preferences()
-
             # Build queryset
             if request.user.is_superuser:
                 queryset = Job.objects.all()
             else:
                 queryset = Job.objects.filter(user=request.user)
 
-            # Initiate handler
-            handler = JobTableHandler(queryset)
-
-            # Build list from queryset
-            tz = timezone(request.user.userdata.timezone)
-            for job in queryset:
-                if job.subset:
-                    target = job.subset
-                else:
-                    play = job.play_set.first()
-                    if play:
-                        target = play.hosts
-                    else:
-                        target = None
-
-                row = [job.created_on.astimezone(tz).strftime(prefs['date_format']),
-                       job.user.username,
-                       job.name,
-                       target,
-                       job.status,
-                       job.id]
-
-                handler.add_and_filter_row(row)
-
-            data = handler.build_response()
+            data = JobTableHandler(request, queryset).build_response()
 
         else:
             raise Http404('Invalid action')

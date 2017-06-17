@@ -170,17 +170,23 @@ class BattutaCallback(CallbackBase):
 
                 gather_facts = play.__dict__['_attributes']['gather_facts']
 
-        elif self._job.type == 'adhoc':
+        else:
+    
+            sql_query = 'UPDATE runner_job SET subset=%s WHERE id=%s'
 
-            play_name = 'AdHoc task'
+            self._run_query_on_db('update', sql_query, (hosts, self._job.id))
 
-            if self._job.data['become']:
+            if self._job.type == 'adhoc':
 
-                become = True
+                play_name = 'AdHoc task'
 
-        elif self._job.type == 'gather_facts':
+                if self._job.data['become']:
 
-            play_name = 'Gather facts'
+                    become = True
+
+            elif self._job.type == 'gather_facts':
+
+                play_name = 'Gather facts'
 
         # Save play to database
         sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts) '\

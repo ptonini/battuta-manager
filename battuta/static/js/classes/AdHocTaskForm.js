@@ -193,7 +193,7 @@ AdHocTaskForm.prototype = {
             });
 
             self.moduleSelector.change(function () {
-                self.name = this.value;
+                self.name = '[adhoc task] ' + this.value;
                 self.module = this.value;
                 self.moduleFieldsContainer.empty().html(self._buildModuleFields());
                 self.form.find('input').keypress(function (event) {
