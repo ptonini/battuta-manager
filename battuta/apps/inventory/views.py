@@ -58,8 +58,11 @@ class InventoryView(View):
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 
             if x_forwarded_for:
+
                 ip = x_forwarded_for.split(',')[0]
+
             else:
+
                 ip = request.META.get('REMOTE_ADDR')
 
             if request.user.is_authenticated or ip in prefs['ansible_servers'].split(','):
@@ -67,6 +70,7 @@ class InventoryView(View):
                 data = BattutaInventory.to_dict()
 
             else:
+
                 raise PermissionDenied
 
         elif action == 'search':
@@ -633,11 +637,15 @@ class RelationsView(View):
             candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
 
             if related_class == type(node):
+
                 candidate_set = candidate_set.exclude(pk=node.id)
 
             if relationship == 'parents' and node.group_descendants:
+
                 candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.group_descendants])
+
             elif relationship == 'children' and node.ancestors:
+
                 candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
 
             data = [[candidate.name, candidate.id] for candidate in candidate_set]
@@ -654,14 +662,18 @@ class RelationsView(View):
         related_set, related_class = self.get_relationships(node, relationship)
 
         if action == 'add':
+
             for selected in request.POST.getlist('selection[]'):
+
                 related_set.add(get_object_or_404(related_class, pk=selected))
 
         elif action == 'remove':
 
             for selected in request.POST.getlist('selection[]'):
+
                 related_set.remove(get_object_or_404(related_class, pk=selected))
 
         else:
             raise Http404('Invalid action')
+
         return HttpResponse(json.dumps({'result': 'ok'}), content_type='application/json')

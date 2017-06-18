@@ -121,24 +121,15 @@ class BattutaCallback(CallbackBase):
 
             host = self._current_task_delegate_to
 
-        sql_query = 'SELECT id FROM runner_result WHERE task_id=%s AND host=%s'
+        if message:
 
-        result_id = self._run_query_on_db('single_value', sql_query, (self._current_task_id, host))
+            message = json.dumps(message)
 
-        if result_id:
+        sql_query = 'INSERT INTO runner_result (host,status,message,response,task_id) VALUES (%s, %s, %s, %s, %s)'
 
-            sql_query = 'UPDATE runner_result SET host=%s, status=%s, message=%s, response=%s WHERE id=%s'
+        var_tuple = (host, status, message, json.dumps(response), self._current_task_id)
 
-            self._run_query_on_db('update', sql_query, (host, status, message, json.dumps(response), result_id))
-
-        else:
-
-            sql_query = 'INSERT INTO runner_result (host,status,message,response,task_id) ' \
-                        'VALUES (%s, %s, %s, %s, %s)'
-
-            var_tuple = (host, status, message, json.dumps(response), self._current_task_id)
-
-            self._run_query_on_db('insert', sql_query, var_tuple)
+        self._run_query_on_db('insert', sql_query, var_tuple)
 
     def v2_playbook_on_play_start(self, play):
 
@@ -197,9 +188,11 @@ class BattutaCallback(CallbackBase):
         self._current_task_id = None
 
     def v2_playbook_on_task_start(self, task, is_conditional):
+
         self._on_task_start(task)
 
     def v2_playbook_on_handler_task_start(self, task):
+
         self._on_task_start(task, is_handler=True)
 
     def v2_playbook_on_stats(self, stats_list):
@@ -238,7 +231,7 @@ class BattutaCallback(CallbackBase):
                 row.append(0)
             stats_list.append(row)
 
-        sql_query = 'UPDATE runner_job SET stats=%s, WHERE id=%s'
+        sql_query = 'UPDATE runner_job SET stats=%s WHERE id=%s'
         self._run_query_on_db('update', sql_query, (str(stats_list), self._job.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):

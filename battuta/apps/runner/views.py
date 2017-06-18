@@ -53,6 +53,7 @@ class JobView(View):
 
     @staticmethod
     def get(request, job_id):
+
         job = get_object_or_404(Job, pk=job_id)
 
         prefs = get_preferences()
@@ -63,16 +64,21 @@ class JobView(View):
         data = model_to_dict(job)
 
         data['username'] = job.user.username
+
         data['created_on'] = job.created_on.astimezone(tz).strftime(prefs['date_format'])
 
         # Convert status string to dict
         if job.stats:
+
             data['stats'] = ast.literal_eval(job.stats)
 
         # Add plays to job data
         data['plays'] = list()
+
         for play in Play.objects.filter(job_id=data['id']).values():
+
             play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]
+
             data['plays'].append(play)
 
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -84,7 +90,9 @@ class JobView(View):
 
         # Run job
         if action == 'run':
+
             data = None
+
             job_data = dict(request.POST.iteritems())
 
             # Add credentials to run data
@@ -103,21 +111,28 @@ class JobView(View):
             job_data['cred'] = cred.id
 
             if not job_data['remote_user']:
+
                 job_data['remote_user'] = cred.username
 
             if not job_data['remote_pass']:
+
                 job_data['remote_pass'] = cred.password
 
             if not job_data['become_user']:
+
                 job_data['become_user'] = cred.sudo_user
 
             if not job_data['become_pass']:
+
                 if cred.sudo_pass:
+
                     job_data['become_pass'] = cred.sudo_pass
+
                 else:
                     job_data['become_pass'] = job_data['remote_pass']
 
             if cred.rsa_key:
+
                 job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
                                                    str(cred.user.username),
                                                    '.ssh',
@@ -125,17 +140,21 @@ class JobView(View):
 
             # Execute playbook
             if job_data['type'] == 'playbook':
+
                 job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['playbook'])
+
                 job_data['name'] = job_data['playbook']
 
             # Execute task
             elif job_data['type'] == 'adhoc':
+
                 adhoc_form = AdHocTaskForm(job_data)
 
                 # Convert become value to boolean
                 job_data['become'] = (job_data['become'] == 'true')
 
                 if adhoc_form.is_valid():
+
                     job_data['adhoc_task'] = {
                         'name': job_data['name'],
                         'hosts': job_data['hosts'],
@@ -147,7 +166,9 @@ class JobView(View):
                             }
                         }]
                     }
+
                 else:
+
                     data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
 
             elif job_data['type'] == 'gather_facts':
@@ -155,38 +176,62 @@ class JobView(View):
                 tasks = [{'action': {'module': 'setup'}}]
 
                 if prefs['use_ec2_facts']:
+
                     tasks.append({'action': {'module': 'ec2_facts'}})
 
                 job_data['name'] = 'Gather facts'
+
                 job_data['become'] = False
+
                 job_data['adhoc_task'] = {
                     'name': job_data['name'],
                     'hosts': job_data['hosts'],
                     'gather_facts': False,
                     'tasks': tasks
                 }
+
             else:
+
                 raise Http404('Invalid form data')
 
             if data is None:
+
                 job_form = JobForm(job_data)
+
                 if job_form.is_valid():
+
                     job = job_form.save(commit=False)
+
                     job.user = request.user
+
                     job.status = 'created'
+
                     job.is_running = True
+
                     setattr(job, 'data', job_data)
+
                     setattr(job, 'prefs', prefs)
+
                     job.save()
+
                     try:
+
                         p = Process(target=run_job, args=(job,))
+
                         p.start()
+
                     except Exception as e:
+
                         job.delete()
+
                         data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+
                     else:
+
                         data = {'result': 'ok', 'runner_id': job.id}
+
                 else:
+
                     data = {'result': 'fail', 'msg': str(job_form.errors)}
 
         # Kill job

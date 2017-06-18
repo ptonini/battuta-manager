@@ -1,13 +1,20 @@
+import json
+
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
 from ansible.inventory import Inventory, Host
-
 from django.conf import settings
 
 from apps.inventory.models import Host, Group
 
 
 class BattutaInventory:
+
+    def __init__(self):
+        self._variable_manager = VariableManager()
+        self._loader = DataLoader()
+        self._inventory = Inventory(loader=self._loader, variable_manager=self._variable_manager)
+        self._variable_manager.set_inventory(self._inventory)
 
     @staticmethod
     def to_dict(internal_vars=True):
@@ -21,7 +28,17 @@ class BattutaInventory:
 
             if host.variable_set.all().exists() or host.description:
 
-                data['_meta']['hostvars'][host.name] = {var.key: var.value for var in host.variable_set.all()}
+                data['_meta']['hostvars'][host.name] = dict()
+
+                for var in host.variable_set.all():
+
+                    try:
+
+                        data['_meta']['hostvars'][host.name][var.key] = json.loads(var.value)
+
+                    except ValueError or TypeError:
+
+                        data['_meta']['hostvars'][host.name][var.key] = var.value
 
                 if host.description and not internal_vars:
 
@@ -32,14 +49,28 @@ class BattutaInventory:
                 data['ungrouped']['hosts'].append(host.name)
 
         for group in Group.objects.order_by('name'):
+
             data[group.name] = dict()
 
             if group.members.all().exists():
+
                 data[group.name]['hosts'] = [host.name for host in group.members.all()]
 
             data[group.name]['children'] = [child.name for child in group.children.all()]
 
-            data[group.name]['vars'] = {var.key: var.value for var in group.variable_set.all()}
+            if group.variable_set.all().exists() or group.description:
+
+                data[group.name]['vars'] = dict()
+
+                for var in group.variable_set.all():
+
+                    try:
+
+                        data[group.name]['vars'][var.key] = json.loads(var.value)
+
+                    except ValueError or TypeError:
+
+                        data[group.name]['vars'][var.key] = var.value
 
             if group.description and not internal_vars:
                 data[group.name]['vars']['_description'] = group.description
@@ -50,12 +81,6 @@ class BattutaInventory:
             data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
 
         return data
-
-    def __init__(self):
-        self._variable_manager = VariableManager()
-        self._loader = DataLoader()
-        self._inventory = Inventory(loader=self._loader, variable_manager=self._variable_manager)
-        self._variable_manager.set_inventory(self._inventory)
 
     def get_variable(self, key, node):
 
@@ -68,6 +93,9 @@ class BattutaInventory:
         host_vars = self._variable_manager.get_vars(self._loader, host=host)
 
         if key in host_vars:
+
             return host_vars[key]
+
         else:
+
             return None
