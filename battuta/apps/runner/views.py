@@ -129,6 +129,7 @@ class JobView(View):
                     job_data['become_pass'] = cred.sudo_pass
 
                 else:
+
                     job_data['become_pass'] = job_data['remote_pass']
 
             if cred.rsa_key:
@@ -149,6 +150,8 @@ class JobView(View):
             elif job_data['type'] == 'adhoc':
 
                 adhoc_form = AdHocTaskForm(job_data)
+
+                print(job_data['arguments'])
 
                 # Convert become value to boolean
                 job_data['become'] = (job_data['become'] == 'true')

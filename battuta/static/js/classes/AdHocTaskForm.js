@@ -185,17 +185,25 @@ AdHocTaskForm.prototype = {
         else if (self.type === 'dialog') {
 
             if (self.task.id) self.formHeader.html('AdHoc Task');
+
             else self.formHeader.html('New AdHoc task');
 
             self.moduleSelector = selectField.clone();
+
             $.each(AdHocTaskForm.modules.sort(), function (index, value) {
+
                 self.moduleSelector.append($('<option>').attr('value', value).append(value))
+
             });
 
             self.moduleSelector.change(function () {
+
                 self.name = '[adhoc task] ' + this.value;
+
                 self.module = this.value;
+
                 self.moduleFieldsContainer.empty().html(self._buildModuleFields());
+
                 self.form.find('input').keypress(function (event) {
                     if (event.keyCode === 13) {
                         event.preventDefault();
@@ -295,7 +303,7 @@ AdHocTaskForm.prototype = {
 
         self.moduleReferenceLink.show().attr({title: moduleReferenceLink, href: moduleReferenceLink});
 
-        switch (self.name) {
+        switch (self.module) {
             case 'ping':
                 self.moduleFieldsContainer.append(
                     divCol12.clone().addClass('labelless_button').append(self.isSudo)
@@ -390,6 +398,8 @@ AdHocTaskForm.prototype = {
                 );
                 break;
         }
+        
+
     },
 
     _formToJson: function () {

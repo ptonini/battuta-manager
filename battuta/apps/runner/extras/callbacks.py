@@ -17,6 +17,7 @@ class BattutaCallback(CallbackBase):
         self._current_task_module = None
         self._current_task_run_once = None
         self._current_task_delegate_to = None
+        self._gather_facts = None
         self._inventory = None
 
     @staticmethod
@@ -57,11 +58,6 @@ class BattutaCallback(CallbackBase):
 
     def _on_task_start(self, task, is_handler=False):
 
-        # Get gather facts value
-        sql_query = 'SELECT gather_facts FROM runner_play WHERE id=%s'
-
-        gather_facts = self._run_query_on_db('single_value', sql_query, (self._current_play_id,))
-
         # Set task module
         self._current_task_module = task.__dict__['_attributes']['action']
 
@@ -77,7 +73,7 @@ class BattutaCallback(CallbackBase):
 
                 task_name = str(task.__dict__['_role']) + ' : ' + task_name
 
-        elif self._current_task_module == 'setup' and gather_facts and not self._current_task_id:
+        elif self._current_task_module == 'setup' and self._gather_facts and not self._current_task_id:
 
             task_name = 'Gather facts'
 
@@ -133,6 +129,8 @@ class BattutaCallback(CallbackBase):
 
     def v2_playbook_on_play_start(self, play):
 
+        self._gather_facts = False
+
         self._finish_current_play_tasks()
 
         sql_query = 'UPDATE runner_job SET status="running" WHERE id=%s'
@@ -146,7 +144,6 @@ class BattutaCallback(CallbackBase):
         hosts = ', '.join(play.__dict__['_attributes']['hosts'])
 
         play_name = None
-        gather_facts = False
         become = False
 
         if self._job.type == 'playbook':
@@ -159,7 +156,7 @@ class BattutaCallback(CallbackBase):
 
             if play.__dict__['_attributes']['gather_facts']:
 
-                gather_facts = play.__dict__['_attributes']['gather_facts']
+                self._gather_facts = play.__dict__['_attributes']['gather_facts']
 
         else:
     
@@ -180,11 +177,12 @@ class BattutaCallback(CallbackBase):
                 play_name = 'Gather facts'
 
         # Save play to database
-        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts) '\
-                    'VALUES (%s, %s, %s, %s, %s)'
+        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts) VALUES (%s, %s, %s, %s, %s)'
 
-        var_tuple = (self._job.id, play_name, hosts, become, gather_facts)
+        var_tuple = (self._job.id, play_name, hosts, become, self._gather_facts)
+
         self._current_play_id = self._run_query_on_db('insert', sql_query, var_tuple)
+
         self._current_task_id = None
 
     def v2_playbook_on_task_start(self, task, is_conditional):
@@ -204,7 +202,9 @@ class BattutaCallback(CallbackBase):
         stats_list = list()
 
         for key, value in stats_dict['processed'].iteritems():
+
             row = [key]
+
             if key in stats_dict['ok']:
                 row.append(stats_dict['ok'][key])
             else:
@@ -232,76 +232,117 @@ class BattutaCallback(CallbackBase):
             stats_list.append(row)
 
         sql_query = 'UPDATE runner_job SET stats=%s WHERE id=%s'
+
         self._run_query_on_db('update', sql_query, (str(stats_list), self._job.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
+
         self._job.data['has_exceptions'] = True
+
         host, response = self._extract_result(result)
+
         message = None
+
         if 'msg' in response:
+
             message = response['msg']
+
         if self._current_task_module == 'command' or self._current_task_module == 'script':
+
             message = response['stdout'] + response['stderr']
+
         elif 'exception' in response:
+
             message = 'Exception raised'
+
         self._save_result(host, 'failed', message, response)
 
     def v2_runner_on_ok(self, result):
+
         host, response = self._extract_result(result)
+
         status = 'ok'
+
         message = None
 
         if 'msg' in response:
+
             message = response['msg']
 
         if 'ansible_facts' in response:
 
             sql_query = 'SELECT facts FROM inventory_host WHERE name=%s'
+
             facts_string = self._run_query_on_db('single_value', sql_query, (host,))
 
             if facts_string:
+
                 facts = json.loads(facts_string)
+
             else:
+
                 facts = dict()
 
             new_facts = response['ansible_facts']
 
             if 'machine_id' in facts and 'ansible_machine_id' in new_facts:
+
                 if facts['machine_id'] != new_facts['ansible_machine_id']:
+
                     facts = dict()
 
             for key in new_facts:
 
                 if 'ansible_' in key:
+
                     facts[key[8:]] = new_facts[key]
+
                 else:
+
                     facts[key] = new_facts[key]
 
             sql_query = 'UPDATE inventory_host SET facts=%s WHERE name=%s'
+
             self._run_query_on_db('update', sql_query, (json.dumps(facts), host))
 
         elif self._current_task_module == 'command' or self._current_task_module == 'script':
+
             message = response['stdout'] + response['stderr']
 
         if response['changed']:
+
             status = 'changed'
 
         self._save_result(host, status, message, response)
 
     def v2_runner_on_skipped(self, result):
+
         host, response = self._extract_result(result)
+
         if self._job.data['show_skipped']:
+
             message = None
+
             if 'skip_reason' in response:
+
                 message = response['skip_reason']
+
             elif 'msg' in response:
+
                 message = response['msg']
+
             self._save_result(host, 'skipped', message, response)
 
     def v2_runner_on_unreachable(self, result):
+
         self._job.data['has_exceptions'] = True
+
         host, response = self._extract_result(result)
+
         message = None
+
         if 'msg' in response:
+
             message = response['msg']
+
         self._save_result(host, 'unreachable', message, response)
