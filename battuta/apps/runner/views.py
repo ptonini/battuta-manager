@@ -110,27 +110,15 @@ class JobView(View):
 
             job_data['cred'] = cred.id
 
-            if not job_data['remote_user']:
+            job_data['remote_user'] = job_data['remote_user'] if job_data['remote_user'] else cred.username
 
-                job_data['remote_user'] = cred.username
+            job_data['remote_pass'] = job_data['remote_pass'] if job_data['remote_pass'] else cred.password
 
-            if not job_data['remote_pass']:
-
-                job_data['remote_pass'] = cred.password
-
-            if not job_data['become_user']:
-
-                job_data['become_user'] = cred.sudo_user
+            job_data['become_user'] = job_data['become_user'] if job_data['become_user'] else cred.sudo_user
 
             if not job_data['become_pass']:
 
-                if cred.sudo_pass:
-
-                    job_data['become_pass'] = cred.sudo_pass
-
-                else:
-
-                    job_data['become_pass'] = job_data['remote_pass']
+                job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
 
             if cred.rsa_key:
 
@@ -150,8 +138,6 @@ class JobView(View):
             elif job_data['type'] == 'adhoc':
 
                 adhoc_form = AdHocTaskForm(job_data)
-
-                print(job_data['arguments'])
 
                 # Convert become value to boolean
                 job_data['become'] = (job_data['become'] == 'true')
@@ -343,13 +329,7 @@ class AdHocView(View):
     @staticmethod
     def post(request, action):
 
-        if request.POST['id']:
-
-            adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
-
-        else:
-
-            adhoc = AdHocTask()
+        adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST['id'] else AdHocTask()
 
         form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
@@ -384,10 +364,15 @@ class PlaybookView(View):
     def get(request, playbook, action):
 
         if action == 'list':
+
             data = list()
+
             for args in PlaybookArgs.objects.filter(playbook=playbook).values():
+
                 data.append(args)
+
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -399,31 +384,41 @@ class PlaybookView(View):
         if action == 'save':
 
             # Create new playbook arguments object if no id is supplied
-            if 'id' in request.POST:
-                args = get_object_or_404(PlaybookArgs, pk=request.POST['id'])
-            else:
-                args = PlaybookArgs(playbook=playbook)
+            args = get_object_or_404(PlaybookArgs, pk=request.POST['id']) if 'id' in request.POST else PlaybookArgs(playbook=playbook)
+
             form = PlaybookArgsForm(request.POST or None, instance=args)
 
             # Validate form data and save object
             if form.is_valid():
+
                 form.save(commit=True)
+
                 data = {'result': 'ok', 'id': args.id}
+
             else:
+
                 data = {'result': 'fail', 'msg': str(form.errors)}
 
         # Delete playbook arguments
         elif action == 'delete':
+
             try:
+
                 args = PlaybookArgs(pk=request.POST['id'])
+
                 args.delete()
+
                 data = {'result': 'ok'}
+
             except Exception as e:
+
                 data = {'result': 'fail', 'msg': e}
 
         # Raise exception
         else:
+
             raise Http404('Invalid action')
+
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
@@ -435,10 +430,7 @@ class HistoryView(View):
         if action == 'list':
 
             # Build queryset
-            if request.user.is_superuser:
-                queryset = Job.objects.all()
-            else:
-                queryset = Job.objects.filter(user=request.user)
+            queryset = Job.objects.all() if request.user.is_superuser else Job.objects.filter(user=request.user)
 
             data = JobTableHandler(request, queryset).build_response()
 
@@ -456,10 +448,13 @@ class TaskView(View):
         task = get_object_or_404(Task, pk=task_id)
 
         data = model_to_dict(task)
+
         data['results'] = list()
 
         for result in task.result_set.all().values():
+
             result.pop('response', None)
+
             data['results'].append(result)
 
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -469,9 +464,11 @@ class ResultView(View):
 
     @staticmethod
     def get(request, result_id):
+
         result = get_object_or_404(Result, pk=result_id)
 
         data = model_to_dict(result)
+
         data['response'] = json.loads(result.response)
 
         return HttpResponse(json.dumps(data), content_type='application/json')

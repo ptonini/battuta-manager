@@ -24,7 +24,9 @@ class PreferencesView(View):
             create_userdata(request.user, data)
 
             data['user_name'] = request.user.username
+
             data['user_id'] = request.user.id
+
             data['user_timezone'] = request.user.userdata.timezone
 
         elif action == 'detailed':
@@ -32,33 +34,44 @@ class PreferencesView(View):
             if request.user.is_superuser:
 
                 data = dict()
+
                 data['default'] = settings.DEFAULT_PREFERENCES
+
                 data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
 
             else:
+
                 raise PermissionDenied
 
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
+
         if action == 'save':
 
             for key, value in json.loads(request.POST['item_values']).iteritems():
 
                 if value == get_default_value(key):
+
                     Item.objects.filter(name=key).delete()
 
                 else:
+
                     item, created = Item.objects.get_or_create(name=key)
+
                     item.value = value
+
                     item.save()
 
             data = {'result': 'ok'}
+
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
