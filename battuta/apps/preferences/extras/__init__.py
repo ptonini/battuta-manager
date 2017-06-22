@@ -16,20 +16,25 @@ def get_preferences():
             prefs[item['name']] = item['value']
 
             if item['data_type'] == 'bool':
+
                 booleans.append(item['name'])
 
             elif item['data_type'] == 'number':
+
                 numbers.append(item['name'])
 
     for item in Item.objects.all():
 
         if item.name in booleans:
+
             prefs[item.name] = item.value == 'true'
 
         elif item.name in numbers:
+
             prefs[item.name] = float(item.value)
 
         else:
+
             prefs[item.name] = item.value
 
     return prefs
@@ -45,10 +50,8 @@ def get_default_value(key):
 
                 if item['data_type'] == 'bool':
 
-                    if item['value']:
-                        return 'true'
-                    else:
-                        return 'false'
+                    return 'true' if item['value'] else 'false'
 
                 else:
+
                     return str(item['value'])

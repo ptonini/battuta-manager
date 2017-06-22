@@ -304,10 +304,8 @@ class CredentialView(View):
                 form_data['user'] = user.id
 
                 # Build credential object
-                if form_data['id'] == 'undefined':
-                    cred = Credential(user=user)
-                else:
-                    cred = get_object_or_404(Credential, pk=form_data['id'])
+
+                cred = Credential(user=user) if form_data['id'] == 'undefined' else get_object_or_404(Credential, pk=form_data['id'])
 
                 # Set form data passwords
                 if form_data['password'] == prefs['password_placeholder']:

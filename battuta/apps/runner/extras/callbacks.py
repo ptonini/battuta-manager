@@ -241,15 +241,11 @@ class BattutaCallback(CallbackBase):
 
         host, response = self._extract_result(result)
 
-        message = None
-
-        if 'msg' in response:
-
-            message = response['msg']
+        message = response.get('msg', None)
 
         if self._current_task_module == 'command' or self._current_task_module == 'script':
 
-            message = response['stdout'] + response['stderr']
+            message = response.get('stdout', '') + response.get('stderr', '')
 
         elif 'exception' in response:
 
@@ -261,13 +257,9 @@ class BattutaCallback(CallbackBase):
 
         host, response = self._extract_result(result)
 
-        status = 'ok'
+        status = 'changed' if response['changed'] else 'ok'
 
-        message = None
-
-        if 'msg' in response:
-
-            message = response['msg']
+        message = response.get('msg', None)
 
         if 'ansible_facts' in response:
 
@@ -275,13 +267,7 @@ class BattutaCallback(CallbackBase):
 
             facts_string = self._run_query_on_db('single_value', sql_query, (host,))
 
-            if facts_string:
-
-                facts = json.loads(facts_string)
-
-            else:
-
-                facts = dict()
+            facts = json.loads(facts_string) if facts_string else dict()
 
             new_facts = response['ansible_facts']
 
@@ -307,11 +293,7 @@ class BattutaCallback(CallbackBase):
 
         elif self._current_task_module == 'command' or self._current_task_module == 'script':
 
-            message = response['stdout'] + response['stderr']
-
-        if response['changed']:
-
-            status = 'changed'
+            message = response.get('stdout', '') + response.get('stderr', '')
 
         self._save_result(host, status, message, response)
 
@@ -339,10 +321,6 @@ class BattutaCallback(CallbackBase):
 
         host, response = self._extract_result(result)
 
-        message = None
-
-        if 'msg' in response:
-
-            message = response['msg']
+        message = response.get('msg', None)
 
         self._save_result(host, 'unreachable', message, response)

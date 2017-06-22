@@ -395,13 +395,9 @@ class NodesView(View):
 
                             host_info['address'] = facts['default_ipv4']['address']
 
-                        if 'processor_count' in facts:
+                        host_info['cores'] = facts['processor_count'] if 'processor_count' in facts else None
 
-                            host_info['cores'] = facts['processor_count']
-
-                        if 'memtotal_mb' in facts:
-
-                            host_info['memory'] = facts['memtotal_mb']
+                        host_info['memory'] = facts['memtotal_mb'] if 'memtotal_mb' in facts else None
 
                         if 'mounts' in facts:
 
@@ -411,13 +407,9 @@ class NodesView(View):
 
                                 host_info['disc'] += mount['size_total']
 
-                        if 'ec2_public_ipv4' in facts:
+                        host_info['public_address'] = facts['ec2_public_ipv4'] if 'ec2_public_ipv4' in facts else None
 
-                            host_info['public_address'] = facts['ec2_public_ipv4']
-
-                        if 'ec2_instance_type' in facts:
-
-                            host_info['instance_type'] = facts['ec2_instance_type']
+                        host_info['instance_type'] = facts['ec2_instance_type'] if 'ec2_instance_type' in facts else None
 
                     data.append(host_info)
 
@@ -511,6 +503,7 @@ class NodeView(View):
         if node_name == 'null':
 
             node = node_class()
+
         else:
 
             node = get_object_or_404(node_class, name=node_name)

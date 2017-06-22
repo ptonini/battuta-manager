@@ -51,46 +51,36 @@ def run_job(job):
     with db_conn as cursor:
         cursor.execute('UPDATE runner_job SET status="starting", pid=%s WHERE id=%s', (os.getpid(), job.id))
 
-    if 'show_skipped' not in job.data:
-        job.data['show_skipped'] = c.DISPLAY_SKIPPED_HOSTS
+    job.data['show_skipped'] = job.data['show_skipped'] if 'show_skipped' in job.data else c.DISPLAY_SKIPPED_HOSTS
 
-    if 'connection' not in job.data:
-        job.data['connection'] = 'paramiko'
+    job.data['connection'] = job.data['connection'] if 'connection' in job.data else 'paramiko'
 
-    if 'module_path' not in job.data:
-        job.data['module_path'] = c.DEFAULT_MODULE_PATH
+    job.data['module_path'] = job.data['module_path'] if 'module_path' in job.data else c.DEFAULT_MODULE_PATH
 
-    if 'forks' not in job.data:
-        job.data['forks'] = c.DEFAULT_FORKS
+    job.data['forks'] = job.data['forks'] if 'forks' in job.data else c.DEFAULT_FORKS
 
-    if 'rsa_key' not in job.data:
-        job.data['rsa_key'] = ''
+    job.data['rsa_key'] = job.data['rsa_key'] if 'rsa_key' in job.data else ''
 
-    if 'become' not in job.data:
-        job.data['become'] = c.DEFAULT_BECOME
+    job.data['become'] = job.data['become'] if 'become' in job.data else c.DEFAULT_BECOME
 
-    if not job.data['become_user']:
-        job.data['become_user'] = c.DEFAULT_BECOME_USER
+    job.data['become_user'] = job.data['become_user'] if job.data['become_user'] else c.DEFAULT_BECOME_USER
 
-    if 'become_method' not in job.data:
-        job.data['become_method'] = c.DEFAULT_BECOME_METHOD
+    job.data['become_method'] = job.data['become_method'] if 'become_method' in job.data else c.DEFAULT_BECOME_METHOD
+
+    job.data['tags'] = job.data['tags'] if 'tags' in job.data else ''
+
+    job.data['skip_tags'] = job.data['skip_tags'] if 'skip_tags' in job.data else ''
+
+    if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
+        job.data['extra_vars'] = []
+    else:
+        job.data['extra_vars'] = job.data['extra_vars'].split(' ')
 
     if 'check' not in job.data or job.data['check'] == 'false':
         job.data['check'] = False
     elif job.data['check'] == 'true':
         job.data['show_skipped'] = True
         job.data['check'] = True
-
-    if 'tags' not in job.data:
-        job.data['tags'] = ''
-
-    if 'skip_tags' not in job.data:
-        job.data['skip_tags'] = ''
-
-    if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
-        job.data['extra_vars'] = []
-    else:
-        job.data['extra_vars'] = job.data['extra_vars'].split(' ')
 
     # Create ansible options tuple
     options = AnsibleOptions(connection=job.data['connection'],
@@ -116,10 +106,15 @@ def run_job(job):
                              syntax=None)
 
     variable_manager = VariableManager()
+
     loader = DataLoader()
+
     inventory = Inventory(loader=loader, variable_manager=variable_manager)
+
     variable_manager.set_inventory(inventory)
+
     variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
+
     passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
 
     if 'subset' in job.data:
