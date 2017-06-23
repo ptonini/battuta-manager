@@ -69,29 +69,23 @@ class UsersView(View):
 
     def get(self, request, user_name, action):
 
-        if action == 'list':
+        if user_name == request.user.username or request.user.is_superuser:
 
-            if user_name == request.user.username or request.user.is_superuser:
+            if action == 'list':
 
-                data = list()
+                data = [self._user_to_dict(user) for user in User.objects.all()]
 
-                for user in User.objects.all():
-
-                    data.append(self._user_to_dict(user))
-
-            else:
-                raise PermissionDenied
-
-        elif action == 'get':
-
-            if user_name == request.user.username or request.user.is_superuser:
+            elif action == 'get':
 
                 data = {'result': 'ok', 'user': self._user_to_dict(get_object_or_404(User, username=user_name))}
 
             else:
-                raise PermissionDenied
+
+                raise Http404('Invalid action')
+
         else:
-            raise Http404('Invalid action')
+
+            raise PermissionDenied
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -142,9 +136,11 @@ class UsersView(View):
                     data = {'result': 'ok', 'user': self._user_to_dict(user)}
 
                 else:
+
                     data = {'result': 'fail', 'msg': str(user_form.errors) + str(userdata_form.errors)}
 
             else:
+
                 raise PermissionDenied
 
         elif action == 'delete':
@@ -304,7 +300,6 @@ class CredentialView(View):
                 form_data['user'] = user.id
 
                 # Build credential object
-
                 cred = Credential(user=user) if form_data['id'] == 'undefined' else get_object_or_404(Credential, pk=form_data['id'])
 
                 # Set form data passwords

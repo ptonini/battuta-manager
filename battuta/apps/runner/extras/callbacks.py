@@ -53,7 +53,6 @@ class BattutaCallback(CallbackBase):
         if self._current_task_id:
 
             sql_query = 'UPDATE runner_task SET is_running=FALSE WHERE play_id=%s'
-
             self._run_query_on_db('update', sql_query, (self._current_play_id,))
 
     def _on_task_start(self, task, is_handler=False):
@@ -89,7 +88,6 @@ class BattutaCallback(CallbackBase):
         if self._current_task_id:
 
             sql_query = 'UPDATE runner_task SET is_running=FALSE WHERE id=%s'
-
             self._run_query_on_db('update', sql_query, (self._current_task_id,))
 
         sql_query = 'INSERT INTO runner_task (play_id, name, module, is_handler, is_running) ' \

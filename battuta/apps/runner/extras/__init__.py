@@ -51,25 +51,25 @@ def run_job(job):
     with db_conn as cursor:
         cursor.execute('UPDATE runner_job SET status="starting", pid=%s WHERE id=%s', (os.getpid(), job.id))
 
-    job.data['show_skipped'] = job.data['show_skipped'] if 'show_skipped' in job.data else c.DISPLAY_SKIPPED_HOSTS
+    job.data['show_skipped'] = job.data.get('show_skipped', c.DISPLAY_SKIPPED_HOSTS)
 
-    job.data['connection'] = job.data['connection'] if 'connection' in job.data else 'paramiko'
+    job.data['connection'] = job.data.get('connection', 'paramiko')
 
-    job.data['module_path'] = job.data['module_path'] if 'module_path' in job.data else c.DEFAULT_MODULE_PATH
+    job.data['module_path'] = job.data.get('module_path')
 
-    job.data['forks'] = job.data['forks'] if 'forks' in job.data else c.DEFAULT_FORKS
+    job.data['forks'] = job.data.get('forks', c.DEFAULT_FORKS)
 
-    job.data['rsa_key'] = job.data['rsa_key'] if 'rsa_key' in job.data else ''
+    job.data['rsa_key'] = job.data.get('rsa_key', '')
 
-    job.data['become'] = job.data['become'] if 'become' in job.data else c.DEFAULT_BECOME
+    job.data['become'] = job.data.get('become', c.DEFAULT_BECOME)
 
     job.data['become_user'] = job.data['become_user'] if job.data['become_user'] else c.DEFAULT_BECOME_USER
 
-    job.data['become_method'] = job.data['become_method'] if 'become_method' in job.data else c.DEFAULT_BECOME_METHOD
+    job.data['become_method'] = job.data.get('become_method', c.DEFAULT_BECOME_METHOD)
 
-    job.data['tags'] = job.data['tags'] if 'tags' in job.data else ''
+    job.data['tags'] = job.data.get('tags', '')
 
-    job.data['skip_tags'] = job.data['skip_tags'] if 'skip_tags' in job.data else ''
+    job.data['skip_tags'] = job.data.get('skip_tags', '')
 
     if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
         job.data['extra_vars'] = []
