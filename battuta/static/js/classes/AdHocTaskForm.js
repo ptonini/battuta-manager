@@ -283,7 +283,7 @@ AdHocTaskForm.prototype = {
         self.fileSourceGroup = divFormGroup.clone().append(
             $('<label>').html(self.fileSourceLabel).append(
                 $('<small>').attr('class', 'label_link').html('upload files').click(function () {
-                    window.open('/files/', '_blank');
+                    window.open(filesPath, '_blank');
                 }),
                 self.fileSourceField
             )
@@ -347,7 +347,7 @@ AdHocTaskForm.prototype = {
                 );
                 break;
             case 'copy':
-                self.fileSourceField.autocomplete({source: runnerApiPath + 'adhoc/searchFiles/?type=file'});
+                self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=file'});
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol12.clone().append(self.fileDestGroup),
@@ -357,7 +357,7 @@ AdHocTaskForm.prototype = {
                 );
                 break;
             case 'unarchive':
-                self.fileSourceField.autocomplete({source: runnerApiPath + 'adhoc/searchFiles/?type=archive'});
+                self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=archive'});
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol12.clone().append(self.fileDestGroup),
@@ -366,7 +366,7 @@ AdHocTaskForm.prototype = {
                 );
                 break;
             case 'script':
-                self.fileSourceField.autocomplete({source: runnerApiPath + 'adhoc/searchFiles/?type=file'});
+                self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=file'});
                 self.fileSourceLabel.html('Script');
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),

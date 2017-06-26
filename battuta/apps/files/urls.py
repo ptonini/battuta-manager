@@ -7,6 +7,6 @@ urlpatterns = [
 
     url(r'^$', login_required(views.PageView.as_view())),
 
-    url(r'^api/([a-zA-Z0-9-._?]+)/([a-z]+)/$', login_required(views.FilesView.as_view()))
+    url(r'^api/([a-z]+)/$', login_required(views.FilesView.as_view()))
 
 ]

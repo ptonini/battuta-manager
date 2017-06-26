@@ -26,6 +26,19 @@ class PageView(View):
 
 class FilesView(View):
 
+    file_sources = [
+        [settings.FILES_PATH, '{{ files_path }}', [], False],
+        [settings.USERDATA_PATH, '{{ userdata_path }}', [], True],
+        [settings.ROLES_PATH, '{{ roles_path }}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
+    ]
+
+    archive_types = [
+        'application/zip',
+        'application/gzip',
+        'application/x-tar',
+        'application/x-gtar'
+    ]
+
     @staticmethod
     def validator(root, full_path):
 
@@ -36,11 +49,13 @@ class FilesView(View):
                 try:
 
                     yaml.load(yaml_file.read())
+
                     return True, None
 
                 except yaml.YAMLError as e:
 
                     return False, type(e).__name__ + ': ' + e.__str__()
+
         else:
 
             return True, None
@@ -76,161 +91,202 @@ class FilesView(View):
 
         return root_dir, file_types
 
-    @staticmethod
-    def get(request, root, action):
+    def get(self, request, action):
 
-        root_dir, file_types = FilesView.set_root(root, request)
+        root_dir, file_types = FilesView.set_root(request.GET.get('root'), request)
 
         prefs = get_preferences()
 
-        if not root_dir:
+        if action == 'search':
 
-            raise Http404('Invalid root')
-
-        if action == 'list':
-
-            tz = timezone(request.user.userdata.timezone)
+            prefs = get_preferences()
 
             data = list()
 
-            if request.GET['folder']:
+            for path, prefix, exclude, is_user_folder in self.file_sources:
 
-                directory = os.path.join(root_dir, request.GET['folder'])
+                for root, dirs, files in os.walk(path):
 
-                folder = request.GET['folder']
+                    for file_name in files:
 
-            else:
+                        full_path = os.path.join(root, file_name)
+                        relative_path = root.replace(path, prefix)
 
-                directory = root_dir
+                        if not prefs['show_hidden_files'] and any(s.startswith('.') for s in full_path.split('/')):
+                            continue
 
-                folder = ''
+                        if request.GET['term'] not in full_path:
+                            continue
 
-            for base_name in os.listdir(directory):
+                        if root.split('/')[-1] in exclude:
+                            continue
 
-                full_path = os.path.join(directory, base_name)
+                        if request.GET['type'] == 'archive':
 
-                if not prefs['show_hidden_files'] and base_name.startswith('.'):
+                            if magic.from_file(full_path, mime='true') not in self.archive_types:
+                                continue
 
-                    continue
+                        if is_user_folder and relative_path.split('/')[1] != request.user.username:
+                            continue
 
-                if file_types != '*' and base_name.split('.')[-1] not in file_types:
-
-                    continue
-
-                if os.path.isfile(full_path):
-
-                    file_type = magic.from_file(full_path, mime='true')
-
-                    is_valid, error = FilesView.validator(root, full_path)
-
-                else:
-
-                    file_type = 'directory'
-
-                    is_valid = True
-
-                    error = None
-
-                file_size = os.path.getsize(full_path)
-
-                file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-
-                utc_timestamp = utc.localize(file_timestamp)
-
-                data.append({'name': base_name,
-                             'type': file_type,
-                             'size': file_size,
-                             'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
-                             'root': root,
-                             'folder': folder,
-                             'is_valid': is_valid,
-                             'error': error})
-
-        elif action == 'read':
-
-            full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
-
-            if os.path.exists(full_path):
-
-                if os.path.isfile(full_path):
-
-                    if os.stat(full_path).st_size <= prefs['max_edit_size']:
-
-                        with open(full_path, 'r') as text_file:
-
-                            data = {'result': 'ok', 'text': text_file.read()}
-                    else:
-
-                        data = {'result': 'fail',
-                                'msg': 'The file is larger than ' + str(prefs['max_edit_size']) + 'kb'}
-                else:
-
-                    data = {'result': 'fail', 'msg': 'Target is not a file'}
-
-            else:
-
-                data = {'result': 'fail', 'msg': 'The file was not found'}
-
-        elif action == 'exists':
-
-            if request.GET['type'] == 'directory':
-
-                check_method = os.path.isdir
-
-            elif request.GET['type'] == 'file':
-
-                check_method = os.path.isfile
-
-            else:
-
-                raise Http404('Invalid object type')
-
-            if check_method(os.path.join(root_dir, request.GET['name'])):
-
-                data = {'result': 'ok'}
-
-            else:
-
-                data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
-
-        elif action == 'download':
-
-            full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
-
-            if os.path.isfile(full_path):
-
-                target = full_path
-
-                delete_after = False
-
-            else:
-
-                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['name']), 'zip', full_path)
-
-                delete_after = True
-
-            stream = StreamingHttpResponse((line for line in open(target, 'r')))
-
-            stream['Content-Length'] = os.path.getsize(target)
-
-            stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
-
-            if delete_after:
-
-                os.remove(target)
-
-            return stream
+                        data.append({'value': os.path.join(relative_path, file_name)})
 
         else:
 
-            raise Http404('Invalid action')
+            if not root_dir:
+
+                raise Http404('Invalid root')
+
+            if action == 'list':
+
+                tz = timezone(request.user.userdata.timezone)
+
+                data = list()
+
+                if request.GET['folder']:
+
+                    directory = os.path.join(root_dir, request.GET['folder'])
+
+                    folder = request.GET['folder']
+
+                else:
+
+                    directory = root_dir
+
+                    folder = ''
+
+                for base_name in os.listdir(directory):
+
+                    full_path = os.path.join(directory, base_name)
+
+                    if not prefs['show_hidden_files'] and base_name.startswith('.'):
+
+                        continue
+
+                    if file_types != '*' and base_name.split('.')[-1] not in file_types:
+
+                        continue
+
+                    if os.path.isfile(full_path):
+
+                        file_type = magic.from_file(full_path, mime='true')
+
+                        is_valid, error = FilesView.validator(request.GET.get('root'), full_path)
+
+                    else:
+
+                        file_type = 'directory'
+
+                        is_valid = True
+
+                        error = None
+
+                    file_size = os.path.getsize(full_path)
+
+                    file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
+
+                    utc_timestamp = utc.localize(file_timestamp)
+
+                    data.append({
+                        'name': base_name,
+                        'type': file_type,
+                        'size': file_size,
+                        'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
+                        'root': request.GET.get('root'),
+                        'folder': folder,
+                        'is_valid': is_valid,
+                        'error': error
+                    })
+
+            elif action == 'read':
+
+                full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
+
+                if os.path.exists(full_path):
+
+                    if os.path.isfile(full_path):
+
+                        if os.stat(full_path).st_size <= prefs['max_edit_size']:
+
+                            with open(full_path, 'r') as text_file:
+
+                                data = {'result': 'ok', 'text': text_file.read()}
+
+                        else:
+
+                            data = {
+                                'result': 'fail',
+                                'msg': 'The file is larger than ' + str(prefs['max_edit_size']) + 'kb'
+                            }
+
+                    else:
+
+                        data = {'result': 'fail', 'msg': 'Target is not a file'}
+
+                else:
+
+                    data = {'result': 'fail', 'msg': 'The file was not found'}
+
+            elif action == 'exists':
+
+                if request.GET['type'] == 'directory':
+
+                    check_method = os.path.isdir
+
+                elif request.GET['type'] == 'file':
+
+                    check_method = os.path.isfile
+
+                else:
+
+                    raise Http404('Invalid object type')
+
+                if check_method(os.path.join(root_dir, request.GET['name'])):
+
+                    data = {'result': 'ok'}
+
+                else:
+
+                    data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
+
+            elif action == 'download':
+
+                full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
+
+                if os.path.isfile(full_path):
+
+                    target = full_path
+
+                    delete_after = False
+
+                else:
+
+                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['name']), 'zip', full_path)
+
+                    delete_after = True
+
+                stream = StreamingHttpResponse((line for line in open(target, 'r')))
+
+                stream['Content-Length'] = os.path.getsize(target)
+
+                stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
+
+                if delete_after:
+
+                    os.remove(target)
+
+                return stream
+
+            else:
+
+                raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
-    def post(request, root, action):
+    def post(request, action):
 
-        root_dir, file_types = FilesView.set_root(root, request)
+        root_dir, file_types = FilesView.set_root(request.POST.get('root'), request)
 
         full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
 
@@ -308,13 +364,7 @@ class FilesView(View):
 
             else:
 
-                if os.path.isfile(full_path):
-
-                    shutil.copy(full_path, new_path)
-
-                else:
-
-                    shutil.copytree(full_path, new_path)
+                shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
 
                 data = {'result': 'ok'}
 
@@ -344,13 +394,7 @@ class FilesView(View):
 
         elif action == 'delete':
 
-            if os.path.isfile(new_path):
-
-                os.remove(new_path)
-
-            else:
-
-                shutil.rmtree(new_path)
+            os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
 
             data = {'result': 'ok'}
 

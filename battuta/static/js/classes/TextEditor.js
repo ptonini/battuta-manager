@@ -41,11 +41,11 @@ function TextEditor(file, saveCallback) {
 
                     $.ajax({
                         type: 'POST',
-                        url: filesApiPath + self.file.root + '/save/',
+                        url: filesApiPath + 'save/',
                         dataType: 'json',
                         data: self.file,
                         success: function (data) {
-                            if (data.result == 'ok') {
+                            if (data.result === 'ok') {
                                 saveCallback && saveCallback();
                                 self.editorDialog.dialog('close');
                                 $.bootstrapGrowl(formName + ' saved', {type: 'success'});

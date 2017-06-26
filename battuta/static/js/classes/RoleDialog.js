@@ -55,37 +55,40 @@ function RoleDialog(fileTable) {
 
                     if (roleName) $.ajax({
                         type: 'POST',
-                        url: filesApiPath + 'roles/create/',
+                        url: filesApiPath + 'create/',
                         dataType: 'json',
                         data: {
                             name: roleName,
                             new_name: roleName,
                             folder: '',
-                            is_folder: true
+                            is_folder: true,
+                            root: 'roles'
                         },
                         success: function (data) {
                             if (data.result === 'ok') {
                                 $('input:checked').each(function (index, input) {
                                     $.ajax({
                                         type: 'POST',
-                                        url: filesApiPath + 'roles/create/',
+                                        url: filesApiPath + 'create/',
                                         dataType: 'json',
                                         data: {
                                             name: $(this).val(),
                                             new_name: $(this).val(),
                                             folder: roleName,
-                                            is_folder: true
+                                            is_folder: true,
+                                            root: 'roles'
                                         },
                                         success: function () {
                                             if ($(input).data('main')) $.ajax({
                                                 type: 'POST',
-                                                url: filesApiPath + 'roles/create/',
+                                                url: filesApiPath + 'create/',
                                                 dataType: 'json',
                                                 data: {
                                                     name: 'main.yml',
                                                     new_name: 'main.yml',
                                                     folder: roleName + '/' + $(input).val(),
-                                                    is_folder: false
+                                                    is_folder: false,
+                                                    root: 'roles'
                                                 }
                                             })
                                         }

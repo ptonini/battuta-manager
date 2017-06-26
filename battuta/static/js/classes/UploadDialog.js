@@ -9,7 +9,7 @@ function UploadDialog(folder, root, uploadCallback) {
 
     self.uploadField
         .fileinput({
-            uploadUrl: filesApiPath + root + '/upload/',
+            uploadUrl: filesApiPath + 'upload/',
             uploadAsync: true,
             uploadExtraData: function () {
                 var file = self.uploadField.fileinput('getFileStack')[0];
@@ -17,6 +17,7 @@ function UploadDialog(folder, root, uploadCallback) {
                     name: file.name,
                     new_name: file.name,
                     folder: folder,
+                    root: root,
                     csrfmiddlewaretoken: getCookie('csrftoken')
                 }
             },
@@ -31,7 +32,7 @@ function UploadDialog(folder, root, uploadCallback) {
         })
         .on('fileuploaded', function (event, data) {
             self.uploadDialog.dialog('close');
-            if (data.response.result == 'fail') $.bootstrapGrowl(data.response.msg, failedAlertOptions);
+            if (data.response.result === 'fail') $.bootstrapGrowl(data.response.msg, failedAlertOptions);
             else uploadCallback && uploadCallback()
         });
 

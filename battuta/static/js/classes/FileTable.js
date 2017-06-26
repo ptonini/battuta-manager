@@ -34,8 +34,8 @@ function FileTable(root, nameCellFormatter, container) {
                             fieldValue = fieldValue.substr(0, fieldValue.length - 1)
                         }
                         $.ajax({
-                            url: filesApiPath+ self.root + '/exists/',
-                            data: {name: fieldValue, type: 'directory'},
+                            url: filesApiPath + 'exists/',
+                            data: {name: fieldValue, type: 'directory', root: self.root},
                             success: function (data) {
 
                                 if (data.result === 'ok') self.setFolder(fieldValue);
@@ -95,8 +95,8 @@ function FileTable(root, nameCellFormatter, container) {
 
     if (self.folder) {
         $.ajax({
-            url: filesApiPath + self.root + '/exists/',
-            data: {folder: self.folder, type: 'directory'},
+            url: filesApiPath + 'exists/',
+            data: {folder: self.folder, type: 'directory', root: self.root},
             success: function (data) {
                 if (data.result === 'failed') self.folder = '';
                 self._buildTable()
@@ -119,10 +119,11 @@ FileTable.prototype = {
 
         self.table.DataTable({
             ajax: {
-                url: filesApiPath + self.root + '/list/',
+                url: filesApiPath + 'list/',
                 dataSrc: '',
                 data: function (d) {
-                    d.folder = self.folder
+                    d.folder = self.folder;
+                    d.root = self.root
                 }
             },
             columns: [
@@ -133,6 +134,8 @@ FileTable.prototype = {
             ],
             order: [[0, 'asc']],
             rowCallback: function (row, object) {
+
+                object.root = self.root;
 
                 if (object.type === 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                     .css({'cursor': 'pointer', 'font-weight': '700'})
@@ -159,7 +162,7 @@ FileTable.prototype = {
 
                             if (object.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
                                 $.ajax({
-                                    url: filesApiPath + self.root + '/read/',
+                                    url: filesApiPath + 'read/',
                                     dataType: 'json',
                                     data: object,
                                     success: function (data) {
@@ -196,7 +199,7 @@ FileTable.prototype = {
                                 new DeleteDialog(function () {
                                     $.ajax({
                                         type: 'POST',
-                                        url: filesApiPath + self.root + '/delete/',
+                                        url: filesApiPath + 'delete/',
                                         dataType: 'json',
                                         data: object,
                                         success: function (data) {

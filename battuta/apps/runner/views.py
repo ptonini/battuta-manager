@@ -284,42 +284,6 @@ class AdHocView(View):
 
                     data.append(task)
 
-        elif action == 'searchFiles':
-            prefs = get_preferences()
-            data = list()
-            file_sources = [
-                [settings.FILES_PATH, '{{ files_path }}', [], False],
-                [settings.USERDATA_PATH, '{{ userdata_path }}', [], True],
-                [settings.ROLES_PATH, '{{ roles_path }}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
-            ]
-
-            archive_types = ['application/zip', 'application/gzip', 'application/x-tar', 'application/x-gtar']
-
-            for path, prefix, exclude, is_user_folder in file_sources:
-                for root, dirs, files in os.walk(path):
-                    for file_name in files:
-
-                        full_path = os.path.join(root, file_name)
-                        relative_path = root.replace(path, prefix)
-
-                        if not prefs['show_hidden_files'] and any(s.startswith('.') for s in full_path.split('/')):
-                            continue
-
-                        if request.GET['term'] not in full_path:
-                            continue
-
-                        if root.split('/')[-1] in exclude:
-                            continue
-
-                        if request.GET['type'] == 'archive':
-                            if magic.from_file(full_path, mime='true') not in archive_types:
-                                continue
-
-                        if is_user_folder and relative_path.split('/')[1] != request.user.username:
-                            continue
-
-                        data.append({'value': os.path.join(relative_path, file_name)})
-
         else:
 
             raise Http404('Invalid action')
