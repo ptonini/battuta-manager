@@ -24,7 +24,7 @@ function VariableForm(variable, type, node, saveCallback, container) {
             id: self.var.id
         };
 
-        if (self.type == 'add') submitCallback = function () {
+        if (self.type === 'add') submitCallback = function () {
             self.saveCallback();
             self.form.find('input').val('');
             self.keyField.focus();
@@ -43,41 +43,55 @@ function VariableForm(variable, type, node, saveCallback, container) {
     self._buildForm();
 
     self.form.find('input').keypress(function (event) {
-        if (event.keyCode == 13) {
+        if (event.keyCode === 13) {
             event.preventDefault();
             $(this).submit()
         }
     });
 
-    if (self.type == 'add') container.append(self.form);
-    else if (self.type == 'dialog') self.dialog.dialog('open');
+    if (self.type === 'add') container.append(self.form);
+
+    else if (self.type === 'dialog') self.dialog.dialog('open');
+
 }
 
 VariableForm.saveVariable = function (variable, node, saveCallback) {
 
     VariableForm.postVariable(variable, 'save', node, function () {
+
         saveCallback();
+
         $.bootstrapGrowl('Variable saved', {type: 'success'})
+
     })
+
 };
 
 VariableForm.deleteVariable = function (variable, node, deleteCallback) {
 
     VariableForm.postVariable(variable, 'delete', node, function () {
+
         deleteCallback();
+
         $.bootstrapGrowl('Variable deleted', {type: 'success'})
+
     })
+
 };
 
 VariableForm.postVariable = function (variable, action, node, successCallback) {
+
     $.ajax({
         url: inventoryApiPath + node.type + '/' + node.name + '/vars/' + action + '/',
         type: 'POST',
         dataType: 'json',
         data: variable,
         success: function(data) {
-            if (data.result == 'ok') successCallback && successCallback();
+
+            if (data.result === 'ok') successCallback && successCallback();
+
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
         }
     });
 };
@@ -85,18 +99,26 @@ VariableForm.postVariable = function (variable, action, node, successCallback) {
 VariableForm.prototype = {
 
     _buildForm: function () {
+
         var self = this;
 
-        if (self.type == 'add') {
+        if (self.type === 'add') {
+
             self.formHeader.html('Add variable');
+
             self.valueField = textInputField.clone();
+
             self.saveButton = btnSmall.clone().html('Save');
+
             self.copyButton = btnSmall.clone()
                 .attr('title', 'Copy from nde')
                 .append(spanGlyph.clone().addClass('glyphicon-duplicate'))
                 .click(function (event) {
+
                     event.preventDefault();
+
                     new CopyVariables(self.node, self.saveCallback)
+
                 });
 
             self.form.append(
@@ -110,9 +132,12 @@ VariableForm.prototype = {
             );
         }
 
-        else if (self.type == 'dialog') {
+        else if (self.type === 'dialog') {
+
             self.formHeader.html('Edit variable');
+
             self.valueField = textAreaField.clone();
+
             self.dialog = largeDialog.clone();
 
             self.form.append(
@@ -133,14 +158,23 @@ VariableForm.prototype = {
                 closeOnEscape: false,
                 buttons: {
                     Save: function () {
+
                         self.action = 'save';
+
                         self.form.submit();
+
                     },
                     Close: function () {
+
                         $(this).dialog('close');
+
                     }
                 },
-                close: function() {$(this).remove()}
+                close: function() {
+
+                    $(this).remove()
+
+                }
             });
         }
     }
