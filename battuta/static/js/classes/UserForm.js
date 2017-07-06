@@ -22,8 +22,11 @@ function UserForm(currentUser, user, container) {
     self.retypePasswordField = passInputField.clone();
 
     self.openCredentialsBtn = btnXsmall.clone().html('Credentials').click(function (event) {
+
         event.preventDefault();
+
         new Credentials(self.user);
+
     });
 
     self.usernameFieldContainer = divRow.clone().append(
@@ -77,20 +80,28 @@ function UserForm(currentUser, user, container) {
             )
         )
         .submit(function (event) {
+
             event.preventDefault();
 
             function saveUser(postData) {
+
                 $.ajax({
                     url: usersApiPath + self.user.username + '/save/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
                     success: function (data) {
+
                         if (data.result === 'ok') {
+
                             if (self.user.username) $.bootstrapGrowl('User saved', {type: 'success'});
+
                             else window.open(usersPath + data.user.username + '/', '_self')
+
                         }
+
                         else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
                     }
                 });
             }
@@ -115,7 +126,9 @@ function UserForm(currentUser, user, container) {
             }
 
             self.passwordField.val('');
+
             self.retypePasswordField.val('');
+
         });
 
     self.currentPassword = passInputField.clone();
@@ -150,6 +163,7 @@ function UserForm(currentUser, user, container) {
             )
         )
         .submit(function (event) {
+
             event.preventDefault();
 
             var data = {
@@ -158,7 +172,9 @@ function UserForm(currentUser, user, container) {
             };
 
             if (data.current_password) {
+
                 if (data.new_password && data.new_password === self.retypeNewPassword.val()) {
+
                     $.ajax({
                         url: usersApiPath + self.user.username + '/chgpass/',
                         type: 'POST',
@@ -173,10 +189,14 @@ function UserForm(currentUser, user, container) {
                         }
                     });
                 }
+
                 else if (data.new_password !== self.retypeNewPassword.val()) {
+
                     $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
+
                 }
             }
+
             $(this).find('input').val('')
 
         });

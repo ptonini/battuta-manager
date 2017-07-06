@@ -21,25 +21,44 @@ function RunnerHistoryTable(container) {
         processing: true,
         order: [[0, "desc"]],
         rowCallback: function (row, data) {
+
             switch (data[4]) {
+
                 case 'running':
+
                     $(row).css('color', 'blue');
+
                     break;
+
                 case 'finished':
+
                     $(row).css('color', 'green');
+
                     break;
+
                 case 'finished with errors':
+
                     $(row).css('color', 'orange');
+
                     break;
+
                 case 'failed':
+
                     $(row).css('color', 'red');
+
                     break;
+
                 case 'canceled':
+
                     $(row).css('color', 'gray');
+
                     break;
+
             }
             $(row).css('cursor','pointer').click(function () {
+
                 popupCenter(runnerPath +'results/' + data[5] + '/', data[5], 1000);
+
             })
         }
     });

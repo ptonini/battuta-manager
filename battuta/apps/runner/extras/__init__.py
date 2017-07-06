@@ -72,14 +72,21 @@ def run_job(job):
     job.data['skip_tags'] = job.data.get('skip_tags', '')
 
     if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
+
         job.data['extra_vars'] = []
+
     else:
+
         job.data['extra_vars'] = job.data['extra_vars'].split(' ')
 
     if 'check' not in job.data or job.data['check'] == 'false':
+
         job.data['check'] = False
+
     elif job.data['check'] == 'true':
+
         job.data['show_skipped'] = True
+
         job.data['check'] = True
 
     # Create ansible options tuple
@@ -118,44 +125,67 @@ def run_job(job):
     passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
 
     if 'subset' in job.data:
+
         inventory.subset(job.data['subset'])
 
     message = None
 
     if 'playbook' in job.data:
+
         try:
+
             pbex = PlaybookExecutor([job.data['playbook_path']],
                                     inventory,
                                     variable_manager,
                                     loader,
                                     options,
                                     passwords)
+
             pbex._tqm._stdout_callback = BattutaCallback(job, db_conn)
+
             pbex.run()
+
         except Exception as e:
+
             status = 'failed'
+
             message = type(e).__name__ + ': ' + e.__str__()
+
         else:
+
             status = 'finished'
 
     elif 'adhoc_task' in job.data:
+
         play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+
         try:
+
             tqm = TaskQueueManager(inventory=inventory,
                                    variable_manager=variable_manager,
                                    passwords=passwords,
                                    loader=loader,
                                    stdout_callback=BattutaCallback(job, db_conn),
                                    options=options)
+
             tqm.run(play)
+
         except Exception as e:
+
             status = 'failed'
+
             message = type(e).__name__ + ': ' + e.__str__()
+
         else:
+
             tqm.cleanup()
+
             status = 'finished'
+
     else:
+
         status = 'failed'
+
         message = 'Invalid job data'
 
     if job.data['has_exceptions']:
@@ -166,8 +196,3 @@ def run_job(job):
 
         cursor.execute('UPDATE runner_job SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
                        (status, message, job.id))
-
-
-
-
-

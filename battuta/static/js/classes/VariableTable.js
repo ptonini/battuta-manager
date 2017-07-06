@@ -19,19 +19,27 @@ function VariableTable(node, container) {
             {class: 'col-md-2', title: 'source', data: 'source'}
         ],
         rowCallback: function(row, variable) {
+
             if (!variable.source) {
+
                 $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
                         .click(function () {
+
                             new VariableForm(variable, 'dialog', self.node, self.table.DataTable().ajax.reload)
+
                         }),
                     $('<span>')
                         .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
                         .click(function () {
+
                             new DeleteDialog(function () {
+
                                 VariableForm.deleteVariable(variable, self.node, self.table.DataTable().ajax.reload)
+
                             })
+
                         })
                 )
             }
@@ -41,34 +49,48 @@ function VariableTable(node, container) {
                     .html(variable.source.italics())
                     .attr('title', 'Open ' + variable.source)
                     .click(function () {
+
                         window.open(inventoryPath + 'group/' + variable.source + '/', '_self')
+
                     });
             }
         },
         drawCallback: function() {
+
             var table = this;
+
             var variableKeys = table.api().columns(0).data()[0];
+
             var duplicates = {};
 
             table.api().rows().every(function () {
 
-                if (this.child.isShown()) this.child.hide();
+                this.child.isShown() && this.child.hide();
 
                 var rowKey = this.data().key;
+
                 var isMain = this.data().primary;
+
                 var rowData = [this.data(), this.node()];
+
                 var keyIndexes = [];
+
                 var i = -1;
 
-                while ( (i = variableKeys.indexOf(rowKey, i+1)) != -1) keyIndexes.push(i);
+                while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
 
                 if (keyIndexes.length > 1)  {
 
                     if (duplicates.hasOwnProperty(rowKey)) {
+
                         if (isMain) duplicates[rowKey].hasMainValue = true;
+
                         duplicates[rowKey].values.push(rowData);
+
                     }
+
                     else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
+
                 }
             });
 
@@ -77,18 +99,29 @@ function VariableTable(node, container) {
                 if (duplicates[key].hasMainValue) {
 
                     var mainValue = null;
+
                     var rowArray = [];
 
                     $.each(duplicates[key]['values'], function (index, value) {
+
                         if (value[0]['primary']) mainValue = value;
+
                         else {
+
                             var newRow = $(value[1]).clone().css('color', '#777');
+
                             newRow.find('td:eq(2)').click(function() {
+
                                 window.open(inventoryPath + 'group/' + value[0].source, '_self')
+
                             });
+
                             rowArray.push(newRow);
+
                             $(value[1]).remove()
+
                         }
+
                     });
 
                     if (mainValue) {
@@ -98,18 +131,28 @@ function VariableTable(node, container) {
                         $(mainValue[1]).find('td:eq(0)').html('').append(
                             $('<span>').html(mainValue[0].key),
                             spanGlyph.clone().addClass('glyphicon-plus-sign btn-incell').off().click(function () {
-                                if (rowApi.child.isShown()) {
-                                    $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
-                                    $(mainValue[1]).css('font-weight', 'normal');
-                                    rowApi.child.hide()
-                                }
-                                else {
-                                    $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
-                                    $(mainValue[1]).css('font-weight', 'bold');
-                                    rowApi.child(rowArray).show();
-                                }
-                            })
 
+                                if (rowApi.child.isShown()) {
+
+                                    $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
+
+                                    $(mainValue[1]).css('font-weight', 'normal');
+
+                                    rowApi.child.hide()
+
+                                }
+
+                                else {
+
+                                    $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
+
+                                    $(mainValue[1]).css('font-weight', 'bold');
+
+                                    rowApi.child(rowArray).show();
+
+                                }
+
+                            })
                         );
 
                     }
@@ -123,11 +166,10 @@ function VariableTable(node, container) {
 VariableTable.prototype =  {
 
     reloadTable: function () {
+
         var self = this;
 
         self.table.DataTable().ajax.reload()
+
     }
-}
-
-;
-
+};

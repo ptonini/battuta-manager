@@ -16,27 +16,41 @@ function UserTable(container) {
             {class: 'col-md-2', title: 'superuser', data: 'is_superuser'}
         ],
         rowCallback: function (row, user) {
+
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
+
                 window.open(usersPath + user.username + '/', '_self')
+
             });
+
             $(row).find('td:eq(3)').append(
                 prettyBoolean($(row).find('td:eq(3)'), user.is_superuser),
                 spanRight.clone().append(
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+
                         new DeleteDialog(function () {
+
                             $.ajax({
                                 url: usersApiPath + user.username + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
+
                                 success: function () {
+
                                     self.table.DataTable().ajax.reload();
+
                                     $.bootstrapGrowl('User deleted', {type: 'success'});
+
                                 }
                             });
+
                         })
+
                     })
                 )
             )
+
         }
     });
+
 }

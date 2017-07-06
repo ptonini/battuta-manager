@@ -54,7 +54,9 @@ function NodeTable(nodeType, addCallback, container) {
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
+
                     window.open(inventoryPath + self.type + '/' + data.name + '/', '_self')
+
                 });
 
             if (self.type !== 'group' || data.name !== 'all') $(row).find('td:last').html(
@@ -63,7 +65,9 @@ function NodeTable(nodeType, addCallback, container) {
                         .addClass('glyphicon-trash btn-incell')
                         .attr('title', 'Delete')
                         .click(function () {
+
                             new DeleteDialog(function () {
+
                                 $.ajax({
                                     url: inventoryApiPath + self.type + '/' + data.name + '/delete/',
                                     type: 'POST',
@@ -73,22 +77,25 @@ function NodeTable(nodeType, addCallback, container) {
                                         self.table.DataTable().ajax.reload();
 
                                         $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
+
                                     }
                                 });
+
                         })
                     })
                 )
             );
 
             if (self.type === 'host') {
-                if (sessionStorage.getItem('use_ec2_facts') === 'true') {
-                    if (data.memory) $(row).find('td:eq(5)').html(humanBytes(data.memory, 'MB'));
-                    if (data.disc) $(row).find('td:eq(6)').html(humanBytes(data.disc))
-                }
-                else {
-                    if (data.memory) $(row).find('td:eq(3)').html(humanBytes(data.memory, 'MB'));
-                    if (data.disc) $(row).find('td:eq(4)').html(humanBytes(data.disc))
-                }
+
+                var columns = ['td:eq(3)', 'td:eq(4)'];
+
+                if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = ['td:eq(5)', 'td:eq(6)'];
+
+                data.memory && $(row).find(columns[0]).html(humanBytes(data.memory, 'MB'));
+
+                data.disc && $(row).find(columns[1]).html(humanBytes(data.disc))
+
             }
         },
 
@@ -106,15 +113,19 @@ function NodeTable(nodeType, addCallback, container) {
 NodeTable.prototype = {
 
     reload: function() {
+
         var self = this;
 
         self.table.DataTable().ajax.reload()
+
     },
 
     download: function() {
+
         var self = this;
 
         self.table.DataTable().buttons().trigger()
+
     }
 };
 

@@ -1,4 +1,5 @@
 function Preferences()  {
+
     var self = this;
 
     self.defaultValues = [];
@@ -12,24 +13,37 @@ function Preferences()  {
     self.restoreDialog.dialog({
         buttons: {
             Ok: function() {
+
                 $(this).dialog('close');
+
                 $.each(self.defaultValues, function (index, item) {
+
                     $('#item_' + item[0] ).val(item[1])
+
                 });
 
                 self._savePreferences(function () {
+
                     setTimeout(function () {
+
                         $.bootstrapGrowl('Preferences restored', {
                             type: 'success',
                             close_callback: function () {
+
                                 window.location.reload(true)
+
                             }
                         })
+
                     }, 500);
+
                 })
+
             },
             Cancel: function() {
+
                 $(this).dialog('close')
+
             }
         }
     });
@@ -56,7 +70,9 @@ function Preferences()  {
             Reload: function() {
 
                 self.buildCallback = function () {
+
                     $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
+
                 };
 
                 self._buildContainer()
@@ -64,22 +80,30 @@ function Preferences()  {
             Save: function() {
 
                 self._savePreferences(function () {
+
                     $.bootstrapGrowl('Preferences saved', {
                         type: 'success',
                         close_callback: function () {
+
                             window.location.reload(true)
+
                         }
                     });
                 })
 
             },
             Cancel: function () {
+
                 $(this).dialog('close')
+
             }
         },
         close: function () {
+
             $(this).remove();
+
             self.restoreDialog.remove()
+
         }
     });
 
@@ -93,25 +117,41 @@ Preferences.getPreferences = function () {
         dataType: 'json',
         data: {action: 'preferences'},
         success: function (data) {
+
             Object.keys(data).forEach(function (key) {
+
                 sessionStorage.setItem(key, data[key])
+
             });
+
         }
     });
 };
 
 Preferences.validateItemDataType = function (dataType, dataValue) {
+
     var result = [true, null];
+
     switch (dataType) {
+
         case 'str':
+
             if (typeof dataValue !== 'string') result = [false, 'Value must be a string'];
+
             break;
+
         case 'bool':
-            if (['true', 'false'].indexOf(dataValue) == -1) result = [false, 'Value must be true/false'];
+
+            if (['true', 'false'].indexOf(dataValue) === -1) result = [false, 'Value must be true/false'];
+
             break;
+
         case 'number':
+
             if (isNaN(dataValue)) result = [false, 'Value must be a number'];
+
             break;
+
     }
     return result
 };
@@ -119,13 +159,16 @@ Preferences.validateItemDataType = function (dataType, dataValue) {
 Preferences.prototype = {
 
     _buildContainer: function () {
+
         var self = this;
 
         var booleanField = $('<select>').addClass('select form-control input-sm').append(
             $('<option>').val('true').html('true'),
             $('<option>').val('false').html('false')
         );
+
         var fieldLabel = $('<label>').css({'font-size': '13px', padding: '6px 0'}).data('toggle', 'tooltip');
+
         var defaultValues = [];
 
         $.ajax({
@@ -155,21 +198,31 @@ Preferences.prototype = {
                         switch (item.data_type) {
 
                             case 'str':
+
                                 var itemField = textInputField.clone();
+
                                 var columnClass = 'col-md-5';
+
                                 break;
 
                             case 'bool':
+
                                 itemField = booleanField.clone();
+
                                 columnClass = 'col-md-2';
-                                if (item.value) item.value = 'true';
-                                else item.value = 'false';
+
+                                item.value ? item.value = 'true' : item.value = 'false';
+
                                 break;
 
                             case 'number':
+
                                 itemField = textInputField.clone();
+
                                 columnClass = 'col-md-2';
+
                                 break;
+
                         }
 
                         defaultValues.push([item.name, item.value]);
@@ -191,7 +244,8 @@ Preferences.prototype = {
                         )
                     });
 
-                    if (index != data.default.length - 1) self.prefsContainer.append('<hr>');
+                    if (index !== data.default.length - 1) self.prefsContainer.append('<hr>');
+
                 });
 
                 self.prefsContainer.data('defaultValues', defaultValues);
@@ -199,42 +253,61 @@ Preferences.prototype = {
                 self.defaultValues = defaultValues;
 
                 $.each(data.stored, function (index, item) {
-                    console.log(item);
+
                     $('#item_' + item[0] ).val(item[1])
+
                 });
 
                 self.prefsDialog.dialog('open');
 
-                if (self.buildCallback) self.buildCallback();
+                self.buildCallback && self.buildCallback();
+
             }
         })
     },
 
     _savePreferences: function (saveCallback) {
+
         var self = this;
+
         var itemValues = {};
+
         var noError = true;
 
         self.prefsContainer.find('input,select').each(function() {
+
             var result = Preferences.validateItemDataType($(this).data('data_type'), $(this).val());
+
             if (result[0]) itemValues[$(this).data('name')] = $(this).val();
+
             else {
+
                 $('#' + $(this).data('name') + '_warning').html(result[1]);
+
                 noError = false;
+
             }
+
         });
 
         if (noError) {
+
             $.ajax({
                 url: '/preferences/save/',
                 type: 'POST',
                 data: {item_values: JSON.stringify(itemValues)},
                 dataType: 'json',
                 success: function() {
+
                     Preferences.getPreferences();
+
                     saveCallback && saveCallback()
+
                 }
+
             })
+
         }
+
     }
 };

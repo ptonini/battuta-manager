@@ -65,8 +65,11 @@ function RoleDialog(fileTable) {
                             root: 'roles'
                         },
                         success: function (data) {
+
                             if (data.result === 'ok') {
+
                                 $('input:checked').each(function (index, input) {
+
                                     $.ajax({
                                         type: 'POST',
                                         url: filesApiPath + 'create/',
@@ -79,6 +82,7 @@ function RoleDialog(fileTable) {
                                             root: 'roles'
                                         },
                                         success: function () {
+
                                             if ($(input).data('main')) $.ajax({
                                                 type: 'POST',
                                                 url: filesApiPath + 'create/',
@@ -91,26 +95,36 @@ function RoleDialog(fileTable) {
                                                     root: 'roles'
                                                 }
                                             })
+
                                         }
                                     });
                                 });
 
                                 fileTable.setFolder(roleName);
+
                                 self.roleDialog.dialog('close');
+
                                 $.bootstrapGrowl('Role ' + roleName + ' created', {type: 'success'});
+
                             }
 
                             else $.bootstrapGrowl(data.msg, failedAlertOptions);
+
                         }
+
                     });
 
                     else $.bootstrapGrowl('Please enter a role name', {type: 'warning'})
                 },
                 Cancel: function() {
-                    $(this).dialog('close')}
+
+                    $(this).dialog('close')
+                }
             },
             close: function() {
+
                 $(this).remove()
+
             }
         })
         .dialog('open');

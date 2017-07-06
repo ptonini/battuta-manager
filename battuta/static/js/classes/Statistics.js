@@ -20,20 +20,29 @@ function Statistics(data, modal) {
     if (modal) {
 
         self.statsTable.wrap('<div style="overflow-y: auto; max-height: 360px">');
+
         self.statsDialog = $('<div>').append(self.statsTableContainer);
+
         self.statsDialog
             .dialog({
                 width: '70%',
                 maxWidth: 800,
                 buttons: {
                     Close: function () {
+
                         $(this).dialog('close')
+
                     }
                 },
-                close: function () {$(this).remove()}
+                close: function () {
+
+                    $(this).remove()
+
+                }
             })
             .dialog('open');
     }
+
     else return self.statsTableContainer.css('margin-top', '20px')
 
 }

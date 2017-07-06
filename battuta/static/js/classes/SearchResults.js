@@ -14,9 +14,13 @@ function SearchResults(type, pattern, container) {
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         ajaxUrl: inventoryApiPath + 'search/?type=' + type + '&pattern=' + pattern,
         formatItem: function (listItem) {
+
             listItem.click(function () {
+
                 window.open(inventoryPath + type + '/' + $(this).data('value') + '/', '_self')
+
             });
+
         }
     });
 }
