@@ -2,7 +2,9 @@ function JobResults(jobId, headerContainer, resultContainer) {
     var self = this;
 
     self.divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');
+
     self.divColInfoLeft = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
+
     self.divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
 
     self.jobId = jobId;
@@ -36,6 +38,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
                 url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/get/',
                 data: {cred_id: self.job.cred},
                 success: function(data) {
+
                     if (data.result === 'ok') {
 
                         new AnsibleRunner({
@@ -50,6 +53,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
                         }, data.cred, true);
 
                     }
+
                     else $.bootstrapGrowl(data.msg, failedAlertOptions)
                 }
             });
@@ -60,7 +64,9 @@ function JobResults(jobId, headerContainer, resultContainer) {
         .attr('title', 'Statistics')
         .html(spanGlyph.clone().addClass('glyphicon-list'))
         .click(function showStatsDialog() {
+
             new Statistics(self.job.stats, true)
+
         });
 
     self.printButton = btnNavbarGlyph.clone()
@@ -69,14 +75,18 @@ function JobResults(jobId, headerContainer, resultContainer) {
         .click(function printReport() {
 
             var pageTitle = $(document).find('title').text();
+
             var statsContainer =  $('<div>');
 
             // Adjust windows for printing
             document.title = pageTitle.replace('.yml', '');
+
             self.resultContainer.css({'font-size': 'smaller', 'padding-top': '0px'});
 
             if (self.job.stats && self.job.stats.length > 0) self.resultContainer.append(
+
                 statsContainer.css('font-size', 'smaller').append(new Statistics(self.job.stats, false))
+
             );
 
             // Open print window
@@ -84,22 +94,32 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
             // Restore windows settings
             self.resultContainer.css({'font-size': 'small', 'padding-top': self.resultContainerTopPadding});
+
             statsContainer.remove();
+
             document.title = pageTitle
+
         });
 
     self.cancelButton = btnNavbarGlyph.clone()
+
         .attr('title', 'Cancel')
+
         .html(spanGlyph.clone().addClass('glyphicon-remove').css('color', 'red'))
+
         .click(function cancelJob() {
+
             $.ajax({
                 url: runnerApiPath + 'kill/',
                 type: 'POST',
                 dataType: 'json',
                 data: {runner_id: self.job.id},
                 success: function (data) {
+
                     if (data.result === 'ok') $.bootstrapGrowl('Job canceled', {type: 'success'});
+
                     else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
                 }
             })
         });
@@ -109,15 +129,23 @@ function JobResults(jobId, headerContainer, resultContainer) {
         .addClass('checked_button')
         .html(spanGlyph.clone().addClass('glyphicon-triangle-bottom'))
         .click(function toggleAutoScroll() {
+
             $(this).toggleClass('checked_button');
+
             self.autoScroll = $(this).hasClass('checked_button');
+
         });
 
     self._getJobData(function () {
+
         document.title = self.job.name;
+
         self._buildHeader();
+
         self._buildInfo();
+
         self._buildResults();
+
         self._formatResults();
 
         if (self.job.is_running) var intervalId = setInterval(function () {
@@ -125,6 +153,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
             self._getJobData(function () {
 
                 self._buildResults();
+
                 self._formatResults();
 
                 self.autoScroll && $('html, body').animate({scrollTop: (self.footerAnchor.offset().top)}, 500);
@@ -138,9 +167,11 @@ function JobResults(jobId, headerContainer, resultContainer) {
                         $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
 
                     }, 2000)
+
                 }
 
             });
+
         }, 1000)
     })
 
@@ -157,13 +188,17 @@ JobResults.prototype = {
     taskContainers: {},
 
     _getJobData: function (successCallback) {
+
         var self = this;
 
         $.ajax({
             url: runnerApiPath + 'job/' + self.jobId + '/',
             success: function (job) {
+
                 self.job = job;
+
                 successCallback && successCallback()
+
             }
         })
     },
@@ -195,6 +230,7 @@ JobResults.prototype = {
     },
 
     _buildInfo: function () {
+
         var self = this;
 
         self.playbookOnlyFields = $('<div>').append(
@@ -229,6 +265,7 @@ JobResults.prototype = {
                 )
             )
         );
+
         self.resultContainer.css('padding-top', self.resultContainerTopPadding).append(
             $('<h4>').attr('class', 'visible-print-block').hide().append(
                 $('<strong>').html(self.job.name)
@@ -254,10 +291,13 @@ JobResults.prototype = {
     },
 
     _buildResults: function () {
+
         var self = this;
 
         if (self.job.message) self.resultContainer.empty().append(
+
             $('<pre>').attr('class', 'runner_error_box').html(self.job.message)
+
         );
 
         else $.each(self.job.plays, function (index, play) {
@@ -266,14 +306,22 @@ JobResults.prototype = {
 
                 // Set playbook only elements
                 if (self.job.type === 'playbook' || self.job.type === 'gather_facts') {
+
                     var separator = $('<hr>');
+
                     var headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
+
                     var headerLastLine = divCol12.clone().addClass('report_field_left').html('Tasks:');
                 }
+
                 else {
+
                     separator = null;
+
                     headerFirstLine = null;
+
                     headerLastLine = $('<br>');
+
                 }
 
                 self.playContainers[play.id] = $('<div>');
@@ -309,16 +357,18 @@ JobResults.prototype = {
                         header: divRow.clone(),
                         title: $('<span>').append(
                             $('<strong>').css('margin-right', '5px').html(task.name)
-                        )
+                        ),
+                        badge: $('<small>').attr('class', 'badge').html('0').hide()
                     };
 
                     if (sessionStorage.getItem('show_empty_tasks') === 'false') self.taskContainers[task.id].header.hide();
 
                     if (self.job.type === 'playbook' || self.job.type === 'gather_facts') {
                         self.taskContainers[task.id].header.append(
-                            divCol12.clone()
-                                .css('margin-top', '10px')
-                                .html(self.taskContainers[task.id].title)
+                            divCol12.clone().css('margin-top', '10px').append(
+                                self.taskContainers[task.id].title,
+                                self.taskContainers[task.id].badge
+                            )
                         )
                     }
 
@@ -377,9 +427,14 @@ JobResults.prototype = {
 
                             },
                             drawCallback: function () {
+
                                 var table = this;
 
                                 var task = table.api().ajax.json();
+
+                                var rowCount = table.DataTable().rows().count();
+
+                                if (rowCount > 0) self.taskContainers[task.id].badge.html(rowCount).show();
 
                                 if (task) {
 

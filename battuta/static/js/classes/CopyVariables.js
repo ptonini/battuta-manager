@@ -6,11 +6,15 @@ function CopyVariables(node, copyCallback) {
     self.copyCallback = copyCallback || null;
 
     self.hostsButton = btnXsmall.clone().css('margin-right', '20px').html('Hosts').click(function() {
+
         self._openSelectNodeDialog('host')
+
     });
 
     self.groupsButton = btnXsmall.clone().html('Groups').click(function() {
+
         self._openSelectNodeDialog('group')
+
     });
 
     self.nodeTypeDialog = $('<div>').attr('class', 'text-center').append(
@@ -22,10 +26,14 @@ function CopyVariables(node, copyCallback) {
             width: 280,
             buttons: {
                 Cancel: function () {
+
                     $(this).dialog('close')
+
                 }
             },
+
             close: function() {$(this).remove()}
+
         })
         .dialog('open');
 }
@@ -33,6 +41,7 @@ function CopyVariables(node, copyCallback) {
 CopyVariables.prototype = {
 
     _openSelectNodeDialog: function(sourceNodeType) {
+
         var self = this;
 
         self.nodeTypeDialog.dialog('close');
@@ -40,24 +49,35 @@ CopyVariables.prototype = {
         var url = inventoryApiPath + 'search/?type=' + sourceNodeType + '&pattern=';
 
         var loadCallback = function (listContainer, selectNodeDialog) {
+
             var currentList = listContainer.find('div.dynamic-list');
+
             selectNodeDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-        };
+        }
+        ;
 
         var formatItem = function (listItem, selectNodeDialog) {
+
             listItem.click(function () {
+
                 var sourceNodeName = $(this).data('value');
+
                 $.ajax({
                     url: inventoryApiPath + self.node.type + '/' + self.node.name + '/vars/copy/',
                     type: 'POST',
                     dataType: 'json',
                     data: {source_name: sourceNodeName, source_type: sourceNodeType},
                     success: function () {
+
                         selectNodeDialog.dialog('close');
+
                         $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
+
                         self.copyCallback && self.copyCallback()
+
                     }
                 });
+
             });
         };
 

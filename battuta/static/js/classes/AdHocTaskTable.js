@@ -9,7 +9,11 @@ function AdHohTaskTable(pattern, container) {
         $('<h4>').html('Saved tasks').append(
             spanRight.clone().append(
                 btnSmall.clone().html('Create task').click(function () {
-                    new AdHocTaskForm(self.pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
+
+                    var task = {id: null, saveCallback: self.table.DataTable().ajax.reload};
+
+                    new AdHocTaskForm(self.pattern, 'dialog', task)
+
                 })
             )
         ),
@@ -30,23 +34,33 @@ function AdHohTaskTable(pattern, container) {
             {class: 'col-md-6', title: 'arguments', data: 'arguments'},
             {class: 'col-md-2', title: 'sudo', data: 'become'}
         ],
-        rowCallback: function (row, data) {
-            var arguments = AdHocTaskForm.jsonToString(data.arguments);
+        rowCallback: function (row, task) {
+
+            var arguments = AdHocTaskForm.jsonToString(task.arguments);
 
             $(row).find('td:eq(2)').html(arguments).attr('title', arguments);
+
             $(row).find('td:eq(3)').append(
                 spanRight.clone().append(
-                    prettyBoolean($(row).find('td:eq(3)'), data.become),
+                    prettyBoolean($(row).find('td:eq(3)'), task.become),
                     spanGlyph.clone().addClass('glyphicon-play-circle btn-incell').attr('title', 'Load').click(function () {
-                        data.saveCallback = self.table.DataTable().ajax.reload;
-                        new AdHocTaskForm(pattern, 'dialog', data);
+
+                        task.saveCallback = self.table.DataTable().ajax.reload;
+
+                        new AdHocTaskForm(pattern, 'dialog', task);
+
                     }),
                     spanGlyph.clone().addClass('glyphicon-duplicate btn-incell').attr('title', 'Copy').click(function () {
-                        AdHocTaskForm.copyTask(data, self.table.DataTable().ajax.reload);
+
+                        AdHocTaskForm.copyTask(task, self.table.DataTable().ajax.reload);
+
                     }),
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+
                         new DeleteDialog(function () {
-                            AdHocTaskForm.deleteTask(data, self.table.DataTable().ajax.reload);
+
+                            AdHocTaskForm.deleteTask(task, self.table.DataTable().ajax.reload);
+
                         })
                     })
                 )

@@ -10,12 +10,25 @@ function DeleteDialog(deleteCallback) {
             width: '320',
             buttons: {
                 Delete: function () {
+
                     deleteCallback();
+
                     $(this).dialog('close');
+
                 },
-                Cancel: function () {$(this).dialog('close')}
+                Cancel: function () {
+
+                    $(this).dialog('close')
+
+                }
             },
-            close: function() {$(this).remove()}
+
+            close: function() {
+
+                $(this).remove()
+
+            }
+
         })
         .dialog('open')
 }

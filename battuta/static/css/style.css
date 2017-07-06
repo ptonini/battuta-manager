@@ -20,6 +20,8 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 small.label_link {float: right; cursor: pointer}
 
+small.badge {background-color: #cacaca}
+
 .input[type="checkbox"] {margin: 10px 0 0 5px}
 
 .chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}

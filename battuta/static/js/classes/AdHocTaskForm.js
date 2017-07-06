@@ -43,10 +43,13 @@ function AdHocTaskForm (pattern, type, task, container) {
         var arguments;
 
         if (self.type === 'dialog') {
+
             var argsObj = self._formToJson();
 
             if (self.action === 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
+
             else if (self.action === 'save') arguments = argsObj;
+
         }
 
         else if (self.type === 'command') arguments = self.argumentsField.val();
@@ -64,9 +67,13 @@ function AdHocTaskForm (pattern, type, task, container) {
         if (self.action === 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
 
         else if (self.action === 'save') AdHocTaskForm.saveTask(task, function () {
+
             self.task.saveCallback();
+
             self.formHeader.html('Edit task');
+
             $.bootstrapGrowl('Task saved', {type: 'success'})
+
         });
     });
 
@@ -79,6 +86,7 @@ function AdHocTaskForm (pattern, type, task, container) {
         self.patternField.val(pattern).prop('disabled', true);
 
         self.patternEditorButton.prop('disabled', true)
+
     }
 
     if (self.type === 'command') container.append(self.form);
@@ -93,6 +101,7 @@ AdHocTaskForm.copyTask = function (task, copyCallback) {
     task.arguments = JSON.stringify(task.arguments);
 
     AdHocTaskForm.postTask(task, 'save', copyCallback)
+
 };
 
 AdHocTaskForm.saveTask = function (task, saveCallback) {
@@ -100,34 +109,44 @@ AdHocTaskForm.saveTask = function (task, saveCallback) {
     task.arguments = JSON.stringify(task.arguments);
 
     AdHocTaskForm.postTask(task, 'save', saveCallback)
+
 };
 
 AdHocTaskForm.deleteTask = function (task, deleteCallback) {
 
     AdHocTaskForm.postTask(task, 'delete', deleteCallback)
+
 };
 
 AdHocTaskForm.postTask = function (task, action, postCallback) {
+
     $.ajax({
         url: runnerApiPath + 'adhoc/' + action + '/',
         type: 'POST',
         dataType: 'json',
         data: task,
         success: function (data) {
+
             if (data.result === 'ok') postCallback && postCallback();
+
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
         }
     });
 };
 
 AdHocTaskForm.jsonToString = function (dataObj) {
+
     var dataString = '';
 
     Object.keys(dataObj).forEach(function (key) {
+
         if (key !== 'otherArgs' && dataObj[key]) dataString += key + '=' + dataObj[key] + ' ';
+
     });
 
     return dataString + dataObj['otherArgs']
+
 };
 
 AdHocTaskForm.modules = [
@@ -145,14 +164,19 @@ AdHocTaskForm.modules = [
 AdHocTaskForm.prototype = {
 
     _buildForm: function () {
+
         var self = this;
 
         if (self.type === 'command') {
 
             self.formHeader.html('Run command');
+
             self.runCommand = btnSmall.clone().html('Run');
+
             self.name ='[adhoc task] shell';
+
             self.module = 'shell';
+
             self.action = 'run';
 
             self.form.append(
@@ -174,19 +198,22 @@ AdHocTaskForm.prototype = {
             );
 
             self.form.find('input').keypress(function (event) {
+
                 if (event.keyCode === 13) {
+
                     event.preventDefault();
+
                     self.form.submit();
+
                 }
+
             });
 
         }
 
         else if (self.type === 'dialog') {
 
-            if (self.task.id) self.formHeader.html('AdHoc Task');
-
-            else self.formHeader.html('New AdHoc task');
+            (self.task.id) ? self.formHeader.html('AdHoc Task') : self.formHeader.html('New AdHoc task');
 
             self.moduleSelector = selectField.clone();
 
@@ -202,14 +229,22 @@ AdHocTaskForm.prototype = {
 
                 self.module = this.value;
 
+                self.argumentsField.val('');
+
                 self.moduleFieldsContainer.empty().html(self._buildModuleFields());
 
                 self.form.find('input').keypress(function (event) {
+
                     if (event.keyCode === 13) {
+
                         event.preventDefault();
+
                         self.action = 'run';
+
                         self.form.submit();
+
                     }
+
                 });
 
             });
@@ -247,26 +282,42 @@ AdHocTaskForm.prototype = {
                 closeOnEscape: false,
                 buttons: {
                     Run: function () {
+
                         self.action = 'run';
+
                         self.form.submit();
+
                     },
                     Save: function () {
+
                         self.action = 'save';
+
                         self.form.submit();
+
                     },
                     Close: function () {
+
                         $(this).dialog('close');
                     }
                 },
-                close: function() {$(this).remove()}
+                close: function() {
+
+                    $(this).remove()
+
+                }
             });
 
 
             if (self.task.id) {
+
                 self.patternField.val(self.task.hosts);
+
                 self.moduleSelector.val(self.task.module).change();
+
                 self._jsonToForm(self.task);
+
             }
+
             else self.moduleSelector.val('shell').change();
         }
     },
@@ -304,18 +355,26 @@ AdHocTaskForm.prototype = {
         self.moduleReferenceLink.show().attr({title: moduleReferenceLink, href: moduleReferenceLink});
 
         switch (self.module) {
+
             case 'ping':
+
                 self.moduleFieldsContainer.append(
                     divCol12.clone().addClass('labelless_button').append(self.isSudo)
                 );
+
                 break;
+
             case 'shell':
+
                 self.moduleFieldsContainer.append(
                     divCol10.clone().append(self.argumentsGroup),
                     divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
                 );
+
                 break;
+
             case 'service':
+
                 self.stateSelect.data('parameter', 'state').append(
                     $('<option>').attr('value', 'started').html('Started'),
                     $('<option>').attr('value', 'stopped').html('Stopped'),
@@ -330,10 +389,8 @@ AdHocTaskForm.prototype = {
                         )
                     ),
                     divCol4.clone().append(divFormGroup.clone().append(self.stateSelectGroup)),
-
                     divCol10.clone().append(self.argumentsGroup),
                     divCol2.clone().addClass('text-right labelless_button').append(self.isSudo),
-
                     divCol4.clone().append(
                         divFormGroup.clone().append(
                             $('<label>').html('Enabled').append(
@@ -345,9 +402,13 @@ AdHocTaskForm.prototype = {
                         )
                     )
                 );
+
                 break;
+
             case 'copy':
+
                 self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=file'});
+
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol12.clone().append(self.fileDestGroup),
@@ -355,26 +416,38 @@ AdHocTaskForm.prototype = {
                     divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
 
                 );
+
                 break;
+
             case 'unarchive':
+
                 self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=archive'});
+
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol12.clone().append(self.fileDestGroup),
                     divCol10.clone().append(self.argumentsGroup),
                     divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
                 );
+
                 break;
+
             case 'script':
+
                 self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=file'});
+
                 self.fileSourceLabel.html('Script');
+
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
                     divCol10.clone().append(self.argumentsGroup),
                     divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
                 );
+
                 break;
+
             case 'file':
+
                 self.stateSelect.append(
                     $('<option>').attr('value', 'file').html('File'),
                     $('<option>').attr('value', 'link').html('Link'),
@@ -385,7 +458,6 @@ AdHocTaskForm.prototype = {
                 );
 
                 self.moduleFieldsContainer.append(
-
                     divCol8.clone().append(
                         divFormGroup.clone().append(
                             $('<label>').html('Path').append(textInputField.clone().attr('data-parameter', 'path'))
@@ -394,29 +466,34 @@ AdHocTaskForm.prototype = {
                     divCol4.clone().append($('<div>').attr('class', 'form-group').append(self.stateSelectGroup)),
                     divCol10.clone().append(self.argumentsGroup),
                     divCol2.clone().addClass('text-right labelless_button').append(self.isSudo)
-
                 );
+
                 break;
+
         }
-        
 
     },
 
     _formToJson: function () {
+
         var self = this;
 
         var jsonData = {otherArgs: self.argumentsField.val()};
 
         switch (self.name) {
+
             case 'script':
+
                 jsonData.script = ' ' + self.fileSourceField.val();
+
                 break;
 
             default:
+
                 $.each(self.moduleFieldsContainer.find("[data-parameter]"), function (index, value) {
-                    if ($(value).val()) {
-                        jsonData[$(value).attr('data-parameter')] = $(value).val();
-                    }
+
+                    if ($(value).val()) jsonData[$(value).attr('data-parameter')] = $(value).val();
+
                 });
 
         }
@@ -425,6 +502,7 @@ AdHocTaskForm.prototype = {
     },
 
     _jsonToForm: function () {
+
         var self = this;
 
         self.isSudo.toggleClass('checked_button', self.task.become);
@@ -432,18 +510,27 @@ AdHocTaskForm.prototype = {
         self.argumentsField.val(self.task.arguments.otherArgs);
 
         switch (self.name) {
+
             case 'script':
+
                 self.fileSourceField.val(self.task.arguments.script);
+
                 break;
 
             default:
+
                 Object.keys(self.task.arguments).forEach(function (key) {
+
                     var formField = self.moduleFieldsContainer.find("[data-parameter='" + key + "']");
+
                     if (formField.length > 0) formField.val(self.task.arguments[key]);
+
                 });
 
         }
+
     }
+
 };
 
 

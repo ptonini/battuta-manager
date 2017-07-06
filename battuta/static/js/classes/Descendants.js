@@ -15,9 +15,13 @@ function Descendants (node, container) {
         breakPoint: sessionStorage.getItem('node_list_break_point'),
         maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
         formatItem: function (listItem) {
+
             var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
+
             listItem.click(function () {
+
                 window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
+
             });
         }
     };
@@ -37,6 +41,7 @@ function Descendants (node, container) {
 }
 
 Descendants.prototype.reload = function () {
+
     var self = this;
 
     self.groupList.DynamicList('load');
