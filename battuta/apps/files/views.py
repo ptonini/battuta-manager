@@ -247,7 +247,10 @@ class FilesView(View):
 
                 else:
 
-                    data = {'result': 'failed', 'msg': request.GET['type'].capitalize() + ' does not exist'}
+                    data = {
+                        'result': 'failed',
+                        'msg': '{} {} does not exist'.format(request.GET['type'].capitalize(), request.GET['name'])
+                    }
 
             elif action == 'download':
 
@@ -271,9 +274,7 @@ class FilesView(View):
 
                 stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
 
-                if delete_after:
-
-                    os.remove(target)
+                os.remove(target) if delete_after else None
 
                 return stream
 

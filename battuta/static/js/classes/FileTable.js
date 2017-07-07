@@ -1,9 +1,10 @@
 function FileTable(root, nameCellFormatter, container) {
+
     var self = this;
 
     self.root = root;
 
-    self.folder = '';
+    self.folder = window.location.hash.slice(1);
 
     self.nameCellFormatter = nameCellFormatter;
 
@@ -124,17 +125,27 @@ function FileTable(root, nameCellFormatter, container) {
     );
 
     if (self.folder) {
+
         $.ajax({
             url: filesApiPath + 'exists/',
-            data: {folder: self.folder, type: 'directory', root: self.root},
+            data: {name: self.folder, type: 'directory', root: self.root},
             success: function (data) {
 
-                if (data.result === 'failed') self.folder = '';
+                if (data.result === 'failed') {
+
+                    $.bootstrapGrowl(data.msg, failedAlertOptions);
+
+                    self.folder = '';
+
+                    location.hash = self.folder
+
+                }
 
                 self._buildTable()
 
             }
         });
+
     }
 
     else self._buildTable()
@@ -347,6 +358,8 @@ FileTable.prototype = {
         var self = this;
 
         self.folder = folder;
+
+        location.hash = folder;
 
         self.table.DataTable().search('');
 
