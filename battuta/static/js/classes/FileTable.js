@@ -149,6 +149,7 @@ FileTable.editableTypes = [
 FileTable.prototype = {
 
     _buildTable: function () {
+
         var self = this;
 
         self.table.DataTable({
