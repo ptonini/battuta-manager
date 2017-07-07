@@ -323,6 +323,7 @@ AdHocTaskForm.prototype = {
     },
 
     _buildModuleFields: function () {
+
         var self = this;
 
         var moduleReferenceLink = 'http://docs.ansible.com/ansible/'+ self.name + '_module.html';

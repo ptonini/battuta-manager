@@ -1,4 +1,5 @@
 function FileDialog(file, action, postCallback) {
+
     var self = this;
 
     self.file = file;
@@ -50,6 +51,7 @@ function FileDialog(file, action, postCallback) {
                                 }
 
                                 else $.bootstrapGrowl(data.msg, failedAlertOptions);
+
                             }
                         });
                     }

@@ -26,6 +26,7 @@ function Credentials(user) {
             var postData = new FormData();
 
             postData.append('id', self.loadedCredentials.id);
+
             postData.append('user_id', self.userId);
 
             switch ($(document.activeElement).html()) {

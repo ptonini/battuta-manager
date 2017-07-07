@@ -1,4 +1,5 @@
 function Descendants (node, container) {
+
     var self = this;
 
     self.node = node;
@@ -47,4 +48,5 @@ Descendants.prototype.reload = function () {
     self.groupList.DynamicList('load');
 
     self.hostList.DynamicList('load')
+
 };

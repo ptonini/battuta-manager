@@ -1,4 +1,5 @@
 function HostFacts(node, container) {
+
     var self = this;
 
     self.node = node;
@@ -7,7 +8,9 @@ function HostFacts(node, container) {
 
     self.gatherFactsButton = btnXsmall.clone().html('Gather facts').click(function () {
         gatherFacts(self.node.name, function () {
+
             self.loadFacts()
+
         });
     });
 
@@ -17,35 +20,48 @@ function HostFacts(node, container) {
 HostFacts.prototype = {
 
     loadFacts: function () {
+
         var self = this;
 
         $.ajax({
             url: inventoryApiPath + 'host/' + self.node.name + '/facts/',
             dataType: 'json',
             success: function (data) {
+
                 if (data.result === 'ok') self._buildFacts(data.facts);
+
                 else self.container.append(self.gatherFactsButton)
+
             }
         });
     },
 
     _buildFacts: function (facts) {
+
         var self = this;
 
         var divCol4L = divCol4.clone().addClass('report_field_left');
+
         var divCol8R = divCol8.clone().addClass('report_field_right truncate-text');
+
         var divFactsCol6 = divCol6.clone().css('margin-bottom', '15px');
+
         var divFactsCol8 = divCol8.clone().css('margin-bottom', '15px');
 
-
         self.os = facts.os_family + ' - ' + facts.distribution + ' ' + facts.distribution_version;
+
         self.factsDate = facts.date_time.date + ' ' + facts.date_time.time + ' ' + facts.date_time.tz;
+
         self.interfaceTable = baseTable.clone();
+
         self.mountTable = baseTable.clone();
 
         self.interfacesArray = [];
+
         $.each(facts.interfaces, function (index, value) {
+
             self.interfacesArray.push(facts[value])
+
         });
 
         self.interfaceTable.DataTable({
@@ -97,7 +113,7 @@ HostFacts.prototype = {
             )
         );
 
-        if (facts.virtualization_role == 'host') self.factsRow.append(
+        if (facts.virtualization_role === 'host') self.factsRow.append(
             divFactsCol6.clone().append(
                 divRowEqHeight.clone().append(
                     divCol4L.clone().append('System vendor:'), divCol8R.clone().append(facts.system_vendor)
@@ -114,9 +130,10 @@ HostFacts.prototype = {
             )
         );
 
-        else if (facts.virtualization_role == 'guest') {
+        else if (facts.virtualization_role === 'guest') {
 
-            if (sessionStorage.getItem('use_ec2_facts') == 'true' && facts.hasOwnProperty('ec2_hostname')) {
+            if (sessionStorage.getItem('use_ec2_facts') === 'true' && facts.hasOwnProperty('ec2_hostname')) {
+
                 self.factsRow.append(
                     divFactsCol6.clone().append(
                         divRowEqHeight.clone().append(
@@ -140,15 +157,21 @@ HostFacts.prototype = {
                         )
                     )
                 )
+
             }
+
         }
 
         self.allFactsContainer = divWell.clone().hide().JSONView(facts, {'collapsed': true});
 
         self.showFactsButton = btnXsmall.clone().html('Show facts').css('margin-right', '5px').click(function () {
-            if ($(this).html() == 'Show facts') $(this).html('Hide facts');
+
+            if ($(this).html() === 'Show facts') $(this).html('Hide facts');
+
             else $(this).html('Show facts');
+
             self.allFactsContainer.toggle();
+
         });
 
         self.container.empty().append(
