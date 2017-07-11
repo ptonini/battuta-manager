@@ -314,7 +314,7 @@ FileTable.prototype = {
 
         self.editPathIcon.removeClass('checked_button');
 
-        if (self.folder) $.each(self.folder.split('/'), function (index, value) {
+        self.folder && $.each(self.folder.split('/'), function (index, value) {
 
             self.breadCrumb.append(
 
