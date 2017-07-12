@@ -6,6 +6,8 @@ function ImportInventory(container) {
 
     self.fileInput = fileInputField.clone();
 
+    self.fileInputLabel = $('<span>').html('Select file');
+
     container.append(
         divRow.clone().append(
             divCol12.clone().append($('<h4>').html('Import from:')),
@@ -33,7 +35,7 @@ function ImportInventory(container) {
             ),
             divCol4.clone().append(
                 divFormGroup.clone().append(
-                    $('<label>').html('Select file').append(self.fileInput)
+                    $('<label>').append(self.fileInputLabel, self.fileInput)
                 )
             ),
             divCol12.clone().append(self.importButton)
@@ -67,7 +69,11 @@ function ImportInventory(container) {
 
             self.fileInput.fileinput('clear').fileinput('enable');
 
+            self.fileInputLabel.html('Select file');
+
             self.importButton.prop('disabled', true);
+
+            container.find('div.file-caption-main').show();
 
             if (data.response.result === 'ok') {
 
@@ -94,7 +100,11 @@ function ImportInventory(container) {
                 .off('click')
                 .click(function () {
 
-                    self.fileInput.fileinput('upload')
+                    self.fileInput.fileinput('upload');
+
+                    self.fileInputLabel.html('Uploading file');
+
+                    container.find('div.file-caption-main').hide()
 
                 });
 

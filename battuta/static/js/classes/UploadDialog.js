@@ -3,9 +3,11 @@ function UploadDialog(folder, root, uploadCallback) {
 
     self.uploadField = fileInputField.clone();
 
+    self.uploadFieldLabel = $('<span>').html('Select file');
+
     self.uploadDialog = smallDialog.clone().append(
 
-        $('<label>').html('Select file').append(self.uploadField)
+        $('<label>').append(self.uploadFieldLabel, self.uploadField)
 
     );
 
@@ -39,9 +41,18 @@ function UploadDialog(folder, root, uploadCallback) {
 
             self.uploadDialog.dialog('close');
 
-            if (data.response.result === 'fail') $.bootstrapGrowl(data.response.msg, failedAlertOptions);
+            if (data.response.result === 'fail') {
+
+                self.uploadDialog.find('div.file-caption-main').show();
+
+                self.uploadFieldLabel.html('Select file');
+
+                $.bootstrapGrowl(data.response.msg, failedAlertOptions);
+
+            }
 
             else uploadCallback && uploadCallback()
+
         });
 
     self.uploadDialog
@@ -49,7 +60,11 @@ function UploadDialog(folder, root, uploadCallback) {
             buttons: {
                 Upload: function () {
 
-                    self.uploadField.fileinput('upload')
+                    self.uploadField.fileinput('upload');
+
+                    self.uploadFieldLabel.html('Uploading file');
+
+                    self.uploadDialog.find('div.file-caption-main').hide()
 
                 },
                 Cancel: function () {
