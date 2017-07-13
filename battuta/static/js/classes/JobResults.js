@@ -312,6 +312,7 @@ JobResults.prototype = {
                     var headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
 
                     var headerLastLine = divCol12.clone().addClass('report_field_left').html('Tasks:');
+
                 }
 
                 else {
@@ -341,12 +342,13 @@ JobResults.prototype = {
                         headerLastLine
                     )
                 );
-
                 self.resultContainer.append(self.playContainers[play.id])
             }
 
-            if (play.host_count === 0) self.playContainers[play.id].append(
-                $('<pre>').css('margin-top', '20px').html('No hosts matched')
+            if (play.message) self.playContainers[play.id].append(
+
+                $('<pre>').css('margin-top', '20px').html(play.message)
+
             );
 
             else $.each(play.tasks, function (index, task) {
@@ -403,27 +405,42 @@ JobResults.prototype = {
                                 {class: 'col-md-7', title: 'message', data: 'message'}
                             ],
                             rowCallback: function (row, result) {
+
                                 var table = this;
 
                                 $(table).show();
+
                                 self.taskContainers[task.id].header.show();
 
                                 switch (result.status) {
-                                    case 'unreachable':
-                                        $(row).css('color', 'gray');
-                                        break;
-                                    case 'changed':
-                                        $(row).css('color', 'orange');
-                                        break;
-                                    case 'ok':
-                                        $(row).css('color', 'green');
-                                        break;
-                                    case 'error':
-                                    case 'failed':
-                                        $(row).css('color', 'red');
-                                        break;
-                                }
 
+                                    case 'unreachable':
+
+                                        $(row).css('color', 'gray');
+
+                                        break;
+
+                                    case 'changed':
+
+                                        $(row).css('color', 'orange');
+
+                                        break;
+
+                                    case 'ok':
+
+                                        $(row).css('color', 'green');
+
+                                        break;
+
+                                    case 'error':
+
+                                    case 'failed':
+
+                                        $(row).css('color', 'red');
+
+                                        break;
+
+                                }
 
                             },
                             drawCallback: function () {
@@ -449,11 +466,14 @@ JobResults.prototype = {
                                             $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
 
                                                 if (rowApi.child.isShown()) {
+
                                                     $(rowApi.node()).css('font-weight', 'normal');
+
                                                     rowApi.child.hide()
                                                 }
 
                                                 else {
+
                                                     $.ajax({
                                                         url: runnerApiPath + 'result/' + result.id + '/',
                                                         dataType: 'json',
@@ -464,7 +484,9 @@ JobResults.prototype = {
                                                                 .JSONView(data.response, {collapsed: true});
 
                                                             rowApi.child(jsonContainer).show();
+
                                                             $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+
                                                         }
                                                     });
 
@@ -495,26 +517,43 @@ JobResults.prototype = {
     },
 
     _formatResults: function () {
+
         var self = this;
 
         var color;
 
         switch (self.job.status) {
+
             case 'running':
+
                 color = 'blue';
+
                 break;
+
             case 'finished':
+
                 color =  'green';
+
                 break;
+
             case 'finished with errors':
+
                 color =  'orange';
+
                 break;
+
             case 'failed':
+
                 color =  'red';
+
                 break;
+
             case 'canceled':
+
                 color =  'gray';
+
                 break;
+
         }
 
         self.jobStatusContainer.css('color', color).html(self.job.status);
@@ -522,7 +561,9 @@ JobResults.prototype = {
         if (self.job.is_running) {
 
             self.printButton.hide();
+
             self.statsButton.hide();
+
             self.rerunButton.hide();
 
         }
@@ -530,24 +571,33 @@ JobResults.prototype = {
         else {
 
             self.printButton.show();
+
             self.rerunButton.show();
 
             if (self.job.stats && self.job.stats.length > 0) self.statsButton.show();
+
             else self.statsButton.hide();
 
             self.jobCogContainer.hide();
+
             self.autoScrollButton.hide();
+
             self.cancelButton.hide();
 
         }
 
         if (self.job.type !== 'playbook') {
+
             self.playbookOnlyFields.hide();
+
             self.rerunButton.remove();
+
         }
+
     },
 
     _updateResultTable: function (intervalId, taskTable) {
+
         var self = this;
 
         if (taskTable) {

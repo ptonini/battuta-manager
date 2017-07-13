@@ -140,6 +140,14 @@ class BattutaCallback(CallbackBase):
 
         self._finish_current_play_tasks()
 
+        if len(play._variable_manager._inventory.get_hosts(play.__dict__['_ds']['hosts'])) == 0:
+
+            message = 'No hosts matched'
+
+        else:
+
+            message = None
+
         self._execute_query('update', 'UPDATE runner_job SET status="running" WHERE id=%s', (self._job.id,))
 
         # Get host pattern
@@ -172,9 +180,10 @@ class BattutaCallback(CallbackBase):
                 play_name = 'Gather facts'
 
         # Save play to database
-        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts) VALUES (%s, %s, %s, %s, %s)'
+        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts, message)' \
+                    ' VALUES (%s, %s, %s, %s, %s, %s)'
 
-        var_tuple = (self._job.id, play_name, hosts, become, self._gather_facts)
+        var_tuple = (self._job.id, play_name, hosts, become, self._gather_facts, message)
 
         self._current_play_id = self._execute_query('insert', sql_query, var_tuple)
 

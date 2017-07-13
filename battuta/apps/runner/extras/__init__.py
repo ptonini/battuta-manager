@@ -51,6 +51,8 @@ def run_job(job):
     with db_conn as cursor:
         cursor.execute('UPDATE runner_job SET status="starting", pid=%s WHERE id=%s', (os.getpid(), job.id))
 
+    message = None
+
     job.data['show_skipped'] = job.data.get('show_skipped', c.DISPLAY_SKIPPED_HOSTS)
 
     job.data['connection'] = job.data.get('connection', 'paramiko')
@@ -127,8 +129,6 @@ def run_job(job):
     if 'subset' in job.data:
 
         inventory.subset(job.data['subset'])
-
-    message = None
 
     if 'playbook' in job.data:
 

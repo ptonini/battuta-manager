@@ -47,6 +47,7 @@ class Play(models.Model):
     hosts = models.CharField(max_length=64)
     become = models.BooleanField()
     gather_facts = models.BooleanField(default=False)
+    message = models.CharField(max_length=1024, blank=True, null=True)
 
 
 class Task(models.Model):
