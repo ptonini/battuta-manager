@@ -193,6 +193,7 @@ $.extend($.ui.dialog.prototype.options, {
     resizable: false
 });
 
+
 // Functions ///////////////////////////
 
 // Convert boolean value to glyphicon
@@ -222,49 +223,22 @@ function rememberSelectedTab(tabId) {
 
 }
 
-function humanBytes(value, suffix) {
+function humanBytes(value, suffix='B') {
 
-    if (suffix) {
+    var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 
-        if (suffix === 'KB') value = value * 1024;
+    value = parseInt(value) * Math.pow(1024, sizes.indexOf(suffix));
 
-        else if (suffix === 'MB') value = value * 1048576;
+    if (value === 0) return value;
 
-        else if (suffix === 'GB') value = value * 1073741824;
+    else {
 
-        else if (suffix === 'TB') value = value * 1099511627776;
+        var i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
 
-    }
-
-    else suffix = ' B';
-
-    value = parseInt(value);
-
-    if (value > 1024 && value <= 1048576) {
-
-        suffix = ' KB';
-
-        value = value / 1024
+        return parseFloat(value / Math.pow(1024, i)).toFixed(i < 4 ? 0 : 2) + ' ' + sizes[i];
 
     }
 
-    else if (value > 1048576 && value <= 1073741824) {
-
-        suffix = ' MB';
-
-        value = value / 1048576
-
-    }
-
-    else if (value > 1073741824) {
-
-        suffix = ' GB';
-
-        value = value / 1073741824
-
-    }
-
-    return Math.ceil(value) + suffix
 }
 
 // Open popup window

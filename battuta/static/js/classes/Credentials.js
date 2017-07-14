@@ -266,7 +266,7 @@ Credentials.buildSelectionBox = function (username, credentials, startValue) {
 
             });
 
-            if (runner) credentials.append($('<option>').val('_none_').html('_none_').data('id', 0));
+            if (runner) credentials.append($('<option>').val('').html('ask').data('id', 0));
 
             else credentials.append($('<option>').val('new').append('new'));
 
