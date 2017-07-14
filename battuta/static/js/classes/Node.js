@@ -1,4 +1,5 @@
 function Node(node, container) {
+
     var self = this;
 
     self.node = node;
@@ -18,25 +19,35 @@ function Node(node, container) {
         .attr('title', 'Edit')
         .append(spanGlyph.clone().addClass('glyphicon-edit'))
         .click(function() {
+
             new NodeDialog(self.node, function (data) {
+
                 window.open(inventoryPath + self.node.type + '/' + data.name + '/', '_self')
+
             });
+
         });
 
     self.deleteNodeBtn = btnXsmall.clone()
         .attr('title', 'Delete')
         .append(spanGlyph.clone().addClass('glyphicon-trash'))
         .click(function() {
+
             new DeleteDialog(function () {
+
                 $.ajax({
                     url: inventoryApiPath + self.node.type + '/' + self.node.name + '/delete/',
                     type: 'POST',
                     dataType: 'json',
                     success: function (data) {
+
                         if (data.result === 'ok') window.open(inventoryPath + self.node.type + 's/', '_self')
+
                     }
                 });
+
             })
+
         });
 
     self.nodeInfoContainer = divCol12.clone();
@@ -97,6 +108,7 @@ function Node(node, container) {
     );
 
     if (self.node.type === 'group') self.descendants = new Descendants(self.node, self.nodeInfoContainer);
+
     else new HostFacts(self.node, self.nodeInfoContainer);
 
     self.variableTable = new VariableTable(self.node, self.variableTableContainer);
@@ -110,12 +122,17 @@ function Node(node, container) {
     new AdHohTaskTable(self.node.name, self.adhocTableContainer);
 
     function saveVariableCallback() {
+
         self.variableTable.reloadTable()
+
     }
 
     function alterRelationCallback() {
+
         self.variableTable.reloadTable();
+
         if (typeof self.descendants !== 'undefined') self.descendants.reload();
+
     }
 
     if (self.node.name === 'all') {
@@ -123,6 +140,7 @@ function Node(node, container) {
         self.infoTab.removeClass('in active');
         self.variablesTab.addClass('in active')
     }
+
     else rememberSelectedTab(self.tabsHeader.attr('id'));
 
 }

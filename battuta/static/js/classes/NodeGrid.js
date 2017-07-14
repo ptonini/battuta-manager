@@ -1,8 +1,11 @@
 function NodeGrid(nodeType, mode, addCallback, container) {
+
     var self = this;
 
     self.type = nodeType;
+
     self.mode = mode;
+
     self.container = container;
 
     self.gridOptions = {
@@ -17,37 +20,47 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         ajaxUrl: inventoryApiPath + 'search/?type=' + nodeType + '&pattern='
     };
 
-    if (self.mode == 'open') Object.assign(self.gridOptions, {
+    if (self.mode === 'open') Object.assign(self.gridOptions, {
         showAddButton: true,
         addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
         formatItem: function (listItem) {
+
             listItem.click(function () {
+
                 window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
+
             });
+
         },
         addButtonAction: function () {
+
             new NodeDialog({name: null, description: null, type: nodeType}, addCallback)
+
         }
     });
 
     else Object.assign(self.gridOptions, {itemToggle: true});
 
     self.container.DynamicList(self.gridOptions)
+
 }
 
 
 NodeGrid.prototype = {
     reload: function () {
+
         var self = this;
 
         self.container.DynamicList('load')
-    },
 
+    },
     getSelected: function () {
+
         var self = this;
 
         return self.container.DynamicList('getSelected', 'id')
+
     }
 };

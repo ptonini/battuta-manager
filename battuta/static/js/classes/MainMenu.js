@@ -1,11 +1,12 @@
 function MainMenu(username, is_authenticated, is_superuser, container) {
+
     var self = this;
 
     self.is_authenticated = (is_authenticated === 'True');
 
     self.is_superuser = (is_superuser === 'True');
 
-    if (self.is_authenticated) Preferences.getPreferences();
+    self.is_authenticated && Preferences.getPreferences();
 
     self.usersDropdownMenu = ulDropdownMenu.clone().append(
         $('<li>').append(
@@ -49,7 +50,9 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
         .attr('title', 'Preferences')
         .append(spanGlyph.clone().addClass('glyphicon-cog'))
         .click(function () {
+
             new Preferences()
+
         });
 
     self.searchBox = textInputField.clone().attr('title', 'Search');
@@ -57,9 +60,13 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
     self.searchForm = $('<form>')
         .attr('class', 'navbar-form')
         .submit(function (event) {
+
             event.preventDefault();
+
             var pattern = self.searchBox.val();
-            if (pattern) window.open('/search/' + pattern, '_self')
+
+            pattern && window.open('/search/' + pattern, '_self')
+
         })
         .append(
             $('<div>').attr('class', 'input-group').append(
@@ -83,11 +90,13 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
         .append(spanGlyph.clone().addClass('glyphicon-log-out'));
 
     self.loginForm = $('<form>').attr('class', 'navbar-form').submit(function (event) {
+
         event.preventDefault();
 
         var action;
 
         if (self.is_authenticated) action = 'logout';
+
         else action = 'login';
 
         $.ajax({
@@ -99,10 +108,15 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
                 password: self.loginFormPassField.val()
             },
             success: function (data) {
+
                 if (data.result === 'ok') window.open('/', '_self');
+
                 else if (data.result === 'fail') {
+
                     self.loginFormPassField.val('');
+
                     $.bootstrapGrowl(data.msg, failedAlertOptions);
+
                 }
             }
         });
@@ -147,7 +161,3 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
     }
 
 }
-
-
-
-

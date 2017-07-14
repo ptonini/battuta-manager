@@ -16,35 +16,49 @@ function Nodes(nodeType, container) {
         .css('margin-right', '5px')
         .append(spanGlyph.clone().addClass('glyphicon-download-alt'))
         .click(function () {
+
             self.nodeTable.download()
+
         });
 
     self.updateFactsBtn = btnXsmall.clone().html('Update facts').click(function () {
+
         gatherFacts('all', reloadInfo)
+
     });
 
     self.deleteModeBtn = btnXsmall.clone().html('Delete mode').click(function () {
+
         self.deleteModeBtn.toggleClass('checked_button');
+
         self.deleteBtn.toggle();
 
         if (self.deleteModeBtn.hasClass('checked_button')) {
+
             self.nodeGrid = new NodeGrid(self.nodeType, 'delete', null, self.gridContainer);
+
         }
+
         else self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, self.gridContainer)
+
     });
 
     self.deleteBtn = btnXsmall.clone()
         .attr('title', 'Delete')
         .append(spanGlyph.clone().addClass('glyphicon-trash'))
         .click(function () {
+
             new DeleteDialog(function () {
+
                 $.ajax({
                     url: inventoryApiPath + nodeType + 's/delete/',
                     type: 'POST',
                     dataType: 'json',
                     data: {selection: self.nodeGrid.getSelected()},
                     success: function () {
+
                         reloadInfo()
+
                     }
                 })
             })
@@ -99,9 +113,12 @@ function Nodes(nodeType, container) {
     self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, self.gridContainer);
 
     function reloadInfo() {
+
         self.nodeTable.reload();
+
         self.nodeGrid.reload();
-    };
+
+    }
 
     rememberSelectedTab(self.tabsHeader.attr('id'));
 

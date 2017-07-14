@@ -1,13 +1,13 @@
 function NodeDialog(node, saveCallback) {
+
     var self = this;
 
     self.node = node;
 
-    if (self.node.name) self.header = 'Edit ' + self.node.name;
-
-    else self.header = 'Add ' + self.node.type;
+    self.node.name ? self.header = 'Edit ' + self.node.name : self.header = 'Add ' + self.node.type;
 
     self.nameFieldInput = textInputField.clone().val(self.node.name);
+
     self.descriptionField = textAreaField.clone().val(self.node.description);
 
     self.form = $('<form>')
@@ -28,11 +28,17 @@ function NodeDialog(node, saveCallback) {
                     description: self.descriptionField.val()
                 },
                 success: function (data) {
-                    if (data.result == 'ok') {
+
+                    if (data.result === 'ok') {
+
                         self.dialog.dialog('close');
+
                         saveCallback && saveCallback(data);
+
                     }
+
                     else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
                 }
             });
         });
@@ -42,13 +48,21 @@ function NodeDialog(node, saveCallback) {
         .dialog({
             buttons: {
                 Save: function() {
+
                     self.form.submit()
+
                 },
                 Cancel: function() {
+
                     $(this).dialog('close');
+
                 }
             },
-            close: function() {$(this).remove()}
+            close: function() {
+
+                $(this).remove()
+
+            }
         })
         .dialog('open');
 }
