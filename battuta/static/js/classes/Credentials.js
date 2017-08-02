@@ -245,7 +245,7 @@ Credentials.buildSelectionBox = function (username, credentials, startValue) {
     credentials.empty();
 
     $.ajax({
-        url: usersApiPath + username + '/creds/list/',
+        url: usersApiPath + 'user/' + username + '/creds/list/',
         dataType: 'json',
         data: {runner: runner},
         success: function (data) {
@@ -351,7 +351,7 @@ Credentials.prototype = {
         var self = this;
 
         $.ajax({
-            url: usersApiPath + self.user.username + '/creds/' + action  + '/',
+            url: usersApiPath + 'user/' + self.user.username + '/creds/' + action  + '/',
             type: 'POST',
             dataType: 'json',
             data: postData,

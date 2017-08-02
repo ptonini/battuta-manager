@@ -1,0 +1,16 @@
+{% extends 'main/main.html' %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            document.title = 'Battuta - User groups';
+
+            new UserGroupTable($('#user_group_table'))
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <h3>User Groups</h3>
+    <div id="user_group_table"></div>
+{% endblock %}

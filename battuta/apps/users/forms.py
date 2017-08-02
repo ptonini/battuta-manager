@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import User, UserData, Credential
+from .models import User, Group, UserData, GroupData, Credential
 
 
 class UserForm(forms.ModelForm):
@@ -14,6 +14,11 @@ class UserDataForm(forms.ModelForm):
         model = UserData
         fields = ('timezone',)
 
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ('name',)
 
 class CredentialForm(forms.ModelForm):
     class Meta:

@@ -1,4 +1,4 @@
-function UserTable(container) {
+function UserGroupTable(container) {
 
     var self = this;
 
@@ -9,18 +9,17 @@ function UserTable(container) {
     self.container.append(self.table);
 
     self.table.DataTable({
-        ajax: {url: usersApiPath + 'user/none/list/', dataSrc: ''},
+        ajax: {url: usersApiPath + 'group/none/list/', dataSrc: ''},
+        dom: '<"toolbar">frtip',
         columns: [
-            {class: 'col-md-4', title: 'user', data: 'username'},
-            {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
-            {class: 'col-md-3', title: 'last login', data: 'last_login'},
-            {class: 'col-md-2', title: 'superuser', data: 'is_superuser'}
+            {class: 'col-md-4', title: 'name', data: 'name'},
+            {class: 'col-md-8', title: 'description', data: 'description'},
         ],
-        rowCallback: function (row, user) {
+        rowCallback: function (row, group) {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open(usersPath + 'profile/' + user.username + '/', '_self')
+                window.open('', '_self')
 
             });
 
@@ -32,7 +31,7 @@ function UserTable(container) {
                         new DeleteDialog(function () {
 
                             $.ajax({
-                                url: usersApiPath + 'user/' + user.username + '/delete/',
+                                url: usersApiPath + 'group/' + group.name + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
 
@@ -40,7 +39,7 @@ function UserTable(container) {
 
                                     self.table.DataTable().ajax.reload();
 
-                                    $.bootstrapGrowl('User deleted', {type: 'success'});
+                                    $.bootstrapGrowl('Group deleted', {type: 'success'});
 
                                 }
                             });
@@ -51,7 +50,28 @@ function UserTable(container) {
                 )
             )
 
+        },
+
+        drawCallback: function() {
+            $('div.toolbar').css('float', 'left').html(
+                btnXsmall.clone().html('Add group').click(function () {
+
+                    new UserGroupDialog({name: null, description: null}, null);
+
+                })
+            );
         }
     });
 
 }
+
+UserGroupTable.prototype = {
+
+    reload: function() {
+
+        var self = this;
+
+        self.table.DataTable().ajax.reload()
+
+    }
+};

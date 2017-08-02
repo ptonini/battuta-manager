@@ -86,7 +86,7 @@ function UserForm(currentUser, user, container) {
             function saveUser(postData) {
 
                 $.ajax({
-                    url: usersApiPath + self.user.username + '/save/',
+                    url: usersApiPath + 'user/' + self.user.username + '/save/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
@@ -96,7 +96,7 @@ function UserForm(currentUser, user, container) {
 
                             if (self.user.username) $.bootstrapGrowl('User saved', {type: 'success'});
 
-                            else window.open(usersPath + data.user.username + '/', '_self')
+                            else window.open(usersPath + 'profile/' + data.user.username + '/', '_self')
 
                         }
 
@@ -176,7 +176,7 @@ function UserForm(currentUser, user, container) {
                 if (data.new_password && data.new_password === self.retypeNewPassword.val()) {
 
                     $.ajax({
-                        url: usersApiPath + self.user.username + '/chgpass/',
+                        url: usersApiPath  + 'user/' + self.user.username + '/chgpass/',
                         type: 'POST',
                         dataType: 'json',
                         data: data,

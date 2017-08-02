@@ -6,7 +6,7 @@
             document.title = 'Battuta - {{ user_name }}';
 
             $.ajax({
-                url: usersApiPath + '{{ user_name }}/get/',
+                url: usersApiPath + 'user/{{ user_name }}/get/',
                 dataType: 'json',
                 success: function (data) {
 

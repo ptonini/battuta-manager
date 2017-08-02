@@ -10,8 +10,8 @@ from django.forms import model_to_dict
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, login, logout
 
-from apps.users.models import User, UserData, Credential
-from apps.users.forms import UserForm, UserDataForm, CredentialForm
+from apps.users.models import User, Group, UserData, GroupData, Credential
+from apps.users.forms import UserForm, UserDataForm, GroupForm, CredentialForm
 from apps.users.extras import create_userdata
 
 from apps.preferences.extras import get_preferences
@@ -20,7 +20,7 @@ from apps.preferences.extras import get_preferences
 class PageView(View):
 
     @staticmethod
-    def get(request, **kwargs):
+    def get(request, *args, **kwargs):
 
         if kwargs['page'] == 'files':
 
@@ -30,13 +30,54 @@ class PageView(View):
 
             return render(request, 'users/list.html')
 
+        elif kwargs['page'] == 'groups':
+
+            return render(request, 'users/groups.html')
+
         elif kwargs['page'] == 'new':
 
             return render(request, 'users/new.html')
 
-        elif kwargs['page'] == 'edit':
+        elif kwargs['page'] == 'profile':
 
-            return render(request, 'users/edit.html', {'user_name': kwargs['user_name']})
+            return render(request, 'users/profile.html', {'user_name': args[0]})
+
+
+class LoginView(View):
+
+    @staticmethod
+    def post(request, action):
+
+        if action == 'login':
+
+            user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
+
+            if user:
+
+                if user.is_active:
+
+                    login(request, user)
+
+                    data = {'result': 'ok'}
+
+                else:
+
+                    data = {'result': 'fail', 'msg': 'Account disabled'}
+
+            else:
+
+                data = {'result': 'fail', 'msg': 'Invalid login'}
+
+        elif action == 'logout':
+
+            logout(request)
+
+            data = {'result': 'ok'}
+
+        else:
+            raise Http404('Invalid action')
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class UsersView(View):
@@ -63,6 +104,7 @@ class UsersView(View):
         }
 
         if user.last_login is not None:
+
             user_dict['last_login'] = user.last_login.astimezone(tz).strftime(prefs['date_format'])
 
         return user_dict
@@ -171,43 +213,6 @@ class UsersView(View):
 
             else:
                 data = {'result': 'fail', 'msg': 'Invalid password'}
-
-        else:
-            raise Http404('Invalid action')
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
-class LoginView(View):
-
-    @staticmethod
-    def post(request, action):
-
-        if action == 'login':
-
-            user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
-
-            if user:
-
-                if user.is_active:
-
-                    login(request, user)
-
-                    data = {'result': 'ok'}
-
-                else:
-
-                    data = {'result': 'fail', 'msg': 'Account disabled'}
-
-            else:
-
-                data = {'result': 'fail', 'msg': 'Invalid login'}
-
-        elif action == 'logout':
-
-            logout(request)
-
-            data = {'result': 'ok'}
 
         else:
             raise Http404('Invalid action')
@@ -387,5 +392,48 @@ class CredentialView(View):
 
         else:
             raise PermissionDenied
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+class UserGroupView(View):
+
+    def get(self, request, group_name, action):
+
+        data = [{'name': group.name, 'description': group.groupdata.description} for group in Group.objects.all()]
+
+        print(data)
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+    def post(self, request, group_name, action):
+
+        data = None
+
+        print(request.POST)
+
+        group = Group() if 'name' in request.POST else get_object_or_404(Group, name=group_name)
+
+        if action == 'save':
+
+            group_form = GroupForm(request.POST or None, instance=group)
+
+            if group_form.is_valid():
+
+                group = group_form.save()
+
+                # if 'description' in request.POST:
+                #
+                #     group.groupdata = GroupData()
+                #
+                #     group.groupdata.description = request.POST['description']
+
+                group.save()
+
+                data = {'result': 'ok'}
+
+            else:
+
+                data = {'result': 'fail', 'msg': str(group_form.errors)}
 
         return HttpResponse(json.dumps(data), content_type='application/json')

@@ -223,7 +223,9 @@ function rememberSelectedTab(tabId) {
 
 }
 
-function humanBytes(value, suffix='B') {
+function humanBytes(value, suffix) {
+
+    if (!suffix) suffix = 'B';
 
     var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 
@@ -284,7 +286,7 @@ function gatherFacts(nodeName, finishCallback) {
     };
 
     $.ajax({
-        url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/default/',
+        url: usersApiPath + 'user/' + sessionStorage.getItem('user_name') + '/creds/default/',
         dataType: 'json',
         success: function (cred) {
 

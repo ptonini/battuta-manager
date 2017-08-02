@@ -35,7 +35,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
             });
 
             $.ajax({
-                url: usersApiPath + sessionStorage.getItem('user_name') + '/creds/get/',
+                url: usersApiPath + 'user/' + sessionStorage.getItem('user_name') + '/creds/get/',
                 data: {cred_id: self.job.cred},
                 success: function(data) {
 
