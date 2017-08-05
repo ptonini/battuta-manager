@@ -4,6 +4,8 @@ function UserGroupDialog(group, saveCallback) {
 
     self.group = group;
 
+    self.header = self.group.name ? 'Edit ' + self.group.name : 'Add user group';
+
     self.nameFieldInput = textInputField.clone().val(self.group.name);
 
     self.descriptionField = textAreaField.clone().val(self.group.description);

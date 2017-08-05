@@ -27,7 +27,8 @@ function AnsibleRunner(postData, cred, sameWindow) {
 
         //self.askSudoUser = true;
 
-        elf.askSudoPass = true;
+        self.askSudoPass = true;
+
     }
 
     else {
@@ -37,8 +38,7 @@ function AnsibleRunner(postData, cred, sameWindow) {
         self.askSudoPass = (postData.become && !cred.sudo_pass && cred.ask_sudo_pass)
 
     }
-
-
+    
     if (self.askUser || self.askUserPass || self.askSudoUser || self.askSudoPass) {
 
         self.userGroup = divFormGroup.clone().toggleClass('hidden', (!self.askUser));
@@ -70,13 +70,9 @@ function AnsibleRunner(postData, cred, sameWindow) {
         self.sudoPassword = passInputField.clone();
 
         self.passwordDialog = $('<div>').attr('class', 'small_dialog').append(
-
             self.userGroup.append($('<label>').html('Username').append(self.userField)),
-
             self.userPasswordGroup.append($('<label>').html(self.userPassFieldTitle).append(self.userPassword)),
-
             self.sudoUserGroup.append($('<label>').html('Sudo user').append(self.sudoUserField)),
-
             self.sudoPasswordGroup.append(
                 $('<label>').html('Sudo password').append(
                     $('<span>').attr('class', 'user_pass_group').html(' (defaults to user)'), self.sudoPassword

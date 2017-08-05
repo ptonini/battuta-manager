@@ -4,7 +4,7 @@ function NodeDialog(node, saveCallback) {
 
     self.node = node;
 
-    self.node.name ? self.header = 'Edit ' + self.node.name : self.header = 'Add ' + self.node.type;
+    self.header = self.node.name ? 'Edit ' + self.node.name : 'Add ' + self.node.type;
 
     self.nameFieldInput = textInputField.clone().val(self.node.name);
 

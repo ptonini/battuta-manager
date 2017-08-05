@@ -23,24 +23,20 @@ function VariableTable(node, container) {
             if (!variable.source) {
 
                 $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
-                    $('<span>')
-                        .attr({class: 'glyphicon glyphicon-edit btn-incell', title: 'Edit'})
-                        .click(function () {
+                    spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
 
-                            new VariableForm(variable, 'dialog', self.node, self.table.DataTable().ajax.reload)
+                        new VariableForm(variable, 'dialog', self.node, self.table.DataTable().ajax.reload)
 
-                        }),
-                    $('<span>')
-                        .attr({class: 'glyphicon glyphicon-trash btn-incell', title: 'Delete'})
-                        .click(function () {
+                    }),
+                    spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
 
-                            new DeleteDialog(function () {
+                        new DeleteDialog(function () {
 
-                                VariableForm.deleteVariable(variable, self.node, self.table.DataTable().ajax.reload)
-
-                            })
+                            VariableForm.deleteVariable(variable, self.node, self.table.DataTable().ajax.reload)
 
                         })
+
+                    })
                 )
             }
             else {

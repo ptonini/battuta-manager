@@ -75,6 +75,7 @@ class LoginView(View):
             data = {'result': 'ok'}
 
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -138,6 +139,7 @@ class UsersView(View):
         if 'username' in form_data:
 
             user = User()
+
             user.userdata = UserData()
 
             new_user = True
@@ -147,6 +149,7 @@ class UsersView(View):
             user = get_object_or_404(User, username=user_name)
 
             form_data['username'] = user.username
+
             form_data['password'] = user.password
 
             new_user = False
@@ -156,6 +159,7 @@ class UsersView(View):
             if user_name == request.user.username or request.user.is_superuser:
 
                 user_form = UserForm(form_data or None, instance=user)
+
                 userdata_form = UserDataForm(form_data or None, instance=user.userdata)
 
                 if user_form.is_valid() and userdata_form.is_valid():
@@ -165,14 +169,21 @@ class UsersView(View):
                     if new_user:
 
                         user.set_password(form_data['password'])
+
                         cred, created = Credential.objects.get_or_create(user=user, title='Default')
+
                         cred.username = user.username
+
                         cred.save()
+
                         user.userdata.default_cred = cred
 
                     user.save()
+
                     userdata = userdata_form.save(commit=False)
+
                     userdata.user = user
+
                     userdata.save()
 
                     data = {'result': 'ok', 'user': self._user_to_dict(user)}
@@ -190,11 +201,13 @@ class UsersView(View):
             if request.user.is_superuser and request.user != user:
 
                 user.userdata.delete()
+
                 user.delete()
 
                 data = {'result': 'ok'}
 
             else:
+
                 raise PermissionDenied
 
         elif action == 'chgpass':
@@ -204,17 +217,21 @@ class UsersView(View):
                 if user == request.user or request.user.is_superuser:
 
                     user.set_password(form_data['new_password'])
+
                     user.save()
 
                     data = {'result': 'ok'}
 
                 else:
+
                     raise PermissionDenied
 
             else:
+
                 data = {'result': 'fail', 'msg': 'Invalid password'}
 
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
@@ -398,21 +415,23 @@ class CredentialView(View):
 
 class UserGroupView(View):
 
-    def get(self, request, group_name, action):
+    @staticmethod
+    def get(request, group_name, action):
 
-        data = [{'name': group.name, 'description': group.groupdata.description} for group in Group.objects.all()]
+        if action == 'list':
 
-        print(data)
+            data = [{'name': group.name, 'description': group.groupdata.description} for group in Group.objects.all()]
+
+        else:
+
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def post(self, request, group_name, action):
+    @staticmethod
+    def post(request, group_name, action):
 
-        data = None
-
-        print(request.POST)
-
-        group = Group() if 'name' in request.POST else get_object_or_404(Group, name=group_name)
+        group = Group() if group_name == 'null' else get_object_or_404(Group, name=group_name)
 
         if action == 'save':
 
@@ -422,18 +441,28 @@ class UserGroupView(View):
 
                 group = group_form.save()
 
-                # if 'description' in request.POST:
-                #
-                #     group.groupdata = GroupData()
-                #
-                #     group.groupdata.description = request.POST['description']
+                GroupData.objects.get_or_create(group=group)
 
-                group.save()
+                group.groupdata.description = request.POST['description'] if 'description' in request.POST else ''
+
+                group.groupdata.save()
 
                 data = {'result': 'ok'}
 
             else:
 
                 data = {'result': 'fail', 'msg': str(group_form.errors)}
+
+        elif action == 'delete':
+
+            if True:
+
+                group.delete()
+
+            data = {'result': 'ok'}
+
+        else:
+
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')

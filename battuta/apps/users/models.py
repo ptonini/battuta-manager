@@ -32,7 +32,7 @@ class UserData(models.Model):
 
 class GroupData(models.Model):
     group = models.OneToOneField(Group, primary_key=True)
-    description = models.CharField(max_length=256, blank=True, null=True)
+    description = models.CharField(max_length=256, default='')
 
     def __str__(self):
         return self.group

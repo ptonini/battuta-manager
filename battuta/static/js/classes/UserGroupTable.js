@@ -13,7 +13,7 @@ function UserGroupTable(container) {
         dom: '<"toolbar">frtip',
         columns: [
             {class: 'col-md-4', title: 'name', data: 'name'},
-            {class: 'col-md-8', title: 'description', data: 'description'},
+            {class: 'col-md-8', title: 'description', data: 'description'}
         ],
         rowCallback: function (row, group) {
 
@@ -23,9 +23,13 @@ function UserGroupTable(container) {
 
             });
 
-            $(row).find('td:eq(3)').append(
-                prettyBoolean($(row).find('td:eq(3)'), user.is_superuser),
+            $(row).find('td:eq(1)').append(
                 spanRight.clone().append(
+                    spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
+
+                        new UserGroupDialog(group, self.table.DataTable().ajax.reload);
+
+                    }),
                     spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
@@ -56,7 +60,7 @@ function UserGroupTable(container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add group').click(function () {
 
-                    new UserGroupDialog({name: null, description: null}, null);
+                    new UserGroupDialog({name: null, description: null}, self.table.DataTable().ajax.reload);
 
                 })
             );
@@ -64,14 +68,3 @@ function UserGroupTable(container) {
     });
 
 }
-
-UserGroupTable.prototype = {
-
-    reload: function() {
-
-        var self = this;
-
-        self.table.DataTable().ajax.reload()
-
-    }
-};
