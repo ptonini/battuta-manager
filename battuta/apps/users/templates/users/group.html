@@ -1,0 +1,36 @@
+{% extends 'main/main.html' %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            if ('{{ group_name }}') {
+
+                document.title = 'Battuta - {{ group_name }}';
+
+                $.ajax({
+                    url: usersApiPath + 'group/{{ group_name }}/get/',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (data.result === 'ok') new UserGroupForm(data.group, $('#group_form_container'))
+
+                    }
+
+                });
+            }
+
+            else {
+
+                document.title = 'Battuta - New user group';
+
+                new UserGroupForm({name: false}, $('#group_form_container'))
+
+            }
+
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div id="group_form_container"></div>
+{% endblock %}

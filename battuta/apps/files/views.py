@@ -11,6 +11,7 @@ from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
+from django.contrib.auth.models import User
 from pytz import timezone, utc
 
 from apps.preferences.extras import get_preferences
@@ -61,7 +62,7 @@ class FilesView(View):
             return True, None
 
     @staticmethod
-    def set_root(root, request):
+    def set_root(root, user):
 
         root_dir = None
 
@@ -81,9 +82,9 @@ class FilesView(View):
 
             file_types = ['yml', 'yaml']
 
-        elif root == 'user':
+        elif root == 'user' and User.objects.filter(username=user).exists():
 
-            root_dir = os.path.join(settings.USERDATA_PATH, request.user.username)
+            root_dir = os.path.join(settings.USERDATA_PATH, user)
 
         if root_dir and not os.path.exists(root_dir):
 
@@ -93,7 +94,7 @@ class FilesView(View):
 
     def get(self, request, action):
 
-        root_dir, file_types = FilesView.set_root(request.GET.get('root'), request)
+        root_dir, file_types = FilesView.set_root(request.GET['root'], request.GET['user'])
 
         prefs = get_preferences()
 
@@ -171,7 +172,7 @@ class FilesView(View):
 
                         file_type = magic.from_file(full_path, mime='true')
 
-                        is_valid, error = FilesView.validator(request.GET.get('root'), full_path)
+                        is_valid, error = FilesView.validator(request.GET['root'], full_path)
 
                     else:
 
@@ -287,7 +288,7 @@ class FilesView(View):
     @staticmethod
     def post(request, action):
 
-        root_dir, file_types = FilesView.set_root(request.POST.get('root'), request)
+        root_dir, file_types = FilesView.set_root(request.POST['root'], request.POST['user'])
 
         full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
 

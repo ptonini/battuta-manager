@@ -23,12 +23,12 @@ function VariableTable(node, container) {
             if (!variable.source) {
 
                 $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
-                    spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
+                    spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
                         new VariableForm(variable, 'dialog', self.node, self.table.DataTable().ajax.reload)
 
                     }),
-                    spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 
@@ -126,11 +126,11 @@ function VariableTable(node, container) {
 
                         $(mainValue[1]).find('td:eq(0)').html('').append(
                             $('<span>').html(mainValue[0].key),
-                            spanGlyph.clone().addClass('glyphicon-plus-sign btn-incell').off().click(function () {
+                            spanFA.clone().addClass('fa-chevron-down btn-incell').off().click(function () {
 
                                 if (rowApi.child.isShown()) {
 
-                                    $(this).removeClass('glyphicon-minus-sign').addClass('glyphicon-plus-sign');
+                                    $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
 
                                     $(mainValue[1]).css('font-weight', 'normal');
 
@@ -140,7 +140,7 @@ function VariableTable(node, container) {
 
                                 else {
 
-                                    $(this).removeClass('glyphicon-plus-sign').addClass('glyphicon-minus-sign');
+                                    $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
 
                                     $(mainValue[1]).css('font-weight', 'bold');
 

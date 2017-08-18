@@ -114,7 +114,7 @@ function PlaybookForm(playbook) {
 
     self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
-        .html(spanGlyph.clone().addClass('glyphicon-edit'))
+        .html(spanFA.clone().addClass('fa-pencil'))
         .click(function (event) {
 
             event.preventDefault();

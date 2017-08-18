@@ -14,12 +14,6 @@ class Host(models.Model):
 
     relations = ['parents']
 
-    class Meta:
-
-        permissions = (
-            (),
-        )
-
     def __str__(self):
 
         return self.name

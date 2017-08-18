@@ -61,7 +61,7 @@ function NodeTable(nodeType, addCallback, container) {
 
             if (self.type !== 'group' || data.name !== 'all') $(row).find('td:last').html(
                 spanRight.clone().append(
-                    spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 

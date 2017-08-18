@@ -9,13 +9,13 @@ function UserForm(currentUser, user, container) {
 
     self.usernameField = textInputField.clone();
 
-    self.firstNameField = textInputField.clone().val(user.first_name);
+    self.firstNameField = textInputField.clone().val(self.user.first_name);
 
-    self.lastNameField = textInputField.clone().val(user.last_name);
+    self.lastNameField = textInputField.clone().val(self.user.last_name);
 
-    self.emailField = textInputField.clone().val(user.email);
+    self.emailField = textInputField.clone().val(self.user.email);
 
-    self.timezoneField = selectField.clone().timezones().val(user.timezone);
+    self.timezoneField = selectField.clone().timezones().val(self.user.timezone);
 
     self.passwordField = passInputField.clone();
 
@@ -96,7 +96,7 @@ function UserForm(currentUser, user, container) {
 
                             if (self.user.username) $.bootstrapGrowl('User saved', {type: 'success'});
 
-                            else window.open(usersPath + 'profile/' + data.user.username + '/', '_self')
+                            else window.open(usersPath + 'user/' + data.user.username + '/', '_self')
 
                         }
 
@@ -215,7 +215,7 @@ function UserForm(currentUser, user, container) {
     if (self.user.username) {
 
         self.formsHeader.append(
-            $('<h3>').html(user.username),
+            $('<h3>').append($('<small>').html('user'), '&nbsp;', user.username),
             divRow.clone().append(
                 $('<div>').attr('class', 'col-md-1 col-sm-2').html($('<strong>').html('Joined in:')),
                 $('<div>').attr('class', 'col-md-5 col-sm-10').html(self.user.date_joined)

@@ -2,6 +2,8 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
     var self = this;
 
+    self.username = username;
+
     self.is_authenticated = (is_authenticated === 'True');
 
     self.is_superuser = (is_superuser === 'True');
@@ -10,8 +12,8 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
     self.usersDropdownMenu = ulDropdownMenu.clone().append(
         $('<li>').append(
-            $('<a>').attr('href', usersPath + 'profile/' + username + '/').html('User profile'),
-            $('<a>').attr('href', usersPath + 'files/').html('User files')
+            $('<a>').attr('href', usersPath + 'user/' + self.username + '/').html(self.username + ' profile'),
+            $('<a>').attr('href', usersPath + 'user/' + self.username + '/files/').html(self.username + ' files')
         )
     );
 
@@ -48,7 +50,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
     self.preferencesButton = btnNavbarGlyph.clone()
         .attr('title', 'Preferences')
-        .append(spanGlyph.clone().addClass('glyphicon-cog'))
+        .append(spanFA.clone().addClass('fa-cog'))
         .click(function () {
 
             new Preferences()
@@ -72,7 +74,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
             $('<div>').attr('class', 'input-group').append(
                 self.searchBox,
                 spanBtnGroup.clone().append(
-                    btnSmall.clone().html(spanGlyph.clone().addClass('glyphicon-search'))
+                    btnSmall.clone().html(spanFA.clone().addClass('fa-search'))
                 )
             )
         );
@@ -83,11 +85,11 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
     self.loginButton = $('<button>').attr('class', 'btn btn-link')
         .attr('title', 'Login')
-        .append(spanGlyph.clone().addClass('glyphicon-log-in'));
+        .append(spanFA.clone().addClass('fa-sign-in'));
 
     self.logoutButton = $('<button>').attr('class', 'btn btn-link')
         .attr('title', 'Logout ' + username)
-        .append(spanGlyph.clone().addClass('glyphicon-log-out'));
+        .append(spanFA.clone().addClass('fa-sign-out'));
 
     self.loginForm = $('<form>').attr('class', 'navbar-form').submit(function (event) {
 
@@ -151,9 +153,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
     if (self.is_superuser) {
 
         self.usersDropdownMenu.children('li').first().prepend(
-            $('<a>').attr('href', usersPath + 'new/').html('New user'),
-            $('<a>').attr('href', usersPath + 'list/').html('List users'),
-            $('<li>').attr('class', 'divider'),
+            $('<a>').attr('href', usersPath + 'users/').html('Users'),
             $('<a>').attr('href', usersPath + 'groups/').html('User groups'),
             $('<li>').attr('class', 'divider')
         );

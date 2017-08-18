@@ -9,6 +9,7 @@ from django.views.generic import View
 from django.forms import model_to_dict
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import Permission
 
 from apps.users.models import User, Group, UserData, GroupData, Credential
 from apps.users.forms import UserForm, UserDataForm, GroupForm, CredentialForm
@@ -22,25 +23,33 @@ class PageView(View):
     @staticmethod
     def get(request, *args, **kwargs):
 
-        if kwargs['page'] == 'files':
+        if kwargs['page'] == 'users':
 
-            return render(request, 'users/files.html')
+            return render(request, 'users/user_table.html')
 
-        elif kwargs['page'] == 'list':
+        elif kwargs['page'] == 'new_user':
 
-            return render(request, 'users/list.html')
+            return render(request, 'users/user.html')
+
+        elif kwargs['page'] == 'user':
+
+            return render(request, 'users/user.html', {'user_name': args[0]})
+
+        elif kwargs['page'] == 'user_files':
+
+            return render(request, 'users/files.html', {'user_name': args[0]})
 
         elif kwargs['page'] == 'groups':
 
-            return render(request, 'users/groups.html')
+            return render(request, 'users/group_table.html')
 
-        elif kwargs['page'] == 'new':
+        elif kwargs['page'] == 'new_group':
 
-            return render(request, 'users/new.html')
+            return render(request, 'users/group.html')
 
-        elif kwargs['page'] == 'profile':
+        elif kwargs['page'] == 'group':
 
-            return render(request, 'users/profile.html', {'user_name': args[0]})
+            return render(request, 'users/group.html', {'group_name': args[0]})
 
 
 class LoginView(View):
@@ -416,11 +425,24 @@ class CredentialView(View):
 class UserGroupView(View):
 
     @staticmethod
-    def get(request, group_name, action):
+    def _group_to_dict(group):
+
+        return {
+            'name': group.name,
+            'description': group.groupdata.description,
+            'permissions': [perm.codename for perm in group.permissions.all()],
+            'members': [user.username for user in User.objects.filter(groups__name=group.name)]
+        }
+
+    def get(self, request, group_name, action):
 
         if action == 'list':
 
-            data = [{'name': group.name, 'description': group.groupdata.description} for group in Group.objects.all()]
+            data = [self._group_to_dict(group) for group in Group.objects.all()]
+
+        elif action == 'get':
+
+            data = {'result': 'ok', 'group': self._group_to_dict(get_object_or_404(Group, name=group_name))}
 
         else:
 
@@ -428,14 +450,23 @@ class UserGroupView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    @staticmethod
-    def post(request, group_name, action):
+    def post(self, request, group_name, action):
 
-        group = Group() if group_name == 'null' else get_object_or_404(Group, name=group_name)
+        form_data = dict(request.POST.iteritems())
+
+        if 'name' in request.POST:
+        
+            group = Group()
+
+        else:
+
+            group = get_object_or_404(Group, name=group_name)
+
+            form_data['name'] = group.name
 
         if action == 'save':
 
-            group_form = GroupForm(request.POST or None, instance=group)
+            group_form = GroupForm(form_data or None, instance=group)
 
             if group_form.is_valid():
 
@@ -447,7 +478,13 @@ class UserGroupView(View):
 
                 group.groupdata.save()
 
-                data = {'result': 'ok'}
+                # for permission in json.loads(request.POST['permissions']):
+                #
+                #     perm = Permission.objects.get(codename=permission[0])
+                #
+                #     group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
+
+                data = {'result': 'ok', 'group': self._group_to_dict(group)}
 
             else:
 

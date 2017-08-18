@@ -111,8 +111,8 @@ VariableForm.prototype = {
             self.saveButton = btnSmall.clone().html('Save');
 
             self.copyButton = btnSmall.clone()
-                .attr('title', 'Copy from nde')
-                .append(spanGlyph.clone().addClass('glyphicon-duplicate'))
+                .attr('title', 'Copy from node')
+                .append(spanFA.clone().addClass('fa-files-o'))
                 .click(function (event) {
 
                     event.preventDefault();

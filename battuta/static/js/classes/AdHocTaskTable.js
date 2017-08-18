@@ -43,19 +43,19 @@ function AdHohTaskTable(pattern, container) {
             $(row).find('td:eq(3)').append(
                 spanRight.clone().append(
                     prettyBoolean($(row).find('td:eq(3)'), task.become),
-                    spanGlyph.clone().addClass('glyphicon-play-circle btn-incell').attr('title', 'Load').click(function () {
+                    spanFA.clone().addClass('fa-play btn-incell').attr('title', 'Load').click(function () {
 
                         task.saveCallback = self.table.DataTable().ajax.reload;
 
                         new AdHocTaskForm(pattern, 'dialog', task);
 
                     }),
-                    spanGlyph.clone().addClass('glyphicon-duplicate btn-incell').attr('title', 'Copy').click(function () {
+                    spanFA.clone().addClass('fa-files-o btn-incell').attr('title', 'Copy').click(function () {
 
                         AdHocTaskForm.copyTask(task, self.table.DataTable().ajax.reload);
 
                     }),
-                    spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 

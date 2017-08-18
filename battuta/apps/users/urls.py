@@ -6,16 +6,19 @@ from . import views
 
 urlpatterns = [
 
-    url(r'^list/$', login_required(views.PageView.as_view()), kwargs={'page': 'list'}),
+    url(r'^users/$', login_required(views.PageView.as_view()), kwargs={'page': 'users'}),
 
-    url(r'^files/$', login_required(views.PageView.as_view()), kwargs={'page': 'files'}),
+    url(r'^new_user/$', login_required(views.PageView.as_view()), kwargs={'page': 'new_user'}),
 
-    url(r'^new/$', login_required(views.PageView.as_view()), kwargs={'page': 'new'}),
+    url(r'^user/([a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'user'}),
+
+    url(r'^user/([a-zA-Z0-9-._]+)/files/$', login_required(views.PageView.as_view()), kwargs={'page': 'user_files'}),
 
     url(r'^groups/$', login_required(views.PageView.as_view()), kwargs={'page': 'groups'}),
 
-    url(r'^profile/([a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'profile'}),
+    url(r'^new_group/$', login_required(views.PageView.as_view()), kwargs={'page': 'new_group'}),
 
+    url(r'^group/([a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'group'}),
 
     url(r'^api/(login|logout)/$', views.LoginView.as_view()),
 

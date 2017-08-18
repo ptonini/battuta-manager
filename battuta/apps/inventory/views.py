@@ -8,6 +8,7 @@ import ntpath
 import ConfigParser
 import yaml
 
+
 from django.http import HttpResponse, Http404, StreamingHttpResponse
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
@@ -176,170 +177,112 @@ class InventoryView(View):
     @staticmethod
     def post(request, action):
 
-        if action == 'import':
+        if request.user.has_perm('inventory.edit_host') and request.user.has_perm('inventory.edit_group'):
 
-            # Create temp file and load import data
-            with tempfile.TemporaryFile() as temp:
+            if action == 'import':
 
-                for chunk in request.FILES['file_data']:
+                # Create temp file and load import data
+                with tempfile.TemporaryFile() as temp:
 
-                    temp.write(chunk)
+                    for chunk in request.FILES['file_data']:
 
-                temp.seek(0, 0)
+                        temp.write(chunk)
 
-                data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
+                    temp.seek(0, 0)
 
-                # Import from CSV
-                if request.POST['format'] == 'csv':
+                    data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
 
-                    csv_data = csv.reader(temp)
+                    # Import from CSV
+                    if request.POST['format'] == 'csv':
 
-                    header = next(csv_data)
+                        csv_data = csv.reader(temp)
 
-                    try:
+                        header = next(csv_data)
 
-                        host_index = header.index('host')
+                        try:
 
-                    except ValueError:
+                            host_index = header.index('host')
 
-                        data['result'] = 'failed'
+                        except ValueError:
 
-                        data['msg'] = 'Error: could not find hosts column'
+                            data['result'] = 'failed'
 
-                    else:
+                            data['msg'] = 'Error: could not find hosts column'
 
-                        for row in csv_data:
+                        else:
 
-                            host, created = Host.objects.get_or_create(name=row[host_index])
+                            for row in csv_data:
 
-                            if created:
+                                host, created = Host.objects.get_or_create(name=row[host_index])
 
-                                data['added_hosts'] += 1
+                                if created:
 
-                            for index, cell in enumerate(row):
+                                    data['added_hosts'] += 1
 
-                                if index != host_index and cell:
+                                for index, cell in enumerate(row):
 
-                                    if header[index] == 'group':
+                                    if index != host_index and cell:
 
-                                        group, created = Group.objects.get_or_create(name=cell)
+                                        if header[index] == 'group':
 
-                                        if created:
+                                            group, created = Group.objects.get_or_create(name=cell)
 
-                                            data['added_groups'] += 1
+                                            if created:
 
-                                        host.group_set.add(group)
+                                                data['added_groups'] += 1
 
-                                        host.save()
+                                            host.group_set.add(group)
 
-                                    else:
+                                            host.save()
 
-                                        var, created = Variable.objects.get_or_create(key=header[index], host=host)
+                                        else:
 
-                                        if created:
+                                            var, created = Variable.objects.get_or_create(key=header[index], host=host)
 
-                                            data['added_vars'] += 1
+                                            if created:
 
-                                        var.value = cell
+                                                data['added_vars'] += 1
 
-                                        var.save()
+                                            var.value = cell
 
-                        data['result'] = 'ok'
+                                            var.save()
 
-                # Import from JSON
-                elif request.POST['format'] == 'json':
+                            data['result'] = 'ok'
 
-                    # Load JSON data
-                    try:
+                    # Import from JSON
+                    elif request.POST['format'] == 'json':
 
-                        json_data = json.load(temp)
+                        # Load JSON data
+                        try:
 
-                    except ValueError:
+                            json_data = json.load(temp)
 
-                        data['result'] = 'failed'
+                        except ValueError:
 
-                        data['msg'] = 'Error: File does not contain valid JSON'
+                            data['result'] = 'failed'
 
-                    else:
+                            data['msg'] = 'Error: File does not contain valid JSON'
 
-                        # Iterate over JSON data host vars
-                        for host_name, variables in json_data['_meta']['hostvars'].iteritems():
+                        else:
 
-                            host, created = Host.objects.get_or_create(name=host_name)
+                            # Iterate over JSON data host vars
+                            for host_name, variables in json_data['_meta']['hostvars'].iteritems():
 
-                            if created:
+                                host, created = Host.objects.get_or_create(name=host_name)
 
-                                data['added_hosts'] += 1
+                                if created:
 
-                            for key, value in variables.iteritems():
+                                    data['added_hosts'] += 1
 
-                                if key == '_description':
-
-                                    host.description = value
-
-                                else:
-
-                                    var, created = Variable.objects.get_or_create(key=key, host=host)
-
-                                    if created:
-
-                                        data['added_vars'] += 1
-
-                                    var.value = value
-
-                                    var.save()
-
-                            host.save()
-
-                        json_data.pop('_meta', None)
-
-                        # Iterate over JSON data groups
-                        for group_name, group_dict in json_data.iteritems():
-
-                            group, created = Group.objects.get_or_create(name=group_name)
-
-                            if created:
-
-                                data['added_groups'] += 1
-
-                            # Iterate over group children
-                            if 'children' in group_dict:
-
-                                for child_name in group_dict['children']:
-
-                                    child, created = Group.objects.get_or_create(name=child_name)
-
-                                    if created:
-
-                                        data['added_groups'] += 1
-
-                                    group.children.add(child)
-
-                            # Iterate over group hosts
-                            if 'hosts' in group_dict:
-
-                                for host_name in group_dict['hosts']:
-
-                                    host, created = Host.objects.get_or_create(name=host_name)
-
-                                    if created:
-
-                                        data['added_hosts'] += 1
-
-                                    group.members.add(host)
-
-                            # Iterate over group vars
-                            if 'vars' in group_dict:
-
-                                for key, value in group_dict['vars'].iteritems():
+                                for key, value in variables.iteritems():
 
                                     if key == '_description':
 
-                                        group.description = value
+                                        host.description = value
 
                                     else:
 
-                                        var, created = Variable.objects.get_or_create(key=key, group=group)
+                                        var, created = Variable.objects.get_or_create(key=key, host=host)
 
                                         if created:
 
@@ -349,15 +292,80 @@ class InventoryView(View):
 
                                         var.save()
 
-                            group.save()
+                                host.save()
 
-                        data['result'] = 'ok'
+                            json_data.pop('_meta', None)
 
-                else:
-                    raise Http404('Invalid format')
+                            # Iterate over JSON data groups
+                            for group_name, group_dict in json_data.iteritems():
+
+                                group, created = Group.objects.get_or_create(name=group_name)
+
+                                if created:
+
+                                    data['added_groups'] += 1
+
+                                # Iterate over group children
+                                if 'children' in group_dict:
+
+                                    for child_name in group_dict['children']:
+
+                                        child, created = Group.objects.get_or_create(name=child_name)
+
+                                        if created:
+
+                                            data['added_groups'] += 1
+
+                                        group.children.add(child)
+
+                                # Iterate over group hosts
+                                if 'hosts' in group_dict:
+
+                                    for host_name in group_dict['hosts']:
+
+                                        host, created = Host.objects.get_or_create(name=host_name)
+
+                                        if created:
+
+                                            data['added_hosts'] += 1
+
+                                        group.members.add(host)
+
+                                # Iterate over group vars
+                                if 'vars' in group_dict:
+
+                                    for key, value in group_dict['vars'].iteritems():
+
+                                        if key == '_description':
+
+                                            group.description = value
+
+                                        else:
+
+                                            var, created = Variable.objects.get_or_create(key=key, group=group)
+
+                                            if created:
+
+                                                data['added_vars'] += 1
+
+                                            var.value = value
+
+                                            var.save()
+
+                                group.save()
+
+                            data['result'] = 'ok'
+
+                    else:
+                        raise Http404('Invalid format')
+
+            else:
+
+                raise Http404('Invalid action')
 
         else:
-            raise Http404('Invalid action')
+
+            raise PermissionDenied
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -439,33 +447,39 @@ class NodesView(View):
 
         node_type = node_type_plural[:-1]
 
-        if action == 'delete':
+        if request.user.has_perm('inventory.edit_' + node_type):
 
-            if node_type == 'host':
+            if action == 'delete':
 
-                node_class = Host
+                if node_type == 'host':
 
-            elif node_type == 'group':
+                    node_class = Host
 
-                node_class = Group
+                elif node_type == 'group':
+
+                    node_class = Group
+
+                else:
+
+                    raise Http404('Invalid node type')
+
+                for node_id in request.POST.getlist('selection[]'):
+
+                    node = get_object_or_404(node_class, pk=node_id)
+
+                    if node.type == 'host' or node.name != 'all':
+
+                        node.delete()
+
+                data = {'result': 'ok'}
 
             else:
 
-                raise Http404('Invalid node type')
-
-            for node_id in request.POST.getlist('selection[]'):
-
-                node = get_object_or_404(node_class, pk=node_id)
-
-                if node.type == 'host' or node.name != 'all':
-
-                    node.delete()
-
-            data = {'result': 'ok'}
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            raise PermissionDenied
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -475,7 +489,7 @@ class NodeView(View):
     context = dict()
 
     @staticmethod
-    def build_node(node_type, node_name):
+    def build_node(node_type, node_name, user):
 
         # Get classes based on node type
         if node_type == 'host':
@@ -555,6 +569,8 @@ class NodeView(View):
 
                 host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
 
+        setattr(node, 'editable', user.has_perm('inventory.edit_' + node_type))
+
         setattr(node, 'form_class', node_form_class)
 
         setattr(node, 'ancestors', ancestors)
@@ -567,7 +583,7 @@ class NodeView(View):
 
     def get(self, request, node_type, node_name, action):
 
-        node = self.build_node(node_type, node_name)
+        node = self.build_node(node_type, node_name, request.user)
 
         if action == 'info':
 
@@ -621,32 +637,38 @@ class NodeView(View):
 
     def post(self, request, node_type, node_name, action):
 
-        node = self.build_node(node_type, node_name)
+        node = self.build_node(node_type, node_name, request.user)
 
-        if action == 'save':
+        if node.editable:
 
-            form = node.form_class(request.POST or None, instance=node)
+            if action == 'save':
 
-            if form.is_valid():
+                form = node.form_class(request.POST or None, instance=node)
 
-                node = form.save(commit=True)
+                if form.is_valid():
 
-                data = {'result': 'ok', 'name': node.name, 'type': node.type}
+                    node = form.save(commit=True)
+
+                    data = {'result': 'ok', 'name': node.name, 'type': node.type}
+
+                else:
+
+                    data = {'result': 'fail', 'msg': str(form.errors)}
+
+            elif action == 'delete':
+
+                if node.type == 'host' or node.name != 'all':
+
+                    node.delete()
+
+                data = {'result': 'ok'}
 
             else:
-
-                data = {'result': 'fail', 'msg': str(form.errors)}
-
-        elif action == 'delete':
-
-            if node.type == 'host' or node.name != 'all':
-
-                node.delete()
-
-            data = {'result': 'ok'}
+                raise Http404('Invalid action')
 
         else:
-            raise Http404('Invalid action')
+
+            raise PermissionDenied
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -656,7 +678,7 @@ class VariablesView(View):
     @staticmethod
     def get(request, node_type, node_name, action):
 
-        node = NodeView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name, request.user)
 
         if action == 'list':
 
@@ -721,7 +743,7 @@ class VariablesView(View):
     @staticmethod
     def post(request, node_type, node_name, action):
 
-        node = NodeView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name, request.user)
 
         if 'id' in request.POST and request.POST['id']:
 
@@ -731,47 +753,53 @@ class VariablesView(View):
 
             variable = Variable()
 
-        if action == 'save':
+        if node.editable:
 
-            post_data = dict(request.POST.iteritems())
+            if action == 'save':
 
-            post_data[node_type] = node.id
+                post_data = dict(request.POST.iteritems())
 
-            form = VariableForm(post_data or None, instance=variable)
+                post_data[node_type] = node.id
 
-            if form.is_valid():
+                form = VariableForm(post_data or None, instance=variable)
 
-                form.save(commit=True)
+                if form.is_valid():
+
+                    form.save(commit=True)
+
+                    data = {'result': 'ok'}
+
+                else:
+
+                    data = {'result': 'fail', 'msg': str(form.errors)}
+
+            elif action == 'delete':
+
+                variable.delete()
+
+                data = {'result': 'ok'}
+
+            elif action == 'copy':
+
+                source = NodeView.build_node(request.POST['source_type'], request.POST['source_name'], request.user)
+
+                for source_var in source.variable_set.all():
+
+                    var, created = node.variable_set.get_or_create(key=source_var.key)
+
+                    var.value = source_var.value
+
+                    var.save()
 
                 data = {'result': 'ok'}
 
             else:
 
-                data = {'result': 'fail', 'msg': str(form.errors)}
-
-        elif action == 'delete':
-
-            variable.delete()
-
-            data = {'result': 'ok'}
-
-        elif action == 'copy':
-
-            source = NodeView.build_node(request.POST['source_type'], request.POST['source_name'])
-
-            for source_var in source.variable_set.all():
-
-                var, created = node.variable_set.get_or_create(key=source_var.key)
-
-                var.value = source_var.value
-
-                var.save()
-
-            data = {'result': 'ok'}
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            raise PermissionDenied
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -807,7 +835,7 @@ class RelationsView(View):
 
     def get(self, request, node_type, node_name, relationship, action):
 
-        node = NodeView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name, request.user)
 
         related_set, related_class = self.get_relationships(node, relationship)
 
@@ -842,7 +870,7 @@ class RelationsView(View):
 
     def post(self, request, node_type, node_name, relationship, action):
 
-        node = NodeView.build_node(node_type, node_name)
+        node = NodeView.build_node(node_type, node_name, request.user)
 
         related_set, related_class = self.get_relationships(node, relationship)
 

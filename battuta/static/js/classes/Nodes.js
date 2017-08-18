@@ -14,7 +14,7 @@ function Nodes(nodeType, container) {
     self.downloadTableBtn = btnXsmall.clone()
         .attr('title', 'Download as CSV')
         .css('margin-right', '5px')
-        .append(spanGlyph.clone().addClass('glyphicon-download-alt'))
+        .append(spanFA.clone().addClass('fa-download'))
         .click(function () {
 
             self.nodeTable.download()
@@ -45,7 +45,7 @@ function Nodes(nodeType, container) {
 
     self.deleteBtn = btnXsmall.clone()
         .attr('title', 'Delete')
-        .append(spanGlyph.clone().addClass('glyphicon-trash'))
+        .append(spanFA.clone().addClass('fa-trash-o'))
         .click(function () {
 
             new DeleteDialog(function () {
@@ -73,12 +73,12 @@ function Nodes(nodeType, container) {
                 self.tabsHeader.append(
                     liActive.clone().append(
                         aTabs.clone().attr('href', '#table_tab').append(
-                            spanGlyph.clone().addClass('glyphicon-list')
+                            spanFA.clone().addClass('fa-list')
                         )
                     ),
                     $('<li>').append(
                         aTabs.clone().attr('href', '#grid_tab').append(
-                            spanGlyph.clone().addClass('glyphicon-th')
+                            spanFA.clone().addClass('fa-th')
                         )
                     )
                 ),

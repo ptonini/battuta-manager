@@ -23,7 +23,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
     self.rerunButton = btnNavbarGlyph.clone()
         .attr('title', 'Run playbook again')
-        .html(spanGlyph.clone().addClass('glyphicon-repeat'))
+        .html(spanFA.clone().addClass('fa-repeat'))
         .click(function rerunPlaybook() {
 
             var become = false;
@@ -62,7 +62,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
     self.statsButton = btnNavbarGlyph.clone()
         .attr('title', 'Statistics')
-        .html(spanGlyph.clone().addClass('glyphicon-list'))
+        .html(spanFA.clone().addClass('fa-list'))
         .click(function showStatsDialog() {
 
             new Statistics(self.job.stats, true)
@@ -71,7 +71,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
     self.printButton = btnNavbarGlyph.clone()
         .attr('title', 'Print')
-        .html(spanGlyph.clone().addClass('glyphicon-print'))
+        .html(spanFA.clone().addClass('fa-print'))
         .click(function printReport() {
 
             var pageTitle = $(document).find('title').text();
@@ -105,7 +105,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
         .attr('title', 'Cancel')
 
-        .html(spanGlyph.clone().addClass('glyphicon-remove').css('color', 'red'))
+        .html(spanFA.clone().addClass('fa-times').css('color', 'red'))
 
         .click(function cancelJob() {
 
@@ -127,7 +127,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
     self.autoScrollButton = btnNavbarGlyph.clone()
         .attr('title', 'Auto scroll')
         .addClass('checked_button')
-        .html(spanGlyph.clone().addClass('glyphicon-triangle-bottom'))
+        .html(spanFA.clone().addClass('fa-angle-double-down'))
         .click(function toggleAutoScroll() {
 
             $(this).toggleClass('checked_button');

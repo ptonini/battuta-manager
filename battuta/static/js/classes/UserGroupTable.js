@@ -11,6 +11,7 @@ function UserGroupTable(container) {
     self.table.DataTable({
         ajax: {url: usersApiPath + 'group/none/list/', dataSrc: ''},
         dom: '<"toolbar">frtip',
+        paging: false,
         columns: [
             {class: 'col-md-4', title: 'name', data: 'name'},
             {class: 'col-md-8', title: 'description', data: 'description'}
@@ -19,18 +20,13 @@ function UserGroupTable(container) {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open('', '_self')
+                window.open('/users/group/' + group.name, '_self')
 
             });
 
             $(row).find('td:eq(1)').append(
                 spanRight.clone().append(
-                    spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
-
-                        new UserGroupDialog(group, self.table.DataTable().ajax.reload);
-
-                    }),
-                    spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 
@@ -57,10 +53,11 @@ function UserGroupTable(container) {
         },
 
         drawCallback: function() {
+
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add group').click(function () {
 
-                    new UserGroupDialog({name: null, description: null}, self.table.DataTable().ajax.reload);
+                    window.open(usersPath + 'new_group/', '_self');
 
                 })
             );

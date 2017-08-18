@@ -1,8 +1,10 @@
-function FileTable(root, nameCellFormatter, container) {
+function FileTable(root, user, nameCellFormatter, container) {
 
     var self = this;
 
     self.root = root;
+
+    self.user = user;
 
     self.folder = window.location.hash.slice(1);
 
@@ -16,7 +18,7 @@ function FileTable(root, nameCellFormatter, container) {
 
     self.pathInputField = $('<input>').attr('id', 'path_input');
 
-    self.editPathIcon = spanGlyph.clone().addClass('glyphicon-edit').attr('title', 'Edit path');
+    self.editPathIcon = spanFA.clone().addClass('fa-pencil').attr('title', 'Edit path');
 
     self.editPath = $('<li>').attr('id', 'edit_path').append(self.editPathIcon).click(function () {
 
@@ -79,10 +81,10 @@ function FileTable(root, nameCellFormatter, container) {
 
     self.createButton = btnSmall.clone()
         .attr('title', 'Create')
-        .html(spanGlyph.clone().addClass('glyphicon-asterisk'))
+        .html(spanFA.clone().addClass('fa-asterisk'))
         .click(function () {
 
-            var newFile = {name: '', root: self.root, folder: self.folder};
+            var newFile = {name: '', root: self.root, folder: self.folder, user: self.user};
 
             new FileDialog(newFile, 'create', self.table.DataTable().ajax.reload);
 
@@ -90,7 +92,7 @@ function FileTable(root, nameCellFormatter, container) {
 
     self.uploadButton = btnSmall.clone()
         .attr('title', 'Upload')
-        .html(spanGlyph.clone().addClass('glyphicon-upload'))
+        .html(spanFA.clone().addClass('fa-upload'))
         .click(function () {
 
             new UploadDialog(self.folder, self.root, self.table.DataTable().ajax.reload);
@@ -124,29 +126,25 @@ function FileTable(root, nameCellFormatter, container) {
         )
     );
 
-    if (self.folder) {
+    if (self.folder) $.ajax({
+        url: filesApiPath + 'exists/',
+        data: {name: self.folder, type: 'directory', root: self.root},
+        success: function (data) {
 
-        $.ajax({
-            url: filesApiPath + 'exists/',
-            data: {name: self.folder, type: 'directory', root: self.root},
-            success: function (data) {
+            if (data.result === 'failed') {
 
-                if (data.result === 'failed') {
+                $.bootstrapGrowl(data.msg, failedAlertOptions);
 
-                    $.bootstrapGrowl(data.msg, failedAlertOptions);
+                self.folder = '';
 
-                    self.folder = '';
-
-                    location.hash = self.folder
-
-                }
-
-                self._buildTable()
+                location.hash = self.folder
 
             }
-        });
 
-    }
+            self._buildTable()
+
+        }
+    });
 
     else self._buildTable()
 }
@@ -171,7 +169,9 @@ FileTable.prototype = {
 
                     d.folder = self.folder;
 
-                    d.root = self.root
+                    d.root = self.root;
+
+                    d.user = self.user;
 
                 }
             },
@@ -202,7 +202,7 @@ FileTable.prototype = {
                 $(row).find('td:eq(3)').html('').removeAttr('title').append(
                     $('<span>').html(object.modified).attr('title', object.modified),
                     spanRight.clone().append(
-                        spanGlyph.clone().addClass('glyphicon-edit btn-incell').attr('title', 'Edit').click(function () {
+                        spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
                             if (object.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
 
@@ -234,24 +234,24 @@ FileTable.prototype = {
                             else new FileDialog(object, 'rename', self.table.DataTable().ajax.reload);
 
                         }),
-                        spanGlyph.clone()
-                            .addClass('glyphicon-duplicate btn-incell')
+                        spanFA.clone()
+                            .addClass('fa-files-o btn-incell')
                             .attr('title', 'Copy')
                             .click(function () {
 
                                 new FileDialog(object, 'copy', self.table.DataTable().ajax.reload);
 
                             }),
-                        spanGlyph.clone()
-                            .addClass('glyphicon-download-alt btn-incell')
+                        spanFA.clone()
+                            .addClass('fa-download btn-incell')
                             .attr('title', 'Download ' + object.name)
                             .click(function () {
 
                                 window.open('/files/' + self.root + '/download/?name=' + object.name + '&folder=' + object.folder, '_self')
 
                             }),
-                        spanGlyph.clone()
-                            .addClass('glyphicon-trash btn-incell')
+                        spanFA.clone()
+                            .addClass('fa-trash-o btn-incell')
                             .attr('title', 'Delete')
                             .click(function () {
 

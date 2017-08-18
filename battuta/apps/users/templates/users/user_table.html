@@ -3,13 +3,15 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - new user';
+            document.title = 'Battuta - Users';
 
-            new UserForm('{{ user.username }}', {username: false}, $('#user_form_container'))
+            new UserTable($('#user_table_container'))
 
         });
     </script>
 {% endblock %}
 {% block content %}
-    <div id="user_form_container"></div>
+    <h3>Users</h3>
+    <br>
+    <div id="user_table_container"></div>
 {% endblock %}

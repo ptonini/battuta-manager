@@ -17,7 +17,7 @@ function Node(node, container) {
     self.editNodeBtn = btnXsmall.clone()
         .css('margin-right', '5px')
         .attr('title', 'Edit')
-        .append(spanGlyph.clone().addClass('glyphicon-edit'))
+        .append(spanFA.clone().addClass('fa-pencil'))
         .click(function() {
 
             new NodeDialog(self.node, function (data) {
@@ -30,7 +30,7 @@ function Node(node, container) {
 
     self.deleteNodeBtn = btnXsmall.clone()
         .attr('title', 'Delete')
-        .append(spanGlyph.clone().addClass('glyphicon-trash'))
+        .append(spanFA.clone().addClass('fa-trash-o'))
         .click(function() {
 
             new DeleteDialog(function () {

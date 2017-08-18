@@ -1,0 +1,35 @@
+{% extends 'main/main.html' %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            if ('{{ user_name }}') {
+
+                document.title = 'Battuta - {{ user_name }}';
+
+                $.ajax({
+                    url: usersApiPath + 'user/{{ user_name }}/get/',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (data.result === 'ok') new UserForm('{{ user.username }}', data.user, $('#user_form_container'))
+
+                    }
+                });
+            }
+
+            else {
+
+                document.title = 'Battuta - New user';
+
+                new UserForm('{{ user.username }}', {username: false}, $('#user_form_container'))
+
+            }
+
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div id="user_form_container"></div>
+{% endblock %}

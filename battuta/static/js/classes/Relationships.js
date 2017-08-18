@@ -45,8 +45,9 @@ function Relationships(node, alterRelationCallback, container) {
                         window.open('/inventory/' + relationType + '/' + name, '_self')
 
                     }),
-                    $('<span>').css({float: 'right', margin: '7px 0', 'font-size': '15px'})
-                        .attr({class: 'glyphicon glyphicon-remove-circle', title: 'Remove'})
+                    spanFA.clone().addClass('text-right fa-times-circle-o')
+                        .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                        .attr('title', 'Remove')
                         .click(function () {
 
                             self._alterRelation(relation, [id], 'remove')

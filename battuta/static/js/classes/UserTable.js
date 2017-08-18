@@ -10,6 +10,8 @@ function UserTable(container) {
 
     self.table.DataTable({
         ajax: {url: usersApiPath + 'user/none/list/', dataSrc: ''},
+        dom: '<"toolbar">frtip',
+        paging: false,
         columns: [
             {class: 'col-md-4', title: 'user', data: 'username'},
             {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
@@ -20,14 +22,14 @@ function UserTable(container) {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open(usersPath + 'profile/' + user.username + '/', '_self')
+                window.open(usersPath + 'user/' + user.username + '/', '_self')
 
             });
 
             $(row).find('td:eq(3)').append(
                 prettyBoolean($(row).find('td:eq(3)'), user.is_superuser),
                 spanRight.clone().append(
-                    spanGlyph.clone().addClass('glyphicon-trash btn-incell').attr('title', 'Delete').click(function () {
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 
@@ -51,6 +53,17 @@ function UserTable(container) {
                 )
             )
 
+        },
+
+        drawCallback: function() {
+
+            $('div.toolbar').css('float', 'left').html(
+                btnXsmall.clone().html('Add user').click(function () {
+
+                    window.open(usersPath + 'new_user/', '_self');
+
+                })
+            );
         }
     });
 

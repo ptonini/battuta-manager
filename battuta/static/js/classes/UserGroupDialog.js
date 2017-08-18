@@ -4,7 +4,7 @@ function UserGroupDialog(group, saveCallback) {
 
     self.group = group;
 
-    self.header = self.group.name ? 'Edit ' + self.group.name : 'Add user group';
+    self.header = $('<h4>').html(self.group.name ? 'Edit ' + self.group.name : 'Add user group');;
 
     self.nameFieldInput = textInputField.clone().val(self.group.name);
 
@@ -12,8 +12,13 @@ function UserGroupDialog(group, saveCallback) {
 
     self.form = $('<form>')
         .append(
-            divFormGroup.clone().append($('<label>').html('Name').append(self.nameFieldInput)),
-            divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
+            divCol12.clone().append(self.header),
+            divCol12.clone().append(
+                divFormGroup.clone().append($('<label>').html('Name').append(self.nameFieldInput))
+            ),
+            divCol12.clone().append(
+                divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
+            )
         )
         .submit(function (event) {
 
@@ -43,7 +48,11 @@ function UserGroupDialog(group, saveCallback) {
             });
         });
 
-    self.dialog = $('<div>').append($('<h4>').html('Add user group'), self.form);
+    self.dialog = smallDialog.clone().append(
+        divRow.clone().append(
+            self.form
+        )
+    );
 
     self.dialog
         .dialog({

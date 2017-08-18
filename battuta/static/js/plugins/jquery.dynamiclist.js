@@ -14,11 +14,11 @@
             if (itemsPerColumn <= opts.breakPoint) break;
         }
 
-        if (visibleItemsCount % columnCount != 0) itemsPerColumn++;
+        if (visibleItemsCount % columnCount !== 0) itemsPerColumn++;
 
         // Set list width
         listBody.show();
-        if (columnCount == 0) listBody.show();
+        if (columnCount === 0) listBody.show();
         else {
             var width = columnCount * opts.maxColumnWidth;
             if (width < 100) opts.listWidth = width + '%';
@@ -45,7 +45,7 @@
     }
 
     function _loadFromArray(listContainer, listBody, opts) {
-        if (opts.dataArray == 0){
+        if (opts.dataArray === 0){
             if (opts.hideIfEmpty) listContainer.hide();
             if (opts.hideBodyIfEmpty) listBody.empty().closest('div.row').hide();
         }
@@ -104,15 +104,15 @@
 
     function _setToggleAllButton(listBody) {
         var toggleAll = $('.toggle_all');
-        if (listBody.children('.dynamic-item:not(".hidden")').length == listBody.children('.toggle-on:not(".hidden")').length) {
+        if (listBody.children('.dynamic-item:not(".hidden")').length === listBody.children('.toggle-on:not(".hidden")').length) {
             toggleAll.attr('title', 'Select none').data('add_class', false).children('span')
-                .removeClass('glyphicon-unchecked')
-                .addClass('glyphicon-check');
+                .removeClass('fa-square-o')
+                .addClass('fa-check-square-o');
         }
         else {
             toggleAll.attr('title', 'Select all').data('add_class', true).children('span')
-                .removeClass('glyphicon-check')
-                .addClass('glyphicon-unchecked');
+                .removeClass('fa-check-square-o')
+                .addClass('fa-square-o');
         }
     }
 
@@ -156,7 +156,7 @@
                     .append(
                         $('<a>')
                             .attr('class', 'btn btn-default btn-xs toggle_all')
-                            .html($('<span>').attr('class', 'glyphicon'))
+                            .html($('<span>').attr('class', 'fa'))
                             .click(function () {
                                 event.preventDefault();
                                 var addClass = $(this).data('add_class');
@@ -166,7 +166,7 @@
                             }),
                         $('<a>')
                             .attr({class: 'btn btn-default btn-xs', title: 'Invert selection'})
-                            .html($('<span>').attr('class', 'glyphicon glyphicon-adjust'))
+                            .html($('<span>').attr('class', 'fa fa-adjust'))
                             .click(function () {
                                 listBody.children('.dynamic-item:not(".hidden")').each(function () {
                                     _toggleItemSelection(listBody, $(this));
@@ -177,12 +177,12 @@
 
             if (opts.showAddButton) {
                 var addButton = null;
-                if (opts.addButtonType == 'icon') {
+                if (opts.addButtonType === 'icon') {
                     addButton = $('<a>')
                         .attr({class: 'btn btn-default btn-xs ' + opts.addButtonClass, title: opts.addButtonTitle})
-                        .html($('<span>').attr('class', 'glyphicon glyphicon-plus'))
+                        .html($('<span>').attr('class', 'fa fa-plus'))
                 }
-                else if (opts.addButtonType == 'text') {
+                else if (opts.addButtonType === 'text') {
                     addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
                 }
                 listHeader.append(addButton.click(function () {
