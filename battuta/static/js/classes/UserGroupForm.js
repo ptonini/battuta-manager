@@ -2,8 +2,6 @@ function UserGroupForm(group, container) {
 
     var self = this;
 
-    console.log(group);
-
     self.group = group;
 
     self.container = container;
@@ -30,51 +28,61 @@ function UserGroupForm(group, container) {
                 divCol12.clone().append($('<h5>').html('Inventory')),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit hosts').data('permission', 'edit_hosts')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit hosts').data('permission', 'edit_hosts')
                     )
                 ),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit groups').data('permission', 'edit_groups')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit groups').data('permission', 'edit_groups')
                     )
                 ),
                 divCol12.clone().append($('<h5>').html('Runner')),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Execute jobs').data('permission', 'execute_jobs')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Execute jobs').data('permission', 'execute_jobs')
                     )
                 ),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit tasks').data('permission', 'edit_tasks')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit tasks').data('permission', 'edit_tasks')
                     )
                 ),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit playbooks').data('permission', 'edit_playbooks')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit playbooks').data('permission', 'edit_playbooks')
+                    )
+                ),
+                divCol4.clone().append(
+                    divFormGroup.clone().append(
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit roles').data('permission', 'edit_roles')
                     )
                 ),
                 divCol12.clone().append($('<h5>').html('Files')),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit files').data('permission', 'edit_files')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit files').data('permission', 'edit_files')
                     )
                 ),
                 divCol12.clone().append($('<h5>').html('Users')),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit users').data('permission', 'edit_users')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit users').data('permission', 'edit_users')
                     )
                 ),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit user groups').data('permission', 'edit_user_groups')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user groups').data('permission', 'edit_user_groups')
+                    )
+                ),
+                divCol4.clone().append(
+                    divFormGroup.clone().append(
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user files').data('permission', 'edit_user_files')
                     )
                 ),
                 divCol12.clone().append($('<h5>').html('Preferences')),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
-                        btnSmallBlkClk.clone(true).html('Edit preferences').data('permission', 'edit_preferences')
+                        btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit preferences').data('permission', 'edit_preferences')
                     )
                 ),
                 divCol12.clone().append(
@@ -113,11 +121,11 @@ function UserGroupForm(group, container) {
 
             var permissions = [];
 
-            // self.form.find('input[type=checkbox]').each(function () {
-            //
-            //    permissions.push([$(this).val(), this.checked])
-            //
-            // });
+            self.form.find('button.permBtn').each(function () {
+
+                permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
+
+            });
 
             var postData = {
                 description: self.descriptionField.val(),
@@ -138,10 +146,32 @@ function UserGroupForm(group, container) {
 
     self.formsHeader = $('<div>');
 
+    self.membersGrid = $('<div>').DynamicList({
+        listTitle: 'Members',
+        headerTag: '<h4>',
+        showAddButton: true,
+        addButtonClass: 'add_members',
+        addButtonTitle: 'Add members',
+        showTitle: true,
+        checkered: true,
+        showCount: true,
+        listBodyBottomMargin: '20px',
+        minColumns: sessionStorage.getItem('node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('node_list_break_point'),
+        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+        ajaxUrl: usersApiPath + 'group/' + self.group.name + '/members',
+        formatItem: function (listItem) {
+
+        }
+    });
+
+
     self.container.append(
         self.formsHeader,
         divRow.clone().append(
-            $('<div>').attr('class', 'col-md-6 col-sm-12 col-xs-12').append(self.form)
+            $('<div>').attr('class', 'col-md-6 col-sm-12 col-xs-12').append(self.form),
+            $('<div>').attr('class', 'col-md-6 col-sm-12 col-xs-12').append(self.membersGrid)
         )
     );
 
@@ -162,5 +192,9 @@ function UserGroupForm(group, container) {
 
     }
 
+    self.form.find('button.permBtn').each(function () {
 
+        if (self.group.permissions.indexOf($(this).data('permission')) > -1) $(this).addClass('checked_button')
+
+    });
 }

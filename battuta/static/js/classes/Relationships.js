@@ -42,7 +42,7 @@ function Relationships(node, alterRelationCallback, container) {
                 listItem.removeClass('truncate-text').html('').append(
                     $('<span>').append(name).click(function () {
 
-                        window.open('/inventory/' + relationType + '/' + name, '_self')
+                        window.open(inventoryPath + relationType + '/' + name, '_self')
 
                     }),
                     spanFA.clone().addClass('text-right fa-times-circle-o')
@@ -60,16 +60,16 @@ function Relationships(node, alterRelationCallback, container) {
 
                 var url = inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
 
-                var loadCallback = function (listContainer, selectNodesDialog) {
+                var loadCallback = function (listContainer, selectionDialog) {
 
                     var currentList = listContainer.find('div.dynamic-list');
 
-                    selectNodesDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                    selectionDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
 
-                    selectNodesDialog.dialog('option', 'buttons', {
+                    selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
-                            self._alterRelation(relation, selectNodesDialog.DynamicList('getSelected', 'id'), 'add');
+                            self._alterRelation(relation, selectionDialog.DynamicList('getSelected', 'id'), 'add');
 
                             $(this).dialog('close');
 
@@ -78,6 +78,7 @@ function Relationships(node, alterRelationCallback, container) {
 
                             $('.filter_box').val('');
 
+
                             $(this).dialog('close');
 
                         }
@@ -85,17 +86,17 @@ function Relationships(node, alterRelationCallback, container) {
 
                 };
 
-                var addButtonAction = function (selectNodesDialog) {
+                var addButtonAction = function (selectionDialog) {
 
                     new NodeDialog({name: null, description: null, type: relationType}, function () {
 
-                        selectNodesDialog.DynamicList('load')
+                        selectionDialog.DynamicList('load')
 
                     })
 
                 };
 
-                new SelectNodesDialog(self.node.type, url, true, loadCallback, addButtonAction, null);
+                new SelectionDialog(self.node.type, url, true, loadCallback, addButtonAction, null);
 
             }
         });

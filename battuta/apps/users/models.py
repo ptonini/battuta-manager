@@ -61,10 +61,12 @@ class GroupData(models.Model):
             ('edit_hosts', 'Can create and edit hosts'),
             ('edit_playbooks', 'Can edit playbooks'),
             ('edit_tasks', 'Can edit tasks'),
+            ('edit_roles', 'Can edit roles'),
             ('execute_jobs', 'Can execute jobs'),
             ('edit_files', 'Can create and edit files'),
             ('edit_users', 'Can create and edit users'),
             ('edit_user_groups', 'Can create and edit user groups'),
+            ('edit_user_files', 'Can create and edit user files'),
             ('edit_preferences', 'Can edit preferences'),
         )
 

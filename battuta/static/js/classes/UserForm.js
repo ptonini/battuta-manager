@@ -159,7 +159,8 @@ function UserForm(currentUser, user, container) {
                         $('<label>').html('Retype new password').append(self.retypeNewPassword)
                     )
                 ),
-                divCol12.clone().append(btnXsmall.clone().html('Change password'))
+                divCol12.clone().append(btnXsmall.clone().html('Change password')),
+                divCol12.clone().append($('<hr>'))
             )
         )
         .submit(function (event) {
@@ -201,28 +202,127 @@ function UserForm(currentUser, user, container) {
 
         });
 
+
+    self.groupGrid = $('<div>').DynamicList({
+        listTitle: 'Groups',
+        headerTag: '<h4>',
+        showAddButton: true,
+        addButtonClass: 'join_group',
+        addButtonTitle: 'Join groups',
+        showTitle: true,
+        checkered: true,
+        showCount: true,
+        listBodyBottomMargin: '20px',
+        minColumns: sessionStorage.getItem('node_list_min_columns'),
+        maxColumns: sessionStorage.getItem('node_list_max_columns'),
+        breakPoint: sessionStorage.getItem('node_list_break_point'),
+        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+        ajaxUrl: usersApiPath + 'user/' + self.user.username + '/groups',
+        formatItem: function (listItem) {
+
+            var name = listItem.data('value');
+
+            listItem.removeClass('truncate-text').html('').append(
+                $('<span>').append(name).click(function () {
+
+                    window.open(usersPath + 'group' + '/' + name, '_self')
+
+                }),
+                spanFA.clone().addClass('text-right fa-times-circle-o')
+                    .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                    .attr('title', 'Remove')
+                    .click(function () {
+
+                        $.ajax({
+                            url: usersApiPath + 'user/' + self.user.username + '/remove_groups/',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {selection: [listItem.data('id')]},
+                            success: function () {
+
+                                self.groupGrid.DynamicList('load');
+
+                            }
+
+                        });
+
+
+                    })
+            )
+
+        },
+        addButtonAction: function () {
+
+            var url = usersApiPath + 'user/' + self.user.username + '/groups/?reverse=true';
+
+            var loadCallback = function (listContainer, selectionDialog) {
+
+                var currentList = listContainer.find('div.dynamic-list');
+
+                selectionDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+
+                selectionDialog.dialog('option', 'buttons', {
+                    Add: function () {
+
+                        $.ajax({
+                            url: usersApiPath + 'user/' + self.user.username + '/add_groups/',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {selection: selectionDialog.DynamicList('getSelected', 'id')},
+                            success: function () {
+
+                                self.groupGrid.DynamicList('load');
+
+                            }
+                        });
+
+                        $(this).dialog('close');
+
+                    },
+                    Cancel: function () {
+
+                        $('.filter_box').val('');
+
+                        $(this).dialog('close');
+
+                    }
+                });
+
+            };
+
+            new SelectionDialog('group', url, true, loadCallback, null, null);
+
+    }
+    });
+
     self.formsHeader = $('<div>');
 
     self.formsContainer = $('<div>').attr('class', 'col-md-6 col-sm-12 col-xs-12');
 
+    self.groupGridContainer = divCol12.clone();
+
     self.container.append(
         self.formsHeader,
         divRow.clone().append(
-            self.formsContainer.append(self.form)
+            self.formsContainer.append(self.form),
+            self.groupGridContainer.append(self.groupGrid)
         )
     );
 
     if (self.user.username) {
 
         self.formsHeader.append(
-            $('<h3>').append($('<small>').html('user'), '&nbsp;', user.username),
+            $('<h3>').append($('<small>').html('user'), '&nbsp;', user.username)
+        );
+
+        self.form.prepend(
             divRow.clone().append(
-                $('<div>').attr('class', 'col-md-1 col-sm-2').html($('<strong>').html('Joined in:')),
-                $('<div>').attr('class', 'col-md-5 col-sm-10').html(self.user.date_joined)
+                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Joined in:')),
+                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.date_joined)
             ),
             divRow.clone().append(
-                $('<div>').attr('class', 'col-md-1 col-sm-2').html($('<strong>').html('Last login:')),
-                $('<div>').attr('class', 'col-md-5 col-sm-10').html(self.user.last_login)
+                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Last login:')),
+                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.last_login)
             ),
             $('<br>')
         );

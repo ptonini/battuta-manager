@@ -81,6 +81,6 @@ CopyVariables.prototype = {
             });
         };
 
-        new SelectNodesDialog(sourceNodeType, url, false, loadCallback, null, formatItem);
+        new SelectionDialog(sourceNodeType, url, false, loadCallback, null, formatItem);
     }
 };

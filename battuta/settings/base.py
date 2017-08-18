@@ -223,29 +223,29 @@ DEFAULT_PREFERENCES = [
         ],
     },
     {
-        'name': 'Node list (Modal)',
+        'name': 'Selection Modal',
         'description': '',
         'items': [
             {
-                'name': 'node_list_modal_min_columns',
+                'name': 'selection_modal_min_columns',
                 'value': 3,
                 'data_type': 'number',
                 'description': 'Minimum columns for modal node list',
             },
             {
-                'name': 'node_list_modal_max_columns',
+                'name': 'selection_modal_max_columns',
                 'value': 6,
                 'data_type': 'number',
                 'description': 'Maximum columns for modal node list',
             },
             {
-                'name': 'node_list_modal_break_point',
+                'name': 'selection_modal_break_point',
                 'value': 9,
                 'data_type': 'number',
                 'description': 'Modal node list column break point',
             },
             {
-                'name': 'node_list_modal_max_column_width',
+                'name': 'selection_modal_max_column_width',
                 'value': 100,
                 'data_type': 'number',
                 'description': '',

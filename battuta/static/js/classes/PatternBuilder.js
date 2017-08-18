@@ -162,6 +162,6 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
 
     };
 
-    new SelectNodesDialog(nodeType, url, true, loadCallback, addButtonAction, null);
+    new SelectionDialog(nodeType, url, true, loadCallback, addButtonAction, null);
 
 };

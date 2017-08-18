@@ -137,6 +137,18 @@ class UsersView(View):
 
                 data = {'result': 'ok', 'user': self._user_to_dict(get_object_or_404(User, username=user_name))}
 
+            elif action == 'groups':
+
+                user = get_object_or_404(User, username=user_name)
+
+                if 'reverse' in request.GET:
+
+                    data = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
+
+                else:
+
+                    data = [[group.name, group.id] for group in user.groups.all()]
+
             else:
 
                 raise Http404('Invalid action')
@@ -244,6 +256,22 @@ class UsersView(View):
             else:
 
                 data = {'result': 'fail', 'msg': 'Invalid password'}
+
+        elif action == 'add_groups':
+
+            for selected in request.POST.getlist('selection[]'):
+
+                user.groups.add(get_object_or_404(Group, pk=selected))
+
+            data = {'result': 'ok'}
+
+        elif action == 'remove_groups':
+
+            for selected in request.POST.getlist('selection[]'):
+
+                user.groups.remove(get_object_or_404(Group, pk=selected))
+
+            data = {'result': 'ok'}
 
         else:
 
@@ -439,7 +467,7 @@ class UserGroupView(View):
             'name': group.name,
             'description': group.groupdata.description,
             'permissions': [perm.codename for perm in group.permissions.all()],
-            'members': [user.username for user in User.objects.filter(groups__name=group.name)]
+            #'members': [user.username for user in User.objects.filter(groups__name=group.name)]
         }
 
     def get(self, request, group_name, action):
@@ -451,6 +479,10 @@ class UserGroupView(View):
         elif action == 'get':
 
             data = {'result': 'ok', 'group': self._group_to_dict(get_object_or_404(Group, name=group_name))}
+
+        elif action == 'members':
+
+            data = [user.username for user in User.objects.filter(groups__name=group_name)]
 
         else:
 
@@ -486,11 +518,11 @@ class UserGroupView(View):
 
                 group.groupdata.save()
 
-                # for permission in json.loads(request.POST['permissions']):
-                #
-                #     perm = Permission.objects.get(codename=permission[0])
-                #
-                #     group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
+                for permission in json.loads(request.POST['permissions']):
+
+                    perm = Permission.objects.get(codename=permission[0])
+
+                    group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
 
                 data = {'result': 'ok', 'group': self._group_to_dict(group)}
 
