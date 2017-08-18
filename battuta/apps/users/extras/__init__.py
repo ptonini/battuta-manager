@@ -1,4 +1,4 @@
-from apps.users.models import UserData, Credential
+from apps.users.models import UserData, GroupData, Credential
 
 
 def create_userdata(user, prefs):
@@ -18,3 +18,14 @@ def create_userdata(user, prefs):
         user.userdata.default_cred = cred
 
         user.userdata.save()
+
+
+def create_groupdata(group):
+
+    try:
+
+        group.groupdata
+
+    except GroupData.DoesNotExist:
+
+        GroupData.objects.get_or_create(group=group)

@@ -20,10 +20,6 @@ function UserGroupForm(group, container) {
 
     self.descriptionField = textAreaField.clone().val(self.group.description);
 
-    self.formBtnContainer = divCol12.clone().append(
-        btnXsmall.clone().css('margin-right', '5px').html('Save')
-    );
-
     self.form = $('<form>')
         .append(
             divRow.clone().append(
@@ -79,6 +75,11 @@ function UserGroupForm(group, container) {
                 divCol4.clone().append(
                     divFormGroup.clone().append(
                         btnSmallBlkClk.clone(true).html('Edit preferences').data('permission', 'edit_preferences')
+                    )
+                ),
+                divCol12.clone().append(
+                    divFormGroup.clone().append(
+                        btnXsmall.clone().css('margin-right', '5px').html('Save')
                     )
                 )
             )
@@ -161,8 +162,5 @@ function UserGroupForm(group, container) {
 
     }
 
-    self.form.append(
-        divRow.clone().append(self.formBtnContainer)
-    );
 
 }

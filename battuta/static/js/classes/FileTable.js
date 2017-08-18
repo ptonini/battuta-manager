@@ -95,7 +95,7 @@ function FileTable(root, user, nameCellFormatter, container) {
         .html(spanFA.clone().addClass('fa-upload'))
         .click(function () {
 
-            new UploadDialog(self.folder, self.root, self.table.DataTable().ajax.reload);
+            new UploadDialog(self.folder, self.root, self.user, self.table.DataTable().ajax.reload);
 
         });
 
@@ -185,6 +185,8 @@ FileTable.prototype = {
             rowCallback: function (row, object) {
 
                 object.root = self.root;
+
+                object.user = self.user;
 
                 if (object.type === 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                     .css({'cursor': 'pointer', 'font-weight': '700'})

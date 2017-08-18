@@ -1,4 +1,4 @@
-function UploadDialog(folder, root, uploadCallback) {
+function UploadDialog(folder, root, user, uploadCallback) {
     var self = this;
 
     self.uploadField = fileInputField.clone();
@@ -19,11 +19,12 @@ function UploadDialog(folder, root, uploadCallback) {
 
                 var file = self.uploadField.fileinput('getFileStack')[0];
 
-                return {
+                if (file) return {
                     name: file.name,
                     new_name: file.name,
                     folder: folder,
                     root: root,
+                    user: user,
                     csrfmiddlewaretoken: getCookie('csrftoken')
                 }
 

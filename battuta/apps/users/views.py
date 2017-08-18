@@ -13,7 +13,7 @@ from django.contrib.auth.models import Permission
 
 from apps.users.models import User, Group, UserData, GroupData, Credential
 from apps.users.forms import UserForm, UserDataForm, GroupForm, CredentialForm
-from apps.users.extras import create_userdata
+from apps.users.extras import create_userdata, create_groupdata
 
 from apps.preferences.extras import get_preferences
 
@@ -37,7 +37,13 @@ class PageView(View):
 
         elif kwargs['page'] == 'user_files':
 
-            return render(request, 'users/files.html', {'user_name': args[0]})
+            if User.objects.filter(username=args[0]).exists():
+
+                return render(request, 'users/files.html', {'user_name': args[0]})
+
+            else:
+
+                raise Http404('Invalid user')
 
         elif kwargs['page'] == 'groups':
 
@@ -427,6 +433,8 @@ class UserGroupView(View):
     @staticmethod
     def _group_to_dict(group):
 
+        create_groupdata(group)
+
         return {
             'name': group.name,
             'description': group.groupdata.description,
@@ -454,7 +462,7 @@ class UserGroupView(View):
 
         form_data = dict(request.POST.iteritems())
 
-        if 'name' in request.POST:
+        if 'name' in form_data:
         
             group = Group()
 
