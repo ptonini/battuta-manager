@@ -48,17 +48,16 @@ CopyVariables.prototype = {
 
         var url = inventoryApiPath + 'search/?type=' + sourceNodeType + '&pattern=';
 
-        var loadCallback = function (listContainer, selectNodeDialog) {
+        var loadCallback = function (gridContainer, selectionDialog) {
 
-            var currentList = listContainer.find('div.dynamic-list');
+            var currentGrid = gridContainer.find('div.dynagrid');
 
-            selectNodeDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
-        }
-        ;
+            selectionDialog.dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20);
+        };
 
-        var formatItem = function (listItem, selectNodeDialog) {
+        var formatItem = function (gridItem, selectionDialog) {
 
-            listItem.click(function () {
+            gridItem.click(function () {
 
                 var sourceNodeName = $(this).data('value');
 
@@ -69,7 +68,7 @@ CopyVariables.prototype = {
                     data: {source_name: sourceNodeName, source_type: sourceNodeType},
                     success: function () {
 
-                        selectNodeDialog.dialog('close');
+                        selectionDialog.dialog('close');
 
                         $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
 

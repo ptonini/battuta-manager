@@ -4,194 +4,277 @@
 
 (function ($) {
 
-    function _formatList(listBody, opts) {
-        var visibleItemsCount = listBody.find('.dynamic-item:not(".hidden")').length;
-        if (opts.showCount) setTimeout(function() {$('#' + opts.listTitle + '_count').html(visibleItemsCount)}, 0);
+    function _formatGrid(gridBody, opts) {
 
-        for (var i = opts.minColumns; i <= opts.maxColumns; i++) {
-            var columnCount = i;
-            var itemsPerColumn = parseInt(visibleItemsCount / i);
-            if (itemsPerColumn <= opts.breakPoint) break;
-        }
+        var visibleItemsCount = gridBody.find('.dynagrid-item:not(".hidden")').length;
 
-        if (visibleItemsCount % columnCount !== 0) itemsPerColumn++;
+        if (opts.showCount) setTimeout(function() {
 
-        // Set list width
-        listBody.show();
-        if (columnCount === 0) listBody.show();
-        else {
-            var width = columnCount * opts.maxColumnWidth;
-            if (width < 100) opts.listWidth = width + '%';
-            else opts.listWidth = '100%'
-        }
+            $('#' + opts.listTitle + '_count').html(visibleItemsCount)
 
-        // Adjust list
-        listBody.css({
-            'column-count': columnCount.toString(),
-            'width': opts.listWidth,
-            'height': itemsPerColumn * opts.itemLineHeight + 'px'
-        });
+        }, 0);
+
+        if (opts.checkered) {
+
+            gridBody.find('.dynagrid-item:not(".hidden")').each(function (index) {
+
+                var indexIsEven = (index % 2 === 0);
+
+                if (opts.columns % 2 === 0) {
+
+                    var cycleStage = index % (opts.columns * 2);
+
+                    if (indexIsEven && cycleStage >= opts.columns || !indexIsEven && cycleStage < opts.columns) $(this).addClass('checkered');
+
+                    else $(this).removeClass('checkered')
+
+                }
+
+                else {
+
+                    if (indexIsEven) $(this).removeClass('checkered');
+
+                    else $(this).addClass('checkered')
+
+                }
+
+            })
+        };
+
+        if (opts.itemToggle) _setToggleAllButton(gridBody);
+
     }
 
-    function _formatItems(listBody, opts) {
-        listBody.children('.dynamic-item').each(function () {
+    function _formatItems(gridBody, opts) {
+
+        gridBody.children('.dynagrid-item').each(function (index) {
 
             if (opts.itemToggle) $(this).off('click').click(function () {
-                _toggleItemSelection(listBody, $(this))
+
+                _toggleItemSelection(gridBody, $(this))
+
             });
+
+            if (opts.truncateItemText) $(this).addClass('truncate-text');
+
+
+
 
             opts.formatItem($(this));
         });
     }
 
-    function _loadFromArray(listContainer, listBody, opts) {
-        if (opts.dataArray === 0){
-            if (opts.hideIfEmpty) listContainer.hide();
-            if (opts.hideBodyIfEmpty) listBody.empty().closest('div.row').hide();
+    function _loadFromArray(gridContainer, gridBody, opts) {
+
+        if (opts.dataArray === 0) {
+
+            if (opts.hideIfEmpty) gridContainer.hide();
+
+            if (opts.hideBodyIfEmpty) gridBody.empty().closest('div.row').hide();
+
         }
+
         else {
-            listContainer.show();
-            listBody.closest('div.row').show();
-            listBody.empty();
+
+            gridContainer.show();
+
+            gridBody.closest('div.row').show();
+
+            gridBody.empty();
+
             $.each(opts.dataArray, function (index, value) {
-                listBody.append(
-                    $('<div>')
-                        .html(value[0])
-                        .attr('title', value[0])
-                        .addClass('list-group-item dynamic-item')
-                        .data({value: value[0], id: value[1]})
-                );
+
+                var currentItem = $('<div>')
+                    .html(value[0])
+                    .attr('title', value[0])
+                    .addClass('dynagrid-item')
+                    .data({value: value[0], id: value[1]});
+
+                gridBody.append(currentItem);
+
             });
+
         }
-        _formatItems(listBody, opts);
-        _formatList(listBody, opts);
-        if (opts.itemToggle) _setToggleAllButton(listBody);
-        opts.loadCallback(listContainer);
-        listContainer.data(opts);
+
+        _formatItems(gridBody, opts);
+
+        _formatGrid(gridBody, opts);
+
+        opts.loadCallback(gridContainer);
+
+        gridContainer.data(opts);
+
     }
 
-    function _loadFromAjax(listContainer, listBody, opts) {
+    function _loadFromAjax(gridContainer, gridBody, opts) {
+
         $.ajax({
             url: opts.ajaxUrl,
             type: opts.ajaxType,
             dataType: 'JSON',
             data: opts.ajaxData,
             success: function (data) {
+
                 opts.dataArray = data;
-                _loadFromArray(listContainer, listBody, opts)
+
+                _loadFromArray(gridContainer, gridBody, opts)
+
             }
         });
     }
 
-    function _load(listContainer, listBody, opts) {
+    function _load(gridContainer, gridBody, opts) {
+
         switch (opts.dataSource) {
+
             case 'ajax':
-                _loadFromAjax(listContainer, listBody, opts);
+
+                _loadFromAjax(gridContainer, gridBody, opts);
+
                 break;
+
             case 'array':
-                _loadFromArray(listContainer, listBody, opts);
+
+                _loadFromArray(gridContainer, gridBody, opts);
+
                 break;
+
             default:
+
                 throw '- invalid data source';
         }
     }
 
-    function _toggleItemSelection(listBody, listItem, addClass) {
-        listItem.toggleClass('toggle-on', addClass);
-        _setToggleAllButton(listBody)
+    function _toggleItemSelection(gridBody, gridItem, addClass) {
+
+        gridItem.toggleClass('toggle-on', addClass);
+
+        _setToggleAllButton(gridBody)
 
     }
 
-    function _setToggleAllButton(listBody) {
+    function _setToggleAllButton(gridBody) {
+
         var toggleAll = $('.toggle_all');
-        if (listBody.children('.dynamic-item:not(".hidden")').length === listBody.children('.toggle-on:not(".hidden")').length) {
+
+        if (gridBody.children('.dynagrid-item:not(".hidden")').length === gridBody.children('.toggle-on:not(".hidden")').length) {
+
             toggleAll.attr('title', 'Select none').data('add_class', false).children('span')
                 .removeClass('fa-square-o')
                 .addClass('fa-check-square-o');
+
         }
         else {
+
             toggleAll.attr('title', 'Select all').data('add_class', true).children('span')
                 .removeClass('fa-check-square-o')
                 .addClass('fa-square-o');
         }
     }
 
-    $.fn.DynamicList = function (options) {
+    $.fn.DynaGrid = function (options) {
 
-        var listContainer = this;
+        var gridContainer = this;
+
         var opts;
 
         if (typeof options === 'object') {
-            opts = $.extend({}, $.fn.DynamicList.defaults, options);
 
-            var listHeader = $(opts.headerTag).attr({class: 'dynamic-list-header', id: opts.listTitle});
+            opts = $.extend({}, $.fn.DynaGrid.defaults, options);
 
-            var listBody = $('<div>')
-                .attr({class: 'list-group dynamic-list', id: opts.listTitle + '_list'})
-                .css({'margin-bottom': opts.listBodyBottomMargin, 'margin-top': opts.listBodyTopMargin});
+            var gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.listTitle});
 
-            listContainer
+            var gridBody = $('<div>')
+                .attr({class: 'dynagrid', id: opts.listTitle + '_grid'})
+                .css({
+                    'margin-bottom': opts.listBodyBottomMargin,
+                    'margin-top': opts.listBodyTopMargin,
+                    'grid-template-columns': 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)'
+                });
+
+            gridContainer
                 .empty()
-                .addClass('dynamic-list-group')
+                .addClass('dynagrid-group')
                 .append(
                     $('<div>').attr('class', 'row row-eq-height').append(
-                        $('<div>').attr('class', 'col-md-6').append(listHeader)
+                        $('<div>').attr('class', 'col-md-6').append(gridHeader)
                     ),
                     $('<div>').attr('class', 'row').append(
-                        $('<div>').attr('class', 'col-md-12').append(listBody)
+                        $('<div>').attr('class', 'col-md-12').append(gridBody)
                     )
                 );
 
-            if (opts.topAlignHeader) listHeader.addClass('top-align');
+            if (opts.topAlignHeader) gridHeader.addClass('top-align');
 
             if (opts.showTitle) {
-                listHeader.append(
+                gridHeader.append(
                     $('<span>').css('text-transform', 'capitalize').append(opts.listTitle.replace(/_/g, ' ')),
                     $('<span>').attr({id: opts.listTitle + '_count', class: 'badge'})
                 )
             }
 
             if (opts.itemToggle) {
-                listHeader
+                gridHeader
                     .append(
                         $('<a>')
                             .attr('class', 'btn btn-default btn-xs toggle_all')
-                            .html($('<span>').attr('class', 'fa'))
-                            .click(function () {
+                            .html($('<span>').attr('class', 'fa fa-fw'))
+                            .click(function (event) {
+
                                 event.preventDefault();
+
                                 var addClass = $(this).data('add_class');
-                                listBody.children('.dynamic-item:not(".hidden")').each(function () {
-                                    _toggleItemSelection(listBody, $(this), addClass);
+
+                                gridBody.children('.dynagrid-item:not(".hidden")').each(function () {
+
+                                    _toggleItemSelection(gridBody, $(this), addClass);
+
                                 });
                             }),
                         $('<a>')
                             .attr({class: 'btn btn-default btn-xs', title: 'Invert selection'})
-                            .html($('<span>').attr('class', 'fa fa-adjust'))
-                            .click(function () {
-                                listBody.children('.dynamic-item:not(".hidden")').each(function () {
-                                    _toggleItemSelection(listBody, $(this));
+                            .html($('<span>').attr('class', 'fa fa-adjust fa-fw'))
+                            .click(function (event) {
+
+                                event.preventDefault();
+
+                                gridBody.children('.dynagrid-item:not(".hidden")').each(function () {
+
+                                    _toggleItemSelection(gridBody, $(this));
+
                                 });
                             })
                     )
             }
 
             if (opts.showAddButton) {
+
                 var addButton = null;
+
                 if (opts.addButtonType === 'icon') {
+
                     addButton = $('<a>')
                         .attr({class: 'btn btn-default btn-xs ' + opts.addButtonClass, title: opts.addButtonTitle})
-                        .html($('<span>').attr('class', 'fa fa-plus'))
+                        .html($('<span>').attr('class', 'fa fa-plus fa-fw'))
+
                 }
+
                 else if (opts.addButtonType === 'text') {
+
                     addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
+
                 }
-                listHeader.append(addButton.click(function () {
+
+                gridHeader.append(addButton.click(function () {
+
                     opts.addButtonAction($(this))
+
                 }))
             }
 
             if (opts.showFilter) {
-                listHeader.parent().after(
+
+                gridHeader.parent().after(
                     $('<div>').attr('class', 'col-md-6 form-inline').css('margin', 'auto').append(
                         $('<span>').css('float', 'right').append(
                             $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
@@ -200,14 +283,23 @@
                                     .attr({class: 'form-control input-sm', type: 'search'})
                                     .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
                                     .keyup(function () {
+
                                         var pattern = $(this).val();
-                                        listBody.children('div.dynamic-item').each(function () {
+
+                                        gridBody.children('div.dynagrid-item').each(function () {
+
                                             var value = $(this).html();
+
                                             if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
+
                                             else $(this).addClass('hidden');
+
                                         });
-                                        _formatList(listBody, opts);
-                                        if (opts.itemToggle) _setToggleAllButton(listBody)
+
+                                        if (opts.itemToggle) _setToggleAllButton(gridBody);
+
+                                        _formatGrid(gridBody, opts)
+
                                     })
                             )
                         )
@@ -215,40 +307,59 @@
                 )
             }
 
-            if (opts.checkered) listBody.addClass('checkered');
+            //if (opts.checkered && opts.columns % 2 !== 0) gridBody.addClass('checkered');
 
-            if (opts.maxHeight) listBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
+            if (opts.maxHeight) gridBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
 
-            if (opts.buildNow) _load(listContainer, listBody, opts);
+            if (opts.buildNow) _load(gridContainer, gridBody, opts);
+
         }
+
         else {
-            listBody = listContainer.find('div.dynamic-list');
-            opts = $.extend({}, $.fn.DynamicList.defaults, listContainer.data());
+
+            gridBody = gridContainer.find('div.dynagrid');
+
+            opts = $.extend({}, $.fn.DynaGrid.defaults, gridContainer.data());
+
             switch (arguments[0]) {
+
                 case 'load':
+
                     if (Array.isArray(arguments[1])) opts.dataArray = arguments[1];
-                    _load(listContainer, listBody, opts);
+
+                    _load(gridContainer, gridBody, opts);
+
                     break;
-                case 'format':
-                    _formatList(listBody, opts);
-                    break;
+
                 case 'getSelected':
+
                     var t = arguments[1];
+
                     var selection = [];
-                    listBody.children('.toggle-on:not(".hidden")').each(function () {
+
+                    gridBody.children('.toggle-on:not(".hidden")').each(function () {
+
                         selection.push($(this).data(t));
+
                     });
+
                     return selection;
+
                 default:
+
                     throw '- invalid option';
+
             }
+
         }
+
         return this;
+
     };
 
-    $.fn.DynamicList.defaults = {
-        formatItem: function(listItem) {},
-        loadCallback: function(listContainer) {},
+    $.fn.DynaGrid.defaults = {
+        formatItem: function(gridItem) {},
+        loadCallback: function(gridContainer) {},
         addButtonAction: function(addButton) {},
         headerTag: '<h4>',
         listTitle: Math.random().toString(36).substring(2, 10),
@@ -271,9 +382,7 @@
         maxColumnWidth: 100,
         listWidth: 0,
         truncateItemText: false,
-        minColumns: 3,
-        maxColumns: 6,
-        breakPoint: 9,
+        columns: 4,
         dataSource: 'ajax',
         dataArray: [],
         ajaxData: null,

@@ -141,7 +141,7 @@ class UsersView(View):
 
                 user = get_object_or_404(User, username=user_name)
 
-                if 'reverse' in request.GET:
+                if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
                     data = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
 
@@ -466,8 +466,7 @@ class UserGroupView(View):
         return {
             'name': group.name,
             'description': group.groupdata.description,
-            'permissions': [perm.codename for perm in group.permissions.all()],
-            #'members': [user.username for user in User.objects.filter(groups__name=group.name)]
+            'permissions': [perm.codename for perm in group.permissions.all()]
         }
 
     def get(self, request, group_name, action):
@@ -482,7 +481,13 @@ class UserGroupView(View):
 
         elif action == 'members':
 
-            data = [user.username for user in User.objects.filter(groups__name=group_name)]
+            if 'reverse' in request.GET and request.GET['reverse'] == 'true':
+
+                data = [[user.username, user.id] for user in User.objects.exclude(groups__name=group_name)]
+
+            else:
+
+                data = [[user.username, user.id] for user in User.objects.filter(groups__name=group_name)]
 
         else:
 
@@ -535,6 +540,22 @@ class UserGroupView(View):
             if True:
 
                 group.delete()
+
+            data = {'result': 'ok'}
+
+        elif action == 'add_members':
+
+            for selected in request.POST.getlist('selection[]'):
+
+                group.user_set.add(get_object_or_404(User, pk=selected))
+
+            data = {'result': 'ok'}
+
+        elif action == 'remove_members':
+
+            for selected in request.POST.getlist('selection[]'):
+
+                group.user_set.remove(get_object_or_404(User, pk=selected))
 
             data = {'result': 'ok'}
 

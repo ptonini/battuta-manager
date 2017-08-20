@@ -159,8 +159,7 @@ function UserForm(currentUser, user, container) {
                         $('<label>').html('Retype new password').append(self.retypeNewPassword)
                     )
                 ),
-                divCol12.clone().append(btnXsmall.clone().html('Change password')),
-                divCol12.clone().append($('<hr>'))
+                divCol12.clone().append(btnXsmall.clone().html('Change password'))
             )
         )
         .submit(function (event) {
@@ -203,7 +202,7 @@ function UserForm(currentUser, user, container) {
         });
 
 
-    self.groupGrid = $('<div>').DynamicList({
+    self.groupGrid = $('<div>').DynaGrid({
         listTitle: 'Groups',
         headerTag: '<h4>',
         showAddButton: true,
@@ -211,18 +210,15 @@ function UserForm(currentUser, user, container) {
         addButtonTitle: 'Join groups',
         showTitle: true,
         checkered: true,
-        showCount: true,
+        buildNow: (self.user.username),
         listBodyBottomMargin: '20px',
-        minColumns: sessionStorage.getItem('node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('node_list_break_point'),
-        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
-        ajaxUrl: usersApiPath + 'user/' + self.user.username + '/groups',
-        formatItem: function (listItem) {
+        columns: sessionStorage.getItem('user_grid_columns'),
+        ajaxUrl: usersApiPath + 'user/' + self.user.username + '/groups/',
+        formatItem: function (gridItem) {
 
-            var name = listItem.data('value');
+            var name = gridItem.data('value');
 
-            listItem.removeClass('truncate-text').html('').append(
+            gridItem.removeClass('truncate-text').html('').append(
                 $('<span>').append(name).click(function () {
 
                     window.open(usersPath + 'group' + '/' + name, '_self')
@@ -237,15 +233,14 @@ function UserForm(currentUser, user, container) {
                             url: usersApiPath + 'user/' + self.user.username + '/remove_groups/',
                             type: 'POST',
                             dataType: 'json',
-                            data: {selection: [listItem.data('id')]},
+                            data: {selection: [gridItem.data('id')]},
                             success: function () {
 
-                                self.groupGrid.DynamicList('load');
+                                self.groupGrid.DynaGrid('load');
 
                             }
 
                         });
-
 
                     })
             )
@@ -255,11 +250,11 @@ function UserForm(currentUser, user, container) {
 
             var url = usersApiPath + 'user/' + self.user.username + '/groups/?reverse=true';
 
-            var loadCallback = function (listContainer, selectionDialog) {
+            var loadCallback = function (gridContainer, selectionDialog) {
 
-                var currentList = listContainer.find('div.dynamic-list');
+                var currentGrid = gridContainer.find('div.dynagrid');
 
-                selectionDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                selectionDialog.dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20);
 
                 selectionDialog.dialog('option', 'buttons', {
                     Add: function () {
@@ -268,10 +263,10 @@ function UserForm(currentUser, user, container) {
                             url: usersApiPath + 'user/' + self.user.username + '/add_groups/',
                             type: 'POST',
                             dataType: 'json',
-                            data: {selection: selectionDialog.DynamicList('getSelected', 'id')},
+                            data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
                             success: function () {
 
-                                self.groupGrid.DynamicList('load');
+                                self.groupGrid.DynaGrid('load');
 
                             }
                         });
@@ -305,7 +300,7 @@ function UserForm(currentUser, user, container) {
         self.formsHeader,
         divRow.clone().append(
             self.formsContainer.append(self.form),
-            self.groupGridContainer.append(self.groupGrid)
+            self.groupGridContainer
         )
     );
 
@@ -329,16 +324,20 @@ function UserForm(currentUser, user, container) {
 
         self.formBtnContainer.append(self.openCredentialsBtn);
 
-        self.formsContainer.append($('<hr>'), self.passwordForm)
+        self.formsContainer.append($('<hr>'), self.passwordForm);
+
+        self.groupGridContainer.append($('<hr>'), self.groupGrid);
+
     }
 
-    else {
+else {
 
         self.formsHeader.append($('<h3>').html('New user'));
 
         self.form.prepend(self.usernameFieldContainer).append(self.passwordFieldsContainer);
 
         self.timezoneField.val(sessionStorage.getItem('default_timezone'))
+
     }
 
     self.form.append(

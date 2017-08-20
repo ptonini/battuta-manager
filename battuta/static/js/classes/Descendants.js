@@ -4,22 +4,19 @@ function Descendants (node, container) {
 
     self.node = node;
 
-    self.listOptions = {
+    self.gridOptions = {
         headerTag: '<h5>',
         showTitle: true,
         hideIfEmpty: true,
         checkered: true,
         showCount: true,
         listBodyBottomMargin: '20px',
-        minColumns: sessionStorage.getItem('node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('node_list_break_point'),
-        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
-        formatItem: function (listItem) {
+        columns: sessionStorage.getItem('node_grid_columns'),
+        formatItem: function (gridItem) {
 
-            var nodeType = listItem.closest('div.dynamic-list-group').data('nodeType');
+            var nodeType = gridItem.closest('div.dynagrid-group').data('nodeType');
 
-            listItem.click(function () {
+            gridItem.click(function () {
 
                 window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
 
@@ -27,12 +24,12 @@ function Descendants (node, container) {
         }
     };
 
-    self.groupList = $('<div>').data('nodeType', 'group').DynamicList($.extend({}, self.listOptions, {
+    self.groupList = $('<div>').data('nodeType', 'group').DynaGrid($.extend({}, self.gridOptions, {
         listTitle: 'Groups',
         ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=groups'
     }));
 
-    self.hostList = $('<div>').data('nodeType', 'host').DynamicList($.extend({}, self.listOptions, {
+    self.hostList = $('<div>').data('nodeType', 'host').DynaGrid($.extend({}, self.gridOptions, {
         listTitle: 'Hosts',
         ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=hosts'
     }));
@@ -45,8 +42,8 @@ Descendants.prototype.reload = function () {
 
     var self = this;
 
-    self.groupList.DynamicList('load');
+    self.groupList.DynaGrid('load');
 
-    self.hostList.DynamicList('load')
+    self.hostList.DynaGrid('load')
 
 };

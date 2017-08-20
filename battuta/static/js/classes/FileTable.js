@@ -57,7 +57,7 @@ function FileTable(root, user, nameCellFormatter, container) {
 
                         $.ajax({
                             url: filesApiPath + 'exists/',
-                            data: {name: fieldValue, type: 'directory', root: self.root},
+                            data: {name: fieldValue, type: 'directory', root: self.root, user: self.user},
                             success: function (data) {
 
                                 if (data.result === 'ok') self.setFolder(fieldValue);
@@ -128,7 +128,7 @@ function FileTable(root, user, nameCellFormatter, container) {
 
     if (self.folder) $.ajax({
         url: filesApiPath + 'exists/',
-        data: {name: self.folder, type: 'directory', root: self.root},
+        data: {name: self.folder, type: 'directory', root: self.root, user: self.user},
         success: function (data) {
 
             if (data.result === 'failed') {

@@ -43,7 +43,7 @@ function AdHohTaskTable(pattern, container) {
             $(row).find('td:eq(3)').append(
                 spanRight.clone().append(
                     prettyBoolean($(row).find('td:eq(3)'), task.become),
-                    spanFA.clone().addClass('fa-play btn-incell').attr('title', 'Load').click(function () {
+                    spanFA.clone().addClass('fa-play-circle-o btn-incell').attr('title', 'Load').click(function () {
 
                         task.saveCallback = self.table.DataTable().ajax.reload;
 

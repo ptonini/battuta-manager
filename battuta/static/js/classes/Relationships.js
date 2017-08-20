@@ -18,7 +18,7 @@ function Relationships(node, alterRelationCallback, container) {
 
         else relationType = 'host';
 
-        self[relation] = $('<div>').DynamicList({
+        self[relation] = $('<div>').DynaGrid({
             listTitle: relation,
             showTitle: true,
             showCount: true,
@@ -28,18 +28,15 @@ function Relationships(node, alterRelationCallback, container) {
             checkered: true,
             listBodyTopMargin: '10px',
             hideBodyIfEmpty: true,
-            minColumns: sessionStorage.getItem('relation_list_min_columns'),
-            maxColumns: sessionStorage.getItem('relation_list_max_columns'),
-            breakPoint: sessionStorage.getItem('relation_list_break_point'),
-            maxColumnWidth: sessionStorage.getItem('relation_list_max_column_width'),
+            columns: sessionStorage.getItem('node_grid_columns'),
             ajaxUrl: inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/related/',
-            formatItem: function (listItem) {
+            formatItem: function (gridItem) {
 
-                var id = listItem.data('id');
+                var id = gridItem.data('id');
 
-                var name = listItem.data('value');
+                var name = gridItem.data('value');
 
-                listItem.removeClass('truncate-text').html('').append(
+                gridItem.removeClass('truncate-text').html('').append(
                     $('<span>').append(name).click(function () {
 
                         window.open(inventoryPath + relationType + '/' + name, '_self')
@@ -60,16 +57,16 @@ function Relationships(node, alterRelationCallback, container) {
 
                 var url = inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
 
-                var loadCallback = function (listContainer, selectionDialog) {
+                var loadCallback = function (gridContainer, selectionDialog) {
 
-                    var currentList = listContainer.find('div.dynamic-list');
+                    var currentGrid = gridContainer.find('div.dynagrid');
 
-                    selectionDialog.dialog('option', 'width', $(currentList).css('column-count') * 140 + 20);
+                    selectionDialog.dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20);
 
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
-                            self._alterRelation(relation, selectionDialog.DynamicList('getSelected', 'id'), 'add');
+                            self._alterRelation(relation, selectionDialog.DynaGrid('getSelected', 'id'), 'add');
 
                             $(this).dialog('close');
 
@@ -90,7 +87,7 @@ function Relationships(node, alterRelationCallback, container) {
 
                     new NodeDialog({name: null, description: null, type: relationType}, function () {
 
-                        selectionDialog.DynamicList('load')
+                        selectionDialog.DynaGrid('load')
 
                     })
 
@@ -118,7 +115,7 @@ Relationships.prototype = {
             data: {selection: selection},
             success: function () {
 
-                self[relation].DynamicList('load');
+                self[relation].DynaGrid('load');
 
                 self.alterRelationCallback && self.alterRelationCallback()
 

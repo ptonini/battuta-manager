@@ -193,94 +193,28 @@ DEFAULT_PREFERENCES = [
         ]
     },
     {
-        'name': 'Node list',
+        'name': 'DynaGrid options',
         'description': '',
         'items': [
             {
-                'name': 'node_list_min_columns',
-                'value': 1,
-                'data_type': 'number',
-                'description': 'Minimum columns for open node list',
-            },
-            {
-                'name': 'node_list_max_columns',
+                'name': 'node_grid_columns',
                 'value': 5,
                 'data_type': 'number',
-                'description': 'Maximum columns for open node list',
+                'description': 'Columns for node grid',
             },
             {
-                'name': 'node_list_break_point',
+                'name': 'selection_modal_columns',
                 'value': 5,
                 'data_type': 'number',
-                'description': 'Open node list column break point',
+                'description': 'Columns for selection modal',
             },
             {
-                'name': 'node_list_max_column_width',
-                'value': 30,
-                'data_type': 'number',
-                'description': '',
-            }
-        ],
-    },
-    {
-        'name': 'Selection Modal',
-        'description': '',
-        'items': [
-            {
-                'name': 'selection_modal_min_columns',
-                'value': 3,
-                'data_type': 'number',
-                'description': 'Minimum columns for modal node list',
-            },
-            {
-                'name': 'selection_modal_max_columns',
-                'value': 6,
-                'data_type': 'number',
-                'description': 'Maximum columns for modal node list',
-            },
-            {
-                'name': 'selection_modal_break_point',
-                'value': 9,
-                'data_type': 'number',
-                'description': 'Modal node list column break point',
-            },
-            {
-                'name': 'selection_modal_max_column_width',
-                'value': 100,
-                'data_type': 'number',
-                'description': '',
-            }
-        ],
-    },
-    {
-        'name': 'Relation list',
-        'description': '',
-        'items': [
-            {
-                'name': 'relation_list_min_columns',
-                'value': 1,
-                'data_type': 'number',
-                'description': 'Minimum columns for relation list',
-            },
-            {
-                'name': 'relation_list_max_columns',
+                'name': 'user_grid_columns',
                 'value': 5,
                 'data_type': 'number',
-                'description': 'Maximum columns for relation list',
+                'description': 'Columns for user and user groups grid',
             },
-            {
-                'name': 'relation_list_break_point',
-                'value': 5,
-                'data_type': 'number',
-                'description': 'Relation list column break point',
-            },
-            {
-                'name': 'relation_list_max_column_width',
-                'value': 30,
-                'data_type': 'number',
-                'description': '',
-            }
-        ],
+        ]
     }
 ]
 

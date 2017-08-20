@@ -119,16 +119,16 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
 
     var url = inventoryApiPath + 'search/?type=' + nodeType + '&pattern=';
 
-    var loadCallback = function (listContainer, dialog) {
+    var loadCallback = function (gridContainer, selectionDialog) {
 
-        var currentList = listContainer.find('div.dynamic-list');
+        var currentGrid = gridContainer.find('div.dynagrid');
 
-        dialog
-            .dialog('option', 'width', $(currentList).css('column-count') * 140 + 20)
+        selectionDialog
+            .dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20)
             .dialog('option', 'buttons', {
                 Add: function () {
 
-                    var selection = dialog.DynamicList('getSelected', 'value');
+                    var selection = selectionDialog.DynaGrid('getSelected', 'value');
 
                     for (var i = 0; i < selection.length; i++) {
 
@@ -152,11 +152,11 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
                 }
             })
     };
-    var addButtonAction = function (dialog) {
+    var addButtonAction = function (selectionDialog) {
 
         new NodeDialog({name: null, description: null, type: nodeType}, function () {
 
-            dialog.DynamicList('load')
+            selectionDialog.DynaGrid('load')
 
         })
 

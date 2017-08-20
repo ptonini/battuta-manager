@@ -1,0 +1,33 @@
+.dynagrid-header > span.badge {background-color: #cacaca; margin-left: .5rem}
+
+.dynagrid-header > a {border-style: hidden}
+
+.dynagrid-header.top-align {vertical-align: text-top; margin-top: 0}
+
+div.dynagrid {display: grid; margin-bottom: 0}
+
+div.dynagrid-item.checkered {background-color: #F8F8F8}
+
+div.dynagrid div.dynagrid-item {
+    padding: 0 .5rem;
+    border: none;
+    margin: .25rem;
+    color: #777;
+    border-radius: .5rem;
+    line-height: 3rem;
+    text-align: left;
+}
+
+div.dynagrid div.dynagrid-item:hover{
+    background: #F4F4F4;
+    color: #2a2a2a;
+    cursor: pointer;
+}
+
+div.dynagrid div.dynagrid-item.toggle-on {background: #D3D3D3; border-radius: .5rem}
+
+div.dynagrid div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
+
+.truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
+
+.row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}

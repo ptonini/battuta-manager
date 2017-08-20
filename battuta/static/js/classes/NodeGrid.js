@@ -9,12 +9,10 @@ function NodeGrid(nodeType, mode, addCallback, container) {
     self.container = container;
 
     self.gridOptions = {
-        minColumns: sessionStorage.getItem('node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('node_list_break_point'),
-        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+        columns: sessionStorage.getItem('node_grid_columns'),
         checkered: true,
         showFilter: true,
+        truncateItemText: true,
         headerBottomPadding: 20,
         topAlignHeader: true,
         ajaxUrl: inventoryApiPath + 'search/?type=' + nodeType + '&pattern='
@@ -25,9 +23,9 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
-        formatItem: function (listItem) {
+        formatItem: function (gridItem) {
 
-            listItem.click(function () {
+            gridItem.click(function () {
 
                 window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
 
@@ -43,7 +41,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
 
     else Object.assign(self.gridOptions, {itemToggle: true});
 
-    self.container.DynamicList(self.gridOptions)
+    self.container.DynaGrid(self.gridOptions)
 
 }
 
@@ -53,14 +51,14 @@ NodeGrid.prototype = {
 
         var self = this;
 
-        self.container.DynamicList('load')
+        self.container.DynaGrid('load')
 
     },
     getSelected: function () {
 
         var self = this;
 
-        return self.container.DynamicList('getSelected', 'id')
+        return self.container.DynaGrid('getSelected', 'id')
 
     }
 };

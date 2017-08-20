@@ -1,6 +1,6 @@
 function SearchResults(type, pattern, container) {
 
-    container.DynamicList({
+    container.DynaGrid({
         listTitle: type + 's',
         showTitle: true,
         showCount: true,
@@ -8,14 +8,11 @@ function SearchResults(type, pattern, container) {
         checkered: true,
         headerBottomMargin: '0',
         listBodyBottomMargin: '20px',
-        minColumns: sessionStorage.getItem('node_list_min_columns'),
-        maxColumns: sessionStorage.getItem('node_list_max_columns'),
-        breakPoint: sessionStorage.getItem('node_list_break_point'),
-        maxColumnWidth: sessionStorage.getItem('node_list_max_column_width'),
+        columns: sessionStorage.getItem('node_grid_columns'),
         ajaxUrl: inventoryApiPath + 'search/?type=' + type + '&pattern=' + pattern,
-        formatItem: function (listItem) {
+        formatItem: function (gridItem) {
 
-            listItem.click(function () {
+            gridItem.click(function () {
 
                 window.open(inventoryPath + type + '/' + $(this).data('value') + '/', '_self')
 

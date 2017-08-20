@@ -4,7 +4,7 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
     self.selectionDialog = largeDialog.clone();
 
     self.selectionDialog
-        .DynamicList({
+        .DynaGrid({
             listTitle: 'selection',
             showFilter: true,
             showAddButton: (addButtonAction),
@@ -12,14 +12,12 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
             addButtonTitle: 'Add ' + objectType,
             maxHeight: 400,
             itemToggle: showButtons,
-            minColumns: sessionStorage.getItem('selection_modal_min_columns'),
-            maxColumns: sessionStorage.getItem('selection_modal_max_columns'),
-            breakPoint: sessionStorage.getItem('selection_modal_break_point'),
-            maxColumnWidth: sessionStorage.getItem('selection_modal_max_column_width'),
+            truncateItemText: true,
+            columns: sessionStorage.getItem('selection_modal_columns'),
             ajaxUrl: url,
-            loadCallback: function (listContainer) {
+            loadCallback: function (gridContainer) {
 
-                loadCallback && loadCallback(listContainer, self.selectionDialog)
+                loadCallback && loadCallback(gridContainer, self.selectionDialog)
 
             },
             addButtonAction: function () {
@@ -27,13 +25,16 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
                 addButtonAction && addButtonAction(self.selectionDialog)
 
             },
-            formatItem: function(listItem) {
+            formatItem: function(gridItem) {
 
-                formatItem && formatItem(listItem, self.selectionDialog)
+                formatItem && formatItem(gridItem, self.selectionDialog)
 
             }
         })
+
         .dialog({
+            minWidth: 700,
+            minHeight: 500,
             buttons: {
                 Cancel: function () {
 
