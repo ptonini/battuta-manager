@@ -23,7 +23,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
         addButtonTitle: 'Add ' + nodeType,
-        formatItem: function (gridItem) {
+        formatItem: function (gridContainer, gridItem) {
 
             gridItem.click(function () {
 

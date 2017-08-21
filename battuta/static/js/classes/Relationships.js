@@ -12,25 +12,23 @@ function Relationships(node, alterRelationCallback, container) {
 
     $.each(self.relations, function (index, relation) {
 
-        var relationType;
-
-        if (relation === 'parents' || relation === 'children') relationType = 'group';
+        if (relation === 'parents' || relation === 'children') var relationType = 'group';
 
         else relationType = 'host';
 
         self[relation] = $('<div>').DynaGrid({
-            listTitle: relation,
+            gridTitle: relation,
             showTitle: true,
             showCount: true,
             showAddButton: true,
             addButtonClass: 'add_relation',
             addButtonTitle: 'Add relationship',
             checkered: true,
-            listBodyTopMargin: '10px',
+            gridBodyTopMargin: '10px',
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
             ajaxUrl: inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/related/',
-            formatItem: function (gridItem) {
+            formatItem: function (gridContainer, gridItem) {
 
                 var id = gridItem.data('id');
 
@@ -58,10 +56,6 @@ function Relationships(node, alterRelationCallback, container) {
                 var url = inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
 
                 var loadCallback = function (gridContainer, selectionDialog) {
-
-                    var currentGrid = gridContainer.find('div.dynagrid');
-
-                    selectionDialog.dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20);
 
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {

@@ -121,10 +121,7 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
 
     var loadCallback = function (gridContainer, selectionDialog) {
 
-        var currentGrid = gridContainer.find('div.dynagrid');
-
         selectionDialog
-            .dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20)
             .dialog('option', 'buttons', {
                 Add: function () {
 

@@ -168,7 +168,7 @@ function UserGroupForm(group, container) {
     self.formsHeader = $('<div>');
 
     self.membersGrid = $('<div>').DynaGrid({
-        listTitle: 'Members',
+        gridTitle: 'Members',
         headerTag: '<h4>',
         showAddButton: true,
         addButtonClass: 'add_members',
@@ -177,10 +177,10 @@ function UserGroupForm(group, container) {
         checkered: true,
         showCount: true,
         buildNow: (self.group.name),
-        listBodyBottomMargin: '20px',
+        gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
         ajaxUrl: usersApiPath + 'group/' + self.group.name + '/members/',
-        formatItem: function (gridItem) {
+        formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
 
@@ -217,10 +217,6 @@ function UserGroupForm(group, container) {
             var url = usersApiPath + 'group/' + self.group.name + '/members/?reverse=true';
 
             var loadCallback = function (gridContainer, selectionDialog) {
-
-                var currentGrid = gridContainer.find('div.dynagrid');
-
-                selectionDialog.dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20);
 
                 selectionDialog.dialog('option', 'buttons', {
                     Add: function () {

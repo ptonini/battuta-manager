@@ -10,12 +10,12 @@ div.dynagrid-item.checkered {background-color: #F8F8F8}
 
 div.dynagrid div.dynagrid-item {
     padding: 0 .5rem;
-    border: none;
     margin: .25rem;
     color: #777;
     border-radius: .5rem;
     line-height: 3rem;
     text-align: left;
+    border: thin solid #F8F8F8;
 }
 
 div.dynagrid div.dynagrid-item:hover{

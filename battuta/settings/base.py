@@ -204,7 +204,7 @@ DEFAULT_PREFERENCES = [
             },
             {
                 'name': 'selection_modal_columns',
-                'value': 5,
+                'value': 4,
                 'data_type': 'number',
                 'description': 'Columns for selection modal',
             },

@@ -10,27 +10,25 @@ function Descendants (node, container) {
         hideIfEmpty: true,
         checkered: true,
         showCount: true,
-        listBodyBottomMargin: '20px',
+        gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
-        formatItem: function (gridItem) {
-
-            var nodeType = gridItem.closest('div.dynagrid-group').data('nodeType');
+        formatItem: function (gridContainer, gridItem) {
 
             gridItem.click(function () {
 
-                window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
+                window.open(inventoryPath + gridContainer.data('nodeType') + '/' + $(this).data('value') + '/', '_self')
 
             });
         }
     };
 
     self.groupList = $('<div>').data('nodeType', 'group').DynaGrid($.extend({}, self.gridOptions, {
-        listTitle: 'Groups',
+        gridTitle: 'Groups',
         ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=groups'
     }));
 
     self.hostList = $('<div>').data('nodeType', 'host').DynaGrid($.extend({}, self.gridOptions, {
-        listTitle: 'Hosts',
+        gridTitle: 'Hosts',
         ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=hosts'
     }));
 

@@ -1,16 +1,16 @@
 function SearchResults(type, pattern, container) {
 
     container.DynaGrid({
-        listTitle: type + 's',
+        gridTitle: type + 's',
         showTitle: true,
         showCount: true,
         hideIfEmpty: true,
         checkered: true,
         headerBottomMargin: '0',
-        listBodyBottomMargin: '20px',
+        gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
         ajaxUrl: inventoryApiPath + 'search/?type=' + type + '&pattern=' + pattern,
-        formatItem: function (gridItem) {
+        formatItem: function (gridContainer, gridItem) {
 
             gridItem.click(function () {
 

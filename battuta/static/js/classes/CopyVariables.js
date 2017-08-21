@@ -48,13 +48,6 @@ CopyVariables.prototype = {
 
         var url = inventoryApiPath + 'search/?type=' + sourceNodeType + '&pattern=';
 
-        var loadCallback = function (gridContainer, selectionDialog) {
-
-            var currentGrid = gridContainer.find('div.dynagrid');
-
-            selectionDialog.dialog('option', 'width', $(currentGrid).css('column-count') * 140 + 20);
-        };
-
         var formatItem = function (gridItem, selectionDialog) {
 
             gridItem.click(function () {
@@ -80,6 +73,6 @@ CopyVariables.prototype = {
             });
         };
 
-        new SelectionDialog(sourceNodeType, url, false, loadCallback, null, formatItem);
+        new SelectionDialog(sourceNodeType, url, false, null, null, formatItem);
     }
 };

@@ -5,7 +5,7 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
 
     self.selectionDialog
         .DynaGrid({
-            listTitle: 'selection',
+            gridTitle: 'selection',
             showFilter: true,
             showAddButton: (addButtonAction),
             addButtonClass: 'open_node_form',
@@ -13,6 +13,7 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
             maxHeight: 400,
             itemToggle: showButtons,
             truncateItemText: true,
+            checkered: true,
             columns: sessionStorage.getItem('selection_modal_columns'),
             ajaxUrl: url,
             loadCallback: function (gridContainer) {
@@ -25,7 +26,7 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
                 addButtonAction && addButtonAction(self.selectionDialog)
 
             },
-            formatItem: function(gridItem) {
+            formatItem: function(gridContainer, gridItem) {
 
                 formatItem && formatItem(gridItem, self.selectionDialog)
 

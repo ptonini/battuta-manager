@@ -4,175 +4,164 @@
 
 (function ($) {
 
-    function _formatGrid(gridBody, opts) {
+    $.fn.DynaGrid = function (options) {
 
-        var visibleItemsCount = gridBody.find('.dynagrid-item:not(".hidden")').length;
+        function _formatGrid(gridBody, opts) {
 
-        if (opts.showCount) setTimeout(function() {
+            var visibleItemsCount = gridBody.find('.dynagrid-item:not(".hidden")').length;
 
-            $('#' + opts.listTitle + '_count').html(visibleItemsCount)
+            if (opts.showCount) $('#' + opts.gridTitle + '_count').html(visibleItemsCount);
 
-        }, 0);
+            if (opts.checkered) {
 
-        if (opts.checkered) {
+                gridBody.find('.dynagrid-item:not(".hidden")').each(function (index) {
 
-            gridBody.find('.dynagrid-item:not(".hidden")').each(function (index) {
+                    var indexIsEven = (index % 2 === 0);
 
-                var indexIsEven = (index % 2 === 0);
+                    if (opts.columns % 2 === 0) {
 
-                if (opts.columns % 2 === 0) {
+                        var cycleStage = index % (opts.columns * 2);
 
-                    var cycleStage = index % (opts.columns * 2);
+                        if (indexIsEven && cycleStage >= opts.columns || !indexIsEven && cycleStage < opts.columns) $(this).addClass('checkered');
 
-                    if (indexIsEven && cycleStage >= opts.columns || !indexIsEven && cycleStage < opts.columns) $(this).addClass('checkered');
+                        else $(this).removeClass('checkered')
 
-                    else $(this).removeClass('checkered')
+                    }
 
-                }
+                    else {
 
-                else {
+                        if (indexIsEven) $(this).removeClass('checkered');
 
-                    if (indexIsEven) $(this).removeClass('checkered');
+                        else $(this).addClass('checkered')
 
-                    else $(this).addClass('checkered')
+                    }
 
-                }
+                })
+            };
 
-            })
-        };
-
-        if (opts.itemToggle) _setToggleAllButton(gridBody);
-
-    }
-
-    function _formatItems(gridBody, opts) {
-
-        gridBody.children('.dynagrid-item').each(function (index) {
-
-            if (opts.itemToggle) $(this).off('click').click(function () {
-
-                _toggleItemSelection(gridBody, $(this))
-
-            });
-
-            if (opts.truncateItemText) $(this).addClass('truncate-text');
-
-
-
-
-            opts.formatItem($(this));
-        });
-    }
-
-    function _loadFromArray(gridContainer, gridBody, opts) {
-
-        if (opts.dataArray === 0) {
-
-            if (opts.hideIfEmpty) gridContainer.hide();
-
-            if (opts.hideBodyIfEmpty) gridBody.empty().closest('div.row').hide();
+            if (opts.itemToggle) _setToggleAllButton(gridBody);
 
         }
 
-        else {
+        function _loadFromArray(gridContainer, gridBody, opts) {
 
-            gridContainer.show();
+            if (opts.dataArray === 0) {
 
-            gridBody.closest('div.row').show();
+                if (opts.hideIfEmpty) gridContainer.hide();
 
-            gridBody.empty();
-
-            $.each(opts.dataArray, function (index, value) {
-
-                var currentItem = $('<div>')
-                    .html(value[0])
-                    .attr('title', value[0])
-                    .addClass('dynagrid-item')
-                    .data({value: value[0], id: value[1]});
-
-                gridBody.append(currentItem);
-
-            });
-
-        }
-
-        _formatItems(gridBody, opts);
-
-        _formatGrid(gridBody, opts);
-
-        opts.loadCallback(gridContainer);
-
-        gridContainer.data(opts);
-
-    }
-
-    function _loadFromAjax(gridContainer, gridBody, opts) {
-
-        $.ajax({
-            url: opts.ajaxUrl,
-            type: opts.ajaxType,
-            dataType: 'JSON',
-            data: opts.ajaxData,
-            success: function (data) {
-
-                opts.dataArray = data;
-
-                _loadFromArray(gridContainer, gridBody, opts)
+                if (opts.hideBodyIfEmpty) gridBody.empty().closest('div.row').hide();
 
             }
-        });
-    }
 
-    function _load(gridContainer, gridBody, opts) {
+            else {
 
-        switch (opts.dataSource) {
+                gridContainer.show();
 
-            case 'ajax':
+                gridBody.closest('div.row').show();
 
-                _loadFromAjax(gridContainer, gridBody, opts);
+                gridBody.empty();
 
-                break;
+                $.each(opts.dataArray, function (index, value) {
 
-            case 'array':
+                    var currentItem = $('<div>')
+                        .html(value[0])
+                        .attr('title', value[0])
+                        .addClass('dynagrid-item')
+                        .data({value: value[0], id: value[1]});
 
-                _loadFromArray(gridContainer, gridBody, opts);
+                    if (opts.itemToggle) currentItem.off('click').click(function () {
 
-                break;
+                        _toggleItemSelection(gridBody, currentItem)
 
-            default:
+                    });
 
-                throw '- invalid data source';
-        }
-    }
+                    if (opts.truncateItemText) currentItem.addClass('truncate-text');
 
-    function _toggleItemSelection(gridBody, gridItem, addClass) {
+                    opts.formatItem(gridContainer, currentItem);
 
-        gridItem.toggleClass('toggle-on', addClass);
+                    gridBody.append(currentItem);
 
-        _setToggleAllButton(gridBody)
+                });
 
-    }
+            }
 
-    function _setToggleAllButton(gridBody) {
+            opts.loadCallback(gridContainer);
 
-        var toggleAll = $('.toggle_all');
+            _formatGrid(gridBody, opts);
 
-        if (gridBody.children('.dynagrid-item:not(".hidden")').length === gridBody.children('.toggle-on:not(".hidden")').length) {
-
-            toggleAll.attr('title', 'Select none').data('add_class', false).children('span')
-                .removeClass('fa-square-o')
-                .addClass('fa-check-square-o');
+            gridContainer.data('dynagridOptions', opts)
 
         }
-        else {
 
-            toggleAll.attr('title', 'Select all').data('add_class', true).children('span')
-                .removeClass('fa-check-square-o')
-                .addClass('fa-square-o');
+        function _loadFromAjax(gridContainer, gridBody, opts) {
+
+            $.ajax({
+                url: opts.ajaxUrl,
+                type: opts.ajaxType,
+                dataType: 'JSON',
+                data: opts.ajaxData,
+                success: function (data) {
+
+                    opts.dataArray = data;
+
+                    _loadFromArray(gridContainer, gridBody, opts)
+
+                }
+            });
         }
-    }
 
-    $.fn.DynaGrid = function (options) {
+        function _load(gridContainer, gridBody, opts) {
+
+            switch (opts.dataSource) {
+
+                case 'ajax':
+
+                    _loadFromAjax(gridContainer, gridBody, opts);
+
+                    break;
+
+                case 'array':
+
+                    _loadFromArray(gridContainer, gridBody, opts);
+
+                    break;
+
+                default:
+
+                    throw '- invalid data source';
+            }
+        }
+
+        function _toggleItemSelection(gridBody, gridItem, addClass) {
+
+            gridItem.toggleClass('toggle-on', addClass);
+
+            _setToggleAllButton(gridBody)
+
+        }
+
+        function _setToggleAllButton(gridBody) {
+
+            var toggleAll = $('.toggle_all');
+
+            var visibleItemCount = gridBody.children('.dynagrid-item:not(".hidden")').length;
+
+            var hiddenItemCount = gridBody.children('.toggle-on:not(".hidden")').length;
+
+            if (visibleItemCount === hiddenItemCount) {
+
+                toggleAll.attr('title', 'Select none').data('add_class', false).children('span')
+                    .removeClass('fa-square-o')
+                    .addClass('fa-check-square-o');
+
+            }
+            else {
+
+                toggleAll.attr('title', 'Select all').data('add_class', true).children('span')
+                    .removeClass('fa-check-square-o')
+                    .addClass('fa-square-o');
+            }
+        }
 
         var gridContainer = this;
 
@@ -182,19 +171,19 @@
 
             opts = $.extend({}, $.fn.DynaGrid.defaults, options);
 
-            var gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.listTitle});
+            var gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.gridTitle});
 
             var gridBody = $('<div>')
-                .attr({class: 'dynagrid', id: opts.listTitle + '_grid'})
+                .attr({class: 'dynagrid', id: opts.gridTitle + '_grid'})
                 .css({
-                    'margin-bottom': opts.listBodyBottomMargin,
-                    'margin-top': opts.listBodyTopMargin,
+                    'margin-bottom': opts.gridBodyBottomMargin,
+                    'margin-top': opts.gridBodyTopMargin,
                     'grid-template-columns': 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)'
                 });
 
             gridContainer
                 .empty()
-                .addClass('dynagrid-group')
+                .addClass('dynagrid-container')
                 .append(
                     $('<div>').attr('class', 'row row-eq-height').append(
                         $('<div>').attr('class', 'col-md-6').append(gridHeader)
@@ -208,8 +197,8 @@
 
             if (opts.showTitle) {
                 gridHeader.append(
-                    $('<span>').css('text-transform', 'capitalize').append(opts.listTitle.replace(/_/g, ' ')),
-                    $('<span>').attr({id: opts.listTitle + '_count', class: 'badge'})
+                    $('<span>').css('text-transform', 'capitalize').append(opts.gridTitle.replace(/_/g, ' ')),
+                    $('<span>').attr({id: opts.gridTitle + '_count', class: 'badge'})
                 )
             }
 
@@ -307,8 +296,6 @@
                 )
             }
 
-            //if (opts.checkered && opts.columns % 2 !== 0) gridBody.addClass('checkered');
-
             if (opts.maxHeight) gridBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
 
             if (opts.buildNow) _load(gridContainer, gridBody, opts);
@@ -319,7 +306,7 @@
 
             gridBody = gridContainer.find('div.dynagrid');
 
-            opts = $.extend({}, $.fn.DynaGrid.defaults, gridContainer.data());
+            opts = $.extend({}, $.fn.DynaGrid.defaults, gridContainer.data('dynagridOptions'));
 
             switch (arguments[0]) {
 
@@ -333,13 +320,13 @@
 
                 case 'getSelected':
 
-                    var t = arguments[1];
+                    var value = arguments[1];
 
                     var selection = [];
 
                     gridBody.children('.toggle-on:not(".hidden")').each(function () {
 
-                        selection.push($(this).data(t));
+                        selection.push($(this).data(value));
 
                     });
 
@@ -358,11 +345,11 @@
     };
 
     $.fn.DynaGrid.defaults = {
-        formatItem: function(gridItem) {},
+        formatItem: function(gridContainer, gridItem) {},
         loadCallback: function(gridContainer) {},
         addButtonAction: function(addButton) {},
         headerTag: '<h4>',
-        listTitle: Math.random().toString(36).substring(2, 10),
+        gridTitle: Math.random().toString(36).substring(2, 10),
         showTitle: false,
         showCount: false,
         showSelectAll: false,
@@ -371,16 +358,14 @@
         addButtonTitle: null,
         topAlignHeader: false,
         addButtonType: 'icon',
-        listBodyTopMargin: 0,
-        listBodyBottomMargin: 0,
+        gridBodyTopMargin: 0,
+        gridBodyBottomMargin: 0,
         hideIfEmpty: false,
         hideBodyIfEmpty: false,
         maxHeight: null,
         showFilter: false,
         checkered: false,
         itemToggle: false,
-        maxColumnWidth: 100,
-        listWidth: 0,
         truncateItemText: false,
         columns: 4,
         dataSource: 'ajax',
