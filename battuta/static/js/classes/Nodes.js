@@ -55,9 +55,11 @@ function Nodes(nodeType, container) {
                     type: 'POST',
                     dataType: 'json',
                     data: {selection: self.nodeGrid.getSelected()},
-                    success: function () {
+                    success: function (data) {
 
-                        reloadInfo()
+                        if (data.result === 'ok') reloadInfo();
+
+                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                     }
                 })

@@ -177,7 +177,9 @@ class InventoryView(View):
     @staticmethod
     def post(request, action):
 
-        if request.user.has_perm('inventory.edit_host') and request.user.has_perm('inventory.edit_group'):
+        print(request.user.get_group_permissions())
+
+        if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
             if action == 'import':
 
@@ -365,7 +367,7 @@ class InventoryView(View):
 
         else:
 
-            raise PermissionDenied
+            data = {'result': 'failed', 'msg': 'Permission denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -447,7 +449,7 @@ class NodesView(View):
 
         node_type = node_type_plural[:-1]
 
-        if request.user.has_perm('inventory.edit_' + node_type):
+        if request.user.has_perm('users.edit_' + node_type_plural):
 
             if action == 'delete':
 
@@ -479,7 +481,7 @@ class NodesView(View):
 
         else:
 
-            raise PermissionDenied
+            data = {'result': 'failed', 'msg': 'Permission denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -569,7 +571,7 @@ class NodeView(View):
 
                 host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
 
-        setattr(node, 'editable', user.has_perm('inventory.edit_' + node_type))
+        setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
 
         setattr(node, 'form_class', node_form_class)
 
@@ -668,7 +670,7 @@ class NodeView(View):
 
         else:
 
-            raise PermissionDenied
+            data = {'result': 'failed', 'msg': 'Permission denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -799,7 +801,7 @@ class VariablesView(View):
 
         else:
 
-            raise PermissionDenied
+            data = {'result': 'failed', 'msg': 'Permission denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -874,19 +876,27 @@ class RelationsView(View):
 
         related_set, related_class = self.get_relationships(node, relationship)
 
-        if action == 'add':
+        if node.editable:
 
-            for selected in request.POST.getlist('selection[]'):
+            if action == 'add':
 
-                related_set.add(get_object_or_404(related_class, pk=selected))
+                for selected in request.POST.getlist('selection[]'):
 
-        elif action == 'remove':
+                    related_set.add(get_object_or_404(related_class, pk=selected))
 
-            for selected in request.POST.getlist('selection[]'):
+            elif action == 'remove':
 
-                related_set.remove(get_object_or_404(related_class, pk=selected))
+                for selected in request.POST.getlist('selection[]'):
+
+                    related_set.remove(get_object_or_404(related_class, pk=selected))
+
+            else:
+                raise Http404('Invalid action')
+
+            data = {'result': 'ok'}
 
         else:
-            raise Http404('Invalid action')
 
-        return HttpResponse(json.dumps({'result': 'ok'}), content_type='application/json')
+            data = {'result': 'failed', 'msg': 'Permission denied'}
+
+        return HttpResponse(json.dumps(data), content_type='application/json')

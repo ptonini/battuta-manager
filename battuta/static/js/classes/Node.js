@@ -41,7 +41,9 @@ function Node(node, container) {
                     dataType: 'json',
                     success: function (data) {
 
-                        if (data.result === 'ok') window.open(inventoryPath + self.node.type + 's/', '_self')
+                        if (data.result === 'ok') window.open(inventoryPath + self.node.type + 's/', '_self');
+
+                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                     }
                 });

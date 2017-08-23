@@ -10,6 +10,7 @@ function Descendants (node, container) {
         hideIfEmpty: true,
         checkered: true,
         showCount: true,
+        truncateItemText: true,
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
         formatItem: function (gridContainer, gridItem) {
@@ -32,7 +33,10 @@ function Descendants (node, container) {
         ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=hosts'
     }));
 
-    container.append(self.groupList, self.hostList);
+    container.append(
+        $('<h4>').html('Descendants'),
+        self.groupList,
+        self.hostList);
 
 }
 

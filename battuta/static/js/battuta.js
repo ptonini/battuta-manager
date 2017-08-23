@@ -49,9 +49,11 @@ var divCol10 = $('<div>').attr('class', 'col-md-10');
 
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
+
 // Bootstrap tables
 
 var baseTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
+
 
 // Form groups
 
@@ -83,11 +85,13 @@ var chkboxInput =  $('<input>').attr('type', 'checkbox');
 
 var radioInput =  $('<input>').attr('type', 'radio');
 
+
 // Dialogs
 
 var largeDialog = $('<div>').attr('class', 'large_dialog');
 
 var smallDialog = $('<div>').attr('class', 'small_dialog');
+
 
 // Tabs
 
@@ -102,6 +106,7 @@ var divTabContent =  $('<div>').attr('class', 'tab-content');
 var divActiveTab = $('<div>').attr('class', 'tab-pane fade in active');
 
 var divTab = $('<div>').attr('class', 'tab-pane fade');
+
 
 // Other element templates
 

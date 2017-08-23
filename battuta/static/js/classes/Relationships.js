@@ -34,14 +34,15 @@ function Relationships(node, alterRelationCallback, container) {
 
                 var name = gridItem.data('value');
 
-                gridItem.removeClass('truncate-text').html('').append(
+                gridItem.html('').append(
                     $('<span>').append(name).click(function () {
 
                         window.open(inventoryPath + relationType + '/' + name, '_self')
 
                     }),
                     spanFA.clone().addClass('text-right fa-times-circle-o')
-                        .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                        //.css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                        .css({float: 'right', margin: '.8rem 0'})
                         .attr('title', 'Remove')
                         .click(function () {
 
@@ -92,7 +93,7 @@ function Relationships(node, alterRelationCallback, container) {
             }
         });
 
-        container.append(self[relation], $('<hr>'));
+        container.append(self[relation], $('<br>'));
     })
 }
 
@@ -107,11 +108,17 @@ Relationships.prototype = {
             type: 'POST',
             dataType: 'json',
             data: {selection: selection},
-            success: function () {
+            success: function (data) {
 
-                self[relation].DynaGrid('load');
+                if (data.result === 'ok ') {
 
-                self.alterRelationCallback && self.alterRelationCallback()
+                    self[relation].DynaGrid('load');
+
+                    self.alterRelationCallback && self.alterRelationCallback()
+
+                }
+
+                else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
             }
         });

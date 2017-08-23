@@ -1,4 +1,5 @@
 function NodeTable(nodeType, addCallback, container) {
+
     var self = this;
 
     self.type = nodeType;
@@ -69,11 +70,16 @@ function NodeTable(nodeType, addCallback, container) {
                                 url: inventoryApiPath + self.type + '/' + data.name + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
-                                success: function () {
+                                success: function (data) {
 
-                                    self.table.DataTable().ajax.reload();
+                                    if (data.result === 'ok') {
 
-                                    $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
+                                        self.table.DataTable().ajax.reload();
+
+                                        $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
+                                    }
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                                 }
                             });

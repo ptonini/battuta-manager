@@ -8,9 +8,9 @@
 
         function _formatGrid(gridBody, opts) {
 
-            var visibleItemsCount = gridBody.find('.dynagrid-item:not(".hidden")').length;
+            var visibleItemCount = gridBody.find('.dynagrid-item:not(".hidden")').length;
 
-            if (opts.showCount) $('#' + opts.gridTitle + '_count').html(visibleItemsCount);
+            if (opts.showCount) $('#' + opts.gridTitle + '_count').html(visibleItemCount);
 
             if (opts.checkered) {
 
@@ -37,19 +37,21 @@
                     }
 
                 })
-            };
+            }
 
-            if (opts.itemToggle) _setToggleAllButton(gridBody);
+            if (opts.itemToggle) _setToggleAllButton(gridBody, opts);
 
         }
 
         function _loadFromArray(gridContainer, gridBody, opts) {
 
-            if (opts.dataArray === 0) {
+            if (opts.dataArray.length === 0) {
 
                 if (opts.hideIfEmpty) gridContainer.hide();
 
                 if (opts.hideBodyIfEmpty) gridBody.empty().closest('div.row').hide();
+
+                $('#' + opts.gridTitle + '_count').css('display', 'none')
 
             }
 
@@ -58,6 +60,8 @@
                 gridContainer.show();
 
                 gridBody.closest('div.row').show();
+
+                $('#' + opts.gridTitle + '_count').css('display', 'inline');
 
                 gridBody.empty();
 
@@ -136,13 +140,13 @@
 
             gridItem.toggleClass('toggle-on', addClass);
 
-            _setToggleAllButton(gridBody)
+            _setToggleAllButton(gridBody, opts)
 
         }
 
-        function _setToggleAllButton(gridBody) {
+        function _setToggleAllButton(gridBody, opts) {
 
-            var toggleAll = $('.toggle_all');
+            var toggleAll = $('#' + opts.gridTitle + '_toggle_all');
 
             var visibleItemCount = gridBody.children('.dynagrid-item:not(".hidden")').length;
 
@@ -206,7 +210,7 @@
                 gridHeader
                     .append(
                         $('<a>')
-                            .attr('class', 'btn btn-default btn-xs toggle_all')
+                            .attr({id: opts.gridTitle + '_toggle_all', class: 'btn btn-default btn-xs'})
                             .html($('<span>').attr('class', 'fa fa-fw'))
                             .click(function (event) {
 
@@ -285,7 +289,7 @@
 
                                         });
 
-                                        if (opts.itemToggle) _setToggleAllButton(gridBody);
+                                        if (opts.itemToggle) _setToggleAllButton(gridBody, opts);
 
                                         _formatGrid(gridBody, opts)
 
