@@ -1,5 +1,8 @@
-function RoleDialog(fileTable) {
+function RoleDialog(fileTable, user) {
+
     var self = this;
+
+    self.user = user;
 
     self.roleNameField = textInputField.clone().css('margin-bottom', '10px');
 
@@ -62,7 +65,8 @@ function RoleDialog(fileTable) {
                             new_name: roleName,
                             folder: '',
                             is_folder: true,
-                            root: 'roles'
+                            root: 'roles',
+                            user: self.user
                         },
                         success: function (data) {
 
@@ -79,7 +83,8 @@ function RoleDialog(fileTable) {
                                             new_name: $(this).val(),
                                             folder: roleName,
                                             is_folder: true,
-                                            root: 'roles'
+                                            root: 'roles',
+                                            user: self.user
                                         },
                                         success: function () {
 
@@ -92,7 +97,8 @@ function RoleDialog(fileTable) {
                                                     new_name: 'main.yml',
                                                     folder: roleName + '/' + $(input).val(),
                                                     is_folder: false,
-                                                    root: 'roles'
+                                                    root: 'roles',
+                                                    user: self.user
                                                 }
                                             })
 

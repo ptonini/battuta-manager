@@ -10,12 +10,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
     self.is_authenticated && Preferences.getPreferences();
 
-    self.usersDropdownMenu = ulDropdownMenu.clone().append(
-        $('<li>').append(
-            $('<a>').attr('href', usersPath + 'user/' + self.username + '/').html(self.username + ' profile'),
-            $('<a>').attr('href', usersPath + 'user/' + self.username + '/files/').html(self.username + ' files')
-        )
-    );
+    //self.usersDropdownMenu =
 
     self.mainMenu = $('<ul>').attr('class', 'nav navbar-nav').append(
         liDropdown.clone().append(
@@ -44,7 +39,15 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
         $('<li>').append($('<a>').attr('href', filesPath).html('Files')),
         liDropdown.clone().append(
             liDropdownAnchor.clone().html('Users'),
-            self.usersDropdownMenu
+            ulDropdownMenu.clone().append(
+                $('<li>').append(
+                    $('<a>').attr('href', usersPath + 'users/').html('Users'),
+                    $('<a>').attr('href', usersPath + 'groups/').html('User groups'),
+                    $('<li>').attr('class', 'divider'),
+                    $('<a>').attr('href', usersPath + 'user/' + self.username + '/').html(self.username + ' profile'),
+                    $('<a>').attr('href', usersPath + 'user/' + self.username + '/files/').html(self.username + ' files')
+                )
+            )
         )
     );
 
@@ -95,11 +98,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
         event.preventDefault();
 
-        var action;
-
-        if (self.is_authenticated) action = 'logout';
-
-        else action = 'login';
+        var action = self.is_authenticated ? 'logout' : 'login';
 
         $.ajax({
             url: usersApiPath + action + '/',
@@ -136,6 +135,8 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
         self.rightMenu.prepend($('<li>').html(self.searchForm));
 
+        self.rightMenu.prepend($('<li>').html(self.preferencesButton));
+
         container.append(self.mainMenu);
 
     }
@@ -147,18 +148,6 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
             self.loginFormPassField,
             self.loginButton
         );
-
-    }
-
-    if (self.is_superuser) {
-
-        self.usersDropdownMenu.children('li').first().prepend(
-            $('<a>').attr('href', usersPath + 'users/').html('Users'),
-            $('<a>').attr('href', usersPath + 'groups/').html('User groups'),
-            $('<li>').attr('class', 'divider')
-        );
-
-        self.rightMenu.prepend($('<li>').html(self.preferencesButton))
 
     }
 

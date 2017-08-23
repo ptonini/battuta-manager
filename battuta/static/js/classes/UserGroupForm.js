@@ -134,6 +134,8 @@ function UserGroupForm(group, container) {
 
                         }
 
+                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                         else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
                     }
@@ -200,9 +202,13 @@ function UserGroupForm(group, container) {
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: [gridItem.data('id')]},
-                            success: function () {
+                            success: function (data) {
 
-                                self.membersGrid.DynaGrid('load');
+                                if (data.result ==='ok') self.membersGrid.DynaGrid('load');
+
+                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
 
                             }
 
@@ -226,9 +232,13 @@ function UserGroupForm(group, container) {
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
-                            success: function () {
+                            success: function (data) {
 
-                                self.membersGrid.DynaGrid('load');
+                                if (data.result ==='ok') self.membersGrid.DynaGrid('load');
+
+                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
 
                             }
                         });

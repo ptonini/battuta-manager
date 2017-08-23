@@ -297,11 +297,19 @@ Preferences.prototype = {
                 type: 'POST',
                 data: {item_values: JSON.stringify(itemValues)},
                 dataType: 'json',
-                success: function() {
+                success: function(data) {
 
-                    Preferences.getPreferences();
+                    if (data.result === 'ok') {
 
-                    saveCallback && saveCallback()
+                        Preferences.getPreferences();
+
+                        saveCallback && saveCallback()
+
+                    }
+
+                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                    else  $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                 }
 

@@ -9,7 +9,20 @@ function UserTable(container) {
     self.container.append(self.table);
 
     self.table.DataTable({
-        ajax: {url: usersApiPath + 'user/none/list/', dataSrc: ''},
+        ajax: {
+            url: usersApiPath + 'user/none/list/',
+            dataSrc: function (data) {
+
+                if (data.result === 'ok') return data.users;
+
+                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                else $.bootstrapGrowl(data.msg, failedAlertOptions);
+
+                return [];
+
+            }
+        },
         dom: '<"toolbar">frtip',
         paging: false,
         columns: [
@@ -38,12 +51,19 @@ function UserTable(container) {
                                 type: 'POST',
                                 dataType: 'json',
 
-                                success: function () {
+                                success: function (data) {
 
-                                    self.table.DataTable().ajax.reload();
+                                    if (data.result ==='ok') {
 
-                                    $.bootstrapGrowl('User deleted', {type: 'success'});
+                                        self.table.DataTable().ajax.reload();
 
+                                        $.bootstrapGrowl('User deleted', {type: 'success'});
+
+                                    }
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
                                 }
                             });
 

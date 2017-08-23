@@ -9,7 +9,22 @@ function UserGroupTable(container) {
     self.container.append(self.table);
 
     self.table.DataTable({
-        ajax: {url: usersApiPath + 'group/none/list/', dataSrc: ''},
+        ajax: {
+            url: usersApiPath + 'group/none/list/',
+            dataSrc: function (data) {
+
+                console.log(data);
+
+                if (data.result === 'ok') return data.groups;
+
+                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                else $.bootstrapGrowl(data.msg, failedAlertOptions);
+
+                return [];
+
+            }
+        },
         dom: '<"toolbar">frtip',
         paging: false,
         columns: [
@@ -35,12 +50,19 @@ function UserGroupTable(container) {
                                 type: 'POST',
                                 dataType: 'json',
 
-                                success: function () {
+                                success: function (data) {
 
-                                    self.table.DataTable().ajax.reload();
+                                    if (data.result ==='ok') {
 
-                                    $.bootstrapGrowl('Group deleted', {type: 'success'});
+                                        self.table.DataTable().ajax.reload();
 
+                                        $.bootstrapGrowl('Group deleted', {type: 'success'});
+
+                                    }
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
                                 }
                             });
 

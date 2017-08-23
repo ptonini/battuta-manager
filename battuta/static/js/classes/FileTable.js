@@ -118,8 +118,8 @@ function FileTable(root, user, nameCellFormatter, container) {
 
     self.container.append(
         divRowEqHeight.clone().css('margin-top', '18px').append(
-            divCol10.clone().append(self.breadCrumb),
-            divCol2.clone().addClass('text-right').css('margin', 'auto').append(self.buttonGroup)
+            divCol10.clone().addClass('col-xs-8').append(self.breadCrumb),
+            divCol2.clone().addClass('text-right col-xs-4').css('margin', 'auto').append(self.buttonGroup)
         ),
         divRow.clone().css('margin-top', '18px').append(
             divCol12.clone().append(self.table)
@@ -165,13 +165,9 @@ FileTable.prototype = {
             ajax: {
                 url: filesApiPath + 'list/',
                 dataSrc: '',
-                data: function (d) {
+                data: function () {
 
-                    d.folder = self.folder;
-
-                    d.root = self.root;
-
-                    d.user = self.user;
+                    return {folder: self.folder, root: self.root, user:  self.user}
 
                 }
             },

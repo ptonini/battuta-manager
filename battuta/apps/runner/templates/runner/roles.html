@@ -10,7 +10,9 @@
 
             var buttons = [
                 btnSmall.clone().html('Add role').click(function () {
-                    new RoleDialog(fileTable)
+
+                    new RoleDialog(fileTable, '{{ user.username }}')
+
                 })
             ];
 

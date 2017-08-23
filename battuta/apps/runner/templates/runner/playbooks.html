@@ -11,11 +11,17 @@
                 cell.css('cursor', 'pointer');
 
                 if (file.is_valid) cell.off().click(function () {
+
                     new PlaybookForm(file)
+
                 });
+
                 else cell.css('color', 'red').off().click(function () {
+
                     var message = preLargeAlert.clone().html(file.error);
+
                     $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+
                 })
             }
 
@@ -24,10 +30,20 @@
                     $.ajax({
                         url: '/static/templates/playbook_template.yml',
                         success: function (data) {
-                            var file = {name: '', root: 'playbooks', folder: playbookTable.getFolder(), text: data};
+
+                            var file = {
+                                name: '',
+                                root: 'playbooks',
+                                folder: playbookTable.getFolder(),
+                                text: data,
+                                user: '{{ user.username }}'};
+
                             new TextEditor(file, function () {
+
                                 playbookTable.reload()
+
                             })
+
                         }
                     });
                 })

@@ -100,6 +100,8 @@ function UserForm(currentUser, user, container) {
 
                         }
 
+                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                         else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
                     }
@@ -184,6 +186,8 @@ function UserForm(currentUser, user, container) {
 
                             if (data.result === 'ok') $.bootstrapGrowl('The password was changed', {type: 'success'});
 
+                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                             else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                         }
@@ -235,9 +239,13 @@ function UserForm(currentUser, user, container) {
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: [gridItem.data('id')]},
-                            success: function () {
+                            success: function (data) {
 
-                                self.groupGrid.DynaGrid('load');
+                                if (data.result === 'ok') self.groupGrid.DynaGrid('load');
+
+                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
 
                             }
 
@@ -261,9 +269,13 @@ function UserForm(currentUser, user, container) {
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
-                            success: function () {
+                            success: function (data) {
 
-                                self.groupGrid.DynaGrid('load');
+                                if (data.result === 'ok') self.groupGrid.DynaGrid('load');
+
+                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
 
                             }
                         });
@@ -303,8 +315,10 @@ function UserForm(currentUser, user, container) {
 
     if (self.user.username) {
 
+        var userType = self.user.is_superuser ? 'superuser' : 'user';
+
         self.formsHeader.append(
-            $('<h3>').append($('<small>').html('user'), '&nbsp;', user.username)
+            $('<h3>').append($('<small>').html(userType), '&nbsp;', user.username)
         );
 
         self.form.prepend(
@@ -323,7 +337,7 @@ function UserForm(currentUser, user, container) {
 
         self.formsContainer.append($('<hr>'), self.passwordForm);
 
-        self.groupGridContainer.append($('<hr>'), self.groupGrid);
+        if (!self.user.is_superuser)self.groupGridContainer.append($('<hr>'), self.groupGrid);
 
     }
 

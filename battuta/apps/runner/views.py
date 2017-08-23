@@ -2,7 +2,6 @@ import json
 import psutil
 import os
 import ast
-import magic
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -106,7 +105,7 @@ class JobView(View):
 
                     cred = get_object_or_404(Credential, pk=job_data['cred'])
 
-                    if not request.user.is_superuser and cred.user.username != request.user.username and not cred.is_shared:
+                    if not cred.user.username != request.user.username and not cred.is_shared:
 
                         raise PermissionDenied
 
@@ -356,44 +355,50 @@ class PlaybookView(View):
     @staticmethod
     def post(request, playbook, action):
 
-        # Save playbook arguments
-        if action == 'save':
+        if request.user.has_perm('users.edit_tasks'):
 
-            # Create new playbook arguments object if no id is supplied
-            args = get_object_or_404(PlaybookArgs, pk=request.POST['id']) if 'id' in request.POST else PlaybookArgs(playbook=playbook)
+            # Save playbook arguments
+            if action == 'save':
 
-            form = PlaybookArgsForm(request.POST or None, instance=args)
+                # Create new playbook arguments object if no id is supplied
+                args = get_object_or_404(PlaybookArgs, pk=request.POST['id']) if 'id' in request.POST else PlaybookArgs(playbook=playbook)
 
-            # Validate form data and save object
-            if form.is_valid():
+                form = PlaybookArgsForm(request.POST or None, instance=args)
 
-                form.save(commit=True)
+                # Validate form data and save object
+                if form.is_valid():
 
-                data = {'result': 'ok', 'id': args.id}
+                    form.save(commit=True)
 
+                    data = {'result': 'ok', 'id': args.id}
+
+                else:
+
+                    data = {'result': 'fail', 'msg': str(form.errors)}
+
+            # Delete playbook arguments
+            elif action == 'delete':
+
+                try:
+
+                    args = PlaybookArgs(pk=request.POST['id'])
+
+                    args.delete()
+
+                    data = {'result': 'ok'}
+
+                except Exception as e:
+
+                    data = {'result': 'fail', 'msg': e}
+
+            # Raise exception
             else:
 
-                data = {'result': 'fail', 'msg': str(form.errors)}
+                raise Http404('Invalid action')
 
-        # Delete playbook arguments
-        elif action == 'delete':
-
-            try:
-
-                args = PlaybookArgs(pk=request.POST['id'])
-
-                args.delete()
-
-                data = {'result': 'ok'}
-
-            except Exception as e:
-
-                data = {'result': 'fail', 'msg': e}
-
-        # Raise exception
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
