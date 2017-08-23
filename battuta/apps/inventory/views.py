@@ -655,7 +655,7 @@ class NodeView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(form.errors)}
+                    data = {'result': 'failed', 'msg': str(form.errors)}
 
             elif action == 'delete':
 
@@ -773,7 +773,7 @@ class VariablesView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(form.errors)}
+                    data = {'result': 'failed', 'msg': str(form.errors)}
 
             elif action == 'delete':
 

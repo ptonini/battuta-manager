@@ -59,7 +59,7 @@ function Nodes(nodeType, container) {
 
                         if (data.result === 'ok') reloadInfo();
 
-                        else if (data.response.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
                         else $.bootstrapGrowl(data.msg, failedAlertOptions);
 

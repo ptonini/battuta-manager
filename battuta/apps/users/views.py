@@ -77,11 +77,11 @@ class LoginView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': 'Account disabled'}
+                    data = {'result': 'failed', 'msg': 'Account disabled'}
 
             else:
 
-                data = {'result': 'fail', 'msg': 'Invalid login'}
+                data = {'result': 'failed', 'msg': 'Invalid login'}
 
         elif action == 'logout':
 
@@ -225,7 +225,7 @@ class UsersView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(user_form.errors) + str(userdata_form.errors)}
+                    data = {'result': 'failed', 'msg': str(user_form.errors) + str(userdata_form.errors)}
 
             elif action == 'delete':
 
@@ -257,7 +257,7 @@ class UsersView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': 'Invalid password'}
+                    data = {'result': 'failed', 'msg': 'Invalid password'}
 
             elif action == 'add_groups':
 
@@ -411,7 +411,7 @@ class CredentialView(View):
 
                 except UnicodeEncodeError:
 
-                    data = {'result': 'fail', 'msg': 'Non-ASCII characters in RSA key filename'}
+                    data = {'result': 'failed', 'msg': 'Non-ASCII characters in RSA key filename'}
 
                 else:
 
@@ -461,11 +461,11 @@ class CredentialView(View):
 
                         else:
 
-                            data = {'result': 'fail', 'msg': str(form.errors)}
+                            data = {'result': 'failed', 'msg': str(form.errors)}
 
                     else:
 
-                        data = {'result': 'fail',
+                        data = {'result': 'failed',
                                 'msg': '"' + form_data['rsa_key'] + '" is in use by another credential'}
 
             # Delete credential
@@ -479,7 +479,7 @@ class CredentialView(View):
                 # Return fail if credential is default for a user(s)
                 if len(user_list) > 0:
 
-                    data = {'result': 'fail', 'msg': 'Credential is default for ' + ', '.join(user_list)}
+                    data = {'result': 'failed', 'msg': 'Credential is default for ' + ', '.join(user_list)}
 
                 else:
 
@@ -519,7 +519,8 @@ class UserGroupView(View):
         return {
             'name': group.name,
             'description': group.groupdata.description,
-            'permissions': [perm.codename for perm in group.permissions.all()]
+            'permissions': [perm.codename for perm in group.permissions.all()],
+            'member_count': len(User.objects.filter(groups__name=group.name))
         }
 
     def get(self, request, group_name, action):
@@ -556,7 +557,7 @@ class UserGroupView(View):
 
                 else:
 
-                    data = [[user.username, user.id] for user in User.objects.filter(groups__name=group_name) if not user.is_superuser]
+                    data = [[user.username, user.id] for user in User.objects.filter(groups__name=group_name)]
 
             else:
 
@@ -608,7 +609,7 @@ class UserGroupView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(group_form.errors)}
+                    data = {'result': 'failed', 'msg': str(group_form.errors)}
 
             elif action == 'delete':
 

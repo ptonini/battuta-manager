@@ -226,17 +226,17 @@ class FilesView(View):
                         else:
 
                             data = {
-                                'result': 'fail',
+                                'result': 'failed',
                                 'msg': 'The file is larger than ' + str(prefs['max_edit_size']) + 'kb'
                             }
 
                     else:
 
-                        data = {'result': 'fail', 'msg': 'Target is not a file'}
+                        data = {'result': 'failed', 'msg': 'Target is not a file'}
 
                 else:
 
-                    data = {'result': 'fail', 'msg': 'The file was not found'}
+                    data = {'result': 'failed', 'msg': 'The file was not found'}
 
             elif action == 'exists':
 
@@ -323,7 +323,7 @@ class FilesView(View):
 
                     except Exception as e:
 
-                        data = {'result': 'fail', 'msg': str(e)}
+                        data = {'result': 'failed', 'msg': str(e)}
 
                     if full_path != new_path:
 
@@ -337,13 +337,13 @@ class FilesView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': 'This filename is already in use'}
+                    data = {'result': 'failed', 'msg': 'This filename is already in use'}
 
             elif action == 'rename':
 
                 if os.path.exists(new_path):
 
-                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+                    data = {'result': 'failed', 'msg': 'This name is already in use'}
 
                 else:
 
@@ -355,7 +355,7 @@ class FilesView(View):
 
                 if os.path.exists(new_path):
 
-                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+                    data = {'result': 'failed', 'msg': 'This name is already in use'}
 
                 else:
 
@@ -373,7 +373,7 @@ class FilesView(View):
 
                 if os.path.exists(new_path):
 
-                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+                    data = {'result': 'failed', 'msg': 'This name is already in use'}
 
                 else:
 
@@ -385,7 +385,7 @@ class FilesView(View):
 
                 if os.path.exists(new_path):
 
-                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+                    data = {'result': 'failed', 'msg': 'This name is already in use'}
 
                 else:
 
@@ -399,7 +399,7 @@ class FilesView(View):
 
                     except Exception as e:
 
-                        data = {'result': 'fail', 'msg': str(e)}
+                        data = {'result': 'failed', 'msg': str(e)}
 
                     else:
 

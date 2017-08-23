@@ -112,7 +112,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
                 if (data.result === 'ok') window.open('/', '_self');
 
-                else if (data.result === 'fail') {
+                else {
 
                     self.loginFormPassField.val('');
 

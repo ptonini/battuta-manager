@@ -96,6 +96,8 @@ class JobView(View):
 
                 job_data = dict(request.POST.iteritems())
 
+                print(job_data)
+
                 # Add credentials to run data
                 if 'cred' not in job_data or job_data['cred'] == '0':
 
@@ -105,7 +107,7 @@ class JobView(View):
 
                     cred = get_object_or_404(Credential, pk=job_data['cred'])
 
-                    if not cred.user.username != request.user.username and not cred.is_shared:
+                    if cred.user.username != request.user.username and not cred.is_shared:
 
                         raise PermissionDenied
 
@@ -123,10 +125,7 @@ class JobView(View):
 
                 if cred.rsa_key:
 
-                    job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
-                                                       str(cred.user.username),
-                                                       '.ssh',
-                                                       cred.rsa_key)
+                    job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH, str(cred.user.username), '.ssh', cred.rsa_key)
 
                 # Execute playbook
                 if job_data['type'] == 'playbook':
@@ -159,7 +158,7 @@ class JobView(View):
 
                     else:
 
-                        data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
+                        data = {'result': 'failed', 'msg': str(adhoc_form.errors)}
 
                 elif job_data['type'] == 'gather_facts':
 
@@ -214,7 +213,7 @@ class JobView(View):
 
                             job.delete()
 
-                            data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+                            data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
 
                         else:
 
@@ -222,7 +221,7 @@ class JobView(View):
 
                     else:
 
-                        data = {'result': 'fail', 'msg': str(job_form.errors)}
+                        data = {'result': 'failed', 'msg': str(job_form.errors)}
 
             # Kill job
             elif action == 'kill':
@@ -235,11 +234,11 @@ class JobView(View):
 
                 except psutil.NoSuchProcess:
 
-                    data = {'result': 'fail', 'msg': 'Job is defunct'}
+                    data = {'result': 'failed', 'msg': 'Job is defunct'}
 
                 except psutil.Error as e:
 
-                    data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
+                    data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
 
                 else:
 
@@ -314,7 +313,7 @@ class AdHocView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(form.errors)}
+                    data = {'result': 'failed', 'msg': str(form.errors)}
 
             elif action == 'delete':
 
@@ -374,7 +373,7 @@ class PlaybookView(View):
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(form.errors)}
+                    data = {'result': 'failed', 'msg': str(form.errors)}
 
             # Delete playbook arguments
             elif action == 'delete':
@@ -389,7 +388,7 @@ class PlaybookView(View):
 
                 except Exception as e:
 
-                    data = {'result': 'fail', 'msg': e}
+                    data = {'result': 'failed', 'msg': e}
 
             # Raise exception
             else:
