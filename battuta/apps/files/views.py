@@ -41,7 +41,7 @@ class FilesView(View):
     ]
 
     @staticmethod
-    def validator(root, full_path):
+    def _validator(root, full_path):
 
         if root == 'playbooks':
 
@@ -62,13 +62,13 @@ class FilesView(View):
             return True, None
 
     @staticmethod
-    def set_root(root, user, current_user):
+    def _set_root(root, user, current_user):
 
         root_dir = None
 
         file_types = '*'
 
-        authorized = True
+        authorized = False
 
         if root == 'files':
 
@@ -104,7 +104,7 @@ class FilesView(View):
 
     def get(self, request, action):
 
-        root_dir, file_types, authorized = FilesView.set_root(request.GET['root'], request.GET['user'], request.user)
+        root_dir, file_types, authorized = self._set_root(request.GET['root'], request.GET['user'], request.user)
 
         prefs = get_preferences()
 
@@ -182,7 +182,7 @@ class FilesView(View):
 
                         file_type = magic.from_file(full_path, mime='true')
 
-                        is_valid, error = FilesView.validator(request.GET['root'], full_path)
+                        is_valid, error = self._validator(request.GET['root'], full_path)
 
                     else:
 
@@ -295,10 +295,9 @@ class FilesView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    @staticmethod
-    def post(request, action):
+    def post(self, request, action):
 
-        root_dir, file_types, authorized = FilesView.set_root(request.POST['root'], request.POST['user'], request.user)
+        root_dir, file_types, authorized = self._set_root(request.POST['root'], request.POST['user'], request.user)
 
         if authorized:
 
