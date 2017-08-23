@@ -249,7 +249,7 @@ FileTable.prototype = {
                             .attr('title', 'Download ' + object.name)
                             .click(function () {
 
-                                window.open('/files/' + self.root + '/download/?name=' + object.name + '&folder=' + object.folder, '_self')
+                                window.open(filesApiPath + 'download/?name=' + object.name + '&root=' + object.root  + '&folder=' + object.folder + '&user=' + object.user,  '_self')
 
                             }),
                         spanFA.clone()
@@ -275,6 +275,8 @@ FileTable.prototype = {
                                                 $.bootstrapGrowl(object.name + ' was deleted', {type: 'success'})
 
                                             }
+
+                                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
                                             else $.bootstrapGrowl(data.msg, failedAlertOptions)
 

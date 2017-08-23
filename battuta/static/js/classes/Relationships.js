@@ -41,7 +41,6 @@ function Relationships(node, alterRelationCallback, container) {
 
                     }),
                     spanFA.clone().addClass('text-right fa-times-circle-o')
-                        //.css({float: 'right', margin: '7px 0', 'font-size': '15px'})
                         .css({float: 'right', margin: '.8rem 0'})
                         .attr('title', 'Remove')
                         .click(function () {
@@ -110,13 +109,15 @@ Relationships.prototype = {
             data: {selection: selection},
             success: function (data) {
 
-                if (data.result === 'ok ') {
+                if (data.result === 'ok') {
 
                     self[relation].DynaGrid('load');
 
                     self.alterRelationCallback && self.alterRelationCallback()
 
                 }
+
+                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
                 else $.bootstrapGrowl(data.msg, failedAlertOptions);
 

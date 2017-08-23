@@ -43,6 +43,8 @@ function Node(node, container) {
 
                         if (data.result === 'ok') window.open(inventoryPath + self.node.type + 's/', '_self');
 
+                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                         else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                     }

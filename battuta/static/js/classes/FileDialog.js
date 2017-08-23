@@ -50,6 +50,8 @@ function FileDialog(file, action, postCallback) {
 
                                 }
 
+                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                                 else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                             }

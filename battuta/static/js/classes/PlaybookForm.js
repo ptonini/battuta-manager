@@ -36,6 +36,8 @@ function PlaybookForm(playbook) {
 
                             }
 
+                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
                         }

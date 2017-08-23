@@ -59,13 +59,20 @@ CopyVariables.prototype = {
                     type: 'POST',
                     dataType: 'json',
                     data: {source_name: sourceNodeName, source_type: sourceNodeType},
-                    success: function () {
+                    success: function (data) {
 
-                        selectionDialog.dialog('close');
+                        if (data.result === 'ok') {
 
-                        $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
+                            selectionDialog.dialog('close');
 
-                        self.copyCallback && self.copyCallback()
+                            $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
+
+                            self.copyCallback && self.copyCallback()
+                        }
+
+                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                        else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
                     }
                 });

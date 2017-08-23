@@ -45,13 +45,15 @@
 
         function _loadFromArray(gridContainer, gridBody, opts) {
 
+            gridBody.empty();
+
             if (opts.dataArray.length === 0) {
 
                 if (opts.hideIfEmpty) gridContainer.hide();
 
-                if (opts.hideBodyIfEmpty) gridBody.empty().closest('div.row').hide();
+                if (opts.hideBodyIfEmpty) gridBody.closest('div.row').hide();
 
-                $('#' + opts.gridTitle + '_count').css('display', 'none')
+                if (opts.showCount) $('#' + opts.gridTitle + '_count').css('display', 'none')
 
             }
 
@@ -61,9 +63,7 @@
 
                 gridBody.closest('div.row').show();
 
-                $('#' + opts.gridTitle + '_count').css('display', 'inline');
-
-                gridBody.empty();
+                if (opts.showCount) $('#' + opts.gridTitle + '_count').css('display', 'inline');
 
                 $.each(opts.dataArray, function (index, value) {
 

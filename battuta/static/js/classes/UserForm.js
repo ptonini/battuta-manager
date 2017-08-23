@@ -210,6 +210,7 @@ function UserForm(currentUser, user, container) {
         addButtonTitle: 'Join groups',
         showTitle: true,
         checkered: true,
+        showCount: true,
         buildNow: (self.user.username),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('user_grid_columns'),

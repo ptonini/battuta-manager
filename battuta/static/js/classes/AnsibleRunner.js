@@ -154,6 +154,8 @@ AnsibleRunner._postJob = function (postData, sameWindow) {
 
             }
 
+            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
         }

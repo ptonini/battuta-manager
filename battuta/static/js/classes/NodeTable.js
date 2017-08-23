@@ -79,6 +79,8 @@ function NodeTable(nodeType, addCallback, container) {
                                         $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
                                     }
 
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                                     else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                                 }

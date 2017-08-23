@@ -88,181 +88,187 @@ class JobView(View):
 
         prefs = get_preferences()
 
-        # Run job
-        if action == 'run':
+        if request.user.has_perm('users.execute_jobs'):
 
-            data = None
+            # Run job
+            if action == 'run':
 
-            job_data = dict(request.POST.iteritems())
+                data = None
 
-            # Add credentials to run data
-            if 'cred' not in job_data or job_data['cred'] == '0':
+                job_data = dict(request.POST.iteritems())
 
-                cred = request.user.userdata.default_cred
+                # Add credentials to run data
+                if 'cred' not in job_data or job_data['cred'] == '0':
 
-            else:
+                    cred = request.user.userdata.default_cred
 
-                cred = get_object_or_404(Credential, pk=job_data['cred'])
+                else:
 
-                if not request.user.is_superuser and cred.user.username != request.user.username and not cred.is_shared:
+                    cred = get_object_or_404(Credential, pk=job_data['cred'])
 
-                    raise PermissionDenied
+                    if not request.user.is_superuser and cred.user.username != request.user.username and not cred.is_shared:
 
-            job_data['cred'] = cred.id
+                        raise PermissionDenied
 
-            job_data['remote_user'] = job_data['remote_user'] if job_data['remote_user'] else cred.username
+                job_data['cred'] = cred.id
 
-            job_data['remote_pass'] = job_data['remote_pass'] if job_data['remote_pass'] else cred.password
+                job_data['remote_user'] = job_data['remote_user'] if job_data['remote_user'] else cred.username
 
-            job_data['become_user'] = job_data['become_user'] if job_data['become_user'] else cred.sudo_user
+                job_data['remote_pass'] = job_data['remote_pass'] if job_data['remote_pass'] else cred.password
 
-            if not job_data['become_pass']:
+                job_data['become_user'] = job_data['become_user'] if job_data['become_user'] else cred.sudo_user
 
-                job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
+                if not job_data['become_pass']:
 
-            if cred.rsa_key:
+                    job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
 
-                job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
-                                                   str(cred.user.username),
-                                                   '.ssh',
-                                                   cred.rsa_key)
+                if cred.rsa_key:
 
-            # Execute playbook
-            if job_data['type'] == 'playbook':
+                    job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH,
+                                                       str(cred.user.username),
+                                                       '.ssh',
+                                                       cred.rsa_key)
 
-                job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['playbook'])
+                # Execute playbook
+                if job_data['type'] == 'playbook':
 
-                job_data['name'] = job_data['playbook']
+                    job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['playbook'])
 
-            # Execute task
-            elif job_data['type'] == 'adhoc':
+                    job_data['name'] = job_data['playbook']
 
-                adhoc_form = AdHocTaskForm(job_data)
+                # Execute task
+                elif job_data['type'] == 'adhoc':
 
-                # Convert become value to boolean
-                job_data['become'] = (job_data['become'] == 'true')
+                    adhoc_form = AdHocTaskForm(job_data)
 
-                if adhoc_form.is_valid():
+                    # Convert become value to boolean
+                    job_data['become'] = (job_data['become'] == 'true')
+
+                    if adhoc_form.is_valid():
+
+                        job_data['adhoc_task'] = {
+                            'name': job_data['name'],
+                            'hosts': job_data['hosts'],
+                            'gather_facts': False,
+                            'tasks': [{
+                                'action': {
+                                    'module': job_data['module'],
+                                    'args': job_data['arguments']
+                                }
+                            }]
+                        }
+
+                    else:
+
+                        data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
+
+                elif job_data['type'] == 'gather_facts':
+
+                    tasks = [{'action': {'module': 'setup'}}]
+
+                    if prefs['use_ec2_facts']:
+
+                        tasks.append({'action': {'module': 'ec2_facts'}})
+
+                    job_data['name'] = 'Gather facts'
+
+                    job_data['become'] = False
 
                     job_data['adhoc_task'] = {
                         'name': job_data['name'],
                         'hosts': job_data['hosts'],
                         'gather_facts': False,
-                        'tasks': [{
-                            'action': {
-                                'module': job_data['module'],
-                                'args': job_data['arguments']
-                            }
-                        }]
+                        'tasks': tasks
                     }
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(adhoc_form.errors)}
+                    raise Http404('Invalid form data')
 
-            elif job_data['type'] == 'gather_facts':
+                if data is None:
 
-                tasks = [{'action': {'module': 'setup'}}]
+                    job_form = JobForm(job_data)
 
-                if prefs['use_ec2_facts']:
+                    if job_form.is_valid():
 
-                    tasks.append({'action': {'module': 'ec2_facts'}})
+                        job = job_form.save(commit=False)
 
-                job_data['name'] = 'Gather facts'
+                        job.user = request.user
 
-                job_data['become'] = False
+                        job.status = 'created'
 
-                job_data['adhoc_task'] = {
-                    'name': job_data['name'],
-                    'hosts': job_data['hosts'],
-                    'gather_facts': False,
-                    'tasks': tasks
-                }
+                        job.is_running = True
 
-            else:
+                        setattr(job, 'data', job_data)
 
-                raise Http404('Invalid form data')
+                        setattr(job, 'prefs', prefs)
 
-            if data is None:
+                        job.save()
 
-                job_form = JobForm(job_data)
+                        try:
 
-                if job_form.is_valid():
+                            p = Process(target=run_job, args=(job,))
 
-                    job = job_form.save(commit=False)
+                            p.start()
 
-                    job.user = request.user
+                        except Exception as e:
 
-                    job.status = 'created'
+                            job.delete()
 
-                    job.is_running = True
+                            data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
 
-                    setattr(job, 'data', job_data)
+                        else:
 
-                    setattr(job, 'prefs', prefs)
-
-                    job.save()
-
-                    try:
-
-                        p = Process(target=run_job, args=(job,))
-
-                        p.start()
-
-                    except Exception as e:
-
-                        job.delete()
-
-                        data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + e.message}
+                            data = {'result': 'ok', 'runner_id': job.id}
 
                     else:
 
-                        data = {'result': 'ok', 'runner_id': job.id}
+                        data = {'result': 'fail', 'msg': str(job_form.errors)}
+
+            # Kill job
+            elif action == 'kill':
+
+                job = get_object_or_404(Job, pk=request.POST['runner_id'])
+
+                try:
+
+                    process = psutil.Process(job.pid)
+
+                except psutil.NoSuchProcess:
+
+                    data = {'result': 'fail', 'msg': 'Job is defunct'}
+
+                except psutil.Error as e:
+
+                    data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
 
                 else:
 
-                    data = {'result': 'fail', 'msg': str(job_form.errors)}
+                    process.suspend()
 
-        # Kill job
-        elif action == 'kill':
+                    for child in process.children(recursive=True):
 
-            job = get_object_or_404(Job, pk=request.POST['runner_id'])
+                        child.kill()
 
-            try:
+                    process.kill()
 
-                process = psutil.Process(job.pid)
+                    data = {'result': 'ok', 'runner_id': job.id}
 
-            except psutil.NoSuchProcess:
+                finally:
 
-                data = {'result': 'fail', 'msg': 'Job is defunct'}
+                    job.status = 'canceled'
 
-            except psutil.Error as e:
+                    job.is_running = False
 
-                data = {'result': 'fail', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
+                    job.save()
 
             else:
 
-                process.suspend()
-
-                for child in process.children(recursive=True):
-
-                    child.kill()
-
-                process.kill()
-
-                data = {'result': 'ok', 'runner_id': job.id}
-
-            finally:
-
-                job.status = 'canceled'
-
-                job.is_running = False
-
-                job.save()
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -293,31 +299,37 @@ class AdHocView(View):
     @staticmethod
     def post(request, action):
 
-        adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST['id'] else AdHocTask()
+        if request.user.has_perm('users.edit_tasks'):
 
-        form = AdHocTaskForm(request.POST or None, instance=adhoc)
+            adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST['id'] else AdHocTask()
 
-        if action == 'save':
+            form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
-            if form.is_valid():
+            if action == 'save':
 
-                saved_task = form.save(commit=True)
+                if form.is_valid():
 
-                data = {'result': 'ok', 'id': saved_task.id}
+                    saved_task = form.save(commit=True)
+
+                    data = {'result': 'ok', 'id': saved_task.id}
+
+                else:
+
+                    data = {'result': 'fail', 'msg': str(form.errors)}
+
+            elif action == 'delete':
+
+                adhoc.delete()
+
+                data = {'result': 'ok'}
 
             else:
 
-                data = {'result': 'fail', 'msg': str(form.errors)}
-
-        elif action == 'delete':
-
-            adhoc.delete()
-
-            data = {'result': 'ok'}
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

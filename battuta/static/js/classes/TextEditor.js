@@ -53,6 +53,8 @@ function TextEditor(file, saveCallback) {
 
                             }
 
+                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
                             else $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                         }

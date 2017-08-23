@@ -49,11 +49,8 @@ function ImportInventory(container) {
             uploadExtraData: function () {
 
                 return {
-
                     format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-
                     csrfmiddlewaretoken: getCookie('csrftoken')
-
                 }
 
             },
@@ -78,19 +75,18 @@ function ImportInventory(container) {
             if (data.response.result === 'ok') {
 
                 var alertMessage = divLargeAlert.clone().append(
-                    $('<h5>').append('Import successful:'),
-                    $('<ul>').append(
-                        $('<li>').html('Hosts added: ' + data.response.added_hosts),
-                        $('<li>').html('Groups added: ' + data.response.added_groups),
-                        $('<li>').html('Variables added: ' + data.response.added_vars)
-                    )
+                    $('<h5>').append('Import successful'),
+                    $('<div>').html('Hosts added: ' + data.response.added_hosts),
+                    $('<div>').html('Groups added: ' + data.response.added_groups),
+                    $('<div>').html('Variables added: ' + data.response.added_vars)
+
                 );
 
                 $.bootstrapGrowl(alertMessage, {type: 'success', delay: 0});
 
             }
 
-            else $.bootstrapGrowl(data.response.msg, failedAlertOptions);
+            else if (data.response.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
         })
         .on('fileloaded', function () {

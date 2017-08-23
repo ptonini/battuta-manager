@@ -62,23 +62,31 @@ class FilesView(View):
             return True, None
 
     @staticmethod
-    def set_root(root, user):
+    def set_root(root, user, current_user):
 
         root_dir = None
 
         file_types = '*'
 
+        authorized = True
+
         if root == 'files':
 
             root_dir = settings.FILES_PATH
+
+            authorized = current_user.has_perm('users.edit_files')
 
         elif root == 'roles':
 
             root_dir = settings.ROLES_PATH
 
+            authorized = current_user.has_perm('users.edit_roles')
+
         elif root == 'playbooks':
 
             root_dir = settings.PLAYBOOK_PATH
+
+            authorized = current_user.has_perm('users.edit_playbooks')
 
             file_types = ['yml', 'yaml']
 
@@ -86,15 +94,17 @@ class FilesView(View):
 
             root_dir = os.path.join(settings.USERDATA_PATH, user)
 
+            authorized = True if current_user.username == user else user.has_perm('users.edit_user_files')
+
         if root_dir and not os.path.exists(root_dir):
 
             os.makedirs(root_dir)
 
-        return root_dir, file_types
+        return root_dir, file_types, authorized
 
     def get(self, request, action):
 
-        root_dir, file_types = FilesView.set_root(request.GET['root'], request.GET['user'])
+        root_dir, file_types, authorized = FilesView.set_root(request.GET['root'], request.GET['user'], request.user)
 
         prefs = get_preferences()
 
@@ -288,121 +298,127 @@ class FilesView(View):
     @staticmethod
     def post(request, action):
 
-        root_dir, file_types = FilesView.set_root(request.POST['root'], request.POST['user'])
+        root_dir, file_types, authorized = FilesView.set_root(request.POST['root'], request.POST['user'], request.user)
 
-        full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
+        if authorized:
 
-        new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])
+            full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
 
-        if file_types != '*' and new_path.split('.')[-1] not in file_types:
+            new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])
 
-            new_path += '.' + file_types[0]
+            if file_types != '*' and new_path.split('.')[-1] not in file_types:
 
-        if action == 'save':
+                new_path += '.' + file_types[0]
 
-            if full_path == new_path or not os.path.exists(new_path):
+            if action == 'save':
 
-                try:
-
-                    with open(new_path, 'w') as f:
-
-                        f.write(request.POST['text'].encode('utf8'))
-
-                        data = {'result': 'ok'}
-
-                except Exception as e:
-
-                    data = {'result': 'fail', 'msg': str(e)}
-
-                if full_path != new_path:
+                if full_path == new_path or not os.path.exists(new_path):
 
                     try:
 
-                        os.remove(full_path)
+                        with open(new_path, 'w') as f:
 
-                    except os.error:
+                            f.write(request.POST['text'].encode('utf8'))
 
-                        pass
+                            data = {'result': 'ok'}
 
-            else:
+                    except Exception as e:
 
-                data = {'result': 'fail', 'msg': 'This filename is already in use'}
+                        data = {'result': 'fail', 'msg': str(e)}
 
-        elif action == 'rename':
+                    if full_path != new_path:
 
-            if os.path.exists(new_path):
+                        try:
 
-                data = {'result': 'fail', 'msg': 'This name is already in use'}
+                            os.remove(full_path)
 
-            else:
+                        except os.error:
 
-                os.rename(full_path, new_path)
-
-                data = {'result': 'ok'}
-
-        elif action == 'create':
-
-            if os.path.exists(new_path):
-
-                data = {'result': 'fail', 'msg': 'This name is already in use'}
-
-            else:
-
-                if request.POST['is_folder'] == 'true':
-
-                    os.makedirs(new_path)
+                            pass
 
                 else:
 
-                    open(new_path, 'a').close()
+                    data = {'result': 'fail', 'msg': 'This filename is already in use'}
 
-                data = {'result': 'ok'}
+            elif action == 'rename':
 
-        elif action == 'copy':
+                if os.path.exists(new_path):
 
-            if os.path.exists(new_path):
-
-                data = {'result': 'fail', 'msg': 'This name is already in use'}
-
-            else:
-
-                shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
-
-                data = {'result': 'ok'}
-
-        elif action == 'upload':
-
-            if os.path.exists(new_path):
-
-                data = {'result': 'fail', 'msg': 'This name is already in use'}
-
-            else:
-
-                try:
-
-                    with open(new_path, 'w') as f:
-
-                        for chunk in request.FILES['file_data']:
-
-                            f.write(chunk)
-
-                except Exception as e:
-
-                    data = {'result': 'fail', 'msg': str(e)}
+                    data = {'result': 'fail', 'msg': 'This name is already in use'}
 
                 else:
+
+                    os.rename(full_path, new_path)
 
                     data = {'result': 'ok'}
 
-        elif action == 'delete':
+            elif action == 'create':
 
-            os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
+                if os.path.exists(new_path):
 
-            data = {'result': 'ok'}
+                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+
+                else:
+
+                    if request.POST['is_folder'] == 'true':
+
+                        os.makedirs(new_path)
+
+                    else:
+
+                        open(new_path, 'a').close()
+
+                    data = {'result': 'ok'}
+
+            elif action == 'copy':
+
+                if os.path.exists(new_path):
+
+                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+
+                else:
+
+                    shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
+
+                    data = {'result': 'ok'}
+
+            elif action == 'upload':
+
+                if os.path.exists(new_path):
+
+                    data = {'result': 'fail', 'msg': 'This name is already in use'}
+
+                else:
+
+                    try:
+
+                        with open(new_path, 'w') as f:
+
+                            for chunk in request.FILES['file_data']:
+
+                                f.write(chunk)
+
+                    except Exception as e:
+
+                        data = {'result': 'fail', 'msg': str(e)}
+
+                    else:
+
+                        data = {'result': 'ok'}
+
+            elif action == 'delete':
+
+                os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
+
+                data = {'result': 'ok'}
+
+            else:
+
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

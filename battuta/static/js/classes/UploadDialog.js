@@ -42,7 +42,11 @@ function UploadDialog(folder, root, user, uploadCallback) {
 
             self.uploadDialog.dialog('close');
 
-            if (data.response.result === 'fail') {
+            if (data.response.result === 'ok') uploadCallback && uploadCallback();
+
+            else if (data.response.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+            else {
 
                 self.uploadDialog.find('div.file-caption-main').show();
 
@@ -51,8 +55,6 @@ function UploadDialog(folder, root, user, uploadCallback) {
                 $.bootstrapGrowl(data.response.msg, failedAlertOptions);
 
             }
-
-            else uploadCallback && uploadCallback()
 
         });
 

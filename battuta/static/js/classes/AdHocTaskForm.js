@@ -129,6 +129,8 @@ AdHocTaskForm.postTask = function (task, action, postCallback) {
 
             if (data.result === 'ok') postCallback && postCallback();
 
+            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
         }

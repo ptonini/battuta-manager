@@ -367,7 +367,7 @@ class InventoryView(View):
 
         else:
 
-            data = {'result': 'failed', 'msg': 'Permission denied'}
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -481,7 +481,7 @@ class NodesView(View):
 
         else:
 
-            data = {'result': 'failed', 'msg': 'Permission denied'}
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -670,7 +670,7 @@ class NodeView(View):
 
         else:
 
-            data = {'result': 'failed', 'msg': 'Permission denied'}
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -801,7 +801,7 @@ class VariablesView(View):
 
         else:
 
-            data = {'result': 'failed', 'msg': 'Permission denied'}
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -897,6 +897,6 @@ class RelationsView(View):
 
         else:
 
-            data = {'result': 'failed', 'msg': 'Permission denied'}
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
