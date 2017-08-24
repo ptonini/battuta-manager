@@ -50,7 +50,6 @@ function UserTable(container) {
                                 url: usersApiPath + 'user/' + user.username + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
-
                                 success: function (data) {
 
                                     if (data.result ==='ok') {
@@ -64,6 +63,7 @@ function UserTable(container) {
                                     else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
                                     else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
                                 }
                             });
 
