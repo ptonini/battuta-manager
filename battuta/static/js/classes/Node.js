@@ -14,34 +14,33 @@ function Node(node, container) {
 
     self.variablesTab = divTab.clone().attr('id', 'variables_tab');
 
-    self.editNodeBtn = btnXsmall.clone()
-        .css('margin-right', '5px')
+    self.editNodeBtn = spanFA.clone()
+        .addClass('fa-pencil btn-incell')
         .attr('title', 'Edit')
-        .append(spanFA.clone().addClass('fa-pencil'))
         .click(function() {
 
             new NodeDialog(self.node, function (data) {
 
-                window.open(inventoryPath + self.node.type + '/' + data.name + '/', '_self')
+                window.open(paths.inventory + self.node.type + '/' + data.name + '/', '_self')
 
             });
 
         });
 
-    self.deleteNodeBtn = btnXsmall.clone()
+    self.deleteNodeBtn = spanFA.clone()
+        .addClass('fa-trash-o btn-incell')
         .attr('title', 'Delete')
-        .append(spanFA.clone().addClass('fa-trash-o'))
         .click(function() {
 
             new DeleteDialog(function () {
 
                 $.ajax({
-                    url: inventoryApiPath + self.node.type + '/' + self.node.name + '/delete/',
+                    url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/delete/',
                     type: 'POST',
                     dataType: 'json',
                     success: function (data) {
 
-                        if (data.result === 'ok') window.open(inventoryPath + self.node.type + 's/', '_self');
+                        if (data.result === 'ok') window.open(paths.inventory + self.node.type + 's/', '_self');
 
                         else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
@@ -68,7 +67,10 @@ function Node(node, container) {
 
     self.container.append(
         $('<h3>').append(
-            $('<small>').html(self.node.type), '&nbsp;', self.node.name
+            $('<small>').html(self.node.type),
+            '&nbsp;',
+            self.node.name,
+            $('<small>').css('margin-left', '1rem').append(self.editNodeBtn, self.deleteNodeBtn)
         ),
         self.tabsHeader.append(
             liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
@@ -81,11 +83,8 @@ function Node(node, container) {
             self.infoTab.append(
                 divRow.clone().append(
                     divCol12.clone().append(
-                        $('<h4>').css('margin-bottom', '30px').html(self.description),
-                        self.editNodeBtn,
-                        self.deleteNodeBtn
+                        $('<h4>').css('margin-bottom', '30px').html(self.description)
                     ),
-                    divCol12.clone().append($('<hr>')),
                     self.nodeInfoContainer
                 )
             ),
@@ -96,55 +95,45 @@ function Node(node, container) {
             ),
             self.variablesTab.append(
                 divRow.clone().append(
-                    self.variableFormContainer,
-                    divCol12.clone().append($('<hr>')),
                     self.variableTableContainer
                 )
             ),
             divTab.clone().attr('id', 'adhoc_tab').append(
                 divRow.clone().append(
                     self.commandFormContainer,
-                    divCol12.clone().append($('<hr>')),
                     self.adhocTableContainer
                 )
             )
         )
     );
 
-    if (self.node.type === 'group') self.descendants = new Descendants(self.node, self.nodeInfoContainer);
-
-    else new HostFacts(self.node, self.nodeInfoContainer);
+    self.node.type === 'group' ? self.descendants = new Descendants(self.node, self.nodeInfoContainer) : new HostFacts(self.node, self.nodeInfoContainer);
 
     self.variableTable = new VariableTable(self.node, self.variableTableContainer);
 
-    new Relationships(self.node, alterRelationCallback, self.relationshipsContainer);
+    self.relationships = new Relationships(self.node, alterRelationCallback, self.relationshipsContainer);
 
-    new VariableForm({id: null}, 'add', self.node, saveVariableCallback, self.variableFormContainer);
+    self.adHocTaskForm = new AdHocTaskForm(self.node.name, 'command', {id: null}, self.commandFormContainer);
 
-    new AdHocTaskForm(self.node.name, 'command', {id: null}, self.commandFormContainer);
-
-    new AdHohTaskTable(self.node.name, self.adhocTableContainer);
-
-    function saveVariableCallback() {
-
-        self.variableTable.reloadTable()
-
-    }
-
-    function alterRelationCallback() {
-
-        self.variableTable.reloadTable();
-
-        if (typeof self.descendants !== 'undefined') self.descendants.reload();
-
-    }
+    self.adHocTaskTable = new AdHohTaskTable(self.node.name, self.adhocTableContainer);
 
     if (self.node.name === 'all') {
+
         self.tabsHeader.remove();
+
         self.infoTab.removeClass('in active');
+
         self.variablesTab.addClass('in active')
+
     }
 
     else rememberSelectedTab(self.tabsHeader.attr('id'));
+
+    function alterRelationCallback () {
+
+        self.variableTable.reloadTable();
+
+        self.descendants && self.descendants.reload();
+    }
 
 }

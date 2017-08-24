@@ -121,7 +121,7 @@ AdHocTaskForm.deleteTask = function (task, deleteCallback) {
 AdHocTaskForm.postTask = function (task, action, postCallback) {
 
     $.ajax({
-        url: runnerApiPath + 'adhoc/' + action + '/',
+        url: paths.runnerApi + 'adhoc/' + action + '/',
         type: 'POST',
         dataType: 'json',
         data: task,
@@ -337,7 +337,7 @@ AdHocTaskForm.prototype = {
         self.fileSourceGroup = divFormGroup.clone().append(
             $('<label>').html(self.fileSourceLabel).append(
                 $('<small>').attr('class', 'label_link').html('upload files').click(function () {
-                    window.open(filesPath, '_blank');
+                    window.open(paths.files, '_blank');
                 }),
                 self.fileSourceField
             )
@@ -410,7 +410,7 @@ AdHocTaskForm.prototype = {
 
             case 'copy':
 
-                self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=file'});
+                self.fileSourceField.autocomplete({source: paths.filesApi + 'search/?type=file'});
 
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
@@ -424,7 +424,7 @@ AdHocTaskForm.prototype = {
 
             case 'unarchive':
 
-                self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=archive'});
+                self.fileSourceField.autocomplete({source: paths.filesApi + 'search/?type=archive'});
 
                 self.moduleFieldsContainer.append(
                     divCol12.clone().append(self.fileSourceGroup),
@@ -437,7 +437,7 @@ AdHocTaskForm.prototype = {
 
             case 'script':
 
-                self.fileSourceField.autocomplete({source: filesApiPath + 'search/?type=file'});
+                self.fileSourceField.autocomplete({source: paths.filesApi + 'search/?type=file'});
 
                 self.fileSourceLabel.html('Script');
 

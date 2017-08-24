@@ -112,7 +112,7 @@ table.dataTable thead th.sorting_desc:after {content: "\f0dd"}
 
 tr.child_row {background-color: transparent !important}
 
-.btn-incell {padding: 0 3px; cursor: pointer}
+.btn-incell {margin: 0 .25rem; cursor: pointer}
 
 
 /* Checked button class options */

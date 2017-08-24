@@ -126,7 +126,7 @@ function AnsibleRunner(postData, cred, sameWindow) {
 // Post Ansible Job
 AnsibleRunner._postJob = function (postData, sameWindow) {
     $.ajax({
-        url: runnerApiPath + 'run/',
+        url: paths.runnerApi + 'run/',
         type: 'POST',
         dataType: 'json',
         data: postData,
@@ -134,7 +134,7 @@ AnsibleRunner._postJob = function (postData, sameWindow) {
 
             if (data.result === 'ok') {
 
-                var resultUrl = runnerPath + 'results/' + data.runner_id + '/';
+                var resultUrl = paths.runner + 'results/' + data.runner_id + '/';
 
                 if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
 

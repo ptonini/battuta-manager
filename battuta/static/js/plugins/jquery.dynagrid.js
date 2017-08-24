@@ -202,7 +202,8 @@
             if (opts.showTitle) {
                 gridHeader.append(
                     $('<span>').css('text-transform', 'capitalize').append(opts.gridTitle.replace(/_/g, ' ')),
-                    $('<span>').attr({id: opts.gridTitle + '_count', class: 'badge'})
+                    $('<span>').attr({id: opts.gridTitle + '_count', class: 'badge'}),
+                    $('<span>').css('margin-right', '.5rem')
                 )
             }
 

@@ -17,10 +17,10 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
             liDropdownAnchor.clone().html('Inventory'),
             ulDropdownMenu.clone().append(
                 $('<li>').append(
-                    $('<a>').attr('href', inventoryPath + 'hosts/').html('Hosts'),
-                    $('<a>').attr('href', inventoryPath + 'groups/').html('Groups'),
+                    $('<a>').attr('href', paths.inventory + 'hosts/').html('Hosts'),
+                    $('<a>').attr('href', paths.inventory + 'groups/').html('Groups'),
                     $('<li>').attr('class', 'divider'),
-                    $('<a>').attr('href', inventoryPath + 'import/').html('Import/Export')
+                    $('<a>').attr('href', paths.inventory + 'import/').html('Import/Export')
                 )
             )
         ),
@@ -28,24 +28,24 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
             liDropdownAnchor.clone().html('Runner'),
             ulDropdownMenu.clone().append(
                 $('<li>').append(
-                    $('<a>').attr('href', runnerPath + 'adhoc/').html('Ad-Hoc'),
-                    $('<a>').attr('href', runnerPath + 'playbooks/').html('Playbooks'),
-                    $('<a>').attr('href', runnerPath + 'roles/').html('Roles'),
+                    $('<a>').attr('href', paths.runner + 'adhoc/').html('Ad-Hoc'),
+                    $('<a>').attr('href', paths.runner + 'playbooks/').html('Playbooks'),
+                    $('<a>').attr('href', paths.runner + 'roles/').html('Roles'),
                     $('<li>').attr('class', 'divider'),
-                    $('<a>').attr('href', runnerPath + 'history/').html('History')
+                    $('<a>').attr('href', paths.runner + 'history/').html('History')
                 )
             )
         ),
-        $('<li>').append($('<a>').attr('href', filesPath).html('Files')),
+        $('<li>').append($('<a>').attr('href', paths.files).html('Files')),
         liDropdown.clone().append(
             liDropdownAnchor.clone().html('Users'),
             ulDropdownMenu.clone().append(
                 $('<li>').append(
-                    $('<a>').attr('href', usersPath + 'users/').html('Users'),
-                    $('<a>').attr('href', usersPath + 'groups/').html('User groups'),
+                    $('<a>').attr('href', paths.users + 'users/').html('Users'),
+                    $('<a>').attr('href', paths.users + 'groups/').html('User groups'),
                     $('<li>').attr('class', 'divider'),
-                    $('<a>').attr('href', usersPath + 'user/' + self.username + '/').html(self.username + ' profile'),
-                    $('<a>').attr('href', usersPath + 'user/' + self.username + '/files/').html(self.username + ' files')
+                    $('<a>').attr('href', paths.users + 'user/' + self.username + '/').html(self.username + ' profile'),
+                    $('<a>').attr('href', paths.users + 'user/' + self.username + '/files/').html(self.username + ' files')
                 )
             )
         )
@@ -101,7 +101,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
         var action = self.is_authenticated ? 'logout' : 'login';
 
         $.ajax({
-            url: usersApiPath + action + '/',
+            url: paths.usersApi + action + '/',
             type: 'POST',
             dataType: 'json',
             data: {

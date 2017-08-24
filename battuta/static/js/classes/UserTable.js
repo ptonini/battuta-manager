@@ -10,7 +10,7 @@ function UserTable(container) {
 
     self.table.DataTable({
         ajax: {
-            url: usersApiPath + 'user/none/list/',
+            url: paths.usersApi + 'user/none/list/',
             dataSrc: function (data) {
 
                 if (data.result === 'ok') return data.users;
@@ -35,7 +35,7 @@ function UserTable(container) {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open(usersPath + 'user/' + user.username + '/', '_self')
+                window.open(paths.users + 'user/' + user.username + '/', '_self')
 
             });
 
@@ -47,7 +47,7 @@ function UserTable(container) {
                         new DeleteDialog(function () {
 
                             $.ajax({
-                                url: usersApiPath + 'user/' + user.username + '/delete/',
+                                url: paths.usersApi + 'user/' + user.username + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
                                 success: function (data) {
@@ -80,7 +80,7 @@ function UserTable(container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add user').click(function () {
 
-                    window.open(usersPath + 'new_user/', '_self');
+                    window.open(paths.users + 'new_user/', '_self');
 
                 })
             );

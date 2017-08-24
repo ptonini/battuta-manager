@@ -6,25 +6,14 @@ function AdHohTaskTable(pattern, container) {
     self.pattern = pattern;
 
     container.append(
-        $('<h4>').html('Saved tasks').append(
-            spanRight.clone().append(
-                btnSmall.clone().html('Create task').click(function () {
-
-                    var task = {id: null, saveCallback: self.table.DataTable().ajax.reload};
-
-                    new AdHocTaskForm(self.pattern, 'dialog', task)
-
-                })
-            )
-        ),
-        $('<br>'),
+        $('<h4>').html('Saved tasks'),
         self.table
     );
 
     self.table.DataTable({
         pageLength: 50,
         ajax: {
-            url: runnerApiPath + 'adhoc/list/',
+            url: paths.runnerApi + 'adhoc/list/',
             dataSrc: '',
             data: {pattern: self.pattern}
         },
@@ -34,6 +23,8 @@ function AdHohTaskTable(pattern, container) {
             {class: 'col-md-6', title: 'arguments', data: 'arguments'},
             {class: 'col-md-2', title: 'sudo', data: 'become'}
         ],
+        paging: false,
+        dom: '<"task-toolbar">frtip',
         rowCallback: function (row, task) {
 
             var arguments = AdHocTaskForm.jsonToString(task.arguments);
@@ -50,7 +41,7 @@ function AdHohTaskTable(pattern, container) {
                         new AdHocTaskForm(pattern, 'dialog', task);
 
                     }),
-                    spanFA.clone().addClass('fa-files-o btn-incell').attr('title', 'Copy').click(function () {
+                    spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
 
                         AdHocTaskForm.copyTask(task, self.table.DataTable().ajax.reload);
 
@@ -65,6 +56,19 @@ function AdHohTaskTable(pattern, container) {
                     })
                 )
             )
+        },
+        drawCallback: function () {
+
+            $('div.task-toolbar').css('float', 'left').html(
+                btnXsmall.clone().html('Create task').click(function () {
+
+                    var task = {id: null, saveCallback: self.table.DataTable().ajax.reload};
+
+                    new AdHocTaskForm(self.pattern, 'dialog', task)
+
+                })
+            )
+
         }
 
     });

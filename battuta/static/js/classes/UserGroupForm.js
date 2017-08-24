@@ -16,7 +16,111 @@ function UserGroupForm(group, container) {
         )
     );
 
+    self.deleteGroupBtn = spanFA.clone()
+        .addClass('fa-trash-o btn-incell')
+        .attr('title', 'Delete')
+        .click(function() {
+
+            new DeleteDialog(function () {
+
+                $.ajax({
+                    url: paths.usersApi + 'group/' + self.group.name + '/delete/',
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (data.result ==='ok') window.open(paths.users + 'groups/', '_self');
+
+                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                        else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
+                    }
+                });
+
+            })
+
+        });
+
+
     self.descriptionField = textAreaField.clone().val(self.group.description);
+
+
+    self.inventoryPermissions = divRow.clone().append(
+        divCol12.clone().append($('<h5>').html('Inventory')),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit hosts').data('permission', 'edit_hosts')
+            )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit groups').data('permission', 'edit_groups')
+            )
+        )
+    );
+
+    self.usersPermissions = divRow.clone().append(
+        divCol12.clone().append($('<h5>').html('Users')),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit users').data('permission', 'edit_users')
+            )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user groups').data('permission', 'edit_user_groups')
+            )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user files').data('permission', 'edit_user_files')
+            )
+        )
+
+    ) ;
+
+    self.runnerPermissions = divRow.clone().append(
+        divCol12.clone().append($('<h5>').html('Runner')),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Execute jobs').data('permission', 'execute_jobs')
+            )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit tasks').data('permission', 'edit_tasks')
+            )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit playbooks').data('permission', 'edit_playbooks')
+            )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit roles').data('permission', 'edit_roles')
+            )
+        )
+    );
+
+    self.preferencesPermissions = divRow.clone().append(
+        divCol12.clone().append($('<h5>').html('Preferences')),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit preferences').data('permission', 'edit_preferences')
+            )
+        )
+    );
+
+    self.filesPermissions = divRow.clone().append(
+        divCol12.clone().append($('<h5>').html('Files')),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit files').data('permission', 'edit_files')
+            )
+        )
+    );
 
     self.form = $('<form>')
         .append(
@@ -24,87 +128,17 @@ function UserGroupForm(group, container) {
                 divCol6.clone().append(
                     divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
                 ),
-                divCol12.clone().append($('<h4>').html('Permissions')),
-                divCol6.clone().append(
-                    divRow.clone().append(
-                        divCol12.clone().append($('<h5>').html('Inventory')),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit hosts').data('permission', 'edit_hosts')
-                            )
-                        ),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit groups').data('permission', 'edit_groups')
-                            )
-                        )
-                    )
-                ),
-                divCol6.clone().append(
-                    divRow.clone().append(
-                        divCol12.clone().append($('<h5>').html('Files')),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit files').data('permission', 'edit_files')
-                            )
-                        )
-                    )
-                ),
-                divCol6.clone().append(
-                    divRow.clone().append(
-                        divCol12.clone().append($('<h5>').html('Runner')),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Execute jobs').data('permission', 'execute_jobs')
-                            )
-                        ),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit tasks').data('permission', 'edit_tasks')
-                            )
-                        ),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit playbooks').data('permission', 'edit_playbooks')
-                            )
-                        ),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit roles').data('permission', 'edit_roles')
-                            )
-                        )
-                    )
-                ),
-                divCol6.clone().append(
-                    divRow.clone().append(
-                        divCol12.clone().append($('<h5>').html('Preferences')),
-                        divCol4.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit preferences').data('permission', 'edit_preferences')
-                            )
-                        )
-                    )
-                ),
                 divCol12.clone().append(
-                    divRow.clone().append(
-                        divCol12.clone().append($('<h5>').html('Users')),
-                        divCol2.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit users').data('permission', 'edit_users')
-                            )
-                        ),
-                        divCol2.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user groups').data('permission', 'edit_user_groups')
-                            )
-                        ),
-                        divCol2.clone().append(
-                            divFormGroup.clone().append(
-                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user files').data('permission', 'edit_user_files')
-                            )
-                        )
-
-                    )
+                    $('<h4>').html('Permissions')
+                ),
+                divCol6.clone().append(
+                    PermissionFormButtons.inventory,
+                    PermissionFormButtons.runner,
+                    PermissionFormButtons.files,
+                // ),
+                // divCol6.clone().append(
+                    PermissionFormButtons.users,
+                    PermissionFormButtons.preferences
                 ),
                 divCol12.clone().append(
                     divFormGroup.clone().append(
@@ -120,7 +154,7 @@ function UserGroupForm(group, container) {
             function saveGroup(postData) {
 
                 $.ajax({
-                    url: usersApiPath + 'group/' + self.group.name + '/save/',
+                    url: paths.usersApi + 'group/' + self.group.name + '/save/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
@@ -130,7 +164,7 @@ function UserGroupForm(group, container) {
 
                             if (self.group.name) $.bootstrapGrowl('User group saved', {type: 'success'});
 
-                            else window.open(usersPath + 'group/' + data.group.name + '/', '_self')
+                            else window.open(paths.users + 'group/' + data.group.name + '/', '_self')
 
                         }
 
@@ -181,7 +215,7 @@ function UserGroupForm(group, container) {
         buildNow: (self.group.name),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
-        ajaxUrl: usersApiPath + 'group/' + self.group.name + '/members/',
+        ajaxUrl: paths.usersApi + 'group/' + self.group.name + '/members/',
         formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
@@ -189,7 +223,7 @@ function UserGroupForm(group, container) {
             gridItem.removeClass('truncate-text').html('').append(
                 $('<span>').append(name).click(function () {
 
-                    window.open(usersPath + 'user' + '/' + name, '_self')
+                    window.open(paths.users + 'user' + '/' + name, '_self')
 
                 }),
                 spanFA.clone().addClass('text-right fa-times-circle-o')
@@ -198,7 +232,7 @@ function UserGroupForm(group, container) {
                     .click(function () {
 
                         $.ajax({
-                            url: usersApiPath + 'group/' + self.group.name + '/remove_members/',
+                            url: paths.usersApi + 'group/' + self.group.name + '/remove_members/',
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: [gridItem.data('id')]},
@@ -220,7 +254,7 @@ function UserGroupForm(group, container) {
         },
         addButtonAction: function () {
 
-            var url = usersApiPath + 'group/' + self.group.name + '/members/?reverse=true';
+            var url = paths.usersApi + 'group/' + self.group.name + '/members/?reverse=true';
 
             var loadCallback = function (gridContainer, selectionDialog) {
 
@@ -228,7 +262,7 @@ function UserGroupForm(group, container) {
                     Add: function () {
 
                         $.ajax({
-                            url: usersApiPath + 'group/' + self.group.name + '/add_members/',
+                            url: paths.usersApi + 'group/' + self.group.name + '/add_members/',
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
@@ -273,7 +307,12 @@ function UserGroupForm(group, container) {
     if (self.group.name) {
 
         self.formsHeader.append(
-            $('<h3>').append($('<small>').html('user group'), '&nbsp;', self.group.name),
+            $('<h3>').append(
+                $('<small>').html('user group'),
+                '&nbsp;',
+                self.group.name,
+                $('<small>').css('margin-left', '1rem').append(self.deleteGroupBtn)
+            ),
             $('<br>')
         );
 

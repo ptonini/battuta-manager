@@ -86,7 +86,7 @@ function UserForm(currentUser, user, container) {
             function saveUser(postData) {
 
                 $.ajax({
-                    url: usersApiPath + 'user/' + self.user.username + '/save/',
+                    url: paths.usersApi + 'user/' + self.user.username + '/save/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
@@ -96,7 +96,7 @@ function UserForm(currentUser, user, container) {
 
                             if (self.user.username) $.bootstrapGrowl('User saved', {type: 'success'});
 
-                            else window.open(usersPath + 'user/' + data.user.username + '/', '_self')
+                            else window.open(paths.users + 'user/' + data.user.username + '/', '_self')
 
                         }
 
@@ -142,6 +142,7 @@ function UserForm(currentUser, user, container) {
     self.passwordForm = $('<form>')
         .append(
             divRow.clone().append(
+                divCol12.clone().append($('<hr>')),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Current password (' + self.currentUser + ')').append(
@@ -178,7 +179,7 @@ function UserForm(currentUser, user, container) {
                 if (data.new_password && data.new_password === self.retypeNewPassword.val()) {
 
                     $.ajax({
-                        url: usersApiPath  + 'user/' + self.user.username + '/chgpass/',
+                        url: paths.usersApi  + 'user/' + self.user.username + '/chgpass/',
                         type: 'POST',
                         dataType: 'json',
                         data: data,
@@ -218,7 +219,7 @@ function UserForm(currentUser, user, container) {
         buildNow: (self.user.username),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('user_grid_columns'),
-        ajaxUrl: usersApiPath + 'user/' + self.user.username + '/groups/',
+        ajaxUrl: paths.usersApi + 'user/' + self.user.username + '/groups/',
         formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
@@ -226,7 +227,7 @@ function UserForm(currentUser, user, container) {
             gridItem.removeClass('truncate-text').html('').append(
                 $('<span>').append(name).click(function () {
 
-                    window.open(usersPath + 'group' + '/' + name, '_self')
+                    window.open(paths.users + 'group' + '/' + name, '_self')
 
                 }),
                 spanFA.clone().addClass('text-right fa-times-circle-o')
@@ -235,7 +236,7 @@ function UserForm(currentUser, user, container) {
                     .click(function () {
 
                         $.ajax({
-                            url: usersApiPath + 'user/' + self.user.username + '/remove_groups/',
+                            url: paths.usersApi + 'user/' + self.user.username + '/remove_groups/',
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: [gridItem.data('id')]},
@@ -257,7 +258,7 @@ function UserForm(currentUser, user, container) {
         },
         addButtonAction: function () {
 
-            var url = usersApiPath + 'user/' + self.user.username + '/groups/?reverse=true';
+            var url = paths.usersApi + 'user/' + self.user.username + '/groups/?reverse=true';
 
             var loadCallback = function (gridContainer, selectionDialog) {
 
@@ -265,7 +266,7 @@ function UserForm(currentUser, user, container) {
                     Add: function () {
 
                         $.ajax({
-                            url: usersApiPath + 'user/' + self.user.username + '/add_groups/',
+                            url: paths.usersApi + 'user/' + self.user.username + '/add_groups/',
                             type: 'POST',
                             dataType: 'json',
                             data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
@@ -301,7 +302,7 @@ function UserForm(currentUser, user, container) {
 
     self.formsHeader = $('<div>');
 
-    self.formsContainer = $('<div>').attr('class', 'col-md-6 col-sm-12 col-xs-12');
+    self.formsContainer = divCol6.clone();
 
     self.groupGridContainer = divCol12.clone();
 
@@ -335,7 +336,7 @@ function UserForm(currentUser, user, container) {
 
         self.formBtnContainer.append(self.openCredentialsBtn);
 
-        self.formsContainer.append($('<hr>'), self.passwordForm);
+        self.formsContainer.append(self.passwordForm);
 
         if (!self.user.is_superuser)self.groupGridContainer.append($('<hr>'), self.groupGrid);
 

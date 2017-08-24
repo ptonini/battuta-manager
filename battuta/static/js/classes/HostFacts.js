@@ -24,7 +24,7 @@ HostFacts.prototype = {
         var self = this;
 
         $.ajax({
-            url: inventoryApiPath + 'host/' + self.node.name + '/facts/',
+            url: paths.inventoryApi + 'host/' + self.node.name + '/facts/',
             dataType: 'json',
             success: function (data) {
 

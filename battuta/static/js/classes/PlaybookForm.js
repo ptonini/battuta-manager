@@ -15,7 +15,7 @@ function PlaybookForm(playbook) {
                 if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
 
                     $.ajax({
-                        url: runnerApiPath + 'playbooks/' + self.playbook.name + '/save/',
+                        url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/save/',
                         type: 'POST',
                         dataType: 'json',
                         data: {
@@ -54,7 +54,7 @@ function PlaybookForm(playbook) {
                 new DeleteDialog(function() {
 
                     $.ajax({
-                        url: runnerApiPath + 'playbooks/' + self.playbook.name + '/delete/',
+                        url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/delete/',
                         type: 'POST',
                         dataType: 'json',
                         data: self.loadedArgs,
@@ -153,7 +153,7 @@ function PlaybookForm(playbook) {
     self.playbookDialog = largeDialog.clone();
 
     $.ajax({
-        url: filesApiPath + 'read/',
+        url: paths.filesApi + 'read/',
         dataType: 'json',
         data: self.playbook,
         success: function (data) {
@@ -295,7 +295,7 @@ PlaybookForm.prototype = {
         self.argumentsSelector.empty();
 
         $.ajax({
-            url: runnerApiPath + 'playbooks/' + self.playbook.name + '/list/',
+            url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/list/',
             dataType: 'json',
             success: function (data) {
 

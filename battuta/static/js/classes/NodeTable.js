@@ -45,7 +45,7 @@ function NodeTable(nodeType, addCallback, container) {
 
     self.table.DataTable({
         paging: false,
-        ajax: {url: inventoryApiPath + nodeType + 's/list/', dataSrc: ''},
+        ajax: {url: paths.inventoryApi + nodeType + 's/list/', dataSrc: ''},
         buttons: ['csv'],
         columns: self.columns,
         dom: '<"toolbar">frtip',
@@ -56,7 +56,7 @@ function NodeTable(nodeType, addCallback, container) {
                 .css('cursor', 'pointer')
                 .click(function () {
 
-                    window.open(inventoryPath + self.type + '/' + data.name + '/', '_self')
+                    window.open(paths.inventory + self.type + '/' + data.name + '/', '_self')
 
                 });
 
@@ -67,7 +67,7 @@ function NodeTable(nodeType, addCallback, container) {
                         new DeleteDialog(function () {
 
                             $.ajax({
-                                url: inventoryApiPath + self.type + '/' + data.name + '/delete/',
+                                url: paths.inventoryApi + self.type + '/' + data.name + '/delete/',
                                 type: 'POST',
                                 dataType: 'json',
                                 success: function (data) {
@@ -103,8 +103,8 @@ function NodeTable(nodeType, addCallback, container) {
 
             }
         },
-
         drawCallback: function() {
+
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add '+ nodeType).click(function () {
 

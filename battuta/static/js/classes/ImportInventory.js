@@ -44,7 +44,7 @@ function ImportInventory(container) {
 
     self.fileInput
         .fileinput({
-            uploadUrl: inventoryApiPath + 'import/',
+            uploadUrl: paths.inventoryApi + 'import/',
             uploadAsync: true,
             uploadExtraData: function () {
 

@@ -20,7 +20,7 @@ function NodeDialog(node, saveCallback) {
             event.preventDefault();
 
             $.ajax({
-                url: inventoryApiPath + self.node.type + '/' + self.node.name + '/save/',
+                url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/save/',
                 type: 'POST',
                 dataType: 'json',
                 data: {

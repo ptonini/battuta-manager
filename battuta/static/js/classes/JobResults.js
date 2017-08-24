@@ -35,7 +35,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
             });
 
             $.ajax({
-                url: usersApiPath + 'user/' + sessionStorage.getItem('user_name') + '/creds/get/',
+                url: paths.usersApi + 'user/' + sessionStorage.getItem('user_name') + '/creds/get/',
                 data: {cred_id: self.job.cred},
                 success: function(data) {
 
@@ -110,7 +110,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
         .click(function cancelJob() {
 
             $.ajax({
-                url: runnerApiPath + 'kill/',
+                url: paths.runnerApi + 'kill/',
                 type: 'POST',
                 dataType: 'json',
                 data: {runner_id: self.job.id},
@@ -192,7 +192,7 @@ JobResults.prototype = {
         var self = this;
 
         $.ajax({
-            url: runnerApiPath + 'job/' + self.jobId + '/',
+            url: paths.runnerApi + 'job/' + self.jobId + '/',
             success: function (job) {
 
                 self.job = job;
@@ -396,7 +396,7 @@ JobResults.prototype = {
                             searching: false,
                             info: true,
                             ajax: {
-                                url: runnerApiPath + 'task/' + task.id + '/',
+                                url: paths.runnerApi + 'task/' + task.id + '/',
                                 dataSrc: 'results'
                             },
                             columns: [
@@ -475,7 +475,7 @@ JobResults.prototype = {
                                                 else {
 
                                                     $.ajax({
-                                                        url: runnerApiPath + 'result/' + result.id + '/',
+                                                        url: paths.runnerApi + 'result/' + result.id + '/',
                                                         dataType: 'json',
                                                         success: function (data) {
 

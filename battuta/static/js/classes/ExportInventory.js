@@ -9,7 +9,7 @@ function ExportInventory(container) {
             case 'json':
 
                 $.ajax({
-                    url: inventoryApiPath + 'export/',
+                    url: paths.inventoryApi + 'export/',
                     data: {format: 'json'},
                     dataType: 'json',
                     success: function (data) {
@@ -35,7 +35,7 @@ function ExportInventory(container) {
 
             case 'zip':
 
-                window.open(inventoryApiPath + 'export/?format=zip', '_self');
+                window.open(paths.inventoryApi + 'export/?format=zip', '_self');
 
                 break
 

@@ -13,7 +13,7 @@ function UploadDialog(folder, root, user, uploadCallback) {
 
     self.uploadField
         .fileinput({
-            uploadUrl: filesApiPath + 'upload/',
+            uploadUrl: paths.filesApi + 'upload/',
             uploadAsync: true,
             uploadExtraData: function () {
 

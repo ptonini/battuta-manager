@@ -46,7 +46,7 @@ CopyVariables.prototype = {
 
         self.nodeTypeDialog.dialog('close');
 
-        var url = inventoryApiPath + 'search/?type=' + sourceNodeType + '&pattern=';
+        var url = paths.inventoryApi + 'search/?type=' + sourceNodeType + '&pattern=';
 
         var formatItem = function (gridItem, selectionDialog) {
 
@@ -55,7 +55,7 @@ CopyVariables.prototype = {
                 var sourceNodeName = $(this).data('value');
 
                 $.ajax({
-                    url: inventoryApiPath + self.node.type + '/' + self.node.name + '/vars/copy/',
+                    url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/copy/',
                     type: 'POST',
                     dataType: 'json',
                     data: {source_name: sourceNodeName, source_type: sourceNodeType},
@@ -65,7 +65,7 @@ CopyVariables.prototype = {
 
                             selectionDialog.dialog('close');
 
-                            $.bootstrapGrowl('VariableForm copied from ' + sourceNodeName, {type: 'success'});
+                            $.bootstrapGrowl('VariableDialog copied from ' + sourceNodeName, {type: 'success'});
 
                             self.copyCallback && self.copyCallback()
                         }

@@ -17,7 +17,7 @@ function Descendants (node, container) {
 
             gridItem.click(function () {
 
-                window.open(inventoryPath + gridContainer.data('nodeType') + '/' + $(this).data('value') + '/', '_self')
+                window.open(paths.inventory + gridContainer.data('nodeType') + '/' + $(this).data('value') + '/', '_self')
 
             });
         }
@@ -25,12 +25,12 @@ function Descendants (node, container) {
 
     self.groupList = $('<div>').data('nodeType', 'group').DynaGrid($.extend({}, self.gridOptions, {
         gridTitle: 'Groups',
-        ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=groups'
+        ajaxUrl: paths.inventoryApi + 'group/' + self.node.name + '/descendants/?type=groups'
     }));
 
     self.hostList = $('<div>').data('nodeType', 'host').DynaGrid($.extend({}, self.gridOptions, {
         gridTitle: 'Hosts',
-        ajaxUrl: inventoryApiPath + 'group/' + self.node.name + '/descendants/?type=hosts'
+        ajaxUrl: paths.inventoryApi + 'group/' + self.node.name + '/descendants/?type=hosts'
     }));
 
     container.append(

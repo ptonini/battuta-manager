@@ -15,7 +15,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
         truncateItemText: true,
         headerBottomPadding: 20,
         topAlignHeader: true,
-        ajaxUrl: inventoryApiPath + 'search/?type=' + nodeType + '&pattern='
+        ajaxUrl: paths.inventoryApi + 'search/?type=' + nodeType + '&pattern='
     };
 
     if (self.mode === 'open') Object.assign(self.gridOptions, {
@@ -27,7 +27,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
 
             gridItem.click(function () {
 
-                window.open(inventoryPath + nodeType + '/' + $(this).data('value') + '/', '_self')
+                window.open(paths.inventory + nodeType + '/' + $(this).data('value') + '/', '_self')
 
             });
 

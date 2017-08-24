@@ -35,7 +35,7 @@ function FileDialog(file, action, postCallback) {
 
                         $.ajax({
                             type: 'POST',
-                            url: filesApiPath + action + '/',
+                            url: paths.filesApi + action + '/',
                             dataType: 'json',
                             data: self.file,
                             success: function (data) {

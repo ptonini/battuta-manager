@@ -56,7 +56,7 @@ function FileTable(root, user, nameCellFormatter, container) {
                         }
 
                         $.ajax({
-                            url: filesApiPath + 'exists/',
+                            url: paths.filesApi + 'exists/',
                             data: {name: fieldValue, type: 'directory', root: self.root, user: self.user},
                             success: function (data) {
 
@@ -79,10 +79,14 @@ function FileTable(root, user, nameCellFormatter, container) {
 
     self.breadCrumb = breadcrumb.clone().attr('id', 'path_links').append(self.rootPath, self.editPath);
 
-    self.createButton = btnSmall.clone()
+    self.createButton = btnXsmall.clone()
         .attr('title', 'Create')
         .html(spanFA.clone().addClass('fa-asterisk'))
-        .click(function () {
+        .click(function (event) {
+
+            event.preventDefault();
+
+            console.log('porra!!!')
 
             var newFile = {name: '', root: self.root, folder: self.folder, user: self.user};
 
@@ -90,7 +94,7 @@ function FileTable(root, user, nameCellFormatter, container) {
 
         });
 
-    self.uploadButton = btnSmall.clone()
+    self.uploadButton = btnXsmall.clone()
         .attr('title', 'Upload')
         .html(spanFA.clone().addClass('fa-upload'))
         .click(function () {
@@ -118,8 +122,7 @@ function FileTable(root, user, nameCellFormatter, container) {
 
     self.container.append(
         divRowEqHeight.clone().css('margin-top', '18px').append(
-            divCol10.clone().addClass('col-xs-8').append(self.breadCrumb),
-            divCol2.clone().addClass('text-right col-xs-4').css('margin', 'auto').append(self.buttonGroup)
+            divCol12.clone().append(self.breadCrumb)
         ),
         divRow.clone().css('margin-top', '18px').append(
             divCol12.clone().append(self.table)
@@ -127,7 +130,7 @@ function FileTable(root, user, nameCellFormatter, container) {
     );
 
     if (self.folder) $.ajax({
-        url: filesApiPath + 'exists/',
+        url: paths.filesApi + 'exists/',
         data: {name: self.folder, type: 'directory', root: self.root, user: self.user},
         success: function (data) {
 
@@ -163,7 +166,7 @@ FileTable.prototype = {
 
         self.table.DataTable({
             ajax: {
-                url: filesApiPath + 'list/',
+                url: paths.filesApi + 'list/',
                 dataSrc: '',
                 data: function () {
 
@@ -178,6 +181,8 @@ FileTable.prototype = {
                 {class: 'col-md-3', title: 'modified', data: 'modified'}
             ],
             order: [[0, 'asc']],
+            paging: false,
+            dom: '<"toolbar">frtip',
             rowCallback: function (row, object) {
 
                 object.root = self.root;
@@ -205,7 +210,7 @@ FileTable.prototype = {
                             if (object.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
 
                                 $.ajax({
-                                    url: filesApiPath + 'read/',
+                                    url: paths.filesApi + 'read/',
                                     dataType: 'json',
                                     data: object,
                                     success: function (data) {
@@ -233,7 +238,7 @@ FileTable.prototype = {
 
                         }),
                         spanFA.clone()
-                            .addClass('fa-files-o btn-incell')
+                            .addClass('fa-clone btn-incell')
                             .attr('title', 'Copy')
                             .click(function () {
 
@@ -245,7 +250,7 @@ FileTable.prototype = {
                             .attr('title', 'Download ' + object.name)
                             .click(function () {
 
-                                window.open(filesApiPath + 'download/?name=' + object.name + '&root=' + object.root  + '&folder=' + object.folder + '&user=' + object.user,  '_self')
+                                window.open(paths.filesApi + 'download/?name=' + object.name + '&root=' + object.root  + '&folder=' + object.folder + '&user=' + object.user,  '_self')
 
                             }),
                         spanFA.clone()
@@ -259,7 +264,7 @@ FileTable.prototype = {
 
                                     $.ajax({
                                         type: 'POST',
-                                        url: filesApiPath + 'delete/',
+                                        url: paths.filesApi + 'delete/',
                                         dataType: 'json',
                                         data: object,
                                         success: function (data) {
@@ -286,6 +291,8 @@ FileTable.prototype = {
             },
             drawCallback: function () {
 
+                $('div.toolbar').css('float', 'left').html(self.buttonGroup.clone(true));
+
                 self._buildBreadcrumbs();
 
                 self.table.find('tr.directory_row').reverse().each(function (index, row) {
@@ -301,6 +308,7 @@ FileTable.prototype = {
                     self.table.prepend(self.previousFolderRow)
 
                 }
+
             }
         });
 

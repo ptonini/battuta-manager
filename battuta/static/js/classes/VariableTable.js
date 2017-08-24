@@ -3,16 +3,19 @@ function VariableTable(node, container) {
 
     self.node = node;
 
+    self.container = container;
+
     self.tableId = 'variable_table';
 
     self.table = baseTable.clone().attr('id', self.tableId);
 
-    container.append($('<h4>').html('Variables'), self.table);
+    self.container.append(self.table);
 
     self.table.DataTable({
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-        pageLength: 100,
-        ajax: {url: inventoryApiPath + self.node.type + '/' + self.node.name + '/vars/list/', dataSrc: ''},
+        paging: false,
+        dom: '<"variable-toolbar">frtip',
+        ajax: {url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/list/', dataSrc: ''},
         columns: [
             {class: 'col-md-3', title: 'key', data: 'key'},
             {class: 'col-md-7', title: 'value', data: 'value'},
@@ -25,14 +28,14 @@ function VariableTable(node, container) {
                 $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
                     spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
-                        new VariableForm(variable, 'dialog', self.node, self.table.DataTable().ajax.reload)
+                        new VariableDialog(variable, self.node, self.table.DataTable().ajax.reload)
 
                     }),
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 
-                            VariableForm.deleteVariable(variable, self.node, self.table.DataTable().ajax.reload)
+                            VariableDialog.deleteVariable(variable, self.node, self.table.DataTable().ajax.reload)
 
                         })
 
@@ -46,7 +49,7 @@ function VariableTable(node, container) {
                     .attr('title', 'Open ' + variable.source)
                     .click(function () {
 
-                        window.open(inventoryPath + 'group/' + variable.source + '/', '_self')
+                        window.open(paths.inventory + 'group/' + variable.source + '/', '_self')
 
                     });
             }
@@ -108,7 +111,7 @@ function VariableTable(node, container) {
 
                             newRow.find('td:eq(2)').click(function() {
 
-                                window.open(inventoryPath + 'group/' + value[0].source, '_self')
+                                window.open(paths.inventory + 'group/' + value[0].source, '_self')
 
                             });
 
@@ -155,6 +158,29 @@ function VariableTable(node, container) {
                 }
 
             });
+
+            $('div.variable-toolbar').css('float', 'left').empty().append(
+                btnXsmall.clone()
+                    .html('Add variable')
+                    .attr('title', 'Add variable')
+                    .css('margin-right', '1rem')
+                    .click(function () {
+
+                        new VariableDialog({id: null}, self.node, self.table.DataTable().ajax.reload);
+
+                    }),
+                btnXsmall.clone()
+                    .attr('title', 'Copy from node')
+                    .append(spanFA.clone().addClass('fa-clone'))
+                    .click(function (event) {
+
+                        event.preventDefault();
+
+                        new CopyVariables(self.node, self.table.DataTable().ajax.reload)
+
+                    })
+            );
+
         }
     });
 }

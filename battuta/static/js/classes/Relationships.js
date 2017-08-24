@@ -27,7 +27,7 @@ function Relationships(node, alterRelationCallback, container) {
             gridBodyTopMargin: '10px',
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/related/',
+            ajaxUrl: paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/related/',
             formatItem: function (gridContainer, gridItem) {
 
                 var id = gridItem.data('id');
@@ -37,10 +37,10 @@ function Relationships(node, alterRelationCallback, container) {
                 gridItem.html('').append(
                     $('<span>').append(name).click(function () {
 
-                        window.open(inventoryPath + relationType + '/' + name, '_self')
+                        window.open(paths.inventory + relationType + '/' + name, '_self')
 
                     }),
-                    spanFA.clone().addClass('text-right fa-times-circle-o')
+                    spanFA.clone().addClass('text-right fa-minus-circle')
                         .css({float: 'right', margin: '.8rem 0'})
                         .attr('title', 'Remove')
                         .click(function () {
@@ -53,7 +53,7 @@ function Relationships(node, alterRelationCallback, container) {
             },
             addButtonAction: function () {
 
-                var url = inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
+                var url = paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
 
                 var loadCallback = function (gridContainer, selectionDialog) {
 
@@ -103,7 +103,7 @@ Relationships.prototype = {
         var self = this;
 
         $.ajax({
-            url: inventoryApiPath + self.node.type + '/' + self.node.name + '/' + relation + '/' + action + '/',
+            url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/' + action + '/',
             type: 'POST',
             dataType: 'json',
             data: {selection: selection},

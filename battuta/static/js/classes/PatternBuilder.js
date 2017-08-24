@@ -117,7 +117,7 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
 
     }
 
-    var url = inventoryApiPath + 'search/?type=' + nodeType + '&pattern=';
+    var url = paths.inventoryApi + 'search/?type=' + nodeType + '&pattern=';
 
     var loadCallback = function (gridContainer, selectionDialog) {
 

@@ -26,7 +26,8 @@
             }
 
             var buttons = [
-                btnSmall.clone().html('New playbook').click(function () {
+                btnXsmall.clone().html('New playbook').click(function () {
+
                     $.ajax({
                         url: '/static/templates/playbook_template.yml',
                         success: function (data) {
@@ -36,7 +37,8 @@
                                 root: 'playbooks',
                                 folder: playbookTable.getFolder(),
                                 text: data,
-                                user: '{{ user.username }}'};
+                                user: '{{ user.username }}'
+                            };
 
                             new TextEditor(file, function () {
 
