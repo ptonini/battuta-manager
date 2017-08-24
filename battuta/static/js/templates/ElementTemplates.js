@@ -1,5 +1,4 @@
-// jQuery elements templates /////////////
-
+// jQuery element templates /////////////
 
 // Bootstrap Grip
 
@@ -50,6 +49,7 @@ var divChkbox =  $('<div>').attr('type', 'checkbox');
 var divRadio = $('<div>').attr('class', 'radio');
 
 var spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
+
 
 // Input elements
 
