@@ -3,7 +3,6 @@
 {% csrf_token %}
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit:400|Actor">
     <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-ui/themes/base/jquery-ui.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap/dist/css/bootstrap.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap-fileinput/css/fileinput.min.css' %}"/>
@@ -11,8 +10,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-jsonview/dist/jquery.jsonview.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/font-awesome/css/font-awesome.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dynagrid.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.bootstrap-growl.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-bootstrap-growl/jquery.bootstrap-growl.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
     <script type="text/javascript" src="{% static 'components/jquery/dist/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
@@ -27,8 +26,8 @@
     <script type="text/javascript" src="{% static 'components/js-yaml/dist/js-yaml.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/timezones/dist/timezones.full.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ace.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/plugins/jquery.bootstrap-growl.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/plugins/jquery.dynagrid.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/jquery-bootstrap-growl/jquery.bootstrap-growl.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/battuta.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/templates/RootPaths.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/templates/ElementTemplates.js' %}"></script>
@@ -52,7 +51,7 @@
     <script type="text/javascript" src="{% static 'js/classes/NodeTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NodeGrid.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/PlaybookForm.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/PlaybookDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Preferences.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Relationships.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/RoleDialog.js' %}"></script>

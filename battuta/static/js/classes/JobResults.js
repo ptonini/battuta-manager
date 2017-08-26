@@ -26,37 +26,51 @@ function JobResults(jobId, headerContainer, resultContainer) {
         .html(spanFA.clone().addClass('fa-repeat'))
         .click(function rerunPlaybook() {
 
-            var become = false;
+            var playbook = {
+                name: self.job.name,
+                root: 'playbooks',
+                folder: '',
+                user: sessionStorage.getItem('user_name'),
+                check: self.job.check,
+                subset: self.job.subset,
+                tags: self.job.tags,
+                skip_tags: self.job.skip_tags,
+                extra_vars: self.job.extra_vars
+            };
 
-            $.each(self.job.plays, function(index, play) {
+            new PlaybookDialog(playbook, true)
 
-                if (play.become) become = true
-
-            });
-
-            $.ajax({
-                url: paths.usersApi + 'user/' + sessionStorage.getItem('user_name') + '/creds/get/',
-                data: {cred_id: self.job.cred},
-                success: function(data) {
-
-                    if (data.result === 'ok') {
-
-                        new AnsibleRunner({
-                            type: 'playbook',
-                            playbook: self.job.name,
-                            become: become,
-                            check: self.job.check,
-                            subset: self.job.subset,
-                            tags: self.job.tags,
-                            skip_tags: self.job.skip_tags,
-                            extra_vars: self.job.extra_vars
-                        }, data.cred, true);
-
-                    }
-
-                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-                }
-            });
+            // var become = false;
+            //
+            // $.each(self.job.plays, function (index, play) {
+            //
+            //     if (play.become) become = true
+            //
+            // });
+            //
+            // $.ajax({
+            //     url: paths.usersApi + 'user/' + sessionStorage.getItem('user_name') + '/creds/get/',
+            //     data: {cred_id: self.job.cred},
+            //     success: function(data) {
+            //
+            //         if (data.result === 'ok') {
+            //
+            //             new AnsibleRunner({
+            //                 type: 'playbook',
+            //                 playbook: self.job.name,
+            //                 become: become,
+            //                 check: self.job.check,
+            //                 subset: self.job.subset,
+            //                 tags: self.job.tags,
+            //                 skip_tags: self.job.skip_tags,
+            //                 extra_vars: self.job.extra_vars
+            //             }, data.cred, true);
+            //
+            //         }
+            //
+            //         else $.bootstrapGrowl(data.msg, failedAlertOptions)
+            //     }
+            // });
 
         });
 
@@ -451,7 +465,7 @@ JobResults.prototype = {
 
                                 var rowCount = table.DataTable().rows().count();
 
-                                if (rowCount > 0) self.taskContainers[task.id].badge.html(rowCount).show();
+                                if (rowCount > 0) self.taskContainers[task.id].badge.html(rowCount).css('display', 'inline');
 
                                 if (task) {
 

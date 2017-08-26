@@ -1,8 +1,10 @@
-function PlaybookForm(playbook) {
+function PlaybookDialog(playbook, sameWindow) {
 
     var self = this;
 
     self.playbook = playbook;
+
+    self.sameWindow = sameWindow;
 
     self.form = $('<form>').submit(function (event) {
 
@@ -112,7 +114,7 @@ function PlaybookForm(playbook) {
 
     self._buildArgumentsSelector();
 
-    self.limitField = textInputField.clone();
+    self.limitField = textInputField.clone().val(self.playbook.subset);
 
     self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
@@ -134,13 +136,13 @@ function PlaybookForm(playbook) {
         )
     );
 
-    self.checkButton = btnSmall.clone().html('Check');
+    self.checkButton = btnSmall.clone().html('Check').toggleClass('checked_button', self.playbook.check);
 
-    self.tagsField = textInputField.clone();
+    self.tagsField = textInputField.clone().val(self.playbook.tags);
 
-    self.skipTagsField = textInputField.clone();
+    self.skipTagsField = textInputField.clone().val(self.playbook.skip_tags);
 
-    self.extraVarsField = textInputField.clone();
+    self.extraVarsField = textInputField.clone().val(self.playbook.extra_vars);
 
     self.saveButton = btnXsmall.clone().html('Save').css('margin-right', '5px');
 
@@ -173,7 +175,7 @@ function PlaybookForm(playbook) {
 
 }
 
-PlaybookForm.prototype = {
+PlaybookDialog.prototype = {
 
     _buildForm: function () {
 
@@ -266,7 +268,7 @@ PlaybookForm.prototype = {
             extra_vars: self.extraVarsField.val()
         };
 
-        new AnsibleRunner(postData, $('option:selected', self.credentialsSelector).data());
+        new AnsibleRunner(postData, $('option:selected', self.credentialsSelector).data(), self.sameWindow);
 
     },
 

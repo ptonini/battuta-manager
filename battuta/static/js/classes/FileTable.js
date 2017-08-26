@@ -86,8 +86,6 @@ function FileTable(root, user, nameCellFormatter, container) {
 
             event.preventDefault();
 
-            console.log('porra!!!')
-
             var newFile = {name: '', root: self.root, folder: self.folder, user: self.user};
 
             new FileDialog(newFile, 'create', self.table.DataTable().ajax.reload);

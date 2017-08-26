@@ -1,3 +1,13 @@
+@font-face {
+    font-family: Kanit;
+    src: url(/static/components/kanit-googlefont/Kanit-Regular.ttf)
+}
+
+@font-face {
+    font-family: Actor;
+    src: url(/static/components/actor-googlefont/Actor-Regular.ttf)
+}
+
 html {overflow-y: scroll}
 
 body {font-size: small}

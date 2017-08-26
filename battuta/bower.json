@@ -26,7 +26,10 @@
     "js-yaml": "^3.8.3",
     "timezones": "^0.1.0",
     "ace-builds": "^1.2.6",
-    "font-awesome": "font-awsome#^4.7.0"
+    "font-awesome": "font-awsome#^4.7.0",
+    "actor-googlefont": "*",
+    "kanit-googlefont": "*",
+    "requirejs": "^2.3.5"
   },
   "resolutions": {
     "jquery": "^3.2.1"
