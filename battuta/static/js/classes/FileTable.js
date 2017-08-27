@@ -1,10 +1,10 @@
-function FileTable(root, user, nameCellFormatter, container) {
+function FileTable(root, owner, nameCellFormatter, container) {
 
     var self = this;
 
     self.root = root;
 
-    self.user = user;
+    self.owner = owner;
 
     self.folder = window.location.hash.slice(1);
 
@@ -57,7 +57,7 @@ function FileTable(root, user, nameCellFormatter, container) {
 
                         $.ajax({
                             url: paths.filesApi + 'exists/',
-                            data: {name: fieldValue, type: 'directory', root: self.root, user: self.user},
+                            data: {name: fieldValue, type: 'directory', root: self.root, user: self.owner},
                             success: function (data) {
 
                                 if (data.result === 'ok') self.setFolder(fieldValue);
@@ -86,7 +86,13 @@ function FileTable(root, user, nameCellFormatter, container) {
 
             event.preventDefault();
 
-            var newFile = {name: '', root: self.root, folder: self.folder, user: self.user};
+            var newFile = new fileObject;
+
+            newFile.root = self.root;
+
+            newFile.folder = self.folder;
+
+            newFile.owner =  self.owner;
 
             new FileDialog(newFile, 'create', self.table.DataTable().ajax.reload);
 
@@ -97,7 +103,7 @@ function FileTable(root, user, nameCellFormatter, container) {
         .html(spanFA.clone().addClass('fa-upload'))
         .click(function () {
 
-            new UploadDialog(self.folder, self.root, self.user, self.table.DataTable().ajax.reload);
+            new UploadDialog(self.folder, self.root, self.owner, self.table.DataTable().ajax.reload);
 
         });
 
@@ -129,7 +135,7 @@ function FileTable(root, user, nameCellFormatter, container) {
 
     if (self.folder) $.ajax({
         url: paths.filesApi + 'exists/',
-        data: {name: self.folder, type: 'directory', root: self.root, user: self.user},
+        data: {name: self.folder, type: 'directory', root: self.root, owner: self.owner},
         success: function (data) {
 
             if (data.result === 'failed') {
@@ -168,7 +174,7 @@ FileTable.prototype = {
                 dataSrc: '',
                 data: function () {
 
-                    return {folder: self.folder, root: self.root, user:  self.user}
+                    return {folder: self.folder, root: self.root}
 
                 }
             },
@@ -185,7 +191,7 @@ FileTable.prototype = {
 
                 object.root = self.root;
 
-                object.user = self.user;
+                object.owner = self.owner;
 
                 if (object.type === 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
                     .css({'cursor': 'pointer', 'font-weight': '700'})
@@ -248,7 +254,7 @@ FileTable.prototype = {
                             .attr('title', 'Download ' + object.name)
                             .click(function () {
 
-                                window.open(paths.filesApi + 'download/?name=' + object.name + '&root=' + object.root  + '&folder=' + object.folder + '&user=' + object.user,  '_self')
+                                window.open(paths.filesApi + 'download/?name=' + object.name + '&root=' + object.root  + '&folder=' + object.folder + '&owner=' + object.owner,  '_self')
 
                             }),
                         spanFA.clone()

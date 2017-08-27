@@ -130,7 +130,7 @@ class JobView(View):
                 # Execute playbook
                 if job_data['type'] == 'playbook':
 
-                    job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['playbook'])
+                    job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['folder'], job_data['playbook'])
 
                     job_data['name'] = job_data['playbook']
 

@@ -260,6 +260,7 @@ PlaybookDialog.prototype = {
         var postData = {
             type: 'playbook',
             playbook: self.playbook.name,
+            folder: self.playbook.folder,
             become: self._requiresSudo(),
             check: self.checkButton.hasClass('checked_button'),
             subset: self.limitField.val(),

@@ -47,6 +47,8 @@ class Job(models.Model):
 
     name = models.CharField(max_length=128)
 
+    folder = models.CharField(max_length=256, blank=True, null=True)
+
     pid = models.IntegerField(blank=True, null=True)
 
     status = models.CharField(max_length=32)

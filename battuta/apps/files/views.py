@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import json
 import os
 import shutil
@@ -6,15 +8,18 @@ import ntpath
 import tempfile
 import datetime
 import yaml
+import sys
 
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
-from django.contrib.auth.models import User
 from pytz import timezone, utc
 
 from apps.preferences.extras import get_preferences
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 class PageView(View):
@@ -27,11 +32,59 @@ class PageView(View):
 
 class FilesView(View):
 
-    file_sources = [
-        [settings.FILES_PATH, '{{ files_path }}', [], False],
-        [settings.USERDATA_PATH, '{{ userdata_path }}', [], True],
-        [settings.ROLES_PATH, '{{ roles_path }}', ['tasks', 'handlers', 'vars', 'defaults', 'meta'], False]
-    ]
+    @staticmethod
+    def _validate_yaml(full_path):
+
+        with open(full_path, 'r') as yaml_file:
+
+            try:
+
+                yaml.load(yaml_file.read())
+
+                return True, None
+
+            except yaml.YAMLError as e:
+
+                return False, type(e).__name__ + ': ' + e.__str__()
+
+    file_roots = {
+        'files': {
+            'path': settings.FILES_PATH,
+            'prefix': '{{ files_path }}',
+            'exclude': list(),
+            'types': list(),
+            'user': False,
+            'validator': None,
+            'permission': 'users.edit_files'
+        },
+        'playbooks': {
+            'path': settings.PLAYBOOK_PATH,
+            'prefix': None,
+            'exclude': list(),
+            'types': ['yml', 'yaml'],
+            'user': False,
+            'validator': _validate_yaml.__func__,
+            'permission': 'users.edit_playbooks'
+        },
+        'roles': {
+            'path': settings.ROLES_PATH,
+            'prefix': '{{ roles_path }}',
+            'exclude': ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
+            'types': list(),
+            'user': False,
+            'validator': None,
+            'permission': 'users.edit_roles'
+        },
+        'users': {
+            'path': settings.USERDATA_PATH,
+            'prefix': '{{ userdata_path }}',
+            'exclude': list(),
+            'types': list(),
+            'user': False,
+            'validator': None,
+            'permission': 'users.edit_files'
+        }
+    }
 
     archive_types = [
         'application/zip',
@@ -40,111 +93,73 @@ class FilesView(View):
         'application/x-gtar'
     ]
 
-    @staticmethod
-    def _validator(root, full_path):
+    def _set_root(self, root, owner, user):
 
-        if root == 'playbooks':
+        root_dict = self.file_roots[root]
 
-            with open(full_path, 'r') as yaml_file:
+        if root == 'users':
 
-                try:
-
-                    yaml.load(yaml_file.read())
-
-                    return True, None
-
-                except yaml.YAMLError as e:
-
-                    return False, type(e).__name__ + ': ' + e.__str__()
+            root_dict['authorized'] = True if user.username == owner else user.has_perm('users.edit_user_files')
 
         else:
 
-            return True, None
+            root_dict['authorized'] = user.has_perm(root_dict['permission'])
 
-    @staticmethod
-    def _set_root(root, user, current_user):
+        if root_dict['path'] and not os.path.exists(root_dict['path']):
 
-        root_dir = None
+            os.makedirs(root_dict['path'])
 
-        file_types = '*'
-
-        authorized = False
-
-        if root == 'files':
-
-            root_dir = settings.FILES_PATH
-
-            authorized = current_user.has_perm('users.edit_files')
-
-        elif root == 'roles':
-
-            root_dir = settings.ROLES_PATH
-
-            authorized = current_user.has_perm('users.edit_roles')
-
-        elif root == 'playbooks':
-
-            root_dir = settings.PLAYBOOK_PATH
-
-            authorized = current_user.has_perm('users.edit_playbooks')
-
-            file_types = ['yml', 'yaml']
-
-        elif root == 'user' and User.objects.filter(username=user).exists():
-
-            root_dir = os.path.join(settings.USERDATA_PATH, user)
-
-            authorized = True if current_user.username == user else user.has_perm('users.edit_user_files')
-
-        if root_dir and not os.path.exists(root_dir):
-
-            os.makedirs(root_dir)
-
-        return root_dir, file_types, authorized
+        return root_dict
 
     def get(self, request, action):
-
-        root_dir, file_types, authorized = self._set_root(request.GET['root'], request.GET['user'], request.user)
 
         prefs = get_preferences()
 
         if action == 'search':
 
-            prefs = get_preferences()
-
             data = list()
 
-            for path, prefix, exclude, is_user_folder in self.file_sources:
+            for key in self.file_roots:
 
-                for root, dirs, files in os.walk(path):
+                source = self.file_roots[key]
 
-                    for file_name in files:
+                if source['prefix']:
 
-                        full_path = os.path.join(root, file_name)
-                        relative_path = root.replace(path, prefix)
+                    for root, dirs, files in os.walk(source['path']):
 
-                        if not prefs['show_hidden_files'] and any(s.startswith('.') for s in full_path.split('/')):
-                            continue
+                        for file_name in files:
 
-                        if request.GET['term'] not in full_path:
-                            continue
+                            full_path = os.path.join(root, file_name)
 
-                        if root.split('/')[-1] in exclude:
-                            continue
+                            relative_path = root.replace(source['path'], source['prefix'])
 
-                        if request.GET['type'] == 'archive':
+                            is_hidden = any(s.startswith('.') for s in full_path.split('/'))
 
-                            if magic.from_file(full_path, mime='true') not in self.archive_types:
-                                continue
+                            excluded = root.split('/')[-1] in source['exclude']
 
-                        if is_user_folder and relative_path.split('/')[1] != request.user.username:
-                            continue
+                            is_not_archive = magic.from_file(full_path, mime='true') not in self.archive_types
 
-                        data.append({'value': os.path.join(relative_path, file_name)})
+                            if request.GET['term'] in full_path:
+
+                                if is_hidden and not prefs['show_hidden_files']:
+
+                                    continue
+
+                                if excluded or request.GET['type'] == 'archive' and is_not_archive:
+
+                                    continue
+
+                                if source['user'] and relative_path.split('/')[1] != request.user.username:
+
+                                    continue
+
+                                data.append({'value': os.path.join(relative_path, file_name)})
 
         else:
 
-            if not root_dir:
+            root = self._set_root(request.GET['root'], request.GET.get('owner'), request.user)
+
+            if not root['path']:
 
                 raise Http404('Invalid root')
 
@@ -156,13 +171,13 @@ class FilesView(View):
 
                 if request.GET['folder']:
 
-                    directory = os.path.join(root_dir, request.GET['folder'])
+                    directory = os.path.join(root['path'], request.GET['folder'])
 
                     folder = request.GET['folder']
 
                 else:
 
-                    directory = root_dir
+                    directory = root['path']
 
                     folder = ''
 
@@ -170,11 +185,15 @@ class FilesView(View):
 
                     full_path = os.path.join(directory, base_name)
 
+                    is_valid = True
+
+                    error = None
+
                     if not prefs['show_hidden_files'] and base_name.startswith('.'):
 
                         continue
 
-                    if file_types != '*' and base_name.split('.')[-1] not in file_types:
+                    if len(root['types']) > 0 and base_name.split('.')[-1] not in root['types']:
 
                         continue
 
@@ -182,15 +201,13 @@ class FilesView(View):
 
                         file_type = magic.from_file(full_path, mime='true')
 
-                        is_valid, error = self._validator(request.GET['root'], full_path)
+                        if root['validator']:
+
+                            is_valid, error = root['validator'](full_path)
 
                     else:
 
                         file_type = 'directory'
-
-                        is_valid = True
-
-                        error = None
 
                     file_size = os.path.getsize(full_path)
 
@@ -211,7 +228,7 @@ class FilesView(View):
 
             elif action == 'read':
 
-                full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
+                full_path = os.path.join(root['path'], request.GET['folder'], request.GET['name'])
 
                 if os.path.exists(full_path):
 
@@ -252,7 +269,7 @@ class FilesView(View):
 
                     raise Http404('Invalid object type')
 
-                if check_method(os.path.join(root_dir, request.GET['name'])):
+                if check_method(os.path.join(root['path'], request.GET['name'])):
 
                     data = {'result': 'ok'}
 
@@ -265,7 +282,7 @@ class FilesView(View):
 
             elif action == 'download':
 
-                full_path = os.path.join(root_dir, request.GET['folder'], request.GET['name'])
+                full_path = os.path.join(root['path'], request.GET['folder'], request.GET['name'])
 
                 if os.path.isfile(full_path):
 
@@ -297,17 +314,13 @@ class FilesView(View):
 
     def post(self, request, action):
 
-        root_dir, file_types, authorized = self._set_root(request.POST['root'], request.POST['user'], request.user)
+        root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
-        if authorized:
+        if root['authorized']:
 
-            full_path = os.path.join(root_dir, request.POST['folder'], request.POST['name'])
+            full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
 
-            new_path = os.path.join(root_dir, request.POST['folder'], request.POST['new_name'])
-
-            if file_types != '*' and new_path.split('.')[-1] not in file_types:
-
-                new_path += '.' + file_types[0]
+            new_path = os.path.join(root['path'], request.POST['folder'], request.POST['new_name'])
 
             if action == 'save':
 

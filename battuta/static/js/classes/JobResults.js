@@ -29,7 +29,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
             var playbook = {
                 name: self.job.name,
                 root: 'playbooks',
-                folder: '',
+                folder: self.job.folder,
                 user: sessionStorage.getItem('user_name'),
                 check: self.job.check,
                 subset: self.job.subset,
@@ -39,38 +39,6 @@ function JobResults(jobId, headerContainer, resultContainer) {
             };
 
             new PlaybookDialog(playbook, true)
-
-            // var become = false;
-            //
-            // $.each(self.job.plays, function (index, play) {
-            //
-            //     if (play.become) become = true
-            //
-            // });
-            //
-            // $.ajax({
-            //     url: paths.usersApi + 'user/' + sessionStorage.getItem('user_name') + '/creds/get/',
-            //     data: {cred_id: self.job.cred},
-            //     success: function(data) {
-            //
-            //         if (data.result === 'ok') {
-            //
-            //             new AnsibleRunner({
-            //                 type: 'playbook',
-            //                 playbook: self.job.name,
-            //                 become: become,
-            //                 check: self.job.check,
-            //                 subset: self.job.subset,
-            //                 tags: self.job.tags,
-            //                 skip_tags: self.job.skip_tags,
-            //                 extra_vars: self.job.extra_vars
-            //             }, data.cred, true);
-            //
-            //         }
-            //
-            //         else $.bootstrapGrowl(data.msg, failedAlertOptions)
-            //     }
-            // });
 
         });
 

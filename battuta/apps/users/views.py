@@ -39,7 +39,7 @@ class PageView(View):
 
             if User.objects.filter(username=args[0]).exists():
 
-                return render(request, 'users/files.html', {'user_name': args[0]})
+                return render(request, 'users/files.html', {'owner': args[0]})
 
             else:
 
