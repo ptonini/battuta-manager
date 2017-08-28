@@ -86,6 +86,10 @@ class BattutaInventory:
 
         if internal_vars:
 
+            if 'vars' not in data['all']:
+
+                data['all']['vars'] = dict()
+
             data['all']['vars']['roles_path'] = settings.ROLES_PATH
 
             data['all']['vars']['files_path'] = settings.FILES_PATH
@@ -108,10 +112,4 @@ class BattutaInventory:
 
         host_vars = self._variable_manager.get_vars(self._loader, host=host)
 
-        if key in host_vars:
-
-            return host_vars[key]
-
-        else:
-
-            return None
+        return host_vars[key] if key in host_vars else None

@@ -89,11 +89,9 @@
 
             }
 
-            opts.loadCallback(gridContainer);
+            opts.loadCallback && opts.loadCallback(gridContainer);
 
             _formatGrid(gridBody, opts);
-
-            gridContainer.data('dynagridOptions', opts)
 
         }
 
@@ -174,6 +172,8 @@
         if (typeof options === 'object') {
 
             opts = $.extend({}, $.fn.DynaGrid.defaults, options);
+
+            gridContainer.data('dynagridOptions', opts);
 
             var gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.gridTitle});
 
@@ -336,6 +336,12 @@
                     });
 
                     return selection;
+
+                    break;
+
+                case 'getCount':
+
+                    return gridBody.find('.dynagrid-item').length;
 
                 default:
 

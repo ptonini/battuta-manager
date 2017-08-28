@@ -28,8 +28,8 @@ function UserGroupTable(container) {
         dom: '<"toolbar">frtip',
         paging: false,
         columns: [
-            {class: 'col-md-4', title: 'name', data: 'name'},
-            {class: 'col-md-6', title: 'description', data: 'description'},
+            {class: 'col-md-3', title: 'name', data: 'name'},
+            {class: 'col-md-7', title: 'description', data: 'description'},
             {class: 'col-md-2', title: 'members', data: 'member_count'}
         ],
         rowCallback: function (row, group) {
@@ -40,7 +40,7 @@ function UserGroupTable(container) {
 
             });
 
-            $(row).find('td:eq(-1)').append(
+            if (group.editable) $(row).find('td:eq(-1)').append(
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 

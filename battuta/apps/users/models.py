@@ -63,6 +63,7 @@ class GroupData(models.Model):
             ('edit_tasks', 'Can edit tasks'),
             ('edit_roles', 'Can edit roles'),
             ('execute_jobs', 'Can execute jobs'),
+            ('view_job_history', 'Can view job history'),
             ('edit_files', 'Can create and edit files'),
             ('edit_users', 'Can create and edit users'),
             ('edit_user_groups', 'Can create and edit user groups'),

@@ -1,4 +1,5 @@
 function CopyVariables(node, copyCallback) {
+
     var self = this;
 
     self.node = node;
@@ -19,8 +20,7 @@ function CopyVariables(node, copyCallback) {
 
     self.nodeTypeDialog = smallDialog.clone().append(
         divRow.clone().addClass('text-center').clone().append(
-            divCol12.clone().append($('<h4>').html('Select source type')),
-            divCol12.clone().append($('<br>')),
+            divCol12.clone().css('margin-bottom', '1rem').append($('<h4>').html('Select source type')),
             divCol4.clone().addClass('col-md-offset-2').append(self.hostsButton),
             divCol4.clone().append(self.groupsButton)
         )

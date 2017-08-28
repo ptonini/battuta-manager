@@ -35,11 +35,11 @@ function Nodes(nodeType, container) {
 
         if (self.deleteModeBtn.hasClass('checked_button')) {
 
-            self.nodeGrid = new NodeGrid(self.nodeType, 'delete', null, self.gridContainer);
+            self.nodeGrid = new NodeGrid(self.nodeType, 'delete', null, null, self.gridContainer);
 
         }
 
-        else self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, self.gridContainer)
+        else self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, hideDeleteButtonIfEmpty, self.gridContainer)
 
     });
 
@@ -114,13 +114,19 @@ function Nodes(nodeType, container) {
 
     self.nodeTable = new NodeTable(self.nodeType, reloadInfo, self.tableContainer);
 
-    self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, self.gridContainer);
+    self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, hideDeleteButtonIfEmpty, self.gridContainer);
 
     function reloadInfo() {
 
         self.nodeTable.reload();
 
         self.nodeGrid.reload();
+
+    }
+
+    function hideDeleteButtonIfEmpty(gridContainer) {
+
+        gridContainer.DynaGrid('getCount') === 0 ? self.deleteModeBtn.hide() : self.deleteModeBtn.show()
 
     }
 

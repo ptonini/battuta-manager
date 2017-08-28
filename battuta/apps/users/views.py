@@ -3,7 +3,6 @@ import os
 from pytz import timezone
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
@@ -319,7 +318,7 @@ class CredentialView(View):
 
         user = get_object_or_404(User, username=user_name)
 
-        if request.user == user:
+        if request.user == user or request.user.has_perm('users.edit_users'):
 
             if action == 'list':
 
@@ -353,7 +352,7 @@ class CredentialView(View):
 
                 else:
 
-                    raise PermissionDenied
+                    data = {'result': 'denied'}
 
             else:
 
@@ -361,7 +360,7 @@ class CredentialView(View):
 
         else:
 
-            raise PermissionDenied
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -520,7 +519,8 @@ class UserGroupView(View):
             'name': group.name,
             'description': group.groupdata.description,
             'permissions': [perm.codename for perm in group.permissions.all()],
-            'member_count': len(User.objects.filter(groups__name=group.name))
+            'member_count': len(User.objects.filter(groups__name=group.name)),
+            'editable': group.groupdata.editable
         }
 
     def get(self, request, group_name, action):
@@ -579,6 +579,8 @@ class UserGroupView(View):
 
                 group = Group()
 
+                group.groupdata = GroupData()
+
             else:
 
                 group = get_object_or_404(Group, name=group_name)
@@ -587,37 +589,46 @@ class UserGroupView(View):
 
             if action == 'save':
 
-                group_form = GroupForm(form_data or None, instance=group)
+                if group.groupdata.editable:
 
-                if group_form.is_valid():
+                    group_form = GroupForm(form_data or None, instance=group)
 
-                    group = group_form.save()
+                    if group_form.is_valid():
 
-                    GroupData.objects.get_or_create(group=group)
+                        group = group_form.save()
 
-                    group.groupdata.description = request.POST['description'] if 'description' in request.POST else ''
+                        GroupData.objects.get_or_create(group=group)
 
-                    group.groupdata.save()
+                        group.groupdata.description = request.POST['description'] if 'description' in request.POST else ''
 
-                    for permission in json.loads(request.POST['permissions']):
+                        group.groupdata.save()
 
-                        perm = Permission.objects.get(codename=permission[0])
+                        for permission in json.loads(request.POST['permissions']):
 
-                        group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
+                            perm = Permission.objects.get(codename=permission[0])
 
-                    data = {'result': 'ok', 'group': self._group_to_dict(group)}
+                            group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
 
+                        data = {'result': 'ok', 'group': self._group_to_dict(group)}
+
+                    else:
+
+                        data = {'result': 'failed', 'msg': str(group_form.errors)}
                 else:
 
-                    data = {'result': 'failed', 'msg': str(group_form.errors)}
+                    data = {'result': 'failed', 'msg': 'This group is not editable'}
 
             elif action == 'delete':
 
-                if True:
+                if group.groupdata.editable:
 
                     group.delete()
 
-                data = {'result': 'ok'}
+                    data = {'result': 'ok'}
+
+                else:
+
+                    data = {'result': 'failed', 'msg': 'This group can not be removed'}
 
             elif action == 'add_members':
 

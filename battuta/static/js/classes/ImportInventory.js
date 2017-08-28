@@ -45,7 +45,6 @@ function ImportInventory(container) {
     self.fileInput
         .fileinput({
             uploadUrl: paths.inventoryApi + 'import/',
-            uploadAsync: true,
             uploadExtraData: function () {
 
                 return {
@@ -54,13 +53,7 @@ function ImportInventory(container) {
                 }
 
             },
-            showPreview: false,
-            showRemove: false,
-            showCancel: false,
-            showUpload: false,
-            browseLabel: '',
-            captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm'
+            uploadAsync: true
         })
         .on('fileuploaded', function (event, data) {
 

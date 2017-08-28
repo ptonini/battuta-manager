@@ -113,6 +113,19 @@ $.extend($.ui.dialog.prototype.options, {
     resizable: false
 });
 
+// Bootstrap File Input
+$.extend($.fn.fileinput.defaults, {
+    browseIcon: '<i class="fa fa-folder-open"></i>&nbsp;',
+    showPreview: false,
+    showRemove: false,
+    showCancel: false,
+    showUpload: false,
+    captionClass: 'form-control input-sm',
+    browseClass: 'btn btn-default btn-sm'
+});
+
+$.extend($.fn.fileinputLocales.en, {browseLabel: ''});
+
 
 // Functions ///////////////////////////
 

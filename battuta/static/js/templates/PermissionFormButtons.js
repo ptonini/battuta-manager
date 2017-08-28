@@ -59,6 +59,11 @@ var PermissionFormButtons = {
             divFormGroup.clone().append(
                 btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit roles').data('permission', 'edit_roles')
             )
+        ),
+        divCol4.clone().append(
+            divFormGroup.clone().append(
+                btnSmallBlkClk.clone(true).addClass('permBtn').html('View job history').data('permission', 'view_job_history')
+            )
         )
     ),
 

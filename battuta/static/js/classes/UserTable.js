@@ -39,8 +39,11 @@ function UserTable(container) {
 
             });
 
-            $(row).find('td:eq(3)').append(
-                prettyBoolean($(row).find('td:eq(3)'), user.is_superuser),
+            var lastCell = $(row).find('td:eq(3)');
+
+            prettyBoolean(lastCell, user.is_superuser);
+
+            if (!user.is_superuser) lastCell.append(
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 

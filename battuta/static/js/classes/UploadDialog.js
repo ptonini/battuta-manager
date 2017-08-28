@@ -15,7 +15,6 @@ function UploadDialog(folder, root, owner, uploadCallback) {
     self.uploadField
         .fileinput({
             uploadUrl: paths.filesApi + 'upload/',
-            uploadAsync: true,
             uploadExtraData: function () {
 
                 var file = self.uploadField.fileinput('getFileStack')[0];
@@ -30,13 +29,7 @@ function UploadDialog(folder, root, owner, uploadCallback) {
                 }
 
             },
-            showPreview: false,
-            showRemove: false,
-            showCancel: false,
-            showUpload: false,
-            browseLabel: '',
-            captionClass: 'form-control input-sm',
-            browseClass: 'btn btn-default btn-sm',
+            uploadAsync: true,
             progressClass: 'progress-bar progress-bar-success active'
         })
         .on('fileuploaded', function (event, data) {

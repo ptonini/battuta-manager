@@ -410,7 +410,7 @@ class HistoryView(View):
         if action == 'list':
 
             # Build queryset
-            queryset = Job.objects.all() if request.user.is_superuser else Job.objects.filter(user=request.user)
+            queryset = Job.objects.all() if request.user.has_perm('users.view_job_history') else Job.objects.filter(user=request.user)
 
             data = JobTableHandler(request, queryset).build_response()
 

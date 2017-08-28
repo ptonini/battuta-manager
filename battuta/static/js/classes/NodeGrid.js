@@ -1,4 +1,4 @@
-function NodeGrid(nodeType, mode, addCallback, container) {
+function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
 
     var self = this;
 
@@ -9,6 +9,7 @@ function NodeGrid(nodeType, mode, addCallback, container) {
     self.container = container;
 
     self.gridOptions = {
+        loadCallback: loadCallback,
         columns: sessionStorage.getItem('node_grid_columns'),
         checkered: true,
         showFilter: true,
