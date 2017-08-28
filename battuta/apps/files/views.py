@@ -80,7 +80,7 @@ class FilesView(View):
             'prefix': '{{ userdata_path }}',
             'exclude': list(),
             'types': list(),
-            'user': False,
+            'user': True,
             'validator': None,
             'permission': 'users.edit_files'
         }
@@ -100,6 +100,8 @@ class FilesView(View):
         if root == 'users':
 
             root_dict['authorized'] = True if user.username == owner else user.has_perm('users.edit_user_files')
+
+            root_dict['path'] = os.path.join(settings.USERDATA_PATH, owner)
 
         else:
 
@@ -169,17 +171,9 @@ class FilesView(View):
 
                 data = list()
 
-                if request.GET['folder']:
+                directory = os.path.join(root['path'], request.GET['folder'])
 
-                    directory = os.path.join(root['path'], request.GET['folder'])
-
-                    folder = request.GET['folder']
-
-                else:
-
-                    directory = root['path']
-
-                    folder = ''
+                folder = request.GET['folder']
 
                 for base_name in os.listdir(directory):
 
@@ -188,14 +182,6 @@ class FilesView(View):
                     is_valid = True
 
                     error = None
-
-                    if not prefs['show_hidden_files'] and base_name.startswith('.'):
-
-                        continue
-
-                    if len(root['types']) > 0 and base_name.split('.')[-1] not in root['types']:
-
-                        continue
 
                     if os.path.isfile(full_path):
 
@@ -208,6 +194,14 @@ class FilesView(View):
                     else:
 
                         file_type = 'directory'
+
+                    if not prefs['show_hidden_files'] and base_name.startswith('.'):
+
+                        continue
+
+                    if file_type != 'directory' and len(root['types']) > 0 and base_name.split('.')[-1] not in root['types']:
+
+                        continue
 
                     file_size = os.path.getsize(full_path)
 
@@ -316,117 +310,127 @@ class FilesView(View):
 
         root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
+        print request.POST
+
         if root['authorized']:
 
             full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
 
             new_path = os.path.join(root['path'], request.POST['folder'], request.POST['new_name'])
 
-            if action == 'save':
+            is_directory = (request.POST['type'] == 'directory')
 
-                if full_path == new_path or not os.path.exists(new_path):
+            if is_directory or len(root['types']) == 0 or request.POST['new_name'].split('.')[-1] in root['types']:
 
-                    try:
+                if action == 'save':
 
-                        with open(new_path, 'w') as f:
-
-                            f.write(request.POST['text'].encode('utf8'))
-
-                            data = {'result': 'ok'}
-
-                    except Exception as e:
-
-                        data = {'result': 'failed', 'msg': str(e)}
-
-                    if full_path != new_path:
+                    if full_path == new_path or not os.path.exists(new_path):
 
                         try:
 
-                            os.remove(full_path)
+                            with open(new_path, 'w') as f:
 
-                        except os.error:
+                                f.write(request.POST['text'].encode('utf8'))
 
-                            pass
+                                data = {'result': 'ok'}
 
-                else:
+                        except Exception as e:
 
-                    data = {'result': 'failed', 'msg': 'This filename is already in use'}
+                            data = {'result': 'failed', 'msg': str(e)}
 
-            elif action == 'rename':
+                        if full_path != new_path:
 
-                if os.path.exists(new_path):
+                            try:
 
-                    data = {'result': 'failed', 'msg': 'This name is already in use'}
+                                os.remove(full_path)
 
-                else:
+                            except os.error:
 
-                    os.rename(full_path, new_path)
-
-                    data = {'result': 'ok'}
-
-            elif action == 'create':
-
-                if os.path.exists(new_path):
-
-                    data = {'result': 'failed', 'msg': 'This name is already in use'}
-
-                else:
-
-                    if request.POST['is_folder'] == 'true':
-
-                        os.makedirs(new_path)
+                                pass
 
                     else:
 
-                        open(new_path, 'a').close()
+                        data = {'result': 'failed', 'msg': 'This filename is already in use'}
 
-                    data = {'result': 'ok'}
+                elif action == 'rename':
 
-            elif action == 'copy':
+                    if os.path.exists(new_path):
 
-                if os.path.exists(new_path):
-
-                    data = {'result': 'failed', 'msg': 'This name is already in use'}
-
-                else:
-
-                    shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
-
-                    data = {'result': 'ok'}
-
-            elif action == 'upload':
-
-                if os.path.exists(new_path):
-
-                    data = {'result': 'failed', 'msg': 'This name is already in use'}
-
-                else:
-
-                    try:
-
-                        with open(new_path, 'w') as f:
-
-                            for chunk in request.FILES['file_data']:
-
-                                f.write(chunk)
-
-                    except Exception as e:
-
-                        data = {'result': 'failed', 'msg': str(e)}
+                        data = {'result': 'failed', 'msg': 'This name is already in use'}
 
                     else:
+
+                        os.rename(full_path, new_path)
 
                         data = {'result': 'ok'}
 
-            elif action == 'delete':
+                elif action == 'create':
 
-                os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
+                    if os.path.exists(new_path):
 
-                data = {'result': 'ok'}
+                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+
+                    else:
+
+                        if request.POST['type'] == 'directory':
+
+                            os.makedirs(new_path)
+
+                        else:
+
+                            open(new_path, 'a').close()
+
+                        data = {'result': 'ok'}
+
+                elif action == 'copy':
+
+                    if os.path.exists(new_path):
+
+                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+
+                    else:
+
+                        shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
+
+                        data = {'result': 'ok'}
+
+                elif action == 'upload':
+
+                    if os.path.exists(new_path):
+
+                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+
+                    else:
+
+                        try:
+
+                            with open(new_path, 'w') as f:
+
+                                for chunk in request.FILES['file_data']:
+
+                                    f.write(chunk)
+
+                        except Exception as e:
+
+                            data = {'result': 'failed', 'msg': str(e)}
+
+                        else:
+
+                            data = {'result': 'ok'}
+
+                elif action == 'delete':
+
+                    os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
+
+                    data = {'result': 'ok'}
+
+                else:
+
+                    raise Http404('Invalid action')
 
             else:
 
-                raise Http404('Invalid action')
+                data = {'result': 'failed', 'msg': 'File extension not allowed is this folder'}
 
         else:
 

@@ -86,7 +86,7 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
             event.preventDefault();
 
-            var newFile = new fileObject;
+            var newFile = new FileObject;
 
             newFile.root = self.root;
 
@@ -174,7 +174,7 @@ FileTable.prototype = {
                 dataSrc: '',
                 data: function () {
 
-                    return {folder: self.folder, root: self.root}
+                    return {folder: self.folder, root: self.root, owner: self.owner}
 
                 }
             },
@@ -193,14 +193,18 @@ FileTable.prototype = {
 
                 object.owner = self.owner;
 
-                if (object.type === 'directory') $(row).attr('class', 'directory_row').find('td:eq(0)')
-                    .css({'cursor': 'pointer', 'font-weight': '700'})
-                    .off('click')
-                    .click(function () {
+                if (object.type === 'directory') {
 
-                        object.folder ? self.setFolder(object.folder + '/' + object.name) : self.setFolder(object.name)
+                    $(row).attr('class', 'directory_row').find('td:eq(0)')
+                        .css({'cursor': 'pointer', 'font-weight': '700'})
+                        .off('click')
+                        .click(function () {
 
-                    });
+                            object.folder ? self.setFolder(object.folder + '/' + object.name) : self.setFolder(object.name)
+
+                        });
+
+                }
 
                 else self.nameCellFormatter && self.nameCellFormatter($(row).find('td:eq(0)'), object);
 

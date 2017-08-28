@@ -32,13 +32,15 @@
                         url: '/static/templates/playbook_template.yml',
                         success: function (data) {
 
-                            var file = {
-                                name: '',
-                                root: 'playbooks',
-                                folder: playbookTable.getFolder(),
-                                text: data,
-                                user: '{{ user.username }}'
-                            };
+                            var file = new FileObject;
+
+                            file.root = 'playbooks';
+
+                            file.folder = playbookTable.getFolder();
+
+                            file.text = data;
+
+
 
                             new TextEditor(file, function () {
 

@@ -29,7 +29,7 @@ function FileDialog(file, action, postCallback) {
 
                     self.file.new_name = self.nameFieldInput.val();
 
-                    if (action === 'create') self.file['is_folder'] = self.isFolderInput.is(':checked');
+                    if (action === 'create' && self.isFolderInput.is(':checked')) self.file.type = 'directory';
 
                     if (self.file.new_name && self.file.new_name !== self.file.name) {
 

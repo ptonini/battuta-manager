@@ -10,80 +10,6 @@ function PlaybookDialog(playbook, sameWindow) {
 
         event.preventDefault();
 
-        switch ($(document.activeElement).html()) {
-
-            case 'Save':
-
-                if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
-
-                    $.ajax({
-                        url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/save/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            id: self.loadedArgs.id,
-                            subset: self.limitField.val(),
-                            tags: self.tagsField.val(),
-                            skip_tags: self.skipTagsField.val(),
-                            extra_vars: self.extraVarsField.val(),
-                            playbook: self.playbook.name
-                        },
-                        success: function (data) {
-
-                            if (data.result === 'ok') {
-
-                                self._buildArgumentsSelector(data.id);
-
-                                $.bootstrapGrowl('Arguments saved', {type: 'success'});
-
-                            }
-
-                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                        }
-
-                    });
-                }
-
-                else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
-
-                break;
-
-            case 'Delete':
-
-                new DeleteDialog(function() {
-
-                    $.ajax({
-                        url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/delete/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: self.loadedArgs,
-                        success: function (data) {
-
-                            if (data.result === 'ok') {
-
-                                self._buildArgumentsSelector();
-
-                                $.bootstrapGrowl('Arguments deleted', {type: 'success'});
-
-                            }
-
-                            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                        }
-                    });
-                });
-                break;
-
-            case 'Check':
-
-                $(document.activeElement).toggleClass('checked_button');
-
-                break;
-
-        }
     });
 
     self.argumentsSelector = selectField.clone().change(function () {
@@ -96,7 +22,7 @@ function PlaybookDialog(playbook, sameWindow) {
 
         self.checkButton.removeClass('checked_button');
 
-        self.deleteButton.toggleClass('hidden', (arguments.val() === 'new'));
+        self.dialog.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
 
         if (arguments.val() !== 'new') {
 
@@ -111,8 +37,6 @@ function PlaybookDialog(playbook, sameWindow) {
         }
 
     });
-
-    self._buildArgumentsSelector();
 
     self.limitField = textInputField.clone().val(self.playbook.subset);
 
@@ -136,7 +60,13 @@ function PlaybookDialog(playbook, sameWindow) {
         )
     );
 
-    self.checkButton = btnSmall.clone().html('Check').toggleClass('checked_button', self.playbook.check);
+    self.checkButton = btnSmall.clone().html('Check')
+        .toggleClass('checked_button', self.playbook.check)
+        .click( function () {
+
+            $(document.activeElement).toggleClass('checked_button');
+
+        });
 
     self.tagsField = textInputField.clone().val(self.playbook.tags);
 
@@ -144,15 +74,11 @@ function PlaybookDialog(playbook, sameWindow) {
 
     self.extraVarsField = textInputField.clone().val(self.playbook.extra_vars);
 
-    self.saveButton = btnXsmall.clone().html('Save').css('margin-right', '5px');
-
-    self.deleteButton = btnXsmall.clone().html('Delete');
-
     self.credentialsSelector = selectField.clone();
 
     Credentials.buildSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
 
-    self.playbookDialog = largeDialog.clone();
+    self.dialog = largeDialog.clone();
 
     $.ajax({
         url: paths.filesApi + 'read/',
@@ -186,7 +112,7 @@ PlaybookDialog.prototype = {
             .css('font-size', 'x-small')
             .toggleClass('hidden', !self._requiresSudo());
 
-        self.playbookDialog.append(
+        self.dialog.append(
             divRow.clone().append(
                 divCol12.clone().html($('<h4>').append(self.playbook.name, self.requiresSudoAlert))
             ),
@@ -208,15 +134,14 @@ PlaybookDialog.prototype = {
                     divCol12.clone().append(
                         divFormGroup.clone().append($('<label>').html('Extra vars').append(self.extraVarsField))
                     ),
-                    divCol12.clone().append(self.saveButton, self.deleteButton),
-                    divCol6.clone().css('margin-top', '18px').append(
+                    divCol6.clone().append(
                         $('<label>').html('Credentials').append(self.credentialsSelector)
                     )
                 )
             )
         );
 
-        self.playbookDialog
+        self.dialog
             .dialog({
                 width: 480,
                 buttons: {
@@ -226,6 +151,71 @@ PlaybookDialog.prototype = {
 
                     },
 
+                    Save: function () {
+
+                        if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
+
+                            $.ajax({
+                                url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/save/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {
+                                    id: self.loadedArgs.id,
+                                    subset: self.limitField.val(),
+                                    tags: self.tagsField.val(),
+                                    skip_tags: self.skipTagsField.val(),
+                                    extra_vars: self.extraVarsField.val(),
+                                    playbook: self.playbook.name
+                                },
+                                success: function (data) {
+
+                                    if (data.result === 'ok') {
+
+                                        self._buildArgumentsSelector(data.id);
+
+                                        $.bootstrapGrowl('Arguments saved', {type: 'success'});
+
+                                    }
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
+                                }
+
+                            });
+                        }
+
+                        else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
+
+                    },
+                    Delete: function () {
+
+                        new DeleteDialog(function() {
+
+                            $.ajax({
+                                url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/delete/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: self.loadedArgs,
+                                success: function (data) {
+
+                                    if (data.result === 'ok') {
+
+                                        self._buildArgumentsSelector();
+
+                                        $.bootstrapGrowl('Arguments deleted', {type: 'success'});
+
+                                    }
+
+                                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
+                                }
+                            });
+
+                        });
+
+                    },
                     Cancel: function () {
 
                         $(this).dialog('close');
@@ -251,6 +241,9 @@ PlaybookDialog.prototype = {
             }
 
         });
+
+        self._buildArgumentsSelector();
+
     },
 
     _runPlaybook: function () {

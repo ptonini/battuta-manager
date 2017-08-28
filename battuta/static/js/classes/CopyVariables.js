@@ -17,8 +17,13 @@ function CopyVariables(node, copyCallback) {
 
     });
 
-    self.nodeTypeDialog = $('<div>').attr('class', 'text-center').append(
-        $('<h5>').html('Select source type'), self.hostsButton, self.groupsButton
+    self.nodeTypeDialog = smallDialog.clone().append(
+        divRow.clone().addClass('text-center').clone().append(
+            divCol12.clone().append($('<h4>').html('Select source type')),
+            divCol12.clone().append($('<br>')),
+            divCol4.clone().addClass('col-md-offset-2').append(self.hostsButton),
+            divCol4.clone().append(self.groupsButton)
+        )
     );
 
     self.nodeTypeDialog

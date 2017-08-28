@@ -1,4 +1,4 @@
-function MainMenu(username, is_authenticated, is_superuser, container) {
+function MainMenu(username, is_authenticated, container) {
 
     var self = this;
 
@@ -6,11 +6,7 @@ function MainMenu(username, is_authenticated, is_superuser, container) {
 
     self.is_authenticated = (is_authenticated === 'True');
 
-    self.is_superuser = (is_superuser === 'True');
-
     self.is_authenticated && Preferences.getPreferences();
-
-    //self.usersDropdownMenu =
 
     self.mainMenu = $('<ul>').attr('class', 'nav navbar-nav').append(
         liDropdown.clone().append(

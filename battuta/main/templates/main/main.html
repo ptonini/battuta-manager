@@ -30,9 +30,9 @@
     <script type="text/javascript" src="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/battuta.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/templates/RootPaths.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/templates/ElementTemplates.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/templates/Elements.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/templates/PermissionFormButtons.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/templates/FileObject.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/FileObject.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AdHocTaskForm.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AdHocTaskTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AnsibleRunner.js' %}"></script>
@@ -73,7 +73,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            new MainMenu('{{ user.username }}', '{% if user.is_authenticated %}True{% endif %}', '{{ user.is_superuser }}', $('#menu_container'))
+            new MainMenu('{{ user.username }}', '{% if user.is_authenticated %}True{% endif %}', $('#menu_container'))
 
         })
     </script>
