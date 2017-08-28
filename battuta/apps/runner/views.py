@@ -354,7 +354,7 @@ class PlaybookView(View):
     @staticmethod
     def post(request, playbook, action):
 
-        if request.user.has_perm('users.edit_tasks'):
+        if request.user.has_perm('users.edit_playbooks'):
 
             # Save playbook arguments
             if action == 'save':
@@ -415,6 +415,7 @@ class HistoryView(View):
             data = JobTableHandler(request, queryset).build_response()
 
         else:
+
             raise Http404('Invalid action')
 
         return HttpResponse(data, content_type='application/json')
