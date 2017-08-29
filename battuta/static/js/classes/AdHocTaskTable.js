@@ -6,7 +6,7 @@ function AdHohTaskTable(pattern, container) {
     self.pattern = pattern;
 
     container.append(
-        $('<h4>').html('Saved tasks'),
+        $('<h4>').html('Tasks'),
         self.table
     );
 
@@ -62,9 +62,7 @@ function AdHohTaskTable(pattern, container) {
             $('div.task-toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Create task').click(function () {
 
-                    var task = {id: null, saveCallback: self.table.DataTable().ajax.reload};
-
-                    new AdHocTaskForm(self.pattern, 'dialog', task)
+                    new AdHocTaskForm(self.pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
 
                 })
             )

@@ -2,6 +2,8 @@ function PlaybookDialog(playbook, sameWindow) {
 
     var self = this;
 
+    console.log(playbook);
+
     self.playbook = playbook;
 
     self.sameWindow = sameWindow;
@@ -67,6 +69,8 @@ function PlaybookDialog(playbook, sameWindow) {
             $(document.activeElement).toggleClass('checked_button');
 
         });
+
+    self.limitField.val(self.playbook.subset);
 
     self.tagsField = textInputField.clone().val(self.playbook.tags);
 

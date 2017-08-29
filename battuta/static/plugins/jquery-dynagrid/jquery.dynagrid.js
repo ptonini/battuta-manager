@@ -8,9 +8,7 @@
 
         function _formatGrid(gridBody, opts) {
 
-            var visibleItemCount = gridBody.find('.dynagrid-item:not(".hidden")').length;
-
-            if (opts.showCount) $('#' + opts.gridTitle + '_count').html(visibleItemCount);
+            if (opts.showCount) $('#' + opts.gridTitle + '_count').html(gridBody.find('.dynagrid-item:not(".hidden")').length);
 
             if (opts.checkered) {
 
@@ -169,7 +167,7 @@
 
         var opts;
 
-        if (typeof options === 'object') {
+        if (typeof options === 'object' || options === null) {
 
             opts = $.extend({}, $.fn.DynaGrid.defaults, options);
 
@@ -243,11 +241,9 @@
 
             if (opts.showAddButton) {
 
-                var addButton = null;
-
                 if (opts.addButtonType === 'icon') {
 
-                    addButton = $('<a>')
+                    var addButton = $('<a>')
                         .attr({class: 'btn btn-default btn-xs ' + opts.addButtonClass, title: opts.addButtonTitle})
                         .html($('<span>').attr('class', 'fa fa-plus fa-fw'))
 
@@ -289,8 +285,6 @@
                                             else $(this).addClass('hidden');
 
                                         });
-
-                                        if (opts.itemToggle) _setToggleAllButton(gridBody, opts);
 
                                         _formatGrid(gridBody, opts)
 
@@ -342,6 +336,8 @@
                 case 'getCount':
 
                     return gridBody.find('.dynagrid-item').length;
+
+                    break;
 
                 default:
 
