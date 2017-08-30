@@ -27,9 +27,8 @@ function ProjectTable(container) {
         paging: false,
         columns: [
             {class: 'col-md-2', title: 'name', data: 'name'},
-            {class: 'col-md-3', title: 'description', data: 'description'},
-            {class: 'col-md-2', title: 'manager', data: 'manager.name'},
-            {class: 'col-md-2', title: 'user group', data: 'user_group.name'},
+            {class: 'col-md-4', title: 'description', data: 'description'},
+            {class: 'col-md-3', title: 'manager', data: 'manager.name'},
             {class: 'col-md-3', title: 'host group', data: 'host_group.name'}
         ],
         rowCallback: function (row, project) {
@@ -74,7 +73,6 @@ function ProjectTable(container) {
             )
 
         },
-
         drawCallback: function() {
 
             $('div.toolbar').css('float', 'left').html(
@@ -84,6 +82,7 @@ function ProjectTable(container) {
 
                 })
             );
+
         }
     });
 

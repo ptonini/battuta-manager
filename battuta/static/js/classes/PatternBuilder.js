@@ -117,48 +117,54 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
 
     }
 
-    var url = paths.inventoryApi + 'search/?type=' + nodeType + '&pattern=';
+    var options = {
+        objectType: nodeType,
+        url: paths.inventoryApi + 'search/?type=' + nodeType + '&pattern=',
+        ajaxDataKey: null,
+        itemValueKey: null,
+        showButtons: true,
+        loadCallback: function (gridContainer, selectionDialog) {
 
-    var loadCallback = function (gridContainer, selectionDialog) {
+            selectionDialog
+                .dialog('option', 'buttons', {
+                    Add: function () {
 
-        selectionDialog
-            .dialog('option', 'buttons', {
-                Add: function () {
+                        var selection = selectionDialog.DynaGrid('getSelected', 'value');
 
-                    var selection = selectionDialog.DynaGrid('getSelected', 'value');
+                        for (var i = 0; i < selection.length; i++) {
 
-                    for (var i = 0; i < selection.length; i++) {
+                            if (self.patternContainer.html() !== '') self.patternContainer.append(separator);
 
-                        if (self.patternContainer.html() !== '') self.patternContainer.append(separator);
+                            self.patternContainer.append(selection[i])
 
-                        self.patternContainer.append(selection[i])
+                        }
+
+                        self.patternContainer.removeClass('hidden');
+
+                        $(this).dialog('close');
+
+                    },
+                    Cancel: function () {
+
+                        $('.filter_box').val('');
+
+                        $(this).dialog('close');
 
                     }
+                })
+        },
+        addButtonAction: function (selectionDialog) {
 
-                    self.patternContainer.removeClass('hidden');
+            new NodeDialog({name: null, description: null, type: nodeType}, function () {
 
-                    $(this).dialog('close');
+                selectionDialog.DynaGrid('load')
 
-                },
-                Cancel: function () {
-
-                    $('.filter_box').val('');
-
-                    $(this).dialog('close');
-
-                }
             })
-    };
-    var addButtonAction = function (selectionDialog) {
 
-        new NodeDialog({name: null, description: null, type: nodeType}, function () {
-
-            selectionDialog.DynaGrid('load')
-
-        })
-
+        },
+        formatItem: null
     };
 
-    new SelectionDialog(nodeType, url, true, loadCallback, addButtonAction, null);
+    new SelectionDialog(options);
 
 };

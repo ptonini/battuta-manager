@@ -1,5 +1,22 @@
-function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAction, formatItem) {
+function SelectionDialog(options) {
+
     var self = this;
+
+    self.objectType = options.objectType;
+
+    self.url = options.url;
+
+    self.showButtons = options.showButtons;
+
+    self.ajaxDataKey = options.ajaxDataKey;
+
+    self.itemValueKey =  options.itemValueKey;
+
+    self.loadCallback = options.loadCallback;
+
+    self.addButtonAction = options.addButtonAction;
+
+    self.formatItem = options.formatItem;
 
     self.selectionDialog = largeDialog.clone();
 
@@ -7,28 +24,30 @@ function SelectionDialog(objectType, url, showButtons, loadCallback, addButtonAc
         .DynaGrid({
             gridTitle: 'selection',
             showFilter: true,
-            showAddButton: (addButtonAction),
+            showAddButton: (self.addButtonAction),
             addButtonClass: 'open_node_form',
-            addButtonTitle: 'Add ' + objectType,
+            addButtonTitle: 'Add ' + self.objectType,
             maxHeight: 400,
-            itemToggle: showButtons,
+            itemToggle: self.showButtons,
             truncateItemText: true,
             checkered: true,
             columns: sessionStorage.getItem('selection_modal_columns'),
-            ajaxUrl: url,
+            ajaxUrl: self.url,
+            ajaxDataKey: self.ajaxDataKey,
+            itemValueKey: self.itemValueKey,
             loadCallback: function (gridContainer) {
 
-                loadCallback && loadCallback(gridContainer, self.selectionDialog)
+                self.loadCallback && self.loadCallback(gridContainer, self.selectionDialog)
 
             },
             addButtonAction: function () {
 
-                addButtonAction && addButtonAction(self.selectionDialog)
+                self.addButtonAction && self.addButtonAction(self.selectionDialog)
 
             },
             formatItem: function(gridContainer, gridItem) {
 
-                formatItem && formatItem(gridItem, self.selectionDialog)
+                self.formatItem && self.formatItem(gridItem, self.selectionDialog)
 
             }
         })

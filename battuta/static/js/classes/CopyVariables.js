@@ -51,40 +51,82 @@ CopyVariables.prototype = {
 
         self.nodeTypeDialog.dialog('close');
 
-        var url = paths.inventoryApi + 'search/?type=' + sourceNodeType + '&pattern=';
+        var options = {
+            objectType: sourceNodeType,
+            url: paths.inventoryApi + 'search/?type=' + sourceNodeType + '&pattern=',
+            ajaxDataKey: null,
+            itemValueKey: null,
+            showButtons: false,
+            loadCallback: null,
+            addButtonAction: null,
+            formatItem: function (gridItem, selectionDialog) {
 
-        var formatItem = function (gridItem, selectionDialog) {
+                gridItem.click(function () {
 
-            gridItem.click(function () {
+                    var sourceNodeName = $(this).data('value');
 
-                var sourceNodeName = $(this).data('value');
+                    $.ajax({
+                        url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/copy/',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {source_name: sourceNodeName, source_type: sourceNodeType},
+                        success: function (data) {
 
-                $.ajax({
-                    url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/copy/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {source_name: sourceNodeName, source_type: sourceNodeType},
-                    success: function (data) {
+                            if (data.result === 'ok') {
 
-                        if (data.result === 'ok') {
+                                selectionDialog.dialog('close');
 
-                            selectionDialog.dialog('close');
+                                $.bootstrapGrowl('VariableDialog copied from ' + sourceNodeName, {type: 'success'});
 
-                            $.bootstrapGrowl('VariableDialog copied from ' + sourceNodeName, {type: 'success'});
+                                self.copyCallback && self.copyCallback()
+                            }
 
-                            self.copyCallback && self.copyCallback()
+                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
                         }
+                    });
 
-                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                        else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                    }
                 });
+            }
+        }
 
-            });
-        };
 
-        new SelectionDialog(sourceNodeType, url, false, null, null, formatItem);
+        // var url = paths.inventoryApi + 'search/?type=' + sourceNodeType + '&pattern=';
+        //
+        // var formatItem = function (gridItem, selectionDialog) {
+        //
+        //     gridItem.click(function () {
+        //
+        //         var sourceNodeName = $(this).data('value');
+        //
+        //         $.ajax({
+        //             url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/copy/',
+        //             type: 'POST',
+        //             dataType: 'json',
+        //             data: {source_name: sourceNodeName, source_type: sourceNodeType},
+        //             success: function (data) {
+        //
+        //                 if (data.result === 'ok') {
+        //
+        //                     selectionDialog.dialog('close');
+        //
+        //                     $.bootstrapGrowl('VariableDialog copied from ' + sourceNodeName, {type: 'success'});
+        //
+        //                     self.copyCallback && self.copyCallback()
+        //                 }
+        //
+        //                 else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+        //
+        //                 else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+        //
+        //             }
+        //         });
+        //
+        //     });
+        // };
+
+        new SelectionDialog(options);
     }
 };

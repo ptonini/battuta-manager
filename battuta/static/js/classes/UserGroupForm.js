@@ -57,8 +57,6 @@ function UserGroupForm(group, container) {
                     PermissionFormButtons.inventory,
                     PermissionFormButtons.runner,
                     PermissionFormButtons.files,
-                // ),
-                // divCol6.clone().append(
                     PermissionFormButtons.users,
                     PermissionFormButtons.preferences
                 ),
@@ -176,44 +174,51 @@ function UserGroupForm(group, container) {
         },
         addButtonAction: function () {
 
-            var url = paths.usersApi + 'group/' + self.group.name + '/members/?reverse=true';
+            var options = {
+                objectType: 'user',
+                url: paths.usersApi + 'group/' + self.group.name + '/members/?reverse=true',
+                ajaxDataKey: null,
+                itemValueKey: null,
+                showButtons: true,
+                loadCallback: function (gridContainer, selectionDialog) {
 
-            var loadCallback = function (gridContainer, selectionDialog) {
+                    selectionDialog.dialog('option', 'buttons', {
+                        Add: function () {
 
-                selectionDialog.dialog('option', 'buttons', {
-                    Add: function () {
+                            $.ajax({
+                                url: paths.usersApi + 'group/' + self.group.name + '/add_members/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
+                                success: function (data) {
 
-                        $.ajax({
-                            url: paths.usersApi + 'group/' + self.group.name + '/add_members/',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
-                            success: function (data) {
+                                    if (data.result ==='ok') self.membersGrid.DynaGrid('load');
 
-                                if (data.result ==='ok') self.membersGrid.DynaGrid('load');
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
-                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
 
-                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
+                                }
+                            });
 
-                            }
-                        });
+                            $(this).dialog('close');
 
-                        $(this).dialog('close');
+                        },
+                        Cancel: function () {
 
-                    },
-                    Cancel: function () {
+                            $('.filter_box').val('');
 
-                        $('.filter_box').val('');
+                            $(this).dialog('close');
 
-                        $(this).dialog('close');
+                        }
+                    });
 
-                    }
-                });
-
+                },
+                addButtonAction: null,
+                formatItem: null
             };
 
-            new SelectionDialog('user', url, true, loadCallback, null, null);
+            new SelectionDialog(options);
 
         }
     });

@@ -14,7 +14,11 @@ class Project(models.Model):
 
     host_group = models.ForeignKey(HostGroup)
 
-    user_group = models.ForeignKey(UserGroup)
+    inventory_admins = models.ForeignKey(UserGroup, related_name='inventory_admins')
+
+    runner_admins = models.ForeignKey(UserGroup, related_name='runner_admins')
+
+    execute_jobs = models.ForeignKey(UserGroup, related_name='execute_jobs')
 
     roles = models.TextField(max_length=1024, default='[]')
 

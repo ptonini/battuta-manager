@@ -107,6 +107,7 @@ class UsersView(View):
         tz = timezone(user.userdata.timezone)
 
         user_dict = {
+            'id': user.id,
             'username': user.username,
             'first_name': user.first_name,
             'last_name': user.last_name,
@@ -516,6 +517,7 @@ class UserGroupView(View):
         create_groupdata(group)
 
         return {
+            'id': group.id,
             'name': group.name,
             'description': group.groupdata.description,
             'permissions': [perm.codename for perm in group.permissions.all()],
@@ -529,7 +531,15 @@ class UserGroupView(View):
 
             if request.user.has_perm('users.edit_user_groups'):
 
-                data = {'result': 'ok', 'groups': [self._group_to_dict(group) for group in Group.objects.all()]}
+                if 'editable' in request.GET and request.GET['editable'] == 'true':
+
+                    query_set = Group.objects.all().filter(groupdata__editable=True)
+
+                else:
+
+                    query_set = Group.objects.all()
+
+                data = {'result': 'ok', 'groups': [self._group_to_dict(group) for group in query_set]}
 
             else:
 

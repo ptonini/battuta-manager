@@ -9,7 +9,7 @@ function ProjectForm(project, container) {
     self.nameFieldInput = textInputField.clone();
 
     self.nameFieldContainer = divRow.clone().append(
-        divCol6.clone().append(
+        divCol12.clone().append(
             divFormGroup.clone().append(
                 $('<label>').html('Project name').append(self.nameFieldInput)
             )
@@ -44,11 +44,210 @@ function ProjectForm(project, container) {
 
     self.descriptionField = textAreaField.clone().val(self.project.description);
 
+    self.managerInput = textInputField.clone().attr('title', 'Project manager').prop('readonly', true);
+
+    self.setManagerBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
+
+        event.preventDefault();
+
+        var options = {
+            objectType: 'user',
+            url: paths.usersApi + 'user/null/list/',
+            ajaxDataKey: 'users',
+            itemValueKey: 'username',
+            showButtons: false,
+            loadCallback: null,
+            addButtonAction: true,
+            formatItem: function (gridItem, selectionDialog) {
+
+                gridItem.click(function () {
+
+                    self.managerInput.val(gridItem.data('username')).data(gridItem.data());
+
+                    selectionDialog.dialog('close')
+
+                })
+
+            }
+        };
+
+        new SelectionDialog(options);
+
+    });
+
+    self.hostGroupInput = textInputField.clone().attr('title', 'Host group').prop('readonly', true);
+
+    self.setHostGroupBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
+
+        event.preventDefault();
+
+        var options = {
+            objectType: 'group',
+            url: paths.inventoryApi + 'search/?type=group&pattern=',
+            ajaxDataKey: null,
+            itemValueKey: null,
+            showButtons: false,
+            loadCallback: null,
+            addButtonAction: null,
+            formatItem: function (gridItem, selectionDialog) {
+
+                gridItem.click(function () {
+
+                    self.hostGroupInput.val(gridItem.data('value')).data(gridItem.data());
+
+                    selectionDialog.dialog('close')
+
+                })
+
+            }
+        };
+
+        new SelectionDialog(options);
+
+    });
+
+    self.inventoryAdminsInput = textInputField.clone().attr('title', 'Inventory Admins').prop('readonly', true);
+
+    self.setInventoryAdminsBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
+
+        event.preventDefault();
+
+        var options = {
+            objectType: 'group',
+            url: paths.usersApi + 'group/null/list/?editable=true',
+            ajaxDataKey: 'groups',
+            itemValueKey: 'name',
+            showButtons: false,
+            loadCallback: null,
+            addButtonAction: null,
+            formatItem: function (gridItem, selectionDialog) {
+
+                gridItem.click(function () {
+
+                    self.inventoryAdminsInput.val(gridItem.data('name')).data(gridItem.data());
+
+                    selectionDialog.dialog('close')
+
+                })
+
+            }
+        };
+
+        new SelectionDialog(options);
+
+    });
+
+    self.runnerAdminsInput = textInputField.clone().attr('title', 'Runner admins').prop('readonly', true);
+
+    self.setRunnerAdminsBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
+
+        event.preventDefault();
+
+        var options = {
+            objectType: 'group',
+            url: paths.usersApi + 'group/null/list/?editable=true',
+            ajaxDataKey: 'groups',
+            itemValueKey: 'name',
+            showButtons: false,
+            loadCallback: null,
+            addButtonAction: null,
+            formatItem: function (gridItem, selectionDialog) {
+
+                gridItem.click(function () {
+
+                    self.runnerAdminsInput.val(gridItem.data('name')).data(gridItem.data());
+
+                    selectionDialog.dialog('close')
+
+                })
+
+            }
+        };
+
+        new SelectionDialog(options);
+
+    });
+
+    self.jobExecutionInput = textInputField.clone().attr('title', 'Job execution').prop('readonly', true);
+
+    self.setJobExecutionBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
+
+        event.preventDefault();
+
+        var options = {
+            objectType: 'group',
+            url: paths.usersApi + 'group/null/list/?editable=true',
+            ajaxDataKey: 'groups',
+            itemValueKey: 'name',
+            showButtons: false,
+            loadCallback: null,
+            addButtonAction: null,
+            formatItem: function (gridItem, selectionDialog) {
+
+                gridItem.click(function () {
+
+                    self.jobExecutionInput.val(gridItem.data('name')).data(gridItem.data());
+
+                    selectionDialog.dialog('close')
+
+                })
+
+            }
+        };
+
+        new SelectionDialog(options);
+
+    });
+
     self.form = $('<form>')
         .append(
             divRow.clone().append(
-                divCol6.clone().append(
+                divCol12.clone().append(
                     divFormGroup.clone().append($('<label>').html('Description').append(self.descriptionField))
+                ),
+                divCol6.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Manager').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.managerInput,
+                                spanBtnGroup.clone().append(self.setManagerBtn)
+                            )
+                        )
+                    ),
+                    divFormGroup.clone().append(
+                        $('<label>').html('Inventory admins').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.inventoryAdminsInput,
+                                spanBtnGroup.clone().append(self.setInventoryAdminsBtn)
+                            )
+                        )
+                    ),
+                    divFormGroup.clone().append(
+                        $('<label>').html('Job execution').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.jobExecutionInput,
+                                spanBtnGroup.clone().append(self.setJobExecutionBtn)
+                            )
+                        )
+                    )
+                ),
+                divCol6.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Host group').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.hostGroupInput,
+                                spanBtnGroup.clone().append(self.setHostGroupBtn)
+                            )
+                        )
+                    ),
+                    divFormGroup.clone().append(
+                        $('<label>').html('Runner admins').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.runnerAdminsInput,
+                                spanBtnGroup.clone().append(self.setRunnerAdminsBtn)
+                            )
+                        )
+                    )
                 ),
                 divCol12.clone().append(
                     divFormGroup.clone().append(
@@ -104,7 +303,9 @@ function ProjectForm(project, container) {
 
     self.container.append(
         self.formsHeader,
-        self.form
+        divRow.clone().append(
+            divCol6.clone().append(self.form)
+        )
     );
 
     if (self.project.id) {

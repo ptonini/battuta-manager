@@ -53,41 +53,46 @@ function Relationships(node, alterRelationCallback, container) {
             },
             addButtonAction: function () {
 
-                var url = paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/';
+                var options = {
+                    objectType: self.node.type,
+                    url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/',
+                    ajaxDataKey: null,
+                    itemValueKey: null,
+                    showButtons: true,
+                    loadCallback: function (gridContainer, selectionDialog) {
 
-                var loadCallback = function (gridContainer, selectionDialog) {
+                        selectionDialog.dialog('option', 'buttons', {
+                            Add: function () {
 
-                    selectionDialog.dialog('option', 'buttons', {
-                        Add: function () {
+                                self._alterRelation(relation, selectionDialog.DynaGrid('getSelected', 'id'), 'add');
 
-                            self._alterRelation(relation, selectionDialog.DynaGrid('getSelected', 'id'), 'add');
+                                $(this).dialog('close');
 
-                            $(this).dialog('close');
+                            },
+                            Cancel: function () {
 
-                        },
-                        Cancel: function () {
-
-                            $('.filter_box').val('');
+                                $('.filter_box').val('');
 
 
-                            $(this).dialog('close');
+                                $(this).dialog('close');
 
-                        }
-                    });
+                            }
+                        });
 
+                    },
+                    addButtonAction: function (selectionDialog) {
+
+                        new NodeDialog({name: null, description: null, type: relationType}, function () {
+
+                            selectionDialog.DynaGrid('load')
+
+                        })
+
+                    },
+                    formatItem: null
                 };
 
-                var addButtonAction = function (selectionDialog) {
-
-                    new NodeDialog({name: null, description: null, type: relationType}, function () {
-
-                        selectionDialog.DynaGrid('load')
-
-                    })
-
-                };
-
-                new SelectionDialog(self.node.type, url, true, loadCallback, addButtonAction, null);
+                new SelectionDialog(options);
 
             }
         });

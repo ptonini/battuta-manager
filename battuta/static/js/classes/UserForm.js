@@ -258,46 +258,53 @@ function UserForm(currentUser, user, container) {
         },
         addButtonAction: function () {
 
-            var url = paths.usersApi + 'user/' + self.user.username + '/groups/?reverse=true';
+            var options = {
+                objectType: 'group',
+                url: paths.usersApi + 'user/' + self.user.username + '/groups/?reverse=true',
+                ajaxDataKey: null,
+                itemValueKey: null,
+                showButtons: true,
+                loadCallback: function (gridContainer, selectionDialog) {
 
-            var loadCallback = function (gridContainer, selectionDialog) {
+                    selectionDialog.dialog('option', 'buttons', {
+                        Add: function () {
 
-                selectionDialog.dialog('option', 'buttons', {
-                    Add: function () {
+                            $.ajax({
+                                url: paths.usersApi + 'user/' + self.user.username + '/add_groups/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
+                                success: function (data) {
 
-                        $.ajax({
-                            url: paths.usersApi + 'user/' + self.user.username + '/add_groups/',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
-                            success: function (data) {
+                                    if (data.result === 'ok') self.groupGrid.DynaGrid('load');
 
-                                if (data.result === 'ok') self.groupGrid.DynaGrid('load');
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
-                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
 
-                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
+                                }
+                            });
 
-                            }
-                        });
+                            $(this).dialog('close');
 
-                        $(this).dialog('close');
+                        },
+                        Cancel: function () {
 
-                    },
-                    Cancel: function () {
+                            $('.filter_box').val('');
 
-                        $('.filter_box').val('');
+                            $(this).dialog('close');
 
-                        $(this).dialog('close');
+                        }
+                    });
 
-                    }
-                });
-
+                },
+                addButtonAction: null,
+                formatItem: null
             };
 
-            new SelectionDialog('group', url, true, loadCallback, null, null);
+            new SelectionDialog(options);
 
-    }
+        }
     });
 
     self.formsHeader = $('<div>');

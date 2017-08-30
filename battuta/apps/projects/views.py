@@ -48,7 +48,6 @@ class ProjectView(View):
                     'description': project.description,
                     'manager': {'name': project.manager.username, 'id': project.manager.id},
                     'host_group': {'name': project.host_group.name, 'id': project.host_group.id},
-                    'user_group': {'name': project.user_group.name, 'id': project.user_group.id},
                     'roles': project.roles
                 })
 

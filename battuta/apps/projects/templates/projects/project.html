@@ -6,8 +6,6 @@
 
             if ('{{ project_id }}') {
 
-
-
                 $.ajax({
                     url: paths.projectsApi + 'project/{{ project_id }}/get/',
                     dataType: 'json',
@@ -19,6 +17,7 @@
 
                     }
                 });
+
             }
 
             else {

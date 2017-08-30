@@ -63,13 +63,29 @@
 
                 if (opts.showCount) $('#' + opts.gridTitle + '_count').css('display', 'inline');
 
-                $.each(opts.dataArray, function (index, value) {
+                $.each(opts.dataArray, function (index, itemData) {
 
-                    var currentItem = $('<div>')
-                        .html(value[0])
-                        .attr('title', value[0])
-                        .addClass('dynagrid-item')
-                        .data({value: value[0], id: value[1]});
+                    var currentItem = $('<div>').addClass('dynagrid-item');
+
+                    if (Array.isArray(itemData)) {
+
+                        currentItem
+                            .html(itemData[0])
+                            .attr('title', itemData[0])
+                            .data({value: itemData[0], id: itemData[1]});
+
+                    }
+
+                    else if (typeof itemData === 'object') {
+
+                        currentItem
+                            .html(itemData[opts.itemValueKey])
+                            .attr('title', itemData[opts.itemValueKey])
+                            .data(itemData);
+
+                    }
+
+
 
                     if (opts.itemToggle) currentItem.off('click').click(function () {
 
@@ -102,7 +118,7 @@
                 data: opts.ajaxData,
                 success: function (data) {
 
-                    opts.dataArray = data;
+                    opts.dataArray = opts.ajaxDataKey ? data[opts.ajaxDataKey] : data;
 
                     _loadFromArray(gridContainer, gridBody, opts)
 
@@ -319,13 +335,13 @@
 
                 case 'getSelected':
 
-                    var value = arguments[1];
+                    var key = arguments[1];
 
                     var selection = [];
 
                     gridBody.children('.toggle-on:not(".hidden")').each(function () {
 
-                        selection.push($(this).data(value));
+                        selection.push($(this).data(key));
 
                     });
 
@@ -374,6 +390,9 @@
         checkered: false,
         itemToggle: false,
         truncateItemText: false,
+        ajaxDataKey: null,
+        itemValueKey: 'name',
+        itemIdKey: 'id',
         columns: 4,
         dataSource: 'ajax',
         dataArray: [],
