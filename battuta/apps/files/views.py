@@ -310,8 +310,6 @@ class FilesView(View):
 
         root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
-        print request.POST
-
         if root['authorized']:
 
             full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])

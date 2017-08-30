@@ -18,4 +18,6 @@ urlpatterns = [
     url(r'^files/', include('apps.files.urls', namespace='files')),
 
     url(r'^preferences/', include('apps.preferences.urls', namespace='preferences')),
+
+    url(r'^projects/', include('apps.projects.urls', namespace='projects')),
 ]

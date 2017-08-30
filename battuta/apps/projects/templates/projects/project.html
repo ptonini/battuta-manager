@@ -1,0 +1,37 @@
+{% extends 'main/main.html' %}
+{% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            if ('{{ project_id }}') {
+
+
+
+                $.ajax({
+                    url: paths.projectsApi + 'project/{{ project_id }}/get/',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        document.title = 'Battuta - ' + data.project.name;
+
+                        if (data.result === 'ok') new ProjectForm(data.project, $('#project_form_container'))
+
+                    }
+                });
+            }
+
+            else {
+
+                document.title = 'Battuta - New project';
+
+                new ProjectForm({id: null}, $('#project_form_container'))
+
+            }
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div id="project_form_container"></div>
+{% endblock %}

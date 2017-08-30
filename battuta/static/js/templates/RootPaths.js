@@ -6,5 +6,7 @@ var paths = {
     runner: '/runner/',
     runnerApi: '/runner/api/',
     users: '/users/',
-    usersApi: '/users/api/'
+    usersApi: '/users/api/',
+    projects: '/projects/',
+    projectsApi: '/projects/api/'
 };

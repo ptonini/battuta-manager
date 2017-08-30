@@ -1,0 +1,18 @@
+{% extends 'main/main.html' %}
+{% load staticfiles %}
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            document.title = 'Battuta - Projects';
+
+            new ProjectTable($('#project_table_container'))
+
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <h3>Projects</h3>
+    <br>
+    <div id="project_table_container"></div>
+{% endblock %}

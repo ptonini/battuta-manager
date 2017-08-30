@@ -2,8 +2,6 @@ function PlaybookDialog(playbook, sameWindow) {
 
     var self = this;
 
-    console.log(playbook);
-
     self.playbook = playbook;
 
     self.sameWindow = sameWindow;
@@ -40,7 +38,7 @@ function PlaybookDialog(playbook, sameWindow) {
 
     });
 
-    self.limitField = textInputField.clone().val(self.playbook.subset);
+    self.limitField = textInputField.clone();
 
     self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
@@ -70,13 +68,11 @@ function PlaybookDialog(playbook, sameWindow) {
 
         });
 
-    self.limitField.val(self.playbook.subset);
+    self.tagsField = textInputField.clone();
 
-    self.tagsField = textInputField.clone().val(self.playbook.tags);
+    self.skipTagsField = textInputField.clone();
 
-    self.skipTagsField = textInputField.clone().val(self.playbook.skip_tags);
-
-    self.extraVarsField = textInputField.clone().val(self.playbook.extra_vars);
+    self.extraVarsField = textInputField.clone();
 
     self.credentialsSelector = selectField.clone();
 
@@ -315,9 +311,19 @@ PlaybookDialog.prototype = {
 
                 });
 
-                self.argumentsSelector.append($('<option>').html('new').val('new'));
+                self.newOption = $('<option>').html('new').val('new');
 
-                selectedValue && self.argumentsSelector.val(selectedValue);
+                self.argumentsSelector.append(self.newOption);
+
+                if (selectedValue) self.argumentsSelector.val(selectedValue);
+
+                else {
+
+                    self.argumentsSelector.val('new');
+
+                    self.newOption.data(self.playbook);
+
+                }
 
                 self.argumentsSelector.change();
 
