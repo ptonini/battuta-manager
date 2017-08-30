@@ -332,16 +332,16 @@ class AdHocView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class PlaybookView(View):
+class PlaybookArgsView(View):
 
     @staticmethod
-    def get(request, playbook, action):
+    def get(request, action):
 
         if action == 'list':
 
             data = list()
 
-            for args in PlaybookArgs.objects.filter(playbook=playbook).values():
+            for args in PlaybookArgs.objects.filter(playbook=request.GET['name'], folder=request.GET['folder']).values():
 
                 data.append(args)
 
@@ -352,15 +352,23 @@ class PlaybookView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
-    def post(request, playbook, action):
+    def post(request, action):
 
         if request.user.has_perm('users.edit_playbooks'):
 
             # Save playbook arguments
             if action == 'save':
 
+                print request.POST
+
                 # Create new playbook arguments object if no id is supplied
-                args = get_object_or_404(PlaybookArgs, pk=request.POST['id']) if 'id' in request.POST else PlaybookArgs(playbook=playbook)
+                if 'id' in request.POST:
+
+                    args = get_object_or_404(PlaybookArgs, pk=request.POST['id'])
+
+                else:
+
+                    args = PlaybookArgs()
 
                 form = PlaybookArgsForm(request.POST or None, instance=args)
 

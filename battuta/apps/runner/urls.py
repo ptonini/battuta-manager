@@ -25,7 +25,7 @@ urlpatterns = [
 
     url(r'^api/result/([0-9]+)/$', login_required(views.ResultView.as_view())),
 
-    url(r'^api/playbooks/([a-zA-Z0-9-._]+)/([a-z]+)/$', login_required(views.PlaybookView.as_view())),
+    url(r'^api/playbook_args/([a-z]+)/$', login_required(views.PlaybookArgsView.as_view())),
 
     url(r'^api/history/([a-z]+)/$', login_required(views.HistoryView.as_view())),
 

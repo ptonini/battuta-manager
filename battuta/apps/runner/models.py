@@ -18,6 +18,8 @@ class PlaybookArgs(models.Model):
 
     playbook = models.CharField(max_length=64)
 
+    folder = models.CharField(max_length=256, default='', blank=True)
+
     tags = models.CharField(max_length=64, blank=True, null=True)
 
     skip_tags = models.CharField(max_length=64, blank=True, null=True)

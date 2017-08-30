@@ -27,4 +27,4 @@ class PlaybookArgsForm(forms.ModelForm):
 
         model = PlaybookArgs
 
-        fields = ['playbook', 'subset', 'tags', 'skip_tags', 'extra_vars']
+        fields = ['playbook', 'folder', 'subset', 'tags', 'skip_tags', 'extra_vars']

@@ -1,8 +1,10 @@
-function PlaybookDialog(playbook, sameWindow) {
+function PlaybookDialog(file, args, sameWindow) {
 
     var self = this;
 
-    self.playbook = playbook;
+    self.file = file;
+
+    self.args = args;
 
     self.sameWindow = sameWindow;
 
@@ -24,21 +26,17 @@ function PlaybookDialog(playbook, sameWindow) {
 
         self.dialog.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
 
-        if (arguments.val() !== 'new') {
+        self.limitField.val(arguments.data('subset'));
 
-            self.limitField.val(arguments.data('subset'));
+        self.tagsField.val(arguments.data('tags'));
 
-            self.tagsField.val(arguments.data('tags'));
+        self.skipTagsField.val(arguments.data('skip_tags'));
 
-            self.skipTagsField.val(arguments.data('skip_tags'));
-
-            self.extraVarsField.val(arguments.data('extra_vars'));
-
-        }
+        self.extraVarsField.val(arguments.data('extra_vars'));
 
     });
 
-    self.limitField = textInputField.clone();
+    self.limitField = textInputField.clone().val(self.file.subset);
 
     self.patternEditorButton = btnSmall.clone()
         .attr('title', 'Build pattern')
@@ -60,9 +58,7 @@ function PlaybookDialog(playbook, sameWindow) {
         )
     );
 
-    self.checkButton = btnSmall.clone().html('Check')
-        .toggleClass('checked_button', self.playbook.check)
-        .click( function () {
+    self.checkButton = btnSmall.clone().html('Check').click(function () {
 
             $(document.activeElement).toggleClass('checked_button');
 
@@ -83,12 +79,12 @@ function PlaybookDialog(playbook, sameWindow) {
     $.ajax({
         url: paths.filesApi + 'read/',
         dataType: 'json',
-        data: self.playbook,
+        data: self.file,
         success: function (data) {
 
             if (data.result === 'ok') {
 
-                self.playbook.text = data.text;
+                self.file.text = data.text;
 
                 self._buildForm();
 
@@ -114,7 +110,7 @@ PlaybookDialog.prototype = {
 
         self.dialog.append(
             divRow.clone().append(
-                divCol12.clone().html($('<h4>').append(self.playbook.name, self.requiresSudoAlert))
+                divCol12.clone().html($('<h4>').append(self.file.name, self.requiresSudoAlert))
             ),
             divRow.clone().append(
                 divCol12.clone().append(
@@ -155,8 +151,10 @@ PlaybookDialog.prototype = {
 
                         if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
 
+                            console.log(self.file)
+
                             $.ajax({
-                                url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/save/',
+                                url: paths.runnerApi + 'playbook_args/save/',
                                 type: 'POST',
                                 dataType: 'json',
                                 data: {
@@ -165,7 +163,8 @@ PlaybookDialog.prototype = {
                                     tags: self.tagsField.val(),
                                     skip_tags: self.skipTagsField.val(),
                                     extra_vars: self.extraVarsField.val(),
-                                    playbook: self.playbook.name
+                                    playbook: self.file.name,
+                                    folder: self.file.folder
                                 },
                                 success: function (data) {
 
@@ -194,7 +193,7 @@ PlaybookDialog.prototype = {
                         new DeleteDialog(function() {
 
                             $.ajax({
-                                url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/delete/',
+                                url: paths.runnerApi + 'playbook_args/delete/',
                                 type: 'POST',
                                 dataType: 'json',
                                 data: self.loadedArgs,
@@ -252,8 +251,8 @@ PlaybookDialog.prototype = {
 
         var postData = {
             type: 'playbook',
-            playbook: self.playbook.name,
-            folder: self.playbook.folder,
+            playbook: self.file.name,
+            folder: self.file.folder,
             become: self._requiresSudo(),
             check: self.checkButton.hasClass('checked_button'),
             subset: self.limitField.val(),
@@ -274,7 +273,7 @@ PlaybookDialog.prototype = {
 
         var requireSudo = false;
 
-        $.each(jsyaml.load(self.playbook.text), function (index, playbook) {
+        $.each(jsyaml.load(self.file.text), function (index, playbook) {
 
             if (trueValues.indexOf(playbook.become) > -1 || trueValues.indexOf(playbook.sudo) > -1) requireSudo = true;
 
@@ -291,7 +290,8 @@ PlaybookDialog.prototype = {
         self.argumentsSelector.empty();
 
         $.ajax({
-            url: paths.runnerApi + 'playbooks/' + self.playbook.name + '/list/',
+            url: paths.runnerApi + 'playbook_args/list/',
+            data: self.file,
             dataType: 'json',
             success: function (data) {
 
@@ -311,19 +311,11 @@ PlaybookDialog.prototype = {
 
                 });
 
-                self.newOption = $('<option>').html('new').val('new');
+                self.argumentsSelector.append(
+                    $('<option>').html('new').val('new').data(self.args)
+                );
 
-                self.argumentsSelector.append(self.newOption);
-
-                if (selectedValue) self.argumentsSelector.val(selectedValue);
-
-                else {
-
-                    self.argumentsSelector.val('new');
-
-                    self.newOption.data(self.playbook);
-
-                }
+                selectedValue ? self.argumentsSelector.val(selectedValue) : self.argumentsSelector.val('new');
 
                 self.argumentsSelector.change();
 

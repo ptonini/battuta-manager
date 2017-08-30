@@ -26,11 +26,14 @@ function JobResults(jobId, headerContainer, resultContainer) {
         .html(spanFA.clone().addClass('fa-repeat'))
         .click(function rerunPlaybook() {
 
-            var playbook = {
+            var file = {
                 name: self.job.name,
                 root: 'playbooks',
                 folder: self.job.folder,
-                user: sessionStorage.getItem('user_name'),
+                user: sessionStorage.getItem('user_name')
+            };
+
+            var args = {
                 check: self.job.check,
                 subset: self.job.subset,
                 tags: self.job.tags,
@@ -38,7 +41,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
                 extra_vars: self.job.extra_vars
             };
 
-            new PlaybookDialog(playbook, true)
+            new PlaybookDialog(file, args, true)
 
         });
 
