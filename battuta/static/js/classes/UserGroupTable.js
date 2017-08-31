@@ -32,6 +32,8 @@ function UserGroupTable(container) {
         ],
         rowCallback: function (row, group) {
 
+            console.log(group);
+
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
                 window.open(paths.users + 'group/' + group.name, '_self')

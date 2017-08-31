@@ -106,6 +106,7 @@ function UserGroupForm(group, container) {
             });
 
             var postData = {
+                id: self.group.id,
                 description: self.descriptionField.val(),
                 permissions: JSON.stringify(permissions)
             };
@@ -162,7 +163,11 @@ function UserGroupForm(group, container) {
                             url: paths.usersApi + 'group/remove_members/',
                             type: 'POST',
                             dataType: 'json',
-                            data: {name: self.group.name, selection: [gridItem.data('id')]},
+                            data: {
+                                id: self.group.id,
+                                name: self.group.name,
+                                selection: [gridItem.data('id')]
+                            },
                             success: function (data) {
 
                                 if (data.result ==='ok') self.membersGrid.DynaGrid('load');
@@ -197,6 +202,7 @@ function UserGroupForm(group, container) {
                                 type: 'POST',
                                 dataType: 'json',
                                 data: {
+                                    id: self.group.id,
                                     name: self.group.name,
                                     selection: selectionDialog.DynaGrid('getSelected', 'id')
                                 },

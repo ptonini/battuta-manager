@@ -109,6 +109,7 @@ function UserForm(currentUser, user, container) {
             }
 
             var postData = {
+                id: self.user.id,
                 first_name: self.firstNameField.val(),
                 last_name: self.lastNameField.val(),
                 email: self.emailField.val(),
@@ -178,6 +179,7 @@ function UserForm(currentUser, user, container) {
             event.preventDefault();
 
             var data = {
+                id: self.user.id,
                 username: self.user.username,
                 current_password: self.currentPassword.val(),
                 new_password: self.newPassword.val()
@@ -248,7 +250,11 @@ function UserForm(currentUser, user, container) {
                             url: paths.usersApi + 'user/remove_groups/',
                             type: 'POST',
                             dataType: 'json',
-                            data: {username: self.user.username, selection: [gridItem.data('id')]},
+                            data: {
+                                id: self.user.id,
+                                username: self.user.username,
+                                selection: [gridItem.data('id')]
+                            },
                             success: function (data) {
 
                                 if (data.result === 'ok') self.groupGrid.DynaGrid('load');
@@ -283,6 +289,7 @@ function UserForm(currentUser, user, container) {
                                 type: 'POST',
                                 dataType: 'json',
                                 data: {
+                                    id: self.user.id,
                                     username: self.user.username,
                                     selection: selectionDialog.DynaGrid('getSelected', 'id')
                                 },

@@ -125,6 +125,21 @@ class UsersView(View):
 
         return user_dict
 
+    @staticmethod
+    def _truncate_secure_data(cred):
+
+        prefs = get_preferences()
+
+        if cred['password']:
+
+            cred['password'] = prefs['password_placeholder']
+
+        if cred['sudo_pass']:
+
+            cred['sudo_pass'] = prefs['password_placeholder']
+
+        return cred
+
     def get(self, request, action):
 
         if action == 'list':
@@ -139,18 +154,15 @@ class UsersView(View):
 
         else:
 
-            if request.user.has_perm('users.edit_users') or request.user.username == request.GET['username']:
+            user = get_object_or_404(User, username=request.GET['username'])
+
+            if request.user.has_perm('users.edit_users') or request.user.username == user.username:
 
                 if action == 'get':
 
-                    data = {
-                        'result': 'ok',
-                        'user': self._user_to_dict(get_object_or_404(User, username=request.GET['username']))
-                    }
+                    data = {'result': 'ok', 'user': self._user_to_dict(user)}
 
                 elif action == 'groups':
-
-                    user = get_object_or_404(User, username=request.GET['username'])
 
                     if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
@@ -159,6 +171,30 @@ class UsersView(View):
                     else:
 
                         data = [[group.name, group.id] for group in user.groups.all()]
+
+                elif action == 'creds':
+
+                    data = list()
+
+                    for cred in Credential.objects.filter(user=user).values():
+
+                        cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
+
+                        data.append(self._truncate_secure_data(cred))
+
+                    if request.GET['runner'] == 'true':
+
+                        for cred in Credential.objects.filter(is_shared=True).exclude(user=user).values():
+
+                            cred_owner = get_object_or_404(User, id=cred['user_id'])
+
+                            cred['title'] += ' (' + cred_owner.username + ')'
+
+                            data.append(self._truncate_secure_data(cred))
+
+                elif action == 'default_cred':
+
+                    data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
 
                 else:
 
@@ -170,29 +206,27 @@ class UsersView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def post(self, request, user_name, action):
+    def post(self, request, action):
 
-        if request.user.has_perm('users.edit_users') or request.user.username == request.POST['username']:
+        if request.user.has_perm('users.edit_users') or request.user.id == request.POST['id']:
 
             form_data = dict(request.POST.iteritems())
 
-            if 'username' in form_data:
+            if form_data['id']:
 
-                user = User()
-
-                user.userdata = UserData()
-
-                new_user = True
-
-            else:
-
-                user = get_object_or_404(User, username=user_name)
+                user = get_object_or_404(User, pk=form_data['id'])
 
                 form_data['username'] = user.username
 
                 form_data['password'] = user.password
 
-                new_user = False
+            else:
+
+                user = User()
+
+                user.userdata = UserData()
+
+            prefs = get_preferences()
 
             if action == 'save':
 
@@ -204,7 +238,7 @@ class UsersView(View):
 
                     user = user_form.save()
 
-                    if new_user:
+                    if not form_data['id']:
 
                         user.set_password(form_data['password'])
 
@@ -290,6 +324,83 @@ class UsersView(View):
 
                     data = {'result': 'denied'}
 
+            elif action == 'save_cred':
+
+                cred_dict = json.loads(form_data['cred'])
+
+                # Build credential object
+
+                if cred_dict['id']:
+
+                    cred = get_object_or_404(Credential, pk=cred_dict['id'])
+
+                else:
+
+                    cred = Credential(user=user)
+
+                # Set form data passwords
+                if cred_dict['password'] == prefs['password_placeholder']:
+
+                    cred_dict['password'] = cred.password
+
+                if cred_dict['sudo_pass'] == prefs['password_placeholder']:
+
+                    cred_dict['sudo_pass'] = cred.sudo_pass
+
+                if cred_dict['password'] or cred_dict['rsa_key']:
+
+                    cred_dict['ask_pass'] = False
+
+                if cred_dict['sudo_pass']:
+
+                    cred_dict['ask_sudo_pass'] = False
+
+                form = CredentialForm(cred_dict or None, instance=cred)
+
+                # Validate form data
+                if form.is_valid():
+
+                    # Set credential as default
+                    if cred_dict['is_default'] == 'true':
+
+                        user.userdata.default_cred = cred
+
+                        user.userdata.save()
+
+                    # Save credential
+                    cred.save()
+
+                    data = {
+                        'result': 'ok',
+                        'msg': 'Credential saved',
+                        'cred': self._truncate_secure_data(model_to_dict(cred))
+                    }
+
+                else:
+
+                    data = {'result': 'failed', 'msg': str(form.errors)}
+
+            elif action == 'delete_cred':
+
+                cred_dict = json.loads(form_data['cred'])
+
+                cred = get_object_or_404(Credential, pk=cred_dict['id'])
+
+                # List users using this credential as default
+                user_list = [user_data.user.username for user_data in UserData.objects.filter(default_cred=cred)]
+
+                # Return fail if credential is default for a user(s)
+                if len(user_list) > 0:
+
+                    data = {'result': 'failed', 'msg': 'Credential is default for ' + ', '.join(user_list)}
+
+                else:
+
+                    # Delete credential
+                    cred.delete()
+
+                    data = {'result': 'ok', 'msg': 'Credential deleted', 'cred': {'id': None}}
+
             else:
 
                 raise Http404('Invalid action')
@@ -318,55 +429,43 @@ class CredentialView(View):
 
         return cred
 
-    def get(self, request, user_name, action):
-
-        user = get_object_or_404(User, username=user_name)
-
-        if request.user == user or request.user.has_perm('users.edit_users'):
-
-            if action == 'list':
-
-                data = list()
-
-                for cred in Credential.objects.filter(user=user).values():
-
-                    cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
-
-                    data.append(self._truncate_secure_data(cred))
-
-                if request.GET['runner'] == 'true':
-
-                    for cred in Credential.objects.filter(is_shared=True).exclude(user=user).values():
-
-                        cred_owner = get_object_or_404(User, id=cred['user_id'])
-                        cred['title'] += ' (' + cred_owner.username + ')'
-                        data.append(self._truncate_secure_data(cred))
-
-            elif action == 'default':
-
-                data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
-
-            elif action == 'get':
-
-                cred = get_object_or_404(Credential, pk=request.GET['cred_id'])
-
-                if request.user == cred.user or cred.is_shared:
-
-                    data = {'result': 'ok', 'cred': self._truncate_secure_data(model_to_dict(cred))}
-
-                else:
-
-                    data = {'result': 'denied'}
-
-            else:
-
-                raise Http404('Invalid action')
-
-        else:
-
-            data = {'result': 'denied'}
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
+    # def get(self, request, user_name, action):
+    #
+    #     user = get_object_or_404(User, username=user_name)
+    #
+    #     if request.user == user or request.user.has_perm('users.edit_users'):
+    #
+    #         if action == 'list':
+    #
+    #             data = list()
+    #
+    #             for cred in Credential.objects.filter(user=user).values():
+    #
+    #                 cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
+    #
+    #                 data.append(self._truncate_secure_data(cred))
+    #
+    #             if request.GET['runner'] == 'true':
+    #
+    #                 for cred in Credential.objects.filter(is_shared=True).exclude(user=user).values():
+    #
+    #                     cred_owner = get_object_or_404(User, id=cred['user_id'])
+    #                     cred['title'] += ' (' + cred_owner.username + ')'
+    #                     data.append(self._truncate_secure_data(cred))
+    #
+    #         elif action == 'default':
+    #
+    #             data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
+    #
+    #         else:
+    #
+    #             raise Http404('Invalid action')
+    #
+    #     else:
+    #
+    #         data = {'result': 'denied'}
+    #
+    #     return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, user_name, action):
@@ -588,17 +687,17 @@ class UserGroupView(View):
 
             form_data = dict(request.POST.iteritems())
 
-            if 'name' in form_data:
+            if form_data['id']:
+
+                group = get_object_or_404(Group, name=request.POST['name'])
+
+                form_data['name'] = group.name
+
+            else:
 
                 group = Group()
 
                 group.groupdata = GroupData()
-
-            else:
-
-                group = get_object_or_404(Group, name=request.GET['name'])
-
-                form_data['name'] = group.name
 
             if action == 'save':
 
@@ -612,7 +711,7 @@ class UserGroupView(View):
 
                         GroupData.objects.get_or_create(group=group)
 
-                        group.groupdata.description = request.POST['description'] if 'description' in request.POST else ''
+                        group.groupdata.description = request.POST['description']
 
                         group.groupdata.save()
 

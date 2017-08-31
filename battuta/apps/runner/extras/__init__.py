@@ -1,5 +1,7 @@
 import os
 import MySQLdb
+import tempfile
+
 
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
@@ -53,144 +55,150 @@ def run_job(job):
 
     message = None
 
-    job.data['show_skipped'] = job.data.get('show_skipped', c.DISPLAY_SKIPPED_HOSTS)
+    with tempfile.NamedTemporaryFile() as rsa_file:
 
-    job.data['connection'] = job.data.get('connection', 'paramiko')
+        rsa_file.write(job.data['rsa_key'])
 
-    job.data['module_path'] = job.data.get('module_path')
+        rsa_file.flush()
 
-    job.data['forks'] = job.data.get('forks', c.DEFAULT_FORKS)
+        job.data['show_skipped'] = job.data.get('show_skipped', c.DISPLAY_SKIPPED_HOSTS)
 
-    job.data['rsa_key'] = job.data.get('rsa_key', '')
+        job.data['connection'] = job.data.get('connection', 'paramiko')
 
-    job.data['become'] = job.data.get('become', c.DEFAULT_BECOME)
+        job.data['module_path'] = job.data.get('module_path')
 
-    job.data['become_user'] = job.data['become_user'] if job.data['become_user'] else c.DEFAULT_BECOME_USER
+        job.data['forks'] = job.data.get('forks', c.DEFAULT_FORKS)
 
-    job.data['become_method'] = job.data.get('become_method', c.DEFAULT_BECOME_METHOD)
+        job.data['rsa_key'] = rsa_file if job.data.get('rsa_key') else ''
 
-    job.data['tags'] = job.data.get('tags', '')
+        job.data['become'] = job.data.get('become', c.DEFAULT_BECOME)
 
-    job.data['skip_tags'] = job.data.get('skip_tags', '')
+        job.data['become_user'] = job.data['become_user'] if job.data['become_user'] else c.DEFAULT_BECOME_USER
 
-    if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
+        job.data['become_method'] = job.data.get('become_method', c.DEFAULT_BECOME_METHOD)
 
-        job.data['extra_vars'] = []
+        job.data['tags'] = job.data.get('tags', '')
 
-    else:
+        job.data['skip_tags'] = job.data.get('skip_tags', '')
 
-        job.data['extra_vars'] = job.data['extra_vars'].split(' ')
+        if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
 
-    if 'check' not in job.data or job.data['check'] == 'false':
-
-        job.data['check'] = False
-
-    elif job.data['check'] == 'true':
-
-        job.data['show_skipped'] = True
-
-        job.data['check'] = True
-
-    # Create ansible options tuple
-    options = AnsibleOptions(connection=job.data['connection'],
-                             module_path=job.data['module_path'],
-                             forks=job.data['forks'],
-                             remote_user=job.data['remote_user'],
-                             private_key_file=job.data['rsa_key'],
-                             ssh_common_args=None,
-                             ssh_extra_args=None,
-                             sftp_extra_args=None,
-                             scp_extra_args=None,
-                             become=job.data['become'],
-                             become_method=job.data['become_method'],
-                             become_user=job.data['become_user'],
-                             verbosity=None,
-                             check=job.data['check'],
-                             tags=job.data['tags'],
-                             skip_tags=job.data['skip_tags'],
-                             extra_vars=job.data['extra_vars'],
-                             listhosts=None,
-                             listtasks=None,
-                             listtags=None,
-                             syntax=None)
-
-    variable_manager = VariableManager()
-
-    loader = DataLoader()
-
-    inventory = Inventory(loader=loader, variable_manager=variable_manager)
-
-    variable_manager.set_inventory(inventory)
-
-    variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
-
-    passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
-
-    if 'subset' in job.data:
-
-        inventory.subset(job.data['subset'])
-
-    if 'playbook' in job.data:
-
-        try:
-
-            pbex = PlaybookExecutor([job.data['playbook_path']],
-                                    inventory,
-                                    variable_manager,
-                                    loader,
-                                    options,
-                                    passwords)
-
-            pbex._tqm._stdout_callback = BattutaCallback(job, db_conn)
-
-            pbex.run()
-
-        except Exception as e:
-
-            status = 'failed'
-
-            message = type(e).__name__ + ': ' + e.__str__()
+            job.data['extra_vars'] = []
 
         else:
 
-            status = 'finished'
+            job.data['extra_vars'] = job.data['extra_vars'].split(' ')
 
-    elif 'adhoc_task' in job.data:
+        if 'check' not in job.data or job.data['check'] == 'false':
 
-        play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+            job.data['check'] = False
 
-        try:
+        elif job.data['check'] == 'true':
 
-            tqm = TaskQueueManager(inventory=inventory,
-                                   variable_manager=variable_manager,
-                                   passwords=passwords,
-                                   loader=loader,
-                                   stdout_callback=BattutaCallback(job, db_conn),
-                                   options=options)
+            job.data['show_skipped'] = True
 
-            tqm.run(play)
+            job.data['check'] = True
 
-        except Exception as e:
+        # Create ansible options tuple
+        options = AnsibleOptions(connection=job.data['connection'],
+                                 module_path=job.data['module_path'],
+                                 forks=job.data['forks'],
+                                 remote_user=job.data['remote_user'],
+                                 private_key_file=job.data['rsa_key'],
+                                 ssh_common_args=None,
+                                 ssh_extra_args=None,
+                                 sftp_extra_args=None,
+                                 scp_extra_args=None,
+                                 become=job.data['become'],
+                                 become_method=job.data['become_method'],
+                                 become_user=job.data['become_user'],
+                                 verbosity=None,
+                                 check=job.data['check'],
+                                 tags=job.data['tags'],
+                                 skip_tags=job.data['skip_tags'],
+                                 extra_vars=job.data['extra_vars'],
+                                 listhosts=None,
+                                 listtasks=None,
+                                 listtags=None,
+                                 syntax=None)
 
-            status = 'failed'
+        variable_manager = VariableManager()
 
-            message = type(e).__name__ + ': ' + e.__str__()
+        loader = DataLoader()
+
+        inventory = Inventory(loader=loader, variable_manager=variable_manager)
+
+        variable_manager.set_inventory(inventory)
+
+        variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
+
+        passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
+
+        if 'subset' in job.data:
+
+            inventory.subset(job.data['subset'])
+
+        if 'playbook' in job.data:
+
+            try:
+
+                pbex = PlaybookExecutor([job.data['playbook_path']],
+                                        inventory,
+                                        variable_manager,
+                                        loader,
+                                        options,
+                                        passwords)
+
+                pbex._tqm._stdout_callback = BattutaCallback(job, db_conn)
+
+                pbex.run()
+
+            except Exception as e:
+
+                status = 'failed'
+
+                message = type(e).__name__ + ': ' + e.__str__()
+
+            else:
+
+                status = 'finished'
+
+        elif 'adhoc_task' in job.data:
+
+            play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+
+            try:
+
+                tqm = TaskQueueManager(inventory=inventory,
+                                       variable_manager=variable_manager,
+                                       passwords=passwords,
+                                       loader=loader,
+                                       stdout_callback=BattutaCallback(job, db_conn),
+                                       options=options)
+
+                tqm.run(play)
+
+            except Exception as e:
+
+                status = 'failed'
+
+                message = type(e).__name__ + ': ' + e.__str__()
+
+            else:
+
+                tqm.cleanup()
+
+                status = 'finished'
 
         else:
 
-            tqm.cleanup()
+            status = 'failed'
 
-            status = 'finished'
+            message = 'Invalid job data'
 
-    else:
+        if job.data['has_exceptions']:
 
-        status = 'failed'
-
-        message = 'Invalid job data'
-
-    if job.data['has_exceptions']:
-
-        status = 'finished with errors'
+            status = 'finished with errors'
 
     with db_conn as cursor:
 

@@ -219,7 +219,7 @@ function gatherFacts(nodeName, finishCallback) {
     };
 
     $.ajax({
-        url: paths.usersApi + 'user/' + sessionStorage.getItem('user_name') + '/creds/default/',
+        url: paths.usersApi + 'user/default_cred/?username=' + sessionStorage.getItem('user_name'),
         dataType: 'json',
         success: function (cred) {
 
@@ -249,6 +249,7 @@ function gatherFacts(nodeName, finishCallback) {
         })
 
     }, 1000)
+
 }
 
 function toggleButton (event) {
