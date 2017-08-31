@@ -10,10 +10,8 @@ function UserGroupTable(container) {
 
     self.table.DataTable({
         ajax: {
-            url: paths.usersApi + 'group/none/list/',
+            url: paths.usersApi + 'group/list/',
             dataSrc: function (data) {
-
-                console.log(data);
 
                 if (data.result === 'ok') return data.groups;
 
@@ -36,7 +34,7 @@ function UserGroupTable(container) {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open('/users/group/' + group.name, '_self')
+                window.open(paths.users + 'group/' + group.name, '_self')
 
             });
 
@@ -47,8 +45,9 @@ function UserGroupTable(container) {
                         new DeleteDialog(function () {
 
                             $.ajax({
-                                url: paths.usersApi + 'group/' + group.name + '/delete/',
+                                url: paths.usersApi + 'group/delete/',
                                 type: 'POST',
+                                data: group,
                                 dataType: 'json',
                                 success: function (data) {
 

@@ -24,8 +24,9 @@ function UserGroupForm(group, container) {
             new DeleteDialog(function () {
 
                 $.ajax({
-                    url: paths.usersApi + 'group/' + self.group.name + '/delete/',
+                    url: paths.usersApi + 'group/delete/',
                     type: 'POST',
+                    data: self.group,
                     dataType: 'json',
                     success: function (data) {
 
@@ -74,7 +75,7 @@ function UserGroupForm(group, container) {
             function saveGroup(postData) {
 
                 $.ajax({
-                    url: paths.usersApi + 'group/' + self.group.name + '/save/',
+                    url: paths.usersApi + 'group/save/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
@@ -109,7 +110,13 @@ function UserGroupForm(group, container) {
                 permissions: JSON.stringify(permissions)
             };
 
-            if (self.group.name) saveGroup(postData);
+            if (self.group.name) {
+
+                postData.name = self.group.name;
+
+                saveGroup(postData);
+
+            }
 
             else {
 
@@ -135,7 +142,7 @@ function UserGroupForm(group, container) {
         buildNow: (self.group.name),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
-        ajaxUrl: paths.usersApi + 'group/' + self.group.name + '/members/',
+        ajaxUrl: paths.usersApi + 'group/members/?name=' + self.group.name,
         formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
@@ -152,10 +159,10 @@ function UserGroupForm(group, container) {
                     .click(function () {
 
                         $.ajax({
-                            url: paths.usersApi + 'group/' + self.group.name + '/remove_members/',
+                            url: paths.usersApi + 'group/remove_members/',
                             type: 'POST',
                             dataType: 'json',
-                            data: {selection: [gridItem.data('id')]},
+                            data: {name: self.group.name, selection: [gridItem.data('id')]},
                             success: function (data) {
 
                                 if (data.result ==='ok') self.membersGrid.DynaGrid('load');
@@ -176,7 +183,7 @@ function UserGroupForm(group, container) {
 
             var options = {
                 objectType: 'user',
-                url: paths.usersApi + 'group/' + self.group.name + '/members/?reverse=true',
+                url: paths.usersApi + 'group/members/?reverse=true&name=' + self.group.name,
                 ajaxDataKey: null,
                 itemValueKey: null,
                 showButtons: true,
@@ -186,10 +193,13 @@ function UserGroupForm(group, container) {
                         Add: function () {
 
                             $.ajax({
-                                url: paths.usersApi + 'group/' + self.group.name + '/add_members/',
+                                url: paths.usersApi + 'group/add_members/',
                                 type: 'POST',
                                 dataType: 'json',
-                                data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
+                                data: {
+                                    name: self.group.name,
+                                    selection: selectionDialog.DynaGrid('getSelected', 'id')
+                                },
                                 success: function (data) {
 
                                     if (data.result ==='ok') self.membersGrid.DynaGrid('load');

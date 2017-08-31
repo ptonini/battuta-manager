@@ -86,7 +86,7 @@ function UserForm(currentUser, user, container) {
             function saveUser(postData) {
 
                 $.ajax({
-                    url: paths.usersApi + 'user/' + self.user.username + '/save/',
+                    url: paths.usersApi + 'user/save/',
                     type: 'POST',
                     dataType: 'json',
                     data: postData,
@@ -115,16 +115,24 @@ function UserForm(currentUser, user, container) {
                 timezone: self.timezoneField.val()
             };
 
-            if (self.user.username) saveUser(postData);
+            if (self.user.username) {
+
+                postData.username = self.user.username;
+
+                saveUser(postData);
+
+            }
 
             else {
 
                 postData.username = self.usernameField.val();
+
                 postData.password = self.passwordField.val();
 
                 if (postData.password === self.retypePasswordField.val()) saveUser(postData);
 
                 else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
+
             }
 
             self.passwordField.val('');
@@ -170,6 +178,7 @@ function UserForm(currentUser, user, container) {
             event.preventDefault();
 
             var data = {
+                username: self.user.username,
                 current_password: self.currentPassword.val(),
                 new_password: self.newPassword.val()
             };
@@ -179,7 +188,7 @@ function UserForm(currentUser, user, container) {
                 if (data.new_password && data.new_password === self.retypeNewPassword.val()) {
 
                     $.ajax({
-                        url: paths.usersApi  + 'user/' + self.user.username + '/chgpass/',
+                        url: paths.usersApi  + 'user/chgpass/',
                         type: 'POST',
                         dataType: 'json',
                         data: data,
@@ -219,7 +228,7 @@ function UserForm(currentUser, user, container) {
         buildNow: (self.user.username),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('user_grid_columns'),
-        ajaxUrl: paths.usersApi + 'user/' + self.user.username + '/groups/',
+        ajaxUrl: paths.usersApi + 'user/groups/?username=' + self.user.username,
         formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
@@ -236,10 +245,10 @@ function UserForm(currentUser, user, container) {
                     .click(function () {
 
                         $.ajax({
-                            url: paths.usersApi + 'user/' + self.user.username + '/remove_groups/',
+                            url: paths.usersApi + 'user/remove_groups/',
                             type: 'POST',
                             dataType: 'json',
-                            data: {selection: [gridItem.data('id')]},
+                            data: {username: self.user.username, selection: [gridItem.data('id')]},
                             success: function (data) {
 
                                 if (data.result === 'ok') self.groupGrid.DynaGrid('load');
@@ -260,7 +269,7 @@ function UserForm(currentUser, user, container) {
 
             var options = {
                 objectType: 'group',
-                url: paths.usersApi + 'user/' + self.user.username + '/groups/?reverse=true',
+                url: paths.usersApi + 'user/groups/?reverse=true&username='+ self.user.username,
                 ajaxDataKey: null,
                 itemValueKey: null,
                 showButtons: true,
@@ -270,10 +279,13 @@ function UserForm(currentUser, user, container) {
                         Add: function () {
 
                             $.ajax({
-                                url: paths.usersApi + 'user/' + self.user.username + '/add_groups/',
+                                url: paths.usersApi + 'user/add_groups/',
                                 type: 'POST',
                                 dataType: 'json',
-                                data: {selection: selectionDialog.DynaGrid('getSelected', 'id')},
+                                data: {
+                                    username: self.user.username,
+                                    selection: selectionDialog.DynaGrid('getSelected', 'id')
+                                },
                                 success: function (data) {
 
                                     if (data.result === 'ok') self.groupGrid.DynaGrid('load');

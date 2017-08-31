@@ -8,7 +8,7 @@
                 document.title = 'Battuta - {{ group_name }}';
 
                 $.ajax({
-                    url: paths.usersApi + 'group/{{ group_name }}/get/',
+                    url: paths.usersApi + 'group/get/?name={{ group_name }}',
                     dataType: 'json',
                     success: function (data) {
 

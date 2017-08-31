@@ -52,7 +52,7 @@ function ProjectForm(project, container) {
 
         var options = {
             objectType: 'user',
-            url: paths.usersApi + 'user/null/list/',
+            url: paths.usersApi + 'user/list/',
             ajaxDataKey: 'users',
             itemValueKey: 'username',
             showButtons: false,
@@ -114,7 +114,7 @@ function ProjectForm(project, container) {
 
         var options = {
             objectType: 'group',
-            url: paths.usersApi + 'group/null/list/?editable=true',
+            url: paths.usersApi + 'group/list/?editable=true',
             ajaxDataKey: 'groups',
             itemValueKey: 'name',
             showButtons: false,
@@ -145,7 +145,7 @@ function ProjectForm(project, container) {
 
         var options = {
             objectType: 'group',
-            url: paths.usersApi + 'group/null/list/?editable=true',
+            url: paths.usersApi + 'group/list/?editable=true',
             ajaxDataKey: 'groups',
             itemValueKey: 'name',
             showButtons: false,
@@ -176,7 +176,7 @@ function ProjectForm(project, container) {
 
         var options = {
             objectType: 'group',
-            url: paths.usersApi + 'group/null/list/?editable=true',
+            url: paths.usersApi + 'group/list/?editable=true',
             ajaxDataKey: 'groups',
             itemValueKey: 'name',
             showButtons: false,

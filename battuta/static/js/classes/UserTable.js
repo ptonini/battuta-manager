@@ -10,7 +10,7 @@ function UserTable(container) {
 
     self.table.DataTable({
         ajax: {
-            url: paths.usersApi + 'user/none/list/',
+            url: paths.usersApi + 'user/list/',
             dataSrc: function (data) {
 
                 if (data.result === 'ok') return data.users;
@@ -50,8 +50,9 @@ function UserTable(container) {
                         new DeleteDialog(function () {
 
                             $.ajax({
-                                url: paths.usersApi + 'user/' + user.username + '/delete/',
+                                url: paths.usersApi + 'user/delete/',
                                 type: 'POST',
+                                data: user,
                                 dataType: 'json',
                                 success: function (data) {
 

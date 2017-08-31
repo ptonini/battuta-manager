@@ -13,7 +13,6 @@ from django.http import HttpResponse, Http404, StreamingHttpResponse
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.forms import model_to_dict
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
@@ -425,8 +424,11 @@ class NodeView(View):
         else:
 
             node_dict['members'] = node.members.all().count()
+
             node_dict['parents'] = node.group_set.all().count()
+
             node_dict['children'] = node.children.all().count(),
+
             node_dict['variables'] = node.variable_set.all().count(),
 
         return node_dict
@@ -583,10 +585,6 @@ class NodeView(View):
             else:
 
                 data = {'result': 'failed'}
-
-        elif action == 'ancestors':
-
-            data = {'result': 'ok', 'groups': [[group.name, group.id] for group in node.ancestors]}
 
         elif action == 'descendants':
 
@@ -780,70 +778,29 @@ class NodeView(View):
 
                 data = {'result': 'ok'}
 
-            else:
+            elif action == 'add_parents' or action == 'add_children' or action == 'add_members':
 
-                raise Http404('Invalid action')
-
-        else:
-
-            data = {'result': 'denied'}
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
-class RelationsView(View):
-
-    @staticmethod
-    def get_relationships(node, relation):
-
-        if relation == 'parents':
-
-            related_set = node.group_set
-
-            related_class = Group
-
-        elif relation == 'children':
-
-            related_set = node.children
-
-            related_class = Group
-
-        elif relation == 'members':
-
-            related_set = node.members
-
-            related_class = Host
-
-        else:
-
-            raise Http404('Invalid relation: ' + relation)
-
-        return related_set, related_class
-
-    def post(self, request, node_type, node_name, relationship, action):
-
-        node = NodeView._build_node(node_type, node_name, request.user)
-
-        related_set, related_class = self.get_relationships(node, relationship)
-
-        if node.editable:
-
-            if action == 'add':
+                related_set, related_class = self._get_relationships(node, action.split('_')[1])
 
                 for selected in request.POST.getlist('selection[]'):
 
                     related_set.add(get_object_or_404(related_class, pk=selected))
 
-            elif action == 'remove':
+                data = {'result': 'ok'}
+
+            elif action == 'remove_parents' or action == 'remove_children' or action == 'remove_members':
+
+                related_set, related_class = self._get_relationships(node, action.split('_')[1])
 
                 for selected in request.POST.getlist('selection[]'):
 
                     related_set.remove(get_object_or_404(related_class, pk=selected))
 
-            else:
-                raise Http404('Invalid action')
+                data = {'result': 'ok'}
 
-            data = {'result': 'ok'}
+            else:
+
+                raise Http404('Invalid action')
 
         else:
 

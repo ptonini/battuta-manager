@@ -18,6 +18,4 @@ urlpatterns = [
 
     url(r'^api/(host|group)/([a-z_]+)/$', login_required(views.NodeView.as_view())),
 
-    url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/(parents|children|members)/([a-z_]+)/$', login_required(views.RelationsView.as_view())),
-
 ]

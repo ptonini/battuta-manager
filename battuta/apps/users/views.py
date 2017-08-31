@@ -125,7 +125,7 @@ class UsersView(View):
 
         return user_dict
 
-    def get(self, request, user_name, action):
+    def get(self, request, action):
 
         if action == 'list':
 
@@ -139,15 +139,18 @@ class UsersView(View):
 
         else:
 
-            if request.user.has_perm('users.edit_users') or request.user.username == user_name:
+            if request.user.has_perm('users.edit_users') or request.user.username == request.GET['username']:
 
                 if action == 'get':
 
-                    data = {'result': 'ok', 'user': self._user_to_dict(get_object_or_404(User, username=user_name))}
+                    data = {
+                        'result': 'ok',
+                        'user': self._user_to_dict(get_object_or_404(User, username=request.GET['username']))
+                    }
 
                 elif action == 'groups':
 
-                    user = get_object_or_404(User, username=user_name)
+                    user = get_object_or_404(User, username=request.GET['username'])
 
                     if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
@@ -169,7 +172,7 @@ class UsersView(View):
 
     def post(self, request, user_name, action):
 
-        if request.user.has_perm('users.edit_users') or request.user.username == user_name:
+        if request.user.has_perm('users.edit_users') or request.user.username == request.POST['username']:
 
             form_data = dict(request.POST.iteritems())
 
@@ -525,7 +528,7 @@ class UserGroupView(View):
             'editable': group.groupdata.editable
         }
 
-    def get(self, request, group_name, action):
+    def get(self, request, action):
 
         if action == 'list':
 
@@ -547,7 +550,7 @@ class UserGroupView(View):
 
         elif action == 'get':
 
-            group = get_object_or_404(Group, name=group_name)
+            group = get_object_or_404(Group, name=request.GET['name'])
 
             if request.user.has_perm('users.edit_user_groups') or group in request.user.groups.all():
 
@@ -563,11 +566,11 @@ class UserGroupView(View):
 
                 if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
-                    data = [[user.username, user.id] for user in User.objects.exclude(groups__name=group_name) if not user.is_superuser]
+                    data = [[user.username, user.id] for user in User.objects.exclude(groups__name=request.GET['name']) if not user.is_superuser]
 
                 else:
 
-                    data = [[user.username, user.id] for user in User.objects.filter(groups__name=group_name)]
+                    data = [[user.username, user.id] for user in User.objects.filter(groups__name=request.GET['name'])]
 
             else:
 
@@ -579,7 +582,7 @@ class UserGroupView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def post(self, request, group_name, action):
+    def post(self, request, action):
 
         if request.user.has_perm('users.edit_user_groups'):
 
@@ -593,7 +596,7 @@ class UserGroupView(View):
 
             else:
 
-                group = get_object_or_404(Group, name=group_name)
+                group = get_object_or_404(Group, name=request.GET['name'])
 
                 form_data['name'] = group.name
 

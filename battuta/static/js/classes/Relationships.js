@@ -110,10 +110,10 @@ Relationships.prototype = {
         var self = this;
 
         $.ajax({
-            url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/' + action + '/',
+            url: paths.inventoryApi + self.node.type + '/' + action + '_' + relation + '/',
             type: 'POST',
             dataType: 'json',
-            data: {selection: selection},
+            data: {name: self.node.name, selection: selection},
             success: function (data) {
 
                 if (data.result === 'ok') {
