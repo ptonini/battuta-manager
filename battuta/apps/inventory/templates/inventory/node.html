@@ -7,7 +7,7 @@
             document.title = 'Battuta - {{ node_name }}';
 
             $.ajax({
-                url: paths.inventoryApi + '{{ node_type }}/{{ node_name }}/info/',
+                url: paths.inventoryApi + '{{ node_type }}/get/?name={{ node_name }}',
                 dataType: 'json',
                 success: function (data) {
                     if (data.result === 'ok') new Node(data.node, $('#node_container'))

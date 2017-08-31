@@ -25,12 +25,12 @@ function Descendants (node, container) {
 
     self.groupList = $('<div>').data('nodeType', 'group').DynaGrid($.extend({}, self.gridOptions, {
         gridTitle: 'Groups',
-        ajaxUrl: paths.inventoryApi + 'group/' + self.node.name + '/descendants/?type=groups'
+        ajaxUrl: paths.inventoryApi + 'group/descendants/?type=groups&name=' + self.node.name
     }));
 
     self.hostList = $('<div>').data('nodeType', 'host').DynaGrid($.extend({}, self.gridOptions, {
         gridTitle: 'Hosts',
-        ajaxUrl: paths.inventoryApi + 'group/' + self.node.name + '/descendants/?type=hosts'
+        ajaxUrl: paths.inventoryApi + 'group/descendants/?type=hosts&name=' + self.node.name
     }));
 
     container.append(

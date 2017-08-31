@@ -11,12 +11,14 @@ function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
     self.gridOptions = {
         loadCallback: loadCallback,
         columns: sessionStorage.getItem('node_grid_columns'),
+        ajaxDataKey: 'nodes',
+        itemValueKey: 'name',
         checkered: true,
         showFilter: true,
         truncateItemText: true,
         headerBottomPadding: 20,
         topAlignHeader: true,
-        ajaxUrl: paths.inventoryApi + 'search/?type=' + nodeType + '&pattern='
+        ajaxUrl: paths.inventoryApi+ nodeType + '/list/'
     };
 
     if (self.mode === 'open') Object.assign(self.gridOptions, {
@@ -28,7 +30,7 @@ function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
 
             gridItem.click(function () {
 
-                window.open(paths.inventory + nodeType + '/' + $(this).data('value') + '/', '_self')
+                window.open(paths.inventory + nodeType + '/' + $(this).data('name') + '/', '_self')
 
             });
 

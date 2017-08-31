@@ -33,14 +33,17 @@ function VariableDialog(variable, node, saveCallback) {
             var variable = {
                 key: self.keyField.val(),
                 value: self.valueField.val(),
-                id: self.var.id
+                id: self.var.id,
+                name: self.node.name
             };
 
             VariableDialog.saveVariable(variable, self.node, function () {
 
                 self.saveCallback();
 
-                self.form.find('input').val('');
+                self.var.id && self.dialog.dialog('close');
+
+                self.form.find('input, textarea').val('');
 
                 self.keyField.focus();
 
@@ -57,7 +60,7 @@ function VariableDialog(variable, node, saveCallback) {
         buttons: {
             Save: function () {
 
-                self.action = 'save';
+                self.action = 'save_var';
 
                 self.form.submit();
 
@@ -93,7 +96,7 @@ function VariableDialog(variable, node, saveCallback) {
 
 VariableDialog.saveVariable = function (variable, node, saveCallback) {
 
-    VariableDialog.postVariable(variable, 'save', node, function () {
+    VariableDialog.postVariable(variable, 'save_var', node, function () {
 
         saveCallback();
 
@@ -105,7 +108,7 @@ VariableDialog.saveVariable = function (variable, node, saveCallback) {
 
 VariableDialog.deleteVariable = function (variable, node, deleteCallback) {
 
-    VariableDialog.postVariable(variable, 'delete', node, function () {
+    VariableDialog.postVariable(variable, 'delete_var', node, function () {
 
         deleteCallback();
 
@@ -118,7 +121,7 @@ VariableDialog.deleteVariable = function (variable, node, deleteCallback) {
 VariableDialog.postVariable = function (variable, action, node, successCallback) {
 
     $.ajax({
-        url: paths.inventoryApi + node.type + '/' + node.name + '/vars/' + action + '/',
+        url: paths.inventoryApi + node.type + '/' + action + '/',
         type: 'POST',
         dataType: 'json',
         data: variable,

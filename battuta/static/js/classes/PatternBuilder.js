@@ -119,9 +119,9 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
 
     var options = {
         objectType: nodeType,
-        url: paths.inventoryApi + 'search/?type=' + nodeType + '&pattern=',
-        ajaxDataKey: null,
-        itemValueKey: null,
+        url: paths.inventoryApi + nodeType + '/list/',
+        ajaxDataKey: 'nodes',
+        itemValueKey: 'name',
         showButtons: true,
         loadCallback: function (gridContainer, selectionDialog) {
 
@@ -129,7 +129,7 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
                 .dialog('option', 'buttons', {
                     Add: function () {
 
-                        var selection = selectionDialog.DynaGrid('getSelected', 'value');
+                        var selection = selectionDialog.DynaGrid('getSelected', 'name');
 
                         for (var i = 0; i < selection.length; i++) {
 

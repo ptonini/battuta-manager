@@ -18,6 +18,8 @@ function Relationships(node, alterRelationCallback, container) {
 
         self[relation] = $('<div>').DynaGrid({
             gridTitle: relation,
+            ajaxDataKey: 'nodes',
+            itemValueKey: 'name',
             showTitle: true,
             showCount: true,
             showAddButton: true,
@@ -27,12 +29,12 @@ function Relationships(node, alterRelationCallback, container) {
             gridBodyTopMargin: '10px',
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/related/',
+            ajaxUrl: paths.inventoryApi + self.node.type + '/' + relation + '/?name=' + self.node.name,
             formatItem: function (gridContainer, gridItem) {
 
                 var id = gridItem.data('id');
 
-                var name = gridItem.data('value');
+                var name = gridItem.data('name');
 
                 gridItem.html('').append(
                     $('<span>').append(name).click(function () {
@@ -55,9 +57,9 @@ function Relationships(node, alterRelationCallback, container) {
 
                 var options = {
                     objectType: self.node.type,
-                    url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/' + relation + '/not_related/',
-                    ajaxDataKey: null,
-                    itemValueKey: null,
+                    url: paths.inventoryApi + self.node.type + '/' + relation + '/?related=false&name=' + self.node.name,
+                    ajaxDataKey: 'nodes',
+                    itemValueKey: 'name',
                     showButtons: true,
                     loadCallback: function (gridContainer, selectionDialog) {
 

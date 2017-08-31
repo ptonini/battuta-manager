@@ -45,30 +45,31 @@ function NodeTable(nodeType, addCallback, container) {
 
     self.table.DataTable({
         paging: false,
-        ajax: {url: paths.inventoryApi + nodeType + 's/list/', dataSrc: ''},
+        ajax: {url: paths.inventoryApi + nodeType + '/list/', dataSrc: 'nodes'},
         buttons: ['csv'],
         columns: self.columns,
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
-        rowCallback: function(row, data) {
+        rowCallback: function(row, node) {
 
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
                 .click(function () {
 
-                    window.open(paths.inventory + self.type + '/' + data.name + '/', '_self')
+                    window.open(paths.inventory + self.type + '/' + node.name + '/', '_self')
 
                 });
 
-            if (self.type !== 'group' || data.name !== 'all') $(row).find('td:last').html(
+            if (self.type !== 'group' || node.name !== 'all') $(row).find('td:last').html(
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 
                             $.ajax({
-                                url: paths.inventoryApi + self.type + '/' + data.name + '/delete/',
+                                url: paths.inventoryApi + self.type + '/delete/',
                                 type: 'POST',
+                                data: {name: node.name},
                                 dataType: 'json',
                                 success: function (data) {
 
@@ -97,9 +98,9 @@ function NodeTable(nodeType, addCallback, container) {
 
                 if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = ['td:eq(5)', 'td:eq(6)'];
 
-                data.memory && $(row).find(columns[0]).html(humanBytes(data.memory, 'MB'));
+                node.memory && $(row).find(columns[0]).html(humanBytes(node.memory, 'MB'));
 
-                data.disc && $(row).find(columns[1]).html(humanBytes(data.disc))
+                node.disc && $(row).find(columns[1]).html(humanBytes(node.disc))
 
             }
         },

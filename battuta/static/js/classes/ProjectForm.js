@@ -83,9 +83,9 @@ function ProjectForm(project, container) {
 
         var options = {
             objectType: 'group',
-            url: paths.inventoryApi + 'search/?type=group&pattern=',
-            ajaxDataKey: null,
-            itemValueKey: null,
+            url: paths.inventoryApi + 'group/list/',
+            ajaxDataKey: 'nodes',
+            itemValueKey: 'name',
             showButtons: false,
             loadCallback: null,
             addButtonAction: null,
@@ -93,7 +93,7 @@ function ProjectForm(project, container) {
 
                 gridItem.click(function () {
 
-                    self.hostGroupInput.val(gridItem.data('value')).data(gridItem.data());
+                    self.hostGroupInput.val(gridItem.data('name')).data(gridItem.data());
 
                     selectionDialog.dialog('close')
 

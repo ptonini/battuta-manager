@@ -51,7 +51,7 @@ function Nodes(nodeType, container) {
             new DeleteDialog(function () {
 
                 $.ajax({
-                    url: paths.inventoryApi + nodeType + 's/delete/',
+                    url: paths.inventoryApi + nodeType + '/delete_bulk/',
                     type: 'POST',
                     dataType: 'json',
                     data: {selection: self.nodeGrid.getSelected()},

@@ -33,7 +33,7 @@ class PageView(View):
 
         elif kwargs['page'] == 'nodes':
 
-            context = {'node_type': kwargs['node_type_plural'][:-1], 'node_type_plural': kwargs['node_type_plural']}
+            context = {'node_type': kwargs['node_type_plural'][:-1]}
 
             return render(request, 'inventory/nodes.html', context)
 
@@ -372,126 +372,67 @@ class InventoryView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class NodesView(View):
-
-    @staticmethod
-    def get(request, node_type_plural, action):
-
-        node_type = node_type_plural[:-1]
-
-        if action == 'list':
-
-            data = list()
-
-            if node_type == 'host':
-
-                for host in Host.objects.all():
-
-                    host_info = {
-                        'name': host.name,
-                        'id': host.id,
-                        'address': '',
-                        'cores': '',
-                        'memory': '',
-                        'disc': '',
-                        'public_address': '',
-                        'instance_type': ''
-                    }
-
-                    if host.facts:
-
-                        facts = json.loads(host.facts)
-
-                        if 'default_ipv4' in facts and 'address' in facts['default_ipv4']:
-
-                            host_info['address'] = facts['default_ipv4']['address']
-
-                        host_info['cores'] = facts['processor_count'] if 'processor_count' in facts else None
-
-                        host_info['memory'] = facts['memtotal_mb'] if 'memtotal_mb' in facts else None
-
-                        if 'mounts' in facts:
-
-                            host_info['disc'] = 0
-
-                            for mount in facts['mounts']:
-
-                                host_info['disc'] += mount['size_total']
-
-                        host_info['public_address'] = facts['ec2_public_ipv4'] if 'ec2_public_ipv4' in facts else None
-
-                        host_info['instance_type'] = facts['ec2_instance_type'] if 'ec2_instance_type' in facts else None
-
-                    data.append(host_info)
-
-            elif node_type == 'group':
-
-                for group in Group.objects.all():
-
-                    data.append({
-                        'name': group.name,
-                        'id': group.id,
-                        'description': group.description,
-                        'members': len(group.members.all()),
-                        'parents': len(group.group_set.all()),
-                        'children': len(group.children.all()),
-                        'variables': len(group.variable_set.all()),
-                    })
-
-        else:
-
-            raise Http404('Invalid action')
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-    @staticmethod
-    def post(request, node_type_plural, action):
-
-        node_type = node_type_plural[:-1]
-
-        if request.user.has_perm('users.edit_' + node_type_plural):
-
-            if action == 'delete':
-
-                if node_type == 'host':
-
-                    node_class = Host
-
-                elif node_type == 'group':
-
-                    node_class = Group
-
-                else:
-
-                    raise Http404('Invalid node type')
-
-                for node_id in request.POST.getlist('selection[]'):
-
-                    node = get_object_or_404(node_class, pk=node_id)
-
-                    if node.type == 'host' or node.name != 'all':
-
-                        node.delete()
-
-                data = {'result': 'ok'}
-
-            else:
-
-                raise Http404('Invalid action')
-
-        else:
-
-            data = {'result': 'denied'}
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
 class NodeView(View):
 
-    context = dict()
+    @staticmethod
+    def _node_to_dict(node):
+
+        node_dict = {
+            'name': node.name,
+            'type': node.type,
+            'description': node.description,
+            'id': node.id,
+        }
+
+        if node.type == 'host':
+
+            node_dict['address'] = ''
+
+            node_dict['public_address'] = ''
+
+            node_dict['instance_type'] = ''
+
+            node_dict['cores'] = ''
+
+            node_dict['memory'] = ''
+
+            node_dict['disc'] = ''
+
+            if node.facts:
+
+                facts = json.loads(node.facts)
+
+                if 'default_ipv4' in facts and 'address' in facts['default_ipv4']:
+
+                    node_dict['address'] = facts['default_ipv4']['address']
+
+                node_dict['cores'] = facts['processor_count'] if 'processor_count' in facts else None
+
+                node_dict['memory'] = facts['memtotal_mb'] if 'memtotal_mb' in facts else None
+
+                if 'mounts' in facts:
+
+                    node_dict['disc'] = 0
+
+                    for mount in facts['mounts']:
+
+                        node_dict['disc'] += mount['size_total']
+
+                node_dict['public_address'] = facts['ec2_public_ipv4'] if 'ec2_public_ipv4' in facts else None
+
+                node_dict['instance_type'] = facts['ec2_instance_type'] if 'ec2_instance_type' in facts else None
+
+        else:
+
+            node_dict['members'] = node.members.all().count()
+            node_dict['parents'] = node.group_set.all().count()
+            node_dict['children'] = node.children.all().count(),
+            node_dict['variables'] = node.variable_set.all().count(),
+
+        return node_dict
 
     @staticmethod
-    def build_node(node_type, node_name, user):
+    def _build_node(node_type, node_name, user):
 
         # Get classes based on node type
         if node_type == 'host':
@@ -516,12 +457,7 @@ class NodeView(View):
 
         host_descendants = list()
 
-        # Build node object
-        if node_name == 'null':
-
-            node = node_class()
-
-        else:
+        if node_class.objects.filter(name=node_name).exists():
 
             node = get_object_or_404(node_class, name=node_name)
 
@@ -571,6 +507,10 @@ class NodeView(View):
 
                 host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
 
+        else:
+
+            node = node_class()
+
         setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
 
         setattr(node, 'form_class', node_form_class)
@@ -583,21 +523,52 @@ class NodeView(View):
 
         return node
 
-    def get(self, request, node_type, node_name, action):
+    @staticmethod
+    def _get_relationships(node, action):
 
-        node = self.build_node(node_type, node_name, request.user)
+        if action == 'parents':
 
-        if action == 'info':
+            related_set = node.group_set
 
-            node_dict = model_to_dict(node)
+            related_class = Group
 
-            node_dict['type'] = node.type
+        elif action == 'children':
 
-            node_dict.pop('members', None)
+            related_set = node.children
 
-            node_dict.pop('children', None)
+            related_class = Group
 
-            data = {'result': 'ok', 'node': node_dict}
+        elif action == 'members':
+
+            related_set = node.members
+
+            related_class = Host
+
+        else:
+
+            raise Http404('Invalid relation: ' + action)
+
+        return related_set, related_class
+
+    def get(self, request, node_type, action):
+
+        node = self._build_node(node_type, request.GET.get('name'), request.user)
+
+        if action == 'list':
+
+            node_list = list()
+
+            for node in node.__class__.objects.all():
+
+                if 'filter' not in request.GET or node.name.find(request.GET['filter']) > -1:
+
+                    node_list.append(self._node_to_dict(node))
+
+            data = {'result': 'ok', 'nodes': node_list}
+
+        elif action == 'get':
+
+            data = {'result': 'ok', 'node': self._node_to_dict(node)}
 
         elif action == 'facts':
 
@@ -631,58 +602,7 @@ class NodeView(View):
 
             data = descendants
 
-        else:
-
-            raise Http404('Invalid action')
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-    def post(self, request, node_type, node_name, action):
-
-        node = self.build_node(node_type, node_name, request.user)
-
-        if node.editable:
-
-            if action == 'save':
-
-                form = node.form_class(request.POST or None, instance=node)
-
-                if form.is_valid():
-
-                    node = form.save(commit=True)
-
-                    data = {'result': 'ok', 'name': node.name, 'type': node.type}
-
-                else:
-
-                    data = {'result': 'failed', 'msg': str(form.errors)}
-
-            elif action == 'delete':
-
-                if node.type == 'host' or node.name != 'all':
-
-                    node.delete()
-
-                data = {'result': 'ok'}
-
-            else:
-                raise Http404('Invalid action')
-
-        else:
-
-            data = {'result': 'denied'}
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
-class VariablesView(View):
-
-    @staticmethod
-    def get(request, node_type, node_name, action):
-
-        node = NodeView.build_node(node_type, node_name, request.user)
-
-        if action == 'list':
+        elif action == 'vars':
 
             variables = dict()
 
@@ -736,28 +656,91 @@ class VariablesView(View):
 
                 data += values
 
+        elif action == 'parents' or action == 'children' or action == 'members':
+
+            related_set, related_class = self._get_relationships(node, action)
+
+            if 'related' not in request.GET or request.GET['related'] == 'true':
+
+                node_list = [self._node_to_dict(related_node) for related_node in related_set.order_by('name')]
+
+            else:
+
+                candidate_set = related_class.objects.order_by('name').exclude(name='all')
+
+                candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
+
+                if related_class == type(node):
+
+                    candidate_set = candidate_set.exclude(pk=node.id)
+
+                if action == 'parents' and node.group_descendants:
+
+                    candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.group_descendants])
+
+                elif action == 'children' and node.ancestors:
+
+                    candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
+
+                node_list = [self._node_to_dict(candidate) for candidate in candidate_set]
+
+            data = {'result': 'ok', 'nodes': node_list}
+
         else:
 
             raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    @staticmethod
-    def post(request, node_type, node_name, action):
+    def post(self, request, node_type, action):
 
-        node = NodeView.build_node(node_type, node_name, request.user)
-
-        if 'id' in request.POST and request.POST['id']:
-
-            variable = get_object_or_404(Variable, pk=request.POST['id'])
-
-        else:
-
-            variable = Variable()
+        node = self._build_node(node_type, request.POST.get('name'), request.user)
 
         if node.editable:
 
             if action == 'save':
+
+                form = node.form_class(request.POST or None, instance=node)
+
+                if form.is_valid():
+
+                    node = form.save(commit=True)
+
+                    data = {'result': 'ok', 'name': node.name, 'type': node.type}
+
+                else:
+
+                    data = {'result': 'failed', 'msg': str(form.errors)}
+
+            elif action == 'delete':
+
+                if node.type == 'host' or node.name != 'all':
+
+                    node.delete()
+
+                data = {'result': 'ok'}
+
+            elif action == 'delete_bulk':
+
+                for node_id in request.POST.getlist('selection[]'):
+
+                    node = get_object_or_404(node.__class__, pk=node_id)
+
+                    if node.type == 'host' or node.name != 'all':
+
+                        node.delete()
+
+                data = {'result': 'ok'}
+
+            elif action == 'save_var':
+
+                if 'id' in request.POST and request.POST['id']:
+
+                    variable = get_object_or_404(Variable, pk=request.POST['id'])
+
+                else:
+
+                    variable = Variable()
 
                 post_data = dict(request.POST.iteritems())
 
@@ -775,15 +758,17 @@ class VariablesView(View):
 
                     data = {'result': 'failed', 'msg': str(form.errors)}
 
-            elif action == 'delete':
+            elif action == 'delete_var':
+
+                variable = get_object_or_404(Variable, pk=request.POST['id'])
 
                 variable.delete()
 
                 data = {'result': 'ok'}
 
-            elif action == 'copy':
+            elif action == 'copy_vars':
 
-                source = NodeView.build_node(request.POST['source_type'], request.POST['source_name'], request.user)
+                source = NodeView._build_node(request.POST['source_type'], request.POST['source_name'], request.user)
 
                 for source_var in source.variable_set.all():
 
@@ -835,44 +820,9 @@ class RelationsView(View):
 
         return related_set, related_class
 
-    def get(self, request, node_type, node_name, relationship, action):
-
-        node = NodeView.build_node(node_type, node_name, request.user)
-
-        related_set, related_class = self.get_relationships(node, relationship)
-
-        if action == 'related':
-
-            data = [[related.name, related.id] for related in related_set.order_by('name')]
-
-        elif action == 'not_related':
-
-            candidate_set = related_class.objects.order_by('name').exclude(name='all')
-
-            candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
-
-            if related_class == type(node):
-
-                candidate_set = candidate_set.exclude(pk=node.id)
-
-            if relationship == 'parents' and node.group_descendants:
-
-                candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.group_descendants])
-
-            elif relationship == 'children' and node.ancestors:
-
-                candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
-
-            data = [[candidate.name, candidate.id] for candidate in candidate_set]
-
-        else:
-            raise Http404('Invalid request')
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
     def post(self, request, node_type, node_name, relationship, action):
 
-        node = NodeView.build_node(node_type, node_name, request.user)
+        node = NodeView._build_node(node_type, node_name, request.user)
 
         related_set, related_class = self.get_relationships(node, relationship)
 

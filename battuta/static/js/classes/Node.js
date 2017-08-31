@@ -35,8 +35,9 @@ function Node(node, container) {
             new DeleteDialog(function () {
 
                 $.ajax({
-                    url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/delete/',
+                    url: paths.inventoryApi + self.node.type + '/delete/',
                     type: 'POST',
+                    data: node,
                     dataType: 'json',
                     success: function (data) {
 

@@ -1,7 +1,6 @@
 import json
 
-from django.http import HttpResponse, Http404, StreamingHttpResponse
-from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict

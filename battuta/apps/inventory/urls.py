@@ -16,11 +16,7 @@ urlpatterns = [
 
     url(r'^api/(search|import|export)/$', login_required(views.InventoryView.as_view())),
 
-    url(r'^api/(hosts|groups)/([a-z]+)/$', login_required(views.NodesView.as_view())),
-
-    url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/([a-z]+)/$', login_required(views.NodeView.as_view())),
-
-    url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/vars/([a-z]+)/$', login_required(views.VariablesView.as_view())),
+    url(r'^api/(host|group)/([a-z_]+)/$', login_required(views.NodeView.as_view())),
 
     url(r'^api/(host|group)/([a-zA-Z0-9-._]+)/(parents|children|members)/([a-z_]+)/$', login_required(views.RelationsView.as_view())),
 

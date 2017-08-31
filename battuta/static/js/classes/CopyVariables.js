@@ -51,11 +51,11 @@ CopyVariables.prototype = {
 
         self.nodeTypeDialog.dialog('close');
 
-        var options = {
+        new SelectionDialog({
             objectType: sourceNodeType,
-            url: paths.inventoryApi + 'search/?type=' + sourceNodeType + '&pattern=',
-            ajaxDataKey: null,
-            itemValueKey: null,
+            url: paths.inventoryApi + sourceNodeType + '/list/',
+            ajaxDataKey: 'nodes',
+            itemValueKey: 'name',
             showButtons: false,
             loadCallback: null,
             addButtonAction: null,
@@ -63,20 +63,20 @@ CopyVariables.prototype = {
 
                 gridItem.click(function () {
 
-                    var sourceNodeName = $(this).data('value');
+                    var sourceNodeName = $(this).data('name');
 
                     $.ajax({
-                        url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/copy/',
+                        url: paths.inventoryApi + self.node.type + '/copy_vars/',
                         type: 'POST',
                         dataType: 'json',
-                        data: {source_name: sourceNodeName, source_type: sourceNodeType},
+                        data: {source_name: sourceNodeName, source_type: sourceNodeType, name: self.node.name},
                         success: function (data) {
 
                             if (data.result === 'ok') {
 
                                 selectionDialog.dialog('close');
 
-                                $.bootstrapGrowl('VariableDialog copied from ' + sourceNodeName, {type: 'success'});
+                                $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
 
                                 self.copyCallback && self.copyCallback()
                             }
@@ -90,43 +90,7 @@ CopyVariables.prototype = {
 
                 });
             }
-        }
+        });
 
-
-        // var url = paths.inventoryApi + 'search/?type=' + sourceNodeType + '&pattern=';
-        //
-        // var formatItem = function (gridItem, selectionDialog) {
-        //
-        //     gridItem.click(function () {
-        //
-        //         var sourceNodeName = $(this).data('value');
-        //
-        //         $.ajax({
-        //             url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/copy/',
-        //             type: 'POST',
-        //             dataType: 'json',
-        //             data: {source_name: sourceNodeName, source_type: sourceNodeType},
-        //             success: function (data) {
-        //
-        //                 if (data.result === 'ok') {
-        //
-        //                     selectionDialog.dialog('close');
-        //
-        //                     $.bootstrapGrowl('VariableDialog copied from ' + sourceNodeName, {type: 'success'});
-        //
-        //                     self.copyCallback && self.copyCallback()
-        //                 }
-        //
-        //                 else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-        //
-        //                 else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-        //
-        //             }
-        //         });
-        //
-        //     });
-        // };
-
-        new SelectionDialog(options);
     }
 };

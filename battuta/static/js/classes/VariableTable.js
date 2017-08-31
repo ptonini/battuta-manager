@@ -15,7 +15,7 @@ function VariableTable(node, container) {
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
         paging: false,
         dom: '<"variable-toolbar">frtip',
-        ajax: {url: paths.inventoryApi + self.node.type + '/' + self.node.name + '/vars/list/', dataSrc: ''},
+        ajax: {url: paths.inventoryApi + self.node.type + '/vars/?name='+ self.node.name, dataSrc: ''},
         columns: [
             {class: 'col-md-3', title: 'key', data: 'key'},
             {class: 'col-md-7', title: 'value', data: 'value'},
