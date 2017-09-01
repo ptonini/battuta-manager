@@ -1,8 +1,6 @@
 import json
-import os
 from pytz import timezone
 
-from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
@@ -210,7 +208,7 @@ class UsersView(View):
 
         if request.user.has_perm('users.edit_users') or request.user.id == request.POST['id']:
 
-            form_data = dict(request.POST.iteritems())
+            form_data = request.POST.dict()
 
             if form_data['id']:
 
@@ -412,205 +410,6 @@ class UsersView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class CredentialView(View):
-
-    @staticmethod
-    def _truncate_secure_data(cred):
-
-        prefs = get_preferences()
-
-        if cred['password']:
-
-            cred['password'] = prefs['password_placeholder']
-
-        if cred['sudo_pass']:
-
-            cred['sudo_pass'] = prefs['password_placeholder']
-
-        return cred
-
-    # def get(self, request, user_name, action):
-    #
-    #     user = get_object_or_404(User, username=user_name)
-    #
-    #     if request.user == user or request.user.has_perm('users.edit_users'):
-    #
-    #         if action == 'list':
-    #
-    #             data = list()
-    #
-    #             for cred in Credential.objects.filter(user=user).values():
-    #
-    #                 cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
-    #
-    #                 data.append(self._truncate_secure_data(cred))
-    #
-    #             if request.GET['runner'] == 'true':
-    #
-    #                 for cred in Credential.objects.filter(is_shared=True).exclude(user=user).values():
-    #
-    #                     cred_owner = get_object_or_404(User, id=cred['user_id'])
-    #                     cred['title'] += ' (' + cred_owner.username + ')'
-    #                     data.append(self._truncate_secure_data(cred))
-    #
-    #         elif action == 'default':
-    #
-    #             data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
-    #
-    #         else:
-    #
-    #             raise Http404('Invalid action')
-    #
-    #     else:
-    #
-    #         data = {'result': 'denied'}
-    #
-    #     return HttpResponse(json.dumps(data), content_type='application/json')
-
-    @staticmethod
-    def post(request, user_name, action):
-
-        user = get_object_or_404(User, username=user_name)
-
-        prefs = get_preferences()
-
-        # Validate user
-        if request.user.has_perm('users.edit_users') or request.user.username == user_name:
-
-            ssh_path = os.path.join(settings.USERDATA_PATH, str(user.username), '.ssh')
-
-            # Save/Update credential
-            if action == 'save':
-
-                form_data = dict(request.POST.iteritems())
-
-                form_data['user'] = user.id
-
-                # Build credential object
-                cred = Credential(user=user) if form_data['id'] == 'undefined' else get_object_or_404(Credential, pk=form_data['id'])
-
-                # Set form data passwords
-                if form_data['password'] == prefs['password_placeholder']:
-
-                    form_data['password'] = cred.password
-
-                if form_data['sudo_pass'] == prefs['password_placeholder']:
-
-                    form_data['sudo_pass'] = cred.sudo_pass
-
-                if form_data['password'] or form_data['rsa_key']:
-
-                    form_data['ask_pass'] = False
-
-                if form_data['sudo_pass']:
-
-                    form_data['ask_sudo_pass'] = False
-
-                # Check RSA key filename encoding
-                try:
-
-                    str(form_data['rsa_key'])
-
-                except UnicodeEncodeError:
-
-                    data = {'result': 'failed', 'msg': 'Non-ASCII characters in RSA key filename'}
-
-                else:
-
-                    # Check if RSA key is in use by another credential
-                    duplicate = user.credential_set.filter(rsa_key=form_data['rsa_key']).exclude(id=cred.id)
-
-                    if form_data['rsa_key'] == '' or len(duplicate) == 0:
-
-                        current_key = cred.rsa_key
-
-                        form = CredentialForm(form_data or None, instance=cred)
-
-                        # Validate form data
-                        if form.is_valid():
-
-                            # Remove old RSA key if changed
-                            if form_data['rsa_key'] != current_key:
-
-                                try:
-
-                                    os.remove(os.path.join(ssh_path, current_key))
-
-                                except os.error:
-
-                                    pass
-
-                            # Save new RSA key
-                            if request.FILES:
-
-                                with open(os.path.join(ssh_path, form_data['rsa_key']), 'w+b') as f:
-
-                                    for chunk in request.FILES['rsa_key_file'].chunks():
-
-                                        f.write(chunk)
-
-                            # Set credential as default
-                            if form_data['is_default'] == 'true':
-
-                                user.userdata.default_cred = cred
-
-                                user.userdata.save()
-
-                            # Save credential
-                            cred.save()
-
-                            data = {'result': 'ok', 'cred_id': cred.id}
-
-                        else:
-
-                            data = {'result': 'failed', 'msg': str(form.errors)}
-
-                    else:
-
-                        data = {'result': 'failed',
-                                'msg': '"' + form_data['rsa_key'] + '" is in use by another credential'}
-
-            # Delete credential
-            elif request.POST['action'] == 'delete':
-
-                cred = get_object_or_404(Credential, pk=request.POST['id'])
-
-                # List users using this credential as default
-                user_list = [user_data.user.username for user_data in UserData.objects.filter(default_cred=cred)]
-
-                # Return fail if credential is default for a user(s)
-                if len(user_list) > 0:
-
-                    data = {'result': 'failed', 'msg': 'Credential is default for ' + ', '.join(user_list)}
-
-                else:
-
-                    # Remove RSA key from disk
-                    try:
-
-                        os.remove(os.path.join(ssh_path, cred.rsa_key))
-
-                    except os.error:
-
-                        pass
-
-                    # Delete credential
-                    cred.delete()
-
-                    data = {'result': 'ok'}
-
-            # Raise error
-            else:
-
-                raise Http404('Invalid action')
-
-        else:
-
-            data = {'result': 'denied'}
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
 class UserGroupView(View):
 
     @staticmethod
@@ -685,7 +484,7 @@ class UserGroupView(View):
 
         if request.user.has_perm('users.edit_user_groups'):
 
-            form_data = dict(request.POST.iteritems())
+            form_data = request.POST.dict()
 
             if form_data['id']:
 

@@ -45,6 +45,8 @@
 
             gridBody.empty();
 
+            opts.dataArray = opts.ajaxDataKey ? data[opts.ajaxDataKey] : opts.dataArray;
+
             if (opts.dataArray.length === 0) {
 
                 if (opts.hideIfEmpty) gridContainer.hide();
@@ -85,8 +87,6 @@
 
                     }
 
-
-
                     if (opts.itemToggle) currentItem.off('click').click(function () {
 
                         _toggleItemSelection(gridBody, currentItem)
@@ -118,7 +118,7 @@
                 data: opts.ajaxData,
                 success: function (data) {
 
-                    opts.dataArray = opts.ajaxDataKey ? data[opts.ajaxDataKey] : data;
+                    opts.dataArray = data;
 
                     _loadFromArray(gridContainer, gridBody, opts)
 
@@ -176,6 +176,37 @@
                 toggleAll.attr('title', 'Select all').data('add_class', true).children('span')
                     .removeClass('fa-check-square-o')
                     .addClass('fa-square-o');
+            }
+        }
+
+        function _sortObjectArray(field, reverse, primer){
+
+            if (primer) {
+
+                var key = function (x) {
+
+                    return primer(x[field])
+
+                }
+
+            }
+
+            else {
+
+                key = function (x) {
+
+                    return x[field]
+
+                }
+
+            }
+
+            reverse = !reverse ? 1 : -1;
+
+            return function (a, b) {
+
+                return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+
             }
         }
 

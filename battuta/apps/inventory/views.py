@@ -78,28 +78,6 @@ class InventoryView(View):
 
                 raise PermissionDenied
 
-        elif action == 'search':
-
-            data = list()
-
-            if request.GET['type'] == 'host':
-
-                node_class = Host
-
-            elif request.GET['type'] == 'group':
-
-                node_class = Group
-
-            else:
-
-                raise Http404('Invalid node type')
-
-            for node in node_class.objects.order_by('name'):
-
-                if node.name.find(request.GET['pattern']) > -1:
-
-                    data.append([node.name, node.id])
-
         elif action == 'export':
 
             if request.GET['format'] == 'json':
@@ -111,6 +89,7 @@ class InventoryView(View):
                 temp_dir = tempfile.mkdtemp()
 
                 os.makedirs(os.path.join(temp_dir, 'group_vars'))
+
                 os.makedirs(os.path.join(temp_dir, 'host_vars'))
 
                 with open(os.path.join(temp_dir, 'hosts'), 'w+') as hosts_file:
@@ -119,7 +98,7 @@ class InventoryView(View):
 
                     for group in Group.objects.all():
 
-                        if len(group.members.all()) > 0:
+                        if group.members.all().count() > 0:
 
                             config.add_section(group.name)
 
@@ -127,7 +106,7 @@ class InventoryView(View):
 
                                 config.set(group.name, host.name)
 
-                        if len(group.children.all()) > 0:
+                        if group.children.all().count() > 0:
 
                             section_name = group.name + ':children'
 
@@ -137,7 +116,7 @@ class InventoryView(View):
 
                                 config.set(section_name, child.name)
 
-                        if len(group.variable_set.all()) > 0:
+                        if group.variable_set.all().count() > 0:
 
                             self._create_node_var_file(group, os.path.join(temp_dir, 'group_vars'))
 
@@ -145,7 +124,7 @@ class InventoryView(View):
 
                 for host in Host.objects.all():
 
-                    if len(host.variable_set.all()) > 0:
+                    if host.variable_set.all().count() > 0:
 
                         self._create_node_var_file(host, os.path.join(temp_dir, 'host_vars'))
 
@@ -169,7 +148,7 @@ class InventoryView(View):
 
         else:
 
-            return Http404('Invalid action')
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

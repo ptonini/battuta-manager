@@ -94,22 +94,13 @@ class JobView(View):
 
                 data = None
 
-                job_data = dict(request.POST.iteritems())
+                job_data = request.POST.dict()
 
-                print(job_data)
+                cred = get_object_or_404(Credential, pk=job_data['cred'])
 
-                # Add credentials to run data
-                if 'cred' not in job_data or job_data['cred'] == '0':
+                if cred.user.username != request.user.username and not cred.is_shared:
 
-                    cred = request.user.userdata.default_cred
-
-                else:
-
-                    cred = get_object_or_404(Credential, pk=job_data['cred'])
-
-                    if cred.user.username != request.user.username and not cred.is_shared:
-
-                        raise PermissionDenied
+                    raise PermissionDenied
 
                 job_data['cred'] = cred.id
 
@@ -122,10 +113,6 @@ class JobView(View):
                 if not job_data['become_pass']:
 
                     job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
-
-                if cred.rsa_key:
-
-                    job_data['rsa_key'] = os.path.join(settings.USERDATA_PATH, str(cred.user.username), '.ssh', cred.rsa_key)
 
                 # Execute playbook
                 if job_data['type'] == 'playbook':
@@ -164,9 +151,7 @@ class JobView(View):
 
                     tasks = [{'action': {'module': 'setup'}}]
 
-                    if prefs['use_ec2_facts']:
-
-                        tasks.append({'action': {'module': 'ec2_facts'}})
+                    tasks.append({'action': {'module': 'ec2_facts'}}) if prefs['use_ec2_facts'] else None
 
                     job_data['name'] = 'Gather facts'
 
@@ -197,6 +182,20 @@ class JobView(View):
 
                         job.is_running = True
 
+                        if cred.rsa_key:
+
+                            job.save()
+
+                            rsa_file_name = '/tmp/tmp_job_' + str(job.id)
+
+                            rsa_file = open(rsa_file_name, 'w+')
+
+                            rsa_file.write(cred.rsa_key)
+
+                            rsa_file.flush()
+
+                            job_data['rsa_file'] = rsa_file_name
+
                         setattr(job, 'data', job_data)
 
                         setattr(job, 'prefs', prefs)
@@ -212,6 +211,14 @@ class JobView(View):
                         except Exception as e:
 
                             job.delete()
+
+                            try:
+
+                                os.remove(job_data['rsa_file'])
+
+                            except OSError:
+
+                                pass
 
                             data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
 
@@ -253,6 +260,14 @@ class JobView(View):
                     data = {'result': 'ok', 'runner_id': job.id}
 
                 finally:
+
+                    try:
+
+                        os.remove('/tmp/tmp_job_' + str(job.id))
+
+                    except OSError:
+
+                        pass
 
                     job.status = 'canceled'
 
@@ -358,8 +373,6 @@ class PlaybookArgsView(View):
 
             # Save playbook arguments
             if action == 'save':
-
-                print request.POST
 
                 # Create new playbook arguments object if no id is supplied
                 if 'id' in request.POST:

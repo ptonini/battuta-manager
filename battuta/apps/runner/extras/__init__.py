@@ -55,150 +55,132 @@ def run_job(job):
 
     message = None
 
-    with tempfile.NamedTemporaryFile() as rsa_file:
+    job.data['show_skipped'] = job.data.get('show_skipped', c.DISPLAY_SKIPPED_HOSTS)
 
-        rsa_file.write(job.data['rsa_key'])
+    if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
 
-        rsa_file.flush()
+        job.data['extra_vars'] = []
 
-        job.data['show_skipped'] = job.data.get('show_skipped', c.DISPLAY_SKIPPED_HOSTS)
+    else:
 
-        job.data['connection'] = job.data.get('connection', 'paramiko')
+        job.data['extra_vars'] = job.data['extra_vars'].split(' ')
 
-        job.data['module_path'] = job.data.get('module_path')
+    if 'check' not in job.data or job.data['check'] == 'false':
 
-        job.data['forks'] = job.data.get('forks', c.DEFAULT_FORKS)
+        job.data['check'] = False
 
-        job.data['rsa_key'] = rsa_file if job.data.get('rsa_key') else ''
+    elif job.data['check'] == 'true':
 
-        job.data['become'] = job.data.get('become', c.DEFAULT_BECOME)
+        job.data['show_skipped'] = True
 
-        job.data['become_user'] = job.data['become_user'] if job.data['become_user'] else c.DEFAULT_BECOME_USER
+        job.data['check'] = True
 
-        job.data['become_method'] = job.data.get('become_method', c.DEFAULT_BECOME_METHOD)
+    # Create ansible options tuple
+    options = AnsibleOptions(connection=job.data.get('connection', 'paramiko'),
+                             module_path=job.data.get('module_path'),
+                             forks=job.data.get('forks', c.DEFAULT_FORKS),
+                             remote_user=job.data['remote_user'],
+                             private_key_file=job.data.get('rsa_file', ''),
+                             ssh_common_args=None,
+                             ssh_extra_args=None,
+                             sftp_extra_args=None,
+                             scp_extra_args=None,
+                             become=job.data.get('become', c.DEFAULT_BECOME),
+                             become_method=job.data.get('become_method', c.DEFAULT_BECOME_METHOD),
+                             become_user=job.data['become_user'] if job.data['become_user'] else c.DEFAULT_BECOME_USER,
+                             verbosity=None,
+                             check=job.data['check'],
+                             tags=job.data.get('tags', ''),
+                             skip_tags=job.data.get('skip_tags', ''),
+                             extra_vars=job.data['extra_vars'],
+                             listhosts=None,
+                             listtasks=None,
+                             listtags=None,
+                             syntax=None)
 
-        job.data['tags'] = job.data.get('tags', '')
+    variable_manager = VariableManager()
 
-        job.data['skip_tags'] = job.data.get('skip_tags', '')
+    loader = DataLoader()
 
-        if 'extra_vars' not in job.data or job.data['extra_vars'] == '':
+    inventory = Inventory(loader=loader, variable_manager=variable_manager)
 
-            job.data['extra_vars'] = []
+    variable_manager.set_inventory(inventory)
 
-        else:
+    variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
 
-            job.data['extra_vars'] = job.data['extra_vars'].split(' ')
+    passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
 
-        if 'check' not in job.data or job.data['check'] == 'false':
+    inventory.subset(job.data.get('subset', ''))
 
-            job.data['check'] = False
+    if 'playbook' in job.data:
 
-        elif job.data['check'] == 'true':
+        try:
 
-            job.data['show_skipped'] = True
+            pbex = PlaybookExecutor([job.data['playbook_path']],
+                                    inventory,
+                                    variable_manager,
+                                    loader,
+                                    options,
+                                    passwords)
 
-            job.data['check'] = True
+            pbex._tqm._stdout_callback = BattutaCallback(job, db_conn)
 
-        # Create ansible options tuple
-        options = AnsibleOptions(connection=job.data['connection'],
-                                 module_path=job.data['module_path'],
-                                 forks=job.data['forks'],
-                                 remote_user=job.data['remote_user'],
-                                 private_key_file=job.data['rsa_key'],
-                                 ssh_common_args=None,
-                                 ssh_extra_args=None,
-                                 sftp_extra_args=None,
-                                 scp_extra_args=None,
-                                 become=job.data['become'],
-                                 become_method=job.data['become_method'],
-                                 become_user=job.data['become_user'],
-                                 verbosity=None,
-                                 check=job.data['check'],
-                                 tags=job.data['tags'],
-                                 skip_tags=job.data['skip_tags'],
-                                 extra_vars=job.data['extra_vars'],
-                                 listhosts=None,
-                                 listtasks=None,
-                                 listtags=None,
-                                 syntax=None)
+            pbex.run()
 
-        variable_manager = VariableManager()
-
-        loader = DataLoader()
-
-        inventory = Inventory(loader=loader, variable_manager=variable_manager)
-
-        variable_manager.set_inventory(inventory)
-
-        variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
-
-        passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
-
-        if 'subset' in job.data:
-
-            inventory.subset(job.data['subset'])
-
-        if 'playbook' in job.data:
-
-            try:
-
-                pbex = PlaybookExecutor([job.data['playbook_path']],
-                                        inventory,
-                                        variable_manager,
-                                        loader,
-                                        options,
-                                        passwords)
-
-                pbex._tqm._stdout_callback = BattutaCallback(job, db_conn)
-
-                pbex.run()
-
-            except Exception as e:
-
-                status = 'failed'
-
-                message = type(e).__name__ + ': ' + e.__str__()
-
-            else:
-
-                status = 'finished'
-
-        elif 'adhoc_task' in job.data:
-
-            play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
-
-            try:
-
-                tqm = TaskQueueManager(inventory=inventory,
-                                       variable_manager=variable_manager,
-                                       passwords=passwords,
-                                       loader=loader,
-                                       stdout_callback=BattutaCallback(job, db_conn),
-                                       options=options)
-
-                tqm.run(play)
-
-            except Exception as e:
-
-                status = 'failed'
-
-                message = type(e).__name__ + ': ' + e.__str__()
-
-            else:
-
-                tqm.cleanup()
-
-                status = 'finished'
-
-        else:
+        except Exception as e:
 
             status = 'failed'
 
-            message = 'Invalid job data'
+            message = type(e).__name__ + ': ' + e.__str__()
 
-        if job.data['has_exceptions']:
+        else:
 
-            status = 'finished with errors'
+            status = 'finished'
+
+    elif 'adhoc_task' in job.data:
+
+        play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+
+        try:
+
+            tqm = TaskQueueManager(inventory=inventory,
+                                   variable_manager=variable_manager,
+                                   passwords=passwords,
+                                   loader=loader,
+                                   stdout_callback=BattutaCallback(job, db_conn),
+                                   options=options)
+
+            tqm.run(play)
+
+        except Exception as e:
+
+            status = 'failed'
+
+            message = type(e).__name__ + ': ' + e.__str__()
+
+        else:
+
+            tqm.cleanup()
+
+            status = 'finished'
+
+    else:
+
+        status = 'failed'
+
+        message = 'Invalid job data'
+
+    if job.data['has_exceptions']:
+
+        status = 'finished with errors'
+
+    try:
+
+        os.remove(job.data.get('rsa_file'))
+
+    except OSError:
+
+        pass
 
     with db_conn as cursor:
 
