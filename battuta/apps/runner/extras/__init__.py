@@ -1,6 +1,5 @@
 import os
 import MySQLdb
-import tempfile
 
 
 from collections import namedtuple

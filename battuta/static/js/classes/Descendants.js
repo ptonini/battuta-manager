@@ -10,6 +10,7 @@ function Descendants (node, container) {
         hideIfEmpty: true,
         checkered: true,
         showCount: true,
+        ajaxDataKey: 'descendants',
         truncateItemText: true,
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),

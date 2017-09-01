@@ -8,7 +8,7 @@ class Host(models.Model):
 
     description = models.TextField(max_length=256, blank=True)
 
-    facts = models.TextField(max_length=65353, blank=True)
+    facts = models.TextField(max_length=65353, default='{}')
 
     type = 'host'
 

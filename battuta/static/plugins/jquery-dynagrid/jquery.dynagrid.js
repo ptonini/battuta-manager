@@ -45,7 +45,15 @@
 
             gridBody.empty();
 
-            opts.dataArray = opts.ajaxDataKey ? data[opts.ajaxDataKey] : opts.dataArray;
+            opts.dataArray = opts.ajaxDataKey ? opts.dataArray[opts.ajaxDataKey] : opts.dataArray;
+
+            if (Object.prototype.toString.call(opts.dataArray) !== '[object Array]') throw '- invalid data format';
+
+            var itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
+
+            if (itemFormat === '[object Object]') opts.dataArray.sort(_sortDataArray(opts.itemValueKey, opts));
+
+            else if (itemFormat === '[object Array]') opts.dataArray.sort(_sortDataArray(0, opts));
 
             if (opts.dataArray.length === 0) {
 
@@ -69,7 +77,7 @@
 
                     var currentItem = $('<div>').addClass('dynagrid-item');
 
-                    if (Array.isArray(itemData)) {
+                    if (Object.prototype.toString.call(itemData) === '[object Array]') {
 
                         currentItem
                             .html(itemData[0])
@@ -78,7 +86,7 @@
 
                     }
 
-                    else if (typeof itemData === 'object') {
+                    else if (Object.prototype.toString.call(itemData) === '[object Object]') {
 
                         currentItem
                             .html(itemData[opts.itemValueKey])
@@ -86,6 +94,8 @@
                             .data(itemData);
 
                     }
+
+                    else throw '- invalid item data type';
 
                     if (opts.itemToggle) currentItem.off('click').click(function () {
 
@@ -179,33 +189,15 @@
             }
         }
 
-        function _sortObjectArray(field, reverse, primer){
+        function _sortDataArray(field, opts){
 
-            if (primer) {
+            return function(a, b) {
 
-                var key = function (x) {
+                if (a[field] > b[field]) return opts.sortOrder;
 
-                    return primer(x[field])
+                else if (a[field] < b[field]) return opts.sortOrder * -1;
 
-                }
-
-            }
-
-            else {
-
-                key = function (x) {
-
-                    return x[field]
-
-                }
-
-            }
-
-            reverse = !reverse ? 1 : -1;
-
-            return function (a, b) {
-
-                return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+                return 0
 
             }
         }
@@ -424,6 +416,7 @@
         ajaxDataKey: null,
         itemValueKey: 'name',
         itemIdKey: 'id',
+        sortOrder: 1,
         columns: 4,
         dataSource: 'ajax',
         dataArray: [],

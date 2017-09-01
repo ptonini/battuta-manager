@@ -337,6 +337,7 @@ class InventoryView(View):
                             data['result'] = 'ok'
 
                     else:
+
                         raise Http404('Invalid format')
 
             else:
@@ -364,41 +365,35 @@ class NodeView(View):
 
         if node.type == 'host':
 
-            node_dict['address'] = ''
+            facts = json.loads(node.facts)
 
-            node_dict['public_address'] = ''
+            node_dict['public_address'] = facts.get('ec2_public_ipv4', '')
 
-            node_dict['instance_type'] = ''
+            node_dict['instance_type'] = facts.get('ec2_instance_type', '')
 
-            node_dict['cores'] = ''
+            node_dict['cores'] = facts.get('processor_count', '')
 
-            node_dict['memory'] = ''
+            node_dict['memory'] = facts.get('memtotal_mb', '')
 
-            node_dict['disc'] = ''
+            if 'default_ipv4' in facts and 'address' in facts['default_ipv4']:
 
-            if node.facts:
+                node_dict['address'] = facts['default_ipv4']['address']
 
-                facts = json.loads(node.facts)
+            else:
 
-                if 'default_ipv4' in facts and 'address' in facts['default_ipv4']:
+                node_dict['address'] = ''
 
-                    node_dict['address'] = facts['default_ipv4']['address']
+            if 'mounts' in facts:
 
-                node_dict['cores'] = facts['processor_count'] if 'processor_count' in facts else None
+                node_dict['disc'] = 0
 
-                node_dict['memory'] = facts['memtotal_mb'] if 'memtotal_mb' in facts else None
+                for mount in facts['mounts']:
 
-                if 'mounts' in facts:
+                    node_dict['disc'] += mount['size_total']
 
-                    node_dict['disc'] = 0
+            else:
 
-                    for mount in facts['mounts']:
-
-                        node_dict['disc'] += mount['size_total']
-
-                node_dict['public_address'] = facts['ec2_public_ipv4'] if 'ec2_public_ipv4' in facts else None
-
-                node_dict['instance_type'] = facts['ec2_instance_type'] if 'ec2_instance_type' in facts else None
+                node_dict['disc'] = ''
 
         else:
 
@@ -553,7 +548,7 @@ class NodeView(View):
 
         elif action == 'facts':
 
-            if node.facts:
+            if node.type == 'host':
 
                 data = {
                     'result': 'ok',
@@ -563,21 +558,23 @@ class NodeView(View):
 
             else:
 
-                data = {'result': 'failed'}
+                data = {'result': 'failed', 'msg': 'Groups do not have facts'}
 
         elif action == 'descendants':
 
             if request.GET['type'] == 'groups':
 
-                descendants = [[group.name, group.id] for group in node.group_descendants]
+                descendants = [self._node_to_dict(group) for group in node.group_descendants]
+
+            elif request.GET['type'] == 'hosts':
+
+                descendants = [self._node_to_dict(host) for host in node.host_descendants]
 
             else:
 
-                descendants = [[host.name, host.id] for host in node.host_descendants]
+                raise Http404('Invalid node type')
 
-            descendants.sort()
-
-            data = descendants
+            data = {'result': 'ok', 'descendants': descendants}
 
         elif action == 'vars':
 
@@ -601,15 +598,9 @@ class NodeView(View):
                         'primary': False
                     }
 
-                    if var.key in variables:
+                    variables[var.key].append(var_dict) if var.key in variables else variables[var.key] = [var_dict]
 
-                        variables[var.key].append(var_dict)
-
-                    else:
-
-                        variables[var.key] = [var_dict]
-
-            data = list()
+            var_list = list()
 
             for key, values in variables.iteritems():
 
@@ -631,7 +622,9 @@ class NodeView(View):
 
                             break
 
-                data += values
+                var_list += values
+
+            data = {'result': 'ok', 'var_list': var_list}
 
         elif action == 'parents' or action == 'children' or action == 'members':
 

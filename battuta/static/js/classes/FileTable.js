@@ -171,7 +171,7 @@ FileTable.prototype = {
         self.table.DataTable({
             ajax: {
                 url: paths.filesApi + 'list/',
-                dataSrc: '',
+                dataSrc: 'file_list',
                 data: function () {
 
                     return {folder: self.folder, root: self.root, owner: self.owner}

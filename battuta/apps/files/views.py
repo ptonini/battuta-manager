@@ -169,7 +169,7 @@ class FilesView(View):
 
                 tz = timezone(request.user.userdata.timezone)
 
-                data = list()
+                file_list = list()
 
                 directory = os.path.join(root['path'], request.GET['folder'])
 
@@ -209,7 +209,7 @@ class FilesView(View):
 
                     utc_timestamp = utc.localize(file_timestamp)
 
-                    data.append({
+                    file_list.append({
                         'name': base_name,
                         'type': file_type,
                         'size': file_size,
@@ -219,6 +219,8 @@ class FilesView(View):
                         'is_valid': is_valid,
                         'error': error
                     })
+
+                data = {'result': 'ok', 'file_list': file_list}
 
             elif action == 'read':
 
