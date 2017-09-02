@@ -164,11 +164,13 @@ class UsersView(View):
 
                     if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
-                        data = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
+                        groups = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
 
                     else:
 
-                        data = [[group.name, group.id] for group in user.groups.all()]
+                        groups = [[group.name, group.id] for group in user.groups.all()]
+
+                    data = {'result': 'ok', 'groups': groups}
 
                 elif action == 'creds':
 
@@ -464,15 +466,17 @@ class UserGroupView(View):
 
                 if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
-                    data = [[user.username, user.id] for user in User.objects.exclude(groups__name=request.GET['name']) if not user.is_superuser]
+                    members = [[user.username, user.id] for user in User.objects.exclude(groups__name=request.GET['name']) if not user.is_superuser]
 
                 else:
 
-                    data = [[user.username, user.id] for user in User.objects.filter(groups__name=request.GET['name'])]
+                    members = [[user.username, user.id] for user in User.objects.filter(groups__name=request.GET['name'])]
 
             else:
 
-                data = []
+                members = []
+
+            data = {'result': 'ok', 'members': members}
 
         else:
 
@@ -514,11 +518,13 @@ class UserGroupView(View):
 
                         group.groupdata.save()
 
-                        for permission in json.loads(request.POST['permissions']):
+                        if request.user.has_perm('edit_preferences'):
 
-                            perm = Permission.objects.get(codename=permission[0])
+                            for permission in json.loads(request.POST['permissions']):
 
-                            group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
+                                perm = Permission.objects.get(codename=permission[0])
+
+                                group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
 
                         data = {'result': 'ok', 'group': self._group_to_dict(group)}
 

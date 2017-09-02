@@ -58,6 +58,7 @@ function UserGroupForm(group, container) {
                     PermissionFormButtons.inventory,
                     PermissionFormButtons.runner,
                     PermissionFormButtons.files,
+                    PermissionFormButtons.projects,
                     PermissionFormButtons.users,
                     PermissionFormButtons.preferences
                 ),
@@ -135,6 +136,8 @@ function UserGroupForm(group, container) {
         gridTitle: 'Members',
         headerTag: '<h4>',
         showAddButton: true,
+        ajaxDataKey: 'members',
+        itemValueKey: 'name',
         addButtonClass: 'add_members',
         addButtonTitle: 'Add members',
         showTitle: true,
@@ -189,8 +192,8 @@ function UserGroupForm(group, container) {
             var options = {
                 objectType: 'user',
                 url: paths.usersApi + 'group/members/?reverse=true&name=' + self.group.name,
-                ajaxDataKey: null,
-                itemValueKey: null,
+                ajaxDataKey: 'members',
+                itemValueKey: 'name',
                 showButtons: true,
                 loadCallback: function (gridContainer, selectionDialog) {
 

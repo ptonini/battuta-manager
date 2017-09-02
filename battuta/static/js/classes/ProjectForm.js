@@ -24,9 +24,10 @@ function ProjectForm(project, container) {
             new DeleteDialog(function () {
 
                 $.ajax({
-                    url: paths.projectsApi + 'project/' + self.project.id + '/delete/',
+                    url: paths.projectsApi + 'project/delete/',
                     type: 'POST',
                     dataType: 'json',
+                    data: self.project,
                     success: function (data) {
 
                         if (data.result ==='ok') window.open(paths.projects, '_self');
@@ -44,13 +45,17 @@ function ProjectForm(project, container) {
 
     self.descriptionField = textAreaField.clone().val(self.project.description);
 
-    self.managerInput = textInputField.clone().attr('title', 'Project manager').prop('readonly', true);
+    self.managerInput = textInputField.clone()
+        .attr('title', 'Project manager')
+        .prop('readonly', true)
+        .val(self.project.manager.name)
+        .data(self.project.manager);
 
     self.setManagerBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
 
         event.preventDefault();
 
-        var options = {
+        new SelectionDialog({
             objectType: 'user',
             url: paths.usersApi + 'user/list/',
             ajaxDataKey: 'users',
@@ -69,19 +74,21 @@ function ProjectForm(project, container) {
                 })
 
             }
-        };
-
-        new SelectionDialog(options);
+        });
 
     });
 
-    self.hostGroupInput = textInputField.clone().attr('title', 'Host group').prop('readonly', true);
+    self.hostGroupInput = textInputField.clone()
+        .attr('title', 'Host group')
+        .prop('readonly', true)
+        .val(self.project.host_group.name)
+        .data(self.project.host_group);
 
     self.setHostGroupBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
 
         event.preventDefault();
 
-        var options = {
+        new SelectionDialog({
             objectType: 'group',
             url: paths.inventoryApi + 'group/list/',
             ajaxDataKey: 'nodes',
@@ -100,19 +107,21 @@ function ProjectForm(project, container) {
                 })
 
             }
-        };
-
-        new SelectionDialog(options);
+        });
 
     });
 
-    self.inventoryAdminsInput = textInputField.clone().attr('title', 'Inventory Admins').prop('readonly', true);
+    self.inventoryAdminsInput = textInputField.clone()
+        .attr('title', 'Inventory Admins')
+        .prop('readonly', true)
+        .val(self.project.inventory_admins.name)
+        .data(self.project.inventory_admins);
 
     self.setInventoryAdminsBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
 
         event.preventDefault();
 
-        var options = {
+        new SelectionDialog({
             objectType: 'group',
             url: paths.usersApi + 'group/list/?editable=true',
             ajaxDataKey: 'groups',
@@ -131,19 +140,21 @@ function ProjectForm(project, container) {
                 })
 
             }
-        };
-
-        new SelectionDialog(options);
+        });
 
     });
 
-    self.runnerAdminsInput = textInputField.clone().attr('title', 'Runner admins').prop('readonly', true);
+    self.runnerAdminsInput = textInputField.clone()
+        .attr('title', 'Runner admins')
+        .prop('readonly', true)
+        .val(self.project.runner_admins.name)
+        .data(self.project.runner_admins);
 
     self.setRunnerAdminsBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
 
         event.preventDefault();
 
-        var options = {
+        new SelectionDialog({
             objectType: 'group',
             url: paths.usersApi + 'group/list/?editable=true',
             ajaxDataKey: 'groups',
@@ -162,19 +173,21 @@ function ProjectForm(project, container) {
                 })
 
             }
-        };
-
-        new SelectionDialog(options);
+        });
 
     });
 
-    self.jobExecutionInput = textInputField.clone().attr('title', 'Job execution').prop('readonly', true);
+    self.jobExecutionInput = textInputField.clone()
+        .attr('title', 'Job execution')
+        .prop('readonly', true)
+        .val(self.project.execute_jobs.name)
+        .data(self.project.execute_jobs);
 
     self.setJobExecutionBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function (event) {
 
         event.preventDefault();
 
-        var options = {
+        new SelectionDialog({
             objectType: 'group',
             url: paths.usersApi + 'group/list/?editable=true',
             ajaxDataKey: 'groups',
@@ -193,9 +206,7 @@ function ProjectForm(project, container) {
                 })
 
             }
-        };
-
-        new SelectionDialog(options);
+        });
 
     });
 
@@ -260,42 +271,41 @@ function ProjectForm(project, container) {
 
             event.preventDefault();
 
-            function saveProject(postData) {
+            if (!self.project.id) self.project.name = self.nameFieldInput.val();
 
-                $.ajax({
-                    url: paths.projectsApi + 'project/' + self.project.id + '/save/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: postData,
-                    success: function (data) {
+            self.project.description =  self.descriptionField.val();
 
-                        if (data.result === 'ok') {
+            self.project.manager = self.managerInput.data('id');
 
-                            if (self.project.name) $.bootstrapGrowl('Project saved', {type: 'success'});
+            self.project.host_group = self.hostGroupInput.data('id');
 
-                            else window.open(paths.projects + 'project/' + data.project.id + '/', '_self')
+            self.project.inventory_admins = self.inventoryAdminsInput.data('id');
 
-                        }
+            self.project.runner_admins = self.runnerAdminsInput.data('id');
 
-                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+            self.project.execute_jobs = self.jobExecutionInput.data('id');
 
-                        else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+            $.ajax({
+                url: paths.projectsApi + 'project/save/',
+                type: 'POST',
+                dataType: 'json',
+                data: self.project,
+                success: function (data) {
+
+                    if (data.result === 'ok') {
+
+                        if (self.project.name) $.bootstrapGrowl('Project saved', {type: 'success'});
+
+                        else window.open(paths.projects + 'project/' + data.project.id + '/', '_self')
 
                     }
-                });
-            }
 
-            var postData = {description: self.descriptionField.val()};
+                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
-            if (self.project.id) saveProject(postData);
+                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
-            else {
-
-                postData.name = self.nameFieldInput.val();
-
-                saveProject(postData);
-
-            }
+                }
+            });
 
         });
 

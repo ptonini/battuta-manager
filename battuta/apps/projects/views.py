@@ -6,6 +6,7 @@ from django.views.generic import View
 from django.forms import model_to_dict
 
 from .models import Project
+from .forms import ProjectForm
 
 from apps.preferences.extras import get_preferences
 
@@ -33,39 +34,55 @@ class PageView(View):
 
 class ProjectView(View):
 
-    def get(self, request, project_id, action):
+    @staticmethod
+    def get(request, action):
 
-        if action == 'list':
+        if request.user.has_perm('users.edit_projects'):
 
-            projects = list()
+            if action == 'list':
 
-            for project in Project.objects.all():
+                projects = list()
 
-                projects.append({
-                    'name': project.name,
-                    'id': project.id,
-                    'description': project.description,
-                    'manager': {'name': project.manager.username, 'id': project.manager.id},
-                    'host_group': {'name': project.host_group.name, 'id': project.host_group.id},
-                    'roles': project.roles
-                })
+                for project in Project.objects.all():
 
-            data = {'result': 'ok', 'projects': projects}
+                    projects.append({
+                        'name': project.name,
+                        'id': project.id,
+                        'description': project.description,
+                        'manager': {'name': project.manager.username, 'id': project.manager.id},
+                        'host_group': {'name': project.host_group.name, 'id': project.host_group.id},
+                        'inventory_admins': {'name': project.inventory_admins.name, 'id': project.inventory_admins.id},
+                        'runner_admins': {'name': project.runner_admins.name, 'id': project.runner_admins.id},
+                        'execute_jobs': {'name': project.execute_jobs.name, 'id': project.execute_jobs.id},
+                        'roles': project.roles
+                    })
+
+                data = {'result': 'ok', 'projects': projects}
+
+            else:
+
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def post(self, request, project_id, action):
+    @staticmethod
+    def post(request, action):
 
-        if action == 'save':
+        if request.user.has_perm('users.edit_projects'):
 
-            data = {}
+            if action == 'save':
 
+                data = {}
+
+            else:
+
+                raise Http404('Invalid action')
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')

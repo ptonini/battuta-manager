@@ -68,7 +68,9 @@ class GroupData(models.Model):
             ('edit_users', 'Can create and edit users'),
             ('edit_user_groups', 'Can create and edit user groups'),
             ('edit_user_files', 'Can create and edit user files'),
+            ('edit_permissions', 'Can edit user group permissions'),
             ('edit_preferences', 'Can edit preferences'),
+            ('edit_projects', 'Can edit projects'),
         )
 
     def __str__(self):

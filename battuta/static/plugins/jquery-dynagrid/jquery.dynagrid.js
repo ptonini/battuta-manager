@@ -226,7 +226,7 @@
                 .empty()
                 .addClass('dynagrid-container')
                 .append(
-                    $('<div>').attr('class', 'row row-eq-height').append(
+                    $('<div>').attr('class', 'row row-eq-height').css('min-height', '4rem').append(
                         $('<div>').attr('class', 'col-md-6').append(gridHeader)
                     ),
                     $('<div>').attr('class', 'row').append(

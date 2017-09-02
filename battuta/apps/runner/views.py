@@ -293,7 +293,7 @@ class AdHocView(View):
 
         if action == 'list':
 
-            data = list()
+            task_list = list()
 
             for task in AdHocTask.objects.all().values():
 
@@ -301,7 +301,9 @@ class AdHocView(View):
 
                     task['arguments'] = json.loads(task['arguments'])
 
-                    data.append(task)
+                    task_list.append(task)
+
+            data = {'result': 'ok', 'task_list': task_list}
 
         else:
 

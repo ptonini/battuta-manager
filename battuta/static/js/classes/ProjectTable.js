@@ -10,7 +10,7 @@ function ProjectTable(container) {
 
     self.table.DataTable({
         ajax: {
-            url: paths.projectsApi + 'project/0/list/',
+            url: paths.projectsApi + 'project/list/',
             dataSrc: function (data) {
 
                 if (data.result === 'ok') return data.projects;

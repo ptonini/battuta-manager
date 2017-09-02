@@ -14,7 +14,7 @@ function AdHohTaskTable(pattern, container) {
         pageLength: 50,
         ajax: {
             url: paths.runnerApi + 'adhoc/list/',
-            dataSrc: '',
+            dataSrc: 'task_list',
             data: {pattern: self.pattern}
         },
         columns: [

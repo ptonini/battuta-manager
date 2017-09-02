@@ -217,11 +217,12 @@ function UserForm(currentUser, user, container) {
 
         });
 
-
     self.groupGrid = $('<div>').DynaGrid({
         gridTitle: 'Groups',
         headerTag: '<h4>',
         showAddButton: true,
+        ajaxDataKey: 'groups',
+        itemValueKey: 'name',
         addButtonClass: 'join_group',
         addButtonTitle: 'Join groups',
         showTitle: true,
@@ -276,8 +277,8 @@ function UserForm(currentUser, user, container) {
             var options = {
                 objectType: 'group',
                 url: paths.usersApi + 'user/groups/?reverse=true&username='+ self.user.username,
-                ajaxDataKey: null,
-                itemValueKey: null,
+                ajaxDataKey: 'groups',
+                itemValueKey: 'name',
                 showButtons: true,
                 loadCallback: function (gridContainer, selectionDialog) {
 
