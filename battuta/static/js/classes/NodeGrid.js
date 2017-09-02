@@ -1,6 +1,8 @@
-function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
+function NodeGrid(nodes, nodeType, mode, addCallback, loadCallback, container) {
 
     var self = this;
+
+    self.nodes = nodes;
 
     self.type = nodeType;
 
@@ -10,15 +12,15 @@ function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
 
     self.gridOptions = {
         loadCallback: loadCallback,
-        columns: sessionStorage.getItem('node_grid_columns'),
-        ajaxDataKey: 'nodes',
+        dataSource: 'array',
+        dataArray: self.nodes,
         itemValueKey: 'name',
         checkered: true,
         showFilter: true,
         truncateItemText: true,
         headerBottomPadding: 20,
         topAlignHeader: true,
-        ajaxUrl: paths.inventoryApi+ nodeType + '/list/'
+        columns: sessionStorage.getItem('node_grid_columns')
     };
 
     if (self.mode === 'open') Object.assign(self.gridOptions, {
@@ -40,6 +42,7 @@ function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
             new NodeDialog({name: null, description: null, type: nodeType}, addCallback)
 
         }
+
     });
 
     else Object.assign(self.gridOptions, {itemToggle: true});
@@ -50,11 +53,11 @@ function NodeGrid(nodeType, mode, addCallback, loadCallback, container) {
 
 
 NodeGrid.prototype = {
-    reload: function () {
+    reload: function (nodes) {
 
         var self = this;
 
-        self.container.DynaGrid('load')
+        self.container.DynaGrid('load', nodes)
 
     },
     getSelected: function () {

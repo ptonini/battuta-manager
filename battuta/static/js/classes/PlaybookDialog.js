@@ -84,7 +84,7 @@ function PlaybookDialog(file, args, sameWindow) {
 
             if (data.result === 'ok') {
 
-                self.file.text = data.text;
+                self.text = data.text;
 
                 self._buildForm();
 
@@ -150,8 +150,6 @@ PlaybookDialog.prototype = {
                     Save: function () {
 
                         if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
-
-                            console.log(self.file)
 
                             $.ajax({
                                 url: paths.runnerApi + 'playbook_args/save/',
@@ -273,7 +271,7 @@ PlaybookDialog.prototype = {
 
         var requireSudo = false;
 
-        $.each(jsyaml.load(self.file.text), function (index, playbook) {
+        $.each(jsyaml.load(self.text), function (index, playbook) {
 
             if (trueValues.indexOf(playbook.become) > -1 || trueValues.indexOf(playbook.sudo) > -1) requireSudo = true;
 

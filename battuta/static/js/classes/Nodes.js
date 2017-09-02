@@ -35,11 +35,11 @@ function Nodes(nodeType, container) {
 
         if (self.deleteModeBtn.hasClass('checked_button')) {
 
-            self.nodeGrid = new NodeGrid(self.nodeType, 'delete', null, null, self.gridContainer);
+            self.nodeGrid = new NodeGrid(self.nodes, self.nodeType, 'delete', null, null, self.gridContainer);
 
         }
 
-        else self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, hideDeleteButtonIfEmpty, self.gridContainer)
+        else self.nodeGrid = new NodeGrid(self.nodes, self.nodeType, 'open', reloadInfo, hideDeleteButtonIfEmpty, self.gridContainer)
 
     });
 
@@ -112,15 +112,23 @@ function Nodes(nodeType, container) {
         )
     );
 
-    self.nodeTable = new NodeTable(self.nodeType, reloadInfo, self.tableContainer);
+    self._getData(function (nodes) {
 
-    self.nodeGrid = new NodeGrid(self.nodeType, 'open', reloadInfo, hideDeleteButtonIfEmpty, self.gridContainer);
+        self.nodeTable = new NodeTable(nodes, self.nodeType, reloadInfo, self.tableContainer);
+
+        self.nodeGrid = new NodeGrid(nodes, self.nodeType, 'open', reloadInfo, hideDeleteButtonIfEmpty, self.gridContainer);
+
+    });
 
     function reloadInfo() {
 
-        self.nodeTable.reload();
+        self._getData(function (nodes) {
 
-        self.nodeGrid.reload();
+            self.nodeTable.reload(nodes);
+
+            self.nodeGrid.reload(nodes);
+
+        });
 
     }
 
@@ -132,4 +140,28 @@ function Nodes(nodeType, container) {
 
     rememberSelectedTab(self.tabsHeader.attr('id'));
 
+}
+
+Nodes.prototype = {
+    _getData: function (callback) {
+
+        var self = this;
+
+        $.ajax({
+            url: paths.inventoryApi+ self.nodeType + '/list/',
+            dataType: 'JSON',
+            success: function (data) {
+
+                if (data.result === 'ok') {
+
+                    self.nodes = data.nodes;
+
+                    callback(data.nodes);
+
+                }
+
+            }
+        });
+
+    }
 }

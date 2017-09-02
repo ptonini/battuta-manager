@@ -1,8 +1,10 @@
-function NodeTable(nodeType, addCallback, container) {
+function NodeTable(nodes, nodeType, changeCallback, container) {
 
     var self = this;
 
     self.type = nodeType;
+
+    self.nodes = nodes;
 
     self.table = baseTable.clone();
 
@@ -45,7 +47,7 @@ function NodeTable(nodeType, addCallback, container) {
 
     self.table.DataTable({
         paging: false,
-        ajax: {url: paths.inventoryApi + nodeType + '/list/', dataSrc: 'nodes'},
+        data: self.nodes,
         buttons: ['csv'],
         columns: self.columns,
         dom: '<"toolbar">frtip',
@@ -75,7 +77,7 @@ function NodeTable(nodeType, addCallback, container) {
 
                                     if (data.result === 'ok') {
 
-                                        self.table.DataTable().ajax.reload();
+                                        changeCallback && changeCallback();
 
                                         $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
                                     }
@@ -94,13 +96,11 @@ function NodeTable(nodeType, addCallback, container) {
 
             if (self.type === 'host') {
 
-                var columns = ['td:eq(3)', 'td:eq(4)'];
+                var cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
 
-                if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = ['td:eq(5)', 'td:eq(6)'];
+                node.memory && $(row).find('td:eq(' + cols[0] + ')').html(humanBytes(node.memory, 'MB'));
 
-                node.memory && $(row).find(columns[0]).html(humanBytes(node.memory, 'MB'));
-
-                node.disc && $(row).find(columns[1]).html(humanBytes(node.disc))
+                node.disc && $(row).find('td:eq(' + cols[1] + ')').html(humanBytes(node.disc))
 
             }
         },
@@ -109,7 +109,7 @@ function NodeTable(nodeType, addCallback, container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add '+ nodeType).click(function () {
 
-                    new NodeDialog({name: null, description: null, type: nodeType}, addCallback);
+                    new NodeDialog({name: null, description: null, type: nodeType}, changeCallback);
 
                 })
             );
@@ -120,11 +120,15 @@ function NodeTable(nodeType, addCallback, container) {
 
 NodeTable.prototype = {
 
-    reload: function() {
+    reload: function(nodes) {
 
         var self = this;
 
-        self.table.DataTable().ajax.reload()
+        self.table.DataTable().clear();
+
+        self.table.DataTable().rows.add(nodes);
+
+        self.table.DataTable().draw();
 
     },
 

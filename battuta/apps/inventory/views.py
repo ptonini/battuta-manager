@@ -356,54 +356,40 @@ class NodeView(View):
     @staticmethod
     def _node_to_dict(node):
 
-        node_dict = {
+        default_fields = {
             'name': node.name,
             'type': node.type,
             'description': node.description,
             'id': node.id,
         }
 
+        node_dict = default_fields.copy()
+
         if node.type == 'host':
 
             facts = json.loads(node.facts)
 
-            node_dict['public_address'] = facts.get('ec2_public_ipv4', '')
+            host_fields = {
+                'public_address': facts.get('ec2_public_ipv4'),
+                'instance_type': facts.get('ec2_instance_type'),
+                'cores': facts.get('processor_count'),
+                'memory': facts.get('memtotal_mb'),
+                'address': facts.get('default_ipv4', {}).get('address'),
+                'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
+            }
 
-            node_dict['instance_type'] = facts.get('ec2_instance_type', '')
-
-            node_dict['cores'] = facts.get('processor_count', '')
-
-            node_dict['memory'] = facts.get('memtotal_mb', '')
-
-            if 'default_ipv4' in facts and 'address' in facts['default_ipv4']:
-
-                node_dict['address'] = facts['default_ipv4']['address']
-
-            else:
-
-                node_dict['address'] = ''
-
-            if 'mounts' in facts:
-
-                node_dict['disc'] = 0
-
-                for mount in facts['mounts']:
-
-                    node_dict['disc'] += mount['size_total']
-
-            else:
-
-                node_dict['disc'] = ''
+            node_dict.update(host_fields)
 
         else:
 
-            node_dict['members'] = node.members.all().count()
+            group_fields = {
+                'members': node.members.all().count(),
+                'parents': node.group_set.all().count(),
+                'children': node.children.all().count(),
+                'variables': node.variable_set.all().count(),
+            }
 
-            node_dict['parents'] = node.group_set.all().count()
-
-            node_dict['children'] = node.children.all().count(),
-
-            node_dict['variables'] = node.variable_set.all().count(),
+            node_dict.update(group_fields)
 
         return node_dict
 
@@ -598,7 +584,13 @@ class NodeView(View):
                         'primary': False
                     }
 
-                    variables[var.key].append(var_dict) if var.key in variables else variables[var.key] = [var_dict]
+                    if var.key in variables:
+
+                        variables[var.key].append(var_dict)
+
+                    else:
+
+                        variables[var.key] = [var_dict]
 
             var_list = list()
 
