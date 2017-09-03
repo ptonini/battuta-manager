@@ -35,24 +35,30 @@ class FilesView(View):
     @staticmethod
     def _validate_yaml(full_path):
 
-        with open(full_path, 'r') as yaml_file:
+        if os.path.isfile(full_path):
 
-            try:
+            with open(full_path, 'r') as yaml_file:
 
-                yaml.load(yaml_file.read())
+                try:
 
-                return True, None
+                    yaml.load(yaml_file.read())
 
-            except yaml.YAMLError as e:
+                    return True, None
 
-                return False, type(e).__name__ + ': ' + e.__str__()
+                except yaml.YAMLError as e:
+
+                    return False, type(e).__name__ + ': ' + e.__str__()
+
+        else:
+
+            return True, None
 
     file_roots = {
         'files': {
             'path': settings.FILES_PATH,
             'prefix': '{{ files_path }}',
             'exclude': list(),
-            'types': list(),
+            'exts': None,
             'user': False,
             'validator': None,
             'permission': 'users.edit_files'
@@ -61,7 +67,7 @@ class FilesView(View):
             'path': settings.PLAYBOOK_PATH,
             'prefix': None,
             'exclude': list(),
-            'types': ['yml', 'yaml'],
+            'exts': ['.yml', '.yaml'],
             'user': False,
             'validator': _validate_yaml.__func__,
             'permission': 'users.edit_playbooks'
@@ -70,7 +76,7 @@ class FilesView(View):
             'path': settings.ROLES_PATH,
             'prefix': '{{ roles_path }}',
             'exclude': ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
-            'types': list(),
+            'exts': None,
             'user': False,
             'validator': None,
             'permission': 'users.edit_roles'
@@ -80,7 +86,7 @@ class FilesView(View):
             'prefix': '{{ userdata_path }}',
             'exclude': list(),
             'types': list(),
-            'user': True,
+            'exts': None,
             'validator': None,
             'permission': 'users.edit_files'
         }
@@ -133,27 +139,19 @@ class FilesView(View):
 
                             full_path = os.path.join(root, file_name)
 
-                            relative_path = root.replace(source['path'], source['prefix'])
-
-                            is_hidden = any(s.startswith('.') for s in full_path.split('/'))
-
-                            excluded = root.split('/')[-1] in source['exclude']
-
                             is_not_archive = magic.from_file(full_path, mime='true') not in self.archive_types
 
-                            if request.GET['term'] in full_path:
+                            exclude_conditions = {
+                                request.GET['term'] not in full_path,
+                                root.split('/')[-1] in source['exclude'],
+                                any(s.startswith('.') for s in full_path.split('/')) and not prefs['show_hidden_files'],
+                                request.GET['type'] == 'archive' and is_not_archive,
+                                source['user'] and relative_path.split('/')[1] != request.user.username,
+                            }
 
-                                if is_hidden and not prefs['show_hidden_files']:
+                            if True not in exclude_conditions:
 
-                                    continue
-
-                                if excluded or request.GET['type'] == 'archive' and is_not_archive:
-
-                                    continue
-
-                                if source['user'] and relative_path.split('/')[1] != request.user.username:
-
-                                    continue
+                                relative_path = root.replace(source['path'], source['prefix'])
 
                                 data.append({'value': os.path.join(relative_path, file_name)})
 
@@ -175,50 +173,39 @@ class FilesView(View):
 
                 folder = request.GET['folder']
 
-                for base_name in os.listdir(directory):
+                for file_name in os.listdir(directory):
 
-                    full_path = os.path.join(directory, base_name)
+                    full_path = os.path.join(directory, file_name)
 
-                    is_valid = True
+                    base_name, ext = os.path.splitext(file_name)
 
-                    error = None
+                    file_type = magic.from_file(full_path, mime='true') if os.path.isfile(full_path) else 'directory'
 
-                    if os.path.isfile(full_path):
+                    is_valid, error = root['validator'](full_path) if root['validator'] else True, None
 
-                        file_type = magic.from_file(full_path, mime='true')
+                    exclude_conditions = {
+                        file_name.startswith('.') and not prefs['show_hidden_files'],
+                        file_type != 'directory' and root['exts'] and ext not in root['exts'],
+                    }
 
-                        if root['validator']:
+                    if True not in exclude_conditions:
 
-                            is_valid, error = root['validator'](full_path)
+                        file_size = os.path.getsize(full_path)
 
-                    else:
+                        file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
 
-                        file_type = 'directory'
+                        utc_timestamp = utc.localize(file_timestamp)
 
-                    if not prefs['show_hidden_files'] and base_name.startswith('.'):
-
-                        continue
-
-                    if file_type != 'directory' and len(root['types']) > 0 and base_name.split('.')[-1] not in root['types']:
-
-                        continue
-
-                    file_size = os.path.getsize(full_path)
-
-                    file_timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-
-                    utc_timestamp = utc.localize(file_timestamp)
-
-                    file_list.append({
-                        'name': base_name,
-                        'type': file_type,
-                        'size': file_size,
-                        'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
-                        'root': request.GET.get('root'),
-                        'folder': folder,
-                        'is_valid': is_valid,
-                        'error': error
-                    })
+                        file_list.append({
+                            'name': file_name,
+                            'type': file_type,
+                            'size': file_size,
+                            'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
+                            'root': request.GET.get('root'),
+                            'folder': folder,
+                            'is_valid': is_valid,
+                            'error': error
+                        })
 
                 data = {'result': 'ok', 'file_list': file_list}
 
@@ -288,7 +275,9 @@ class FilesView(View):
 
                 else:
 
-                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), request.GET['name']), 'zip', full_path)
+                    archive_name = os.path.join(tempfile.gettempdir(), request.GET['name'])
+
+                    target = shutil.make_archive(archive_name, 'zip', full_path)
 
                     delete_after = True
 

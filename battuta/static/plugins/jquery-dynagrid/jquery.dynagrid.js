@@ -26,13 +26,7 @@
 
                     }
 
-                    else {
-
-                        if (indexIsEven) $(this).removeClass('checkered');
-
-                        else $(this).addClass('checkered')
-
-                    }
+                    else indexIsEven ? $(this).removeClass('checkered') : $(this).addClass('checkered')
 
                 })
             }

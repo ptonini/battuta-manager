@@ -7,7 +7,7 @@
             if ('{{ project_id }}') {
 
                 $.ajax({
-                    url: paths.projectsApi + 'project/{{ project_id }}/get/',
+                    url: paths.projectsApi + 'project/get/?id={{ project_id }}',
                     dataType: 'json',
                     success: function (data) {
 
@@ -24,7 +24,17 @@
 
                 document.title = 'Battuta - New project';
 
-                new ProjectForm({id: null, manager: {}, host_group: {}, inventory_admins: {}, runner_admins: {}, execute_jobs: {}}, $('#project_form_container'))
+                var emptyProject = {
+                    id: null,
+                    manager: {},
+                    host_group: {},
+                    inventory_admins: {},
+                    runner_admins: {},
+                    execute_jobs: {},
+                    roles: '[]'
+                };
+
+                new ProjectForm(emptyProject, $('#project_form_container'))
 
             }
 

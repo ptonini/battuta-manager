@@ -413,71 +413,25 @@ class NodeView(View):
 
             raise Http404('Invalid node type')
 
-        ancestors = list()
-
-        group_descendants = list()
-
-        host_descendants = list()
-
         if node_class.objects.filter(name=node_name).exists():
 
             node = get_object_or_404(node_class, name=node_name)
-
-            parents = node.group_set.all()
-
-            while len(parents) > 0:
-
-                step_list = list()
-
-                for parent in parents:
-
-                    if parent not in ancestors:
-
-                        ancestors.append(parent)
-
-                    for group in parent.group_set.all():
-
-                        step_list.append(group)
-
-                parents = step_list
-
-            if node.name != 'all':
-
-                ancestors.append(Group.objects.get(name='all'))
-
-            if node.type == 'group':
-
-                group_descendants = set()
-
-                children = node.children.all()
-
-                while len(children) > 0:
-
-                    step_list = set()
-
-                    for child in children:
-
-                        group_descendants.add(child)
-
-                        for grandchild in child.children.all():
-
-                            step_list.add(grandchild)
-
-                    children = step_list
-
-                members = {host for host in node.members.all()}
-
-                host_descendants = members.union({host for group in group_descendants for host in group.members.all()})
 
         else:
 
             node = node_class()
 
-        setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
+        group_descendants, host_descendants = BattutaInventory.get_node_descendants(node)
+
+        editable_conditions = {
+            user.has_perm('users.edit_' + node_type + 's')
+        }
+
+        setattr(node, 'editable', True if True in editable_conditions else False)
 
         setattr(node, 'form_class', node_form_class)
 
-        setattr(node, 'ancestors', ancestors)
+        setattr(node, 'ancestors', BattutaInventory.get_node_ancestors(node))
 
         setattr(node, 'group_descendants', group_descendants)
 

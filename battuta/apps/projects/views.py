@@ -3,7 +3,6 @@ import json
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.forms import model_to_dict
 
 from .models import Project
 from .forms import ProjectForm
@@ -35,48 +34,77 @@ class PageView(View):
 class ProjectView(View):
 
     @staticmethod
-    def get(request, action):
+    def _project_to_dict(project):
 
-        if request.user.has_perm('users.edit_projects'):
+        return {
+            'name': project.name,
+            'id': project.id,
+            'description': project.description,
+            'manager': {'name': project.manager.username, 'id': project.manager.id},
+            'host_group': {'name': project.host_group.name, 'id': project.host_group.id},
+            'inventory_admins': {'name': project.inventory_admins.name, 'id': project.inventory_admins.id},
+            'runner_admins': {'name': project.runner_admins.name, 'id': project.runner_admins.id},
+            'execute_jobs': {'name': project.execute_jobs.name, 'id': project.execute_jobs.id},
+            'roles': project.roles
+        }
 
-            if action == 'list':
+    def get(self, request, action):
 
-                projects = list()
+        if action == 'list':
 
-                for project in Project.objects.all():
+            projects = list()
 
-                    projects.append({
-                        'name': project.name,
-                        'id': project.id,
-                        'description': project.description,
-                        'manager': {'name': project.manager.username, 'id': project.manager.id},
-                        'host_group': {'name': project.host_group.name, 'id': project.host_group.id},
-                        'inventory_admins': {'name': project.inventory_admins.name, 'id': project.inventory_admins.id},
-                        'runner_admins': {'name': project.runner_admins.name, 'id': project.runner_admins.id},
-                        'execute_jobs': {'name': project.execute_jobs.name, 'id': project.execute_jobs.id},
-                        'roles': project.roles
-                    })
+            for project in Project.objects.all():
 
-                data = {'result': 'ok', 'projects': projects}
+                if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
+
+                    projects.append(self._project_to_dict(project))
+
+            data = {'result': 'ok', 'projects': projects}
+
+        elif action == 'get':
+
+            project = get_object_or_404(Project, pk=request.GET['id'])
+
+            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
+
+                data = {'result': 'ok', 'project': self._project_to_dict(project)}
 
             else:
 
-                raise Http404('Invalid action')
+                data = {'result': 'denied'}
 
         else:
 
-            data = {'result': 'denied'}
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    @staticmethod
-    def post(request, action):
+    def post(self, request, action):
 
         if request.user.has_perm('users.edit_projects'):
 
+            project = get_object_or_404(Project, pk=request.POST['id']) if request.POST['id'] else Project()
+
             if action == 'save':
 
-                data = {}
+                project_form = ProjectForm(request.POST or None, instance=project)
+
+                if project_form.is_valid():
+
+                    project = project_form.save()
+
+                    data = {'result': 'ok', 'project': self._project_to_dict(project)}
+
+                else:
+
+                    data = {'result': 'failed', 'msg': str(project_form.errors)}
+
+            elif action == 'delete':
+
+                project.delete()
+
+                data = {'result': 'ok'}
 
             else:
 

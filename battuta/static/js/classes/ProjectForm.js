@@ -294,7 +294,7 @@ function ProjectForm(project, container) {
 
                     if (data.result === 'ok') {
 
-                        if (self.project.name) $.bootstrapGrowl('Project saved', {type: 'success'});
+                        if (self.project.id) $.bootstrapGrowl('Project saved', {type: 'success'});
 
                         else window.open(paths.projects + 'project/' + data.project.id + '/', '_self')
 
@@ -325,7 +325,7 @@ function ProjectForm(project, container) {
                 $('<small>').html('project'),
                 '&nbsp;',
                 self.project.name,
-                $('<small>').css('margin-left', '1rem').append(self.deleteGroupBtn)
+                $('<small>').css('margin-left', '1rem').append(self.deleteProjectBtn)
             ),
             $('<br>')
         );

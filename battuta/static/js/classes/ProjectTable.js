@@ -35,7 +35,7 @@ function ProjectTable(container) {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open(paths.projectsApi + 'project/' + project.id + '/', '_self')
+                window.open(paths.projects + 'project/' + project.id + '/', '_self')
 
             });
 
