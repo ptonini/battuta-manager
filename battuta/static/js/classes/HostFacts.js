@@ -24,11 +24,11 @@ HostFacts.prototype = {
         var self = this;
 
         $.ajax({
-            url: paths.inventoryApi + 'host/facts/?name=' + self.node.name,
+            url: paths.inventoryApi + 'host/facts/?id=' + self.node.id,
             dataType: 'json',
             success: function (data) {
 
-                if (data.result === 'ok') self._buildFacts(data.facts);
+                if (data.result === 'ok' && data.facts) self._buildFacts(data.facts);
 
                 else self.container.append(self.gatherFactsButton)
 

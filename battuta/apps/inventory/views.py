@@ -19,6 +19,7 @@ from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import BattutaInventory
 
 from apps.preferences.extras import get_preferences
+from apps.projects.extras import authorize_action
 
 
 class PageView(View):
@@ -38,7 +39,9 @@ class PageView(View):
 
         elif kwargs['page'] == 'node':
 
-            context = {'node_type': kwargs['node_type'], 'node_name': kwargs['node_name']}
+            classes = {'host': Host, 'group': Group}
+
+            context = {'node': (get_object_or_404(classes[kwargs['node_type']], name=kwargs['node_name']))}
 
             return render(request, 'inventory/node.html', context)
 
@@ -354,6 +357,40 @@ class InventoryView(View):
 class NodeView(View):
 
     @staticmethod
+    def _build_node(node_dict, node_type, user):
+
+        classes = {
+            'host': {'node': Host, 'form': HostForm},
+            'group': {'node': Group, 'form': GroupForm}
+        }
+
+        if node_dict.get('id', False):
+
+            node = get_object_or_404(classes[node_type]['node'], pk=node_dict['id'])
+
+        else:
+
+            node = classes[node_type]['node']()
+
+        group_descendants, host_descendants = BattutaInventory.get_node_descendants(node)
+
+        editable_conditions = {
+            user.has_perm('users.edit_' + node_type + 's'),
+        }
+
+        setattr(node, 'editable', True if True in editable_conditions else False)
+
+        setattr(node, 'form_class', classes[node_type]['form'])
+
+        setattr(node, 'ancestors', BattutaInventory.get_node_ancestors(node))
+
+        setattr(node, 'group_descendants', group_descendants)
+
+        setattr(node, 'host_descendants', host_descendants)
+
+        return node
+
+    @staticmethod
     def _node_to_dict(node):
 
         default_fields = {
@@ -394,52 +431,6 @@ class NodeView(View):
         return node_dict
 
     @staticmethod
-    def _build_node(node_type, node_name, user):
-
-        # Get classes based on node type
-        if node_type == 'host':
-
-            node_class = Host
-
-            node_form_class = HostForm
-
-        elif node_type == 'group':
-
-            node_class = Group
-
-            node_form_class = GroupForm
-
-        else:
-
-            raise Http404('Invalid node type')
-
-        if node_class.objects.filter(name=node_name).exists():
-
-            node = get_object_or_404(node_class, name=node_name)
-
-        else:
-
-            node = node_class()
-
-        group_descendants, host_descendants = BattutaInventory.get_node_descendants(node)
-
-        editable_conditions = {
-            user.has_perm('users.edit_' + node_type + 's')
-        }
-
-        setattr(node, 'editable', True if True in editable_conditions else False)
-
-        setattr(node, 'form_class', node_form_class)
-
-        setattr(node, 'ancestors', BattutaInventory.get_node_ancestors(node))
-
-        setattr(node, 'group_descendants', group_descendants)
-
-        setattr(node, 'host_descendants', host_descendants)
-
-        return node
-
-    @staticmethod
     def _get_relationships(node, action):
 
         if action == 'parents':
@@ -468,15 +459,24 @@ class NodeView(View):
 
     def get(self, request, node_type, action):
 
-        node = self._build_node(node_type, request.GET.get('name'), request.user)
+        node = self._build_node(request.GET.dict(), node_type, request.user)
 
         if action == 'list':
 
             node_list = list()
 
+            filter_pattern = request.GET.get('filter')
+
+            exclude_pattern = request.GET.get('exclude')
+
             for node in node.__class__.objects.all():
 
-                if 'filter' not in request.GET or node.name.find(request.GET['filter']) > -1:
+                match_conditions = {
+                    not filter_pattern or node.name.find(filter_pattern) > -1,
+                    not exclude_pattern or node.name.find(exclude_pattern) <= -1
+                }
+
+                if False not in match_conditions:
 
                     node_list.append(self._node_to_dict(node))
 
@@ -490,10 +490,12 @@ class NodeView(View):
 
             if node.type == 'host':
 
+                facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
+
                 data = {
                     'result': 'ok',
                     'name': node.name,
-                    'facts': (collections.OrderedDict(sorted(json.loads(node.facts).items())))
+                    'facts': facts if facts else None
                 }
 
             else:
@@ -610,11 +612,11 @@ class NodeView(View):
 
     def post(self, request, node_type, action):
 
-        node = self._build_node(node_type, request.POST.get('name'), request.user)
+        node = self._build_node(request.POST.dict(), node_type, request.user)
 
-        if node.editable:
+        if action == 'save':
 
-            if action == 'save':
+            if node.editable:
 
                 form = node.form_class(request.POST or None, instance=node)
 
@@ -628,63 +630,87 @@ class NodeView(View):
 
                     data = {'result': 'failed', 'msg': str(form.errors)}
 
-            elif action == 'delete':
+            else:
 
-                if node.type == 'host' or node.name != 'all':
+                data = {'result': 'denied'}
+
+        elif action == 'delete':
+
+            if node.editable and (node.type == 'host' or node.name != 'all'):
+
+                node.delete()
+
+                data = {'result': 'ok'}
+
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'delete_bulk':
+
+            for node_id in request.POST.getlist('selection[]'):
+
+                node = self._build_node({'id': node_id}, node_type, request.user)
+
+                if node.editable and (node.type == 'host' or node.name != 'all'):
 
                     node.delete()
 
-                data = {'result': 'ok'}
+            data = {'result': 'ok'}
 
-            elif action == 'delete_bulk':
+        elif action == 'save_var':
 
-                for node_id in request.POST.getlist('selection[]'):
+            if node.editable or authorize_action(request.user, 'edit_variables', node):
 
-                    node = get_object_or_404(node.__class__, pk=node_id)
+                var_dict = json.loads(request.POST['variable'])
 
-                    if node.type == 'host' or node.name != 'all':
+                if var_dict['id']:
 
-                        node.delete()
-
-                data = {'result': 'ok'}
-
-            elif action == 'save_var':
-
-                if 'id' in request.POST and request.POST['id']:
-
-                    variable = get_object_or_404(Variable, pk=request.POST['id'])
+                    variable = get_object_or_404(Variable, pk=var_dict['id'])
 
                 else:
 
                     variable = Variable()
 
-                post_data = dict(request.POST.iteritems())
+                var_dict[node_type] = node.id
 
-                post_data[node_type] = node.id
-
-                form = VariableForm(post_data or None, instance=variable)
+                form = VariableForm(var_dict or None, instance=variable)
 
                 if form.is_valid():
 
                     form.save(commit=True)
 
-                    data = {'result': 'ok'}
+                    data = {'result': 'ok', 'msg': 'Variable saved'}
 
                 else:
 
                     data = {'result': 'failed', 'msg': str(form.errors)}
 
-            elif action == 'delete_var':
+            else:
 
-                variable = get_object_or_404(Variable, pk=request.POST['id'])
+                data = {'result': 'denied'}
+
+        elif action == 'delete_var':
+
+            if node.editable or authorize_action(request.user, 'edit_variables', node):
+
+                variable = get_object_or_404(Variable, pk=json.loads(request.POST['variable'])['id'])
 
                 variable.delete()
 
-                data = {'result': 'ok'}
+                data = {'result': 'ok', 'msg': 'Variable deleted'}
 
-            elif action == 'copy_vars':
+            else:
 
-                source = NodeView._build_node(request.POST['source_type'], request.POST['source_name'], request.user)
+                data = {'result': 'denied'}
+
+        elif action == 'copy_vars':
+
+            if node.editable or authorize_action(request.user, 'edit_variables', node):
+
+                source_dict = json.loads(request.POST['source'])
+
+                source = self._build_node(source_dict, source_dict['type'], request.user)
 
                 for source_var in source.variable_set.all():
 
@@ -694,9 +720,15 @@ class NodeView(View):
 
                     var.save()
 
-                data = {'result': 'ok'}
+                data = {'result': 'ok', 'msg': 'Variable copied from ' + source.name}
 
-            elif action == 'add_parents' or action == 'add_children' or action == 'add_members':
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'add_parents' or action == 'add_children' or action == 'add_members':
+
+            if node.editable:
 
                 related_set, related_class = self._get_relationships(node, action.split('_')[1])
 
@@ -706,7 +738,13 @@ class NodeView(View):
 
                 data = {'result': 'ok'}
 
-            elif action == 'remove_parents' or action == 'remove_children' or action == 'remove_members':
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'remove_parents' or action == 'remove_children' or action == 'remove_members':
+
+            if node.editable:
 
                 related_set, related_class = self._get_relationships(node, action.split('_')[1])
 
@@ -718,10 +756,10 @@ class NodeView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                data = {'result': 'denied'}
 
         else:
 
-            data = {'result': 'denied'}
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')

@@ -30,14 +30,13 @@ function VariableDialog(variable, node, saveCallback) {
 
             event.preventDefault();
 
-            var variable = {
+            self.node.variable = JSON.stringify({
                 key: self.keyField.val(),
                 value: self.valueField.val(),
-                id: self.var.id,
-                name: self.node.name
-            };
+                id: self.var.id
+            });
 
-            VariableDialog.saveVariable(variable, self.node, function () {
+            Node.postData(self.node, 'save_var', function () {
 
                 self.saveCallback();
 
@@ -94,45 +93,3 @@ function VariableDialog(variable, node, saveCallback) {
 
 }
 
-VariableDialog.saveVariable = function (variable, node, saveCallback) {
-
-    VariableDialog.postVariable(variable, 'save_var', node, function () {
-
-        saveCallback();
-
-        $.bootstrapGrowl('Variable saved', {type: 'success'})
-
-    })
-
-};
-
-VariableDialog.deleteVariable = function (variable, node, deleteCallback) {
-
-    VariableDialog.postVariable(variable, 'delete_var', node, function () {
-
-        deleteCallback();
-
-        $.bootstrapGrowl('Variable deleted', {type: 'success'})
-
-    })
-
-};
-
-VariableDialog.postVariable = function (variable, action, node, successCallback) {
-
-    $.ajax({
-        url: paths.inventoryApi + node.type + '/' + action + '/',
-        type: 'POST',
-        dataType: 'json',
-        data: variable,
-        success: function(data) {
-
-            if (data.result === 'ok') successCallback && successCallback();
-
-            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-        }
-    });
-};

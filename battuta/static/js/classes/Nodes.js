@@ -50,21 +50,8 @@ function Nodes(nodeType, container) {
 
             new DeleteDialog(function () {
 
-                $.ajax({
-                    url: paths.inventoryApi + nodeType + '/delete_bulk/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {selection: self.nodeGrid.getSelected()},
-                    success: function (data) {
+                Node.postData({id: null, selection: self.nodeGrid.getSelected()}, 'delete_bulk', reloadInfo);
 
-                        if (data.result === 'ok') reloadInfo();
-
-                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                    }
-                })
             })
         });
 

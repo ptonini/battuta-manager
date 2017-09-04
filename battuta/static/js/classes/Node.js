@@ -34,21 +34,11 @@ function Node(node, container) {
 
             new DeleteDialog(function () {
 
-                $.ajax({
-                    url: paths.inventoryApi + self.node.type + '/delete/',
-                    type: 'POST',
-                    data: node,
-                    dataType: 'json',
-                    success: function (data) {
+                Node.postData(node, 'delete', function () {
 
-                        if (data.result === 'ok') window.open(paths.inventory + self.node.type + 's/', '_self');
+                    window.open(paths.inventory + self.node.type + 's/', '_self');
 
-                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                        else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                    }
-                });
+                })
 
             })
 
@@ -135,6 +125,32 @@ function Node(node, container) {
         self.variableTable.reloadTable();
 
         self.descendants && self.descendants.reload();
+
     }
 
 }
+
+Node.postData = function (node, action, callback) {
+
+    $.ajax({
+        url: paths.inventoryApi + node.type + '/' + action + '/',
+        type: 'POST',
+        dataType: 'json',
+        data: node,
+        success: function(data) {
+
+            if (data.result === 'ok') {
+
+                callback && callback(data);
+
+                data.msg && $.bootstrapGrowl(data.msg, {type: 'success'})
+
+            }
+
+            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
+        }
+    });
+};

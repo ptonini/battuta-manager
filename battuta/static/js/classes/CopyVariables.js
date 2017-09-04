@@ -53,7 +53,7 @@ CopyVariables.prototype = {
 
         new SelectionDialog({
             objectType: sourceNodeType,
-            url: paths.inventoryApi + sourceNodeType + '/list/',
+            url: paths.inventoryApi + sourceNodeType + '/list/?exclude=' + self.node.name,
             ajaxDataKey: 'nodes',
             itemValueKey: 'name',
             showButtons: false,
@@ -63,29 +63,14 @@ CopyVariables.prototype = {
 
                 gridItem.click(function () {
 
-                    var sourceNodeName = $(this).data('name');
+                    self.node.source = JSON.stringify($(this).data());
 
-                    $.ajax({
-                        url: paths.inventoryApi + self.node.type + '/copy_vars/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {source_name: sourceNodeName, source_type: sourceNodeType, name: self.node.name},
-                        success: function (data) {
+                    Node.postData(self.node, 'copy_vars', function () {
 
-                            if (data.result === 'ok') {
+                        selectionDialog.dialog('close');
 
-                                selectionDialog.dialog('close');
+                        self.copyCallback && self.copyCallback()
 
-                                $.bootstrapGrowl('Variables copied from ' + sourceNodeName, {type: 'success'});
-
-                                self.copyCallback && self.copyCallback()
-                            }
-
-                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                        }
                     });
 
                 });

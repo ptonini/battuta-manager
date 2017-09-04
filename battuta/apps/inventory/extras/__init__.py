@@ -6,6 +6,7 @@ from ansible.inventory import Inventory, Host as AnsibleHost
 from django.conf import settings
 
 from apps.inventory.models import Host, Group
+from apps.inventory.forms import HostForm, GroupForm
 
 
 class BattutaInventory:

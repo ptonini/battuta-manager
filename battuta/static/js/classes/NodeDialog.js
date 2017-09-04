@@ -19,30 +19,19 @@ function NodeDialog(node, saveCallback) {
 
             event.preventDefault();
 
-            $.ajax({
-                url: paths.inventoryApi + self.node.type + '/save/',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    name: self.nameFieldInput .val(),
-                    description: self.descriptionField.val()
-                },
-                success: function (data) {
+            self.node.name = self.nameFieldInput .val();
 
-                    if (data.result === 'ok') {
+            self.node.description = self.descriptionField.val();
 
-                        self.dialog.dialog('close');
 
-                        saveCallback && saveCallback(data);
+            Node.postData(self.node, 'save', function (data) {
 
-                    }
+                self.dialog.dialog('close');
 
-                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                saveCallback && saveCallback(data);
 
-                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                }
             });
+
         });
 
     self.dialog = $('<div>').append($('<h4>').html(self.header), self.form);

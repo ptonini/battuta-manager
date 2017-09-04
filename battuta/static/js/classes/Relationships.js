@@ -29,7 +29,7 @@ function Relationships(node, alterRelationCallback, container) {
             gridBodyTopMargin: '10px',
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: paths.inventoryApi + self.node.type + '/' + relation + '/?name=' + self.node.name,
+            ajaxUrl: paths.inventoryApi + self.node.type + '/' + relation + '/?id=' + self.node.id,
             formatItem: function (gridContainer, gridItem) {
 
                 var id = gridItem.data('id');
@@ -47,7 +47,15 @@ function Relationships(node, alterRelationCallback, container) {
                         .attr('title', 'Remove')
                         .click(function () {
 
-                            self._alterRelation(relation, [id], 'remove')
+                            self.node.selection = [id];
+
+                            Node.postData(self.node, 'remove_' + relation, function () {
+
+                                self[relation].DynaGrid('load');
+
+                                self.alterRelationCallback && self.alterRelationCallback()
+
+                            });
 
                         })
                 )
@@ -57,7 +65,7 @@ function Relationships(node, alterRelationCallback, container) {
 
                 var options = {
                     objectType: self.node.type,
-                    url: paths.inventoryApi + self.node.type + '/' + relation + '/?related=false&name=' + self.node.name,
+                    url: paths.inventoryApi + self.node.type + '/' + relation + '/?related=false&id=' + self.node.id,
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
                     showButtons: true,
@@ -66,7 +74,15 @@ function Relationships(node, alterRelationCallback, container) {
                         selectionDialog.dialog('option', 'buttons', {
                             Add: function () {
 
-                                self._alterRelation(relation, selectionDialog.DynaGrid('getSelected', 'id'), 'add');
+                                self.node.selection = selectionDialog.DynaGrid('getSelected', 'id');
+
+                                Node.postData(self.node, 'add_' + relation, function () {
+
+                                    self[relation].DynaGrid('load');
+
+                                    self.alterRelationCallback && self.alterRelationCallback()
+
+                                });
 
                                 $(this).dialog('close');
 
@@ -102,33 +118,3 @@ function Relationships(node, alterRelationCallback, container) {
         container.append(self[relation], $('<br>'));
     })
 }
-
-Relationships.prototype = {
-
-    _alterRelation: function (relation, selection, action) {
-
-        var self = this;
-
-        $.ajax({
-            url: paths.inventoryApi + self.node.type + '/' + action + '_' + relation + '/',
-            type: 'POST',
-            dataType: 'json',
-            data: {name: self.node.name, selection: selection},
-            success: function (data) {
-
-                if (data.result === 'ok') {
-
-                    self[relation].DynaGrid('load');
-
-                    self.alterRelationCallback && self.alterRelationCallback()
-
-                }
-
-                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-            }
-        });
-    }
-};

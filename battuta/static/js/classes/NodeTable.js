@@ -44,7 +44,6 @@ function NodeTable(nodes, nodeType, changeCallback, container) {
         {class: 'col-md-1', title: '', defaultContent: ''}
     ];
 
-
     self.table.DataTable({
         paging: false,
         data: self.nodes,
@@ -68,25 +67,12 @@ function NodeTable(nodes, nodeType, changeCallback, container) {
 
                         new DeleteDialog(function () {
 
-                            $.ajax({
-                                url: paths.inventoryApi + self.type + '/delete/',
-                                type: 'POST',
-                                data: {name: node.name},
-                                dataType: 'json',
-                                success: function (data) {
+                            Node.postData(node, 'delete', function () {
 
-                                    if (data.result === 'ok') {
+                                changeCallback && changeCallback();
 
-                                        changeCallback && changeCallback();
+                                $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
 
-                                        $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
-                                    }
-
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                                }
                             });
 
                         })

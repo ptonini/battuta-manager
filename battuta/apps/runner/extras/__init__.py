@@ -175,7 +175,7 @@ def run_job(job):
 
     try:
 
-        os.remove(job.data.get('rsa_file'))
+        os.remove(job.data.get('rsa_file', ''))
 
     except OSError:
 

@@ -15,7 +15,7 @@ function VariableTable(node, container) {
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
         paging: false,
         dom: '<"variable-toolbar">frtip',
-        ajax: {url: paths.inventoryApi + self.node.type + '/vars/?name='+ self.node.name, dataSrc: 'var_list'},
+        ajax: {url: paths.inventoryApi + self.node.type + '/vars/?id='+ self.node.id, dataSrc: 'var_list'},
         columns: [
             {class: 'col-md-3', title: 'key', data: 'key'},
             {class: 'col-md-7', title: 'value', data: 'value'},
@@ -35,7 +35,9 @@ function VariableTable(node, container) {
 
                         new DeleteDialog(function () {
 
-                            VariableDialog.deleteVariable(variable, self.node, self.table.DataTable().ajax.reload)
+                            self.node.variable = JSON.stringify(variable);
+
+                            Node.postData(self.node, 'delete_var', self.table.DataTable().ajax.reload)
 
                         })
 
