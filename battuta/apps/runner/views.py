@@ -2,6 +2,7 @@ import json
 import psutil
 import os
 import ast
+import yaml
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -20,6 +21,8 @@ from apps.runner.extras.handlers import JobTableHandler
 from apps.users.models import Credential
 
 from apps.preferences.extras import get_preferences
+from apps.projects.extras import authorize_action
+from apps.inventory.extras import AnsibleInventory
 
 
 class PageView(View):
@@ -49,6 +52,13 @@ class PageView(View):
 
 
 class JobView(View):
+
+    @staticmethod
+    def _get_playbook_hosts(playbook_path):
+
+        with open(playbook_path, 'r') as playbook_file:
+
+            return [play['hosts'] for play in yaml.load(playbook_file.read())]
 
     @staticmethod
     def get(request, job_id):
@@ -82,47 +92,73 @@ class JobView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    @staticmethod
-    def post(request, action):
+    def post(self, request, action):
 
         prefs = get_preferences()
 
-        if request.user.has_perm('users.execute_jobs'):
+        # Run job
+        if action == 'run':
 
-            # Run job
-            if action == 'run':
+            data = None
 
-                data = None
+            ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 
-                job_data = request.POST.dict()
+            job_data = request.POST.dict()
 
-                cred = get_object_or_404(Credential, pk=job_data['cred'])
+            job_data['inventory'] = ansible_inventory.inventory
 
-                if cred.user.username != request.user.username and not cred.is_shared:
+            job_data['var_manager'] = ansible_inventory.var_manager
 
-                    raise PermissionDenied
+            job_data['loader'] = ansible_inventory.loader
 
-                job_data['cred'] = cred.id
+            cred = get_object_or_404(Credential, pk=job_data['cred'])
 
-                job_data['remote_user'] = job_data['remote_user'] if job_data['remote_user'] else cred.username
+            if cred.user.username != request.user.username and not cred.is_shared:
 
-                job_data['remote_pass'] = job_data['remote_pass'] if job_data['remote_pass'] else cred.password
+                raise PermissionDenied
 
-                job_data['become_user'] = job_data['become_user'] if job_data['become_user'] else cred.sudo_user
+            job_data['cred'] = cred.id
 
-                if not job_data['become_pass']:
+            job_data['remote_user'] = job_data['remote_user'] if job_data['remote_user'] else cred.username
 
-                    job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
+            job_data['remote_pass'] = job_data['remote_pass'] if job_data['remote_pass'] else cred.password
 
-                # Execute playbook
-                if job_data['type'] == 'playbook':
+            job_data['become_user'] = job_data['become_user'] if job_data['become_user'] else cred.sudo_user
 
-                    job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['folder'], job_data['playbook'])
+            if not job_data['become_pass']:
 
-                    job_data['name'] = job_data['playbook']
+                job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
 
-                # Execute task
-                elif job_data['type'] == 'adhoc':
+            # Execute playbook
+            if job_data['type'] == 'playbook':
+
+                authorize_conditions = {request.user.has_perm('users.execute_jobs')}
+
+                job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['folder'], job_data['playbook'])
+
+                job_data['name'] = job_data['playbook']
+
+                for hosts in self._get_playbook_hosts(job_data['playbook_path']):
+
+                    authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
+
+                if True not in authorize_conditions:
+
+                    data = {'result': 'denied'}
+
+            # Execute task
+            elif job_data['type'] == 'adhoc':
+
+                authorize_conditions = {
+                    request.user.has_perm('users.execute_jobs'),
+                    authorize_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
+                }
+
+                if True not in authorize_conditions:
+
+                    data = {'result': 'denied'}
+
+                else:
 
                     adhoc_form = AdHocTaskForm(job_data)
 
@@ -147,7 +183,18 @@ class JobView(View):
 
                         data = {'result': 'failed', 'msg': str(adhoc_form.errors)}
 
-                elif job_data['type'] == 'gather_facts':
+            elif job_data['type'] == 'gather_facts':
+
+                authorize_conditions = {
+                    request.user.has_perm('users.execute_jobs'),
+                    authorize_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
+                }
+
+                if False in authorize_conditions:
+
+                    data = {'result': 'denied'}
+
+                else:
 
                     tasks = [{'action': {'module': 'setup'}}]
 
@@ -164,76 +211,94 @@ class JobView(View):
                         'tasks': tasks
                     }
 
-                else:
+            else:
 
-                    raise Http404('Invalid form data')
+                raise Http404('Invalid form data')
 
-                if data is None:
+            if data is None:
 
-                    job_form = JobForm(job_data)
+                job_form = JobForm(job_data)
 
-                    if job_form.is_valid():
+                if job_form.is_valid():
 
-                        job = job_form.save(commit=False)
+                    job = job_form.save(commit=False)
 
-                        job.user = request.user
+                    job.user = request.user
 
-                        job.status = 'created'
+                    job.status = 'created'
 
-                        job.is_running = True
+                    job.is_running = True
 
-                        if cred.rsa_key:
-
-                            job.save()
-
-                            rsa_file_name = '/tmp/tmp_job_' + str(job.id)
-
-                            rsa_file = open(rsa_file_name, 'w+')
-
-                            rsa_file.write(cred.rsa_key)
-
-                            rsa_file.flush()
-
-                            job_data['rsa_file'] = rsa_file_name
-
-                        setattr(job, 'data', job_data)
-
-                        setattr(job, 'prefs', prefs)
+                    if cred.rsa_key:
 
                         job.save()
 
+                        rsa_file_name = '/tmp/tmp_job_' + str(job.id)
+
+                        rsa_file = open(rsa_file_name, 'w+')
+
+                        rsa_file.write(cred.rsa_key)
+
+                        rsa_file.flush()
+
+                        job_data['rsa_file'] = rsa_file_name
+
+                    setattr(job, 'data', job_data)
+
+                    setattr(job, 'prefs', prefs)
+
+                    job.save()
+
+                    try:
+
+                        p = Process(target=run_job, args=(job,))
+
+                        p.start()
+
+                    except Exception as e:
+
+                        job.delete()
+
                         try:
 
-                            p = Process(target=run_job, args=(job,))
+                            os.remove(job_data['rsa_file'])
 
-                            p.start()
+                        except OSError:
 
-                        except Exception as e:
+                            pass
 
-                            job.delete()
-
-                            try:
-
-                                os.remove(job_data['rsa_file'])
-
-                            except OSError:
-
-                                pass
-
-                            data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
-
-                        else:
-
-                            data = {'result': 'ok', 'runner_id': job.id}
+                        data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
 
                     else:
 
-                        data = {'result': 'failed', 'msg': str(job_form.errors)}
+                        data = {'result': 'ok', 'runner_id': job.id}
 
-            # Kill job
-            elif action == 'kill':
+                else:
 
-                job = get_object_or_404(Job, pk=request.POST['runner_id'])
+                    data = {'result': 'failed', 'msg': str(job_form.errors)}
+
+        # Kill job
+        elif action == 'kill':
+
+            authorize_conditions = {request.user.has_perm('users.execute_jobs')}
+
+            job = get_object_or_404(Job, pk=request.POST['runner_id'])
+
+            ansible_inventory = AnsibleInventory(subset=job.subset if job.subset else '')
+
+            if job.type == 'playbook':
+
+                playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder, job.name)
+
+                for hosts in self._get_playbook_hosts(playbook_path):
+
+                    authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
+
+            else:
+
+                authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=job.subset, inventory=ansible_inventory))
+
+            if True in authorize_conditions:
 
                 try:
 
@@ -277,11 +342,11 @@ class JobView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                data = {'result': 'denied'}
 
         else:
 
-            data = {'result': 'denied'}
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

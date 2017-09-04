@@ -13,10 +13,11 @@ from django.http import HttpResponse, Http404, StreamingHttpResponse
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
+from django.conf import settings
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
-from apps.inventory.extras import BattutaInventory
+from apps.inventory.extras import AnsibleInventory, get_node_ancestors, get_node_descendants
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import authorize_action
@@ -53,6 +54,84 @@ class PageView(View):
 class InventoryView(View):
 
     @staticmethod
+    def _inventory_to_dict(internal_vars=True):
+
+        data = {
+            '_meta': {
+                'hostvars': dict()
+            },
+            'ungrouped': {
+                'hosts': list()
+            }
+        }
+
+        for host in Host.objects.order_by('name'):
+
+            if host.variable_set.all().exists() or host.description:
+
+                data['_meta']['hostvars'][host.name] = dict()
+
+                for var in host.variable_set.all():
+
+                    try:
+
+                        data['_meta']['hostvars'][host.name][var.key] = json.loads(var.value)
+
+                    except ValueError or TypeError:
+
+                        data['_meta']['hostvars'][host.name][var.key] = var.value
+
+                if host.description and not internal_vars:
+
+                    data['_meta']['hostvars'][host.name]['_description'] = host.description
+
+            if host.group_set.count() == 0 and internal_vars:
+
+                data['ungrouped']['hosts'].append(host.name)
+
+        for group in Group.objects.order_by('name'):
+
+            data[group.name] = dict()
+
+            if group.members.all().exists():
+
+                data[group.name]['hosts'] = [host.name for host in group.members.all()]
+
+            data[group.name]['children'] = [child.name for child in group.children.all()]
+
+            if group.variable_set.all().exists() or group.description:
+
+                data[group.name]['vars'] = dict()
+
+                for var in group.variable_set.all():
+
+                    try:
+
+                        data[group.name]['vars'][var.key] = json.loads(var.value)
+
+                    except ValueError or TypeError:
+
+                        data[group.name]['vars'][var.key] = var.value
+
+            if group.description and not internal_vars:
+
+                data[group.name]['vars']['_description'] = group.description
+
+        if internal_vars:
+
+            if 'vars' not in data['all']:
+
+                data['all']['vars'] = dict()
+
+            data['all']['vars']['roles_path'] = settings.ROLES_PATH
+
+            data['all']['vars']['files_path'] = settings.FILES_PATH
+
+            data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
+
+        return data
+
+    @staticmethod
     def _create_node_var_file(node, folder):
 
         with open(os.path.join(folder, node.name + '.yml'), 'w+') as vars_file:
@@ -75,7 +154,7 @@ class InventoryView(View):
 
             if request.user.is_authenticated or ip in prefs['ansible_servers'].split(','):
 
-                data = BattutaInventory.to_dict()
+                data = self._inventory_to_dict()
 
             else:
 
@@ -85,7 +164,7 @@ class InventoryView(View):
 
             if request.GET['format'] == 'json':
 
-                data = BattutaInventory.to_dict(internal_vars=False)
+                data = self._inventory_to_dict(internal_vars=False)
 
             elif request.GET['format'] == 'zip':
 
@@ -372,7 +451,7 @@ class NodeView(View):
 
             node = classes[node_type]['node']()
 
-        group_descendants, host_descendants = BattutaInventory.get_node_descendants(node)
+        group_descendants, host_descendants = get_node_descendants(node)
 
         editable_conditions = {
             user.has_perm('users.edit_' + node_type + 's'),
@@ -382,7 +461,7 @@ class NodeView(View):
 
         setattr(node, 'form_class', classes[node_type]['form'])
 
-        setattr(node, 'ancestors', BattutaInventory.get_node_ancestors(node))
+        setattr(node, 'ancestors', get_node_ancestors(node))
 
         setattr(node, 'group_descendants', group_descendants)
 
@@ -522,7 +601,7 @@ class NodeView(View):
 
             variables = dict()
 
-            inventory = BattutaInventory()
+            inventory = AnsibleInventory()
 
             for var in node.variable_set.all():
 
@@ -660,7 +739,7 @@ class NodeView(View):
 
         elif action == 'save_var':
 
-            if node.editable or authorize_action(request.user, 'edit_variables', node):
+            if node.editable or authorize_action(request.user, 'edit_variables', node=node):
 
                 var_dict = json.loads(request.POST['variable'])
 
@@ -686,7 +765,7 @@ class NodeView(View):
 
         elif action == 'delete_var':
 
-            if node.editable or authorize_action(request.user, 'edit_variables', node):
+            if node.editable or authorize_action(request.user, 'edit_variables', node=node):
 
                 variable = get_object_or_404(Variable, pk=json.loads(request.POST['variable'])['id'])
 
@@ -700,7 +779,7 @@ class NodeView(View):
 
         elif action == 'copy_vars':
 
-            if node.editable or authorize_action(request.user, 'edit_variables', node):
+            if node.editable or authorize_action(request.user, 'edit_variables', node=node):
 
                 source_dict = json.loads(request.POST['source'])
 

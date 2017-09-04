@@ -64,7 +64,7 @@ function AdHocTaskForm (pattern, type, task, container) {
             id: self.task.id
         };
 
-        if (self.action === 'run') new AnsibleRunner(task, $('option:selected', self.credentialsSelector).data());
+        if (self.action === 'run') new JobRunner(task, $('option:selected', self.credentialsSelector).data());
 
         else if (self.action === 'save') AdHocTaskForm.saveTask(task, function () {
 

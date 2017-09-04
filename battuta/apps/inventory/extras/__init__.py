@@ -1,178 +1,102 @@
-import json
-
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
-from ansible.inventory import Inventory, Host as AnsibleHost
-from django.conf import settings
+from ansible.inventory import Inventory, Host
 
-from apps.inventory.models import Host, Group
-from apps.inventory.forms import HostForm, GroupForm
+from apps.inventory.models import Group
 
 
-class BattutaInventory:
+def get_node_ancestors(node):
 
-    def __init__(self):
+    ancestors = set()
 
-        self._variable_manager = VariableManager()
+    if node.id:
 
-        self._loader = DataLoader()
+        parents = node.group_set.all()
 
-        self._inventory = Inventory(loader=self._loader, variable_manager=self._variable_manager)
+        while len(parents) > 0:
 
-        self._variable_manager.set_inventory(self._inventory)
+            step_list = list()
 
-    @staticmethod
-    def to_dict(internal_vars=True):
+            for parent in parents:
 
-        data = {
-            '_meta': {
-                'hostvars': dict()
-            },
-            'ungrouped': {
-                'hosts': list()
-            }
-        }
+                if parent not in ancestors:
 
-        for host in Host.objects.order_by('name'):
+                    ancestors.add(parent)
 
-            if host.variable_set.all().exists() or host.description:
+                for group in parent.group_set.all():
 
-                data['_meta']['hostvars'][host.name] = dict()
+                    step_list.append(group)
 
-                for var in host.variable_set.all():
+            parents = step_list
 
-                    try:
+        if node.name != 'all':
 
-                        data['_meta']['hostvars'][host.name][var.key] = json.loads(var.value)
+            ancestors.add(Group.objects.get(name='all'))
 
-                    except ValueError or TypeError:
+    return ancestors
 
-                        data['_meta']['hostvars'][host.name][var.key] = var.value
 
-                if host.description and not internal_vars:
+def get_node_descendants(node):
 
-                    data['_meta']['hostvars'][host.name]['_description'] = host.description
+    if node.type == 'group' and node.id:
 
-            if host.group_set.count() == 0 and internal_vars:
+        group_descendants = set()
 
-                data['ungrouped']['hosts'].append(host.name)
+        children = node.children.all()
 
-        for group in Group.objects.order_by('name'):
+        while len(children) > 0:
 
-            data[group.name] = dict()
+            step_list = set()
 
-            if group.members.all().exists():
+            for child in children:
 
-                data[group.name]['hosts'] = [host.name for host in group.members.all()]
+                group_descendants.add(child)
 
-            data[group.name]['children'] = [child.name for child in group.children.all()]
+                for grandchild in child.children.all():
 
-            if group.variable_set.all().exists() or group.description:
+                    step_list.add(grandchild)
 
-                data[group.name]['vars'] = dict()
+            children = step_list
 
-                for var in group.variable_set.all():
+        members = {host for host in node.members.all()}
 
-                    try:
+        return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
 
-                        data[group.name]['vars'][var.key] = json.loads(var.value)
+    else:
 
-                    except ValueError or TypeError:
+        return set(), set()
 
-                        data[group.name]['vars'][var.key] = var.value
 
-            if group.description and not internal_vars:
+class AnsibleInventory:
 
-                data[group.name]['vars']['_description'] = group.description
+    def __init__(self, subset=None):
 
-        if internal_vars:
+        self.var_manager = VariableManager()
 
-            if 'vars' not in data['all']:
+        self.loader = DataLoader()
 
-                data['all']['vars'] = dict()
+        self.inventory = Inventory(loader=self.loader, variable_manager=self.var_manager)
 
-            data['all']['vars']['roles_path'] = settings.ROLES_PATH
+        self.var_manager.set_inventory(self.inventory)
 
-            data['all']['vars']['files_path'] = settings.FILES_PATH
-
-            data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
-
-        return data
-
-    @staticmethod
-    def get_node_ancestors(node):
-
-        ancestors = set()
-
-        if node.id:
-
-            parents = node.group_set.all()
-
-            while len(parents) > 0:
-
-                step_list = list()
-
-                for parent in parents:
-
-                    if parent not in ancestors:
-
-                        ancestors.add(parent)
-
-                    for group in parent.group_set.all():
-
-                        step_list.append(group)
-
-                parents = step_list
-
-            if node.name != 'all':
-
-                ancestors.add(Group.objects.get(name='all'))
-
-        return ancestors
-
-    @staticmethod
-    def get_node_descendants(node):
-
-        if node.type == 'group' and node.id:
-
-            group_descendants = set()
-
-            children = node.children.all()
-
-            while len(children) > 0:
-
-                step_list = set()
-
-                for child in children:
-
-                    group_descendants.add(child)
-
-                    for grandchild in child.children.all():
-
-                        step_list.add(grandchild)
-
-                children = step_list
-
-            members = {host for host in node.members.all()}
-
-            return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
-
-        else:
-
-            return set(), set()
+        self.inventory.subset(subset)
 
     def get_variable(self, key, node):
 
         if node.type == 'host':
 
-            host = self._inventory.get_host(node.name)
+            host = self.inventory.get_host(node.name)
 
         else:
 
-            host = AnsibleHost('temp_host')
+            host = Host('temp_host')
 
-            host.add_group(self._inventory.get_group(node.name))
+            host.add_group(self.inventory.get_group(node.name))
 
-        host_vars = self._variable_manager.get_vars(self._loader, host=host)
+        host_vars = self.var_manager.get_vars(self.loader, host=host)
 
         return host_vars[key] if key in host_vars else None
+
+    def get_host_names(self, pattern):
+
+        return {host.name for host in self.inventory.get_hosts(pattern=pattern)}

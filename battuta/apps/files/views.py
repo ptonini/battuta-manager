@@ -307,9 +307,11 @@ class FilesView(View):
 
             new_path = os.path.join(root['path'], request.POST['folder'], request.POST['new_name'])
 
+            base_name, ext = os.path.splitext(new_path)
+
             is_directory = (request.POST['type'] == 'directory')
 
-            if is_directory or len(root['types']) == 0 or request.POST['new_name'].split('.')[-1] in root['types']:
+            if is_directory or not root['exts'] or ext in root['exts']:
 
                 if action == 'save':
 

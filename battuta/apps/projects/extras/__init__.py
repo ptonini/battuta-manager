@@ -1,12 +1,13 @@
 from apps.projects.models import Project
 
-from apps.inventory.extras import BattutaInventory
+from apps.inventory.extras import get_node_descendants
 
 
-def authorize_action(user, action, node):
+def authorize_action(user, action, node=None, pattern=None, inventory=None,):
 
     authorized = {
-        'nodes': set()
+        'editable_nodes': set(),
+        'execute_on_hosts': set()
     }
 
     inventory_projects = set()
@@ -35,13 +36,24 @@ def authorize_action(user, action, node):
 
     for project in inventory_projects:
 
-        group_descendants, host_descendants = BattutaInventory.get_node_descendants(project.host_group)
+        group_descendants, host_descendants = get_node_descendants(project.host_group)
 
-        authorized['nodes'].update(host_descendants)
+        authorized['editable_nodes'].update(host_descendants)
 
-        authorized['nodes'].update(group_descendants)
+        authorized['editable_nodes'].update(group_descendants)
+
+    for project in execute_projects:
+
+        group_descendants, host_descendants = get_node_descendants(project.host_group)
+
+        authorized['execute_on_hosts'].update({host.name for host in host_descendants})
 
     if action == 'edit_variables':
 
-        return True if node.id and node in authorized['nodes'] else False
+        return True if node.id and node in authorized['editable_nodes'] else False
+
+    elif action == 'execute_job':
+
+        return inventory.get_host_names(pattern).issubset(authorized['execute_on_hosts'])
+
 

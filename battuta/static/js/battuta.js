@@ -223,7 +223,7 @@ function gatherFacts(nodeName, finishCallback) {
         dataType: 'json',
         success: function (cred) {
 
-            new AnsibleRunner(postData, cred);
+            new JobRunner(postData, cred);
 
         }
     });

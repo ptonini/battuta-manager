@@ -259,7 +259,7 @@ PlaybookDialog.prototype = {
             extra_vars: self.extraVarsField.val()
         };
 
-        new AnsibleRunner(postData, $('option:selected', self.credentialsSelector).data(), self.sameWindow);
+        new JobRunner(postData, $('option:selected', self.credentialsSelector).data(), self.sameWindow);
 
     },
 

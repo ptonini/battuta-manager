@@ -50,7 +50,9 @@ function Nodes(nodeType, container) {
 
             new DeleteDialog(function () {
 
-                Node.postData({id: null, selection: self.nodeGrid.getSelected()}, 'delete_bulk', reloadInfo);
+                var node = {id: null, type: self.nodeType, selection: self.nodeGrid.getSelected()};
+
+                Node.postData(node, 'delete_bulk', reloadInfo);
 
             })
         });

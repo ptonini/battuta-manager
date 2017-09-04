@@ -1,4 +1,4 @@
-function AnsibleRunner(postData, cred, sameWindow) {
+function JobRunner(postData, cred, sameWindow) {
     var self = this;
 
     postData.cred = cred.id;
@@ -96,7 +96,7 @@ function AnsibleRunner(postData, cred, sameWindow) {
 
                         postData.become_pass = self.sudoPassword.val();
 
-                        AnsibleRunner._postJob(postData, sameWindow)
+                        JobRunner._postJob(postData, sameWindow)
 
                     },
                     Cancel: function () {
@@ -120,11 +120,11 @@ function AnsibleRunner(postData, cred, sameWindow) {
             })
     }
 
-    else AnsibleRunner._postJob(postData, sameWindow)
+    else JobRunner._postJob(postData, sameWindow)
 }
 
 // Post Ansible Job
-AnsibleRunner._postJob = function (postData, sameWindow) {
+JobRunner._postJob = function (postData, sameWindow) {
     $.ajax({
         url: paths.runnerApi + 'run/',
         type: 'POST',

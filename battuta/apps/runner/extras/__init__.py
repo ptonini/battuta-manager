@@ -1,12 +1,8 @@
 import os
 import MySQLdb
 
-
 from collections import namedtuple
-from ansible.parsing.dataloader import DataLoader
-from ansible.vars import VariableManager
 from ansible.utils.vars import load_extra_vars
-from ansible.inventory import Inventory
 from ansible.playbook.play import Play
 from ansible.executor.playbook_executor import PlaybookExecutor
 from ansible.executor.task_queue_manager import TaskQueueManager
@@ -97,28 +93,18 @@ def run_job(job):
                              listtags=None,
                              syntax=None)
 
-    variable_manager = VariableManager()
-
-    loader = DataLoader()
-
-    inventory = Inventory(loader=loader, variable_manager=variable_manager)
-
-    variable_manager.set_inventory(inventory)
-
-    variable_manager.extra_vars = load_extra_vars(loader=loader, options=options)
+    job.data['var_manager'].extra_vars = load_extra_vars(loader=job.data['loader'], options=options)
 
     passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
-
-    inventory.subset(job.data.get('subset', ''))
 
     if 'playbook' in job.data:
 
         try:
 
             pbex = PlaybookExecutor([job.data['playbook_path']],
-                                    inventory,
-                                    variable_manager,
-                                    loader,
+                                    job.data['inventory'],
+                                    job.data['var_manager'],
+                                    job.data['loader'],
                                     options,
                                     passwords)
 
@@ -138,14 +124,14 @@ def run_job(job):
 
     elif 'adhoc_task' in job.data:
 
-        play = Play().load(job.data['adhoc_task'], variable_manager=variable_manager, loader=loader)
+        play = Play().load(job.data['adhoc_task'], variable_manager=job.data['var_manager'], loader=job.data['loader'])
 
         try:
 
-            tqm = TaskQueueManager(inventory=inventory,
-                                   variable_manager=variable_manager,
+            tqm = TaskQueueManager(inventory=job.data['inventory'],
+                                   variable_manager=job.data['var_manager'],
                                    passwords=passwords,
-                                   loader=loader,
+                                   loader=job.data['loader'],
                                    stdout_callback=BattutaCallback(job, db_conn),
                                    options=options)
 
@@ -185,3 +171,4 @@ def run_job(job):
 
         cursor.execute('UPDATE runner_job SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
                        (status, message, job.id))
+
