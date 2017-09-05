@@ -224,7 +224,20 @@ function ProjectForm(project, container) {
                                 spanBtnGroup.clone().append(self.setManagerBtn)
                             )
                         )
-                    ),
+                    )
+                ),
+                divCol6.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Host group').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.hostGroupInput,
+                                spanBtnGroup.clone().append(self.setHostGroupBtn)
+                            )
+                        )
+                    )
+                ),
+                divCol12.clone().append($('<h4>').html('User groups')),
+                divCol6.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Inventory admins').append(
                             $('<div>').attr('class', 'input-group').append(
@@ -238,16 +251,6 @@ function ProjectForm(project, container) {
                             $('<div>').attr('class', 'input-group').append(
                                 self.jobExecutionInput,
                                 spanBtnGroup.clone().append(self.setJobExecutionBtn)
-                            )
-                        )
-                    )
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Host group').append(
-                            $('<div>').attr('class', 'input-group').append(
-                                self.hostGroupInput,
-                                spanBtnGroup.clone().append(self.setHostGroupBtn)
                             )
                         )
                     ),

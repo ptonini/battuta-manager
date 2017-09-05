@@ -54,13 +54,96 @@ function UserGroupForm(group, container) {
                 divCol12.clone().append(
                     $('<h4>').html('Permissions')
                 ),
-                divCol6.clone().append(
-                    PermissionFormButtons.inventory,
-                    PermissionFormButtons.runner,
-                    PermissionFormButtons.files,
-                    PermissionFormButtons.projects,
-                    PermissionFormButtons.users,
-                    PermissionFormButtons.preferences
+                divCol12.clone().append(
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h5>').html('Inventory')),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit hosts').data('permission', 'edit_hosts')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit groups').data('permission', 'edit_groups')
+                            )
+                        )
+                    ),
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h5>').html('Runner')),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Execute jobs').data('permission', 'execute_jobs')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit tasks').data('permission', 'edit_tasks')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit playbooks').data('permission', 'edit_playbooks')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit roles').data('permission', 'edit_roles')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('View job history').data('permission', 'view_job_history')
+                            )
+                        )
+                    ),
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h5>').html('Files')),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit files').data('permission', 'edit_files')
+                            )
+                        )
+                    ),
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h5>').html('Projects')),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit projects').data('permission', 'edit_projects')
+                            )
+                        )
+                    ),
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h5>').html('Users')),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit users').data('permission', 'edit_users')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user groups').data('permission', 'edit_user_groups')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit user files').data('permission', 'edit_user_files')
+                            )
+                        ),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit permissions').data('permission', 'edit_permissions')
+                            )
+                        )
+
+                    ),
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h5>').html('Preferences')),
+                        divCol2.clone().append(
+                            divFormGroup.clone().append(
+                                btnSmallBlkClk.clone(true).addClass('permBtn').html('Edit preferences').data('permission', 'edit_preferences')
+                            )
+                        )
+                    )
                 ),
                 divCol12.clone().append(
                     divFormGroup.clone().append(

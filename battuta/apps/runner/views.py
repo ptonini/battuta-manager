@@ -15,7 +15,7 @@ from multiprocessing import Process
 
 from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
 from apps.runner.forms import AdHocTaskForm, JobForm, PlaybookArgsForm
-from apps.runner.extras import run_job
+from apps.runner.extras import run_job, get_playbook_hosts
 from apps.runner.extras.handlers import JobTableHandler
 
 from apps.users.models import Credential
@@ -52,13 +52,6 @@ class PageView(View):
 
 
 class JobView(View):
-
-    @staticmethod
-    def _get_playbook_hosts(playbook_path):
-
-        with open(playbook_path, 'r') as playbook_file:
-
-            return [play['hosts'] for play in yaml.load(playbook_file.read())]
 
     @staticmethod
     def get(request, job_id):
@@ -138,7 +131,7 @@ class JobView(View):
 
                 job_data['name'] = job_data['playbook']
 
-                for hosts in self._get_playbook_hosts(job_data['playbook_path']):
+                for hosts in get_playbook_hosts(job_data['playbook_path']):
 
                     authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
 
@@ -154,11 +147,7 @@ class JobView(View):
                     authorize_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
                 }
 
-                if True not in authorize_conditions:
-
-                    data = {'result': 'denied'}
-
-                else:
+                if True in authorize_conditions:
 
                     adhoc_form = AdHocTaskForm(job_data)
 
@@ -183,6 +172,10 @@ class JobView(View):
 
                         data = {'result': 'failed', 'msg': str(adhoc_form.errors)}
 
+                else:
+
+                    data = {'result': 'denied'}
+
             elif job_data['type'] == 'gather_facts':
 
                 authorize_conditions = {
@@ -190,11 +183,7 @@ class JobView(View):
                     authorize_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
                 }
 
-                if False in authorize_conditions:
-
-                    data = {'result': 'denied'}
-
-                else:
+                if True in authorize_conditions:
 
                     tasks = [{'action': {'module': 'setup'}}]
 
@@ -210,6 +199,10 @@ class JobView(View):
                         'gather_facts': False,
                         'tasks': tasks
                     }
+
+                else:
+
+                    data = {'result': 'denied'}
 
             else:
 
@@ -290,7 +283,7 @@ class JobView(View):
 
                 playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder, job.name)
 
-                for hosts in self._get_playbook_hosts(playbook_path):
+                for hosts in get_playbook_hosts(playbook_path):
 
                     authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
 
@@ -379,7 +372,12 @@ class AdHocView(View):
     @staticmethod
     def post(request, action):
 
-        if request.user.has_perm('users.edit_tasks'):
+        authorize_conditions = {
+            request.user.has_perm('users.edit_tasks'),
+            authorize_action(request.user, 'edit_job', pattern=request.POST['hosts'], inventory=AnsibleInventory())
+        }
+
+        if True in authorize_conditions:
 
             adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST['id'] else AdHocTask()
 
@@ -436,19 +434,23 @@ class PlaybookArgsView(View):
     @staticmethod
     def post(request, action):
 
-        if request.user.has_perm('users.edit_playbooks'):
+        authorize_conditions = {request.user.has_perm('users.edit_playbooks')}
+
+        ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
+
+        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.POST.get('folder', ''), request.POST.get('playbook'))
+
+        for hosts in get_playbook_hosts(playbook_path):
+
+            authorize_conditions.add(authorize_action(request.user, 'edit_job', pattern=hosts, inventory=ansible_inventory))
+
+        if True in authorize_conditions:
 
             # Save playbook arguments
             if action == 'save':
 
                 # Create new playbook arguments object if no id is supplied
-                if 'id' in request.POST:
-
-                    args = get_object_or_404(PlaybookArgs, pk=request.POST['id'])
-
-                else:
-
-                    args = PlaybookArgs()
+                args = get_object_or_404(PlaybookArgs, pk=request.POST['id']) if 'id' in request.POST else PlaybookArgs()
 
                 form = PlaybookArgsForm(request.POST or None, instance=args)
 

@@ -3,13 +3,13 @@ function JobRunner(postData, cred, sameWindow) {
 
     postData.cred = cred.id;
 
-    postData.remote_user = null;
-
-    postData.remote_pass = null;
-
-    postData.become_user = null;
-
-    postData.become_pass = null;
+    // postData.remote_user = null;
+    //
+    // postData.remote_pass = null;
+    //
+    // postData.become_user = null;
+    //
+    // postData.become_pass = null;
 
     self.askUser = false;
 
@@ -87,6 +87,8 @@ function JobRunner(postData, cred, sameWindow) {
                     Run: function () {
 
                         $(this).dialog('close');
+
+                        //self.userField.val() ? postData.remote_user = self.userField.val() : null;
 
                         postData.remote_user = self.userField.val();
 

@@ -3,11 +3,12 @@ from apps.projects.models import Project
 from apps.inventory.extras import get_node_descendants
 
 
-def authorize_action(user, action, node=None, pattern=None, inventory=None,):
+def authorize_action(user, action, node=None, pattern=None, inventory=None):
 
     authorized = {
         'editable_nodes': set(),
-        'execute_on_hosts': set()
+        'executable_hosts': set(),
+        'editable_job_hosts': set()
     }
 
     inventory_projects = set()
@@ -42,11 +43,17 @@ def authorize_action(user, action, node=None, pattern=None, inventory=None,):
 
         authorized['editable_nodes'].update(group_descendants)
 
+    for project in runner_projects:
+
+        group_descendants, host_descendants = get_node_descendants(project.host_group)
+
+        authorized['editable_job_hosts'].update({host.name for host in host_descendants})
+
     for project in execute_projects:
 
         group_descendants, host_descendants = get_node_descendants(project.host_group)
 
-        authorized['execute_on_hosts'].update({host.name for host in host_descendants})
+        authorized['executable_hosts'].update({host.name for host in host_descendants})
 
     if action == 'edit_variables':
 
@@ -54,6 +61,9 @@ def authorize_action(user, action, node=None, pattern=None, inventory=None,):
 
     elif action == 'execute_job':
 
-        return inventory.get_host_names(pattern).issubset(authorized['execute_on_hosts'])
+        return inventory.get_host_names(pattern).issubset(authorized['executable_hosts'])
 
+    elif action == 'edit_job':
+
+        return inventory.get_host_names(pattern).issubset(authorized['editable_job_hosts'])
 
