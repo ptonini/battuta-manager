@@ -22,54 +22,37 @@ function Credentials(user) {
 
             event.preventDefault();
 
-            switch ($(document.activeElement).html()) {
-
-                case 'Default':
-
-                case 'Shared':
-
-                case 'Ask':
-
-                    $(document.activeElement).toggleClass('checked_button');
-
-                    break;
-
-                // case 'Remove':
-                //
-                //     self.loadedCredentials.rsa_key = '';
-                //
-                //     self.rsaFileInput.fileinput('refresh', {initialCaption: ''});
-                //
-                //     self.rsaFileInput.fileinput('reset');
-                //
-                //     break;
-
-                case 'Delete':
-
-                    break;
-
-                default:
-
-                    // Define post action and variables
-
-
-                    break;
-
-            }
-
         });
 
     self.titleField = textInputField.clone();
 
-    self.isSharedButton = btnSmall.clone().html('Shared');
+    self.isSharedButton = btnSmall.clone().html('Shared').click(function (event) {
 
-    self.isDefaultButton = btnSmall.clone().html('Default');
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
+
+    self.isDefaultButton = btnSmall.clone().html('Default').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
 
     self.usernameField = textInputField.clone();
 
     self.passwordField = passInputField.clone();
 
-    self.askPassButton = btnSmall.clone().html('Ask');
+    self.askPassButton = btnSmall.clone().html('Ask').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
 
     self.rsaKeyField = textAreaField.clone();
 
@@ -77,7 +60,13 @@ function Credentials(user) {
 
     self.sudoPassField = passInputField.clone();
 
-    self.askSudoPassButton = btnSmall.clone().html('Ask');
+    self.askSudoPassButton = btnSmall.clone().html('Ask').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
 
     self.confirmChangesDialog = smallDialog.clone().addClass('text-center').html(
         $('<strong>').append('You have unsaved changes<br>Save now?')
@@ -157,8 +146,6 @@ function Credentials(user) {
             width: 560,
             buttons: {
                 Save: function () {
-
-                    console.log(self.loadedCredentials);
 
                     var postData = {
                         id: self.user.id,

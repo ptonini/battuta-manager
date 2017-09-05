@@ -20,7 +20,9 @@ class Project(models.Model):
 
     execute_jobs = models.ForeignKey(UserGroup, related_name='execute_jobs', null=True)
 
-    roles = models.TextField(max_length=1024, default='[]')
+    roles = models.TextField(max_length=65536, default='[]')
+
+    playbooks = models.TextField(max_length=65536, default='[]')
 
     def __str__(self):
 

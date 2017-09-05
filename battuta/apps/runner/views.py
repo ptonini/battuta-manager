@@ -2,7 +2,6 @@ import json
 import psutil
 import os
 import ast
-import yaml
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
@@ -85,7 +84,8 @@ class JobView(View):
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def post(self, request, action):
+    @staticmethod
+    def post(request, action):
 
         prefs = get_preferences()
 
@@ -104,38 +104,42 @@ class JobView(View):
 
             job_data['loader'] = ansible_inventory.loader
 
-            cred = get_object_or_404(Credential, pk=job_data['cred'])
+            if job_data['cred'] == '0':
 
-            if cred.user.username != request.user.username and not cred.is_shared:
+                cred = None
 
-                raise PermissionDenied
+                job_data['cred'] = None
 
-            job_data['cred'] = cred.id
+            else:
 
-            job_data['remote_user'] = job_data['remote_user'] if job_data['remote_user'] else cred.username
+                cred = get_object_or_404(Credential, pk=job_data['cred'])
 
-            job_data['remote_pass'] = job_data['remote_pass'] if job_data['remote_pass'] else cred.password
+                if cred.user.username != request.user.username and not cred.is_shared:
 
-            job_data['become_user'] = job_data['become_user'] if job_data['become_user'] else cred.sudo_user
+                    raise PermissionDenied
 
-            if not job_data['become_pass']:
+            job_data.setdefault('remote_user', cred.username if cred else None)
 
-                job_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else job_data['remote_pass']
+            job_data.setdefault('remote_pass', cred.password if cred else None)
+
+            job_data.setdefault('become_user', cred.sudo_user if cred else None)
+
+            job_data.setdefault('become_pass', cred.sudo_pass if cred and cred.sudo_pass else job_data['remote_pass'])
 
             # Execute playbook
             if job_data['type'] == 'playbook':
-
-                authorize_conditions = {request.user.has_perm('users.execute_jobs')}
 
                 job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['folder'], job_data['playbook'])
 
                 job_data['name'] = job_data['playbook']
 
+                authorize_conditions = set()
+
                 for hosts in get_playbook_hosts(job_data['playbook_path']):
 
                     authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
 
-                if True not in authorize_conditions:
+                if not request.user.has_perm('users.execute_jobs') or False in authorize_conditions:
 
                     data = {'result': 'denied'}
 
@@ -222,7 +226,7 @@ class JobView(View):
 
                     job.is_running = True
 
-                    if cred.rsa_key:
+                    if cred and cred.rsa_key:
 
                         job.save()
 
@@ -273,11 +277,11 @@ class JobView(View):
         # Kill job
         elif action == 'kill':
 
-            authorize_conditions = {request.user.has_perm('users.execute_jobs')}
-
             job = get_object_or_404(Job, pk=request.POST['runner_id'])
 
             ansible_inventory = AnsibleInventory(subset=job.subset if job.subset else '')
+
+            authorize_conditions = set()
 
             if job.type == 'playbook':
 
@@ -291,7 +295,7 @@ class JobView(View):
 
                 authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=job.subset, inventory=ansible_inventory))
 
-            if True in authorize_conditions:
+            if request.user.has_perm('users.execute_jobs') or False not in authorize_conditions:
 
                 try:
 

@@ -237,8 +237,6 @@ class InventoryView(View):
     @staticmethod
     def post(request, action):
 
-        print(request.user.get_group_permissions())
-
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
             if action == 'import':
@@ -434,6 +432,11 @@ class InventoryView(View):
 
 
 class NodeView(View):
+
+    classes = {
+        'host': {'node': Host, 'form': HostForm},
+        'group': {'node': Group, 'form': GroupForm}
+    }
 
     @staticmethod
     def _build_node(node_dict, node_type, user):

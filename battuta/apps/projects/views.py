@@ -45,7 +45,6 @@ class ProjectView(View):
             'inventory_admins': {'name': project.inventory_admins.name, 'id': project.inventory_admins.id},
             'runner_admins': {'name': project.runner_admins.name, 'id': project.runner_admins.id},
             'execute_jobs': {'name': project.execute_jobs.name, 'id': project.execute_jobs.id},
-            'roles': project.roles
         }
 
     def get(self, request, action):
@@ -69,6 +68,20 @@ class ProjectView(View):
             if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
 
                 data = {'result': 'ok', 'project': self._project_to_dict(project)}
+
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'playbooks':
+
+            project = get_object_or_404(Project, pk=request.GET['id'])
+
+            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
+
+                playbook_list = [{'name': p.name, 'folder': p.folder} for p in json.loads(project.playbooks)]
+
+                data = {'result': 'ok', 'playbook_list': playbook_list}
 
             else:
 

@@ -213,8 +213,6 @@ function gatherFacts(nodeName, finishCallback) {
         action: 'run',
         type: 'gather_facts',
         hosts: nodeName,
-        remote_pass: '',
-        become_pass: '',
         job_key: jobKey
     };
 
@@ -239,7 +237,7 @@ function gatherFacts(nodeName, finishCallback) {
 
                 if (!job.is_running) {
 
-                    finishCallback();
+                    finishCallback && finishCallback();
 
                     clearInterval(intervalId)
 

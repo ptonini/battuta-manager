@@ -3,42 +3,14 @@ function JobRunner(postData, cred, sameWindow) {
 
     postData.cred = cred.id;
 
-    // postData.remote_user = null;
-    //
-    // postData.remote_pass = null;
-    //
-    // postData.become_user = null;
-    //
-    // postData.become_pass = null;
+    self.askUser =  cred.id === 0;
 
-    self.askUser = false;
-
-    self.askUserPass = false;
+    self.askUserPass = cred.id === 0 || !cred.password && cred.ask_pass && !cred.rsa_key;
 
     self.askSudoUser = false;
 
-    self.askSudoPass = false;
+    self.askSudoPass =  cred.id === 0 || postData.become && !cred.sudo_pass && cred.ask_sudo_pass;
 
-    if (cred.id === 0) {
-
-        self.askUser = true;
-
-        self.askUserPass = true;
-
-        //self.askSudoUser = true;
-
-        self.askSudoPass = true;
-
-    }
-
-    else {
-
-        self.askUserPass = (!cred.password && cred.ask_pass && !cred.rsa_key);
-
-        self.askSudoPass = (postData.become && !cred.sudo_pass && cred.ask_sudo_pass)
-
-    }
-    
     if (self.askUser || self.askUserPass || self.askSudoUser || self.askSudoPass) {
 
         self.userGroup = divFormGroup.clone().toggleClass('hidden', (!self.askUser));
@@ -88,15 +60,13 @@ function JobRunner(postData, cred, sameWindow) {
 
                         $(this).dialog('close');
 
-                        //self.userField.val() ? postData.remote_user = self.userField.val() : null;
+                        if (self.userField.val()) postData.remote_user = self.userField.val();
 
-                        postData.remote_user = self.userField.val();
+                        if (self.userPassword.val()) postData.remote_pass = self.userPassword.val();
 
-                        postData.remote_pass = self.userPassword.val();
+                        if (self.sudoUserField.val()) postData.become_user = self.sudoUserField.val();
 
-                        postData.become_user = self.sudoUserField.val();
-
-                        postData.become_pass = self.sudoPassword.val();
+                        if (self.sudoPassword.val()) postData.become_pass = self.sudoPassword.val();
 
                         JobRunner._postJob(postData, sameWindow)
 
@@ -165,5 +135,3 @@ JobRunner._postJob = function (postData, sameWindow) {
     });
 
 };
-
-

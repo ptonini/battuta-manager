@@ -112,7 +112,7 @@ function ProjectForm(project, container) {
     });
 
     self.inventoryAdminsInput = textInputField.clone()
-        .attr('title', 'Inventory Admins')
+        .attr('title', 'Can edit inventory')
         .prop('readonly', true)
         .val(self.project.inventory_admins.name)
         .data(self.project.inventory_admins);
@@ -145,7 +145,7 @@ function ProjectForm(project, container) {
     });
 
     self.runnerAdminsInput = textInputField.clone()
-        .attr('title', 'Runner admins')
+        .attr('title', 'Can edit tasks and playbooks')
         .prop('readonly', true)
         .val(self.project.runner_admins.name)
         .data(self.project.runner_admins);
@@ -178,7 +178,7 @@ function ProjectForm(project, container) {
     });
 
     self.jobExecutionInput = textInputField.clone()
-        .attr('title', 'Job execution')
+        .attr('title', 'Can execute tasks and playbooks')
         .prop('readonly', true)
         .val(self.project.execute_jobs.name)
         .data(self.project.execute_jobs);
@@ -247,18 +247,18 @@ function ProjectForm(project, container) {
                         )
                     ),
                     divFormGroup.clone().append(
-                        $('<label>').html('Job execution').append(
-                            $('<div>').attr('class', 'input-group').append(
-                                self.jobExecutionInput,
-                                spanBtnGroup.clone().append(self.setJobExecutionBtn)
-                            )
-                        )
-                    ),
-                    divFormGroup.clone().append(
                         $('<label>').html('Runner admins').append(
                             $('<div>').attr('class', 'input-group').append(
                                 self.runnerAdminsInput,
                                 spanBtnGroup.clone().append(self.setRunnerAdminsBtn)
+                            )
+                        )
+                    ),
+                    divFormGroup.clone().append(
+                        $('<label>').html('Job execution').append(
+                            $('<div>').attr('class', 'input-group').append(
+                                self.jobExecutionInput,
+                                spanBtnGroup.clone().append(self.setJobExecutionBtn)
                             )
                         )
                     )
@@ -314,10 +314,111 @@ function ProjectForm(project, container) {
 
     self.formsHeader = $('<div>');
 
+    self.playbookGrid = $('<div>').DynaGrid({
+        gridTitle: 'Playbooks',
+        headerTag: '<h4>',
+        showAddButton: true,
+        ajaxDataKey: 'playbook_list',
+        itemValueKey: 'name',
+        addButtonClass: 'add_playbooks',
+        addButtonTitle: 'Add playbooks',
+        showTitle: true,
+        checkered: true,
+        showCount: true,
+        gridBodyBottomMargin: '20px',
+        columns: sessionStorage.getItem('user_grid_columns'),
+        ajaxUrl: paths.projectsApi + 'project/playbooks/?id=' + self.project.id,
+        formatItem: function(gridItem) {
+
+            var playbook = gridItem.data();
+
+            gridItem.attr('title', playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name)
+
+        },
+        // formatItem: function (gridContainer, gridItem) {
+        //
+        //     var name = gridItem.data('value');
+        //
+        //     gridItem.removeClass('truncate-text').html('').append(
+        //         $('<span>').append(name).click(function () {
+        //
+        //             window.open(paths.users + 'group' + '/' + name, '_self')
+        //
+        //         }),
+        //         spanFA.clone().addClass('text-right fa-times-circle-o')
+        //             .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+        //             .attr('title', 'Remove')
+        //             .click(function () {
+        //
+        //                 $.ajax({
+        //                     url: paths.usersApi + 'user/remove_groups/',
+        //                     type: 'POST',
+        //                     dataType: 'json',
+        //                     data: {
+        //                         id: self.user.id,
+        //                         username: self.user.username,
+        //                         selection: [gridItem.data('id')]
+        //                     },
+        //                     success: function (data) {
+        //
+        //                         if (data.result === 'ok') self.groupGrid.DynaGrid('load');
+        //
+        //                         else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+        //
+        //                         else $.bootstrapGrowl(data.msg, failedAlertOptions)
+        //
+        //                     }
+        //
+        //                 });
+        //
+        //             })
+        //     )
+        //
+        // },
+        addButtonAction: function () {
+
+            new SelectionDialog({
+                objectType: 'playbooks',
+                url: paths.filesApi + 'list/?folder=&root=playbooks',
+                ajaxDataKey: 'file_list',
+                itemValueKey: 'name',
+                showButtons: true,
+                addButtonAction: null,
+                formatItem: function(gridItem) {
+
+                    var playbook = gridItem.data();
+
+                    gridItem.attr('title', playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name)
+
+                },
+                loadCallback: function (gridContainer, selectionDialog) {
+
+                    selectionDialog.dialog('option', 'buttons', {
+                        Add: function () {
+
+                        },
+                        Cancel: function () {
+
+                            $('.filter_box').val('');
+
+                            $(this).dialog('close');
+
+                        }
+                    });
+
+                }
+            });
+
+        }
+    });
+
     self.container.append(
         self.formsHeader,
         divRow.clone().append(
             divCol6.clone().append(self.form)
+        ),
+        divRow.clone().append(
+            divCol12.clone().append(self.playbookGrid)
         )
     );
 
