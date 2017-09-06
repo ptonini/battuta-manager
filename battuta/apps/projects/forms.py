@@ -9,4 +9,4 @@ class ProjectForm(forms.ModelForm):
 
         model = Project
 
-        fields = '__all__'
+        fields = ['name', 'description']

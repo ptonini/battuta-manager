@@ -6,7 +6,7 @@ function Node(node, container) {
 
     self.container = container;
 
-    self.description = self.node.description || $('<small>').html($('<i>').html('No description available'));
+    self.description = self.node.description || noDescriptionMsg;
 
     self.tabsHeader = ulTabs.clone().attr('id', self.node.type + '_' + self.node.name + '_tabs');
 
@@ -19,7 +19,7 @@ function Node(node, container) {
         .attr('title', 'Edit')
         .click(function() {
 
-            new NodeDialog(self.node, function (data) {
+            new EntityDialog(self.node, Node.postData, function (data) {
 
                 window.open(paths.inventory + self.node.type + '/' + data.name + '/', '_self')
 

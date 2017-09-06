@@ -9,8 +9,6 @@ urlpatterns = [
 
     url(r'^project/([0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'project'}),
 
-    url(r'^new_project/$', login_required(views.PageView.as_view()), kwargs={'page': 'new_project'}),
-
     url(r'^api/project/([a-z_]+)/$', login_required(views.ProjectView.as_view())),
 
 ]

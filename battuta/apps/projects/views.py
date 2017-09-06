@@ -9,6 +9,9 @@ from .forms import ProjectForm
 
 from apps.preferences.extras import get_preferences
 
+from django.contrib.auth.models import User, Group as UserGroup
+from apps.inventory.models import Group as HostGroup
+
 
 class PageView(View):
 
@@ -34,17 +37,17 @@ class PageView(View):
 class ProjectView(View):
 
     @staticmethod
-    def _project_to_dict(project):
+    def _project_to_dict(p):
 
         return {
-            'name': project.name,
-            'id': project.id,
-            'description': project.description,
-            'manager': {'name': project.manager.username, 'id': project.manager.id},
-            'host_group': {'name': project.host_group.name, 'id': project.host_group.id},
-            'inventory_admins': {'name': project.inventory_admins.name, 'id': project.inventory_admins.id},
-            'runner_admins': {'name': project.runner_admins.name, 'id': project.runner_admins.id},
-            'execute_jobs': {'name': project.execute_jobs.name, 'id': project.execute_jobs.id},
+            'name': p.name,
+            'id': p.id,
+            'description': p.description,
+            'manager': p.manager.username if p.manager else None,
+            'host_group': p.host_group.name if p.host_group else None,
+            'inventory_admins': p.inventory_admins.name if p.inventory_admins else None,
+            'runner_admins': p.runner_admins.name if p.runner_admins else None,
+            'execute_jobs': p.execute_jobs.name if p.execute_jobs else None,
         }
 
     def get(self, request, action):
@@ -130,6 +133,28 @@ class ProjectView(View):
             elif action == 'delete':
 
                 project.delete()
+
+                data = {'result': 'ok'}
+
+            elif action == 'set_property':
+
+                prop = json.loads(request.POST['property'])
+
+                if prop['name'] == 'manager':
+
+                    prop_class = User
+
+                elif prop['name'] == 'host_group':
+
+                    prop_class = HostGroup
+
+                else:
+
+                    prop_class = UserGroup
+
+                project.__setattr__(prop['name'], get_object_or_404(prop_class, pk=prop['value']))
+
+                project.save()
 
                 data = {'result': 'ok'}
 

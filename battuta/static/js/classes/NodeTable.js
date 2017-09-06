@@ -95,7 +95,7 @@ function NodeTable(nodes, nodeType, changeCallback, container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add '+ nodeType).click(function () {
 
-                    new NodeDialog({name: null, description: null, type: nodeType}, changeCallback);
+                    new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, changeCallback);
 
                 })
             );

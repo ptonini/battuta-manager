@@ -20,7 +20,7 @@ from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, get_node_ancestors, get_node_descendants
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import authorize_action
+from apps.projects.extras import auth_action
 
 
 class PageView(View):
@@ -456,11 +456,7 @@ class NodeView(View):
 
         group_descendants, host_descendants = get_node_descendants(node)
 
-        editable_conditions = {
-            user.has_perm('users.edit_' + node_type + 's'),
-        }
-
-        setattr(node, 'editable', True if True in editable_conditions else False)
+        setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
 
         setattr(node, 'form_class', classes[node_type]['form'])
 
@@ -742,7 +738,7 @@ class NodeView(View):
 
         elif action == 'save_var':
 
-            if node.editable or authorize_action(request.user, 'edit_variables', node=node):
+            if node.editable or auth_action(request.user, 'edit_variables', node=node):
 
                 var_dict = json.loads(request.POST['variable'])
 
@@ -768,7 +764,7 @@ class NodeView(View):
 
         elif action == 'delete_var':
 
-            if node.editable or authorize_action(request.user, 'edit_variables', node=node):
+            if node.editable or auth_action(request.user, 'edit_variables', node=node):
 
                 variable = get_object_or_404(Variable, pk=json.loads(request.POST['variable'])['id'])
 
@@ -782,7 +778,7 @@ class NodeView(View):
 
         elif action == 'copy_vars':
 
-            if node.editable or authorize_action(request.user, 'edit_variables', node=node):
+            if node.editable or auth_action(request.user, 'edit_variables', node=node):
 
                 source_dict = json.loads(request.POST['source'])
 
@@ -802,7 +798,7 @@ class NodeView(View):
 
                 data = {'result': 'denied'}
 
-        elif action == 'add_parents' or action == 'add_children' or action == 'add_members':
+        elif action in ['add_parents', 'add_children', 'add_members']:
 
             if node.editable:
 
@@ -818,7 +814,7 @@ class NodeView(View):
 
                 data = {'result': 'denied'}
 
-        elif action == 'remove_parents' or action == 'remove_children' or action == 'remove_members':
+        elif action in ['remove_parents', 'remove_children', 'remove_members']:
 
             if node.editable:
 

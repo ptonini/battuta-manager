@@ -20,7 +20,7 @@ from apps.runner.extras.handlers import JobTableHandler
 from apps.users.models import Credential
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import authorize_action
+from apps.projects.extras import auth_action
 from apps.inventory.extras import AnsibleInventory
 
 
@@ -133,25 +133,25 @@ class JobView(View):
 
                 job_data['name'] = job_data['playbook']
 
-                authorize_conditions = set()
+                auth = {auth_action(request.user, 'use_playbook', playbook=os.path.join(job_data['folder'], job_data['playbook']))}
 
                 for hosts in get_playbook_hosts(job_data['playbook_path']):
 
-                    authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
+                    auth.add(auth_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
 
-                if not request.user.has_perm('users.execute_jobs') or False in authorize_conditions:
+                if not request.user.has_perm('users.execute_jobs') and False in auth:
 
                     data = {'result': 'denied'}
 
             # Execute task
             elif job_data['type'] == 'adhoc':
 
-                authorize_conditions = {
+                auth = {
                     request.user.has_perm('users.execute_jobs'),
-                    authorize_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
+                    auth_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
                 }
 
-                if True in authorize_conditions:
+                if True in auth:
 
                     adhoc_form = AdHocTaskForm(job_data)
 
@@ -182,12 +182,12 @@ class JobView(View):
 
             elif job_data['type'] == 'gather_facts':
 
-                authorize_conditions = {
+                auth = {
                     request.user.has_perm('users.execute_jobs'),
-                    authorize_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
+                    auth_action(request.user, 'execute_job', pattern=job_data['hosts'], inventory=ansible_inventory)
                 }
 
-                if True in authorize_conditions:
+                if True in auth:
 
                     tasks = [{'action': {'module': 'setup'}}]
 
@@ -281,21 +281,23 @@ class JobView(View):
 
             ansible_inventory = AnsibleInventory(subset=job.subset if job.subset else '')
 
-            authorize_conditions = set()
+            auth = set()
 
             if job.type == 'playbook':
 
                 playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder, job.name)
 
+                auth.add(auth_action(request.user, 'use_playbook', playbook=playbook_path))
+
                 for hosts in get_playbook_hosts(playbook_path):
 
-                    authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
+                    auth.add(auth_action(request.user, 'execute_job', pattern=hosts, inventory=ansible_inventory))
 
             else:
 
-                authorize_conditions.add(authorize_action(request.user, 'execute_job', pattern=job.subset, inventory=ansible_inventory))
+                auth.add(auth_action(request.user, 'execute_job', pattern=job.subset, inventory=ansible_inventory))
 
-            if request.user.has_perm('users.execute_jobs') or False not in authorize_conditions:
+            if request.user.has_perm('users.execute_jobs') or False not in auth:
 
                 try:
 
@@ -378,7 +380,7 @@ class AdHocView(View):
 
         authorize_conditions = {
             request.user.has_perm('users.edit_tasks'),
-            authorize_action(request.user, 'edit_job', pattern=request.POST['hosts'], inventory=AnsibleInventory())
+            auth_action(request.user, 'edit_task', pattern=request.POST['hosts'], inventory=AnsibleInventory())
         }
 
         if True in authorize_conditions:
@@ -446,7 +448,7 @@ class PlaybookArgsView(View):
 
         for hosts in get_playbook_hosts(playbook_path):
 
-            authorize_conditions.add(authorize_action(request.user, 'edit_job', pattern=hosts, inventory=ansible_inventory))
+            authorize_conditions.add(auth_action(request.user, 'edit_job', pattern=hosts, inventory=ansible_inventory))
 
         if True in authorize_conditions:
 

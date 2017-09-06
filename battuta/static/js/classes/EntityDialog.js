@@ -1,14 +1,14 @@
-function NodeDialog(node, saveCallback) {
+function EntityDialog(entity, postFunction, saveCallback) {
 
     var self = this;
 
-    self.node = node;
+    self.entity = entity;
 
-    self.header = self.node.name ? 'Edit ' + self.node.name : 'Add ' + self.node.type;
+    self.header = self.entity.name ? 'Edit ' + self.entity.name : 'Add ' + self.entity.type;
 
-    self.nameFieldInput = textInputField.clone().val(self.node.name);
+    self.nameFieldInput = textInputField.clone().val(self.entity.name);
 
-    self.descriptionField = textAreaField.clone().val(self.node.description);
+    self.descriptionField = textAreaField.clone().val(self.entity.description);
 
     self.form = $('<form>')
         .append(
@@ -19,12 +19,11 @@ function NodeDialog(node, saveCallback) {
 
             event.preventDefault();
 
-            self.node.name = self.nameFieldInput .val();
+            self.entity.name = self.nameFieldInput .val();
 
-            self.node.description = self.descriptionField.val();
+            self.entity.description = self.descriptionField.val();
 
-
-            Node.postData(self.node, 'save', function (data) {
+            postFunction(self.entity, 'save', function (data) {
 
                 self.dialog.dialog('close');
 

@@ -123,3 +123,5 @@ var liDropdownAnchor = $('<a>').attr({href: '#', class: 'dropdown-toggle', 'data
 var ulDropdownMenu = $('<ul>').attr('class', 'dropdown-menu');
 
 var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
+
+var noDescriptionMsg = $('<small>').html($('<i>').html('No description available'))

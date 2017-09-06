@@ -4,39 +4,17 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            if ('{{ project_id }}') {
+            $.ajax({
+                url: paths.projectsApi + 'project/get/?id={{ project_id }}',
+                dataType: 'json',
+                success: function (data) {
 
-                $.ajax({
-                    url: paths.projectsApi + 'project/get/?id={{ project_id }}',
-                    dataType: 'json',
-                    success: function (data) {
+                    document.title = 'Battuta - ' + data.project.name;
 
-                        document.title = 'Battuta - ' + data.project.name;
+                    if (data.result === 'ok') new Project(data.project, $('#project_form_container'))
 
-                        if (data.result === 'ok') new ProjectForm(data.project, $('#project_form_container'))
-
-                    }
-                });
-
-            }
-
-            else {
-
-                document.title = 'Battuta - New project';
-
-                var emptyProject = {
-                    id: null,
-                    manager: {},
-                    host_group: {},
-                    inventory_admins: {},
-                    runner_admins: {},
-                    execute_jobs: {},
-                    roles: '[]'
-                };
-
-                new ProjectForm(emptyProject, $('#project_form_container'))
-
-            }
+                }
+            });
 
         });
     </script>

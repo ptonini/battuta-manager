@@ -39,7 +39,7 @@ function NodeGrid(nodes, nodeType, mode, addCallback, loadCallback, container) {
         },
         addButtonAction: function () {
 
-            new NodeDialog({name: null, description: null, type: nodeType}, addCallback)
+            new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, addCallback)
 
         }
 

@@ -28,8 +28,8 @@ function ProjectTable(container) {
         columns: [
             {class: 'col-md-2', title: 'name', data: 'name'},
             {class: 'col-md-4', title: 'description', data: 'description'},
-            {class: 'col-md-3', title: 'manager', data: 'manager.name'},
-            {class: 'col-md-3', title: 'host group', data: 'host_group.name'}
+            {class: 'col-md-3', title: 'manager', data: 'manager'},
+            {class: 'col-md-3', title: 'host group', data: 'host_group'}
         ],
         rowCallback: function (row, project) {
 
@@ -78,7 +78,11 @@ function ProjectTable(container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add project').click(function () {
 
-                    window.open(paths.projects + 'new_project/', '_self');
+                    new EntityDialog({id: null, name: null, description: null, type: 'project'}, Project.postData, function (data){
+
+                        window.open(paths.projects + 'project/' + data.project.id + '/', '_self');
+
+                    })
 
                 })
             );

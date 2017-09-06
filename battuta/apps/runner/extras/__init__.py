@@ -176,6 +176,6 @@ def run_job(job):
 
 def get_playbook_hosts(playbook_path):
 
-    with open(playbook_path, 'r') as playbook_file:
+    with open(os.path.join(settings.PLAYBOOK_PATH, playbook_path), 'r') as playbook_file:
 
         return [play['hosts'] for play in yaml.load(playbook_file.read())]

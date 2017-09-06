@@ -100,7 +100,7 @@ function Relationships(node, alterRelationCallback, container) {
                     },
                     addButtonAction: function (selectionDialog) {
 
-                        new NodeDialog({name: null, description: null, type: relationType}, function () {
+                        new EntityDialog({name: null, description: null, type: relationType}, Node.postData, function () {
 
                             selectionDialog.DynaGrid('load')
 
