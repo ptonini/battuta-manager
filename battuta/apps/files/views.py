@@ -186,6 +186,8 @@ class FilesView(View):
                     exclude_conditions = {
                         file_name.startswith('.') and not prefs['show_hidden_files'],
                         file_type != 'directory' and root['exts'] and ext not in root['exts'],
+                        {'name': file_name, 'folder': folder} in json.loads(request.GET.get('exclude', '[]')),
+                        # {'name': file_name, 'folder': folder} not in json.loads(request.GET.get('filter', '[]'))
                     }
 
                     if True not in exclude_conditions:

@@ -41,6 +41,8 @@
 
             opts.dataArray = opts.ajaxDataKey ? opts.dataArray[opts.ajaxDataKey] : opts.dataArray;
 
+            gridContainer.data('dynagridOptions', opts);
+
             if (Object.prototype.toString.call(opts.dataArray) !== '[object Array]') throw '- invalid data format';
 
             var itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
@@ -85,7 +87,10 @@
                         currentItem
                             .html(itemData[opts.itemValueKey])
                             .attr('title', itemData[opts.itemValueKey])
-                            .data(itemData);
+                            .data(itemData)
+                            .hover(function () {
+                                $(this).css('cursor', opts.itemHoverCursor)
+                            })
 
                     }
 
@@ -358,11 +363,17 @@
 
                     gridBody.children('.toggle-on:not(".hidden")').each(function () {
 
-                        selection.push($(this).data(key));
+                        selection.push(key ? $(this).data(key) : $(this).data());
 
                     });
 
                     return selection;
+
+                    break;
+
+                case 'getData':
+
+                    return opts.dataArray;
 
                     break;
 
@@ -406,6 +417,7 @@
         showFilter: false,
         checkered: false,
         itemToggle: false,
+        itemHoverCursor: 'pointer',
         truncateItemText: false,
         ajaxDataKey: null,
         itemValueKey: 'name',

@@ -325,61 +325,59 @@ function ProjectForm(project, container) {
         showTitle: true,
         checkered: true,
         showCount: true,
+        itemHoverCursor: 'auto',
         gridBodyBottomMargin: '20px',
-        columns: sessionStorage.getItem('user_grid_columns'),
+        columns: 3,
         ajaxUrl: paths.projectsApi + 'project/playbooks/?id=' + self.project.id,
-        formatItem: function(gridItem) {
+        formatItem: function(gridContainer, gridItem) {
 
             var playbook = gridItem.data();
 
-            gridItem.attr('title', playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name)
+            gridItem
+                .attr('title', playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name)
+                .removeClass('truncate-text')
+                .append(
+                    spanFA.clone().addClass('text-right fa-minus-circle')
+                        .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
+                        .attr('title', 'Remove')
+                        .click(function () {
+
+                            self.project.playbooks = JSON.stringify([{name: playbook.name, folder: playbook.folder}]);
+
+                            $.ajax({
+                                url: paths.projectsApi + 'project/remove_playbooks/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: self.project,
+                                success: function (data) {
+
+                                    if (data.result === 'ok') self.playbookGrid.DynaGrid('load');
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
+                                }
+
+                            });
+
+                        })
+                )
 
         },
-        // formatItem: function (gridContainer, gridItem) {
-        //
-        //     var name = gridItem.data('value');
-        //
-        //     gridItem.removeClass('truncate-text').html('').append(
-        //         $('<span>').append(name).click(function () {
-        //
-        //             window.open(paths.users + 'group' + '/' + name, '_self')
-        //
-        //         }),
-        //         spanFA.clone().addClass('text-right fa-times-circle-o')
-        //             .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
-        //             .attr('title', 'Remove')
-        //             .click(function () {
-        //
-        //                 $.ajax({
-        //                     url: paths.usersApi + 'user/remove_groups/',
-        //                     type: 'POST',
-        //                     dataType: 'json',
-        //                     data: {
-        //                         id: self.user.id,
-        //                         username: self.user.username,
-        //                         selection: [gridItem.data('id')]
-        //                     },
-        //                     success: function (data) {
-        //
-        //                         if (data.result === 'ok') self.groupGrid.DynaGrid('load');
-        //
-        //                         else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-        //
-        //                         else $.bootstrapGrowl(data.msg, failedAlertOptions)
-        //
-        //                     }
-        //
-        //                 });
-        //
-        //             })
-        //     )
-        //
-        // },
         addButtonAction: function () {
+
+            var currentPlaybooks = [];
+
+            $.each(self.playbookGrid.DynaGrid('getData'), function (index, playbook) {
+
+                currentPlaybooks.push({name: playbook.name, folder: playbook.folder})
+
+            });
 
             new SelectionDialog({
                 objectType: 'playbooks',
-                url: paths.filesApi + 'list/?folder=&root=playbooks',
+                url: paths.filesApi + 'list/?folder=&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
                 ajaxDataKey: 'file_list',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -396,6 +394,149 @@ function ProjectForm(project, container) {
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
+                            var selection = [];
+
+                            $.each(selectionDialog.DynaGrid('getSelected'), function (index, playbook) {
+
+                                selection.push({name: playbook.name, folder: playbook.folder})
+
+                            });
+
+                            self.project.playbooks = JSON.stringify(selection);
+
+                            $.ajax({
+                                url: paths.projectsApi + 'project/add_playbooks/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: self.project,
+                                success: function (data) {
+
+                                    if (data.result === 'ok') self.playbookGrid.DynaGrid('load');
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
+                                }
+                            });
+
+                            $(this).dialog('close');
+                        },
+                        Cancel: function () {
+
+                            $('.filter_box').val('');
+
+                            $(this).dialog('close');
+
+                        }
+                    });
+
+                }
+            });
+
+        }
+    });
+
+    self.roleGrid = $('<div>').DynaGrid({
+        gridTitle: 'Roles',
+        headerTag: '<h4>',
+        showAddButton: true,
+        ajaxDataKey: 'role_list',
+        itemValueKey: 'name',
+        addButtonClass: 'add_roles',
+        addButtonTitle: 'Add roles',
+        showTitle: true,
+        checkered: true,
+        showCount: true,
+        itemHoverCursor: 'auto',
+        gridBodyBottomMargin: '20px',
+        columns: 3,
+        ajaxUrl: paths.projectsApi + 'project/roles/?id=' + self.project.id,
+        formatItem: function(gridContainer, gridItem) {
+
+            var role = gridItem.data();
+
+            gridItem
+                .attr('title', role.folder ? role.folder + '/' + role.name : role.name)
+                .removeClass('truncate-text')
+                .append(
+                    spanFA.clone().addClass('text-right fa-minus-circle')
+                        .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
+                        .attr('title', 'Remove')
+                        .click(function () {
+
+                            self.project.roles = JSON.stringify([{name: role.name, folder: role.folder}]);
+
+                            $.ajax({
+                                url: paths.projectsApi + 'project/remove_roles/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: self.project,
+                                success: function (data) {
+
+                                    if (data.result === 'ok') self.roleGrid.DynaGrid('load');
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
+                                }
+
+                            });
+
+                        })
+                )
+
+        },
+        addButtonAction: function () {
+
+            var currentRoles = [];
+
+            $.each(self.roleGrid.DynaGrid('getData'), function (index, role) {
+
+                currentRoles.push({name: role.name, folder: role.folder})
+
+            });
+
+            new SelectionDialog({
+                objectType: 'roles',
+                url: paths.filesApi + 'list/?folder=&root=roles&exclude=' + JSON.stringify(currentRoles),
+                ajaxDataKey: 'file_list',
+                itemValueKey: 'name',
+                showButtons: true,
+                addButtonAction: null,
+                loadCallback: function (gridContainer, selectionDialog) {
+
+                    selectionDialog.dialog('option', 'buttons', {
+                        Add: function () {
+
+                            var selection = [];
+
+                            $.each(selectionDialog.DynaGrid('getSelected'), function (index, role) {
+
+                                selection.push({name: role.name, folder: role.folder})
+
+                            });
+
+                            self.project.roles = JSON.stringify(selection);
+
+                            $.ajax({
+                                url: paths.projectsApi + 'project/add_roles/',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: self.project,
+                                success: function (data) {
+
+                                    if (data.result === 'ok') self.roleGrid.DynaGrid('load');
+
+                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
+
+                                }
+                            });
+
+                            $(this).dialog('close');
                         },
                         Cancel: function () {
 
@@ -415,10 +556,8 @@ function ProjectForm(project, container) {
     self.container.append(
         self.formsHeader,
         divRow.clone().append(
-            divCol6.clone().append(self.form)
-        ),
-        divRow.clone().append(
-            divCol12.clone().append(self.playbookGrid)
+            divCol6.clone().append(self.form),
+            divCol12.clone().append(self.playbookGrid, self.roleGrid)
         )
     );
 

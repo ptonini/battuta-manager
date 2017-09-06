@@ -240,7 +240,7 @@ function UserGroupForm(group, container) {
                     window.open(paths.users + 'user' + '/' + name, '_self')
 
                 }),
-                spanFA.clone().addClass('text-right fa-times-circle-o')
+                spanFA.clone().addClass('text-right fa-minus-circle')
                     .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
                     .attr('title', 'Remove')
                     .click(function () {

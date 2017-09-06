@@ -17,9 +17,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
     self.resultContainer.after(self.footerAnchor);
 
-    self.jobCogContainer = $('<span>')
-        .css('margin', '5px')
-        .html($('<img>').attr('src', '/static/images/waiting-small.gif'));
+    self.jobCogContainer = $('<span>').css('margin', '5px').attr('class', 'fa fa-cog fa-spin fa-fw');
 
     self.rerunButton = btnNavbarGlyph.clone()
         .attr('title', 'Run playbook again')

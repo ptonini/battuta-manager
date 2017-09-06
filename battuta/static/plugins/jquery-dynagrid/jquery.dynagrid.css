@@ -21,10 +21,9 @@ div.dynagrid div.dynagrid-item {
 div.dynagrid div.dynagrid-item:hover{
     background: #F4F4F4;
     color: #2a2a2a;
-    cursor: pointer;
 }
 
-div.dynagrid div.dynagrid-item.toggle-on {background: #D3D3D3; border-radius: .5rem}
+div.dynagrid div.dynagrid-item.toggle-on {background: #D3D3D3}
 
 div.dynagrid div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 

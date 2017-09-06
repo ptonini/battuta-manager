@@ -79,9 +79,23 @@ class ProjectView(View):
 
             if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
 
-                playbook_list = [{'name': p.name, 'folder': p.folder} for p in json.loads(project.playbooks)]
+                playbook_list = [{'name': p['name'], 'folder': p['folder']} for p in json.loads(project.playbooks)]
 
                 data = {'result': 'ok', 'playbook_list': playbook_list}
+
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'roles':
+
+            project = get_object_or_404(Project, pk=request.GET['id'])
+
+            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
+
+                role_list = [{'name': r['name'], 'folder': r['folder']} for r in json.loads(project.roles)]
+
+                data = {'result': 'ok', 'role_list': role_list}
 
             else:
 
@@ -118,6 +132,50 @@ class ProjectView(View):
                 project.delete()
 
                 data = {'result': 'ok'}
+
+            elif action == 'add_playbooks':
+
+                playbooks = json.loads(project.playbooks)
+
+                playbooks = playbooks + [r for r in (json.loads(request.POST['playbooks'])) if r not in playbooks]
+
+                project.playbooks = json.dumps(playbooks)
+
+                project.save()
+
+                data = {'result': 'ok', 'msg': 'Playbooks added'}
+
+            elif action == 'remove_playbooks':
+
+                playbooks = [p for p in json.loads(project.playbooks) if p not in (json.loads(request.POST['playbooks']))]
+
+                project.playbooks = json.dumps(playbooks)
+
+                project.save()
+
+                data = {'result': 'ok', 'msg': 'Playbooks removed'}
+
+            elif action == 'add_roles':
+
+                roles = json.loads(project.roles)
+
+                roles = roles + [r for r in (json.loads(request.POST['roles'])) if r not in roles]
+
+                project.roles = json.dumps(roles)
+
+                project.save()
+
+                data = {'result': 'ok', 'msg': 'Roles added'}
+
+            elif action == 'remove_roles':
+
+                roles = [r for r in json.loads(project.roles) if r not in (json.loads(request.POST['roles']))]
+
+                project.roles = json.dumps(roles)
+
+                project.save()
+
+                data = {'result': 'ok', 'msg': 'Roles removed'}
 
             else:
 
