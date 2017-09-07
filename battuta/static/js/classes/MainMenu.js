@@ -32,8 +32,8 @@ function MainMenu(username, is_authenticated, container) {
                 )
             )
         ),
-        $('<li>').append($('<a>').attr('href', paths.projects).html('Projects')),
         $('<li>').append($('<a>').attr('href', paths.files).html('Files')),
+        $('<li>').append($('<a>').attr('href', paths.projects).html('Projects')),
         liDropdown.clone().append(
             liDropdownAnchor.clone().html('Users'),
             ulDropdownMenu.clone().append(

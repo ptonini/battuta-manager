@@ -85,9 +85,9 @@ var aTabs = $('<a>').attr('data-toggle', 'tab');
 
 var divTabContent =  $('<div>').attr('class', 'tab-content');
 
-var divActiveTab = $('<div>').attr('class', 'tab-pane fade in active');
+var divActiveTab = $('<div>').attr('class', 'tab-pane in active');
 
-var divTab = $('<div>').attr('class', 'tab-pane fade');
+var divTab = $('<div>').attr('class', 'tab-pane');
 
 
 // Other element templates

@@ -19,8 +19,6 @@ function Project(project, container) {
 
             new EntityDialog(self.project, Project.postData, function (data) {
 
-                console.log(data);
-
                 self.nameContainer.html(data.project.name);
 
                 self.descriptionContainer.html(data.project.description ? data.project.description : noDescriptionMsg);
@@ -123,7 +121,7 @@ function Project(project, container) {
         gridTitle: 'Playbooks',
         headerTag: '<h4>',
         showAddButton: true,
-        ajaxDataKey: 'playbook_list',
+        ajaxDataKey: 'file_list',
         itemValueKey: 'name',
         addButtonClass: 'add_playbooks',
         addButtonTitle: 'Add playbooks',
@@ -133,6 +131,7 @@ function Project(project, container) {
         itemHoverCursor: 'auto',
         gridBodyBottomMargin: '20px',
         columns: 3,
+        buildNow: false,
         ajaxUrl: paths.projectsApi + 'project/playbooks/?id=' + self.project.id,
         formatItem: function(gridContainer, gridItem) {
 
@@ -246,7 +245,7 @@ function Project(project, container) {
         gridTitle: 'Roles',
         headerTag: '<h4>',
         showAddButton: true,
-        ajaxDataKey: 'role_list',
+        ajaxDataKey: 'file_list',
         itemValueKey: 'name',
         addButtonClass: 'add_roles',
         addButtonTitle: 'Add roles',
@@ -256,6 +255,7 @@ function Project(project, container) {
         itemHoverCursor: 'auto',
         gridBodyBottomMargin: '20px',
         columns: 3,
+        buildNow: false,
         ajaxUrl: paths.projectsApi + 'project/roles/?id=' + self.project.id,
         formatItem: function(gridContainer, gridItem) {
 
@@ -436,6 +436,10 @@ function Project(project, container) {
             )
         )
     );
+
+    self.playbookGrid.DynaGrid('load', self.project.playbooks);
+
+    self.roleGrid.DynaGrid('load', self.project.roles);
 
     rememberSelectedTab(self.tabsHeader.attr('id'));
 

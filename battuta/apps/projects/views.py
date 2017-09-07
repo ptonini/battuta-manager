@@ -36,6 +36,14 @@ class PageView(View):
 
 class ProjectView(View):
 
+    classes = {
+        'manager': User,
+        'host_group': HostGroup,
+        'inventory_admins': UserGroup,
+        'runner_admins': UserGroup,
+        'execute_jobs': UserGroup
+    }
+
     @staticmethod
     def _project_to_dict(p):
 
@@ -48,6 +56,8 @@ class ProjectView(View):
             'inventory_admins': p.inventory_admins.name if p.inventory_admins else None,
             'runner_admins': p.runner_admins.name if p.runner_admins else None,
             'execute_jobs': p.execute_jobs.name if p.execute_jobs else None,
+            'playbooks': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.playbooks)],
+            'roles': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.roles)]
         }
 
     def get(self, request, action):
@@ -64,49 +74,29 @@ class ProjectView(View):
 
             data = {'result': 'ok', 'projects': projects}
 
-        elif action == 'get':
-
-            project = get_object_or_404(Project, pk=request.GET['id'])
-
-            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
-
-                data = {'result': 'ok', 'project': self._project_to_dict(project)}
-
-            else:
-
-                data = {'result': 'denied'}
-
-        elif action == 'playbooks':
-
-            project = get_object_or_404(Project, pk=request.GET['id'])
-
-            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
-
-                playbook_list = [{'name': p['name'], 'folder': p['folder']} for p in json.loads(project.playbooks)]
-
-                data = {'result': 'ok', 'playbook_list': playbook_list}
-
-            else:
-
-                data = {'result': 'denied'}
-
-        elif action == 'roles':
-
-            project = get_object_or_404(Project, pk=request.GET['id'])
-
-            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
-
-                role_list = [{'name': r['name'], 'folder': r['folder']} for r in json.loads(project.roles)]
-
-                data = {'result': 'ok', 'role_list': role_list}
-
-            else:
-
-                data = {'result': 'denied'}
-
         else:
 
-            raise Http404('Invalid action')
+            project = get_object_or_404(Project, pk=request.GET['id'])
+
+            if request.user.has_perm('users.edit_projects') or request.user.username == project.manager.username:
+
+                if action == 'get':
+
+                    data = {'result': 'ok', 'project': self._project_to_dict(project)}
+
+                elif action in ['playbooks', 'roles']:
+
+                    file_list = [{'name': f['name'], 'folder': f['folder']} for f in json.loads(project.__getattribute__(action))]
+
+                    data = {'result': 'ok', 'file_list': file_list}
+
+                else:
+
+                    raise Http404('Invalid action')
+
+            else:
+
+                data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -140,67 +130,37 @@ class ProjectView(View):
 
                 prop = json.loads(request.POST['property'])
 
-                if prop['name'] == 'manager':
-
-                    prop_class = User
-
-                elif prop['name'] == 'host_group':
-
-                    prop_class = HostGroup
-
-                else:
-
-                    prop_class = UserGroup
-
-                project.__setattr__(prop['name'], get_object_or_404(prop_class, pk=prop['value']))
+                project.__setattr__(prop['name'], get_object_or_404(self.classes[prop['name']], pk=prop['value']))
 
                 project.save()
 
                 data = {'result': 'ok'}
 
-            elif action == 'add_playbooks':
+            elif action in ['add_playbooks', 'add_roles']:
 
-                playbooks = json.loads(project.playbooks)
+                file_type = action.split('_')[1]
 
-                playbooks = playbooks + [r for r in (json.loads(request.POST['playbooks'])) if r not in playbooks]
+                files = json.loads(project.__getattribute__(file_type))
 
-                project.playbooks = json.dumps(playbooks)
+                files = files + [r for r in (json.loads(request.POST[file_type])) if r not in files]
+
+                project.__setattr__(file_type, json.dumps(files))
 
                 project.save()
 
-                data = {'result': 'ok', 'msg': 'Playbooks added'}
+                data = {'result': 'ok'}
 
-            elif action == 'remove_playbooks':
+            elif action in ['remove_playbooks', 'remove_roles']:
 
-                playbooks = [p for p in json.loads(project.playbooks) if p not in (json.loads(request.POST['playbooks']))]
+                file_type = action.split('_')[1]
 
-                project.playbooks = json.dumps(playbooks)
+                files = [p for p in json.loads(project.__getattribute__(file_type)) if p not in (json.loads(request.POST[file_type]))]
+
+                project.__setattr__(file_type, json.dumps(files))
 
                 project.save()
 
                 data = {'result': 'ok', 'msg': 'Playbooks removed'}
-
-            elif action == 'add_roles':
-
-                roles = json.loads(project.roles)
-
-                roles = roles + [r for r in (json.loads(request.POST['roles'])) if r not in roles]
-
-                project.roles = json.dumps(roles)
-
-                project.save()
-
-                data = {'result': 'ok', 'msg': 'Roles added'}
-
-            elif action == 'remove_roles':
-
-                roles = [r for r in json.loads(project.roles) if r not in (json.loads(request.POST['roles']))]
-
-                project.roles = json.dumps(roles)
-
-                project.save()
-
-                data = {'result': 'ok', 'msg': 'Roles removed'}
 
             else:
 

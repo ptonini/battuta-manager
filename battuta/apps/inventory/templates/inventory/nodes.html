@@ -8,7 +8,15 @@
 
             document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
 
-            new Nodes(nodeType, $('#nodes_container'));
+            $.ajax({
+                url: paths.inventoryApi + nodeType + '/list/',
+                dataType: 'JSON',
+                success: function (data) {
+
+                    if (data.result === 'ok')  new Nodes(data.nodes, nodeType, $('#nodes_container'));
+
+                }
+            });
 
         });
     </script>

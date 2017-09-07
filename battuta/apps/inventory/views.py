@@ -690,7 +690,7 @@ class NodeView(View):
 
     def post(self, request, node_type, action):
 
-        node = self._build_node(request.POST.dict(), node_type, request.user)
+        node = self._build_node(request.POST.dict(), node_type, request.user) if request.POST.get('id') else None
 
         if action == 'save':
 

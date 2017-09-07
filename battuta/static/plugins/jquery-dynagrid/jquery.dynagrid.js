@@ -303,7 +303,7 @@
             if (opts.showFilter) {
 
                 gridHeader.parent().after(
-                    $('<div>').attr('class', 'col-md-6 form-inline').css('margin', 'auto').append(
+                    $('<div>').attr('class', 'col-md-6 form-inline').append(
                         $('<span>').css('float', 'right').append(
                             $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
                                 'Search:',
