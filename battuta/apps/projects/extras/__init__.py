@@ -1,19 +1,25 @@
 import json
 import os
 
+from django.conf import settings
+
 from apps.projects.models import Project
 
 from apps.inventory.extras import get_node_descendants
 
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
-def auth_action(user, action, node=None, pattern=None, inventory=None, playbook=None):
+def auth_action(user, action, node=None, pattern=None, inventory=None, playbook=None, role_file=None):
 
     authorized = {
         'editable_nodes': set(),
         'executable_hosts': set(),
         'editable_task_hosts': set(),
         'editable_playbooks': set(),
-        'usable_playbooks': set()
+        'usable_playbooks': set(),
+        'editable_role_files': set(),
+        'usable_roles': set()
     }
 
     inventory_projects = set()
@@ -58,6 +64,14 @@ def auth_action(user, action, node=None, pattern=None, inventory=None, playbook=
 
         authorized['editable_playbooks'].update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
 
+        for role in json.loads(project.roles):
+
+            for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
+
+                for f in files:
+
+                    authorized['editable_role_files'].add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
+
     for project in execute_projects:
 
         group_descendants, host_descendants = get_node_descendants(project.host_group)
@@ -65,6 +79,17 @@ def auth_action(user, action, node=None, pattern=None, inventory=None, playbook=
         authorized['executable_hosts'].update({host.name for host in host_descendants})
 
         authorized['usable_playbooks'].update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
+
+        for role in json.loads(project.roles):
+
+            for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
+
+                for f in files:
+
+                    authorized['usable_roles'].add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
+
+    print(authorized['editable_playbooks'])
+    print(authorized['editable_role_files'])
 
     if action == 'edit_variables':
 
@@ -81,3 +106,17 @@ def auth_action(user, action, node=None, pattern=None, inventory=None, playbook=
     elif action == 'use_playbook':
 
         return True if playbook in authorized['usable_playbooks'] else False
+
+    elif action == 'use_role_file':
+
+        return True if role_file in authorized['usable_role_files'] else False
+
+    elif action == 'edit_playbook':
+
+        return True if playbook in authorized['editable_playbooks'] else False
+
+    elif action == 'edit_role_file':
+
+        return True if role_file in authorized['editable_role_file'] else False
+
+

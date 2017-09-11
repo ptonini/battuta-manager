@@ -18,6 +18,8 @@ from pytz import timezone, utc
 
 from apps.preferences.extras import get_preferences
 
+from apps.projects.extras import auth_action
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -53,42 +55,58 @@ class FilesView(View):
 
             return True, None
 
-    file_roots = {
+    @staticmethod
+    def _authorize_playbook(user, folder, playbook):
+
+        auth_action(user, 'edit_playbook', playbook=playbook)
+
+    @staticmethod
+    def _authorize_role(user, folder, role_file):
+
+        auth_action(user, 'edit_role', role_file=file)
+
+    file_sources = {
         'files': {
+            'name': 'files',
             'path': settings.FILES_PATH,
             'prefix': '{{ files_path }}',
             'exclude': list(),
             'exts': None,
-            'user': False,
             'validator': None,
-            'permission': 'users.edit_files'
+            'permission': 'users.edit_files',
+            'authorize': True
         },
         'playbooks': {
+            'name': 'playbooks',
             'path': settings.PLAYBOOK_PATH,
             'prefix': None,
             'exclude': list(),
             'exts': ['.yml', '.yaml'],
-            'user': False,
             'validator': _validate_yaml.__func__,
-            'permission': 'users.edit_playbooks'
+            'permission': 'users.edit_playbooks',
+            'authorize': True
         },
         'roles': {
+            'name': 'roles',
             'path': settings.ROLES_PATH,
             'prefix': '{{ roles_path }}',
             'exclude': ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
             'exts': None,
-            'user': False,
             'validator': None,
-            'permission': 'users.edit_roles'
-        },
+            'permission': 'users.edit_roles',
+            'authorize': True
+
+    },
         'users': {
+            'name': 'users',
             'path': settings.USERDATA_PATH,
             'prefix': '{{ userdata_path }}',
             'exclude': list(),
             'types': list(),
             'exts': None,
             'validator': None,
-            'permission': 'users.edit_files'
+            'permission': 'users.edit_files',
+            'authorize': True
         }
     }
 
@@ -101,7 +119,7 @@ class FilesView(View):
 
     def _set_root(self, root, owner, user):
 
-        root_dict = self.file_roots[root]
+        root_dict = self.file_sources[root]
 
         if root == 'users':
 
@@ -119,6 +137,46 @@ class FilesView(View):
 
         return root_dict
 
+    def _search_files(self, source, request, prefs):
+
+        file_list = list()
+
+        for root, dirs, files in os.walk(source['path']):
+
+            for file_name in files:
+
+                full_path = os.path.join(root, file_name)
+
+                is_not_archive = magic.from_file(full_path, mime='true') not in self.archive_types
+
+                relative_path = full_path.replace(source['path'] + '/', '')
+
+                exclude_conditions = {
+                    request.GET.get('term', '') not in relative_path,
+                    request.GET.get('term') and root.split('/')[-1] in source['exclude'],
+                    any(s.startswith('.') for s in relative_path.split('/')) and not prefs['show_hidden_files'],
+                    request.GET.get('type') == 'archive' and is_not_archive,
+                    source['name'] == 'users' and relative_path.split('/')[1] != request.user.username,
+                }
+
+                if True not in exclude_conditions:
+
+                    if request.GET.get('term'):
+
+                        file_list.append({'value': os.path.join(source['prefix'], relative_path)})
+
+                    else:
+
+                        head, tail = os.path.split(relative_path)
+
+                        file_dict = {'folder': head, 'name': tail}
+
+                        if file_dict not in json.loads(request.GET.get('exclude', '[]')):
+
+                            file_list.append({'folder': head, 'name': tail})
+
+        return file_list
+
     def get(self, request, action):
 
         prefs = get_preferences()
@@ -127,33 +185,19 @@ class FilesView(View):
 
             data = list()
 
-            for key in self.file_roots:
+            if request.GET.get('root'):
 
-                source = self.file_roots[key]
+                data = self._search_files(self.file_sources[request.GET['root']], request, prefs)
 
-                if source['prefix']:
+            else:
 
-                    for root, dirs, files in os.walk(source['path']):
+                for key in self.file_sources:
 
-                        for file_name in files:
+                    source = self.file_sources[key]
 
-                            full_path = os.path.join(root, file_name)
+                    if source['prefix']:
 
-                            is_not_archive = magic.from_file(full_path, mime='true') not in self.archive_types
-
-                            exclude_conditions = {
-                                request.GET['term'] not in full_path,
-                                root.split('/')[-1] in source['exclude'],
-                                any(s.startswith('.') for s in full_path.split('/')) and not prefs['show_hidden_files'],
-                                request.GET['type'] == 'archive' and is_not_archive,
-                                source['user'] and relative_path.split('/')[1] != request.user.username,
-                            }
-
-                            if True not in exclude_conditions:
-
-                                relative_path = root.replace(source['path'], source['prefix'])
-
-                                data.append({'value': os.path.join(relative_path, file_name)})
+                        data = data + self._search_files(source, request, prefs)
 
         else:
 
@@ -187,7 +231,6 @@ class FilesView(View):
                         file_name.startswith('.') and not prefs['show_hidden_files'],
                         file_type != 'directory' and root['exts'] and ext not in root['exts'],
                         {'name': file_name, 'folder': folder} in json.loads(request.GET.get('exclude', '[]')),
-                        # {'name': file_name, 'folder': folder} not in json.loads(request.GET.get('filter', '[]'))
                     }
 
                     if True not in exclude_conditions:

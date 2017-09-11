@@ -89,10 +89,10 @@ class JobView(View):
 
         prefs = get_preferences()
 
+        data = None
+
         # Run job
         if action == 'run':
-
-            data = None
 
             ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 
@@ -440,7 +440,7 @@ class PlaybookArgsView(View):
     @staticmethod
     def post(request, action):
 
-        authorize_conditions = {request.user.has_perm('users.edit_playbooks')}
+        auth = {request.user.has_perm('users.edit_playbooks')}
 
         ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 
@@ -448,9 +448,9 @@ class PlaybookArgsView(View):
 
         for hosts in get_playbook_hosts(playbook_path):
 
-            authorize_conditions.add(auth_action(request.user, 'edit_job', pattern=hosts, inventory=ansible_inventory))
+            auth.add(auth_action(request.user, 'edit_job', pattern=hosts, inventory=ansible_inventory))
 
-        if True in authorize_conditions:
+        if True in auth:
 
             # Save playbook arguments
             if action == 'save':

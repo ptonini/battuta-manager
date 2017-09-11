@@ -137,8 +137,10 @@ function Project(project, container) {
 
             var playbook = gridItem.data();
 
-            gridItem
-                .attr('title', playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name)
+            var itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+
+            gridItem.attr('title', itemTitle)
+                .html(itemTitle)
                 .removeClass('truncate-text')
                 .append(
                     spanFA.clone().addClass('text-right fa-minus-circle')
@@ -181,8 +183,7 @@ function Project(project, container) {
 
             new SelectionDialog({
                 objectType: 'playbooks',
-                url: paths.filesApi + 'list/?folder=&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
-                ajaxDataKey: 'file_list',
+                url: paths.filesApi + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
                 itemValueKey: 'name',
                 showButtons: true,
                 addButtonAction: null,
@@ -190,7 +191,9 @@ function Project(project, container) {
 
                     var playbook = gridItem.data();
 
-                    gridItem.attr('title', playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name)
+                    var itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+
+                    gridItem.attr('title', itemTitle).html(itemTitle)
 
                 },
                 loadCallback: function (gridContainer, selectionDialog) {
@@ -305,8 +308,7 @@ function Project(project, container) {
 
             new SelectionDialog({
                 objectType: 'roles',
-                url: paths.filesApi + 'list/?folder=&root=roles&exclude=' + JSON.stringify(currentRoles),
-                ajaxDataKey: 'file_list',
+                url: paths.filesApi + 'search/?root=roles&exclude=' + JSON.stringify(currentRoles),
                 itemValueKey: 'name',
                 showButtons: true,
                 addButtonAction: null,

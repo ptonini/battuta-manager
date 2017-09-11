@@ -238,7 +238,11 @@ function Nodes(nodes, nodeType, container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add '+ self.nodeType).click(function () {
 
-                    new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, changeCallback);
+                    new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, function () {
+
+                        self._refreshData();
+
+                    });
 
                 })
             );
@@ -278,4 +282,4 @@ Nodes.prototype = {
         });
 
     }
-}
+};
