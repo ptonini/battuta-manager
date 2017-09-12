@@ -18,6 +18,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
+from apps.projects.extras import ProjectAuth
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -54,7 +55,7 @@ class FilesView(View):
 
             return True, None
 
-    file_sources = {
+    _file_sources = {
         'files': {
             'name': 'files',
             'path': settings.FILES_PATH,
@@ -95,7 +96,7 @@ class FilesView(View):
         }
     }
 
-    archive_types = [
+    _archive_types = [
         'application/zip',
         'application/gzip',
         'application/x-tar',
@@ -104,7 +105,7 @@ class FilesView(View):
 
     def _set_root(self, root, owner, user):
 
-        root_dict = self.file_sources[root]
+        root_dict = self._file_sources[root]
 
         if root == 'users':
 
@@ -134,7 +135,7 @@ class FilesView(View):
 
                 full_path = os.path.join(root, file_name)
 
-                is_not_archive = magic.from_file(full_path, mime='true') not in self.archive_types
+                is_not_archive = magic.from_file(full_path, mime='true') not in self._archive_types
 
                 relative_path = full_path.replace(source['path'] + '/', '')
 
@@ -169,7 +170,7 @@ class FilesView(View):
 
         prefs = get_preferences()
 
-        project_auth = cache.get(str(request.user.username + '_auth'))
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'search':
 
@@ -177,13 +178,13 @@ class FilesView(View):
 
             if request.GET.get('root'):
 
-                data = self._search_files(self.file_sources[request.GET['root']], request, prefs, project_auth)
+                data = self._search_files(self._file_sources[request.GET['root']], request, prefs, project_auth)
 
             else:
 
-                for key in self.file_sources:
+                for key in self._file_sources:
 
-                    source = self.file_sources[key]
+                    source = self._file_sources[key]
 
                     if source['prefix']:
 
@@ -335,7 +336,7 @@ class FilesView(View):
 
     def post(self, request, action):
 
-        project_auth = cache.get(str(request.user.username + '_auth'))
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
 

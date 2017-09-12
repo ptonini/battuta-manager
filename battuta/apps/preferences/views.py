@@ -3,18 +3,21 @@ import json
 from django.views.generic import View
 from django.http import HttpResponse, Http404
 from django.conf import settings
-
+from django.core.cache import cache
 
 from apps.preferences.models import Item
 from apps.preferences.extras import get_preferences, get_default_value
 
 from apps.users.extras import create_userdata
+from apps.projects.extras import ProjectAuth
 
 
 class PreferencesView(View):
 
     @staticmethod
     def get(request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'basic':
 
@@ -44,6 +47,8 @@ class PreferencesView(View):
 
     @staticmethod
     def post(request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perm('users.edit_preferences'):
 

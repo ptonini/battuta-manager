@@ -87,6 +87,8 @@ ROLES_PATH = os.path.join(DATA_PATH, 'roles')
 PLAYBOOK_PATH = os.path.join(DATA_PATH, 'playbooks')
 USERDATA_PATH = os.path.join(DATA_PATH, 'userdata')
 
+CACHE_TIMEOUT = 30
+
 DEFAULT_PREFERENCES = [
     {
         'name': 'Global preferences',

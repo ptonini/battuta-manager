@@ -1,4 +1,4 @@
-function Descendants (node, container) {
+function Descendants (node, showHeader, container) {
 
     var self = this;
 
@@ -18,7 +18,7 @@ function Descendants (node, container) {
 
             gridItem.click(function () {
 
-                window.open(paths.inventory + gridContainer.data('nodeType') + '/' + $(this).data('value') + '/', '_self')
+                window.open(paths.inventory + gridContainer.data('nodeType') + '/' + $(this).data('name') + '/', '_self')
 
             });
         }
@@ -34,10 +34,11 @@ function Descendants (node, container) {
         ajaxUrl: paths.inventoryApi + 'group/descendants/?type=hosts&id=' + self.node.id
     }));
 
-    container.append(
-        $('<h4>').html('Descendants'),
+    container.html('').append(
         self.groupList,
         self.hostList);
+
+    showHeader && container.prepend($('<h4>').html('Descendants'))
 
 }
 

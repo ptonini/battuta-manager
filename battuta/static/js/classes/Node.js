@@ -98,7 +98,7 @@ function Node(node, container) {
         )
     );
 
-    self.node.type === 'group' ? self.descendants = new Descendants(self.node, self.nodeInfoContainer) : new HostFacts(self.node, self.nodeInfoContainer);
+    self.node.type === 'group' ? self.descendants = new Descendants(self.node, true, self.nodeInfoContainer) : new HostFacts(self.node, self.nodeInfoContainer);
 
     self.variableTable = new VariableTable(self.node, self.variableTableContainer);
 

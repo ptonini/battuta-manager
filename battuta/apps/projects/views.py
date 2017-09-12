@@ -3,13 +3,14 @@ import json
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-
-from .models import Project
-from .forms import ProjectForm
-
-from apps.preferences.extras import get_preferences
-
 from django.contrib.auth.models import User, Group as UserGroup
+from django.core.cache import cache
+from django.conf import settings
+
+from apps.projects.models import Project
+from apps.projects.forms import ProjectForm
+from apps.projects.extras import ProjectAuth
+
 from apps.inventory.models import Group as HostGroup
 
 
@@ -52,7 +53,7 @@ class ProjectView(View):
             'id': p.id,
             'description': p.description,
             'manager': p.manager.username if p.manager else None,
-            'host_group': p.host_group.name if p.host_group else None,
+            'host_group': {'name': p.host_group.name, 'id': p.host_group.id} if p.host_group else None,
             'inventory_admins': p.inventory_admins.name if p.inventory_admins else None,
             'runner_admins': p.runner_admins.name if p.runner_admins else None,
             'execute_jobs': p.execute_jobs.name if p.execute_jobs else None,
@@ -61,6 +62,8 @@ class ProjectView(View):
         }
 
     def get(self, request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'list':
 
@@ -101,6 +104,8 @@ class ProjectView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perm('users.edit_projects'):
 

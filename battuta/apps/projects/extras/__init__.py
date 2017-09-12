@@ -1,11 +1,9 @@
 import json
 import os
-import datetime
 
 from django.conf import settings
 
 from apps.projects.models import Project
-
 from apps.inventory.extras import get_node_descendants
 
 import pprint
@@ -35,14 +33,6 @@ class ProjectAuth:
         self._runner_projects = set()
 
         self._execute_projects = set()
-
-        self._last_load = None
-
-        self._max_age = datetime.timedelta(seconds=30)
-
-        self._load()
-
-    def _load(self):
 
         for group in self._user.groups.all():
 
@@ -112,66 +102,22 @@ class ProjectAuth:
 
             self._usable_roles.update({os.path.join(r['folder'], r['name']) for r in (json.loads(project.roles))})
 
-        self._last_load = datetime.datetime.now()
-
-    def reload(self):
-
-        self._editable_nodes = set()
-
-        self._executable_hosts = set()
-
-        self._editable_task_hosts = set()
-
-        self._editable_files = set()
-
-        self._usable_playbooks = set()
-
-        self._usable_roles = set()
-
-        self._inventory_projects = set()
-
-        self._runner_projects = set()
-
-        self._execute_projects = set()
-
-        self._load()
-
     def can_edit_variable(self, node):
-
-        if datetime.datetime.now() - self._last_load > self._max_age:
-
-            self.reload()
 
         return True if node.id and node in self._editable_nodes else False
 
     def can_execute_job(self, inventory, pattern):
 
-        if datetime.datetime.now() - self._last_load > self._max_age:
-
-            self.reload()
-
         return inventory.get_host_names(pattern).issubset(self._executable_hosts)
 
     def can_edit_task(self, inventory, pattern):
-
-        if datetime.datetime.now() - self._last_load > self._max_age:
-
-            self.reload()
 
         return inventory.get_host_names(pattern).issubset(self._editable_task_hosts)
 
     def can_use_playbook(self, playbook):
 
-        if datetime.datetime.now() - self._last_load > self._max_age:
-
-            self.reload()
-
         return True if playbook in self._usable_playbooks else False
 
     def can_edit_file(self, file_path):
-
-        if datetime.datetime.now() - self._last_load > self._max_age:
-
-            self.reload()
 
         return True if file_path in self._editable_files else False

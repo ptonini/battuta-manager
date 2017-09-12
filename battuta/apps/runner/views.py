@@ -21,6 +21,7 @@ from apps.runner.extras.handlers import JobTableHandler
 from apps.users.models import Credential
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
+from apps.projects.extras import ProjectAuth
 
 
 class PageView(View):
@@ -58,6 +59,8 @@ class JobView(View):
 
         prefs = get_preferences()
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         tz = timezone(job.user.userdata.timezone)
 
         # Convert job object to dict
@@ -88,7 +91,7 @@ class JobView(View):
 
         prefs = get_preferences()
 
-        project_auth = cache.get(str(request.user.username + '_auth'))
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         data = None
 
@@ -286,6 +289,8 @@ class JobView(View):
 
             if job.type == 'playbook':
 
+                job.folder = job.folder if job.folder else ''
+
                 playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder, job.name)
 
                 auth.add(project_auth.can_use_playbook(playbook_path))
@@ -356,6 +361,8 @@ class AdHocView(View):
     @staticmethod
     def get(request, action):
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'list':
 
             task_list = list()
@@ -379,7 +386,7 @@ class AdHocView(View):
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get(str(request.user.username + '_auth'))
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         authorize_conditions = {
             request.user.has_perm('users.edit_tasks'),
@@ -426,6 +433,8 @@ class PlaybookArgsView(View):
     @staticmethod
     def get(request, action):
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'list':
 
             data = list()
@@ -443,7 +452,7 @@ class PlaybookArgsView(View):
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get(str(request.user.username + '_auth'))
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         auth = {request.user.has_perm('users.edit_playbooks')}
 
@@ -508,6 +517,8 @@ class HistoryView(View):
     @staticmethod
     def get(request, action):
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'list':
 
             # Build queryset
@@ -526,6 +537,8 @@ class TaskView(View):
 
     @staticmethod
     def get(request, task_id):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         task = get_object_or_404(Task, pk=task_id)
 
@@ -546,6 +559,8 @@ class ResultView(View):
 
     @staticmethod
     def get(request, result_id):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         result = get_object_or_404(Result, pk=result_id)
 

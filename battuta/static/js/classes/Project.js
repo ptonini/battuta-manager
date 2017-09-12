@@ -68,13 +68,25 @@ function Project(project, container) {
     self.hostGroupInput = textInputField.clone()
         .attr('title', 'Host group')
         .prop('readonly', true)
-        .val(self.project.host_group);
+        .val(self.project.host_group.name)
+        .data(self.project.host_group)
+        .change(function () {
+
+            console.log($(this).data());
+
+            new Descendants($(this).data(), false, self.descendantsContainer);
+
+        });
 
     self.setHostGroupBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty(paths.inventoryApi + 'group/list/', 'group', 'nodes', 'name', self.hostGroupInput, 'host_group');
 
     });
+
+    self.descendantsContainer = $('<div>');
+
+    self.descendants = new Descendants(self.project.host_group, false, self.descendantsContainer);
 
     self.inventoryAdminsInput = textInputField.clone()
         .attr('title', 'Can edit inventory')
@@ -112,6 +124,10 @@ function Project(project, container) {
     self.tabsHeader = ulTabs.clone().attr('id','project_' + self.project.id + '_tabs');
 
     self.infoTab = divActiveTab.clone().attr('id', 'info_tab');
+
+    self.hostsTab = divTab.clone().attr('id', 'hosts_tab');
+
+    self.usersTab = divTab.clone().attr('id', 'users_tab');
 
     self.playbookTab = divTab.clone().attr('id', 'playbook_tab');
 
@@ -308,7 +324,8 @@ function Project(project, container) {
 
             new SelectionDialog({
                 objectType: 'roles',
-                url: paths.filesApi + 'search/?root=roles&exclude=' + JSON.stringify(currentRoles),
+                url: paths.filesApi + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
+                ajaxDataKey: 'file_list',
                 itemValueKey: 'name',
                 showButtons: true,
                 addButtonAction: null,
@@ -369,8 +386,10 @@ function Project(project, container) {
         ),
         self.tabsHeader.append(
             liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
+            $('<li>').html(aTabs.clone().attr('href', '#hosts_tab').html('Hosts')),
             $('<li>').html(aTabs.clone().attr('href', '#playbook_tab').html('Playbooks')),
-            $('<li>').html(aTabs.clone().attr('href', '#role_tab').html('Roles'))
+            $('<li>').html(aTabs.clone().attr('href', '#role_tab').html('Roles')),
+            $('<li>').html(aTabs.clone().attr('href', '#users_tab').html('Users'))
         ),
         $('<br>'),
         divTabContent.clone().append(
@@ -386,7 +405,11 @@ function Project(project, container) {
                                 )
                             )
                         )
-                    ),
+                    )
+                )
+            ),
+            self.hostsTab.append(
+                divRow.clone().append(
                     divCol3.clone().append(
                         divFormGroup.clone().append(
                             $('<label>').html('Host group').append(
@@ -397,7 +420,21 @@ function Project(project, container) {
                             )
                         )
                     ),
-                    divCol12.clone().append($('<h4>').html('User groups')),
+                    divCol12.clone().append(self.descendantsContainer)
+                )
+            ),
+            self.playbookTab.append(
+                divRow.clone().append(
+                    divCol12.clone().append(self.playbookGrid)
+                )
+            ),
+            self.roleTab.append(
+                divRow.clone().append(
+                    divCol12.clone().append(self.roleGrid)
+                )
+            ),
+            self.usersTab.append(
+                divRow.clone().append(
                     divCol3.clone().append(
                         divFormGroup.clone().append(
                             $('<label>').html('Inventory admins').append(
@@ -424,16 +461,6 @@ function Project(project, container) {
                             )
                         )
                     )
-                )
-            ),
-            self.playbookTab.append(
-                divRow.clone().append(
-                    divCol12.clone().append(self.playbookGrid)
-                )
-            ),
-            self.roleTab.append(
-                divRow.clone().append(
-                    divCol12.clone().append(self.roleGrid)
                 )
             )
         )
@@ -472,7 +499,7 @@ Project.prototype = {
                         data: self.project,
                         success: function (data) {
 
-                            if (data.result === 'ok') input.val(gridItem.data(itemKey));
+                            if (data.result === 'ok') input.val(gridItem.data(itemKey)).data(gridItem.data()).change();
 
                             else data.msg && $.bootstrapGrowl(data.msg, failedAlertOptions);
 

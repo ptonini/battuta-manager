@@ -22,6 +22,7 @@ from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, get_node_ancestors, get_node_descendants
 
 from apps.preferences.extras import get_preferences
+from apps.projects.extras import ProjectAuth
 
 
 class PageView(View):
@@ -147,6 +148,8 @@ class InventoryView(View):
 
         prefs = get_preferences()
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'get':
 
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -237,6 +240,8 @@ class InventoryView(View):
 
     @staticmethod
     def post(request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
@@ -540,6 +545,8 @@ class NodeView(View):
 
         node = self._build_node(request.GET.dict(), node_type, request.user)
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'list':
 
             node_list = list()
@@ -693,7 +700,7 @@ class NodeView(View):
 
         node = self._build_node(request.POST.dict(), node_type, request.user) if request.POST.get('id') else None
 
-        project_auth = cache.get(str(request.user.username + '_auth'))
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'save':
 

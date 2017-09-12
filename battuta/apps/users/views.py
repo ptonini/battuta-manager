@@ -8,6 +8,7 @@ from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Permission
 from django.core.cache import cache
+from django.conf import settings
 
 from apps.users.models import User, Group, UserData, GroupData, Credential
 from apps.users.forms import UserForm, UserDataForm, GroupForm, CredentialForm
@@ -72,7 +73,7 @@ class LoginView(View):
 
                     login(request, user)
 
-                    cache.set(str(user.username + '_auth'), ProjectAuth(user))
+                    cache.set(str(user.username + '_auth'), ProjectAuth(user), 30)
 
                     data = {'result': 'ok'}
 
@@ -144,6 +145,8 @@ class UsersView(View):
 
     def get(self, request, action):
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'list':
 
             if request.user.has_perm('users.edit_users'):
@@ -211,6 +214,8 @@ class UsersView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perm('users.edit_users') or request.user.id == request.POST['id']:
 
@@ -434,6 +439,8 @@ class UserGroupView(View):
 
     def get(self, request, action):
 
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+
         if action == 'list':
 
             if request.user.has_perm('users.edit_user_groups'):
@@ -489,6 +496,8 @@ class UserGroupView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, action):
+
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perm('users.edit_user_groups'):
 
