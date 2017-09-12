@@ -74,19 +74,31 @@ class ProjectAuth:
 
             group_descendants, host_descendants = get_node_descendants(project.host_group)
 
-            full_playbook_names = json.loads(project.playbooks)
-
             self._editable_task_hosts.update({host.name for host in host_descendants})
 
-            self._editable_files.update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
+            for p in json.loads(project.playbooks):
+
+                if p['folder']:
+
+                    self._editable_files.add(os.path.join(settings.PLAYBOOK_PATH, p['folder']))
+
+                self._editable_files.add(os.path.join(settings.PLAYBOOK_PATH, p['folder'], p['name']))
 
             for role in json.loads(project.roles):
 
-                for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
+                role_path = os.path.join(settings.ROLES_PATH, role['name'])
+
+                self._editable_files.add(role_path)
+
+                for root, dirs, files in os.walk(role_path):
 
                     for f in files:
 
-                        self._editable_files.add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
+                        self._editable_files.add(os.path.join(root, f))
+
+                    for d in dirs:
+
+                        self._editable_files.add(os.path.join(root, d))
 
         for project in self._execute_projects:
 
@@ -98,13 +110,7 @@ class ProjectAuth:
 
             self._usable_playbooks.update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
 
-            for role in json.loads(project.roles):
-
-                for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
-
-                    for f in files:
-
-                        self._usable_roles.add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
+            self._usable_roles.update({os.path.join(r['folder'], r['name']) for r in (json.loads(project.roles))})
 
         self._last_load = datetime.datetime.now()
 
