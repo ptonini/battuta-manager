@@ -73,8 +73,6 @@ class LoginView(View):
 
                     login(request, user)
 
-                    cache.set(str(user.username + '_auth'), ProjectAuth(user), 30)
-
                     data = {'result': 'ok'}
 
                 else:

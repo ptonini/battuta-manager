@@ -289,9 +289,7 @@ class JobView(View):
 
             if job.type == 'playbook':
 
-                job.folder = job.folder if job.folder else ''
-
-                playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder, job.name)
+                playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder if job.folder else '', job.name)
 
                 auth.add(project_auth.can_use_playbook(playbook_path))
 
