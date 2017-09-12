@@ -1,5 +1,6 @@
 import json
 import os
+import datetime
 
 from django.conf import settings
 
@@ -10,113 +11,161 @@ from apps.inventory.extras import get_node_descendants
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
-def auth_action(user, action, node=None, pattern=None, inventory=None, playbook=None, role_file=None):
 
-    authorized = {
-        'editable_nodes': set(),
-        'executable_hosts': set(),
-        'editable_task_hosts': set(),
-        'editable_playbooks': set(),
-        'usable_playbooks': set(),
-        'editable_role_files': set(),
-        'usable_roles': set()
-    }
+class ProjectAuth:
 
-    inventory_projects = set()
+    def __init__(self, user):
 
-    runner_projects = set()
+        self._user = user
 
-    execute_projects = set()
+        self._editable_nodes = set()
 
-    for group in user.groups.all():
+        self._executable_hosts = set()
 
-        inventory_projects.update({p for p in Project.objects.all() if p.inventory_admins == group})
+        self._editable_task_hosts = set()
 
-        runner_projects.update({p for p in Project.objects.all() if p.runner_admins == group})
+        self._editable_files = set()
 
-        execute_projects.update({p for p in Project.objects.all() if p.execute_jobs == group})
+        self._usable_playbooks = set()
 
-    for project in Project.objects.all():
+        self._usable_roles = set()
 
-        if user == project.manager:
+        self._inventory_projects = set()
 
-            inventory_projects.add(project)
+        self._runner_projects = set()
 
-            runner_projects.add(project)
+        self._execute_projects = set()
 
-            execute_projects.add(project)
+        self._last_load = None
 
-    for project in inventory_projects:
+        self._max_age = datetime.timedelta(seconds=30)
 
-        group_descendants, host_descendants = get_node_descendants(project.host_group)
+        self._load()
 
-        authorized['editable_nodes'].update(host_descendants)
+    def _load(self):
 
-        authorized['editable_nodes'].update(group_descendants)
+        for group in self._user.groups.all():
 
-    for project in runner_projects:
+            self._inventory_projects.update({p for p in Project.objects.all() if p.inventory_admins == group})
 
-        group_descendants, host_descendants = get_node_descendants(project.host_group)
+            self._runner_projects.update({p for p in Project.objects.all() if p.runner_admins == group})
 
-        full_playbook_names = json.loads(project.playbooks)
+            self._execute_projects.update({p for p in Project.objects.all() if p.execute_jobs == group})
 
-        authorized['editable_task_hosts'].update({host.name for host in host_descendants})
+        for project in Project.objects.all():
 
-        authorized['editable_playbooks'].update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
+            if self._user == project.manager:
 
-        for role in json.loads(project.roles):
+                self._inventory_projects.add(project)
 
-            for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
+                self._runner_projects.add(project)
 
-                for f in files:
+                self._execute_projects.add(project)
 
-                    authorized['editable_role_files'].add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
+        for project in self._inventory_projects:
 
-    for project in execute_projects:
+            group_descendants, host_descendants = get_node_descendants(project.host_group)
 
-        group_descendants, host_descendants = get_node_descendants(project.host_group)
+            self._editable_nodes.update(host_descendants)
 
-        authorized['executable_hosts'].update({host.name for host in host_descendants})
+            self._editable_nodes.update(group_descendants)
 
-        authorized['usable_playbooks'].update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
+        for project in self._runner_projects:
 
-        for role in json.loads(project.roles):
+            group_descendants, host_descendants = get_node_descendants(project.host_group)
 
-            for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
+            full_playbook_names = json.loads(project.playbooks)
 
-                for f in files:
+            self._editable_task_hosts.update({host.name for host in host_descendants})
 
-                    authorized['usable_roles'].add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
+            self._editable_files.update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
 
-    print(authorized['editable_playbooks'])
-    print(authorized['editable_role_files'])
+            for role in json.loads(project.roles):
 
-    if action == 'edit_variables':
+                for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
 
-        return True if node.id and node in authorized['editable_nodes'] else False
+                    for f in files:
 
-    elif action == 'execute_job':
+                        self._editable_files.add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
 
-        return inventory.get_host_names(pattern).issubset(authorized['executable_hosts'])
+        for project in self._execute_projects:
 
-    elif action == 'edit_task':
+            group_descendants, host_descendants = get_node_descendants(project.host_group)
 
-        return inventory.get_host_names(pattern).issubset(authorized['editable_task_hosts'])
+            full_playbook_names = json.loads(project.playbooks)
 
-    elif action == 'use_playbook':
+            self._executable_hosts.update({host.name for host in host_descendants})
 
-        return True if playbook in authorized['usable_playbooks'] else False
+            self._usable_playbooks.update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
 
-    elif action == 'use_role_file':
+            for role in json.loads(project.roles):
 
-        return True if role_file in authorized['usable_role_files'] else False
+                for root, dirs, files in os.walk(os.path.join(settings.ROLES_PATH, role['name'])):
 
-    elif action == 'edit_playbook':
+                    for f in files:
 
-        return True if playbook in authorized['editable_playbooks'] else False
+                        self._usable_roles.add(os.path.join(root.replace(settings.ROLES_PATH + '/', ''), f))
 
-    elif action == 'edit_role_file':
+        self._last_load = datetime.datetime.now()
 
-        return True if role_file in authorized['editable_role_file'] else False
+    def reload(self):
 
+        self._editable_nodes = set()
 
+        self._executable_hosts = set()
+
+        self._editable_task_hosts = set()
+
+        self._editable_files = set()
+
+        self._usable_playbooks = set()
+
+        self._usable_roles = set()
+
+        self._inventory_projects = set()
+
+        self._runner_projects = set()
+
+        self._execute_projects = set()
+
+        self._load()
+
+    def can_edit_variable(self, node):
+
+        if datetime.datetime.now() - self._last_load > self._max_age:
+
+            self.reload()
+
+        return True if node.id and node in self._editable_nodes else False
+
+    def can_execute_job(self, inventory, pattern):
+
+        if datetime.datetime.now() - self._last_load > self._max_age:
+
+            self.reload()
+
+        return inventory.get_host_names(pattern).issubset(self._executable_hosts)
+
+    def can_edit_task(self, inventory, pattern):
+
+        if datetime.datetime.now() - self._last_load > self._max_age:
+
+            self.reload()
+
+        return inventory.get_host_names(pattern).issubset(self._editable_task_hosts)
+
+    def can_use_playbook(self, playbook):
+
+        if datetime.datetime.now() - self._last_load > self._max_age:
+
+            self.reload()
+
+        return True if playbook in self._usable_playbooks else False
+
+    def can_edit_file(self, file_path):
+
+        if datetime.datetime.now() - self._last_load > self._max_age:
+
+            self.reload()
+
+        return True if file_path in self._editable_files else False

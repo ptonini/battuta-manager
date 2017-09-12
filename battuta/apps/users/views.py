@@ -7,12 +7,14 @@ from django.forms import model_to_dict
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Permission
+from django.core.cache import cache
 
 from apps.users.models import User, Group, UserData, GroupData, Credential
 from apps.users.forms import UserForm, UserDataForm, GroupForm, CredentialForm
 from apps.users.extras import create_userdata, create_groupdata
 
 from apps.preferences.extras import get_preferences
+from apps.projects.extras import ProjectAuth
 
 
 class PageView(View):
@@ -69,6 +71,8 @@ class LoginView(View):
                 if user.is_active:
 
                     login(request, user)
+
+                    cache.set(str(user.username + '_auth'), ProjectAuth(user))
 
                     data = {'result': 'ok'}
 

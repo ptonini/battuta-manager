@@ -9,16 +9,15 @@ import tempfile
 import datetime
 import yaml
 import sys
+from pytz import timezone, utc
 
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
-from pytz import timezone, utc
+from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
-
-from apps.projects.extras import auth_action
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -55,16 +54,6 @@ class FilesView(View):
 
             return True, None
 
-    @staticmethod
-    def _authorize_playbook(user, folder, playbook):
-
-        auth_action(user, 'edit_playbook', playbook=playbook)
-
-    @staticmethod
-    def _authorize_role(user, folder, role_file):
-
-        auth_action(user, 'edit_role', role_file=file)
-
     file_sources = {
         'files': {
             'name': 'files',
@@ -73,8 +62,7 @@ class FilesView(View):
             'exclude': list(),
             'exts': None,
             'validator': None,
-            'permission': 'users.edit_files',
-            'authorize': True
+            'permission': 'users.edit_files'
         },
         'playbooks': {
             'name': 'playbooks',
@@ -83,8 +71,7 @@ class FilesView(View):
             'exclude': list(),
             'exts': ['.yml', '.yaml'],
             'validator': _validate_yaml.__func__,
-            'permission': 'users.edit_playbooks',
-            'authorize': True
+            'permission': 'users.edit_playbooks'
         },
         'roles': {
             'name': 'roles',
@@ -93,8 +80,7 @@ class FilesView(View):
             'exclude': ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
             'exts': None,
             'validator': None,
-            'permission': 'users.edit_roles',
-            'authorize': True
+            'permission': 'users.edit_roles'
 
     },
         'users': {
@@ -105,8 +91,7 @@ class FilesView(View):
             'types': list(),
             'exts': None,
             'validator': None,
-            'permission': 'users.edit_files',
-            'authorize': True
+            'permission': 'users.edit_files'
         }
     }
 
@@ -137,9 +122,11 @@ class FilesView(View):
 
         return root_dict
 
-    def _search_files(self, source, request, prefs):
+    def _search_files(self, source, request, prefs, project_auth):
 
         file_list = list()
+
+        root_path = self._set_root(source['name'], '', request.user)
 
         for root, dirs, files in os.walk(source['path']):
 
@@ -157,6 +144,7 @@ class FilesView(View):
                     any(s.startswith('.') for s in relative_path.split('/')) and not prefs['show_hidden_files'],
                     request.GET.get('type') == 'archive' and is_not_archive,
                     source['name'] == 'users' and relative_path.split('/')[1] != request.user.username,
+                    not root_path['authorized'] and not project_auth.can_edit_file(relative_path),
                 }
 
                 if True not in exclude_conditions:
@@ -181,13 +169,15 @@ class FilesView(View):
 
         prefs = get_preferences()
 
+        project_auth = cache.get(str(request.user.username + '_auth'))
+
         if action == 'search':
 
             data = list()
 
             if request.GET.get('root'):
 
-                data = self._search_files(self.file_sources[request.GET['root']], request, prefs)
+                data = self._search_files(self.file_sources[request.GET['root']], request, prefs, project_auth)
 
             else:
 
@@ -197,7 +187,7 @@ class FilesView(View):
 
                     if source['prefix']:
 
-                        data = data + self._search_files(source, request, prefs)
+                        data = data + self._search_files(source, request, prefs, project_auth)
 
         else:
 
@@ -231,6 +221,7 @@ class FilesView(View):
                         file_name.startswith('.') and not prefs['show_hidden_files'],
                         file_type != 'directory' and root['exts'] and ext not in root['exts'],
                         {'name': file_name, 'folder': folder} in json.loads(request.GET.get('exclude', '[]')),
+                        not root['authorized'] and not project_auth.can_edit_file(os.path.join(folder, file_name)),
                     }
 
                     if True not in exclude_conditions:
@@ -344,11 +335,15 @@ class FilesView(View):
 
     def post(self, request, action):
 
+        project_auth = cache.get(str(request.user.username + '_auth'))
+
         root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
-        if root['authorized']:
+        full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
 
-            full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
+        relative_path = os.path.join(request.POST['folder'], request.POST['name'])
+
+        if root['authorized'] or project_auth.can_edit_file(relative_path):
 
             new_path = os.path.join(root['path'], request.POST['folder'], request.POST['new_name'])
 

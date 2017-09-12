@@ -14,13 +14,14 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
+from django.core.cache import cache
+
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, get_node_ancestors, get_node_descendants
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import auth_action
 
 
 class PageView(View):
@@ -692,6 +693,8 @@ class NodeView(View):
 
         node = self._build_node(request.POST.dict(), node_type, request.user) if request.POST.get('id') else None
 
+        project_auth = cache.get(str(request.user.username + '_auth'))
+
         if action == 'save':
 
             if node.editable:
@@ -738,7 +741,7 @@ class NodeView(View):
 
         elif action == 'save_var':
 
-            if node.editable or auth_action(request.user, 'edit_variables', node=node):
+            if node.editable or project_auth.can_edit_variable(node):
 
                 var_dict = json.loads(request.POST['variable'])
 
@@ -764,7 +767,7 @@ class NodeView(View):
 
         elif action == 'delete_var':
 
-            if node.editable or auth_action(request.user, 'edit_variables', node=node):
+            if node.editable or project_auth.can_edit_variables(node):
 
                 variable = get_object_or_404(Variable, pk=json.loads(request.POST['variable'])['id'])
 
@@ -778,7 +781,7 @@ class NodeView(View):
 
         elif action == 'copy_vars':
 
-            if node.editable or auth_action(request.user, 'edit_variables', node=node):
+            if node.editable or project_auth.can_edit_variables(node):
 
                 source_dict = json.loads(request.POST['source'])
 
