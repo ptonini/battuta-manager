@@ -29,7 +29,7 @@ function ProjectTable(container) {
             {class: 'col-md-2', title: 'name', data: 'name'},
             {class: 'col-md-4', title: 'description', data: 'description'},
             {class: 'col-md-3', title: 'manager', data: 'manager'},
-            {class: 'col-md-3', title: 'host group', data: 'host_group'}
+            {class: 'col-md-3', title: 'host group', data: 'host_group.name'}
         ],
         rowCallback: function (row, project) {
 

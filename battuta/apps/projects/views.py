@@ -40,9 +40,12 @@ class ProjectView(View):
     classes = {
         'manager': User,
         'host_group': HostGroup,
-        'inventory_admins': UserGroup,
-        'runner_admins': UserGroup,
-        'execute_jobs': UserGroup
+        'can_edit_variables': UserGroup,
+        'can_run_tasks': UserGroup,
+        'can_edit_tasks': UserGroup,
+        'can_run_playbooks': UserGroup,
+        'can_edit_playbooks': UserGroup,
+        'can_edit_roles': UserGroup,
     }
 
     @staticmethod
@@ -54,9 +57,12 @@ class ProjectView(View):
             'description': p.description,
             'manager': p.manager.username if p.manager else None,
             'host_group': {'name': p.host_group.name, 'id': p.host_group.id} if p.host_group else None,
-            'inventory_admins': p.inventory_admins.name if p.inventory_admins else None,
-            'runner_admins': p.runner_admins.name if p.runner_admins else None,
-            'execute_jobs': p.execute_jobs.name if p.execute_jobs else None,
+            'can_edit_variables': p.can_edit_variables.name if p.can_edit_variables else None,
+            'can_run_tasks': p.can_run_tasks.name if p.can_run_tasks else None,
+            'can_edit_tasks': p.can_edit_tasks.name if p.can_edit_tasks else None,
+            'can_run_playbooks': p.can_run_playbooks.name if p.can_run_playbooks else None,
+            'can_edit_playbooks': p.can_edit_playbooks.name if p.can_edit_playbooks else None,
+            'can_edit_roles': p.can_edit_roles.name if p.can_edit_roles else None,
             'playbooks': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.playbooks)],
             'roles': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.roles)]
         }
@@ -136,6 +142,16 @@ class ProjectView(View):
                 prop = json.loads(request.POST['property'])
 
                 project.__setattr__(prop['name'], get_object_or_404(self.classes[prop['name']], pk=prop['value']))
+
+                project.save()
+
+                data = {'result': 'ok'}
+
+            elif action == 'clear_property':
+
+                prop = json.loads(request.POST['property'])
+
+                project.__setattr__(prop['name'], None)
 
                 project.save()
 

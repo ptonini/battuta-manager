@@ -18,41 +18,57 @@ class ProjectAuth:
 
         self._editable_nodes = set()
 
-        self._executable_hosts = set()
+        self._runnable_task_hosts = set()
 
         self._editable_task_hosts = set()
 
         self._editable_files = set()
 
-        self._usable_playbooks = set()
+        self._runnable_playbooks = set()
 
-        self._usable_roles = set()
+        self._can_edit_variables = set()
 
-        self._inventory_projects = set()
+        self._can_run_tasks = set()
 
-        self._runner_projects = set()
+        self._can_edit_tasks = set()
 
-        self._execute_projects = set()
+        self._can_run_playbooks = set()
+
+        self._can_edit_playbooks = set()
+
+        self._can_edit_roles = set()
 
         for group in self._user.groups.all():
 
-            self._inventory_projects.update({p for p in Project.objects.all() if p.inventory_admins == group})
+            self._can_edit_variables.update({p for p in Project.objects.all() if p.can_edit_variables == group})
 
-            self._runner_projects.update({p for p in Project.objects.all() if p.runner_admins == group})
+            self._can_run_tasks.update({p for p in Project.objects.all() if p.can_run_tasks == group})
 
-            self._execute_projects.update({p for p in Project.objects.all() if p.execute_jobs == group})
+            self._can_edit_tasks.update({p for p in Project.objects.all() if p.can_edit_tasks == group})
+
+            self._can_run_playbooks.update({p for p in Project.objects.all() if p.can_run_playbooks == group})
+
+            self._can_edit_playbooks.update({p for p in Project.objects.all() if p.can_edit_playbooks == group})
+
+            self._can_edit_roles.update({p for p in Project.objects.all() if p.can_edit_roles == group})
 
         for project in Project.objects.all():
 
             if self._user == project.manager:
 
-                self._inventory_projects.add(project)
+                self._can_edit_variables.add(project)
 
-                self._runner_projects.add(project)
+                self._can_run_tasks.add(project)
 
-                self._execute_projects.add(project)
+                self._can_edit_tasks.add(project)
 
-        for project in self._inventory_projects:
+                self._can_run_playbooks.add(project)
+
+                self._can_edit_playbooks.add(project)
+
+                self._can_edit_roles.add(project)
+
+        for project in self._can_edit_variables:
 
             group_descendants, host_descendants = get_node_descendants(project.host_group)
 
@@ -60,19 +76,33 @@ class ProjectAuth:
 
             self._editable_nodes.update(group_descendants)
 
-        for project in self._runner_projects:
+        for project in self._can_run_tasks:
+
+            group_descendants, host_descendants = get_node_descendants(project.host_group)
+
+            self._runnable_task_hosts.update({host.name for host in host_descendants})
+
+        for project in self._can_edit_tasks:
 
             group_descendants, host_descendants = get_node_descendants(project.host_group)
 
             self._editable_task_hosts.update({host.name for host in host_descendants})
 
+        for project in self._can_run_playbooks:
+
             for p in json.loads(project.playbooks):
 
-                if p['folder']:
+                self._runnable_playbooks.add(os.path.join(p['folder'], p['name']))
 
-                    self._editable_files.add(os.path.join(settings.PLAYBOOK_PATH, p['folder']))
+        for project in self._can_edit_playbooks:
+
+            for p in json.loads(project.playbooks):
+
+                self._editable_files.add(os.path.join(settings.PLAYBOOK_PATH, p['folder']))
 
                 self._editable_files.add(os.path.join(settings.PLAYBOOK_PATH, p['folder'], p['name']))
+
+        for project in self._can_edit_roles:
 
             for role in json.loads(project.roles):
 
@@ -90,33 +120,21 @@ class ProjectAuth:
 
                         self._editable_files.add(os.path.join(root, d))
 
-        for project in self._execute_projects:
-
-            group_descendants, host_descendants = get_node_descendants(project.host_group)
-
-            full_playbook_names = json.loads(project.playbooks)
-
-            self._executable_hosts.update({host.name for host in host_descendants})
-
-            self._usable_playbooks.update({os.path.join(p['folder'], p['name']) for p in full_playbook_names})
-
-            self._usable_roles.update({os.path.join(r['folder'], r['name']) for r in (json.loads(project.roles))})
-
-    def can_edit_variable(self, node):
+    def can_edit_variables(self, node):
 
         return True if node.id and node in self._editable_nodes else False
 
-    def can_execute_job(self, inventory, pattern):
+    def can_run_tasks(self, inventory, pattern):
 
-        return inventory.get_host_names(pattern).issubset(self._executable_hosts)
+        return inventory.get_host_names(pattern).issubset(self._runnable_task_hosts)
 
-    def can_edit_task(self, inventory, pattern):
+    def can_edit_tasks(self, inventory, pattern):
 
         return inventory.get_host_names(pattern).issubset(self._editable_task_hosts)
 
-    def can_use_playbook(self, playbook):
+    def can_run_playbooks(self, playbook):
 
-        return True if playbook in self._usable_playbooks else False
+        return True if playbook in self._runnable_playbooks else False
 
     def can_edit_file(self, file_path):
 

@@ -748,7 +748,7 @@ class NodeView(View):
 
         elif action == 'save_var':
 
-            if node.editable or project_auth.can_edit_variable(node):
+            if node.editable or project_auth.can_edit_variables(node):
 
                 var_dict = json.loads(request.POST['variable'])
 

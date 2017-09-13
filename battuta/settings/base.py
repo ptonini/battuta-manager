@@ -217,6 +217,18 @@ DEFAULT_PREFERENCES = [
                 'data_type': 'number',
                 'description': 'Columns for user and user groups grid',
             },
+            {
+                'name': 'playbook_grid_columns',
+                'value': 3,
+                'data_type': 'number',
+                'description': 'Columns for playbook grid',
+            },
+            {
+                'name': 'role_grid_columns',
+                'value': 3,
+                'data_type': 'number',
+                'description': 'Columns for role grid',
+            },
         ]
     }
 ]

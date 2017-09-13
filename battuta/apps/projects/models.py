@@ -14,15 +14,21 @@ class Project(models.Model):
 
     host_group = models.ForeignKey(HostGroup, null=True, blank=True)
 
-    inventory_admins = models.ForeignKey(UserGroup, related_name='inventory_admins', null=True, blank=True)
-
-    runner_admins = models.ForeignKey(UserGroup, related_name='runner_admins', null=True, blank=True)
-
-    execute_jobs = models.ForeignKey(UserGroup, related_name='execute_jobs', null=True, blank=True)
+    playbooks = models.TextField(max_length=65536, default='[]')
 
     roles = models.TextField(max_length=65536, default='[]')
 
-    playbooks = models.TextField(max_length=65536, default='[]')
+    can_edit_variables = models.ForeignKey(UserGroup, related_name='can_edit_variables', null=True, blank=True)
+
+    can_run_tasks = models.ForeignKey(UserGroup, related_name='can_run_tasks', null=True, blank=True)
+
+    can_edit_tasks = models.ForeignKey(UserGroup, related_name='can_edit_tasks', null=True, blank=True)
+
+    can_run_playbooks = models.ForeignKey(UserGroup, related_name='can_run_playbooks', null=True, blank=True)
+
+    can_edit_playbooks = models.ForeignKey(UserGroup, related_name='can_edit_playbooks', null=True, blank=True)
+
+    can_edit_roles = models.ForeignKey(UserGroup, related_name='can_edit_roles', null=True, blank=True)
 
     def __str__(self):
 

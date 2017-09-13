@@ -72,8 +72,6 @@ function Project(project, container) {
         .data(self.project.host_group)
         .change(function () {
 
-            console.log($(this).data());
-
             new Descendants($(this).data(), false, self.descendantsContainer);
 
         });
@@ -88,51 +86,6 @@ function Project(project, container) {
 
     self.descendants = new Descendants(self.project.host_group, false, self.descendantsContainer);
 
-    self.inventoryAdminsInput = textInputField.clone()
-        .attr('title', 'Can edit inventory')
-        .prop('readonly', true)
-        .val(self.project.inventory_admins);
-
-    self.setInventoryAdminsBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.inventoryAdminsInput, 'inventory_admins');
-
-    });
-
-    self.runnerAdminsInput = textInputField.clone()
-        .attr('title', 'Can edit tasks and playbooks')
-        .prop('readonly', true)
-        .val(self.project.runner_admins);
-
-    self.setRunnerAdminsBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.runnerAdminsInput, 'runner_admins');
-
-    });
-
-    self.jobExecutionInput = textInputField.clone()
-        .attr('title', 'Can execute tasks and playbooks')
-        .prop('readonly', true)
-        .val(self.project.execute_jobs);
-
-    self.setJobExecutionBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.jobExecutionInput, 'execute_jobs');
-
-    });
-
-    self.tabsHeader = ulTabs.clone().attr('id','project_' + self.project.id + '_tabs');
-
-    self.infoTab = divActiveTab.clone().attr('id', 'info_tab');
-
-    self.hostsTab = divTab.clone().attr('id', 'hosts_tab');
-
-    self.usersTab = divTab.clone().attr('id', 'users_tab');
-
-    self.playbookTab = divTab.clone().attr('id', 'playbook_tab');
-
-    self.roleTab = divTab.clone().attr('id', 'role_tab');
-
     self.playbookGrid = $('<div>').DynaGrid({
         gridTitle: 'Playbooks',
         headerTag: '<h4>',
@@ -146,7 +99,7 @@ function Project(project, container) {
         showCount: true,
         itemHoverCursor: 'auto',
         gridBodyBottomMargin: '20px',
-        columns: 3,
+        columns: sessionStorage.getItem('playbook_grid_columns'),
         buildNow: false,
         ajaxUrl: paths.projectsApi + 'project/playbooks/?id=' + self.project.id,
         formatItem: function(gridContainer, gridItem) {
@@ -273,7 +226,7 @@ function Project(project, container) {
         showCount: true,
         itemHoverCursor: 'auto',
         gridBodyBottomMargin: '20px',
-        columns: 3,
+        columns: sessionStorage.getItem('role_grid_columns'),
         buildNow: false,
         ajaxUrl: paths.projectsApi + 'project/roles/?id=' + self.project.id,
         formatItem: function(gridContainer, gridItem) {
@@ -377,6 +330,104 @@ function Project(project, container) {
         }
     });
 
+
+    self.canEditVariablesInput = textInputField.clone().prop('readonly', true).val(self.project.can_edit_variables);
+
+    self.setCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+
+        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.canEditVariablesInput, 'can_edit_variables');
+
+    });
+
+    self.clearCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+
+        self.clearProperty(self.canEditVariablesInput, 'can_edit_variables')
+
+    });
+
+
+    self.canRunTasksInput = textInputField.clone().prop('readonly', true).val(self.project.can_run_tasks);
+
+    self.setCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+
+        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.canRunTasksInput, 'can_run_tasks');
+
+    });
+
+    self.clearCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+
+        self.clearProperty(self.canRunTasksInput, 'can_run_tasks')
+
+    });
+
+    self.canEditTasksInput = textInputField.clone().prop('readonly', true).val(self.project.can_edit_tasks);
+
+    self.setCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+
+        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.canEditTasksInput, 'can_edit_tasks');
+
+    });
+
+    self.clearCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+
+        self.clearProperty(self.canEditTasksInput, 'can_edit_tasks')
+
+    });
+
+    self.canRunPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.project.can_run_playbooks);
+
+    self.setCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+
+        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.canRunPlaybooksInput, 'can_run_playbooks');
+
+    });
+
+    self.clearCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+
+        self.clearProperty(self.canRunPlaybooksInput, 'can_run_playbooks')
+
+    });
+
+    self.canEditPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.project.can_edit_playbooks);
+
+    self.setCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+
+        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.canEditPlaybooksInput, 'can_edit_playbooks');
+
+    });
+
+    self.clearCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+
+        self.clearProperty(self.canEditPlaybooksInput, 'can_edit_playbooks')
+
+    });
+
+    self.canEditRolesInput = textInputField.clone().prop('readonly', true).val(self.project.can_edit_roles);
+
+    self.setCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+
+        self.setProperty(paths.usersApi + 'group/list/?editable=true', 'group', 'groups', 'name', self.canEditRolesInput, 'can_edit_roles');
+
+    });
+
+    self.clearCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+
+        self.clearProperty(self.canEditRolesInput, 'can_edit_roles')
+
+    });
+
+    self.tabsHeader = ulTabs.clone().attr('id','project_' + self.project.id + '_tabs');
+
+    self.infoTab = divActiveTab.clone().attr('id', 'info_tab');
+
+    self.hostsTab = divTab.clone().attr('id', 'hosts_tab');
+
+    self.playbookTab = divTab.clone().attr('id', 'playbook_tab');
+
+    self.roleTab = divTab.clone().attr('id', 'role_tab');
+
+    self.usersTab = divTab.clone().attr('id', 'users_tab');
+
     self.container.append(
         $('<h3>').append(
             $('<small>').html('project'),
@@ -389,7 +440,7 @@ function Project(project, container) {
             $('<li>').html(aTabs.clone().attr('href', '#hosts_tab').html('Hosts')),
             $('<li>').html(aTabs.clone().attr('href', '#playbook_tab').html('Playbooks')),
             $('<li>').html(aTabs.clone().attr('href', '#role_tab').html('Roles')),
-            $('<li>').html(aTabs.clone().attr('href', '#users_tab').html('Users'))
+            $('<li>').html(aTabs.clone().attr('href', '#users_tab').html('User groups'))
         ),
         $('<br>'),
         divTabContent.clone().append(
@@ -435,28 +486,64 @@ function Project(project, container) {
             ),
             self.usersTab.append(
                 divRow.clone().append(
-                    divCol3.clone().append(
+                    divCol12.clone().append($('<h4>').html('Inventory')),
+                    divCol4.clone().append(
                         divFormGroup.clone().append(
-                            $('<label>').html('Inventory admins').append(
+                            $('<label>').html('Can edit variables').append(
                                 $('<div>').attr('class', 'input-group').append(
-                                    self.inventoryAdminsInput,
-                                    spanBtnGroup.clone().append(self.setInventoryAdminsBtn)
+                                    self.canEditVariablesInput,
+                                    spanBtnGroup.clone().append(self.setCanEditVariablesBtn, self.clearCanEditVariablesBtn)
                                 )
                             )
-                        ),
+                        )
+                    ),
+                    divCol12.clone().append($('<h4>').html('Runner')),
+                    divCol4.clone().append(
                         divFormGroup.clone().append(
-                            $('<label>').html('Runner admins').append(
+                            $('<label>').html('Can run tasks').append(
                                 $('<div>').attr('class', 'input-group').append(
-                                    self.runnerAdminsInput,
-                                    spanBtnGroup.clone().append(self.setRunnerAdminsBtn)
+                                    self.canRunTasksInput,
+                                    spanBtnGroup.clone().append(self.setCanRunTasksBtn, self.clearCanRunTasksBtn)
                                 )
                             )
-                        ),
+                        )
+                    ),
+                    divCol4.clone().append(
                         divFormGroup.clone().append(
-                            $('<label>').html('Job execution').append(
+                            $('<label>').html('Can run playbooks').append(
                                 $('<div>').attr('class', 'input-group').append(
-                                    self.jobExecutionInput,
-                                    spanBtnGroup.clone().append(self.setJobExecutionBtn)
+                                    self.canRunPlaybooksInput,
+                                    spanBtnGroup.clone().append(self.setCanRunPlaybooksBtn, self.clearCanRunPlaybooksBtn)
+                                )
+                            )
+                        )
+                    ),
+                    divCol4.clone().append(
+                        divFormGroup.clone().append(
+                            $('<label>').html('Can edit roles').append(
+                                $('<div>').attr('class', 'input-group').append(
+                                    self.canEditRolesInput,
+                                    spanBtnGroup.clone().append(self.setCanEditRolesBtn, self.clearCanEditRolesBtn)
+                                )
+                            )
+                        )
+                    ),
+                    divCol4.clone().append(
+                        divFormGroup.clone().append(
+                            $('<label>').html('Can edit tasks').append(
+                                $('<div>').attr('class', 'input-group').append(
+                                    self.canEditTasksInput,
+                                    spanBtnGroup.clone().append(self.setCanEditTasksBtn, self.clearCanEditTasksBtn)
+                                )
+                            )
+                        )
+                    ),
+                    divCol4.clone().append(
+                        divFormGroup.clone().append(
+                            $('<label>').html('Can edit playbooks').append(
+                                $('<div>').attr('class', 'input-group').append(
+                                    self.canEditPlaybooksInput,
+                                    spanBtnGroup.clone().append(self.setCanEditPlaybooksBtn, self.clearCanEditPlaybooksBtn)
                                 )
                             )
                         )
@@ -512,6 +599,27 @@ Project.prototype = {
 
             }
         });
+    },
+    clearProperty: function (input, property) {
+
+        var self = this;
+
+        self.project.property = JSON.stringify({name: property});
+
+        $.ajax({
+            url: paths.projectsApi + 'project/clear_property/',
+            type: 'POST',
+            dataType: 'json',
+            data: self.project,
+            success: function (data) {
+
+                if (data.result === 'ok') input.val('').removeData().change();
+
+                else data.msg && $.bootstrapGrowl(data.msg, failedAlertOptions);
+
+            }
+        });
+
     }
 };
 
