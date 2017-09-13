@@ -1,6 +1,5 @@
 import os
 import MySQLdb
-import yaml
 
 from collections import namedtuple
 from ansible.utils.vars import load_extra_vars
@@ -172,10 +171,3 @@ def run_job(job):
 
         cursor.execute('UPDATE runner_job SET status=%s, is_running=FALSE, message=%s WHERE id=%s',
                        (status, message, job.id))
-
-
-def get_playbook_hosts(playbook_path):
-
-    with open(os.path.join(settings.PLAYBOOK_PATH, playbook_path), 'r') as playbook_file:
-
-        return [play['hosts'] for play in yaml.load(playbook_file.read())]

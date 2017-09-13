@@ -148,8 +148,6 @@ class InventoryView(View):
 
         prefs = get_preferences()
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
         if action == 'get':
 
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -240,8 +238,6 @@ class InventoryView(View):
 
     @staticmethod
     def post(request, action):
-
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 

@@ -15,7 +15,7 @@ from django.core.cache import cache
 
 from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
 from apps.runner.forms import AdHocTaskForm, JobForm, PlaybookArgsForm
-from apps.runner.extras import run_job, get_playbook_hosts
+from apps.runner.extras import run_job
 from apps.runner.extras.handlers import JobTableHandler
 
 from apps.users.models import Credential
@@ -137,13 +137,9 @@ class JobView(View):
 
                 job_data['name'] = job_data['playbook']
 
-                auth = {project_auth.can_use_playbook(os.path.join(job_data['folder'], job_data['playbook']))}
+                auth = project_auth.can_run_playbooks(ansible_inventory, job_data['playbook_path'])
 
-                for hosts in get_playbook_hosts(job_data['playbook_path']):
-
-                    auth.add(project_auth.can_execute_job(ansible_inventory, hosts))
-
-                if not request.user.has_perm('users.execute_jobs') and False in auth:
+                if not request.user.has_perm('users.execute_jobs') and not auth:
 
                     data = {'result': 'denied'}
 
@@ -152,7 +148,7 @@ class JobView(View):
 
                 auth = {
                     request.user.has_perm('users.execute_jobs'),
-                    project_auth.can_execute_job(ansible_inventory, job_data['hosts'])
+                    project_auth.can_run_tasks(ansible_inventory, job_data['hosts'])
                 }
 
                 if True in auth:
@@ -188,7 +184,7 @@ class JobView(View):
 
                 auth = {
                     request.user.has_perm('users.execute_jobs'),
-                    project_auth.can_execute_job(ansible_inventory, job_data['hosts'])
+                    project_auth.can_run_tasks(ansible_inventory, job_data['hosts'])
                 }
 
                 if True in auth:
@@ -291,15 +287,11 @@ class JobView(View):
 
                 playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder if job.folder else '', job.name)
 
-                auth.add(project_auth.can_use_playbook(playbook_path))
-
-                for hosts in get_playbook_hosts(playbook_path):
-
-                    auth.add(project_auth.can_execute_job(ansible_inventory, hosts))
+                auth.add(project_auth.can_run_playbooks(ansible_inventory, playbook_path))
 
             else:
 
-                auth.add(project_auth.can_execute_job(ansible_inventory, job.subset))
+                auth.add(project_auth.can_run_tasks(ansible_inventory, job.subset))
 
             if request.user.has_perm('users.execute_jobs') or False not in auth:
 
@@ -388,7 +380,7 @@ class AdHocView(View):
 
         authorize_conditions = {
             request.user.has_perm('users.edit_tasks'),
-            project_auth.can_edit_task(AnsibleInventory(), request.POST['hosts'])
+            project_auth.can_edit_tasks(AnsibleInventory(), request.POST['hosts'])
         }
 
         if True in authorize_conditions:
@@ -452,15 +444,14 @@ class PlaybookArgsView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
-        auth = {request.user.has_perm('users.edit_playbooks')}
-
         ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 
         playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.POST.get('folder', ''), request.POST.get('playbook'))
 
-        for hosts in get_playbook_hosts(playbook_path):
-
-            auth.add(project_auth.can_edit_task(ansible_inventory, hosts))
+        auth = {
+            request.user.has_perm('users.edit_playbooks'),
+            project_auth.can_run_playbooks(ansible_inventory, playbook_path)
+        }
 
         if True in auth:
 

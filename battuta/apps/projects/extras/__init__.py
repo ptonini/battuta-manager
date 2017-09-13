@@ -1,5 +1,6 @@
 import json
 import os
+import yaml
 
 from django.conf import settings
 
@@ -22,9 +23,9 @@ class ProjectAuth:
 
         self._editable_task_hosts = set()
 
-        self._editable_files = set()
-
         self._runnable_playbooks = set()
+
+        self._editable_files = set()
 
         self._can_edit_variables = set()
 
@@ -37,6 +38,8 @@ class ProjectAuth:
         self._can_edit_playbooks = set()
 
         self._can_edit_roles = set()
+
+        self._managed_projects = {p for p in Project.objects.all() if self._user == p.manager}
 
         for group in self._user.groups.all():
 
@@ -51,22 +54,6 @@ class ProjectAuth:
             self._can_edit_playbooks.update({p for p in Project.objects.all() if p.can_edit_playbooks == group})
 
             self._can_edit_roles.update({p for p in Project.objects.all() if p.can_edit_roles == group})
-
-        for project in Project.objects.all():
-
-            if self._user == project.manager:
-
-                self._can_edit_variables.add(project)
-
-                self._can_run_tasks.add(project)
-
-                self._can_edit_tasks.add(project)
-
-                self._can_run_playbooks.add(project)
-
-                self._can_edit_playbooks.add(project)
-
-                self._can_edit_roles.add(project)
 
         for project in self._can_edit_variables:
 
@@ -132,9 +119,17 @@ class ProjectAuth:
 
         return inventory.get_host_names(pattern).issubset(self._editable_task_hosts)
 
-    def can_run_playbooks(self, playbook):
+    def can_run_playbooks(self, inventory, playbook_path):
 
-        return True if playbook in self._runnable_playbooks else False
+        with open(os.path.join(playbook_path), 'r') as playbook_file:
+
+            auth = set()
+
+            for pattern in [play['hosts'] for play in yaml.load(playbook_file.read())]:
+
+                auth.add({inventory.get_host_names(pattern).issubset(self._editable_task_hosts)})
+
+        return True if playbook_path in self._runnable_playbooks and False not in auth else False
 
     def can_edit_file(self, file_path):
 
