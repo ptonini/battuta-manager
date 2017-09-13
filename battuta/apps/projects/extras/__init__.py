@@ -41,6 +41,8 @@ class ProjectAuth:
 
         self._managed_projects = {p for p in Project.objects.all() if self._user == p.manager}
 
+        self._managed_groups = set()
+
         for group in self._user.groups.all():
 
             self._can_edit_variables.update({p for p in Project.objects.all() if p.can_edit_variables == group})
@@ -54,6 +56,20 @@ class ProjectAuth:
             self._can_edit_playbooks.update({p for p in Project.objects.all() if p.can_edit_playbooks == group})
 
             self._can_edit_roles.update({p for p in Project.objects.all() if p.can_edit_roles == group})
+
+        for project in self._managed_projects:
+
+            self._managed_groups.add(project.can_edit_variables)
+
+            self._managed_groups.add(project.can_run_tasks)
+
+            self._managed_groups.add(project.can_edit_tasks)
+
+            self._managed_groups.add(project.can_run_playbooks)
+
+            self._managed_groups.add(project.can_edit_playbooks)
+
+            self._managed_groups.add(project.can_edit_roles)
 
         for project in self._can_edit_variables:
 
@@ -79,7 +95,9 @@ class ProjectAuth:
 
             for p in json.loads(project.playbooks):
 
-                self._runnable_playbooks.add(os.path.join(p['folder'], p['name']))
+                self._runnable_playbooks.add(os.path.join(settings.PLAYBOOK_PATH, p['folder']))
+
+                self._runnable_playbooks.add(os.path.join(settings.PLAYBOOK_PATH, p['folder'], p['name']))
 
         for project in self._can_edit_playbooks:
 
@@ -107,6 +125,10 @@ class ProjectAuth:
 
                         self._editable_files.add(os.path.join(root, d))
 
+    def is_manager(self):
+
+        return True if len(self._managed_projects) > 0 else False
+
     def can_edit_variables(self, node):
 
         return True if node.id and node in self._editable_nodes else False
@@ -127,10 +149,30 @@ class ProjectAuth:
 
             for pattern in [play['hosts'] for play in yaml.load(playbook_file.read())]:
 
-                auth.add({inventory.get_host_names(pattern).issubset(self._editable_task_hosts)})
+                auth.add(inventory.get_host_names(pattern).issubset(self._runnable_task_hosts))
 
         return True if playbook_path in self._runnable_playbooks and False not in auth else False
+
+    def can_view_file(self, file_path):
+
+        return True if file_path in self._editable_files or file_path in self._runnable_playbooks else False
 
     def can_edit_file(self, file_path):
 
         return True if file_path in self._editable_files else False
+
+    def authorize_job(self, inventory, job):
+
+        if job.type == 'playbook':
+
+            playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder if job.folder else '', job.name)
+
+            return self.can_run_playbooks(inventory, playbook_path)
+
+        else:
+
+            return self.can_run_tasks(inventory, job.subset)
+
+    def can_add_to_group(self, group):
+
+        return True if group in self._managed_groups else False

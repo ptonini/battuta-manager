@@ -57,32 +57,44 @@ class JobView(View):
 
         job = get_object_or_404(Job, pk=job_id)
 
-        prefs = get_preferences()
-
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
-        tz = timezone(job.user.userdata.timezone)
+        auth = {
+            request.user.has_perm('users.execute_jobs'),
+            request.user == job.user,
+            # project_auth.authorize_job(AnsibleInventory(subset=job.subset if job.subset else ''), job)
+        }
 
-        # Convert job object to dict
-        data = model_to_dict(job)
+        if True in auth:
 
-        data['username'] = job.user.username
+            prefs = get_preferences()
 
-        data['created_on'] = job.created_on.astimezone(tz).strftime(prefs['date_format'])
+            tz = timezone(job.user.userdata.timezone)
 
-        # Convert status string to dict
-        if job.stats:
+            # Convert job object to dict
+            data = model_to_dict(job)
 
-            data['stats'] = ast.literal_eval(job.stats)
+            data['username'] = job.user.username
 
-        # Add plays to job data
-        data['plays'] = list()
+            data['created_on'] = job.created_on.astimezone(tz).strftime(prefs['date_format'])
 
-        for play in Play.objects.filter(job_id=data['id']).values():
+            # Convert status string to dict
+            if job.stats:
 
-            play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]
+                data['stats'] = ast.literal_eval(job.stats)
 
-            data['plays'].append(play)
+            # Add plays to job data
+            data['plays'] = list()
+
+            for play in Play.objects.filter(job_id=data['id']).values():
+
+                play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]
+
+                data['plays'].append(play)
+
+        else:
+
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -279,21 +291,13 @@ class JobView(View):
 
             job = get_object_or_404(Job, pk=request.POST['runner_id'])
 
-            ansible_inventory = AnsibleInventory(subset=job.subset if job.subset else '')
+            auth = {
+                request.user.has_perm('users.execute_jobs'),
+                request.user == job.user,
+                # project_auth.authorize_job(AnsibleInventory(subset=job.subset if job.subset else ''), job)
+            }
 
-            auth = set()
-
-            if job.type == 'playbook':
-
-                playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder if job.folder else '', job.name)
-
-                auth.add(project_auth.can_run_playbooks(ansible_inventory, playbook_path))
-
-            else:
-
-                auth.add(project_auth.can_run_tasks(ansible_inventory, job.subset))
-
-            if request.user.has_perm('users.execute_jobs') or False not in auth:
+            if True in auth:
 
                 try:
 
@@ -353,13 +357,20 @@ class AdHocView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
+        inventory = AnsibleInventory()
+
         if action == 'list':
 
             task_list = list()
 
             for task in AdHocTask.objects.all().values():
 
-                if request.GET['pattern'] == '' or request.GET['pattern'] == task['hosts']:
+                auth = {
+                    request.GET['pattern'] == '' or request.GET['pattern'] == task['hosts'],
+                    request.user.has_perm('users.edit_tasks') or project_auth.can_edit_tasks(inventory, task['hosts'])
+                }
+
+                if auth == {True}:
 
                     task['arguments'] = json.loads(task['arguments'])
 
@@ -378,12 +389,12 @@ class AdHocView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
-        authorize_conditions = {
+        auth = {
             request.user.has_perm('users.edit_tasks'),
             project_auth.can_edit_tasks(AnsibleInventory(), request.POST['hosts'])
         }
 
-        if True in authorize_conditions:
+        if True in auth:
 
             adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST['id'] else AdHocTask()
 
@@ -425,17 +436,25 @@ class PlaybookArgsView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
-        if action == 'list':
+        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['name'])
 
-            data = list()
+        if request.user.has_perm('users.execute_jobs') or project_auth.can_run_playbooks(AnsibleInventory(), playbook_path):
 
-            for args in PlaybookArgs.objects.filter(playbook=request.GET['name'], folder=request.GET['folder']).values():
+            if action == 'list':
 
-                data.append(args)
+                data = list()
+
+                for args in PlaybookArgs.objects.filter(playbook=request.GET['name'], folder=request.GET['folder']).values():
+
+                    data.append(args)
+
+            else:
+
+                raise Http404('Invalid action')
 
         else:
 
-            raise Http404('Invalid action')
+            data = {'result': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

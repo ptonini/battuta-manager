@@ -6,7 +6,15 @@ function Credentials(user) {
 
     self.credentialsSelector = selectField.clone().change(function () {
 
-        self._loadForm()
+        if ($('option:selected', self.credentialsSelector).data()) {
+
+            self._loadForm();
+
+            self.credentialsDialog.dialog('open')
+
+        }
+
+        else self.credentialsDialog.dialog('close')
 
     });
 
@@ -141,8 +149,7 @@ function Credentials(user) {
         )
     );
 
-    self.credentialsDialog
-        .dialog({
+    self.credentialsDialog.dialog({
             width: 560,
             buttons: {
                 Save: function () {
@@ -198,7 +205,7 @@ function Credentials(user) {
 
             }
         })
-        .dialog('open');
+
 
 }
 
@@ -214,25 +221,33 @@ Credentials.buildSelectionBox = function (username, credentials, startValue) {
         data: {runner: runner},
         success: function (data) {
 
-            $.each(data, function (index, cred) {
+            if (data.result === 'ok') {
 
-                var display = cred.title;
+                $.each(data.cred_list, function (index, cred) {
 
-                if (cred.is_default && !startValue) {
+                    var display = cred.title;
 
-                    display += ' (default)';
+                    if (cred.is_default && !startValue) {
 
-                    startValue = cred.id
+                        display += ' (default)';
 
-                }
+                        startValue = cred.id
 
-                credentials.append($('<option>').val(cred.id).data(cred).append(display))
+                    }
 
-            });
+                    credentials.append($('<option>').val(cred.id).data(cred).append(display))
 
-            if (runner) credentials.append($('<option>').val('').html('ask').data('id', 0));
+                });
 
-            else credentials.append($('<option>').val('new').append('new'));
+                if (runner) credentials.append($('<option>').val('').html('ask').data('id', 0));
+
+                else credentials.append($('<option>').val('new').append('new'));
+
+            }
+
+            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 
             credentials.val(startValue).change()
 

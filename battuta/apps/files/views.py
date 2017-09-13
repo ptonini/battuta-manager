@@ -145,7 +145,7 @@ class FilesView(View):
                     any(s.startswith('.') for s in relative_path.split('/')) and not prefs['show_hidden_files'],
                     request.GET.get('type') == 'archive' and is_not_archive,
                     source['name'] == 'users' and relative_path.split('/')[1] != request.user.username,
-                    not root_path['authorized'] and not project_auth.can_edit_file(full_path),
+                    not root_path['authorized'] and not project_auth.can_view_file(full_path),
                 }
 
                 if True not in exclude_conditions:
@@ -222,7 +222,7 @@ class FilesView(View):
                         file_name.startswith('.') and not prefs['show_hidden_files'],
                         file_type != 'directory' and root['exts'] and ext not in root['exts'],
                         {'name': file_name, 'folder': folder} in json.loads(request.GET.get('exclude', '[]')),
-                        not root['authorized'] and not project_auth.can_edit_file(full_path),
+                        not root['authorized'] and not project_auth.can_view_file(full_path),
                     }
 
                     if True not in exclude_conditions:

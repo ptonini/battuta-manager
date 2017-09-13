@@ -147,7 +147,7 @@ class UsersView(View):
 
         if action == 'list':
 
-            if request.user.has_perm('users.edit_users'):
+            if request.user.has_perm('users.edit_users') or project_auth.is_manager():
 
                 data = {'result': 'ok', 'users': [self._user_to_dict(user) for user in User.objects.all()]}
 
@@ -159,13 +159,24 @@ class UsersView(View):
 
             user = get_object_or_404(User, username=request.GET['username'])
 
-            if request.user.has_perm('users.edit_users') or request.user.username == user.username:
+            auth = {
+                request.user.has_perm('users.edit_users'),
+                request.user.username == user.username,
+            }
 
-                if action == 'get':
+            if action == 'get':
+
+                if True in auth or project_auth.is_manager():
 
                     data = {'result': 'ok', 'user': self._user_to_dict(user)}
 
-                elif action == 'groups':
+                else:
+
+                    data = {'result': 'denied'}
+
+            elif action == 'groups':
+
+                if True in auth or project_auth.is_manager():
 
                     if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
@@ -177,15 +188,21 @@ class UsersView(View):
 
                     data = {'result': 'ok', 'groups': groups}
 
-                elif action == 'creds':
+                else:
 
-                    data = list()
+                    data = {'result': 'denied'}
+
+            elif action == 'creds':
+
+                if True in auth:
+
+                    cred_list = list()
 
                     for cred in Credential.objects.filter(user=user).values():
 
                         cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
 
-                        data.append(self._truncate_secure_data(cred))
+                        cred_list.append(self._truncate_secure_data(cred))
 
                     if request.GET['runner'] == 'true':
 
@@ -195,19 +212,27 @@ class UsersView(View):
 
                             cred['title'] += ' (' + cred_owner.username + ')'
 
-                            data.append(self._truncate_secure_data(cred))
+                            cred_list.append(self._truncate_secure_data(cred))
 
-                elif action == 'default_cred':
+                    data = {'result': 'ok', 'cred_list': cred_list}
+
+                else:
+
+                    data = {'result': 'denied'}
+
+            elif action == 'default_cred':
+
+                if True in auth:
 
                     data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
 
                 else:
 
-                    raise Http404('Invalid action')
+                    data = {'result': 'denied'}
 
             else:
 
-                data = {'result': 'denied'}
+                raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -215,27 +240,32 @@ class UsersView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
-        if request.user.has_perm('users.edit_users') or request.user.id == request.POST['id']:
+        prefs = get_preferences()
 
-            form_data = request.POST.dict()
+        auth = {
+            request.user.has_perm('users.edit_users'),
+            request.user.id == request.POST['id'],
+        }
 
-            if form_data['id']:
+        form_data = request.POST.dict()
 
-                user = get_object_or_404(User, pk=form_data['id'])
+        if form_data['id']:
 
-                form_data['username'] = user.username
+            user = get_object_or_404(User, pk=form_data['id'])
 
-                form_data['password'] = user.password
+            form_data['username'] = user.username
 
-            else:
+            form_data['password'] = user.password
 
-                user = User()
+        else:
 
-                user.userdata = UserData()
+            user = User()
 
-            prefs = get_preferences()
+            user.userdata = UserData()
 
-            if action == 'save':
+        if action == 'save':
+
+            if True in auth or project_auth.is_manager():
 
                 user_form = UserForm(form_data or None, instance=user)
 
@@ -271,7 +301,13 @@ class UsersView(View):
 
                     data = {'result': 'failed', 'msg': str(user_form.errors) + str(userdata_form.errors)}
 
-            elif action == 'delete':
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'delete':
+
+            if True in auth:
 
                 if user.is_superuser:
 
@@ -288,8 +324,13 @@ class UsersView(View):
                     user.delete()
 
                     data = {'result': 'ok'}
+            else:
 
-            elif action == 'chgpass':
+                data = {'result': 'denied'}
+
+        elif action == 'chgpass':
+
+            if True in auth:
 
                 if request.user.check_password(request.POST['current_password']):
 
@@ -303,35 +344,37 @@ class UsersView(View):
 
                     data = {'result': 'failed', 'msg': 'Invalid password'}
 
-            elif action == 'add_groups':
+            else:
 
-                if request.user.has_perm('users.edit_user_groups'):
+                data = {'result': 'denied'}
 
-                    for selected in request.POST.getlist('selection[]'):
+        elif action == 'add_groups':
 
-                        user.groups.add(get_object_or_404(Group, pk=selected))
+            for selected in request.POST.getlist('selection[]'):
 
-                    data = {'result': 'ok'}
+                group = get_object_or_404(Group, pk=selected)
 
-                else:
+                if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
-                    data = {'result': 'denied'}
+                    user.groups.add(get_object_or_404(Group, pk=selected))
 
-            elif action == 'remove_groups':
+            data = {'result': 'ok'}
 
-                if request.user.has_perm('users.edit_user_groups'):
+        elif action == 'remove_groups':
 
-                    for selected in request.POST.getlist('selection[]'):
+            for selected in request.POST.getlist('selection[]'):
 
-                        user.groups.remove(get_object_or_404(Group, pk=selected))
+                group = get_object_or_404(Group, pk=selected)
 
-                    data = {'result': 'ok'}
+                if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
-                else:
+                    user.groups.remove(get_object_or_404(Group, pk=selected))
 
-                    data = {'result': 'denied'}
+            data = {'result': 'ok'}
 
-            elif action == 'save_cred':
+        elif action == 'save_cred':
+
+            if True in auth:
 
                 cred_dict = json.loads(form_data['cred'])
 
@@ -387,7 +430,13 @@ class UsersView(View):
 
                     data = {'result': 'failed', 'msg': str(form.errors)}
 
-            elif action == 'delete_cred':
+            else:
+
+                data = {'result': 'denied'}
+
+        elif action == 'delete_cred':
+
+            if True in auth:
 
                 cred_dict = json.loads(form_data['cred'])
 
@@ -410,11 +459,11 @@ class UsersView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                data = {'result': 'denied'}
 
         else:
 
-            data = {'result': 'denied'}
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -441,27 +490,29 @@ class UserGroupView(View):
 
         if action == 'list':
 
-            if request.user.has_perm('users.edit_user_groups'):
+            if 'editable' in request.GET and request.GET['editable'] == 'true':
 
-                if 'editable' in request.GET and request.GET['editable'] == 'true':
-
-                    query_set = Group.objects.all().filter(groupdata__editable=True)
-
-                else:
-
-                    query_set = Group.objects.all()
-
-                data = {'result': 'ok', 'groups': [self._group_to_dict(group) for group in query_set]}
+                query_set = Group.objects.all().filter(groupdata__editable=True)
 
             else:
 
-                data = {'result': 'denied'}
+                query_set = Group.objects.all()
+
+            group_list = list()
+
+            for group in query_set:
+
+                if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
+
+                    group_list.append(self._group_to_dict(group))
+
+            data = {'result': 'ok', 'groups': group_list}
 
         elif action == 'get':
 
             group = get_object_or_404(Group, name=request.GET['name'])
 
-            if request.user.has_perm('users.edit_user_groups') or group in request.user.groups.all():
+            if request.user.has_perm('users.edit_user_groups') or group in request.user.groups.all() or project_auth.can_add_to_group(group):
 
                 data = {'result': 'ok', 'group': self._group_to_dict(group)}
 
@@ -471,7 +522,9 @@ class UserGroupView(View):
 
         elif action == 'members':
 
-            if request.user.has_perm('users.edit_user_groups'):
+            group = get_object_or_404(Group, name=request.GET['name'])
+
+            if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
                 if 'reverse' in request.GET and request.GET['reverse'] == 'true':
 
