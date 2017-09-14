@@ -1,7 +1,9 @@
 function AdHocTask (pattern, type, task, container) {
+
     var self = this;
 
     self.type = type;
+
     self.task = task;
 
     self.formHeader = $('<h4>');
@@ -40,45 +42,51 @@ function AdHocTask (pattern, type, task, container) {
 
         event.preventDefault();
 
-        var arguments;
-
-        if (self.type === 'dialog') {
-
-            var argsObj = self._formToJson();
-
-            if (self.action === 'run') arguments = AdHocTask.jsonToString(argsObj);
-
-            else if (self.action === 'save') arguments = argsObj;
-
-        }
-
-        else if (self.type === 'command') arguments = self.argumentsField.val();
-
         var task = {
             type: 'adhoc',
             module: self.module,
             name: self.name,
             hosts: self.patternField.val(),
             become: self.isSudo.hasClass('checked_button'),
-            arguments: arguments,
             id: self.task.id
         };
 
-        if (self.action === 'run') new JobRunner(task, $('option:selected', self.credentialsSelector).data());
+        if (self.type === 'dialog') {
 
-        else if (self.action === 'save') {
+            var argsObj = self._formToJson();
 
-            task.arguments = JSON.stringify(task.arguments);
+            if (self.action === 'run') {
 
-            AdHocTask.postData(task, 'save', function () {
+                task.arguments = AdHocTask.jsonToString(argsObj);
 
-                self.task.saveCallback();
+                new JobRunner(task, $('option:selected', self.credentialsSelector).data())
 
-                self.formHeader.html('Edit task');
+            }
 
-            });
+            else if (self.action === 'save') {
+
+                task.arguments = JSON.stringify(argsObj);
+
+                AdHocTask.postData(task, 'save', function () {
+
+                    self.task.saveCallback();
+
+                    self.formHeader.html('Edit task');
+
+                });
+
+            }
 
         }
+
+        else if (self.type === 'command') {
+
+            task.arguments = self.argumentsField.val();
+
+            new JobRunner(task, $('option:selected', self.credentialsSelector).data())
+
+        }
+
     });
 
     self.form.append(self.formHeader);
@@ -182,7 +190,7 @@ AdHocTask.prototype = {
 
         else if (self.type === 'dialog') {
 
-            (self.task.id) ? self.formHeader.html('AdHoc Task') : self.formHeader.html('New AdHoc task');
+            self.task.id ? self.formHeader.html('AdHoc Task') : self.formHeader.html('New AdHoc task');
 
             self.moduleSelector = selectField.clone();
 
@@ -502,5 +510,3 @@ AdHocTask.prototype = {
     }
 
 };
-
-

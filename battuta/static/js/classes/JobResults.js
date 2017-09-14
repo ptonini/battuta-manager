@@ -1,4 +1,7 @@
+
 function JobResults(jobId, headerContainer, resultContainer) {
+
+    "use strict";
 
     var self = this;
 
@@ -40,7 +43,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
                 extra_vars: self.job.extra_vars
             };
 
-            new PlaybookDialog(file, args, true)
+            new PlaybookDialog(file, args, true);
 
         });
 

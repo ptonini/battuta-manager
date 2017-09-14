@@ -1,5 +1,7 @@
 function Node(node, container) {
 
+    "use strict";
+
     var self = this;
 
     self.node = node;
@@ -21,7 +23,7 @@ function Node(node, container) {
 
             new EntityDialog(self.node, Node.postData, function (data) {
 
-                window.open(paths.inventory + self.node.type + '/' + data.name + '/', '_self')
+                window.open(paths.inventory + self.node.type + '/' + data.name + '/', '_self');
 
             });
 
