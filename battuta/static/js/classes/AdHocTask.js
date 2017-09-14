@@ -1,4 +1,4 @@
-function AdHocTaskForm (pattern, type, task, container) {
+function AdHocTask (pattern, type, task, container) {
     var self = this;
 
     self.type = type;
@@ -46,7 +46,7 @@ function AdHocTaskForm (pattern, type, task, container) {
 
             var argsObj = self._formToJson();
 
-            if (self.action === 'run') arguments = AdHocTaskForm.jsonToString(argsObj);
+            if (self.action === 'run') arguments = AdHocTask.jsonToString(argsObj);
 
             else if (self.action === 'save') arguments = argsObj;
 
@@ -66,15 +66,19 @@ function AdHocTaskForm (pattern, type, task, container) {
 
         if (self.action === 'run') new JobRunner(task, $('option:selected', self.credentialsSelector).data());
 
-        else if (self.action === 'save') AdHocTaskForm.saveTask(task, function () {
+        else if (self.action === 'save') {
 
-            self.task.saveCallback();
+            task.arguments = JSON.stringify(task.arguments);
 
-            self.formHeader.html('Edit task');
+            AdHocTask.postData(task, 'save', function () {
 
-            $.bootstrapGrowl('Task saved', {type: 'success'})
+                self.task.saveCallback();
 
-        });
+                self.formHeader.html('Edit task');
+
+            });
+
+        }
     });
 
     self.form.append(self.formHeader);
@@ -94,50 +98,13 @@ function AdHocTaskForm (pattern, type, task, container) {
     else if (self.type === 'dialog') self.dialog.dialog('open');
 }
 
-AdHocTaskForm.copyTask = function (task, copyCallback) {
+AdHocTask.postData = function (task, action, callback) {
 
-    task.id = '';
-
-    task.arguments = JSON.stringify(task.arguments);
-
-    AdHocTaskForm.postTask(task, 'save', copyCallback)
+    postData(task, paths.runnerApi + 'adhoc/' + action + '/', callback);
 
 };
 
-AdHocTaskForm.saveTask = function (task, saveCallback) {
-
-    task.arguments = JSON.stringify(task.arguments);
-
-    AdHocTaskForm.postTask(task, 'save', saveCallback)
-
-};
-
-AdHocTaskForm.deleteTask = function (task, deleteCallback) {
-
-    AdHocTaskForm.postTask(task, 'delete', deleteCallback)
-
-};
-
-AdHocTaskForm.postTask = function (task, action, postCallback) {
-
-    $.ajax({
-        url: paths.runnerApi + 'adhoc/' + action + '/',
-        type: 'POST',
-        dataType: 'json',
-        data: task,
-        success: function (data) {
-
-            if (data.result === 'ok') postCallback && postCallback();
-
-            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-        }
-    });
-};
-
-AdHocTaskForm.jsonToString = function (dataObj) {
+AdHocTask.jsonToString = function (dataObj) {
 
     var dataString = '';
 
@@ -151,7 +118,7 @@ AdHocTaskForm.jsonToString = function (dataObj) {
 
 };
 
-AdHocTaskForm.modules = [
+AdHocTask.modules = [
     'copy',
     'ec2_facts',
     'ping',
@@ -163,7 +130,7 @@ AdHocTaskForm.modules = [
     'file'
 ];
 
-AdHocTaskForm.prototype = {
+AdHocTask.prototype = {
 
     _buildForm: function () {
 
@@ -219,7 +186,7 @@ AdHocTaskForm.prototype = {
 
             self.moduleSelector = selectField.clone();
 
-            $.each(AdHocTaskForm.modules.sort(), function (index, value) {
+            $.each(AdHocTask.modules.sort(), function (index, value) {
 
                 self.moduleSelector.append($('<option>').attr('value', value).append(value))
 

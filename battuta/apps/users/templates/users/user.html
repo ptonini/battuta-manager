@@ -12,7 +12,7 @@
                     dataType: 'json',
                     success: function (data) {
 
-                        if (data.result === 'ok') new UserForm('{{ user.username }}', data.user, $('#user_form_container'))
+                        if (data.result === 'ok') new User('{{ user.username }}', data.user, $('#user_form_container'))
 
                     }
                 });
@@ -22,7 +22,7 @@
 
                 document.title = 'Battuta - New user';
 
-                new UserForm('{{ user.username }}', {username: null, id: null}, $('#user_form_container'))
+                new User('{{ user.username }}', {username: null, id: null}, $('#user_form_container'))
 
             }
 

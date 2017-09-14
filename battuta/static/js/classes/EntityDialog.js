@@ -1,4 +1,4 @@
-function EntityDialog(entity, postFunction, saveCallback) {
+function EntityDialog(entity, postFunction, callback) {
 
     var self = this;
 
@@ -27,7 +27,7 @@ function EntityDialog(entity, postFunction, saveCallback) {
 
                 self.dialog.dialog('close');
 
-                saveCallback && saveCallback(data);
+                callback && callback(data);
 
             });
 

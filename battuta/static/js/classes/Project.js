@@ -34,21 +34,11 @@ function Project(project, container) {
 
             new DeleteDialog(function () {
 
-                $.ajax({
-                    url: paths.projectsApi + 'project/delete/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: self.project,
-                    success: function (data) {
+                Project.postData(self.project, 'delete', function () {
 
-                        if (data.result ==='ok') window.open(paths.projects, '_self');
+                    window.open(paths.projects, '_self');
 
-                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                        else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                    }
-                });
+                })
 
             })
 
@@ -330,7 +320,6 @@ function Project(project, container) {
         }
     });
 
-
     self.canEditVariablesInput = textInputField.clone().prop('readonly', true).val(self.project.can_edit_variables);
 
     self.setCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
@@ -344,7 +333,6 @@ function Project(project, container) {
         self.clearProperty(self.canEditVariablesInput, 'can_edit_variables')
 
     });
-
 
     self.canRunTasksInput = textInputField.clone().prop('readonly', true).val(self.project.can_run_tasks);
 
@@ -416,17 +404,7 @@ function Project(project, container) {
 
     });
 
-    self.tabsHeader = ulTabs.clone().attr('id','project_' + self.project.id + '_tabs');
-
-    self.infoTab = divActiveTab.clone().attr('id', 'info_tab');
-
-    self.hostsTab = divTab.clone().attr('id', 'hosts_tab');
-
-    self.playbookTab = divTab.clone().attr('id', 'playbook_tab');
-
-    self.roleTab = divTab.clone().attr('id', 'role_tab');
-
-    self.usersTab = divTab.clone().attr('id', 'users_tab');
+    self.tabsHeader =
 
     self.container.append(
         $('<h3>').append(
@@ -435,7 +413,7 @@ function Project(project, container) {
             self.nameContainer,
             $('<small>').css('margin-left', '1rem').append(self.editProjectBtn, self.deleteProjectBtn)
         ),
-        self.tabsHeader.append(
+        ulTabs.clone().attr('id','project_' + self.project.id + '_tabs').append(
             liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
             $('<li>').html(aTabs.clone().attr('href', '#hosts_tab').html('Hosts')),
             $('<li>').html(aTabs.clone().attr('href', '#playbook_tab').html('Playbooks')),
@@ -444,7 +422,7 @@ function Project(project, container) {
         ),
         $('<br>'),
         divTabContent.clone().append(
-            self.infoTab.append(
+            divActiveTab.clone().attr('id', 'info_tab').append(
                 divRow.clone().append(
                     divCol12.clone().append(self.descriptionContainer),
                     divCol3.clone().append(
@@ -459,7 +437,7 @@ function Project(project, container) {
                     )
                 )
             ),
-            self.hostsTab.append(
+            divTab.clone().attr('id', 'hosts_tab').append(
                 divRow.clone().append(
                     divCol3.clone().append(
                         divFormGroup.clone().append(
@@ -474,17 +452,17 @@ function Project(project, container) {
                     divCol12.clone().append(self.descendantsContainer)
                 )
             ),
-            self.playbookTab.append(
+            divTab.clone().attr('id', 'playbook_tab').append(
                 divRow.clone().append(
                     divCol12.clone().append(self.playbookGrid)
                 )
             ),
-            self.roleTab.append(
+            divTab.clone().attr('id', 'role_tab').append(
                 divRow.clone().append(
                     divCol12.clone().append(self.roleGrid)
                 )
             ),
-            self.usersTab.append(
+            divTab.clone().attr('id', 'users_tab').append(
                 divRow.clone().append(
                     divCol12.clone().append($('<h4>').html('Inventory')),
                     divCol4.clone().append(
@@ -579,18 +557,10 @@ Project.prototype = {
 
                     self.project.property = JSON.stringify({name: property, value: gridItem.data('id')});
 
-                    $.ajax({
-                        url: paths.projectsApi + 'project/set_property/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: self.project,
-                        success: function (data) {
+                    Project.postData(self.project, 'set_property', function () {
 
-                            if (data.result === 'ok') input.val(gridItem.data(itemKey)).data(gridItem.data()).change();
+                        input.val(gridItem.data(itemKey)).data(gridItem.data()).change()
 
-                            else data.msg && $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                        }
                     });
 
                     selectionDialog.dialog('close')
@@ -606,18 +576,10 @@ Project.prototype = {
 
         self.project.property = JSON.stringify({name: property});
 
-        $.ajax({
-            url: paths.projectsApi + 'project/clear_property/',
-            type: 'POST',
-            dataType: 'json',
-            data: self.project,
-            success: function (data) {
+        Project.postData(self.project, 'clear_property', function () {
 
-                if (data.result === 'ok') input.val('').removeData().change();
+            input.val('').removeData().change()
 
-                else data.msg && $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-            }
         });
 
     }
@@ -625,26 +587,6 @@ Project.prototype = {
 
 Project.postData = function (project, action, callback) {
 
-    $.ajax({
-        url: paths.projectsApi + 'project/' + action + '/',
-        type: 'POST',
-        dataType: 'json',
-        data: project,
-        success: function (data) {
-
-            if (data.result === 'ok') {
-
-                callback && callback(data);
-
-                data.msg && $.bootstrapGrowl(data.msg, {type: 'success'});
-
-            }
-
-            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-        }
-    });
+    postData(project, paths.projectsApi + 'project/' + action + '/', callback)
 
 };

@@ -34,7 +34,7 @@ function Node(node, container) {
 
             new DeleteDialog(function () {
 
-                Node.postData(node, 'delete', function () {
+                Node.postData(self.node, 'delete', function () {
 
                     window.open(paths.inventory + self.node.type + 's/', '_self');
 
@@ -104,7 +104,7 @@ function Node(node, container) {
 
     self.relationships = new Relationships(self.node, alterRelationCallback, self.relationshipsContainer);
 
-    self.adHocTaskForm = new AdHocTaskForm(self.node.name, 'command', {id: null}, self.commandFormContainer);
+    self.adHocTaskForm = new AdHocTask(self.node.name, 'command', {id: null}, self.commandFormContainer);
 
     self.adHocTaskTable = new AdHohTaskTable(self.node.name, self.adhocTableContainer);
 
@@ -132,25 +132,6 @@ function Node(node, container) {
 
 Node.postData = function (node, action, callback) {
 
-    $.ajax({
-        url: paths.inventoryApi + node.type + '/' + action + '/',
-        type: 'POST',
-        dataType: 'json',
-        data: node,
-        success: function(data) {
+    postData(node, paths.inventoryApi + node.type + '/' + action + '/', callback);
 
-            if (data.result === 'ok') {
-
-                callback && callback(data);
-
-                data.msg && $.bootstrapGrowl(data.msg, {type: 'success'})
-
-            }
-
-            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-        }
-    });
 };

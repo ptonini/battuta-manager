@@ -406,7 +406,7 @@ class AdHocView(View):
 
                     saved_task = form.save(commit=True)
 
-                    data = {'result': 'ok', 'id': saved_task.id}
+                    data = {'result': 'ok', 'id': saved_task.id, 'msg': 'Task saved'}
 
                 else:
 
@@ -416,7 +416,7 @@ class AdHocView(View):
 
                 adhoc.delete()
 
-                data = {'result': 'ok'}
+                data = {'result': 'ok', 'msg': 'Task deleted'}
 
             else:
 

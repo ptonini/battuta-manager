@@ -16,8 +16,6 @@ urlpatterns = [
 
     url(r'^groups/$', login_required(views.PageView.as_view()), kwargs={'page': 'groups'}),
 
-    url(r'^new_group/$', login_required(views.PageView.as_view()), kwargs={'page': 'new_group'}),
-
     url(r'^group/([a-zA-Z0-9-._" "]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'group'}),
 
 

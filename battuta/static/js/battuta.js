@@ -258,4 +258,30 @@ function toggleButton (event) {
 
 }
 
+function postData (object, url, callback) {
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        dataType: 'json',
+        data: object,
+        success: function (data) {
+
+            if (data.result === 'ok') {
+
+                callback && callback(data);
+
+                data.msg && $.bootstrapGrowl(data.msg, {type: 'success'});
+
+            }
+
+            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
+        }
+    });
+
+}
+
 jQuery.fn.reverse = [].reverse;

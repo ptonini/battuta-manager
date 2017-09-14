@@ -39,9 +39,9 @@ class ProjectAuth:
 
         self._can_edit_roles = set()
 
-        self._managed_projects = {p for p in Project.objects.all() if self._user == p.manager}
-
         self._managed_groups = set()
+
+        self._managed_projects = {p for p in Project.objects.all() if self._user == p.manager}
 
         for group in self._user.groups.all():
 

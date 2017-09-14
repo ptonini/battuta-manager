@@ -86,7 +86,9 @@ HostFacts.prototype = {
                 {class: 'col-md-3', title: 'options', data: 'options'}
             ],
             rowCallback: function(row, data) {
+
                 $(row).find('td:eq(2)').html(humanBytes(data.size_total))
+
             }
         });
 

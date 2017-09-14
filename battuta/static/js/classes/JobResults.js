@@ -1,4 +1,5 @@
 function JobResults(jobId, headerContainer, resultContainer) {
+
     var self = this;
 
     self.divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');

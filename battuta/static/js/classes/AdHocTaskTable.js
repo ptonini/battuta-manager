@@ -27,7 +27,7 @@ function AdHohTaskTable(pattern, container) {
         dom: '<"task-toolbar">frtip',
         rowCallback: function (row, task) {
 
-            var arguments = AdHocTaskForm.jsonToString(task.arguments);
+            var arguments = AdHocTask.jsonToString(task.arguments);
 
             $(row).find('td:eq(2)').html(arguments).attr('title', arguments);
 
@@ -38,19 +38,31 @@ function AdHohTaskTable(pattern, container) {
 
                         task.saveCallback = self.table.DataTable().ajax.reload;
 
-                        new AdHocTaskForm(pattern, 'dialog', task);
+                        new AdHocTask(pattern, 'dialog', task);
 
                     }),
                     spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
 
-                        AdHocTaskForm.copyTask(task, self.table.DataTable().ajax.reload);
+                        task.id = '';
+
+                        task.arguments = JSON.stringify(task.arguments);
+
+                        AdHocTask.postData(task, 'save', function () {
+
+                            self.table.DataTable().ajax.reload()
+
+                        })
 
                     }),
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
                         new DeleteDialog(function () {
 
-                            AdHocTaskForm.deleteTask(task, self.table.DataTable().ajax.reload);
+                            AdHocTask.postData(task, 'delete', function () {
+
+                                self.table.DataTable().ajax.reload()
+
+                            });
 
                         })
                     })
@@ -62,7 +74,7 @@ function AdHohTaskTable(pattern, container) {
             $('div.task-toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Create task').click(function () {
 
-                    new AdHocTaskForm(self.pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
+                    new AdHocTask(self.pattern, 'dialog', {id: null, saveCallback: self.table.DataTable().ajax.reload})
 
                 })
             )

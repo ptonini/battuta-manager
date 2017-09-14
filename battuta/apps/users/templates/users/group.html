@@ -3,30 +3,18 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            if ('{{ group_name }}') {
+            document.title = 'Battuta - {{ group_name }}';
 
-                document.title = 'Battuta - {{ group_name }}';
+            $.ajax({
+                url: paths.usersApi + 'group/get/?name={{ group_name }}',
+                dataType: 'json',
+                success: function (data) {
 
-                $.ajax({
-                    url: paths.usersApi + 'group/get/?name={{ group_name }}',
-                    dataType: 'json',
-                    success: function (data) {
+                    if (data.result === 'ok') new UserGroup(data.group, $('#group_form_container'))
 
-                        if (data.result === 'ok') new UserGroupForm(data.group, $('#group_form_container'))
+                }
 
-                    }
-
-                });
-            }
-
-            else {
-
-                document.title = 'Battuta - New user group';
-
-                new UserGroupForm({name: null, id: null}, $('#group_form_container'))
-
-            }
-
+            });
 
         });
     </script>

@@ -1,4 +1,4 @@
-function DeleteDialog(deleteCallback) {
+function DeleteDialog(callback) {
     var self = this;
 
     self.deleteDialog = smallDialog.clone().addClass('text-center').append(
@@ -11,7 +11,7 @@ function DeleteDialog(deleteCallback) {
             buttons: {
                 Delete: function () {
 
-                    deleteCallback();
+                    callback();
 
                     $(this).dialog('close');
 

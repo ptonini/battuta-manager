@@ -1,4 +1,4 @@
-function UserForm(currentUser, user, container) {
+function User(currentUser, user, container) {
     var self = this;
 
     self.currentUser = currentUser;

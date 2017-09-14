@@ -32,8 +32,6 @@ function UserGroupTable(container) {
         ],
         rowCallback: function (row, group) {
 
-            console.log(group);
-
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
                 window.open(paths.users + 'group/' + group.name, '_self')
@@ -81,7 +79,11 @@ function UserGroupTable(container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add group').click(function () {
 
-                    window.open(paths.users + 'new_group/', '_self');
+                    new EntityDialog({id: null, name: null, description: null, type: 'user group'}, UserGroup.postData, function (data){
+
+                        window.open(paths.users + 'group/' + data.group.name + '/', '_self');
+
+                    })
 
                 })
             );
