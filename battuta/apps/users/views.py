@@ -27,10 +27,6 @@ class PageView(View):
 
             return render(request, 'users/user_table.html')
 
-        elif kwargs['page'] == 'new_user':
-
-            return render(request, 'users/user.html')
-
         elif kwargs['page'] == 'user':
 
             return render(request, 'users/user.html', {'user_name': args[0]})
@@ -48,10 +44,6 @@ class PageView(View):
         elif kwargs['page'] == 'groups':
 
             return render(request, 'users/group_table.html')
-
-        elif kwargs['page'] == 'new_group':
-
-            return render(request, 'users/group.html')
 
         elif kwargs['page'] == 'group':
 
@@ -261,7 +253,7 @@ class UsersView(View):
 
                     userdata.save()
 
-                    data = {'result': 'ok', 'user': self._user_to_dict(user)}
+                    data = {'result': 'ok', 'user': self._user_to_dict(user), 'msg': 'User saved'}
 
                 else:
 
@@ -283,7 +275,7 @@ class UsersView(View):
 
                     user.delete()
 
-                    data = {'result': 'ok'}
+                    data = {'result': 'ok', 'msg': 'User deleted'}
 
             elif action == 'chgpass':
 
@@ -293,7 +285,7 @@ class UsersView(View):
 
                     user.save()
 
-                    data = {'result': 'ok'}
+                    data = {'result': 'ok', 'msg': 'The password was changed'}
 
                 else:
 
@@ -558,7 +550,7 @@ class UserGroupView(View):
 
                 group.delete()
 
-                data = {'result': 'ok'}
+                data = {'result': 'ok', 'msg': 'Group deleted'}
 
             else:
 

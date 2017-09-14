@@ -167,7 +167,6 @@ function UserGroup(group, container) {
         showAddButton: true,
         ajaxDataKey: 'members',
         itemValueKey: 'name',
-        addButtonClass: 'add_members',
         addButtonTitle: 'Add members',
         showTitle: true,
         checkered: true,
@@ -270,10 +269,6 @@ function UserGroup(group, container) {
             )
         )
     );
-
-
-
-
 
     self.form.find('button.permBtn').each(function () {
 

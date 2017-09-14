@@ -110,13 +110,17 @@ function Node(node, container) {
 
     self.adHocTaskTable = new AdHohTaskTable(self.node.name, self.adhocTableContainer);
 
-    if (self.node.name === 'all') {
+    if (self.node.type === 'group' && self.node.name === 'all') {
 
         self.tabsHeader.remove();
 
+        self.editNodeBtn.remove();
+
+        self.deleteNodeBtn.remove();
+
         self.infoTab.removeClass('in active');
 
-        self.variablesTab.addClass('in active')
+        self.variablesTab.addClass('in active').prepend($('<h4>').html('Variables'))
 
     }
 

@@ -3,29 +3,17 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            if ('{{ user_name }}') {
+            document.title = 'Battuta - {{ user_name }}';
 
-                document.title = 'Battuta - {{ user_name }}';
+            $.ajax({
+                url: paths.usersApi + 'user/get/?username={{ user_name }}',
+                dataType: 'json',
+                success: function (data) {
 
-                $.ajax({
-                    url: paths.usersApi + 'user/get/?username={{ user_name }}',
-                    dataType: 'json',
-                    success: function (data) {
+                    if (data.result === 'ok') new User('{{ user.username }}', data.user, $('#user_form_container'))
 
-                        if (data.result === 'ok') new User('{{ user.username }}', data.user, $('#user_form_container'))
-
-                    }
-                });
-            }
-
-            else {
-
-                document.title = 'Battuta - New user';
-
-                new User('{{ user.username }}', {username: null, id: null}, $('#user_form_container'))
-
-            }
-
+                }
+            });
 
         });
     </script>

@@ -11,17 +11,7 @@ function UserTable(container) {
     self.table.DataTable({
         ajax: {
             url: paths.usersApi + 'user/list/',
-            dataSrc: function (data) {
-
-                if (data.result === 'ok') return data.users;
-
-                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                return [];
-
-            }
+            dataSrc: 'users'
         },
         dom: '<"toolbar">frtip',
         paging: false,
@@ -49,26 +39,10 @@ function UserTable(container) {
 
                         new DeleteDialog(function () {
 
-                            $.ajax({
-                                url: paths.usersApi + 'user/delete/',
-                                type: 'POST',
-                                data: user,
-                                dataType: 'json',
-                                success: function (data) {
+                            User.postData(user, 'delete', function () {
 
-                                    if (data.result ==='ok') {
+                                self.table.DataTable().ajax.reload();
 
-                                        self.table.DataTable().ajax.reload();
-
-                                        $.bootstrapGrowl('User deleted', {type: 'success'});
-
-                                    }
-
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                }
                             });
 
                         })
@@ -84,8 +58,11 @@ function UserTable(container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add user').click(function () {
 
-                    window.open(paths.users + 'new_user/', '_self');
+                    new UserDialog({id: null}, function (data) {
 
+                        window.open(paths.users + 'user/' + data.user.username + '/', '_self');
+
+                    })
                 })
             );
         }

@@ -11,17 +11,7 @@ function UserGroupTable(container) {
     self.table.DataTable({
         ajax: {
             url: paths.usersApi + 'group/list/',
-            dataSrc: function (data) {
-
-                if (data.result === 'ok') return data.groups;
-
-                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                return [];
-
-            }
+            dataSrc: 'groups'
         },
         dom: '<"toolbar">frtip',
         paging: false,
@@ -44,26 +34,10 @@ function UserGroupTable(container) {
 
                         new DeleteDialog(function () {
 
-                            $.ajax({
-                                url: paths.usersApi + 'group/delete/',
-                                type: 'POST',
-                                data: group,
-                                dataType: 'json',
-                                success: function (data) {
+                            UserGroup.postData(group, 'delete', function () {
 
-                                    if (data.result ==='ok') {
+                                self.table.DataTable().ajax.reload();
 
-                                        self.table.DataTable().ajax.reload();
-
-                                        $.bootstrapGrowl('Group deleted', {type: 'success'});
-
-                                    }
-
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                }
                             });
 
                         })

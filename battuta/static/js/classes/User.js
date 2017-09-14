@@ -7,7 +7,25 @@ function User(currentUser, user, container) {
 
     self.container = container;
 
-    self.usernameField = textInputField.clone();
+    self.usernameContainer = $('<span>').html(self.user.username);
+
+    self.deleteUserBtn = spanFA.clone()
+        .addClass('fa-trash-o btn-incell')
+        .attr('title', 'Delete')
+        .click(function () {
+
+            new DeleteDialog(function () {
+
+                User.postData(self.user, 'delete', function () {
+
+                    window.open(paths.users + 'users/', '_self')
+
+                })
+
+            })
+
+        });
+
 
     self.firstNameField = textInputField.clone().val(self.user.first_name);
 
@@ -17,45 +35,17 @@ function User(currentUser, user, container) {
 
     self.timezoneField = selectField.clone().timezones().val(self.user.timezone);
 
-    self.passwordField = passInputField.clone();
-
-    self.retypePasswordField = passInputField.clone();
-
-    self.openCredentialsBtn = btnXsmall.clone().html('Credentials').click(function (event) {
-
-        event.preventDefault();
-
-        new Credentials(self.user);
-
-    });
-
-    self.usernameFieldContainer = divRow.clone().append(
-        divCol6.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Username').append(self.usernameField)
-            )
-        )
-    );
-
-    self.passwordFieldsContainer = divRow.clone().append(
-        divCol6.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Password').append(self.passwordField)
-            )
-        ),
-        divCol6.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Retype password').append(self.retypePasswordField)
-            )
-        )
-    );
-
-    self.formBtnContainer = divCol12.clone().append(
-        btnXsmall.clone().css('margin-right', '5px').html('Save')
-    );
-
     self.form = $('<form>')
         .append(
+            divRow.clone().append(
+                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Joined in:')),
+                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.date_joined)
+            ),
+            divRow.clone().append(
+                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Last login:')),
+                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.last_login)
+            ),
+            $('<br>'),
             divRow.clone().append(
                 divCol6.clone().append(
                     divFormGroup.clone().append(
@@ -76,6 +66,9 @@ function User(currentUser, user, container) {
                     divFormGroup.clone().append(
                         $('<label>').html('Timezone').append(self.timezoneField)
                     )
+                ),
+                divCol12.clone().append(
+                    btnXsmall.clone().html('Save')
                 )
             )
         )
@@ -83,62 +76,15 @@ function User(currentUser, user, container) {
 
             event.preventDefault();
 
-            function saveUser(postData) {
+            self.user.first_name = self.firstNameField.val();
 
-                $.ajax({
-                    url: paths.usersApi + 'user/save/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: postData,
-                    success: function (data) {
+            self.user.last_name = self.lastNameField.val();
 
-                        if (data.result === 'ok') {
+            self.user.email = self.emailField.val();
 
-                            if (self.user.username) $.bootstrapGrowl('User saved', {type: 'success'});
+            self.user.timezone = self.timezoneField.val();
 
-                            else window.open(paths.users + 'user/' + data.user.username + '/', '_self')
-
-                        }
-
-                        else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                        else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                    }
-                });
-            }
-
-            var postData = {
-                id: self.user.id,
-                first_name: self.firstNameField.val(),
-                last_name: self.lastNameField.val(),
-                email: self.emailField.val(),
-                timezone: self.timezoneField.val()
-            };
-
-            if (self.user.username) {
-
-                postData.username = self.user.username;
-
-                saveUser(postData);
-
-            }
-
-            else {
-
-                postData.username = self.usernameField.val();
-
-                postData.password = self.passwordField.val();
-
-                if (postData.password === self.retypePasswordField.val()) saveUser(postData);
-
-                else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
-
-            }
-
-            self.passwordField.val('');
-
-            self.retypePasswordField.val('');
+            User.postData(self.user, 'save')
 
         });
 
@@ -178,42 +124,175 @@ function User(currentUser, user, container) {
 
             event.preventDefault();
 
-            var data = {
-                id: self.user.id,
-                username: self.user.username,
-                current_password: self.currentPassword.val(),
-                new_password: self.newPassword.val()
-            };
+            self.user.current_password = self.currentPassword.val();
 
-            if (data.current_password) {
+            self.user.new_password = self.newPassword.val();
 
-                if (data.new_password && data.new_password === self.retypeNewPassword.val()) {
+            if (self.user.current_password) {
 
-                    $.ajax({
-                        url: paths.usersApi  + 'user/chgpass/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: data,
-                        success: function (data) {
+                if (self.user.new_password && self.user.new_password === self.retypeNewPassword.val()) {
 
-                            if (data.result === 'ok') $.bootstrapGrowl('The password was changed', {type: 'success'});
-
-                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                        }
-                    });
-                }
-
-                else if (data.new_password !== self.retypeNewPassword.val()) {
-
-                    $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
+                    User.postData(self.user, 'chgpass');
 
                 }
+
+                else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
+
             }
 
             $(this).find('input').val('')
+
+        });
+
+
+    self.credentialsSelector = selectField.clone().change(function () {
+
+        self._loadCredentialsForm();
+
+    });
+
+    User.buildCredentialsSelectionBox(self.user.username, self.credentialsSelector);
+
+    self.titleField = textInputField.clone();
+
+    self.isSharedButton = btnSmall.clone().html('Shared').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
+
+    self.isDefaultButton = btnSmall.clone().html('Default').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
+
+    self.credUserField = textInputField.clone();
+
+    self.credPassField = passInputField.clone();
+
+    self.askPassButton = btnSmall.clone().html('Ask').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
+
+    self.rsaKeyField = textAreaField.clone();
+
+    self.sudoUserField = textInputField.clone().attr('placeholder', 'root');
+
+    self.sudoPassField = passInputField.clone();
+
+    self.askSudoPassButton = btnSmall.clone().html('Ask').click(function (event) {
+
+        event.preventDefault();
+
+        $(this).toggleClass('checked_button')
+
+    });
+
+    self.credentialsForm = $('<form>')
+        .append(
+            divRow.clone().append(
+                divCol12.clone().append(
+                    divFormGroup.clone().append($('<label>').html('Saved credentials').append(self.credentialsSelector))
+                ),
+                divCol8.clone().append(divFormGroup.clone().append($('<label>').html('Title').append(self.titleField))),
+                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(self.isSharedButton),
+                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(self.isDefaultButton),
+                divCol6.clone().append(
+                    divFormGroup.clone().append($('<label>').html('Username').append(self.credUserField))
+                ),
+                divCol6.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Password').append(
+                            divInputGroup.clone().append(
+                                self.credPassField, spanBtnGroup.clone().append(self.askPassButton)
+                            )
+                        )
+                    )
+                ),
+                divCol12.clone().append(
+                    divFormGroup.clone().append($('<label>').html('RSA key').append(self.rsaKeyField))
+                ),
+                divCol6.clone().append(
+                    divFormGroup.clone().append($('<label>').html('Sudo Username').append(self.sudoUserField))
+                ),
+                divCol6.clone().append(
+                    divFormGroup.clone().append(
+                        $('<label>').html('Sudo Password').append(
+                            divInputGroup.clone().append(
+                                self.sudoPassField,
+                                spanBtnGroup.clone().append(self.askSudoPassButton)
+                            )
+                        )
+                    )
+                ),
+                divCol12.clone().append(
+                    btnXsmall.clone().css('margin-right', '5px').html('Save'),
+                    btnXsmall.clone().css('margin-right', '5px').html('Delete')
+                )
+            )
+        )
+        .change(function () {
+
+            self.formHasChanged = true
+
+        })
+        .submit(function (event) {
+
+            event.preventDefault();
+
+            switch ($(document.activeElement).html()) {
+
+                case 'Save':
+
+                    self.user.cred = JSON.stringify({
+                        user: self.user.id,
+                        id: self.loadedCredentials.id,
+                        title:self.titleField.val(),
+                        username: self.credUserField.val(),
+                        password: self.credPassField.val(),
+                        sudo_user: self.sudoUserField.val(),
+                        sudo_pass: self.sudoPassField.val(),
+                        is_shared: self.isSharedButton.hasClass('checked_button'),
+                        is_default: self.isDefaultButton.hasClass('checked_button'),
+                        ask_pass: self.askPassButton.hasClass('checked_button'),
+                        ask_sudo_pass: self.askSudoPassButton.hasClass('checked_button'),
+                        rsa_key: self.rsaKeyField.val()
+                    });
+
+                    User.postData(self.user, 'save_cred', function (data) {
+
+                        User.buildCredentialsSelectionBox(self.user.username, self.credentialsSelector, data.cred.id);
+
+                    });
+
+                    break;
+
+                case 'Delete':
+
+                    new DeleteDialog(function () {
+
+                        self.user.cred = JSON.stringify(self.loadedCredentials);
+
+                        User.postData(self.user, 'delete_cred', function (data) {
+
+                            User.buildCredentialsSelectionBox(self.user.username, self.credentialsSelector, data.cred.id);
+
+                        });
+
+                    });
+
+                    break;
+
+            }
 
         });
 
@@ -223,9 +302,9 @@ function User(currentUser, user, container) {
         showAddButton: true,
         ajaxDataKey: 'groups',
         itemValueKey: 'name',
-        addButtonClass: 'join_group',
-        addButtonTitle: 'Join groups',
-        showTitle: true,
+        addButtonClass: 'btn btn-default btn-xs',
+        addButtonTitle: 'Join group',
+        addButtonType: 'text',
         checkered: true,
         showCount: true,
         buildNow: (self.user.username),
@@ -247,24 +326,11 @@ function User(currentUser, user, container) {
                     .attr('title', 'Remove')
                     .click(function () {
 
-                        $.ajax({
-                            url: paths.usersApi + 'user/remove_groups/',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: {
-                                id: self.user.id,
-                                username: self.user.username,
-                                selection: [gridItem.data('id')]
-                            },
-                            success: function (data) {
+                        self.user.selection = [gridItem.data('id')];
 
-                                if (data.result === 'ok') self.groupGrid.DynaGrid('load');
+                        User.postData(self.user, 'remove_groups', function () {
 
-                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                            }
+                            self.groupGrid.DynaGrid('load')
 
                         });
 
@@ -274,9 +340,9 @@ function User(currentUser, user, container) {
         },
         addButtonAction: function () {
 
-            var options = {
+            new SelectionDialog({
                 objectType: 'group',
-                url: paths.usersApi + 'user/groups/?reverse=true&username='+ self.user.username,
+                url: paths.usersApi + 'user/groups/?reverse=true&username=' + self.user.username,
                 ajaxDataKey: 'groups',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -285,24 +351,13 @@ function User(currentUser, user, container) {
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
-                            $.ajax({
-                                url: paths.usersApi + 'user/add_groups/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: {
-                                    id: self.user.id,
-                                    username: self.user.username,
-                                    selection: selectionDialog.DynaGrid('getSelected', 'id')
-                                },
-                                success: function (data) {
 
-                                    if (data.result === 'ok') self.groupGrid.DynaGrid('load');
+                            self.user.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                            User.postData(self.user, 'add_groups', function () {
 
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
+                                self.groupGrid.DynaGrid('load')
 
-                                }
                             });
 
                             $(this).dialog('close');
@@ -320,67 +375,164 @@ function User(currentUser, user, container) {
                 },
                 addButtonAction: null,
                 formatItem: null
-            };
-
-            new SelectionDialog(options);
+            });
 
         }
     });
 
-    self.formsHeader = $('<div>');
+    self.groupsTab = $('<li>').html(aTabs.clone().attr('href', '#groups_tab').html('Groups'))
 
-    self.formsContainer = divCol6.clone();
-
-    self.groupGridContainer = divCol12.clone();
+    self.tabsHeader = ulTabs.clone().attr('id','user_' + self.user.id + '_tabs');
 
     self.container.append(
-        self.formsHeader,
-        divRow.clone().append(
-            self.formsContainer.append(self.form),
-            self.groupGridContainer
+        $('<h3>').append(
+            $('<small>').html(self.user.is_superuser ? 'superuser' : 'user'),
+            '&nbsp;',
+            user.username,
+            $('<small>').css('margin-left', '1rem').append(self.deleteUserBtn)
+        ),
+        ulTabs.clone().attr('id','user_' + self.user.id + '_tabs').append(
+            liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
+            $('<li>').html(aTabs.clone().attr('href', '#credentials_tab').html('Credentials')),
+            self.groupsTab
+        ),
+        $('<br>'),
+        divTabContent.clone().append(
+            divActiveTab.clone().attr('id', 'info_tab').append(
+                divRow.clone().append(
+                    divCol6.clone().append(self.form, self.passwordForm)
+                )
+            ),
+            divTab.clone().attr('id', 'credentials_tab').append(
+                divRow.clone().append(
+                    divCol6.clone().append(self.credentialsForm)
+                )
+            ),
+            divTab.clone().attr('id', 'groups_tab').append(
+                divRow.clone().append(
+                    divCol12.clone().append(self.groupGrid)
+                )
+            )
         )
     );
 
-    if (self.user.username) {
+    if (self.user.is_superuser) {
 
-        var userType = self.user.is_superuser ? 'superuser' : 'user';
+        self.deleteUserBtn.remove();
 
-        self.formsHeader.append(
-            $('<h3>').append($('<small>').html(userType), '&nbsp;', user.username)
-        );
-
-        self.form.prepend(
-            divRow.clone().append(
-                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Joined in:')),
-                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.date_joined)
-            ),
-            divRow.clone().append(
-                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Last login:')),
-                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.last_login)
-            ),
-            $('<br>')
-        );
-
-        self.formBtnContainer.append(self.openCredentialsBtn);
-
-        self.formsContainer.append(self.passwordForm);
-
-        if (!self.user.is_superuser)self.groupGridContainer.append($('<hr>'), self.groupGrid);
+        self.groupsTab.remove();
 
     }
-
-else {
-
-        self.formsHeader.append($('<h3>').html('New user'));
-
-        self.form.prepend(self.usernameFieldContainer).append(self.passwordFieldsContainer);
-
-        self.timezoneField.val(sessionStorage.getItem('default_timezone'))
-
-    }
-
-    self.form.append(
-       divRow.clone().append(self.formBtnContainer)
-    );
 
 }
+
+User.postData = function (user, action, callback) {
+
+    postData(user, paths.usersApi + 'user/' + action + '/', callback);
+
+};
+
+User.buildCredentialsSelectionBox = function (username, credentials, startValue) {
+
+    var runner = (window.location.href.split('/').indexOf('users') < 0);
+
+    credentials.empty();
+
+    $.ajax({
+        url: paths.usersApi + 'user/creds/?username=' + username,
+        dataType: 'json',
+        data: {runner: runner},
+        success: function (data) {
+
+            $.each(data, function (index, cred) {
+
+                var display = cred.title;
+
+                if (cred.is_default && !startValue) {
+
+                    display += ' (default)';
+
+                    startValue = cred.id
+
+                }
+
+                credentials.append($('<option>').val(cred.id).data(cred).append(display))
+
+            });
+
+            if (runner) credentials.append($('<option>').val('').html('ask').data('id', 0));
+
+            else credentials.append($('<option>').val('new').append('new'));
+
+            credentials.val(startValue).change()
+
+        }
+    });
+};
+
+User.prototype = {
+    _loadCredentialsForm: function () {
+
+        var self = this;
+
+        var credentials = $('option:selected', self.credentialsSelector).data();
+
+        self._resetCredentialsForm();
+
+        if (credentials.title) {
+
+            self.loadedCredentials = credentials;
+
+            self.credentialsForm.find('button:contains("Delete")').removeClass('hidden');
+
+            self.titleField.val(credentials.title);
+
+            self.credUserField.val(credentials.username);
+
+            self.sudoUserField.val(credentials.sudo_user);
+
+            self.rsaKeyField.val(credentials.rsa_key);
+
+            self.isSharedButton.toggleClass('checked_button', credentials.is_shared);
+
+            self.isDefaultButton.toggleClass('checked_button', credentials.is_default);
+
+            self.credPassField.val(credentials.password);
+
+            self.sudoPassField.val(credentials.sudo_pass);
+
+            self.askPassButton
+                .toggleClass('checked_button', credentials.ask_pass)
+                .prop('disabled', (credentials.password || credentials.rsa_key ));
+
+            self.askSudoPassButton
+                .toggleClass('checked_button', credentials.ask_sudo_pass)
+                .prop('disabled', credentials.sudo_pass);
+
+        }
+
+        else self.loadedCredentials = {id: null}
+
+    },
+    _resetCredentialsForm: function () {
+
+        var self = this;
+
+        self.formHasChanged = false;
+
+        self.credentialsForm.find('input, textarea').val('');
+
+        self.isSharedButton.removeClass('checked_button');
+
+        self.isDefaultButton.removeClass('checked_button');
+
+        self.sudoUserField.attr('placeholder', 'root');
+
+        self.credentialsForm.find('button:contains("Delete")').addClass('hidden');
+
+        self.askPassButton.addClass('checked_button').prop('disabled', false);
+
+        self.askSudoPassButton.addClass('checked_button').prop('disabled', false);
+
+    }
+};

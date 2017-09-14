@@ -72,7 +72,7 @@ function PlaybookDialog(file, args, sameWindow) {
 
     self.credentialsSelector = selectField.clone();
 
-    Credentials.buildSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
+    User.buildCredentialsSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
 
     self.dialog = largeDialog.clone();
 

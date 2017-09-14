@@ -541,8 +541,6 @@ class NodeView(View):
 
         node = self._build_node(request.GET.dict(), node_type, request.user)
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
         if action == 'list':
 
             node_list = list()
@@ -700,7 +698,7 @@ class NodeView(View):
 
         if action == 'save':
 
-            if node.editable:
+            if node.editable and node.type != 'group' or node.name != 'all':
 
                 form = node.form_class(request.POST or None, instance=node)
 

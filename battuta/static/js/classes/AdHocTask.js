@@ -36,7 +36,7 @@ function AdHocTask (pattern, type, task, container) {
 
     self.credentialsSelector = selectField.clone();
 
-    Credentials.buildSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
+    User.buildCredentialsSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
 
     self.form = $('<form>').submit(function (event) {
 
