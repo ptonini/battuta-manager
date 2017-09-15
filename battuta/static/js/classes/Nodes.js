@@ -2,6 +2,8 @@ function Nodes(nodes, nodeType, container) {
 
     var self = this;
 
+    document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
+
     self.nodes = nodes;
 
     self.nodeType = nodeType;

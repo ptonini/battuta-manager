@@ -4,16 +4,10 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.ajax({
-                url: paths.projectsApi + 'project/get/?id={{ project_id }}',
-                dataType: 'json',
-                success: function (data) {
+            Project.getData({id: '{{ project_id }}'}, 'get', function (data) {
 
-                    document.title = 'Battuta - ' + data.project.name;
+                new Project(data.project, $('#project_form_container'));
 
-                    if (data.result === 'ok') new Project(data.project, $('#project_form_container'))
-
-                }
             });
 
         });

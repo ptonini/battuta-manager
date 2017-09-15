@@ -12,7 +12,7 @@
 
                 if (file.is_valid) cell.off().click(function () {
 
-                    new PlaybookDialog(file, null, false)
+                    new PlaybookArgs(file, null, false)
 
                 });
 
@@ -32,7 +32,7 @@
                         url: '/static/templates/playbook_template.yml',
                         success: function (data) {
 
-                            var file = new FileObject;
+                            var file = new File;
 
                             file.root = 'playbooks';
 

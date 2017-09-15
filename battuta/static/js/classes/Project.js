@@ -585,6 +585,12 @@ Project.prototype = {
     }
 };
 
+Project.getData = function (project, action, callback) {
+
+    getData(project, paths.projectsApi + 'project/' + action + '/', callback)
+
+};
+
 Project.postData = function (project, action, callback) {
 
     postData(project, paths.projectsApi + 'project/' + action + '/', callback)

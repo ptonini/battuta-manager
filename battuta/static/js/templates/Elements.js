@@ -94,11 +94,13 @@ var divTab = $('<div>').attr('class', 'tab-pane');
 
 var btnSmall = $('<button>').attr('class', 'btn btn-default btn-sm');
 
-var btnSmallBlkClk = $('<button>').attr({type: 'button', class: 'btn btn-default btn-sm btn-block'}).click(function () {
+var btnSmallClk = $('<button>').attr({type: 'button', class: 'btn btn-default btn-sm'}).click(function () {
 
     $(this).toggleClass('checked_button')
 
 });
+
+var btnSmallBlkClk = btnSmallClk.clone(true).addClass('btn-block');
 
 var btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
 

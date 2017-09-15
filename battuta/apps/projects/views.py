@@ -81,7 +81,7 @@ class ProjectView(View):
 
                     projects.append(self._project_to_dict(project))
 
-            data = {'result': 'ok', 'projects': projects}
+            data = {'status': 'ok', 'projects': projects}
 
         else:
 
@@ -91,13 +91,13 @@ class ProjectView(View):
 
                 if action == 'get':
 
-                    data = {'result': 'ok', 'project': self._project_to_dict(project)}
+                    data = {'status': 'ok', 'project': self._project_to_dict(project)}
 
                 elif action in ['playbooks', 'roles']:
 
                     file_list = [{'name': f['name'], 'folder': f['folder']} for f in json.loads(project.__getattribute__(action))]
 
-                    data = {'result': 'ok', 'file_list': file_list}
+                    data = {'status': 'ok', 'file_list': file_list}
 
                 else:
 
@@ -105,7 +105,7 @@ class ProjectView(View):
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -125,17 +125,17 @@ class ProjectView(View):
 
                     project = project_form.save()
 
-                    data = {'result': 'ok', 'project': self._project_to_dict(project)}
+                    data = {'status': 'ok', 'project': self._project_to_dict(project)}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(project_form.errors)}
+                    data = {'status': 'failed', 'msg': str(project_form.errors)}
 
             elif action == 'delete':
 
                 project.delete()
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             elif action == 'set_property':
 
@@ -145,7 +145,7 @@ class ProjectView(View):
 
                 project.save()
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             elif action == 'clear_property':
 
@@ -155,7 +155,7 @@ class ProjectView(View):
 
                 project.save()
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             elif action in ['add_playbooks', 'add_roles']:
 
@@ -169,7 +169,7 @@ class ProjectView(View):
 
                 project.save()
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             elif action in ['remove_playbooks', 'remove_roles']:
 
@@ -181,13 +181,13 @@ class ProjectView(View):
 
                 project.save()
 
-                data = {'result': 'ok', 'msg': 'Playbooks removed'}
+                data = {'status': 'ok', 'msg': 'Playbooks removed'}
 
             else:
 
                 raise Http404('Invalid action')
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')

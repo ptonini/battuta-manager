@@ -1,7 +1,7 @@
-function JobRunner(postData, cred, sameWindow) {
+function JobRunner(job, cred, sameWindow) {
     var self = this;
 
-    postData.cred = cred.id;
+    job.cred = cred.id;
 
     self.askUser =  cred.id === 0;
 
@@ -9,7 +9,7 @@ function JobRunner(postData, cred, sameWindow) {
 
     self.askSudoUser = false;
 
-    self.askSudoPass =  cred.id === 0 || postData.become && !cred.sudo_pass && cred.ask_sudo_pass;
+    self.askSudoPass =  cred.id === 0 || job.become && !cred.sudo_pass && cred.ask_sudo_pass;
 
     if (self.askUser || self.askUserPass || self.askSudoUser || self.askSudoPass) {
 
@@ -60,15 +60,15 @@ function JobRunner(postData, cred, sameWindow) {
 
                         $(this).dialog('close');
 
-                        if (self.userField.val()) postData.remote_user = self.userField.val();
+                        if (self.userField.val()) job.remote_user = self.userField.val();
 
-                        if (self.userPassword.val()) postData.remote_pass = self.userPassword.val();
+                        if (self.userPassword.val()) job.remote_pass = self.userPassword.val();
 
-                        if (self.sudoUserField.val()) postData.become_user = self.sudoUserField.val();
+                        if (self.sudoUserField.val()) job.become_user = self.sudoUserField.val();
 
-                        if (self.sudoPassword.val()) postData.become_pass = self.sudoPassword.val();
+                        if (self.sudoPassword.val()) job.become_pass = self.sudoPassword.val();
 
-                        JobRunner._postJob(postData, sameWindow)
+                        JobRunner._postJob(job, sameWindow)
 
                     },
                     Cancel: function () {
@@ -92,43 +92,29 @@ function JobRunner(postData, cred, sameWindow) {
             })
     }
 
-    else JobRunner._postJob(postData, sameWindow)
+    else JobRunner._postJob(job, sameWindow)
 }
 
 // Post Ansible Job
-JobRunner._postJob = function (postData, sameWindow) {
-    $.ajax({
-        url: paths.runnerApi + 'run/',
-        type: 'POST',
-        dataType: 'json',
-        data: postData,
-        success: function (data) {
+JobRunner._postJob = function (job, sameWindow) {
 
-            if (data.result === 'ok') {
+    Job.postData(job, 'run', function (data) {
 
-                var resultUrl = paths.runner + 'results/' + data.runner_id + '/';
+        var jobUrl = paths.runner + 'job/' + data.job.id + '/';
 
-                if (postData.runner_key) sessionStorage.setItem(postData.runner_key, data.runner_id);
+        if (job.runner_key) sessionStorage.setItem(job.runner_key, data.job.id);
 
-                if (sameWindow) window.open(resultUrl, '_self');
+        if (sameWindow) window.open(jobUrl, '_self');
 
-                else {
+        else {
 
-                    var windowTitle;
+            var windowTitle;
 
-                    if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
+            if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
 
-                    else windowTitle = data.runner_id;
+            else windowTitle = data.job.id;
 
-                    popupCenter(resultUrl, windowTitle, 1000);
-
-                }
-
-            }
-
-            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+            popupCenter(jobUrl, windowTitle, 1000);
 
         }
 

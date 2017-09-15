@@ -67,9 +67,9 @@ class DataTableRequestHandler:
 
             self._filtered_result.sort(key=lambda x: x[col_order['column']], reverse=col_order['dir'] == 'desc')
 
-        return json.dumps({
+        return {
             'draw': self._draw,
             'recordsTotal': len(self._queryset),
             'recordsFiltered': len(self._filtered_result),
             'data': self._filtered_result[self._start:self._start + self._length]
-        })
+        }

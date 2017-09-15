@@ -1,4 +1,4 @@
-function PlaybookDialog(file, args, sameWindow) {
+function PlaybookArgs(file, args, sameWindow) {
 
     var self = this;
 
@@ -58,11 +58,7 @@ function PlaybookDialog(file, args, sameWindow) {
         )
     );
 
-    self.checkButton = btnSmall.clone().html('Check').click(function () {
-
-            $(document.activeElement).toggleClass('checked_button');
-
-        });
+    self.checkButton = btnSmallClk.clone(true).html('Check');
 
     self.tagsField = textInputField.clone();
 
@@ -76,28 +72,29 @@ function PlaybookDialog(file, args, sameWindow) {
 
     self.dialog = largeDialog.clone();
 
-    $.ajax({
-        url: paths.filesApi + 'read/',
-        dataType: 'json',
-        data: self.file,
-        success: function (data) {
+    File.getData(self.file, 'read', function (data) {
 
-            if (data.result === 'ok') {
+        self.text = data.text;
 
-                self.text = data.text;
+        self._buildForm();
 
-                self._buildForm();
-
-            }
-
-            else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-        }
     });
 
 }
 
-PlaybookDialog.prototype = {
+PlaybookArgs.getData = function (args, action, callback) {
+
+    getData(args, paths.runnerApi + 'playbook_args/' + action + '/', callback);
+
+};
+
+PlaybookArgs.postData = function (args, action, callback) {
+
+    postData(args, paths.runnerApi + 'playbook_args/' + action + '/', callback);
+
+};
+
+PlaybookArgs.prototype = {
 
     _buildForm: function () {
 
@@ -151,36 +148,23 @@ PlaybookDialog.prototype = {
 
                         if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
 
-                            $.ajax({
-                                url: paths.runnerApi + 'playbook_args/save/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: {
-                                    id: self.loadedArgs.id,
-                                    subset: self.limitField.val(),
-                                    tags: self.tagsField.val(),
-                                    skip_tags: self.skipTagsField.val(),
-                                    extra_vars: self.extraVarsField.val(),
-                                    playbook: self.file.name,
-                                    folder: self.file.folder
-                                },
-                                success: function (data) {
+                            var args = {
+                                id: self.loadedArgs.id,
+                                subset: self.limitField.val(),
+                                tags: self.tagsField.val(),
+                                skip_tags: self.skipTagsField.val(),
+                                extra_vars: self.extraVarsField.val(),
+                                playbook: self.file.name,
+                                folder: self.file.folder
+                            };
 
-                                    if (data.result === 'ok') {
 
-                                        self._buildArgumentsSelector(data.id);
+                            PlaybookArgs.postData(args, 'save', function (data) {
 
-                                        $.bootstrapGrowl('Arguments saved', {type: 'success'});
-
-                                    }
-
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                                }
+                                self._buildArgumentsSelector(data.id);
 
                             });
+
                         }
 
                         else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
@@ -190,24 +174,10 @@ PlaybookDialog.prototype = {
 
                         new DeleteDialog(function() {
 
-                            $.ajax({
-                                url: paths.runnerApi + 'playbook_args/delete/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: self.loadedArgs,
-                                success: function (data) {
+                            PlaybookArgs.postData(self.loadedArgs, 'delete', function () {
 
-                                    if (data.result === 'ok') {
+                                self._buildArgumentsSelector();
 
-                                        self._buildArgumentsSelector();
-
-                                        $.bootstrapGrowl('Arguments deleted', {type: 'success'});
-
-                                    }
-
-                                    else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-
-                                }
                             });
 
                         });
@@ -247,7 +217,7 @@ PlaybookDialog.prototype = {
 
         var self = this;
 
-        var postData = {
+        var job = {
             type: 'playbook',
             playbook: self.file.name,
             folder: self.file.folder,
@@ -259,7 +229,7 @@ PlaybookDialog.prototype = {
             extra_vars: self.extraVarsField.val()
         };
 
-        new JobRunner(postData, $('option:selected', self.credentialsSelector).data(), self.sameWindow);
+        new JobRunner(job, $('option:selected', self.credentialsSelector).data(), self.sameWindow);
 
     },
 
@@ -287,38 +257,34 @@ PlaybookDialog.prototype = {
 
         self.argumentsSelector.empty();
 
-        $.ajax({
-            url: paths.runnerApi + 'playbook_args/list/',
-            data: self.file,
-            dataType: 'json',
-            success: function (data) {
+        PlaybookArgs.getData(self.file, 'list', function (data) {
 
-                $.each(data, function (index, args) {
+            $.each(data.args, function (index, args) {
 
-                    var optionLabel = [];
+                var optionLabel = [];
 
-                    args.subset && optionLabel.push('--limit ' + args.subset);
+                args.subset && optionLabel.push('--limit ' + args.subset);
 
-                    args.tags && optionLabel.push('--tags ' + args.tags);
+                args.tags && optionLabel.push('--tags ' + args.tags);
 
-                    args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
+                args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
 
-                    args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
+                args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
 
-                    self.argumentsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
+                self.argumentsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
 
-                });
+            });
 
-                self.argumentsSelector.append(
-                    $('<option>').html('new').val('new').data(self.args)
-                );
+            self.argumentsSelector.append(
+                $('<option>').html('new').val('new').data(self.args)
+            );
 
-                selectedValue ? self.argumentsSelector.val(selectedValue) : self.argumentsSelector.val('new');
+            selectedValue ? self.argumentsSelector.val(selectedValue) : self.argumentsSelector.val('new');
 
-                self.argumentsSelector.change();
+            self.argumentsSelector.change();
 
-            }
         });
+
     }
 };
 

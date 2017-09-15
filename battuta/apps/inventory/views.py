@@ -267,7 +267,7 @@ class InventoryView(View):
 
                         except ValueError:
 
-                            data['result'] = 'failed'
+                            data['status':] = 'failed'
 
                             data['msg'] = 'Error: could not find hosts column'
 
@@ -309,7 +309,7 @@ class InventoryView(View):
 
                                             var.save()
 
-                            data['result'] = 'ok'
+                            data['status':] = 'ok'
 
                     # Import from JSON
                     elif request.POST['format'] == 'json':
@@ -321,7 +321,7 @@ class InventoryView(View):
 
                         except ValueError:
 
-                            data['result'] = 'failed'
+                            data['status':] = 'failed'
 
                             data['msg'] = 'Error: File does not contain valid JSON'
 
@@ -416,7 +416,7 @@ class InventoryView(View):
 
                                 group.save()
 
-                            data['result'] = 'ok'
+                            data['status':] = 'ok'
 
                     else:
 
@@ -428,7 +428,7 @@ class InventoryView(View):
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -560,11 +560,11 @@ class NodeView(View):
 
                     node_list.append(self._node_to_dict(node))
 
-            data = {'result': 'ok', 'nodes': node_list}
+            data = {'status': 'ok', 'nodes': node_list}
 
         elif action == 'get':
 
-            data = {'result': 'ok', 'node': self._node_to_dict(node)}
+            data = {'status': 'ok', 'node': self._node_to_dict(node)}
 
         elif action == 'facts':
 
@@ -573,14 +573,14 @@ class NodeView(View):
                 facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
 
                 data = {
-                    'result': 'ok',
+                    'status': 'ok',
                     'name': node.name,
                     'facts': facts if facts else None
                 }
 
             else:
 
-                data = {'result': 'failed', 'msg': 'Groups do not have facts'}
+                data = {'status': 'failed', 'msg': 'Groups do not have facts'}
 
         elif action == 'descendants':
 
@@ -596,7 +596,7 @@ class NodeView(View):
 
                 raise Http404('Invalid node type')
 
-            data = {'result': 'ok', 'descendants': descendants}
+            data = {'status': 'ok', 'descendants': descendants}
 
         elif action == 'vars':
 
@@ -652,7 +652,7 @@ class NodeView(View):
 
                 var_list += values
 
-            data = {'result': 'ok', 'var_list': var_list}
+            data = {'status': 'ok', 'var_list': var_list}
 
         elif action == 'parents' or action == 'children' or action == 'members':
 
@@ -682,7 +682,7 @@ class NodeView(View):
 
                 node_list = [self._node_to_dict(candidate) for candidate in candidate_set]
 
-            data = {'result': 'ok', 'nodes': node_list}
+            data = {'status': 'ok', 'nodes': node_list}
 
         else:
 
@@ -706,15 +706,15 @@ class NodeView(View):
 
                     node = form.save(commit=True)
 
-                    data = {'result': 'ok', 'name': node.name, 'type': node.type}
+                    data = {'status': 'ok', 'name': node.name, 'type': node.type}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(form.errors)}
+                    data = {'status': 'failed', 'msg': str(form.errors)}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'delete':
 
@@ -722,11 +722,11 @@ class NodeView(View):
 
                 node.delete()
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'delete_bulk':
 
@@ -738,7 +738,7 @@ class NodeView(View):
 
                     node.delete()
 
-            data = {'result': 'ok'}
+            data = {'status': 'ok'}
 
         elif action == 'save_var':
 
@@ -756,15 +756,15 @@ class NodeView(View):
 
                     form.save(commit=True)
 
-                    data = {'result': 'ok', 'msg': 'Variable saved'}
+                    data = {'status': 'ok', 'msg': 'Variable saved'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(form.errors)}
+                    data = {'status': 'failed', 'msg': str(form.errors)}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'delete_var':
 
@@ -774,11 +774,11 @@ class NodeView(View):
 
                 variable.delete()
 
-                data = {'result': 'ok', 'msg': 'Variable deleted'}
+                data = {'status': 'ok', 'msg': 'Variable deleted'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'copy_vars':
 
@@ -796,11 +796,11 @@ class NodeView(View):
 
                     var.save()
 
-                data = {'result': 'ok', 'msg': 'Variable copied from ' + source.name}
+                data = {'status': 'ok', 'msg': 'Variable copied from ' + source.name}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action in ['add_parents', 'add_children', 'add_members']:
 
@@ -812,11 +812,11 @@ class NodeView(View):
 
                     related_set.add(get_object_or_404(related_class, pk=selected))
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action in ['remove_parents', 'remove_children', 'remove_members']:
 
@@ -828,11 +828,11 @@ class NodeView(View):
 
                     related_set.remove(get_object_or_404(related_class, pk=selected))
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         else:
 

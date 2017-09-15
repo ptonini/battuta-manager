@@ -1,7 +1,5 @@
 function Node(node, container) {
 
-    "use strict";
-
     var self = this;
 
     self.node = node;
@@ -100,6 +98,14 @@ function Node(node, container) {
         )
     );
 
+    var alterRelationCallback = function () {
+
+        self.variableTable.reloadTable();
+
+        self.descendants && self.descendants.reload();
+
+    };
+
     self.node.type === 'group' ? self.descendants = new Descendants(self.node, true, self.nodeInfoContainer) : new HostFacts(self.node, self.nodeInfoContainer);
 
     self.variableTable = new VariableTable(self.node, self.variableTableContainer);
@@ -126,15 +132,13 @@ function Node(node, container) {
 
     else rememberSelectedTab(self.tabsHeader.attr('id'));
 
-    function alterRelationCallback () {
-
-        self.variableTable.reloadTable();
-
-        self.descendants && self.descendants.reload();
-
-    }
-
 }
+
+Node.getData = function (node, action, callback) {
+
+    getData(node, paths.inventoryApi + node.type + '/' + action + '/', callback);
+
+};
 
 Node.postData = function (node, action, callback) {
 

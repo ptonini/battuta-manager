@@ -250,24 +250,29 @@ function gatherFacts(nodeName, finishCallback) {
 
 }
 
-function toggleButton (event) {
+function postData (object, url, callback) {
 
-    event.preventDefault();
-
-    $(this).toggleClass('checked_button');
+    submitRequest ('POST', object, url, callback)
 
 }
 
-function postData (object, url, callback) {
+
+function getData (object, url, callback) {
+
+    submitRequest ('GET', object, url, callback)
+
+}
+
+function submitRequest (action, object, url, callback) {
 
     $.ajax({
         url: url,
-        type: 'POST',
+        type: action,
         dataType: 'json',
         data: object,
         success: function (data) {
 
-            if (data.result === 'ok') {
+            if (data.status === 'ok') {
 
                 callback && callback(data);
 
@@ -275,7 +280,7 @@ function postData (object, url, callback) {
 
             }
 
-            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+            else if (data.status === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
             else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
 

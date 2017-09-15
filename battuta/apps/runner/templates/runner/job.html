@@ -4,7 +4,11 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            new JobResults('{{ runner_id }}', $('#result_header'), $('#result_container'))
+            Job.getData({id: '{{ job_id }}'}, 'get', function (data) {
+
+                new Job(data.job , $('#result_header'), $('#result_container'));
+
+            })
 
         });
     </script>

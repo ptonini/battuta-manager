@@ -4,6 +4,8 @@ function UserGroup(group, container) {
 
     self.group = group;
 
+    document.title = 'Battuta - ' + self.group.name;
+
     self.container = container;
 
     self.nameContainer = $('<span>').html(self.group.name);
@@ -287,6 +289,12 @@ function UserGroup(group, container) {
     }
 
 }
+
+UserGroup.getData = function (group, action, callback) {
+
+    getData(group, paths.usersApi + 'group/' + action + '/', callback);
+
+};
 
 UserGroup.postData = function (group, action, callback) {
 

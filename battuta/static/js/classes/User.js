@@ -5,6 +5,8 @@ function User(currentUser, user, container) {
 
     self.user = user;
 
+    document.title = 'Battuta - ' + self.user.name;
+
     self.container = container;
 
     self.usernameContainer = $('<span>').html(self.user.username);
@@ -155,33 +157,15 @@ function User(currentUser, user, container) {
 
     self.titleField = textInputField.clone();
 
-    self.isSharedButton = btnSmall.clone().html('Shared').click(function (event) {
+    self.isSharedButton = btnSmallClk.clone(true).html('Shared');
 
-        event.preventDefault();
-
-        $(this).toggleClass('checked_button')
-
-    });
-
-    self.isDefaultButton = btnSmall.clone().html('Default').click(function (event) {
-
-        event.preventDefault();
-
-        $(this).toggleClass('checked_button')
-
-    });
+    self.isDefaultButton = btnSmallClk.clone(true).html('Default');
 
     self.credUserField = textInputField.clone();
 
     self.credPassField = passInputField.clone();
 
-    self.askPassButton = btnSmall.clone().html('Ask').click(function (event) {
-
-        event.preventDefault();
-
-        $(this).toggleClass('checked_button')
-
-    });
+    self.askPassButton = btnSmallClk.clone(true).html('Ask');
 
     self.rsaKeyField = textAreaField.clone();
 
@@ -189,13 +173,7 @@ function User(currentUser, user, container) {
 
     self.sudoPassField = passInputField.clone();
 
-    self.askSudoPassButton = btnSmall.clone().html('Ask').click(function (event) {
-
-        event.preventDefault();
-
-        $(this).toggleClass('checked_button')
-
-    });
+    self.askSudoPassButton = btnSmallClk.clone(true).html('Ask');
 
     self.credentialsForm = $('<form>')
         .append(
@@ -425,6 +403,12 @@ function User(currentUser, user, container) {
     }
 
 }
+
+User.getData = function (user, action, callback) {
+
+    getData(user, paths.usersApi + 'user/' + action + '/', callback);
+
+};
 
 User.postData = function (user, action, callback) {
 

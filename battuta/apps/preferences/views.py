@@ -68,7 +68,7 @@ class PreferencesView(View):
 
                         item.save()
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             else:
 
@@ -76,6 +76,6 @@ class PreferencesView(View):
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')

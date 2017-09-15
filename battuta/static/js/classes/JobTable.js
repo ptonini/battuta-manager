@@ -1,4 +1,4 @@
-function RunnerHistoryTable(container) {
+function JobTable(container) {
     var self = this;
 
     self.container = container;
@@ -8,7 +8,7 @@ function RunnerHistoryTable(container) {
     self.container.append(self.table);
 
     self.table.DataTable({
-        ajax: {url: paths.runnerApi + 'history/list/'},
+        ajax: {url: paths.runnerApi + 'job/list/'},
         columns: [
             {class: 'col-md-2', title: 'run data'},
             {class: 'col-md-2', title: 'user'},
@@ -57,7 +57,7 @@ function RunnerHistoryTable(container) {
             }
             $(row).css('cursor','pointer').click(function () {
 
-                popupCenter(paths.runner +'results/' + data[5] + '/', data[5], 1000);
+                popupCenter(paths.runner +'job/' + data[5] + '/', data[5], 1000);
 
             })
         }

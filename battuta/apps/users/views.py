@@ -65,21 +65,21 @@ class LoginView(View):
 
                     login(request, user)
 
-                    data = {'result': 'ok'}
+                    data = {'status': 'ok'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': 'Account disabled'}
+                    data = {'status': 'failed', 'msg': 'Account disabled'}
 
             else:
 
-                data = {'result': 'failed', 'msg': 'Invalid login'}
+                data = {'status': 'failed', 'msg': 'Invalid login'}
 
         elif action == 'logout':
 
             logout(request)
 
-            data = {'result': 'ok'}
+            data = {'status': 'ok'}
 
         else:
 
@@ -139,11 +139,11 @@ class UsersView(View):
 
             if request.user.has_perm('users.edit_users'):
 
-                data = {'result': 'ok', 'users': [self._user_to_dict(user) for user in User.objects.all()]}
+                data = {'status': 'ok', 'users': [self._user_to_dict(user) for user in User.objects.all()]}
 
             else:
 
-                data = {'result': 'ok', 'users': []}
+                data = {'status': 'ok', 'users': []}
 
         else:
 
@@ -153,7 +153,7 @@ class UsersView(View):
 
                 if action == 'get':
 
-                    data = {'result': 'ok', 'user': self._user_to_dict(user)}
+                    data = {'status': 'ok', 'user': self._user_to_dict(user)}
 
                 elif action == 'groups':
 
@@ -165,7 +165,7 @@ class UsersView(View):
 
                         groups = [[group.name, group.id] for group in user.groups.all()]
 
-                    data = {'result': 'ok', 'groups': groups}
+                    data = {'status': 'ok', 'groups': groups}
 
                 elif action == 'creds':
 
@@ -197,7 +197,7 @@ class UsersView(View):
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -253,21 +253,21 @@ class UsersView(View):
 
                     userdata.save()
 
-                    data = {'result': 'ok', 'user': self._user_to_dict(user), 'msg': 'User saved'}
+                    data = {'status': 'ok', 'user': self._user_to_dict(user), 'msg': 'User saved'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(user_form.errors) + str(userdata_form.errors)}
+                    data = {'status': 'failed', 'msg': str(user_form.errors) + str(userdata_form.errors)}
 
             elif action == 'delete':
 
                 if user.is_superuser:
 
-                    data = {'result': 'failed', 'msg': 'Cannot delete a superuser'}
+                    data = {'status': 'failed', 'msg': 'Cannot delete a superuser'}
 
                 elif user == request.user:
 
-                    data = {'result': 'failed', 'msg': 'User cannot delete itself'}
+                    data = {'status': 'failed', 'msg': 'User cannot delete itself'}
 
                 else:
 
@@ -275,7 +275,7 @@ class UsersView(View):
 
                     user.delete()
 
-                    data = {'result': 'ok', 'msg': 'User deleted'}
+                    data = {'status': 'ok', 'msg': 'User deleted'}
 
             elif action == 'chgpass':
 
@@ -285,11 +285,11 @@ class UsersView(View):
 
                     user.save()
 
-                    data = {'result': 'ok', 'msg': 'The password was changed'}
+                    data = {'status': 'ok', 'msg': 'The password was changed'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': 'Invalid password'}
+                    data = {'status': 'failed', 'msg': 'Invalid password'}
 
             elif action == 'add_groups':
 
@@ -299,11 +299,11 @@ class UsersView(View):
 
                         user.groups.add(get_object_or_404(Group, pk=selected))
 
-                    data = {'result': 'ok'}
+                    data = {'status': 'ok'}
 
                 else:
 
-                    data = {'result': 'denied'}
+                    data = {'status': 'denied'}
 
             elif action == 'remove_groups':
 
@@ -313,11 +313,11 @@ class UsersView(View):
 
                         user.groups.remove(get_object_or_404(Group, pk=selected))
 
-                    data = {'result': 'ok'}
+                    data = {'status': 'ok'}
 
                 else:
 
-                    data = {'result': 'denied'}
+                    data = {'status': 'denied'}
 
             elif action == 'save_cred':
 
@@ -366,14 +366,14 @@ class UsersView(View):
                     cred.save()
 
                     data = {
-                        'result': 'ok',
+                        'status': 'ok',
                         'msg': 'Credential saved',
                         'cred': self._truncate_secure_data(model_to_dict(cred))
                     }
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(form.errors)}
+                    data = {'status': 'failed', 'msg': str(form.errors)}
 
             elif action == 'delete_cred':
 
@@ -387,14 +387,14 @@ class UsersView(View):
                 # Return fail if credential is default for a user(s)
                 if len(user_list) > 0:
 
-                    data = {'result': 'failed', 'msg': 'Credential is default for ' + ', '.join(user_list)}
+                    data = {'status': 'failed', 'msg': 'Credential is default for ' + ', '.join(user_list)}
 
                 else:
 
                     # Delete credential
                     cred.delete()
 
-                    data = {'result': 'ok', 'msg': 'Credential deleted', 'cred': {'id': None}}
+                    data = {'status': 'ok', 'msg': 'Credential deleted', 'cred': {'id': None}}
 
             else:
 
@@ -402,7 +402,7 @@ class UsersView(View):
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -451,7 +451,7 @@ class UserGroupView(View):
 
                     group_list.append(self._group_to_dict(group))
 
-            data = {'result': 'ok', 'groups': group_list}
+            data = {'status': 'ok', 'groups': group_list}
 
         elif action == 'get':
 
@@ -463,7 +463,7 @@ class UserGroupView(View):
                 project_auth.can_add_to_group(group)
             }
 
-            data = {'result': 'ok', 'group': self._group_to_dict(group)} if True in auth else {'result': 'denied'}
+            data = {'status': 'ok', 'group': self._group_to_dict(group)} if True in auth else {'status': 'denied'}
 
         elif action == 'members':
 
@@ -487,7 +487,7 @@ class UserGroupView(View):
 
                         members.append([user.username, user.id])
 
-            data = {'result': 'ok', 'members': members}
+            data = {'status': 'ok', 'members': members}
 
         else:
 
@@ -535,14 +535,14 @@ class UserGroupView(View):
 
                             group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
 
-                    data = {'result': 'ok', 'group': self._group_to_dict(group), 'msg': 'User group saved'}
+                    data = {'status': 'ok', 'group': self._group_to_dict(group), 'msg': 'User group saved'}
 
                 else:
 
-                    data = {'result': 'denied', 'msg': str(group_form.errors)}
+                    data = {'status': 'denied', 'msg': str(group_form.errors)}
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'delete':
 
@@ -550,11 +550,11 @@ class UserGroupView(View):
 
                 group.delete()
 
-                data = {'result': 'ok', 'msg': 'Group deleted'}
+                data = {'status': 'ok', 'msg': 'Group deleted'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'add_members':
 
@@ -564,11 +564,11 @@ class UserGroupView(View):
 
                     group.user_set.add(get_object_or_404(User, pk=selected))
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         elif action == 'remove_members':
 
@@ -578,11 +578,11 @@ class UserGroupView(View):
 
                     group.user_set.remove(get_object_or_404(User, pk=selected))
 
-                data = {'result': 'ok'}
+                data = {'status': 'ok'}
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         else:
 

@@ -3,16 +3,10 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - {{ user_name }}';
+            User.getData({username: '{{ user_name }}'}, 'get', function (data) {
 
-            $.ajax({
-                url: paths.usersApi + 'user/get/?username={{ user_name }}',
-                dataType: 'json',
-                success: function (data) {
+                new User('{{ user.username }}', data.user, $('#user_form_container'))
 
-                    if (data.result === 'ok') new User('{{ user.username }}', data.user, $('#user_form_container'))
-
-                }
             });
 
         });

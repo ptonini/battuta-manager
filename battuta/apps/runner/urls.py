@@ -5,7 +5,6 @@ from . import views
 
 urlpatterns = [
 
-
     url(r'^adhoc/$', login_required(views.PageView.as_view()), kwargs={'page': 'adhoc'}),
 
     url(r'^roles/$', login_required(views.PageView.as_view()), kwargs={'page': 'roles'}),
@@ -14,20 +13,12 @@ urlpatterns = [
 
     url(r'^playbooks/$', login_required(views.PageView.as_view()), kwargs={'page': 'playbooks'}),
 
-    url(r'^results/(?P<runner_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'results'}),
+    url(r'^job/(?P<job_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'job'}),
 
 
-    url(r'^api/(run|kill)/$', login_required(views.JobView.as_view())),
-
-    url(r'^api/job/([0-9]+)/$', login_required(views.JobView.as_view())),
-
-    url(r'^api/task/([0-9]+)/$', login_required(views.TaskView.as_view())),
-
-    url(r'^api/result/([0-9]+)/$', login_required(views.ResultView.as_view())),
+    url(r'^api/job/([a-z_]+)/$', login_required(views.JobView.as_view())),
 
     url(r'^api/playbook_args/([a-z]+)/$', login_required(views.PlaybookArgsView.as_view())),
-
-    url(r'^api/history/([a-z]+)/$', login_required(views.HistoryView.as_view())),
 
     url(r'^api/adhoc/([a-zA-Z]+)/$', login_required(views.AdHocView.as_view())),
 

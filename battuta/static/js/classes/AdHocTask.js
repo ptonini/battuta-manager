@@ -32,7 +32,7 @@ function AdHocTask (pattern, type, task, container) {
 
     self.argumentsField = textInputField.clone();
 
-    self.isSudo = btnSmall.clone().html('Sudo').attr('title', 'Run with sudo').click(toggleButton);
+    self.isSudo = btnSmallClk.clone(true).html('Sudo').attr('title', 'Run with sudo');
 
     self.credentialsSelector = selectField.clone();
 
@@ -318,7 +318,11 @@ AdHocTask.prototype = {
             )
         );
 
-        self.isSudo.off().click(toggleButton);
+        self.isSudo.off().click(function () {
+
+            $(this).toggleClass('checked_button');
+
+        });
 
         self.fileDestGroup = divFormGroup.clone().append(
             $('<label>').html('Destination').append(textInputField.clone().attr('data-parameter', 'dest'))

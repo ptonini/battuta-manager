@@ -244,7 +244,7 @@ class FilesView(View):
                             'error': error
                         })
 
-                data = {'result': 'ok', 'file_list': file_list}
+                data = {'status': 'ok', 'file_list': file_list}
 
             elif action == 'read':
 
@@ -258,22 +258,22 @@ class FilesView(View):
 
                             with open(full_path, 'r') as text_file:
 
-                                data = {'result': 'ok', 'text': text_file.read()}
+                                data = {'status': 'ok', 'text': text_file.read()}
 
                         else:
 
                             data = {
-                                'result': 'failed',
+                                'status': 'failed',
                                 'msg': 'The file is larger than ' + str(prefs['max_edit_size']) + 'kb'
                             }
 
                     else:
 
-                        data = {'result': 'failed', 'msg': 'Target is not a file'}
+                        data = {'status': 'failed', 'msg': 'Target is not a file'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': 'The file was not found'}
+                    data = {'status': 'failed', 'msg': 'The file was not found'}
 
             elif action == 'exists':
 
@@ -291,12 +291,12 @@ class FilesView(View):
 
                 if check_method(os.path.join(root['path'], request.GET['name'])):
 
-                    data = {'result': 'ok'}
+                    data = {'status': 'ok'}
 
                 else:
 
                     data = {
-                        'result': 'failed',
+                        'status': 'failed',
                         'msg': '{} {} does not exist'.format(request.GET['type'].capitalize(), request.GET['name'])
                     }
 
@@ -362,11 +362,11 @@ class FilesView(View):
 
                                 f.write(request.POST['text'].encode('utf8'))
 
-                                data = {'result': 'ok'}
+                                data = {'status': 'ok'}
 
                         except Exception as e:
 
-                            data = {'result': 'failed', 'msg': str(e)}
+                            data = {'status': 'failed', 'msg': str(e)}
 
                         if full_path != new_path:
 
@@ -380,25 +380,25 @@ class FilesView(View):
 
                     else:
 
-                        data = {'result': 'failed', 'msg': 'This filename is already in use'}
+                        data = {'status': 'failed', 'msg': 'This filename is already in use'}
 
                 elif action == 'rename':
 
                     if os.path.exists(new_path):
 
-                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+                        data = {'status': 'failed', 'msg': 'This name is already in use'}
 
                     else:
 
                         os.rename(full_path, new_path)
 
-                        data = {'result': 'ok'}
+                        data = {'status': 'ok'}
 
                 elif action == 'create':
 
                     if os.path.exists(new_path):
 
-                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+                        data = {'status': 'failed', 'msg': 'This name is already in use'}
 
                     else:
 
@@ -410,25 +410,25 @@ class FilesView(View):
 
                             open(new_path, 'a').close()
 
-                        data = {'result': 'ok'}
+                        data = {'status': 'ok'}
 
                 elif action == 'copy':
 
                     if os.path.exists(new_path):
 
-                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+                        data = {'status': 'failed', 'msg': 'This name is already in use'}
 
                     else:
 
                         shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
 
-                        data = {'result': 'ok'}
+                        data = {'status': 'ok'}
 
                 elif action == 'upload':
 
                     if os.path.exists(new_path):
 
-                        data = {'result': 'failed', 'msg': 'This name is already in use'}
+                        data = {'status': 'failed', 'msg': 'This name is already in use'}
 
                     else:
 
@@ -442,17 +442,17 @@ class FilesView(View):
 
                         except Exception as e:
 
-                            data = {'result': 'failed', 'msg': str(e)}
+                            data = {'status': 'failed', 'msg': str(e)}
 
                         else:
 
-                            data = {'result': 'ok'}
+                            data = {'status': 'ok'}
 
                 elif action == 'delete':
 
                     os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
 
-                    data = {'result': 'ok'}
+                    data = {'status': 'ok'}
 
                 else:
 
@@ -460,11 +460,11 @@ class FilesView(View):
 
             else:
 
-                data = {'result': 'failed', 'msg': 'File extension not allowed is this folder'}
+                data = {'status': 'failed', 'msg': 'File extension not allowed is this folder'}
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

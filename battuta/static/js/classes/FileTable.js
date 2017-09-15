@@ -86,15 +86,15 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
             event.preventDefault();
 
-            var newFile = new FileObject;
+            var file = new File;
 
-            newFile.root = self.root;
+            file.root = self.root;
 
-            newFile.folder = self.folder;
+            file.folder = self.folder;
 
-            newFile.owner =  self.owner;
+            file.owner =  self.owner;
 
-            new FileDialog(newFile, 'create', self.table.DataTable().ajax.reload);
+            new FileDialog(file, 'create', self.table.DataTable().ajax.reload);
 
         });
 

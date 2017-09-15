@@ -3,16 +3,9 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - {{ group_name }}';
+            UserGroup.getData({name: '{{ group_name }}'}, 'get', function (data) {
 
-            $.ajax({
-                url: paths.usersApi + 'group/get/?name={{ group_name }}',
-                dataType: 'json',
-                success: function (data) {
-
-                    if (data.result === 'ok') new UserGroup(data.group, $('#group_form_container'))
-
-                }
+                new UserGroup(data.group, $('#group_form_container'))
 
             });
 

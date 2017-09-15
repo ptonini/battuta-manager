@@ -1,7 +1,4 @@
-
-function JobResults(jobId, headerContainer, resultContainer) {
-
-    "use strict";
+function Job(job, headerContainer, resultContainer) {
 
     var self = this;
 
@@ -11,7 +8,9 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
     self.divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
 
-    self.jobId = jobId;
+    self.job = job;
+
+    document.title = self.job.name;
 
     self.headerContainer = headerContainer;
 
@@ -43,7 +42,7 @@ function JobResults(jobId, headerContainer, resultContainer) {
                 extra_vars: self.job.extra_vars
             };
 
-            new PlaybookDialog(file, args, true);
+            new PlaybookArgs(file, args, true);
 
         });
 
@@ -89,33 +88,19 @@ function JobResults(jobId, headerContainer, resultContainer) {
         });
 
     self.cancelButton = btnNavbarGlyph.clone()
-
         .attr('title', 'Cancel')
-
         .html(spanFA.clone().addClass('fa-times').css('color', 'red'))
+        .click(function () {
 
-        .click(function cancelJob() {
+            Job.postData(self.job, 'kill');
 
-            $.ajax({
-                url: paths.runnerApi + 'kill/',
-                type: 'POST',
-                dataType: 'json',
-                data: {runner_id: self.job.id},
-                success: function (data) {
-
-                    if (data.result === 'ok') $.bootstrapGrowl('Job canceled', {type: 'success'});
-
-                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                }
-            })
         });
 
     self.autoScrollButton = btnNavbarGlyph.clone()
         .attr('title', 'Auto scroll')
         .addClass('checked_button')
         .html(spanFA.clone().addClass('fa-angle-double-down'))
-        .click(function toggleAutoScroll() {
+        .click(function () {
 
             $(this).toggleClass('checked_button');
 
@@ -123,48 +108,57 @@ function JobResults(jobId, headerContainer, resultContainer) {
 
         });
 
-    self._getJobData(function () {
+    self._buildHeader();
 
-        document.title = self.job.name;
+    self._buildInfo();
 
-        self._buildHeader();
+    self._buildResults();
 
-        self._buildInfo();
+    self._formatResults();
 
-        self._buildResults();
+    if (self.job.is_running) var intervalId = setInterval(function () {
 
-        self._formatResults();
+        Job.getData(self.job, 'get', function (data) {
 
-        if (self.job.is_running) var intervalId = setInterval(function () {
+            self.job = data.job;
 
-            self._getJobData(function () {
+            self._buildResults();
 
-                self._buildResults();
+            self._formatResults();
 
-                self._formatResults();
+            self.autoScroll && $('html, body').animate({scrollTop: (self.footerAnchor.offset().top)}, 500);
 
-                self.autoScroll && $('html, body').animate({scrollTop: (self.footerAnchor.offset().top)}, 500);
+            if (!self.job.is_running) {
 
-                if (!self.job.is_running) {
+                clearInterval(intervalId);
 
-                    clearInterval(intervalId);
+                self.autoScroll && setTimeout(function () {
 
-                    self.autoScroll && setTimeout(function () {
+                    $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
 
-                        $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
+                }, 2000)
 
-                    }, 2000)
+            }
 
-                }
+        });
 
-            });
-
-        }, 1000)
-    })
+    }, 1000)
 
 }
 
-JobResults.prototype = {
+Job.getData = function (job, action, callback) {
+
+    getData(job, paths.runnerApi + 'job/' + action + '/', callback);
+
+};
+
+Job.postData = function (job, action, callback) {
+
+    postData(job, paths.runnerApi + 'job/' + action + '/', callback);
+
+};
+
+Job.prototype = {
 
     autoScroll: true,
 
@@ -173,22 +167,6 @@ JobResults.prototype = {
     playContainers: {},
 
     taskContainers: {},
-
-    _getJobData: function (successCallback) {
-
-        var self = this;
-
-        $.ajax({
-            url: paths.runnerApi + 'job/' + self.jobId + '/',
-            success: function (job) {
-
-                self.job = job;
-
-                successCallback && successCallback()
-
-            }
-        })
-    },
 
     _buildHeader: function () {
         var self = this;
@@ -383,7 +361,7 @@ JobResults.prototype = {
                             searching: false,
                             info: true,
                             ajax: {
-                                url: paths.runnerApi + 'task/' + task.id + '/',
+                                url: paths.runnerApi + 'job/get_task/?id=' + self.job.id + '&task_id=' + task.id,
                                 dataSrc: 'results'
                             },
                             columns: [
@@ -461,20 +439,18 @@ JobResults.prototype = {
 
                                                 else {
 
-                                                    $.ajax({
-                                                        url: paths.runnerApi + 'result/' + result.id + '/',
-                                                        dataType: 'json',
-                                                        success: function (data) {
+                                                    self.job.result = JSON.stringify(result);
 
-                                                            var jsonContainer = $('<div>')
-                                                                .attr('class', 'well')
-                                                                .JSONView(data.response, {collapsed: true});
+                                                    Job.getData(self.job, 'get_result', function (data) {
 
-                                                            rowApi.child(jsonContainer).show();
+                                                        var jsonContainer = $('<div>')
+                                                            .attr('class', 'well')
+                                                            .JSONView(data.result.response, {collapsed: true});
 
-                                                            $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                                        rowApi.child(jsonContainer).show();
 
-                                                        }
+                                                        $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+
                                                     });
 
                                                 }

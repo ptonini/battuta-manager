@@ -45,56 +45,95 @@ class PageView(View):
 
             return render(request, "runner/history.html")
 
-        elif kwargs['page'] == 'results':
+        elif kwargs['page'] == 'job':
 
-            return render(request, "runner/results.html", {'runner_id': kwargs['runner_id']})
+            return render(request, "runner/job.html", {'job_id': kwargs['job_id']})
 
 
 class JobView(View):
 
     @staticmethod
-    def get(request, job_id):
+    def get(request, action):
 
-        job = get_object_or_404(Job, pk=job_id)
+        if action == 'list':
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+            if request.user.has_perm('users.view_job_history'):
 
-        auth = {
-            request.user.has_perm('users.execute_jobs'),
-            request.user == job.user,
-            # project_auth.authorize_job(AnsibleInventory(subset=job.subset if job.subset else ''), job)
-        }
+                queryset = Job.objects.all()
 
-        if True in auth:
+            else:
 
-            prefs = get_preferences()
+                queryset = Job.objects.filter(user=request.user)
 
-            tz = timezone(job.user.userdata.timezone)
+            data = JobTableHandler(request, queryset).build_response()
 
-            # Convert job object to dict
-            data = model_to_dict(job)
+        elif action == 'get':
 
-            data['username'] = job.user.username
+            job = get_object_or_404(Job, pk=request.GET['id'])
 
-            data['created_on'] = job.created_on.astimezone(tz).strftime(prefs['date_format'])
+            auth = {
+                request.user.has_perm('users.execute_jobs'),
+                request.user == job.user,
+            }
 
-            # Convert status string to dict
-            if job.stats:
+            if True in auth:
 
-                data['stats'] = ast.literal_eval(job.stats)
+                prefs = get_preferences()
 
-            # Add plays to job data
-            data['plays'] = list()
+                tz = timezone(job.user.userdata.timezone)
 
-            for play in Play.objects.filter(job_id=data['id']).values():
+                # Convert job object to dict
+                job_dict = model_to_dict(job)
 
-                play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]
+                job_dict['username'] = job.user.username
 
-                data['plays'].append(play)
+                job_dict['created_on'] = job.created_on.astimezone(tz).strftime(prefs['date_format'])
+
+                # Convert status string to dict
+                if job.stats:
+
+                    job_dict['stats'] = ast.literal_eval(job.stats)
+
+                # Add plays to job data
+                job_dict['plays'] = list()
+
+                for play in Play.objects.filter(job_id=job_dict['id']).values():
+
+                    play['tasks'] = [task for task in Task.objects.filter(play_id=play['id']).values()]
+
+                    job_dict['plays'].append(play)
+
+                data = {'status': 'ok', 'job': job_dict}
+
+            else:
+
+                data = {'status': 'denied'}
+
+        elif action == 'get_task':
+
+            task = get_object_or_404(Task, pk=request.GET['task_id'])
+
+            data = model_to_dict(task)
+
+            data['results'] = list()
+
+            for result in task.result_set.all().values():
+
+                result.pop('response', None)
+
+                data['results'].append(result)
+
+        elif action == 'get_result':
+
+            result = get_object_or_404(Result, pk=json.loads(request.GET['result'])['id'])
+
+            result_dict = model_to_dict(result)
+
+            data = {'status': 'ok', 'result': result_dict}
 
         else:
 
-            data = {'result': 'denied'}
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -153,7 +192,7 @@ class JobView(View):
 
                 if not request.user.has_perm('users.execute_jobs') and not auth:
 
-                    data = {'result': 'denied'}
+                    data = {'status': 'denied'}
 
             # Execute task
             elif job_data['type'] == 'adhoc':
@@ -186,11 +225,11 @@ class JobView(View):
 
                     else:
 
-                        data = {'result': 'failed', 'msg': str(adhoc_form.errors)}
+                        data = {'status': 'failed', 'msg': str(adhoc_form.errors)}
 
                 else:
 
-                    data = {'result': 'denied'}
+                    data = {'status': 'denied'}
 
             elif job_data['type'] == 'gather_facts':
 
@@ -218,7 +257,7 @@ class JobView(View):
 
                 else:
 
-                    data = {'result': 'denied'}
+                    data = {'status': 'denied'}
 
             else:
 
@@ -276,20 +315,20 @@ class JobView(View):
 
                             pass
 
-                        data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
+                        data = {'status': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
 
                     else:
 
-                        data = {'result': 'ok', 'runner_id': job.id}
+                        data = {'status': 'ok', 'job': {'id': job.id}}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(job_form.errors)}
+                    data = {'status': 'failed', 'msg': str(job_form.errors)}
 
         # Kill job
         elif action == 'kill':
 
-            job = get_object_or_404(Job, pk=request.POST['runner_id'])
+            job = get_object_or_404(Job, pk=request.POST['id'])
 
             auth = {
                 request.user.has_perm('users.execute_jobs'),
@@ -305,11 +344,11 @@ class JobView(View):
 
                 except psutil.NoSuchProcess:
 
-                    data = {'result': 'failed', 'msg': 'Job is defunct'}
+                    data = {'status': 'failed', 'msg': 'Job is defunct'}
 
                 except psutil.Error as e:
 
-                    data = {'result': 'failed', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
+                    data = {'status': 'failed', 'msg': e.__class__.__name__ + ': ' + str(job.pid)}
 
                 else:
 
@@ -321,7 +360,7 @@ class JobView(View):
 
                     process.kill()
 
-                    data = {'result': 'ok', 'runner_id': job.id}
+                    data = {'status': 'ok', 'runner_id': job.id, 'msg': 'Job canceled'}
 
                 finally:
 
@@ -341,7 +380,7 @@ class JobView(View):
 
             else:
 
-                data = {'result': 'denied'}
+                data = {'status': 'denied'}
 
         else:
 
@@ -376,7 +415,7 @@ class AdHocView(View):
 
                     task_list.append(task)
 
-            data = {'result': 'ok', 'task_list': task_list}
+            data = {'status': 'ok', 'task_list': task_list}
 
         else:
 
@@ -406,17 +445,17 @@ class AdHocView(View):
 
                     saved_task = form.save(commit=True)
 
-                    data = {'result': 'ok', 'id': saved_task.id, 'msg': 'Task saved'}
+                    data = {'status': 'ok', 'id': saved_task.id, 'msg': 'Task saved'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(form.errors)}
+                    data = {'status': 'failed', 'msg': str(form.errors)}
 
             elif action == 'delete':
 
                 adhoc.delete()
 
-                data = {'result': 'ok', 'msg': 'Task deleted'}
+                data = {'status': 'ok', 'msg': 'Task deleted'}
 
             else:
 
@@ -424,7 +463,7 @@ class AdHocView(View):
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -442,11 +481,13 @@ class PlaybookArgsView(View):
 
             if action == 'list':
 
-                data = list()
+                args_list = list()
 
                 for args in PlaybookArgs.objects.filter(playbook=request.GET['name'], folder=request.GET['folder']).values():
 
-                    data.append(args)
+                    args_list.append(args)
+
+                data = {'status': 'ok', 'args': args_list}
 
             else:
 
@@ -454,7 +495,7 @@ class PlaybookArgsView(View):
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -487,11 +528,11 @@ class PlaybookArgsView(View):
 
                     form.save(commit=True)
 
-                    data = {'result': 'ok', 'id': args.id}
+                    data = {'status': 'ok', 'id': args.id, 'msg': 'Arguments saved'}
 
                 else:
 
-                    data = {'result': 'failed', 'msg': str(form.errors)}
+                    data = {'status': 'failed', 'msg': str(form.errors)}
 
             # Delete playbook arguments
             elif action == 'delete':
@@ -502,11 +543,11 @@ class PlaybookArgsView(View):
 
                     args.delete()
 
-                    data = {'result': 'ok'}
+                    data = {'status': 'ok', 'msg': 'Arguments deleted'}
 
                 except Exception as e:
 
-                    data = {'result': 'failed', 'msg': e}
+                    data = {'status': 'failed', 'msg': e}
 
             # Raise exception
             else:
@@ -515,65 +556,7 @@ class PlaybookArgsView(View):
 
         else:
 
-            data = {'result': 'denied'}
+            data = {'status': 'denied'}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
-
-class HistoryView(View):
-
-    @staticmethod
-    def get(request, action):
-
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
-        if action == 'list':
-
-            # Build queryset
-            queryset = Job.objects.all() if request.user.has_perm('users.view_job_history') else Job.objects.filter(user=request.user)
-
-            data = JobTableHandler(request, queryset).build_response()
-
-        else:
-
-            raise Http404('Invalid action')
-
-        return HttpResponse(data, content_type='application/json')
-
-
-class TaskView(View):
-
-    @staticmethod
-    def get(request, task_id):
-
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
-        task = get_object_or_404(Task, pk=task_id)
-
-        data = model_to_dict(task)
-
-        data['results'] = list()
-
-        for result in task.result_set.all().values():
-
-            result.pop('response', None)
-
-            data['results'].append(result)
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
-class ResultView(View):
-
-    @staticmethod
-    def get(request, result_id):
-
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
-        result = get_object_or_404(Result, pk=result_id)
-
-        data = model_to_dict(result)
-
-        data['response'] = json.loads(result.response)
-
-        return HttpResponse(json.dumps(data), content_type='application/json')

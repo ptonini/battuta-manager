@@ -6,16 +6,10 @@
 
             var nodeType = '{{ node_type }}';
 
-            document.title = 'Battuta - ' + nodeType[0].toUpperCase() + nodeType.slice(1) + 's';
+            Node.getData({type: nodeType}, 'list', function (data) {
 
-            $.ajax({
-                url: paths.inventoryApi + nodeType + '/list/',
-                dataType: 'JSON',
-                success: function (data) {
+                new Nodes(data.nodes, nodeType, $('#nodes_container'));
 
-                    if (data.result === 'ok')  new Nodes(data.nodes, nodeType, $('#nodes_container'));
-
-                }
             });
 
         });
