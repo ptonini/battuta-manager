@@ -97,27 +97,21 @@ function MainMenu(username, is_authenticated, container) {
 
         var action = self.is_authenticated ? 'logout' : 'login';
 
-        $.ajax({
-            url: paths.usersApi + action + '/',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                username: self.loginFormUserField.val(),
-                password: self.loginFormPassField.val()
-            },
-            success: function (data) {
+        var user_data = {
+            username: self.loginFormUserField.val(),
+            password: self.loginFormPassField.val()
+        };
 
-                if (data.result === 'ok') window.open('/', '_self');
+        postData(user_data, paths.usersApi + action + '/', function () {
 
-                else {
+            window.open('/', '_self');
 
-                    self.loginFormPassField.val('');
+        }, function () {
 
-                    $.bootstrapGrowl(data.msg, failedAlertOptions);
+            self.loginFormPassField.val('');
 
-                }
-            }
         });
+
     });
 
     self.rightMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(

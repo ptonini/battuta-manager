@@ -38,7 +38,12 @@ function Nodes(nodes, nodeType, container) {
 
         self.deleteBtn.toggle();
 
-        if (self.deleteModeBtn.hasClass('checked_button')) self.nodeGrid.DynaGrid(self.deleteNodeGridOptions);
+        if (self.deleteModeBtn.hasClass('checked_button')) {
+
+            self.deleteNodeGridOptions = Object.assign({itemToggle: true, dataArray: self.nodes}, self.nodegridBaseOptions);
+
+            self.nodeGrid.DynaGrid(self.deleteNodeGridOptions);
+        }
 
         else self.nodeGrid.DynaGrid(self.openNodeGridOptions);
 
@@ -85,7 +90,6 @@ function Nodes(nodes, nodeType, container) {
 
         },
         dataSource: 'array',
-        dataArray: self.nodes,
         itemValueKey: 'name',
         checkered: true,
         showFilter: true,
@@ -96,6 +100,7 @@ function Nodes(nodes, nodeType, container) {
     };
 
     self.openNodeGridOptions = Object.assign({
+        dataArray: self.nodes,
         showAddButton: true,
         addButtonType: 'text',
         addButtonClass: 'btn btn-default btn-xs',
@@ -120,8 +125,6 @@ function Nodes(nodes, nodeType, container) {
         }
 
     }, self.nodegridBaseOptions);
-
-    self.deleteNodeGridOptions = Object.assign({itemToggle: true}, self.nodegridBaseOptions);
 
     self.nodeGrid = $('<div>');
 
@@ -206,7 +209,7 @@ function Nodes(nodes, nodeType, container) {
 
                 });
 
-            if (self.nodeType!== 'group' || node.name !== 'all') $(row).find('td:last').html(
+            if (self.nodeType !== 'group' || node.name !== 'all') $(row).find('td:last').html(
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
@@ -216,8 +219,6 @@ function Nodes(nodes, nodeType, container) {
 
                                 self._refreshData();
 
-                                $.bootstrapGrowl(self.type[0].toUpperCase() + self.type.substring(1) + ' deleted', {type: 'success'});
-
                             });
 
                         })
@@ -225,7 +226,7 @@ function Nodes(nodes, nodeType, container) {
                 )
             );
 
-            if (self.nodeType=== 'host') {
+            if (self.nodeType === 'host') {
 
                 var cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
 
@@ -262,26 +263,18 @@ Nodes.prototype = {
 
         var self = this;
 
-        $.ajax({
-            url: paths.inventoryApi+ self.nodeType + '/list/',
-            dataType: 'JSON',
-            success: function (data) {
+        Node.getData({type: self.nodeType}, 'list', function (data) {
 
-                if (data.result === 'ok') {
+            self.nodes = data.nodes;
 
+            self.nodeTable.DataTable().clear();
 
-                    self.nodeTable.DataTable().clear();
+            self.nodeTable.DataTable().rows.add(data.nodes);
 
-                    self.nodeTable.DataTable().rows.add(data.nodes);
+            self.nodeTable.DataTable().draw();
 
-                    self.nodeTable.DataTable().draw();
+            self.nodeGrid.DynaGrid('load', data.nodes);
 
-                    self.nodeGrid.DynaGrid('load', data.nodes)
-
-                }
-
-            }
         });
-
     }
 };

@@ -109,20 +109,9 @@ function Project(project, container) {
 
                             self.project.playbooks = JSON.stringify([{name: playbook.name, folder: playbook.folder}]);
 
-                            $.ajax({
-                                url: paths.projectsApi + 'project/remove_playbooks/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: self.project,
-                                success: function (data) {
+                            Project.postData(self.project, 'remove_playbook', function () {
 
-                                    if (data.result === 'ok') self.playbookGrid.DynaGrid('load');
-
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                }
+                                self.playbookGrid.DynaGrid('load')
 
                             });
 
@@ -170,20 +159,10 @@ function Project(project, container) {
 
                             self.project.playbooks = JSON.stringify(selection);
 
-                            $.ajax({
-                                url: paths.projectsApi + 'project/add_playbooks/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: self.project,
-                                success: function (data) {
+                            Project.postData(self.project, 'add_playbooks', function () {
 
-                                    if (data.result === 'ok') self.playbookGrid.DynaGrid('load');
+                                self.playbookGrid.DynaGrid('load')
 
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                }
                             });
 
                             $(this).dialog('close');
@@ -234,22 +213,12 @@ function Project(project, container) {
 
                             self.project.roles = JSON.stringify([{name: role.name, folder: role.folder}]);
 
-                            $.ajax({
-                                url: paths.projectsApi + 'project/remove_roles/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: self.project,
-                                success: function (data) {
+                            Project.postData(self.project, 'remove_role', function () {
 
-                                    if (data.result === 'ok') self.roleGrid.DynaGrid('load');
-
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                }
+                                self.roleGrid.DynaGrid('load')
 
                             });
+
 
                         })
                 )
@@ -287,21 +256,12 @@ function Project(project, container) {
 
                             self.project.roles = JSON.stringify(selection);
 
-                            $.ajax({
-                                url: paths.projectsApi + 'project/add_roles/',
-                                type: 'POST',
-                                dataType: 'json',
-                                data: self.project,
-                                success: function (data) {
+                            Project.postData(self.project, 'add_roles', function () {
 
-                                    if (data.result === 'ok') self.roleGrid.DynaGrid('load');
+                                self.roleGrid.DynaGrid('load')
 
-                                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                    else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                }
                             });
+
 
                             $(this).dialog('close');
                         },
@@ -553,13 +513,15 @@ Project.prototype = {
             loadCallback: null,
             formatItem: function (gridItem, selectionDialog) {
 
+                var itemData = gridItem.data();
+
                 gridItem.click(function () {
 
                     self.project.property = JSON.stringify({name: property, value: gridItem.data('id')});
 
                     Project.postData(self.project, 'set_property', function () {
 
-                        input.val(gridItem.data(itemKey)).data(gridItem.data()).change()
+                        input.val(itemData[itemKey]).data(itemData).change()
 
                     });
 

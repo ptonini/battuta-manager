@@ -3,13 +3,11 @@ import json
 from django.views.generic import View
 from django.http import HttpResponse, Http404
 from django.conf import settings
-from django.core.cache import cache
 
 from apps.preferences.models import Item
 from apps.preferences.extras import get_preferences, get_default_value
 
 from apps.users.extras import create_userdata
-from apps.projects.extras import ProjectAuth
 
 
 class PreferencesView(View):
@@ -17,46 +15,46 @@ class PreferencesView(View):
     @staticmethod
     def get(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
         if action == 'basic':
 
-            data = get_preferences()
+            pref_dict = get_preferences()
 
-            create_userdata(request.user, data)
+            create_userdata(request.user, pref_dict)
 
-            data['user_name'] = request.user.username
+            pref_dict['user_name'] = request.user.username
 
-            data['user_id'] = request.user.id
+            pref_dict['user_id'] = request.user.id
 
-            data['user_timezone'] = request.user.userdata.timezone
+            pref_dict['user_timezone'] = request.user.userdata.timezone
+
+            print pref_dict
 
         elif action == 'detailed':
 
-            data = dict()
+            pref_dict = dict()
 
-            data['default'] = settings.DEFAULT_PREFERENCES
+            pref_dict['default'] = settings.DEFAULT_PREFERENCES
 
-            data['stored'] = [[item.name, item.value] for item in Item.objects.all()]
+            pref_dict['stored'] = [[item.name, item.value] for item in Item.objects.all()]
 
         else:
 
             raise Http404('Invalid action')
+
+        data = {'status': 'ok', 'prefs': pref_dict}
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
         if request.user.has_perm('users.edit_preferences'):
 
             if action == 'save':
 
-                for key, value in json.loads(request.POST['item_values']).iteritems():
+                for key in request.POST:
 
-                    if value == get_default_value(key):
+                    if request.POST[key] == get_default_value(key):
 
                         Item.objects.filter(name=key).delete()
 
@@ -64,7 +62,7 @@ class PreferencesView(View):
 
                         item, created = Item.objects.get_or_create(name=key)
 
-                        item.value = value
+                        item.value = request.POST[key]
 
                         item.save()
 

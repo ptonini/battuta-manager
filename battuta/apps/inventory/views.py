@@ -692,7 +692,7 @@ class NodeView(View):
 
     def post(self, request, node_type, action):
 
-        node = self._build_node(request.POST.dict(), node_type, request.user) if request.POST.get('id') else None
+        node = self._build_node(request.POST.dict(), node_type, request.user)
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
@@ -722,7 +722,7 @@ class NodeView(View):
 
                 node.delete()
 
-                data = {'status': 'ok'}
+                data = {'status': 'ok', 'msg': node.type.title() + ' deleted'}
 
             else:
 

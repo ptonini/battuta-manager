@@ -362,7 +362,7 @@ class FilesView(View):
 
                                 f.write(request.POST['text'].encode('utf8'))
 
-                                data = {'status': 'ok'}
+                                data = {'status': 'ok', 'msg': 'File saved'}
 
                         except Exception as e:
 
@@ -380,7 +380,7 @@ class FilesView(View):
 
                     else:
 
-                        data = {'status': 'failed', 'msg': 'This filename is already in use'}
+                        data = {'status': 'failed', 'msg': 'This name is already in use'}
 
                 elif action == 'rename':
 
@@ -392,7 +392,7 @@ class FilesView(View):
 
                         os.rename(full_path, new_path)
 
-                        data = {'status': 'ok'}
+                        data = {'status': 'ok', 'msg': request.POST['type'].title() + ' renamed'}
 
                 elif action == 'create':
 
@@ -406,11 +406,13 @@ class FilesView(View):
 
                             os.makedirs(new_path)
 
+
+
                         else:
 
                             open(new_path, 'a').close()
 
-                        data = {'status': 'ok'}
+                        data = {'status': 'ok', 'msg': request.POST['type'].title() + ' created'}
 
                 elif action == 'copy':
 
@@ -422,7 +424,7 @@ class FilesView(View):
 
                         shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
 
-                        data = {'status': 'ok'}
+                        data = {'status': 'ok', 'msg': request.POST['type'].title() + ' copied'}
 
                 elif action == 'upload':
 
@@ -446,13 +448,13 @@ class FilesView(View):
 
                         else:
 
-                            data = {'status': 'ok'}
+                            data = {'status': 'ok', 'msg': request.POST['type'].title() + ' uploaded'}
 
                 elif action == 'delete':
 
                     os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
 
-                    data = {'status': 'ok'}
+                    data = {'status': 'ok', 'msg': request.POST['type'].title() + ' deleted'}
 
                 else:
 

@@ -67,7 +67,7 @@ function RoleDialog(fileTable) {
                         },
                         success: function (data) {
 
-                            if (data.result === 'ok') {
+                            if (data.status === 'ok') {
 
                                 $('input:checked').each(function (index, input) {
 

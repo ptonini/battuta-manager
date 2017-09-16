@@ -250,20 +250,20 @@ function gatherFacts(nodeName, finishCallback) {
 
 }
 
-function postData (object, url, callback) {
+function postData (object, url, callback, failCallback) {
 
-    submitRequest ('POST', object, url, callback)
-
-}
-
-
-function getData (object, url, callback) {
-
-    submitRequest ('GET', object, url, callback)
+    submitRequest ('POST', object, url, callback, failCallback)
 
 }
 
-function submitRequest (action, object, url, callback) {
+
+function getData (object, url, callback, failCallback) {
+
+    submitRequest ('GET', object, url, callback, failCallback)
+
+}
+
+function submitRequest (action, object, url, callback, failCallback) {
 
     $.ajax({
         url: url,
@@ -282,7 +282,12 @@ function submitRequest (action, object, url, callback) {
 
             else if (data.status === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
 
-            else $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+            else {
+
+                failCallback && failCallback();
+
+                data.msg && $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+            }
 
         }
     });

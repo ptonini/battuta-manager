@@ -11,17 +11,7 @@ function ProjectTable(container) {
     self.table.DataTable({
         ajax: {
             url: paths.projectsApi + 'project/list/',
-            dataSrc: function (data) {
-
-                if (data.result === 'ok') return data.projects;
-
-                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                return [];
-
-            }
+            dataSrc: 'projects'
         },
         dom: '<"toolbar">frtip',
         paging: false,

@@ -33,29 +33,13 @@ function FileDialog(file, action, postCallback) {
 
                     if (self.file.new_name && self.file.new_name !== self.file.name) {
 
-                        $.ajax({
-                            type: 'POST',
-                            url: paths.filesApi + action + '/',
-                            dataType: 'json',
-                            data: self.file,
-                            success: function (data) {
+                       File.postData(self.file, action, function () {
 
-                                if (data.result === 'ok') {
+                           self.fileDialog.dialog('close');
 
-                                    self.fileDialog.dialog('close');
+                           postCallback && postCallback();
 
-                                    postCallback && postCallback();
-
-                                    $.bootstrapGrowl(self.file.new_name + ' saved', {type: 'success'});
-
-                                }
-
-                                else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                            }
-                        });
+                       });
                     }
                 },
                 Cancel: function() {

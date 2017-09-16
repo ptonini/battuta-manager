@@ -55,17 +55,14 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
                         }
 
-                        $.ajax({
-                            url: paths.filesApi + 'exists/',
-                            data: {name: fieldValue, type: 'directory', root: self.root, user: self.owner},
-                            success: function (data) {
+                        var file = {name: fieldValue, type: 'directory', root: self.root, user: self.owner};
 
-                                if (data.result === 'ok') self.setFolder(fieldValue);
+                        File.getData(file, 'exists', function () {
 
-                                else $.bootstrapGrowl(data.msg, failedAlertOptions);
+                            self.setFolder(fieldValue)
 
-                            }
                         });
+
                     }
                 })
         }
@@ -187,62 +184,46 @@ FileTable.prototype = {
             order: [[0, 'asc']],
             paging: false,
             dom: '<"toolbar">frtip',
-            rowCallback: function (row, object) {
+            rowCallback: function (row, file) {
 
-                object.root = self.root;
+                file.root = self.root;
 
-                object.owner = self.owner;
+                file.owner = self.owner;
 
-                if (object.type === 'directory') {
+                if (file.type === 'directory') {
 
                     $(row).attr('class', 'directory_row').find('td:eq(0)')
                         .css({'cursor': 'pointer', 'font-weight': '700'})
                         .off('click')
                         .click(function () {
 
-                            object.folder ? self.setFolder(object.folder + '/' + object.name) : self.setFolder(object.name)
+                            file.folder ? self.setFolder(file.folder + '/' + file.name) : self.setFolder(file.name)
 
                         });
 
                 }
 
-                else self.nameCellFormatter && self.nameCellFormatter($(row).find('td:eq(0)'), object);
+                else self.nameCellFormatter && self.nameCellFormatter($(row).find('td:eq(0)'), file);
 
-                $(row).find('td:eq(2)').html(humanBytes(object.size));
+                $(row).find('td:eq(2)').html(humanBytes(file.size));
 
                 $(row).find('td:eq(3)').html('').removeAttr('title').append(
-                    $('<span>').html(object.modified).attr('title', object.modified),
+                    $('<span>').html(file.modified).attr('title', file.modified),
                     spanRight.clone().append(
                         spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
-                            if (object.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(object.type) > -1) {
+                            if (file.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(file.type) > -1) {
 
-                                $.ajax({
-                                    url: paths.filesApi + 'read/',
-                                    dataType: 'json',
-                                    data: object,
-                                    success: function (data) {
+                                File.getData(file, 'read', function (data) {
 
-                                        if (data.result === 'ok') {
+                                    file.text = data.text;
 
-                                            object.text = data.text;
+                                    new TextEditor(file, self.table.DataTable().ajax.reload);
 
-                                            new TextEditor(object, self.table.DataTable().ajax.reload);
-
-                                        }
-
-                                        else {
-
-                                            self.table.DataTable().ajax.reload();
-
-                                            $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                        }
-                                    }
                                 });
                             }
 
-                            else new FileDialog(object, 'rename', self.table.DataTable().ajax.reload);
+                            else new FileDialog(file, 'rename', self.table.DataTable().ajax.reload);
 
                         }),
                         spanFA.clone()
@@ -250,15 +231,15 @@ FileTable.prototype = {
                             .attr('title', 'Copy')
                             .click(function () {
 
-                                new FileDialog(object, 'copy', self.table.DataTable().ajax.reload);
+                                new FileDialog(file, 'copy', self.table.DataTable().ajax.reload);
 
                             }),
                         spanFA.clone()
                             .addClass('fa-download btn-incell')
-                            .attr('title', 'Download ' + object.name)
+                            .attr('title', 'Download ' + file.name)
                             .click(function () {
 
-                                window.open(paths.filesApi + 'download/?name=' + object.name + '&root=' + object.root  + '&folder=' + object.folder + '&owner=' + object.owner,  '_self')
+                                window.open(paths.filesApi + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + file.owner,  '_self')
 
                             }),
                         spanFA.clone()
@@ -266,30 +247,14 @@ FileTable.prototype = {
                             .attr('title', 'Delete')
                             .click(function () {
 
-                                object.new_name = object.name;
+                                file.new_name = file.name;
 
                                 new DeleteDialog(function () {
 
-                                    $.ajax({
-                                        type: 'POST',
-                                        url: paths.filesApi + 'delete/',
-                                        dataType: 'json',
-                                        data: object,
-                                        success: function (data) {
+                                    File.postData(file, 'delete', function () {
 
-                                            if (data.result === 'ok') {
+                                        self.table.DataTable().ajax.reload();
 
-                                                self.table.DataTable().ajax.reload();
-
-                                                $.bootstrapGrowl(object.name + ' was deleted', {type: 'success'})
-
-                                            }
-
-                                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                                            else $.bootstrapGrowl(data.msg, failedAlertOptions)
-
-                                        }
                                     });
 
                                 })

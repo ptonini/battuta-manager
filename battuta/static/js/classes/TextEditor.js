@@ -36,28 +36,12 @@ function TextEditor(file, saveCallback) {
 
                     self.file.text = self.textEditor.getValue();
 
-                    $.ajax({
-                        type: 'POST',
-                        url: paths.filesApi + 'save/',
-                        dataType: 'json',
-                        data: self.file,
-                        success: function (data) {
+                    File.postData(self.file, 'save', function () {
 
-                            if (data.result === 'ok') {
+                        saveCallback && saveCallback();
 
-                                saveCallback && saveCallback();
+                        self.editorDialog.dialog('close');
 
-                                self.editorDialog.dialog('close');
-
-                                $.bootstrapGrowl(formName + ' saved', {type: 'success'});
-
-                            }
-
-                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                        }
                     });
 
                 }

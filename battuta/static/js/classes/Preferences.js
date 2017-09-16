@@ -111,21 +111,16 @@ function Preferences()  {
 }
 
 Preferences.getPreferences = function () {
-    $.ajax({
-        url: '/preferences/basic/',
-        type: 'GET',
-        dataType: 'json',
-        data: {action: 'preferences'},
-        success: function (data) {
 
-            Object.keys(data).forEach(function (key) {
+    Preferences.getData({}, 'basic', function (data) {
 
-                sessionStorage.setItem(key, data[key])
+        Object.keys(data.prefs).forEach(function (key) {
 
-            });
+            sessionStorage.setItem(key, data.prefs[key])
 
-        }
-    });
+        });
+
+    })
 };
 
 Preferences.validateItemDataType = function (dataType, dataValue) {
@@ -171,98 +166,94 @@ Preferences.prototype = {
 
         var defaultValues = [];
 
-        $.ajax({
-            url: '/preferences/detailed/',
-            dataType: 'json',
-            success: function(data) {
+        Preferences.getData({}, 'detailed', function(data) {
 
-                self.prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
+            self.prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
 
-                $.each(data.default, function (index, item_group) {
+            $.each(data.prefs.default, function (index, item_group) {
+
+                self.prefsContainer.append(
+                    divRow.clone().append(
+                        divCol4.clone().append(
+                            $('<h4>')
+                                .data('toggle', 'tooltip')
+                                .attr('title', item_group.description)
+                                .html(item_group.name)
+                        )
+                    )
+                );
+
+                $.each(item_group.items, function(index, item) {
+
+                    var itemId = 'item_' + item.name;
+
+                    switch (item.data_type) {
+
+                        case 'str':
+
+                            var itemField = textInputField.clone();
+
+                            var columnClass = 'col-md-5';
+
+                            break;
+
+                        case 'bool':
+
+                            itemField = booleanField.clone();
+
+                            columnClass = 'col-md-2';
+
+                            item.value ? item.value = 'true' : item.value = 'false';
+
+                            break;
+
+                        case 'number':
+
+                            itemField = textInputField.clone();
+
+                            columnClass = 'col-md-2';
+
+                            break;
+
+                    }
+
+                    defaultValues.push([item.name, item.value]);
 
                     self.prefsContainer.append(
                         divRow.clone().append(
                             divCol4.clone().append(
-                                $('<h4>')
-                                    .data('toggle', 'tooltip')
-                                    .attr('title', item_group.description)
-                                    .html(item_group.name)
+                                fieldLabel.clone().html(item.name + ':').attr({for: itemId, title: item.description})
+                            ),
+                            $('<div>').addClass(columnClass).append(
+                                itemField
+                                    .attr('id', itemId).data({name: item.name, data_type: item.data_type})
+                                    .val(item.value)
+                            ),
+                            divCol3.clone().append(
+                                fieldLabel.clone().css('color', 'red').attr('id', item.name + '_warning')
                             )
                         )
-                    );
-
-                    $.each(item_group.items, function(index, item) {
-
-                        var itemId = 'item_' + item.name;
-
-                        switch (item.data_type) {
-
-                            case 'str':
-
-                                var itemField = textInputField.clone();
-
-                                var columnClass = 'col-md-5';
-
-                                break;
-
-                            case 'bool':
-
-                                itemField = booleanField.clone();
-
-                                columnClass = 'col-md-2';
-
-                                item.value ? item.value = 'true' : item.value = 'false';
-
-                                break;
-
-                            case 'number':
-
-                                itemField = textInputField.clone();
-
-                                columnClass = 'col-md-2';
-
-                                break;
-
-                        }
-
-                        defaultValues.push([item.name, item.value]);
-
-                        self.prefsContainer.append(
-                            divRow.clone().append(
-                                divCol4.clone().append(
-                                    fieldLabel.clone().html(item.name + ':').attr({for: itemId, title: item.description})
-                                ),
-                                $('<div>').addClass(columnClass).append(
-                                    itemField
-                                        .attr('id', itemId).data({name: item.name, data_type: item.data_type})
-                                        .val(item.value)
-                                ),
-                                divCol3.clone().append(
-                                    fieldLabel.clone().css('color', 'red').attr('id', item.name + '_warning')
-                                )
-                            )
-                        )
-                    });
-
-                    if (index !== data.default.length - 1) self.prefsContainer.append('<hr>');
-
+                    )
                 });
 
-                self.prefsContainer.data('defaultValues', defaultValues);
+                if (index !== data.prefs.default.length - 1) self.prefsContainer.append('<hr>');
 
-                self.defaultValues = defaultValues;
+            });
 
-                $.each(data.stored, function (index, item) {
+            self.prefsContainer.data('defaultValues', defaultValues);
 
-                    $('#item_' + item[0] ).val(item[1])
+            self.defaultValues = defaultValues;
 
-                });
+            $.each(data.prefs.stored, function (index, item) {
 
-                self.prefsDialog.dialog('open');
+                $('#item_' + item[0] ).val(item[1])
 
-                self.buildCallback && self.buildCallback();
+            });
 
-            }
+            self.prefsDialog.dialog('open');
+
+            self.buildCallback && self.buildCallback();
+
         })
     },
 
@@ -270,7 +261,7 @@ Preferences.prototype = {
 
         var self = this;
 
-        var itemValues = {};
+        var prefs = {};
 
         var noError = true;
 
@@ -278,7 +269,7 @@ Preferences.prototype = {
 
             var result = Preferences.validateItemDataType($(this).data('data_type'), $(this).val());
 
-            if (result[0]) itemValues[$(this).data('name')] = $(this).val();
+            if (result[0]) prefs[$(this).data('name')] = $(this).val();
 
             else {
 
@@ -292,30 +283,27 @@ Preferences.prototype = {
 
         if (noError) {
 
-            $.ajax({
-                url: '/preferences/save/',
-                type: 'POST',
-                data: {item_values: JSON.stringify(itemValues)},
-                dataType: 'json',
-                success: function(data) {
+            Preferences.postData(prefs, 'save', function () {
 
-                    if (data.result === 'ok') {
+                Preferences.getPreferences();
 
-                        Preferences.getPreferences();
+                saveCallback && saveCallback()
 
-                        saveCallback && saveCallback()
-
-                    }
-
-                    else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-                    else  $.bootstrapGrowl(data.msg, failedAlertOptions);
-
-                }
-
-            })
+            });
 
         }
 
     }
+};
+
+Preferences.getData = function (prefs, action, callback) {
+
+    getData(prefs, paths.preferencesApi + action + '/', callback);
+
+};
+
+Preferences.postData = function (prefs, action, callback) {
+
+    postData(prefs, paths.preferencesApi + action + '/', callback);
+
 };

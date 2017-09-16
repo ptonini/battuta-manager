@@ -69,8 +69,6 @@ class ProjectView(View):
 
     def get(self, request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
-
         if action == 'list':
 
             projects = list()
@@ -110,8 +108,6 @@ class ProjectView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     def post(self, request, action):
-
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
         if request.user.has_perm('users.edit_projects'):
 
@@ -171,9 +167,9 @@ class ProjectView(View):
 
                 data = {'status': 'ok'}
 
-            elif action in ['remove_playbooks', 'remove_roles']:
+            elif action in ['remove_playbook', 'remove_role']:
 
-                file_type = action.split('_')[1]
+                file_type = action.split('_')[1] + 's'
 
                 files = [p for p in json.loads(project.__getattribute__(file_type)) if p not in (json.loads(request.POST[file_type]))]
 
@@ -181,7 +177,7 @@ class ProjectView(View):
 
                 project.save()
 
-                data = {'status': 'ok', 'msg': 'Playbooks removed'}
+                data = {'status': 'ok'}
 
             else:
 

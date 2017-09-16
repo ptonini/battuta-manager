@@ -8,5 +8,6 @@ var paths = {
     users: '/users/',
     usersApi: '/users/api/',
     projects: '/projects/',
-    projectsApi: '/projects/api/'
+    projectsApi: '/projects/api/',
+    preferencesApi: '/preferences/'
 };
