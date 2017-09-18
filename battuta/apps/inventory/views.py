@@ -166,7 +166,7 @@ class InventoryView(View):
 
             if request.GET['format'] == 'json':
 
-                data = self._inventory_to_dict(internal_vars=False)
+                data = {'status': 'ok', 'inventory': self._inventory_to_dict(internal_vars=False)}
 
             elif request.GET['format'] == 'zip':
 

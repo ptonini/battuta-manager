@@ -8,27 +8,22 @@ function ExportInventory(container) {
 
             case 'json':
 
-                $.ajax({
-                    url: paths.inventoryApi + 'export/',
-                    data: {format: 'json'},
-                    dataType: 'json',
-                    success: function (data) {
+                getData({format: 'json'}, paths.inventoryApi + 'export/', function (data) {
 
-                        var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
+                    var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
 
-                        var link = document.createElement('a');
+                    var link = document.createElement('a');
 
-                        link.setAttribute('href', jsonString);
+                    link.setAttribute('href', jsonString);
 
-                        link.setAttribute('download', 'inventory.json');
+                    link.setAttribute('download', 'inventory.json');
 
-                        document.body.appendChild(link);
+                    document.body.appendChild(link);
 
-                        link.click();
+                    link.click();
 
-                        link.remove();
+                    link.remove();
 
-                    }
                 });
 
                 break;

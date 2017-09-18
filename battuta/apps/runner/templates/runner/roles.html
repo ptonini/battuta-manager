@@ -6,17 +6,7 @@
 
             document.title = 'Battuta - Roles';
 
-            var fileTable = new FileTable('roles', null, null, $('#file_table_container'));
-
-            var buttons = [
-                btnXsmall.clone().html('Add role').click(function () {
-
-                    new RoleDialog(fileTable)
-
-                })
-            ];
-
-            fileTable.addButtons(buttons)
+            new FileTable('roles', null, $('#file_table_container'));
 
         });
     </script>

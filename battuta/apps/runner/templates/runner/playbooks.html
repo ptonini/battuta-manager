@@ -6,56 +6,7 @@
 
             document.title = 'Battuta - Playbooks';
 
-            function nameCellFormatter(cell, file) {
-
-                cell.css('cursor', 'pointer');
-
-                if (file.is_valid) cell.off().click(function () {
-
-                    new PlaybookArgs(file, null, false)
-
-                });
-
-                else cell.css('color', 'red').off().click(function () {
-
-                    var message = preLargeAlert.clone().html(file.error);
-
-                    $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
-
-                })
-            }
-
-            var buttons = [
-                btnXsmall.clone().html('New playbook').click(function () {
-
-                    $.ajax({
-                        url: '/static/templates/playbook_template.yml',
-                        success: function (data) {
-
-                            var file = new File;
-
-                            file.root = 'playbooks';
-
-                            file.folder = playbookTable.getFolder();
-
-                            file.text = data;
-
-
-
-                            new TextEditor(file, function () {
-
-                                playbookTable.reload()
-
-                            })
-
-                        }
-                    });
-                })
-            ];
-
-            var playbookTable = new FileTable('playbooks', null, nameCellFormatter, $('#playbook_table_container'));
-
-            playbookTable.addButtons(buttons);
+            new FileTable('playbooks', null, $('#playbook_table_container'));
 
         });
     </script>

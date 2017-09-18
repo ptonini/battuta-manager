@@ -11,7 +11,7 @@ function DeleteDialog(callback) {
             buttons: {
                 Delete: function () {
 
-                    callback();
+                    callback && callback();
 
                     $(this).dialog('close');
 

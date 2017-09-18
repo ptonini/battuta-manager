@@ -27,8 +27,6 @@ class PreferencesView(View):
 
             pref_dict['user_timezone'] = request.user.userdata.timezone
 
-            print pref_dict
-
         elif action == 'detailed':
 
             pref_dict = dict()

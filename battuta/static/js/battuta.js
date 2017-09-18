@@ -205,45 +205,37 @@ function popupCenter(url, title, w) {
 
 }
 
-function gatherFacts(nodeName, finishCallback) {
+function gatherFacts(nodeName, callback) {
 
     var jobKey = 'job_' + Math.random().toString(36).substring(2, 10);
 
-    var postData = {
-        action: 'run',
-        type: 'gather_facts',
-        hosts: nodeName,
-        job_key: jobKey
-    };
+    User.getData({username: sessionStorage.getItem('user_name')}, 'default_cred', function (data) {
 
-    $.ajax({
-        url: paths.usersApi + 'user/default_cred/?username=' + sessionStorage.getItem('user_name'),
-        dataType: 'json',
-        success: function (cred) {
+        var job = {
+            action: 'run',
+            type: 'gather_facts',
+            hosts: nodeName,
+            job_key: jobKey
+        };
 
-            new JobRunner(postData, cred);
+        new JobRunner(job, data.cred)
 
-        }
     });
 
     var intervalId = setInterval(function() {
 
         var jobId = sessionStorage.getItem(jobKey);
 
-        jobId && $.ajax({
-            url: paths.runnerApi + 'job/' + jobId + '/',
-            dataType: 'json',
-            success: function (job) {
+        jobId && Job.getData({id: jobId}, 'get', function (data) {
 
-                if (!job.is_running) {
+            if (!data.job.is_running) {
 
-                    finishCallback && finishCallback();
+                callback && callback();
 
-                    clearInterval(intervalId)
-
-                }
+                clearInterval(intervalId)
 
             }
+
         })
 
     }, 1000)
@@ -256,7 +248,6 @@ function postData (object, url, callback, failCallback) {
 
 }
 
-
 function getData (object, url, callback, failCallback) {
 
     submitRequest ('GET', object, url, callback, failCallback)
@@ -265,32 +256,58 @@ function getData (object, url, callback, failCallback) {
 
 function submitRequest (action, object, url, callback, failCallback) {
 
+    var requestData = {};
+
+    for (var property in object) {
+
+        if (object.hasOwnProperty(property)) requestData[property] = object[property];
+    }
+
     $.ajax({
         url: url,
         type: action,
         dataType: 'json',
-        data: object,
+        data: requestData,
         success: function (data) {
 
-            if (data.status === 'ok') {
-
-                callback && callback(data);
-
-                data.msg && $.bootstrapGrowl(data.msg, {type: 'success'});
-
-            }
-
-            else if (data.status === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
-
-            else {
-
-                failCallback && failCallback();
-
-                data.msg && $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
-            }
+            requestResponse (data, callback, failCallback)
 
         }
     });
+
+}
+
+function requestResponse (data, callback, failCallback) {
+
+    switch (data.status) {
+
+        case 'ok':
+
+            callback && callback(data);
+
+            data.msg && $.bootstrapGrowl(data.msg, {type: 'success'});
+
+            break;
+
+        case 'failed':
+
+            failCallback && failCallback(data);
+
+            data.msg && $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+
+            break;
+
+        case 'denied':
+
+            $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+            break;
+
+        default:
+
+            $.bootstrapGrowl('Unknown response', failedAlertOptions)
+
+    }
 
 }
 

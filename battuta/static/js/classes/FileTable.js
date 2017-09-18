@@ -1,4 +1,4 @@
-function FileTable(root, owner, nameCellFormatter, container) {
+function FileTable(root, owner, container) {
 
     var self = this;
 
@@ -7,8 +7,6 @@ function FileTable(root, owner, nameCellFormatter, container) {
     self.owner = owner;
 
     self.folder = window.location.hash.slice(1);
-
-    self.nameCellFormatter = nameCellFormatter;
 
     self.container = container;
 
@@ -49,17 +47,17 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
                         var fieldValue = self.pathInputField.val();
 
+                        var folder = new File({name: fieldValue, type: 'directory', root: self.root, user: self.owner});
+
                         if (fieldValue.charAt(fieldValue.length - 1) === '/') {
 
                             fieldValue = fieldValue.substr(0, fieldValue.length - 1)
 
                         }
 
-                        var file = {name: fieldValue, type: 'directory', root: self.root, user: self.owner};
+                        folder.exists(function (data) {
 
-                        File.getData(file, 'exists', function () {
-
-                            self.setFolder(fieldValue)
+                            data.exists && self._setFolder(fieldValue)
 
                         });
 
@@ -70,7 +68,7 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
     self.rootPath = $('<li>').attr('id', 'root_path').html('&lt;root&gt;').click(function () {
 
-        self.setFolder('')
+        self._setFolder('')
 
     });
 
@@ -83,15 +81,13 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
             event.preventDefault();
 
-            var file = new File;
+            var file = new File({root: self.root, folder: self.folder, owner: self.owner});
 
-            file.root = self.root;
+            file.create(function () {
 
-            file.folder = self.folder;
+                self.table.DataTable().ajax.reload()
 
-            file.owner =  self.owner;
-
-            new FileDialog(file, 'create', self.table.DataTable().ajax.reload);
+            });
 
         });
 
@@ -100,11 +96,19 @@ function FileTable(root, owner, nameCellFormatter, container) {
         .html(spanFA.clone().addClass('fa-upload'))
         .click(function () {
 
-            new UploadDialog(self.folder, self.root, self.owner, self.table.DataTable().ajax.reload);
+            var file = new File({root: self.root, folder: self.folder, owner: self.owner});
+
+            file.upload(function () {
+
+                self.table.DataTable().ajax.reload()
+
+            });
 
         });
 
     self.buttonGroup = divBtnGroup.clone().append(self.createButton, self.uploadButton);
+
+    self[self.root] && self[self.root].buttons && self[self.root].buttons(self);
 
     self.previousFolderRow = $('<tr>').attr('role', 'row').append(
         $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
@@ -113,7 +117,7 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
             folderArray.pop();
 
-            self.setFolder(folderArray.join('/'));
+            self._setFolder(folderArray.join('/'));
 
         }),
         $('<td>'),
@@ -130,14 +134,13 @@ function FileTable(root, owner, nameCellFormatter, container) {
         )
     );
 
-    if (self.folder) $.ajax({
-        url: paths.filesApi + 'exists/',
-        data: {name: self.folder, type: 'directory', root: self.root, owner: self.owner},
-        success: function (data) {
+    if (self.folder) {
 
-            if (data.result === 'failed') {
+        var folder = new File({name: self.folder, type: 'directory', root: self.root, owner: self.owner});
 
-                $.bootstrapGrowl(data.msg, failedAlertOptions);
+        folder.exists(function (data) {
+
+            if (!data.exists) {
 
                 self.folder = '';
 
@@ -147,17 +150,12 @@ function FileTable(root, owner, nameCellFormatter, container) {
 
             self._buildTable()
 
-        }
-    });
+        });
+
+    }
 
     else self._buildTable()
 }
-
-FileTable.editableTypes = [
-    'inode/x-empty',
-    'application/xml',
-    'application/json'
-];
 
 FileTable.prototype = {
 
@@ -184,11 +182,9 @@ FileTable.prototype = {
             order: [[0, 'asc']],
             paging: false,
             dom: '<"toolbar">frtip',
-            rowCallback: function (row, file) {
+            rowCallback: function (row, data) {
 
-                file.root = self.root;
-
-                file.owner = self.owner;
+                var file = new File(data);
 
                 if (file.type === 'directory') {
 
@@ -197,13 +193,13 @@ FileTable.prototype = {
                         .off('click')
                         .click(function () {
 
-                            file.folder ? self.setFolder(file.folder + '/' + file.name) : self.setFolder(file.name)
+                            file.folder ? self._setFolder(file.folder + '/' + file.name) : self._setFolder(file.name)
 
                         });
 
                 }
 
-                else self.nameCellFormatter && self.nameCellFormatter($(row).find('td:eq(0)'), file);
+                else self[self.root] && self[self.root].formatter && self[self.root].formatter(row, file);
 
                 $(row).find('td:eq(2)').html(humanBytes(file.size));
 
@@ -212,28 +208,22 @@ FileTable.prototype = {
                     spanRight.clone().append(
                         spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
-                            if (file.type.split('/')[0] === 'text' || FileTable.editableTypes.indexOf(file.type) > -1) {
+                            file.edit(function () {
 
-                                File.getData(file, 'read', function (data) {
+                                self.table.DataTable().ajax.reload()
 
-                                    file.text = data.text;
-
-                                    new TextEditor(file, self.table.DataTable().ajax.reload);
-
-                                });
-                            }
-
-                            else new FileDialog(file, 'rename', self.table.DataTable().ajax.reload);
+                            });
 
                         }),
-                        spanFA.clone()
-                            .addClass('fa-clone btn-incell')
-                            .attr('title', 'Copy')
-                            .click(function () {
+                        spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
 
-                                new FileDialog(file, 'copy', self.table.DataTable().ajax.reload);
+                            file.copy(function () {
 
-                            }),
+                                self.table.DataTable().ajax.reload()
+
+                            });
+
+                        }),
                         spanFA.clone()
                             .addClass('fa-download btn-incell')
                             .attr('title', 'Download ' + file.name)
@@ -247,17 +237,12 @@ FileTable.prototype = {
                             .attr('title', 'Delete')
                             .click(function () {
 
-                                file.new_name = file.name;
+                                file.delete(function () {
 
-                                new DeleteDialog(function () {
-
-                                    File.postData(file, 'delete', function () {
-
-                                        self.table.DataTable().ajax.reload();
-
-                                    });
+                                    self.table.DataTable().ajax.reload()
 
                                 })
+
                             })
                     )
                 );
@@ -316,14 +301,14 @@ FileTable.prototype = {
 
                         $(this).nextAll('.path_link').remove();
 
-                        self.setFolder(nextFolder)
+                        self._setFolder(nextFolder)
 
                     })
             )
         });
     },
 
-    addButtons: function (buttons) {
+    _addButtons: function (buttons) {
 
         var self = this;
 
@@ -334,7 +319,7 @@ FileTable.prototype = {
         });
     },
 
-    setFolder:  function (folder) {
+    _setFolder:  function (folder) {
 
         var self = this;
 
@@ -348,20 +333,220 @@ FileTable.prototype = {
 
     },
 
-    getFolder: function () {
-
-        var self = this;
-
-        return self.folder;
-
-    },
-
     reload: function () {
 
         var self = this;
 
         self.table.DataTable().ajax.reload()
 
+    },
+
+    playbooks: {
+
+        formatter: function (row, file) {
+
+            var cell = $(row).find('td:eq(0)');
+
+            cell.css('cursor', 'pointer');
+
+            if (file.error) cell.css('color', 'red').off().click(function () {
+
+                var message = preLargeAlert.clone().html(file.error);
+
+                $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+
+            });
+
+            else cell.off().click(function () {
+
+                new PlaybookArgs(file, null, false)
+
+            })
+
+        },
+
+        buttons: function (self) {
+
+            self._addButtons([
+                btnXsmall.clone().html('New playbook').click(function () {
+
+                    $.ajax({
+                        url: '/static/templates/playbook_template.yml',
+                        success: function (data) {
+
+                            var file = new File({root: 'playbooks', folder: self.folder, text: data});
+
+                            file.openEditor(function () {
+
+                                self.table.DataTable().ajax.reload()
+
+                            })
+
+                        }
+                    });
+
+                })
+            ])
+
+        }
+    },
+
+    roles: {
+
+        buttons: function (self) {
+
+            self._addButtons([
+                btnXsmall.clone().html('Add role').click(function () {
+
+                    var roleNameField= textInputField.clone().css('margin-bottom', '10px');
+
+                    var roleDialog = smallDialog.clone().append(
+                        divRow.clone().append(
+                            divCol12.clone().append(
+                                $('<label>').html('Role name').append(roleNameField)
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(chkboxInput.clone().attr('value', 'files'), 'Files')
+                                )
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(
+                                        chkboxInput.clone().attr('value', 'defaults').data('main', true),
+                                        'Defaults'
+                                    )
+                                )
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(chkboxInput.clone().attr('value', 'templates'), 'Templates')
+                                )
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(
+                                        chkboxInput.clone().attr('value', 'vars').data('main', true),
+                                        'Vars'
+                                    )
+                                )
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(
+                                        chkboxInput.clone().attr('value', 'handlers').data('main', true),
+                                        'Handlers'
+                                    )
+                                )
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(
+                                        chkboxInput.clone().attr('value', 'tasks').data('main', true),
+                                        'Tasks'
+                                    )
+                                )
+                            ),
+                            divCol6.clone().append(
+                                divChkbox.clone().append(
+                                    $('<label>').append(
+                                        chkboxInput.clone().attr('value', 'meta').data('main', true),
+                                        'Meta'
+                                    )
+                                )
+                            )
+                        )
+                    );
+
+                    roleDialog
+                        .dialog({
+                            buttons: {
+                                Save: function() {
+
+                                    var roleName = roleNameField.val();
+
+                                    if (roleName) $.ajax({
+                                        type: 'POST',
+                                        url: paths.filesApi + 'create/',
+                                        dataType: 'json',
+                                        data: {
+                                            name: roleName,
+                                            new_name: roleName,
+                                            folder: '',
+                                            type: 'directory',
+                                            root: 'roles'
+                                        },
+                                        success: function (data) {
+
+                                            if (data.status === 'ok') {
+
+                                                $('input:checked').each(function (index, input) {
+
+                                                    $.ajax({
+                                                        type: 'POST',
+                                                        url: paths.filesApi + 'create/',
+                                                        dataType: 'json',
+                                                        data: {
+                                                            name: $(this).val(),
+                                                            new_name: $(this).val(),
+                                                            folder: roleName,
+                                                            type: 'directory',
+                                                            root: 'roles'
+                                                        },
+                                                        success: function () {
+
+                                                            if ($(input).data('main')) $.ajax({
+                                                                type: 'POST',
+                                                                url: paths.filesApi + 'create/',
+                                                                dataType: 'json',
+                                                                data: {
+                                                                    name: 'main.yml',
+                                                                    new_name: 'main.yml',
+                                                                    folder: roleName + '/' + $(input).val(),
+                                                                    type: 'file',
+                                                                    root: 'roles'
+                                                                }
+                                                            })
+
+                                                        }
+                                                    });
+                                                });
+
+                                                self._setFolder(roleName);
+
+                                                roleDialog.dialog('close');
+
+                                                $.bootstrapGrowl('Role ' + roleName + ' created', {type: 'success'});
+
+                                            }
+
+                                            else if (data.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+
+                                            else $.bootstrapGrowl(data.msg, failedAlertOptions);
+
+                                        }
+
+                                    });
+
+                                    else $.bootstrapGrowl('Please enter a role name', {type: 'warning'})
+                                },
+                                Cancel: function() {
+
+                                    $(this).dialog('close')
+                                }
+                            },
+                            close: function() {
+
+                                $(this).remove()
+
+                            }
+                        })
+                        .dialog('open');
+
+                })
+            ])
+
+        }
     }
 
-};
+}

@@ -45,15 +45,15 @@ class FilesView(View):
 
                     yaml.load(yaml_file.read())
 
-                    return True, None
+                    return None
 
                 except yaml.YAMLError as e:
 
-                    return False, type(e).__name__ + ': ' + e.__str__()
+                    return type(e).__name__ + ': ' + e.__str__()
 
         else:
 
-            return True, None
+            return None
 
     _file_sources = {
         'files': {
@@ -216,7 +216,7 @@ class FilesView(View):
 
                     file_type = magic.from_file(full_path, mime='true') if os.path.isfile(full_path) else 'directory'
 
-                    is_valid, error = root['validator'](full_path) if root['validator'] else True, None
+                    error = root['validator'](full_path) if root['validator'] else None
 
                     exclude_conditions = {
                         file_name.startswith('.') and not prefs['show_hidden_files'],
@@ -240,7 +240,6 @@ class FilesView(View):
                             'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
                             'root': request.GET.get('root'),
                             'folder': folder,
-                            'is_valid': is_valid,
                             'error': error
                         })
 
@@ -289,16 +288,7 @@ class FilesView(View):
 
                     raise Http404('Invalid object type')
 
-                if check_method(os.path.join(root['path'], request.GET['name'])):
-
-                    data = {'status': 'ok'}
-
-                else:
-
-                    data = {
-                        'status': 'failed',
-                        'msg': '{} {} does not exist'.format(request.GET['type'].capitalize(), request.GET['name'])
-                    }
+                data = {'status': 'ok', 'exists': check_method(os.path.join(root['path'], request.GET['name']))}
 
             elif action == 'download':
 
@@ -362,7 +352,7 @@ class FilesView(View):
 
                                 f.write(request.POST['text'].encode('utf8'))
 
-                                data = {'status': 'ok', 'msg': 'File saved'}
+                                data = {'status': 'ok', 'msg': request.POST['new_name'] + ' saved'}
 
                         except Exception as e:
 
@@ -392,7 +382,7 @@ class FilesView(View):
 
                         os.rename(full_path, new_path)
 
-                        data = {'status': 'ok', 'msg': request.POST['type'].title() + ' renamed'}
+                        data = {'status': 'ok', 'msg': request.POST['new_name'] + ' renamed'}
 
                 elif action == 'create':
 
@@ -412,7 +402,7 @@ class FilesView(View):
 
                             open(new_path, 'a').close()
 
-                        data = {'status': 'ok', 'msg': request.POST['type'].title() + ' created'}
+                        data = {'status': 'ok', 'msg': request.POST['new_name'] + ' created'}
 
                 elif action == 'copy':
 
@@ -424,7 +414,7 @@ class FilesView(View):
 
                         shutil.copy(full_path, new_path) if os.path.isfile(full_path) else shutil.copytree(full_path, new_path)
 
-                        data = {'status': 'ok', 'msg': request.POST['type'].title() + ' copied'}
+                        data = {'status': 'ok', 'msg': request.POST['name'] + ' copied'}
 
                 elif action == 'upload':
 
@@ -448,13 +438,13 @@ class FilesView(View):
 
                         else:
 
-                            data = {'status': 'ok', 'msg': request.POST['type'].title() + ' uploaded'}
+                            data = {'status': 'ok', 'msg': request.POST['new_name'] + ' uploaded'}
 
                 elif action == 'delete':
 
                     os.remove(new_path) if os.path.isfile(new_path) else shutil.rmtree(new_path)
 
-                    data = {'status': 'ok', 'msg': request.POST['type'].title() + ' deleted'}
+                    data = {'status': 'ok', 'msg': request.POST['new_name'] + ' deleted'}
 
                 else:
 

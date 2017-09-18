@@ -558,7 +558,7 @@ class UserGroupView(View):
 
         elif action == 'add_members':
 
-            if project_auth.can_add_to_group(group):
+            if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
                 for selected in request.POST.getlist('selection[]'):
 
@@ -572,7 +572,7 @@ class UserGroupView(View):
 
         elif action == 'remove_members':
 
-            if project_auth.can_add_to_group(group):
+            if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
                 for selected in request.POST.getlist('selection[]'):
 

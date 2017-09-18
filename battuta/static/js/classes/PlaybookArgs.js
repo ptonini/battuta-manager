@@ -72,7 +72,7 @@ function PlaybookArgs(file, args, sameWindow) {
 
     self.dialog = largeDialog.clone();
 
-    File.getData(self.file, 'read', function (data) {
+    self.file.read(function (data) {
 
         self.text = data.text;
 
