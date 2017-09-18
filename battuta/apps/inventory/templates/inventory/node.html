@@ -6,9 +6,11 @@
 
             document.title = 'Battuta - {{ node.name }}';
 
-            Node.getData({id: '{{ node.id }}', type: '{{ node.type }}'}, 'get', function (data) {
+            var node = new Node({id: '{{ node.id }}', type: '{{ node.type }}'});
 
-               new Node(data.node, $('#node_container'))
+            node.get(function (data) {
+
+               new NodeView(new Node(data.node), $('#node_container'))
 
             });
 

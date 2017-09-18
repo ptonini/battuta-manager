@@ -36,7 +36,7 @@ function VariableDialog(variable, node, saveCallback) {
                 id: self.var.id
             });
 
-            Node.postData(self.node, 'save_var', function () {
+            NodeView.postData(self.node, 'save_var', function () {
 
                 self.saveCallback();
 

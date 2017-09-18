@@ -65,7 +65,7 @@ CopyVariables.prototype = {
 
                     self.node.source = JSON.stringify($(this).data());
 
-                    Node.postData(self.node, 'copy_vars', function () {
+                    NodeView.postData(self.node, 'copy_vars', function () {
 
                         selectionDialog.dialog('close');
 

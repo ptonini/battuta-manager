@@ -2,6 +2,8 @@ function Project(project, container) {
 
     var self = this;
 
+    var hostGroup = new Node(project.host_group);
+
     self.project = project;
 
     self.container = container;
@@ -62,7 +64,9 @@ function Project(project, container) {
         .data(self.project.host_group)
         .change(function () {
 
-            new Descendants($(this).data(), false, self.descendantsContainer);
+            var hostGroup = new Node($(this).data());
+
+            hostGroup.descendants(self.descendantsContainer, false);
 
         });
 
@@ -74,7 +78,7 @@ function Project(project, container) {
 
     self.descendantsContainer = $('<div>');
 
-    self.descendants = new Descendants(self.project.host_group, false, self.descendantsContainer);
+    self.project.host_group.id && hostGroup.descendants(self.descendantsContainer, false);
 
     self.playbookGrid = $('<div>').DynaGrid({
         gridTitle: 'Playbooks',

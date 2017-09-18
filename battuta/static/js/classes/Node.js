@@ -1,147 +1,251 @@
-function Node(node, container) {
+function Node(param) {
+
+    param = param ? param : {};
 
     var self = this;
 
-    self.node = node;
+    self.name = param.name;
 
-    self.container = container;
+    self.description = param.description;
 
-    self.description = self.node.description || noDescriptionMsg;
+    self.id = param.id;
 
-    self.tabsHeader = ulTabs.clone().attr('id', self.node.type + '_' + self.node.name + '_tabs');
+    self.type = param.type;
 
-    self.infoTab = divActiveTab.clone().attr('id', 'info_tab');
-
-    self.variablesTab = divTab.clone().attr('id', 'variables_tab');
-
-    self.editNodeBtn = spanFA.clone()
-        .addClass('fa-pencil btn-incell')
-        .attr('title', 'Edit')
-        .click(function() {
-
-            new EntityDialog(self.node, Node.postData, function (data) {
-
-                window.open(paths.inventory + self.node.type + '/' + data.name + '/', '_self');
-
-            });
-
-        });
-
-    self.deleteNodeBtn = spanFA.clone()
-        .addClass('fa-trash-o btn-incell')
-        .attr('title', 'Delete')
-        .click(function() {
-
-            new DeleteDialog(function () {
-
-                Node.postData(self.node, 'delete', function () {
-
-                    window.open(paths.inventory + self.node.type + 's/', '_self');
-
-                })
-
-            })
-
-        });
-
-    self.nodeInfoContainer = divCol12.clone();
-
-    self.relationshipsContainer = divCol12.clone();
-
-    self.variableFormContainer = divCol12.clone();
-
-    self.variableTableContainer = divCol12.clone();
-
-    self.commandFormContainer = divCol12.clone();
-
-    self.adhocTableContainer = divCol12.clone();
-
-    self.container.append(
-        $('<h3>').append(
-            $('<small>').html(self.node.type),
-            '&nbsp;',
-            self.node.name,
-            $('<small>').css('margin-left', '1rem').append(self.editNodeBtn, self.deleteNodeBtn)
-        ),
-        self.tabsHeader.append(
-            liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
-            $('<li>').html(aTabs.clone().attr('href', '#relationships_tab').html('Relationships')),
-            $('<li>').html(aTabs.clone().attr('href', '#variables_tab').html('Variables')),
-            $('<li>').html(aTabs.clone().attr('href', '#adhoc_tab').html('Ad-Hoc'))
-        ),
-        $('<br>'),
-        divTabContent.clone().append(
-            self.infoTab.append(
-                divRow.clone().append(
-                    divCol12.clone().append(
-                        $('<h4>').css('margin-bottom', '30px').html(self.description)
-                    ),
-                    self.nodeInfoContainer
-                )
-            ),
-            divTab.clone().attr('id', 'relationships_tab').append(
-                divRow.clone().append(
-                    self.relationshipsContainer
-                )
-            ),
-            self.variablesTab.append(
-                divRow.clone().append(
-                    self.variableTableContainer
-                )
-            ),
-            divTab.clone().attr('id', 'adhoc_tab').append(
-                divRow.clone().append(
-                    self.commandFormContainer,
-                    self.adhocTableContainer
-                )
-            )
-        )
-    );
-
-    var alterRelationCallback = function () {
-
-        self.variableTable.reloadTable();
-
-        self.descendants && self.descendants.reload();
-
-    };
-
-    self.node.type === 'group' ? self.descendants = new Descendants(self.node, true, self.nodeInfoContainer) : new HostFacts(self.node, self.nodeInfoContainer);
-
-    self.variableTable = new VariableTable(self.node, self.variableTableContainer);
-
-    self.relationships = new Relationships(self.node, alterRelationCallback, self.relationshipsContainer);
-
-    self.adHocTaskForm = new AdHocTask(self.node.name, 'command', {id: null}, self.commandFormContainer);
-
-    self.adHocTaskTable = new AdHohTaskTable(self.node.name, self.adhocTableContainer);
-
-    if (self.node.type === 'group' && self.node.name === 'all') {
-
-        self.tabsHeader.remove();
-
-        self.editNodeBtn.remove();
-
-        self.deleteNodeBtn.remove();
-
-        self.infoTab.removeClass('in active');
-
-        self.variablesTab.addClass('in active').prepend($('<h4>').html('Variables'))
-
-    }
-
-    else rememberSelectedTab(self.tabsHeader.attr('id'));
+    self.apiPath = '/inventory/api/' + self.type + '/';
 
 }
 
-Node.getData = function (node, action, callback) {
+Node.prototype = Object.create(Base.prototype);
 
-    getData(node, paths.inventoryApi + node.type + '/' + action + '/', callback);
+Node.prototype.constructor = Node;
+
+Node.prototype.list = function (callback) {
+
+    var self = this;
+
+    self._getData('list', callback)
 
 };
 
-Node.postData = function (node, action, callback) {
+Node.prototype.descendants = function (container, showHeader) {
 
-    postData(node, paths.inventoryApi + node.type + '/' + action + '/', callback);
+    var self = this;
+
+    var gridOptions = {
+        headerTag: '<h5>',
+        showTitle: true,
+        hideIfEmpty: true,
+        checkered: true,
+        showCount: true,
+        ajaxDataKey: 'descendants',
+        truncateItemText: true,
+        gridBodyBottomMargin: '20px',
+        columns: sessionStorage.getItem('node_grid_columns'),
+        formatItem: function (gridContainer, gridItem) {
+
+            gridItem.click(function () {
+
+                window.open(paths.inventory + gridContainer.data('nodeType') + '/' + $(this).data('name') + '/', '_self')
+
+            });
+        }
+    };
+
+    var groupList = $('<div>').data('nodeType', 'group').DynaGrid($.extend({}, gridOptions, {
+        gridTitle: 'Groups',
+        ajaxUrl: self.apiPath + 'descendants/?type=groups&id=' + self.id
+    }));
+
+    var hostList = $('<div>').data('nodeType', 'host').DynaGrid($.extend({}, gridOptions, {
+        gridTitle: 'Hosts',
+        ajaxUrl: self.apiPath + 'descendants/?type=hosts&id=' + self.id
+    }));
+
+    container.html('').append(groupList, hostList);
+
+    showHeader && container.prepend($('<h4>').html('Descendants'))
 
 };
+
+Node.prototype.facts = function (container, facts) {
+
+    var self = this;
+
+    var gatherFactsButton = btnXsmall.clone().html('Gather facts').click(function () {
+
+        gatherFacts(self.name, function () {
+
+            self.facts()
+
+        });
+    });
+
+    self._getData('facts', function (data) {
+
+        if (data.facts) {
+
+            var divCol4L = divCol4.clone().addClass('report_field_left');
+
+            var divCol8R = divCol8.clone().addClass('report_field_right truncate-text');
+
+            var divFactsCol6 = divCol6.clone().css('margin-bottom', '15px');
+
+            var divFactsCol8 = divCol8.clone().css('margin-bottom', '15px');
+
+            var os = data.facts.os_family + ' - ' + data.facts.distribution + ' ' + data.facts.distribution_version;
+
+            var factsDate = data.facts.date_time.date + ' ' + data.facts.date_time.time + ' ' + data.facts.date_time.tz;
+
+            var interfaceTable = baseTable.clone();
+
+            var mountTable = baseTable.clone();
+
+            var interfacesArray = [];
+
+            $.each(data.facts.interfaces, function (index, value) {
+
+                interfacesArray.push(data.facts[value])
+
+            });
+
+            interfaceTable.DataTable({
+                data: interfacesArray,
+                columns: [
+                    {class: 'col-md-2', title: 'interface', data: 'device'},
+                    {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
+                    {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
+                    {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
+                    {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
+                    {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
+                ]
+            });
+
+            mountTable.DataTable({
+                data: data.facts.mounts,
+                columns: [
+                    {class: 'col-md-2', title: 'device', data: 'device'},
+                    {class: 'col-md-3', title: 'mount point', data: 'mount'},
+                    {class: 'col-md-2', title: 'size', data: 'size_total'},
+                    {class: 'col-md-2', title: 'type', data: 'fstype'},
+                    {class: 'col-md-3', title: 'options', data: 'options'}
+                ],
+                rowCallback: function(row, data) {
+
+                    $(row).find('td:eq(2)').html(humanBytes(data.size_total))
+
+                }
+            });
+
+            var factsRow = divRow.clone().append(
+                divFactsCol6.clone().append(
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('Full hostname:'),
+                        divCol8R.clone().append(data.facts.fqdn)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('Processor:'),
+                        divCol8R.clone().append(data.facts.processor[1])
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('Cores:'),
+                        divCol8R.clone().append(data.facts.processor_count)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('RAM Memory'),
+                        divCol8R.clone().append(humanBytes(data.facts.memtotal_mb, 'MB'))
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('System:'),
+                        divCol8R.clone().append(data.facts.system)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('OS:'),
+                        divCol8R.clone().append(os)
+                    )
+                )
+            );
+
+            if (data.facts.virtualization_role === 'host') factsRow.append(
+                divFactsCol6.clone().append(
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('System vendor:'), divCol8R.clone().append(data.facts.system_vendor)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('Product name:'), divCol8R.clone().append(data.facts.product_name)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('Product serial:'), divCol8R.clone().append(data.facts.product_serial)
+                    ),
+                    divRowEqHeight.clone().append(
+                        divCol4L.clone().append('Form factor:'), divCol8R.clone().append(data.facts.form_factor)
+                    )
+                )
+            );
+
+            else if (data.facts.virtualization_role === 'guest') {
+
+                if (sessionStorage.getItem('use_ec2_facts') === 'true' && data.facts.hasOwnProperty('ec2_hostname')) {
+
+                    factsRow.append(
+                        divFactsCol6.clone().append(
+                            divRowEqHeight.clone().append(
+                                divCol4L.clone().append('EC2 hostname:'),
+                                divCol8R.clone().append(data.facts.ec2_hostname)
+                            ),
+                            divRowEqHeight.clone().append(
+                                divCol4L.clone().append('EC2 public address:'),
+                                divCol8R.clone().append(data.facts.ec2_public_ipv4)
+                            ),
+                            divRowEqHeight.clone().append(
+                                divCol4L.clone().append('EC2 instance type:'),
+                                divCol8R.clone().append(data.facts.ec2_instance_type)
+                            ),
+                            divRowEqHeight.clone().append(
+                                divCol4L.clone().append('EC2 instance id:'),
+                                divCol8R.clone().append(data.facts.ec2_instance_id)
+                            ),
+                            divRowEqHeight.clone().append(
+                                divCol4L.clone().append('EC2 avaliability zone:'),
+                                divCol8R.clone().append(data.facts.ec2_placement_availability_zone)
+                            )
+                        )
+                    )
+
+                }
+
+            }
+
+            var allFactsContainer = divWell.clone().hide().JSONView(data.facts, {'collapsed': true});
+
+            var showFactsButton = btnXsmall.clone().html('Show facts').css('margin-right', '5px').click(function () {
+
+                if ($(this).html() === 'Show facts') $(this).html('Hide facts');
+
+                else $(this).html('Show facts');
+
+                allFactsContainer.toggle();
+
+            });
+
+            container.empty().append(
+                factsRow,
+                divRow.clone().append(
+                    divFactsCol8.clone().append($('<h5>').html('Networking'), interfaceTable),
+                    divFactsCol8.clone().append($('<h5>').html('Storage'), mountTable),
+                    divFactsCol8.clone().append(
+                        $('<span>').append(showFactsButton, gatherFactsButton),
+                        spanRight.clone().html('Facts gathered in ').append($('<strong>').html(factsDate))
+                    ),
+                    divCol12.clone().append(allFactsContainer)
+                )
+            );
+
+        }
+
+        else container.append(gatherFactsButton)
+    });
+
+};
+
+

@@ -77,44 +77,116 @@ Base.prototype = {
 
     },
 
+    deleteDialog: function (action, callback) {
+
+    var self = this;
+
+    var dialog = smallDialog.clone().addClass('text-center').append(
+        $('<strong>').html('This action cannot be undone')
+    );
+
+    dialog
+        .dialog({
+            width: '320',
+            buttons: {
+                Delete: function () {
+
+                    self._postData(action, function (data) {
+
+                        callback && callback(data)
+
+                    });
+
+                    $(this).dialog('close');
+
+                },
+                Cancel: function () {
+
+                    $(this).dialog('close')
+
+                }
+            },
+
+            close: function() {
+
+                $(this).remove()
+
+            }
+
+        })
+        .dialog('open')
+
+},
+
     delete: function (callback) {
 
         var self = this;
 
-        var deleteDialog = smallDialog.clone().addClass('text-center').append(
-            $('<strong>').html('This action cannot be undone')
+        self.deleteDialog('delete', callback)
+
+    },
+
+    edit: function (callback) {
+
+        var self = this;
+
+        var header = self.name ? 'Edit ' + self.name : 'Add ' + self.type;
+
+        var nameFieldInput = textInputField.clone().val(self.name);
+
+        var descriptionField = textAreaField.clone().val(self.description);
+
+        var dialog = largeDialog.clone().append(
+            $('<h4>').html(header),
+            divRow.clone().append(
+                divCol12.clone().append(
+                    divFormGroup.clone().append($('<label>').html('Name').append(nameFieldInput))
+                ),
+                divCol12.clone().append(
+                    divFormGroup.clone().append($('<label>').html('Description').append(descriptionField))
+                )
+            )
         );
 
-        deleteDialog
+        dialog
             .dialog({
-                width: '320',
                 buttons: {
-                    Delete: function () {
+                    Save: function() {
 
-                        self._postData('delete', function (data) {
+                        self.name = nameFieldInput .val();
 
-                            callback && callback(data)
+                        self.description = descriptionField.val();
 
-                        });
+                        self._postData('save', function (data) {
+
+                            dialog.dialog('close');
+
+                            callback && callback(data);
+
+                        })
+
+                    },
+                    Cancel: function() {
 
                         $(this).dialog('close');
 
-                    },
-                    Cancel: function () {
-
-                        $(this).dialog('close')
-
                     }
                 },
-
                 close: function() {
 
                     $(this).remove()
 
                 }
-
             })
-            .dialog('open')
+            .dialog('open');
+
+        },
+
+    get: function (callback) {
+
+        var self = this;
+
+        self._getData('get', callback)
 
     }
 

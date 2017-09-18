@@ -4,11 +4,11 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var nodeType = '{{ node_type }}';
+            var node = new Node({type: '{{ node_type }}'});
 
-            Node.getData({type: nodeType}, 'list', function (data) {
+            node.list(function (data) {
 
-                new Nodes(data.nodes, nodeType, $('#nodes_container'));
+                new Nodes(data.nodes, '{{ node_type }}', $('#nodes_container'));
 
             });
 

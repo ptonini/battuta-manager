@@ -49,7 +49,7 @@ function Relationships(node, alterRelationCallback, container) {
 
                             self.node.selection = [id];
 
-                            Node.postData(self.node, 'remove_' + relation, function () {
+                            NodeView.postData(self.node, 'remove_' + relation, function () {
 
                                 self[relation].DynaGrid('load');
 
@@ -76,7 +76,7 @@ function Relationships(node, alterRelationCallback, container) {
 
                                 self.node.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                                Node.postData(self.node, 'add_' + relation, function () {
+                                NodeView.postData(self.node, 'add_' + relation, function () {
 
                                     self[relation].DynaGrid('load');
 
@@ -100,7 +100,7 @@ function Relationships(node, alterRelationCallback, container) {
                     },
                     addButtonAction: function (selectionDialog) {
 
-                        new EntityDialog({name: null, description: null, type: relationType}, Node.postData, function () {
+                        new EntityDialog({name: null, description: null, type: relationType}, NodeView.postData, function () {
 
                             selectionDialog.DynaGrid('load')
 

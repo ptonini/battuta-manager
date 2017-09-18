@@ -37,7 +37,7 @@ function VariableTable(node, container) {
 
                             self.node.variable = JSON.stringify(variable);
 
-                            Node.postData(self.node, 'delete_var', self.table.DataTable().ajax.reload)
+                            NodeView.postData(self.node, 'delete_var', self.table.DataTable().ajax.reload)
 
                         })
 

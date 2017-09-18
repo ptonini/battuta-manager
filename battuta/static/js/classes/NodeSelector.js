@@ -116,11 +116,7 @@ function Nodes(nodes, nodeType, container) {
         },
         addButtonAction: function () {
 
-            new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, function() {
-
-                self._refreshData()
-
-            })
+            self._addNode()
 
         }
 
@@ -135,17 +131,16 @@ function Nodes(nodes, nodeType, container) {
         .append(spanFA.clone().addClass('fa-trash-o'))
         .click(function () {
 
-            new DeleteDialog(function () {
+            var node = new Node({id: null, type: self.nodeType});
 
-                var node = {id: null, type: self.nodeType, selection: self.nodeGrid.DynaGrid('getSelected', 'id')};
+            node.selection = self.nodeGrid.DynaGrid('getSelected', 'id');
 
-                Node.postData(node, 'delete_bulk', function () {
+            node.deleteDialog('delete_bulk', function () {
 
-                    self._refreshData()
+                self._refreshData()
 
-                });
+            });
 
-            })
         });
 
     self.container.append(
@@ -199,7 +194,9 @@ function Nodes(nodes, nodeType, container) {
         columns: self.columns,
         dom: '<"toolbar">frtip',
         order: [[0, "asc"]],
-        rowCallback: function(row, node) {
+        rowCallback: function(row, data) {
+
+            var node = new Node(data);
 
             $(row).find('td:eq(0)')
                 .css('cursor', 'pointer')
@@ -213,15 +210,12 @@ function Nodes(nodes, nodeType, container) {
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                        new DeleteDialog(function () {
+                        node.delete(function () {
 
-                            Node.postData(node, 'delete', function () {
+                            self._refreshData();
 
-                                self._refreshData();
+                        });
 
-                            });
-
-                        })
                     })
                 )
             );
@@ -241,11 +235,7 @@ function Nodes(nodes, nodeType, container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add '+ self.nodeType).click(function () {
 
-                    new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, function () {
-
-                        self._refreshData();
-
-                    });
+                    self._addNode()
 
                 })
             );
@@ -259,11 +249,14 @@ function Nodes(nodes, nodeType, container) {
 }
 
 Nodes.prototype = {
+
     _refreshData: function () {
 
         var self = this;
 
-        Node.getData({type: self.nodeType}, 'list', function (data) {
+        var node = new Node({type: self.nodeType});
+
+        node.list(function (data) {
 
             self.nodes = data.nodes;
 
@@ -276,5 +269,21 @@ Nodes.prototype = {
             self.nodeGrid.DynaGrid('load', data.nodes);
 
         });
+
+    },
+
+    _addNode: function () {
+
+        var self = this;
+
+        var node = new Node({name: null, description: null, type: self.nodeType});
+
+        node.edit(function() {
+
+            self._refreshData()
+
+        });
+
     }
+
 };

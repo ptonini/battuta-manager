@@ -155,7 +155,7 @@ PatternBuilder.prototype._selectNodes = function (nodeType, operation, separator
         },
         addButtonAction: function (selectionDialog) {
 
-            new EntityDialog({name: null, description: null, type: nodeType}, Node.postData, function () {
+            new EntityDialog({name: null, description: null, type: nodeType}, NodeView.postData, function () {
 
                 selectionDialog.DynaGrid('load')
 
