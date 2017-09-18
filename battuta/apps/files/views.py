@@ -166,6 +166,27 @@ class FilesView(View):
 
         return file_list
 
+    @staticmethod
+    def _create_file(new_name, new_path, file_type):
+
+        print new_path
+
+        if os.path.exists(new_path):
+
+            return 'exists'
+
+        else:
+
+            if file_type == 'directory':
+
+                os.makedirs(new_path)
+
+            else:
+
+                open(new_path, 'a').close()
+
+            return 'ok'
+
     def get(self, request, action):
 
         prefs = get_preferences()
@@ -386,23 +407,39 @@ class FilesView(View):
 
                 elif action == 'create':
 
-                    if os.path.exists(new_path):
+                    result = self._create_file(request.POST['new_name'], new_path, request.POST['type'])
+
+                    if result == 'ok':
+
+                        data = {'status': 'ok', 'msg': request.POST['new_name'] + ' created'}
+
+                    elif result == 'exists':
 
                         data = {'status': 'failed', 'msg': 'This name is already in use'}
 
-                    else:
+                elif action == 'create_role':
 
-                        if request.POST['type'] == 'directory':
+                    result = self._create_file(request.POST['name'], new_path, 'directory')
 
-                            os.makedirs(new_path)
+                    if result == 'ok':
 
+                        for folder in json.loads(request.POST['role_folders']):
 
+                            folder_path = os.path.join(new_path, folder['folder'])
 
-                        else:
+                            self._create_file(folder['folder'], folder_path, 'directory')
 
-                            open(new_path, 'a').close()
+                            if folder.get('main'):
 
-                        data = {'status': 'ok', 'msg': request.POST['new_name'] + ' created'}
+                                main_path = os.path.join(folder_path, 'main.yml')
+
+                                self._create_file('main.yml', main_path, '')
+
+                        data = {'status': 'ok', 'msg': request.POST['name'] + ' created', 'name': request.POST['name']}
+
+                    elif result == 'exists':
+
+                        data = {'status': 'failed', 'msg': request.POST['name'] + ' already exists'}
 
                 elif action == 'copy':
 

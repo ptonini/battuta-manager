@@ -1,11 +1,4 @@
-function Base (apiPath) {
-
-    var self = this;
-
-    self.apiPath = apiPath;
-
-}
-
+function Base () {}
 
 Base.prototype = {
 
@@ -76,11 +69,52 @@ Base.prototype = {
 
     },
 
-    _postData : function (action, callback, failCallback) {
+    _postData: function (action, callback, failCallback) {
 
         var self = this;
 
         self._submitRequest('POST', self, self.apiPath + action + '/', callback, failCallback);
+
+    },
+
+    delete: function (callback) {
+
+        var self = this;
+
+        var deleteDialog = smallDialog.clone().addClass('text-center').append(
+            $('<strong>').html('This action cannot be undone')
+        );
+
+        deleteDialog
+            .dialog({
+                width: '320',
+                buttons: {
+                    Delete: function () {
+
+                        self._postData('delete', function (data) {
+
+                            callback && callback(data)
+
+                        });
+
+                        $(this).dialog('close');
+
+                    },
+                    Cancel: function () {
+
+                        $(this).dialog('close')
+
+                    }
+                },
+
+                close: function() {
+
+                    $(this).remove()
+
+                }
+
+            })
+            .dialog('open')
 
     }
 

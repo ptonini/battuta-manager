@@ -179,22 +179,6 @@ File.prototype.exists = function (callback) {
 
 };
 
-File.prototype.delete = function (callback) {
-
-    var self = this;
-
-    new DeleteDialog(function () {
-
-        self._postData('delete', function (data) {
-
-            callback && callback(data)
-
-        });
-
-    })
-
-};
-
 File.prototype.openEditor = function (callback) {
 
     var self = this;
@@ -360,6 +344,100 @@ File.prototype.openEditor = function (callback) {
     editorDialog.dialog('open');
 
     textEditor.focus();
+
+};
+
+File.prototype.openRoleDialog = function (callback) {
+
+    var self = this;
+
+    var roleNameField = textInputField.clone().css('margin-bottom', '10px');
+
+    var roleDialog = smallDialog.clone().append(
+        divRow.clone().append(
+            divCol12.clone().append(
+                $('<label>').html('Role name').append(roleNameField)
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Files').data({folder: 'files'})
+                )
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Defaults').data({folder: 'defaults', main: true})
+                )
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Templates').data({folder: 'templates'})
+                )
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Vars').data({folder: 'vars', main: true})
+                )
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Handlers').data({folder: 'handlers', main: true})
+                )
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Tasks').data({folder: 'tasks', main: true})
+                )
+            ),
+            divCol6.clone().append(
+                divFormGroup.clone().append(
+                    btnSmallBlkClk.clone(true).html('Meta').data({folder: 'meta', main: true})
+                )
+            )
+        )
+    );
+
+    roleDialog
+        .dialog({
+            buttons: {
+                Save: function() {
+
+                    self.name = roleNameField.val();
+
+                    self.new_name = self.name;
+
+                    var roleFolders = [];
+
+                    roleDialog.find('button.checked_button').each(function() {
+
+                        roleFolders.push($(this).data())
+
+                    });
+
+                    self.role_folders = JSON.stringify(roleFolders);
+
+                    self._postData('create_role', function (data) {
+
+                        callback && callback(data, self);
+
+                        roleDialog.dialog('close');
+
+                    });
+
+                },
+                Cancel: function() {
+
+                    $(this).dialog('close')
+                }
+            },
+            close: function() {
+
+                $(this).remove()
+
+            }
+        })
+        .dialog('open');
+
+
 
 };
 
