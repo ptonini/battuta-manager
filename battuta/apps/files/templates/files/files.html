@@ -6,12 +6,8 @@
 
             document.title = 'Battuta - Files';
 
-            new FileTable('files', null, $('#file_table_container'))
+            $('#container').append(new FileTable('files'))
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Files</h3>
-    <div id="file_table_container"></div>
 {% endblock %}

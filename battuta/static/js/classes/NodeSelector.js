@@ -1,4 +1,4 @@
-function Nodes(nodes, nodeType, container) {
+function NodeSelector(nodes, nodeType, container) {
 
     var self = this;
 
@@ -74,7 +74,7 @@ function Nodes(nodes, nodeType, container) {
     }
 
     else if (self.nodeType=== 'group') self.columns = [
-        {class: 'col-md-2', title: 'Group', data: 'name'},
+        {class: 'col-md-2', title: 'GroupView', data: 'name'},
         {class: 'col-md-4', title: 'Description', data: 'description'},
         {class: 'col-md-1', title: 'Members', data: 'members'},
         {class: 'col-md-1', title: 'Parents', data: 'parents'},
@@ -248,7 +248,7 @@ function Nodes(nodes, nodeType, container) {
 
 }
 
-Nodes.prototype = {
+NodeSelector.prototype = {
 
     _refreshData: function () {
 

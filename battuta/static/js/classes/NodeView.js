@@ -1,18 +1,22 @@
-function NodeView(node, container) {
+function NodeView(node) {
 
     var self = this;
 
-    self.node = node;
+    var container = $('<div>');
 
-    self.container = container;
+    self.node = node;
 
     self.description = self.node.description || noDescriptionMsg;
 
     self.tabsHeader = ulTabs.clone().attr('id', self.node.type + '_' + self.node.name + '_tabs');
 
+    self.descendantsTabSelector = $('<li>').html(aTabs.clone().attr('href', '#descendants_tab').html('Descendants')),
+
     self.infoTab = divActiveTab.clone().attr('id', 'info_tab');
 
     self.variablesTab = divTab.clone().attr('id', 'variables_tab');
+
+    self.descendantsTab = divTab.clone().attr('id', 'descendants_tab');
 
     self.editNodeBtn = spanFA.clone()
         .addClass('fa-pencil btn-incell')
@@ -40,19 +44,17 @@ function NodeView(node, container) {
 
         });
 
-    self.nodeInfoContainer = divCol12.clone();
+    self.nodeInfo = self.node.type === 'host' ? self.node.facts() : null;
 
-    self.relationshipsContainer = divCol12.clone();
+    self.descendants = self.node.type === 'group' ? self.node.descendants() : null;
 
-    self.variableFormContainer = divCol12.clone();
-
-    self.variableTableContainer = divCol12.clone();
+    self.variableTable = self.node.variables();
 
     self.commandFormContainer = divCol12.clone();
 
     self.adhocTableContainer = divCol12.clone();
 
-    self.container.append(
+    container.append(
         $('<h3>').append(
             $('<small>').html(self.node.type),
             '&nbsp;',
@@ -62,6 +64,7 @@ function NodeView(node, container) {
         self.tabsHeader.append(
             liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
             $('<li>').html(aTabs.clone().attr('href', '#relationships_tab').html('Relationships')),
+            self.descendantsTabSelector,
             $('<li>').html(aTabs.clone().attr('href', '#variables_tab').html('Variables')),
             $('<li>').html(aTabs.clone().attr('href', '#adhoc_tab').html('Ad-Hoc'))
         ),
@@ -70,19 +73,30 @@ function NodeView(node, container) {
             self.infoTab.append(
                 divRow.clone().append(
                     divCol12.clone().append(
-                        $('<h4>').css('margin-bottom', '30px').html(self.description)
-                    ),
-                    self.nodeInfoContainer
+                        $('<h4>').css('margin-bottom', '30px').html(self.description),
+                        self.nodeInfo
+                    )
                 )
             ),
             divTab.clone().attr('id', 'relationships_tab').append(
                 divRow.clone().append(
-                    self.relationshipsContainer
+                    divCol12.clone().append(self.node.relationships(function () {
+
+                        self.variableTable.trigger('reload');
+
+                        self.node.type === 'group' && self.nodeInfo.trigger('reload');
+
+                    }))
+                )
+            ),
+            divTab.clone().attr('id', 'descendants_tab').append(
+                divRow.clone().append(
+                    divCol12.clone().append(self.descendants)
                 )
             ),
             self.variablesTab.append(
                 divRow.clone().append(
-                    self.variableTableContainer
+                    divCol12.clone().append(self.variableTable)
                 )
             ),
             divTab.clone().attr('id', 'adhoc_tab').append(
@@ -94,23 +108,11 @@ function NodeView(node, container) {
         )
     );
 
-    var alterRelationCallback = function () {
+    new AdHocTask(self.node.name, 'command', {id: null}, self.commandFormContainer);
 
-        self.variableTable.reloadTable();
+    new AdHohTaskTable(self.node.name, self.adhocTableContainer);
 
-        self.descendants && self.descendants.reload();
-
-    };
-
-    self.node.type === 'group' ? self.node.descendants(self.nodeInfoContainer, true) : self.node.facts(self.nodeInfoContainer);
-
-    self.variableTable = new VariableTable(self.node, self.variableTableContainer);
-
-    self.relationships = new Relationships(self.node, alterRelationCallback, self.relationshipsContainer);
-
-    self.adHocTaskForm = new AdHocTask(self.node.name, 'command', {id: null}, self.commandFormContainer);
-
-    self.adHocTaskTable = new AdHohTaskTable(self.node.name, self.adhocTableContainer);
+    self.node.type === 'host' && self.descendantsTabSelector.hide();
 
     if (self.node.type === 'group' && self.node.name === 'all') {
 
@@ -128,16 +130,6 @@ function NodeView(node, container) {
 
     else rememberSelectedTab(self.tabsHeader.attr('id'));
 
+    return container
+
 }
-
-NodeView.getData = function (node, action, callback) {
-
-    getData(node, paths.inventoryApi + node.type + '/' + action + '/', callback);
-
-};
-
-NodeView.postData = function (node, action, callback) {
-
-    postData(node, paths.inventoryApi + node.type + '/' + action + '/', callback);
-
-};

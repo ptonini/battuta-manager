@@ -6,12 +6,8 @@
 
             document.title = 'Battuta - Roles';
 
-            new FileTable('roles', null, $('#file_table_container'));
+            $('#container').append(new FileTable('roles'));
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Roles</h3>
-    <div id="file_table_container"></div>
 {% endblock %}

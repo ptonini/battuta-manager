@@ -1,6 +1,8 @@
-function FileTable(root, owner, container) {
+function FileTable(root, owner) {
 
     var self = this;
+
+    var container = $('<div>');
 
     self.root = root;
 
@@ -123,12 +125,13 @@ function FileTable(root, owner, container) {
         $('<td>')
     );
 
-    self.container.append(
-        divRowEqHeight.clone().css('margin-top', '18px').append(
-            divCol12.clone().append(self.breadCrumb)
-        ),
-        divRow.clone().css('margin-top', '18px').append(
-            divCol12.clone().append(self.table)
+    container.append(
+        divRow.clone().append(
+            divCol12.clone().append(
+                $('<h3>').html(self.owner ? self.owner + ' files' : self.root.capitalize())
+            ),
+            divCol12.clone().append(self.breadCrumb),
+            divCol12.clone().css('margin-top', '2rem').append(self.table)
         )
     );
 
@@ -152,7 +155,9 @@ function FileTable(root, owner, container) {
 
     }
 
-    else self._buildTable()
+    else self._buildTable();
+
+    return container
 }
 
 FileTable.prototype = {

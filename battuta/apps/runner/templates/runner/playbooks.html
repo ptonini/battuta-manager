@@ -6,12 +6,8 @@
 
             document.title = 'Battuta - Playbooks';
 
-            new FileTable('playbooks', null, $('#playbook_table_container'));
+            $('#container').append(new FileTable('playbooks'));
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Playbooks</h3>
-    <div id="playbook_table_container"></div>
 {% endblock %}

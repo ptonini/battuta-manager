@@ -2,6 +2,8 @@ function PlaybookArgs(file, args, sameWindow) {
 
     var self = this;
 
+    self.user = new User({username: sessionStorage.getItem('user_name')});
+
     self.file = file;
 
     self.args = args;
@@ -66,9 +68,7 @@ function PlaybookArgs(file, args, sameWindow) {
 
     self.extraVarsField = textInputField.clone();
 
-    self.credentialsSelector = selectField.clone();
-
-    User.buildCredentialsSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
+    self.credentialsSelector = self.user.credentialsSelector(null, true);
 
     self.dialog = largeDialog.clone();
 

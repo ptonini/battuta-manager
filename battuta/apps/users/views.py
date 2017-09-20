@@ -169,13 +169,13 @@ class UsersView(View):
 
                 elif action == 'creds':
 
-                    data = list()
+                    cred_list = list()
 
                     for cred in Credential.objects.filter(user=user).values():
 
                         cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
 
-                        data.append(self._truncate_secure_data(cred))
+                        cred_list.append(self._truncate_secure_data(cred))
 
                     if request.GET['runner'] == 'true':
 
@@ -185,11 +185,16 @@ class UsersView(View):
 
                             cred['title'] += ' (' + cred_owner.username + ')'
 
-                            data.append(self._truncate_secure_data(cred))
+                            cred_list.append(self._truncate_secure_data(cred))
+
+                    data = {'status': 'ok', 'creds': cred_list}
 
                 elif action == 'default_cred':
 
-                    data = self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
+                    data = {
+                        'status': 'ok',
+                        'cred': self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
+                    }
 
                 else:
 
@@ -324,8 +329,7 @@ class UsersView(View):
                 cred_dict = json.loads(form_data['cred'])
 
                 # Build credential object
-
-                if cred_dict['id']:
+                if cred_dict.get('id'):
 
                     cred = get_object_or_404(Credential, pk=cred_dict['id'])
 

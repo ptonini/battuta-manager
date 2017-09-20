@@ -36,22 +36,24 @@ Base.prototype = {
 
     },
 
-    _submitRequest: function (type, object, url, callback, failCallback) {
+    _submitRequest: function (type, obj, url, callback, failCallback) {
 
         var self = this;
 
-        var requestData = {};
+        var data = {};
 
-        for (var property in object) {
+        var pathKeys = ['path', 'basePath','apiPath', 'baseApiPath'];
 
-            if (object.hasOwnProperty(property)) requestData[property] = object[property];
+        for (var p in obj) {
+
+            if (obj.hasOwnProperty(p) && pathKeys.indexOf(p) === -1) data[p] = obj[p];
         }
 
         $.ajax({
             url: url,
             type: type,
             dataType: 'json',
-            data: requestData,
+            data: data,
             success: function (data) {
 
                 self._requestResponse(data, callback, failCallback)
@@ -75,6 +77,60 @@ Base.prototype = {
 
         self._submitRequest('POST', self, self.apiPath + action + '/', callback, failCallback);
 
+    },
+
+    _selectionDialog: function (options) {
+
+        var selectionDialog = largeDialog.clone();
+
+        selectionDialog
+            .DynaGrid({
+                gridTitle: 'selection',
+                showFilter: true,
+                showAddButton: (options.addButtonAction),
+                addButtonClass: 'open_node_form',
+                addButtonTitle: 'Add ' + options.objectType,
+                maxHeight: 400,
+                itemToggle: options.showButtons,
+                truncateItemText: true,
+                checkered: true,
+                columns: sessionStorage.getItem('selection_modal_columns'),
+                ajaxUrl: options.url,
+                ajaxDataKey: options.ajaxDataKey,
+                itemValueKey: options.itemValueKey,
+                loadCallback: function (gridContainer) {
+
+                    options.loadCallback && options.loadCallback(gridContainer, selectionDialog)
+
+                },
+                addButtonAction: function () {
+
+                    options.addButtonAction && options.addButtonAction(selectionDialog)
+
+                },
+                formatItem: function(gridContainer, gridItem) {
+
+                    options.formatItem && options.formatItem(gridItem, selectionDialog)
+
+                }
+            })
+            .dialog({
+                minWidth: 700,
+                minHeight: 500,
+                buttons: {
+                    Cancel: function () {
+
+                        $(this).dialog('close')
+
+                    }
+                },
+                close: function() {
+
+                    $(this).remove()
+
+                }
+            })
+            .dialog('open');
     },
 
     deleteDialog: function (action, callback) {
@@ -186,7 +242,13 @@ Base.prototype = {
 
         var self = this;
 
-        self._getData('get', callback)
+        self._getData('get', function (data){
+
+            data[self.key] && self.constructor(data[self.key]);
+
+            callback && callback(data)
+
+        })
 
     }
 

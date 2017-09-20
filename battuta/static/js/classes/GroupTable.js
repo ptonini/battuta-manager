@@ -1,12 +1,12 @@
-function UserGroupTable(container) {
+function GroupTable(container) {
 
     var self = this;
 
-    self.container = container;
+    container = $('<div>');
 
     self.table = baseTable.clone();
 
-    self.container.append(self.table);
+    container.append($('<h3>').html('User groups'), $('<br>'), self.table);
 
     self.table.DataTable({
         ajax: {
@@ -20,7 +20,9 @@ function UserGroupTable(container) {
             {class: 'col-md-7', title: 'description', data: 'description'},
             {class: 'col-md-2', title: 'members', data: 'member_count'}
         ],
-        rowCallback: function (row, group) {
+        rowCallback: function (row, data) {
+
+            var group = new Group(data);
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
@@ -32,13 +34,9 @@ function UserGroupTable(container) {
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                        new DeleteDialog(function () {
+                        group.delete(function () {
 
-                            UserGroup.postData(group, 'delete', function () {
-
-                                self.table.DataTable().ajax.reload();
-
-                            });
+                            self.table.DataTable().ajax.reload();
 
                         })
 
@@ -53,7 +51,9 @@ function UserGroupTable(container) {
             $('div.toolbar').css('float', 'left').html(
                 btnXsmall.clone().html('Add group').click(function () {
 
-                    new EntityDialog({id: null, name: null, description: null, type: 'user group'}, UserGroup.postData, function (data){
+                    var group = new Group({id: null, name: null, description: null});
+
+                    group.edit(function (data) {
 
                         window.open(paths.users + 'group/' + data.group.name + '/', '_self');
 
@@ -63,5 +63,7 @@ function UserGroupTable(container) {
             );
         }
     });
+
+    return container
 
 }

@@ -3,15 +3,16 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            User.getData({username: '{{ user_name }}'}, 'get', function (data) {
+            document.title = 'Battuta - {{ user_name }}';
 
-                new User('{{ user.username }}', data.user, $('#user_form_container'))
+            var user = new User({username: '{{ user_name }}'});
+
+            user.get(function () {
+
+                $('#container').html(new UserView(user, '{{ user.username }}'))
 
             });
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <div id="user_form_container"></div>
 {% endblock %}

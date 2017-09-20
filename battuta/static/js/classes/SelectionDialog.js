@@ -51,7 +51,6 @@ function SelectionDialog(options) {
 
             }
         })
-
         .dialog({
             minWidth: 700,
             minHeight: 500,

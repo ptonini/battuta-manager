@@ -209,7 +209,9 @@ function gatherFacts(nodeName, callback) {
 
     var jobKey = 'job_' + Math.random().toString(36).substring(2, 10);
 
-    User.getData({username: sessionStorage.getItem('user_name')}, 'default_cred', function (data) {
+    var user = new User({username: sessionStorage.getItem('user_name')});
+
+    user.defaultCred(function (data) {
 
         var job = {
             action: 'run',
@@ -312,3 +314,9 @@ function requestResponse (data, callback, failCallback) {
 }
 
 jQuery.fn.reverse = [].reverse;
+
+String.prototype.capitalize = function() {
+
+    return this.charAt(0).toUpperCase() + this.slice(1);
+
+}

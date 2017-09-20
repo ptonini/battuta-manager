@@ -5,13 +5,8 @@
 
             document.title = 'Battuta - User groups';
 
-            new UserGroupTable($('#user_group_table'))
+            $('#container').append(new GroupTable());
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>User Groups</h3>
-    <br>
-    <div id="user_group_table"></div>
 {% endblock %}

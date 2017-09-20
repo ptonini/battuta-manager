@@ -8,7 +8,7 @@
 
             node.list(function (data) {
 
-                new Nodes(data.nodes, '{{ node_type }}', $('#nodes_container'));
+                new NodeSelector(data.nodes, '{{ node_type }}', $('#nodes_container'));
 
             });
 

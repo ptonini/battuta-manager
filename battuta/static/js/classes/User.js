@@ -1,72 +1,143 @@
-function User(currentUser, user, container) {
+function User(param) {
+
+    param = param ? param : {};
+
     var self = this;
 
-    self.currentUser = currentUser;
+    self.id = param.id;
 
-    self.user = user;
+    self.username = param.username;
 
-    document.title = 'Battuta - ' + self.user.name;
+    self.first_name = param.first_name;
 
-    self.container = container;
+    self.last_name = param.last_name;
 
-    self.usernameContainer = $('<span>').html(self.user.username);
+    self.email = param.email;
 
-    self.deleteUserBtn = spanFA.clone()
-        .addClass('fa-trash-o btn-incell')
-        .attr('title', 'Delete')
-        .click(function () {
+    self.date_joined = param.date_joined;
 
-            new DeleteDialog(function () {
+    self.timezone = param.timezone;
 
-                User.postData(self.user, 'delete', function () {
+    self.is_active = param.is_active;
 
-                    window.open(paths.users + 'users/', '_self')
+    self.is_superuser = param.is_superuser;
 
-                })
+    self.last_login = param.last_login;
 
-            })
+    self.path = '/users/user/';
 
-        });
+    self.apiPath = '/users/api/user/';
 
+    self.runner = false;
 
-    self.firstNameField = textInputField.clone().val(self.user.first_name);
+}
 
-    self.lastNameField = textInputField.clone().val(self.user.last_name);
+User.prototype = Object.create(Base.prototype);
 
-    self.emailField = textInputField.clone().val(self.user.email);
+User.prototype.constructor = User;
 
-    self.timezoneField = selectField.clone().timezones().val(self.user.timezone);
+User.prototype.key = 'user';
 
-    self.form = $('<form>')
+User.prototype.edit = function (callback) {
+
+    var self = this;
+
+    var credUserField = textInputField.clone();
+
+    var credPassField = passInputField.clone();
+
+    var retypePasswordField = passInputField.clone();
+
+    var dialog = largeDialog.clone().append(
+        $('<h4>').html('Add user'),
+        divRow.clone().append(
+            divCol12.clone().append(
+                divFormGroup.clone().append($('<label>').html('Username').append(credUserField)),
+                divFormGroup.clone().append($('<label>').html('Password').append(credPassField)),
+                divFormGroup.clone().append($('<label>').html('Retype password').append(retypePasswordField))
+            )
+        )
+    );
+
+    dialog
+        .dialog({
+            buttons: {
+                Save: function() {
+
+                    self.username = credUserField.val();
+
+                    self.password = credPassField.val();
+
+                    self.timezone = sessionStorage.getItem('default_timezone');
+
+                    if (self.password !== retypePasswordField.val()) $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
+
+                    self._postData('save', function (data) {
+
+                        dialog.dialog('close');
+
+                        callback && callback(data);
+
+                    });
+
+                },
+                Cancel: function() {
+
+                    $(this).dialog('close');
+
+                }
+            },
+            close: function() {
+
+                $(this).remove()
+
+            }
+        })
+        .dialog('open');
+
+};
+
+User.prototype.defaultCred = function (callback) {
+
+    var self = this;
+
+    self._postData('default_cred', callback)
+
+};
+
+User.prototype.form = function () {
+
+    var self = this;
+
+    var firstNameField = textInputField.clone().val(self.first_name);
+
+    var lastNameField = textInputField.clone().val(self.last_name);
+
+    var emailField = textInputField.clone().val(self.email);
+
+    var timezoneField = selectField.clone().timezones().val(self.timezone);
+
+    return $('<form>')
         .append(
             divRow.clone().append(
-                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Joined in:')),
-                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.date_joined)
-            ),
-            divRow.clone().append(
-                $('<div>').attr('class', 'col-md-2 col-sm-2').html($('<strong>').html('Last login:')),
-                $('<div>').attr('class', 'col-md-10 col-sm-10').html(self.user.last_login)
-            ),
-            $('<br>'),
-            divRow.clone().append(
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('First name').append(self.firstNameField)
+                        $('<label>').html('First name').append(firstNameField)
                     )
                 ),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('Last name').append(self.lastNameField)
+                        $('<label>').html('Last name').append(lastNameField)
                     )
                 ),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('E-mail').append(self.emailField)
+                        $('<label>').html('E-mail').append(emailField)
                     )
                 ),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('Timezone').append(self.timezoneField)
+                        $('<label>').html('Timezone').append(timezoneField)
                     )
                 ),
                 divCol12.clone().append(
@@ -78,32 +149,38 @@ function User(currentUser, user, container) {
 
             event.preventDefault();
 
-            self.user.first_name = self.firstNameField.val();
+            self.first_name = firstNameField.val();
 
-            self.user.last_name = self.lastNameField.val();
+            self.last_name = lastNameField.val();
 
-            self.user.email = self.emailField.val();
+            self.email = emailField.val();
 
-            self.user.timezone = self.timezoneField.val();
+            self.timezone = timezoneField.val();
 
-            User.postData(self.user, 'save')
+            self._postData('save');
 
         });
 
-    self.currentPassword = passInputField.clone();
+};
 
-    self.newPassword = passInputField.clone();
+User.prototype.passwordForm = function () {
 
-    self.retypeNewPassword = passInputField.clone();
+    var self = this;
 
-    self.passwordForm = $('<form>')
+    var currentPassword = passInputField.clone();
+
+    var newPassword = passInputField.clone();
+
+    var retypeNewPassword = passInputField.clone();
+
+    return $('<form>')
         .append(
             divRow.clone().append(
                 divCol12.clone().append($('<hr>')),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Current password (' + self.currentUser + ')').append(
-                            self.currentPassword
+                            currentPassword
                         )
                     )
                 )
@@ -111,12 +188,12 @@ function User(currentUser, user, container) {
             divRow.clone().append(
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('New password').append(self.newPassword)
+                        $('<label>').html('New password').append(newPassword)
                     )
                 ),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('Retype new password').append(self.retypeNewPassword)
+                        $('<label>').html('Retype new password').append(retypeNewPassword)
                     )
                 ),
                 divCol12.clone().append(btnXsmall.clone().html('Change password'))
@@ -126,88 +203,147 @@ function User(currentUser, user, container) {
 
             event.preventDefault();
 
-            self.user.current_password = self.currentPassword.val();
+            self.current_password = currentPassword.val();
 
-            self.user.new_password = self.newPassword.val();
+            self.new_password = newPassword.val();
 
-            if (self.user.current_password) {
+            if (self.current_password) {
 
-                if (self.user.new_password && self.user.new_password === self.retypeNewPassword.val()) {
-
-                    User.postData(self.user, 'chgpass');
-
-                }
+                if (self.new_password && self.new_password === retypeNewPassword.val()) self._postData('chgpass');
 
                 else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
 
             }
 
-            $(this).find('input').val('')
+            $(this).find('input').val('');
 
         });
 
+};
 
-    self.credentialsSelector = selectField.clone().change(function () {
+User.prototype.credentialsForm = function () {
 
-        self._loadCredentialsForm();
+    var self = this;
+
+    var resetCredentialsForm =  function () {
+
+        credentialsForm.find('input, textarea').val('');
+
+        credentialsForm.find('button:contains("Delete")').addClass('hidden');
+
+        credentialsForm.removeData('loadedCred');
+
+        isSharedButton.removeClass('checked_button');
+
+        isDefaultButton.removeClass('checked_button');
+
+        sudoUserField.attr('placeholder', 'root');
+
+        askPassButton.addClass('checked_button').prop('disabled', false);
+
+        askSudoPassButton.addClass('checked_button').prop('disabled', false);
+
+    };
+
+    var loadCredentialsForm = function () {
+
+        var credentials = $('option:selected', credentialsSelector).data();
+
+        resetCredentialsForm();
+
+        if (credentials.title) {
+
+            credentialsForm.find('button:contains("Delete")').removeClass('hidden');
+
+            credentialsForm.data('loadedCred', credentials.id);
+
+            titleField.val(credentials.title);
+
+            credUserField.val(credentials.username);
+
+            sudoUserField.val(credentials.sudo_user);
+
+            rsaKeyField.val(credentials.rsa_key);
+
+            isSharedButton.toggleClass('checked_button', credentials.is_shared);
+
+            isDefaultButton.toggleClass('checked_button', credentials.is_default);
+
+            credPassField.val(credentials.password);
+
+            sudoPassField.val(credentials.sudo_pass);
+
+            askPassButton
+                .toggleClass('checked_button', credentials.ask_pass)
+                .prop('disabled', (credentials.password || credentials.rsa_key ));
+
+            askSudoPassButton
+                .toggleClass('checked_button', credentials.ask_sudo_pass)
+                .prop('disabled', credentials.sudo_pass);
+
+        }
+
+    };
+
+    var titleField = textInputField.clone();
+
+    var isSharedButton = btnSmallClk.clone(true).html('Shared');
+
+    var isDefaultButton = btnSmallClk.clone(true).html('Default');
+
+    var credUserField = textInputField.clone();
+
+    var credPassField = passInputField.clone();
+
+    var askPassButton = btnSmallClk.clone(true).html('Ask');
+
+    var rsaKeyField = textAreaField.clone();
+
+    var sudoUserField = textInputField.clone().attr('placeholder', 'root');
+
+    var sudoPassField = passInputField.clone();
+
+    var askSudoPassButton = btnSmallClk.clone(true).html('Ask');
+
+    var credentialsSelector = self.credentialsSelector(null, false, function () {
+
+        loadCredentialsForm();
 
     });
-
-    User.buildCredentialsSelectionBox(self.user.username, self.credentialsSelector);
-
-    self.titleField = textInputField.clone();
-
-    self.isSharedButton = btnSmallClk.clone(true).html('Shared');
-
-    self.isDefaultButton = btnSmallClk.clone(true).html('Default');
-
-    self.credUserField = textInputField.clone();
-
-    self.credPassField = passInputField.clone();
-
-    self.askPassButton = btnSmallClk.clone(true).html('Ask');
-
-    self.rsaKeyField = textAreaField.clone();
-
-    self.sudoUserField = textInputField.clone().attr('placeholder', 'root');
-
-    self.sudoPassField = passInputField.clone();
-
-    self.askSudoPassButton = btnSmallClk.clone(true).html('Ask');
-
-    self.credentialsForm = $('<form>')
+    
+    var credentialsForm = $('<form>')
         .append(
             divRow.clone().append(
                 divCol12.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Saved credentials').append(self.credentialsSelector))
+                    divFormGroup.clone().append($('<label>').html('Saved credentials').append(credentialsSelector))
                 ),
-                divCol8.clone().append(divFormGroup.clone().append($('<label>').html('Title').append(self.titleField))),
-                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(self.isSharedButton),
-                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(self.isDefaultButton),
+                divCol8.clone().append(divFormGroup.clone().append($('<label>').html('Title').append(titleField))),
+                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(isSharedButton),
+                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(isDefaultButton),
                 divCol6.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Username').append(self.credUserField))
+                    divFormGroup.clone().append($('<label>').html('Username').append(credUserField))
                 ),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Password').append(
                             divInputGroup.clone().append(
-                                self.credPassField, spanBtnGroup.clone().append(self.askPassButton)
+                                credPassField, spanBtnGroup.clone().append(askPassButton)
                             )
                         )
                     )
                 ),
                 divCol12.clone().append(
-                    divFormGroup.clone().append($('<label>').html('RSA key').append(self.rsaKeyField))
+                    divFormGroup.clone().append($('<label>').html('RSA key').append(rsaKeyField))
                 ),
                 divCol6.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Sudo Username').append(self.sudoUserField))
+                    divFormGroup.clone().append($('<label>').html('Sudo Username').append(sudoUserField))
                 ),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Sudo Password').append(
                             divInputGroup.clone().append(
-                                self.sudoPassField,
-                                spanBtnGroup.clone().append(self.askSudoPassButton)
+                                sudoPassField,
+                                spanBtnGroup.clone().append(askSudoPassButton)
                             )
                         )
                     )
@@ -218,11 +354,6 @@ function User(currentUser, user, container) {
                 )
             )
         )
-        .change(function () {
-
-            self.formHasChanged = true
-
-        })
         .submit(function (event) {
 
             event.preventDefault();
@@ -231,24 +362,25 @@ function User(currentUser, user, container) {
 
                 case 'Save':
 
-                    self.user.cred = JSON.stringify({
-                        user: self.user.id,
-                        id: self.loadedCredentials.id,
-                        title:self.titleField.val(),
-                        username: self.credUserField.val(),
-                        password: self.credPassField.val(),
-                        sudo_user: self.sudoUserField.val(),
-                        sudo_pass: self.sudoPassField.val(),
-                        is_shared: self.isSharedButton.hasClass('checked_button'),
-                        is_default: self.isDefaultButton.hasClass('checked_button'),
-                        ask_pass: self.askPassButton.hasClass('checked_button'),
-                        ask_sudo_pass: self.askSudoPassButton.hasClass('checked_button'),
-                        rsa_key: self.rsaKeyField.val()
+                    self.cred = JSON.stringify({
+                        user: self.id,
+                        id: credentialsForm.data('loadedCred'),
+                        title:titleField.val(),
+                        username: credUserField.val(),
+                        password: credPassField.val(),
+                        sudo_user: sudoUserField.val(),
+                        sudo_pass: sudoPassField.val(),
+                        is_shared: isSharedButton.hasClass('checked_button'),
+                        is_default: isDefaultButton.hasClass('checked_button'),
+                        ask_pass: askPassButton.hasClass('checked_button'),
+                        ask_sudo_pass: askSudoPassButton.hasClass('checked_button'),
+                        rsa_key: rsaKeyField.val()
                     });
 
-                    User.postData(self.user, 'save_cred', function (data) {
 
-                        User.buildCredentialsSelectionBox(self.user.username, self.credentialsSelector, data.cred.id);
+                    self._postData('save_cred', function (data) {
+
+                        credentialsSelector.trigger('build', data.cred.id);
 
                     });
 
@@ -256,15 +388,11 @@ function User(currentUser, user, container) {
 
                 case 'Delete':
 
-                    new DeleteDialog(function () {
+                    self.cred = JSON.stringify({id: credentialsForm.data('loadedCred')});
 
-                        self.user.cred = JSON.stringify(self.loadedCredentials);
+                    self._postData('delete_cred', function (data) {
 
-                        User.postData(self.user, 'delete_cred', function (data) {
-
-                            User.buildCredentialsSelectionBox(self.user.username, self.credentialsSelector, data.cred.id);
-
-                        });
+                        credentialsSelector.trigger('build', data.cred.id);
 
                     });
 
@@ -274,7 +402,70 @@ function User(currentUser, user, container) {
 
         });
 
-    self.groupGrid = $('<div>').DynaGrid({
+    return credentialsForm;
+
+};
+
+User.prototype.credentialsSelector = function (startValue, runner, callback) {
+
+    var self = this;
+
+    self.runner = runner;
+
+    var buildSelector = function (startValue) {
+
+        self._getData('creds', function (data) {
+
+            $.each(data.creds, function (index, cred) {
+
+                var display = cred.title;
+
+                if (cred.is_default && !startValue) {
+
+                    display += ' (default)';
+
+                    startValue = cred.id;
+
+                }
+
+                selector.append($('<option>').val(cred.id).data(cred).append(display));
+
+            });
+
+            if (self.runner) selector.append($('<option>').val('').html('ask').data('id', 0));
+
+            else selector.append($('<option>').val('new').append('new'));
+
+            selector.val(startValue).change();
+
+        });
+
+
+    };
+
+    var selector = selectField.clone()
+        .change(function () {
+
+            callback && callback()
+
+        })
+        .on('build', function (event, startValue) {
+
+            buildSelector(startValue)
+
+        });
+
+    buildSelector(startValue);
+
+    return selector;
+
+};
+
+User.prototype.groupGrid = function () {
+
+    var self = this;
+
+    var groupGrid = $('<div>').DynaGrid({
         gridTitle: 'Groups',
         headerTag: '<h4>',
         showAddButton: true,
@@ -285,10 +476,10 @@ function User(currentUser, user, container) {
         addButtonType: 'text',
         checkered: true,
         showCount: true,
-        buildNow: (self.user.username),
+        buildNow: (self.username),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('user_grid_columns'),
-        ajaxUrl: paths.usersApi + 'user/groups/?username=' + self.user.username,
+        ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
         formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
@@ -304,11 +495,11 @@ function User(currentUser, user, container) {
                     .attr('title', 'Remove')
                     .click(function () {
 
-                        self.user.selection = [gridItem.data('id')];
+                        self.selection = [gridItem.data('id')];
 
-                        User.postData(self.user, 'remove_groups', function () {
+                        self._postData('remove_groups', function () {
 
-                            self.groupGrid.DynaGrid('load')
+                            groupGrid.DynaGrid('load')
 
                         });
 
@@ -318,9 +509,9 @@ function User(currentUser, user, container) {
         },
         addButtonAction: function () {
 
-            new SelectionDialog({
+            self._selectionDialog({
                 objectType: 'group',
-                url: paths.usersApi + 'user/groups/?reverse=true&username=' + self.user.username,
+                url: self.apiPath + 'user/groups/?reverse=true&username=' + self.username,
                 ajaxDataKey: 'groups',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -329,12 +520,11 @@ function User(currentUser, user, container) {
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
+                            self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                            self.user.selection = selectionDialog.DynaGrid('getSelected', 'id');
+                            self._postData('add_groups', function () {
 
-                            User.postData(self.user, 'add_groups', function () {
-
-                                self.groupGrid.DynaGrid('load')
+                                groupGrid.DynaGrid('load')
 
                             });
 
@@ -358,165 +548,6 @@ function User(currentUser, user, container) {
         }
     });
 
-    self.groupsTab = $('<li>').html(aTabs.clone().attr('href', '#groups_tab').html('Groups'))
-
-    self.tabsHeader = ulTabs.clone().attr('id','user_' + self.user.id + '_tabs');
-
-    self.container.append(
-        $('<h3>').append(
-            $('<small>').html(self.user.is_superuser ? 'superuser' : 'user'),
-            '&nbsp;',
-            user.username,
-            $('<small>').css('margin-left', '1rem').append(self.deleteUserBtn)
-        ),
-        ulTabs.clone().attr('id','user_' + self.user.id + '_tabs').append(
-            liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
-            $('<li>').html(aTabs.clone().attr('href', '#credentials_tab').html('Credentials')),
-            self.groupsTab
-        ),
-        $('<br>'),
-        divTabContent.clone().append(
-            divActiveTab.clone().attr('id', 'info_tab').append(
-                divRow.clone().append(
-                    divCol6.clone().append(self.form, self.passwordForm)
-                )
-            ),
-            divTab.clone().attr('id', 'credentials_tab').append(
-                divRow.clone().append(
-                    divCol6.clone().append(self.credentialsForm)
-                )
-            ),
-            divTab.clone().attr('id', 'groups_tab').append(
-                divRow.clone().append(
-                    divCol12.clone().append(self.groupGrid)
-                )
-            )
-        )
-    );
-
-    if (self.user.is_superuser) {
-
-        self.deleteUserBtn.remove();
-
-        self.groupsTab.remove();
-
-    }
-
-}
-
-User.getData = function (user, action, callback) {
-
-    getData(user, paths.usersApi + 'user/' + action + '/', callback);
-
+    return groupGrid
 };
 
-User.postData = function (user, action, callback) {
-
-    postData(user, paths.usersApi + 'user/' + action + '/', callback);
-
-};
-
-User.buildCredentialsSelectionBox = function (username, credentials, startValue) {
-
-    var runner = (window.location.href.split('/').indexOf('users') < 0);
-
-    credentials.empty();
-
-    $.ajax({
-        url: paths.usersApi + 'user/creds/?username=' + username,
-        dataType: 'json',
-        data: {runner: runner},
-        success: function (data) {
-
-            $.each(data, function (index, cred) {
-
-                var display = cred.title;
-
-                if (cred.is_default && !startValue) {
-
-                    display += ' (default)';
-
-                    startValue = cred.id
-
-                }
-
-                credentials.append($('<option>').val(cred.id).data(cred).append(display))
-
-            });
-
-            if (runner) credentials.append($('<option>').val('').html('ask').data('id', 0));
-
-            else credentials.append($('<option>').val('new').append('new'));
-
-            credentials.val(startValue).change()
-
-        }
-    });
-};
-
-User.prototype = {
-    _loadCredentialsForm: function () {
-
-        var self = this;
-
-        var credentials = $('option:selected', self.credentialsSelector).data();
-
-        self._resetCredentialsForm();
-
-        if (credentials.title) {
-
-            self.loadedCredentials = credentials;
-
-            self.credentialsForm.find('button:contains("Delete")').removeClass('hidden');
-
-            self.titleField.val(credentials.title);
-
-            self.credUserField.val(credentials.username);
-
-            self.sudoUserField.val(credentials.sudo_user);
-
-            self.rsaKeyField.val(credentials.rsa_key);
-
-            self.isSharedButton.toggleClass('checked_button', credentials.is_shared);
-
-            self.isDefaultButton.toggleClass('checked_button', credentials.is_default);
-
-            self.credPassField.val(credentials.password);
-
-            self.sudoPassField.val(credentials.sudo_pass);
-
-            self.askPassButton
-                .toggleClass('checked_button', credentials.ask_pass)
-                .prop('disabled', (credentials.password || credentials.rsa_key ));
-
-            self.askSudoPassButton
-                .toggleClass('checked_button', credentials.ask_sudo_pass)
-                .prop('disabled', credentials.sudo_pass);
-
-        }
-
-        else self.loadedCredentials = {id: null}
-
-    },
-    _resetCredentialsForm: function () {
-
-        var self = this;
-
-        self.formHasChanged = false;
-
-        self.credentialsForm.find('input, textarea').val('');
-
-        self.isSharedButton.removeClass('checked_button');
-
-        self.isDefaultButton.removeClass('checked_button');
-
-        self.sudoUserField.attr('placeholder', 'root');
-
-        self.credentialsForm.find('button:contains("Delete")').addClass('hidden');
-
-        self.askPassButton.addClass('checked_button').prop('disabled', false);
-
-        self.askSudoPassButton.addClass('checked_button').prop('disabled', false);
-
-    }
-};

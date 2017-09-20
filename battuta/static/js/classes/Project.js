@@ -368,8 +368,6 @@ function Project(project, container) {
 
     });
 
-    self.tabsHeader =
-
     self.container.append(
         $('<h3>').append(
             $('<small>').html('project'),
@@ -504,6 +502,7 @@ function Project(project, container) {
 }
 
 Project.prototype = {
+
     setProperty: function (url, type, dataKey, itemKey, input, property) {
 
         var self = this;

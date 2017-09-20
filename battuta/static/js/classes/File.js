@@ -4,8 +4,6 @@ function File(param) {
 
     var self = this;
 
-    self.apiPath = '/files/api/';
-
     self.name = param.name ? param.name : '';
 
     self.new_name = param.new_name ? param.new_name : self.name;
@@ -27,6 +25,8 @@ function File(param) {
     self.owner = param.owner;
 
     self.text = param.text;
+
+    self.apiPath = '/files/api/';
 
 }
 
@@ -501,5 +501,3 @@ File.prototype._openDialog = function (action, callback) {
         .dialog('open');
 
 };
-
-

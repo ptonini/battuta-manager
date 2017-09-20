@@ -8,15 +8,12 @@
 
             var node = new Node({id: '{{ node.id }}', type: '{{ node.type }}'});
 
-            node.get(function (data) {
+            node.get(function () {
 
-               new NodeView(new Node(data.node), $('#node_container'))
+                $('#container').html(new NodeView(node))
 
             });
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <div id="node_container"></div>
 {% endblock %}

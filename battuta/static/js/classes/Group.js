@@ -1,50 +1,40 @@
-function UserGroup(group, container) {
+function Group(param) {
+
+    param = param ? param : {};
 
     var self = this;
 
-    self.group = group;
+    self.id = param.id;
 
-    document.title = 'Battuta - ' + self.group.name;
+    self.name = param.name;
 
-    self.container = container;
+    self.description = param.description;
 
-    self.nameContainer = $('<span>').html(self.group.name);
+    self.permissions = param.permissions;
 
-    self.descriptionContainer = $('<h4>')
-        .css('margin-bottom', '30px')
-        .html(self.group.description || noDescriptionMsg);
+    self.member_count = param.member_count;
 
-    self.editGroupBtn = spanFA.clone()
-        .addClass('fa-pencil btn-incell')
-        .attr('title', 'Edit')
-        .click(function() {
+    self.editable = param.editable;
 
-            new EntityDialog(self.group, UserGroup.postData, function (data) {
+    self.path = '/users/group/';
 
-                window.open(paths.users + 'group/' + data.group.name + '/', '_self')
+    self.apiPath = '/users/api/group/';
 
-            });
+    self.type = 'user group';
 
-        });
+}
 
-    self.deleteGroupBtn = spanFA.clone()
-        .addClass('fa-trash-o btn-incell')
-        .attr('title', 'Delete')
-        .click(function() {
+Group.prototype = Object.create(Base.prototype);
 
-            new DeleteDialog(function () {
+Group.prototype.constructor = Group;
 
-                UserGroup.postData(self.group, 'delete', function () {
+Group.prototype.key = 'group';
 
-                    window.open(paths.users + 'groups/', '_self')
+Group.prototype.permissionsForm = function () {
 
-                })
+    var self = this;
 
-            })
-
-        });
-
-    self.form = $('<form>')
+    var form = $('<form>')
         .append(
             divCol12.clone().append(
                 divRow.clone().append(
@@ -150,33 +140,48 @@ function UserGroup(group, container) {
 
             var permissions = [];
 
-            self.form.find('button.permBtn').each(function () {
+            form.find('button.permBtn').each(function () {
 
                 permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
 
             });
 
-            self.group.permissions = JSON.stringify(permissions);
+            self.permissions = JSON.stringify(permissions);
 
-            UserGroup.postData(self.group, 'save')
-
+            self._postData('save');
 
         });
 
-    self.membersGrid = $('<div>').DynaGrid({
+        form.find('button.permBtn').each(function () {
+
+            if (self.permissions.indexOf($(this).data('permission')) > -1) $(this).addClass('checked_button')
+
+        });
+
+        self.editable || form.find('input, textarea, button, select').attr('disabled','disabled');
+
+        return form
+
+};
+
+Group.prototype.memberGrid = function () {
+
+    var self = this;
+
+    var membersGrid = $('<div>').DynaGrid({
         gridTitle: 'Members',
         headerTag: '<h4>',
         showAddButton: true,
         ajaxDataKey: 'members',
         itemValueKey: 'name',
         addButtonTitle: 'Add members',
-        showTitle: true,
+        addButtonType: 'text',
+        addButtonClass: 'btn btn-default btn-xs',
         checkered: true,
         showCount: true,
-        buildNow: (self.group.name),
         gridBodyBottomMargin: '20px',
         columns: sessionStorage.getItem('node_grid_columns'),
-        ajaxUrl: paths.usersApi + 'group/members/?name=' + self.group.name,
+        ajaxUrl: self.apiPath + 'members/?name=' + self.name,
         formatItem: function (gridContainer, gridItem) {
 
             var name = gridItem.data('value');
@@ -192,11 +197,11 @@ function UserGroup(group, container) {
                     .attr('title', 'Remove')
                     .click(function () {
 
-                        self.group.selection = [gridItem.data('id')];
+                        self.selection = [gridItem.data('id')];
 
-                        UserGroup.postData(self.group, 'remove_members', function () {
+                        self._postData('remove_members', function () {
 
-                            self.membersGrid.DynaGrid('load')
+                            membersGrid.DynaGrid('load')
 
                         });
 
@@ -206,9 +211,9 @@ function UserGroup(group, container) {
         },
         addButtonAction: function () {
 
-            var options = {
+            self._selectionDialog({
                 objectType: 'user',
-                url: paths.usersApi + 'group/members/?reverse=true&name=' + self.group.name,
+                url: paths.usersApi + 'group/members/?reverse=true&name=' + self.name,
                 ajaxDataKey: 'members',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -217,11 +222,11 @@ function UserGroup(group, container) {
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
-                            self.group.selection = selectionDialog.DynaGrid('getSelected', 'id');
+                            self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                            UserGroup.postData(self.group, 'add_members', function () {
+                            self._postData('add_members', function () {
 
-                                self.membersGrid.DynaGrid('load')
+                                membersGrid.DynaGrid('load')
 
                             });
 
@@ -240,64 +245,11 @@ function UserGroup(group, container) {
                 },
                 addButtonAction: null,
                 formatItem: null
-            };
-
-            new SelectionDialog(options);
+            });
 
         }
     });
 
-    self.container.append(
-        $('<h3>').append(
-            $('<small>').html('user group'),
-            '&nbsp;',
-            self.nameContainer,
-            $('<small>').css('margin-left', '1rem').append(self.editGroupBtn, self.deleteGroupBtn)
-        ),
-        ulTabs.clone().attr('id','user_group_' + self.group.id + '_tabs').append(
-            liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
-            $('<li>').html(aTabs.clone().attr('href', '#permissions_tab').html('Permissions'))
-        ),
-        $('<br>'),
-        divTabContent.clone().append(
-            divActiveTab.clone().attr('id', 'info_tab').append(
-                divRow.clone().append(
-                    divCol12.clone().append(self.descriptionContainer),
-                    divCol12.clone().append(self.membersGrid)
-                )
-            ),
-            divTab.clone().attr('id', 'permissions_tab').append(
-                divRow.clone().append(self.form)
-            )
-        )
-    );
-
-    self.form.find('button.permBtn').each(function () {
-
-        if (self.group.permissions.indexOf($(this).data('permission')) > -1) $(this).addClass('checked_button')
-
-    });
-
-    if (!self.group.editable) {
-
-        self.form.find('input, textarea, button, select').attr('disabled','disabled');
-
-        self.editGroupBtn.hide();
-
-        self.deleteGroupBtn.hide();
-
-    }
-
-}
-
-UserGroup.getData = function (group, action, callback) {
-
-    getData(group, paths.usersApi + 'group/' + action + '/', callback);
-
-};
-
-UserGroup.postData = function (group, action, callback) {
-
-    postData(group, paths.usersApi + 'group/' + action + '/', callback);
+    return membersGrid
 
 };

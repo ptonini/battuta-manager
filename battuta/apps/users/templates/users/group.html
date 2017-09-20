@@ -3,15 +3,16 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            UserGroup.getData({name: '{{ group_name }}'}, 'get', function (data) {
+            document.title = 'Battuta - {{ group_name }}';
 
-                new UserGroup(data.group, $('#group_form_container'))
+            var group = new Group({name: '{{ group_name }}'});
+
+            group.get(function () {
+
+                $('#container').html(new GroupView(group))
 
             });
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <div id="group_form_container"></div>
 {% endblock %}

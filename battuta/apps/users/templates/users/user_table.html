@@ -5,13 +5,8 @@
 
             document.title = 'Battuta - Users';
 
-            new UserTable($('#user_table_container'))
+            $('#container').append(new UserTable())
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Users</h3>
-    <br>
-    <div id="user_table_container"></div>
 {% endblock %}

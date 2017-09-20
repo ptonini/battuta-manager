@@ -6,6 +6,8 @@ function AdHocTask (pattern, type, task, container) {
 
     self.task = task;
 
+    self.user = new User({username: sessionStorage.getItem('user_name')});
+
     self.formHeader = $('<h4>');
 
     self.patternField = textInputField.clone();
@@ -34,9 +36,7 @@ function AdHocTask (pattern, type, task, container) {
 
     self.isSudo = btnSmallClk.clone(true).html('Sudo').attr('title', 'Run with sudo');
 
-    self.credentialsSelector = selectField.clone();
-
-    User.buildCredentialsSelectionBox(sessionStorage.getItem('user_name'), self.credentialsSelector);
+    self.credentialsSelector = self.user.credentialsSelector(null, true);
 
     self.form = $('<form>').submit(function (event) {
 
