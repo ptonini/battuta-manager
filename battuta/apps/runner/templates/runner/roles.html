@@ -6,7 +6,9 @@
 
             document.title = 'Battuta - Roles';
 
-            $('#container').append(new FileTable('roles'));
+            var file = new File({root: 'roles'});
+
+            $('#container').html(file.selector())
 
         });
     </script>

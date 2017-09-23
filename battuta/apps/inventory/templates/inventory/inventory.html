@@ -4,9 +4,11 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var battuta = new Battuta();
+            document.title = 'Battuta - Inventory';
 
-            $('#container').html(battuta.search('{{  pattern }}'));
+            var inventory = new Inventory;
+
+            $('#container').html(inventory.view());
 
         })
     </script>

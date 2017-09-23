@@ -6,13 +6,10 @@
 
             document.title = 'Battuta - Projects';
 
-            new ProjectTable($('#project_table_container'))
+            var project = new Project();
+
+            $('#container').append(project.selector())
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Projects</h3>
-    <br>
-    <div id="project_table_container"></div>
 {% endblock %}

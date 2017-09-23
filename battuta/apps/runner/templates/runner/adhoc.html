@@ -6,17 +6,14 @@
 
             document.title = 'Battuta - AdHoc';
 
-            new AdHocTask(null, 'command', {id: null}, $('#command_form_container'));
+            var adhoc = new AdHoc();
 
-            new AdHohTaskTable(null, $('#adhoc_table_container'));
+            $('#container').append(
+                $('<h3>').html('AdHoc tasks'),
+                adhoc.commandForm(),
+                adhoc.selector()
+            );
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Ad-Hoc tasks</h3>
-    <div class="row">
-        <div id="command_form_container" class="col-md-12"></div>
-        <div id="adhoc_table_container" class="col-md-12"></div>
-    </div>
 {% endblock %}

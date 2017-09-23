@@ -31,40 +31,28 @@
     <script type="text/javascript" src="{% static 'js/battuta.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/templates/RootPaths.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/templates/Elements.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/AdHocTask.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/AdHocTaskTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Battuta.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/DeleteDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/EntityDialog.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/ExportInventory.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/AdHoc.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/File.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/FileTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Group.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/GroupTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/GroupView.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/ImportInventory.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/Inventory.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Job.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/JobView.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/JobRunner.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/JobTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/MainMenu.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Node.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/NodeSelector.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/NodeView.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/PatternBuilder.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/PlaybookArgs.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Preferences.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Project.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/ProjectTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/SearchResults.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/SelectionDialog.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Statistics.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/User.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/UserTable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/UserView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/Project.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
 
-            new MainMenu('{{ user.username }}', '{% if user.is_authenticated %}True{% endif %}', $('#menu_container'))
+            var battuta = new Battuta();
+
+            $('#menu_container').html(
+                battuta.mainMenu('{{ user.username }}', '{% if user.is_authenticated %}True{% endif %}')
+            )
 
         })
     </script>
@@ -82,9 +70,7 @@
 <body>
 {% block header %}
     <header class="navbar navbar-default">
-        <div id="menu_container" class="container">
-            <div class="navbar-header"><a class="navbar-brand" href="/">Battuta</a></div>
-        </div>
+        <div id="menu_container" class="container"></div>
     </header>
 {% endblock %}
 <section class="container">

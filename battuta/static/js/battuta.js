@@ -44,14 +44,14 @@ $.ajaxSetup({
     cache: false
 });
 
-// Set AJAX default error handling
-$(document).ajaxError(function (event, xhr) {
-
-    if (xhr.status === 500) $('body').html($('pre').html(xhr.responseText));
-
-    else $('body').html(xhr.responseText);
-
-});
+// // Set AJAX default error handling
+// $(document).ajaxError(function (event, xhr) {
+//
+//     if (xhr.status === 500) $('body').html($('pre').html(xhr.responseText));
+//
+//     else $('body').html(xhr.responseText);
+//
+// });
 
 
 // Plugins defaults /////////////////////
@@ -126,6 +126,16 @@ $.extend($.fn.fileinput.defaults, {
 
 $.extend($.fn.fileinputLocales.en, {browseLabel: ''});
 
+// Add reverse method to JQuery
+jQuery.fn.reverse = [].reverse;
+
+// Add capitalize method to String
+String.prototype.capitalize = function() {
+
+    return this.charAt(0).toUpperCase() + this.slice(1);
+
+};
+
 
 // Functions ///////////////////////////
 
@@ -137,22 +147,6 @@ function prettyBoolean (element, value) {
     if (value) element.html($('<span>').attr('class', 'fa fa-check'));
 
     else element.html('');
-
-}
-
-function rememberSelectedTab(tabId) {
-
-    var keyName = tabId + '_activeTab';
-    
-    $('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
-
-        sessionStorage.setItem(keyName, $(event.target).attr('href'));
-
-    });
-
-    var activeTab = sessionStorage.getItem(keyName);
-
-    activeTab && $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
 
 }
 
@@ -228,7 +222,7 @@ function gatherFacts(nodeName, callback) {
 
         var jobId = sessionStorage.getItem(jobKey);
 
-        jobId && Job.getData({id: jobId}, 'get', function (data) {
+        jobId && JobView.getData({id: jobId}, 'get', function (data) {
 
             if (!data.job.is_running) {
 

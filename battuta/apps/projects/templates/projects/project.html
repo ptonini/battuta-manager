@@ -4,15 +4,10 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            Project.getData({id: '{{ project_id }}'}, 'get', function (data) {
+            var project = new Project({id: '{{ project_id }}'});
 
-                new Project(data.project, $('#project_form_container'));
-
-            });
+            $('#container').html(project.view())
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <div id="project_form_container"></div>
 {% endblock %}

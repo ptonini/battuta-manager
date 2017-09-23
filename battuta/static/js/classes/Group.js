@@ -24,7 +24,7 @@ function Group(param) {
 
 }
 
-Group.prototype = Object.create(Base.prototype);
+Group.prototype = Object.create(Battuta.prototype);
 
 Group.prototype.constructor = Group;
 
@@ -251,5 +251,159 @@ Group.prototype.memberGrid = function () {
     });
 
     return membersGrid
+
+};
+
+Group.prototype.view = function () {
+
+    var self = this;
+
+    var container = $('<div>');
+
+    self.get(function () {
+
+        var editGroupBtn = spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function() {
+
+            self.edit(function (data) {
+
+                window.open(self.group.path + data.group.name + '/', '_self')
+
+            });
+
+        });
+
+        var deleteGroupBtn = spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function() {
+
+            self.delete(function () {
+
+                window.open(paths.users + 'groups/', '_self')
+
+            })
+
+        });
+
+        var tabsHeader = ulTabs.clone().attr('id','user_group_' + self.id + '_tabs');
+
+        container.append(
+            $('<h3>').append(
+                $('<small>').html('user group'),
+                '&nbsp;',
+                $('<span>').html(self.name),
+                $('<small>').css('margin-left', '1rem').append(editGroupBtn, deleteGroupBtn)
+            ),
+            tabsHeader.append(
+                liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
+                $('<li>').html(aTabs.clone().attr('href', '#members_tab').html('Members')),
+                $('<li>').html(aTabs.clone().attr('href', '#permissions_tab').html('Permissions'))
+            ),
+            $('<br>'),
+            divTabContent.clone().append(
+                divActiveTab.clone().attr('id', 'info_tab').append(
+                    divRow.clone().append(
+                        divCol12.clone().append($('<h4>')
+                            .css('margin-bottom', '30px')
+                            .html(self.description || noDescriptionMsg)
+                        )
+                    )
+                ),
+                divTab.clone().attr('id', 'members_tab').append(
+                    divRow.clone().append(
+                        divCol12.clone().append(self.memberGrid())
+                    )
+                ),
+                divTab.clone().attr('id', 'permissions_tab').append(
+                    divRow.clone().append(
+                        divCol12.clone().append(self.permissionsForm())
+                    )
+                )
+            )
+        );
+
+        if (!self.editable) {
+
+            editGroupBtn.hide();
+
+            deleteGroupBtn.hide();
+
+        }
+
+        self._rememberLastTab(tabsHeader.attr('id'));
+
+        return container
+
+
+    });
+
+    return container
+
+};
+
+Group.prototype.selector = function () {
+
+    var self = this;
+
+    var container = $('<div>');
+
+    var table = baseTable.clone();
+
+    container.append($('<h3>').html('User groups'), $('<br>'), table);
+
+    table.DataTable({
+        ajax: {
+            url: self.apiPath + 'list/',
+            dataSrc: 'groups'
+        },
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                text: 'Add user group',
+                className: 'btn-xs',
+                action: function () {
+
+                    var group = new Group({id: null, name: null, description: null});
+
+                    group.edit(function (data) {
+
+                        window.open(paths.users + 'group/' + data.group.name + '/', '_self');
+
+                    })
+
+                }
+            }
+        ],
+        paging: false,
+        columns: [
+            {class: 'col-md-3', title: 'name', data: 'name'},
+            {class: 'col-md-7', title: 'description', data: 'description'},
+            {class: 'col-md-2', title: 'members', data: 'member_count'}
+        ],
+        rowCallback: function (row, data) {
+
+            var group = new Group(data);
+
+            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
+
+                window.open(paths.users + 'group/' + group.name, '_self')
+
+            });
+
+            if (group.editable) $(row).find('td:eq(-1)').append(
+                spanRight.clone().append(
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+
+                        group.delete(function () {
+
+                            table.DataTable().ajax.reload();
+
+                        })
+
+                    })
+                )
+            )
+
+        }
+    });
+
+    return container
 
 };

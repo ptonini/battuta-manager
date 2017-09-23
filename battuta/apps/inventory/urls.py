@@ -12,9 +12,7 @@ urlpatterns = [
     url(r'^(?P<node_type>host|group)/(?P<node_name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'node'}),
 
 
-    url(r'^api/(get)/$', views.InventoryView.as_view()),
-
-    url(r'^api/(search|import|export)/$', login_required(views.InventoryView.as_view())),
+    url(r'^api/([a-z_]+)/$', views.InventoryView.as_view()),
 
     url(r'^api/(host|group)/([a-z_]+)/$', login_required(views.NodeView.as_view())),
 

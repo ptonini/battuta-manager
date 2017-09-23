@@ -4,9 +4,9 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            Job.getData({id: '{{ job_id }}'}, 'get', function (data) {
+            JobView.getData({id: '{{ job_id }}'}, 'get', function (data) {
 
-                new Job(data.job , $('#result_header'), $('#result_container'));
+                new JobView(data.job , $('#result_header'), $('#result_container'));
 
             })
 

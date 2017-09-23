@@ -475,7 +475,7 @@ class PlaybookArgsView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
-        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['name'])
+        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['playbook'])
 
         if request.user.has_perm('users.execute_jobs') or project_auth.can_run_playbooks(AnsibleInventory(), playbook_path):
 
@@ -483,7 +483,7 @@ class PlaybookArgsView(View):
 
                 args_list = list()
 
-                for args in PlaybookArgs.objects.filter(playbook=request.GET['name'], folder=request.GET['folder']).values():
+                for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook'], folder=request.GET['folder']).values():
 
                     args_list.append(args)
 

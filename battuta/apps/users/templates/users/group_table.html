@@ -5,7 +5,9 @@
 
             document.title = 'Battuta - User groups';
 
-            $('#container').append(new GroupTable());
+            var group = new Group();
+
+            $('#container').html(group.selector());
 
         });
     </script>

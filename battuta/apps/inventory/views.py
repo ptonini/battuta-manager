@@ -18,8 +18,8 @@ from django.core.cache import cache
 
 
 from apps.inventory.models import Host, Group, Variable
-from apps.inventory.forms import HostForm, GroupForm, VariableForm
-from apps.inventory.extras import AnsibleInventory, get_node_ancestors, get_node_descendants
+from apps.inventory.forms import VariableForm
+from apps.inventory.extras import AnsibleInventory, node_to_dict, build_node
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import ProjectAuth
@@ -32,7 +32,7 @@ class PageView(View):
 
         if kwargs['page'] == 'import':
 
-            return render(request, 'inventory/import.html')
+            return render(request, 'inventory/inventory.html')
 
         elif kwargs['page'] == 'nodes':
 
@@ -230,6 +230,29 @@ class InventoryView(View):
 
                 raise Http404('Invalid format')
 
+        elif action == 'list':
+
+            classes = {'host': Host, 'group': Group}
+
+            node_list = list()
+
+            filter_pattern = request.GET.get('filter')
+
+            exclude_pattern = request.GET.get('exclude')
+
+            for node in classes[request.GET['type']].objects.all():
+
+                match_conditions = {
+                    not filter_pattern or node.name.find(filter_pattern) > -1,
+                    not exclude_pattern or node.name.find(exclude_pattern) <= -1
+                }
+
+                if False not in match_conditions:
+
+                    node_list.append(node_to_dict(node))
+
+            data = {'status': 'ok', 'nodes': node_list}
+
         else:
 
             raise Http404('Invalid action')
@@ -239,9 +262,9 @@ class InventoryView(View):
     @staticmethod
     def post(request, action):
 
-        if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
+        if action == 'import':
 
-            if action == 'import':
+            if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
                 # Create temp file and load import data
                 with tempfile.TemporaryFile() as temp:
@@ -424,91 +447,28 @@ class InventoryView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                data = {'status': 'denied'}
+
+        elif action == 'delete':
+
+            for node_id in json.loads(request.POST['selection']):
+
+                node = build_node({'id': node_id}, request.POST['type'], request.user)
+
+                if node.editable and (node.type == 'host' or node.name != 'all'):
+
+                    node.delete()
+
+            data = {'status': 'ok', 'msg': request.POST['type'].capitalize() + 's deleted'}
 
         else:
 
-            data = {'status': 'denied'}
+            raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class NodeView(View):
-
-    classes = {
-        'host': {'node': Host, 'form': HostForm},
-        'group': {'node': Group, 'form': GroupForm}
-    }
-
-    @staticmethod
-    def _build_node(node_dict, node_type, user):
-
-        classes = {
-            'host': {'node': Host, 'form': HostForm},
-            'group': {'node': Group, 'form': GroupForm}
-        }
-
-        if node_dict.get('id', False):
-
-            node = get_object_or_404(classes[node_type]['node'], pk=node_dict['id'])
-
-        else:
-
-            node = classes[node_type]['node']()
-
-        group_descendants, host_descendants = get_node_descendants(node)
-
-        setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
-
-        setattr(node, 'form_class', classes[node_type]['form'])
-
-        setattr(node, 'ancestors', get_node_ancestors(node))
-
-        setattr(node, 'group_descendants', group_descendants)
-
-        setattr(node, 'host_descendants', host_descendants)
-
-        return node
-
-    @staticmethod
-    def _node_to_dict(node):
-
-        default_fields = {
-            'name': node.name,
-            'type': node.type,
-            'description': node.description,
-            'id': node.id,
-        }
-
-        node_dict = default_fields.copy()
-
-        if node.type == 'host':
-
-            facts = json.loads(node.facts)
-
-            host_fields = {
-                'public_address': facts.get('ec2_public_ipv4'),
-                'instance_type': facts.get('ec2_instance_type'),
-                'cores': facts.get('processor_count'),
-                'memory': facts.get('memtotal_mb'),
-                'address': facts.get('default_ipv4', {}).get('address'),
-                'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
-            }
-
-            node_dict.update(host_fields)
-
-        else:
-
-            group_fields = {
-                'members': node.members.all().count(),
-                'parents': node.group_set.all().count(),
-                'children': node.children.all().count(),
-                'variables': node.variable_set.all().count(),
-            }
-
-            node_dict.update(group_fields)
-
-        return node_dict
 
     @staticmethod
     def _get_relationships(node, action):
@@ -539,7 +499,7 @@ class NodeView(View):
 
     def get(self, request, node_type, action):
 
-        node = self._build_node(request.GET.dict(), node_type, request.user)
+        node = build_node(request.GET.dict(), node_type, request.user)
 
         if action == 'list':
 
@@ -558,13 +518,13 @@ class NodeView(View):
 
                 if False not in match_conditions:
 
-                    node_list.append(self._node_to_dict(node))
+                    node_list.append(node_to_dict(node))
 
             data = {'status': 'ok', 'nodes': node_list}
 
         elif action == 'get':
 
-            data = {'status': 'ok', 'node': self._node_to_dict(node)}
+            data = {'status': 'ok', 'node': node_to_dict(node)}
 
         elif action == 'facts':
 
@@ -586,11 +546,11 @@ class NodeView(View):
 
             if request.GET['type'] == 'groups':
 
-                descendants = [self._node_to_dict(group) for group in node.group_descendants]
+                descendants = [node_to_dict(group) for group in node.group_descendants]
 
             elif request.GET['type'] == 'hosts':
 
-                descendants = [self._node_to_dict(host) for host in node.host_descendants]
+                descendants = [node_to_dict(host) for host in node.host_descendants]
 
             else:
 
@@ -654,13 +614,13 @@ class NodeView(View):
 
             data = {'status': 'ok', 'var_list': var_list}
 
-        elif action == 'parents' or action == 'children' or action == 'members':
+        elif action in ['parents','children', 'members']:
 
             related_set, related_class = self._get_relationships(node, action)
 
             if 'related' not in request.GET or request.GET['related'] == 'true':
 
-                node_list = [self._node_to_dict(related_node) for related_node in related_set.order_by('name')]
+                node_list = [node_to_dict(related_node) for related_node in related_set.order_by('name')]
 
             else:
 
@@ -680,7 +640,7 @@ class NodeView(View):
 
                     candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
 
-                node_list = [self._node_to_dict(candidate) for candidate in candidate_set]
+                node_list = [node_to_dict(candidate) for candidate in candidate_set]
 
             data = {'status': 'ok', 'nodes': node_list}
 
@@ -692,7 +652,7 @@ class NodeView(View):
 
     def post(self, request, node_type, action):
 
-        node = self._build_node(request.POST.dict(), node_type, request.user)
+        node = build_node(request.POST.dict(), node_type, request.user)
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
 
@@ -727,18 +687,6 @@ class NodeView(View):
             else:
 
                 data = {'status': 'denied'}
-
-        elif action == 'delete_bulk':
-
-            for node_id in request.POST.getlist('selection[]'):
-
-                node = self._build_node({'id': node_id}, node_type, request.user)
-
-                if node.editable and (node.type == 'host' or node.name != 'all'):
-
-                    node.delete()
-
-            data = {'status': 'ok'}
 
         elif action == 'save_var':
 
@@ -786,7 +734,7 @@ class NodeView(View):
 
                 source_dict = json.loads(request.POST['source'])
 
-                source = self._build_node(source_dict, source_dict['type'], request.user)
+                source = build_node(source_dict, source_dict['type'], request.user)
 
                 for source_var in source.variable_set.all():
 
@@ -808,7 +756,7 @@ class NodeView(View):
 
                 related_set, related_class = self._get_relationships(node, action.split('_')[1])
 
-                for selected in request.POST.getlist('selection[]'):
+                for selected in json.loads(request.POST['selection']):
 
                     related_set.add(get_object_or_404(related_class, pk=selected))
 
@@ -824,7 +772,7 @@ class NodeView(View):
 
                 related_set, related_class = self._get_relationships(node, action.split('_')[1])
 
-                for selected in request.POST.getlist('selection[]'):
+                for selected in json.loads(request.POST['selection']):
 
                     related_set.remove(get_object_or_404(related_class, pk=selected))
 

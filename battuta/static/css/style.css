@@ -97,7 +97,10 @@ ul.ui-autocomplete {z-index: 999; max-height: 300px; overflow-y: auto; overflow-
     overflow: hidden;
 }
 
-.dataTables_filter > label {width: auto !important;}
+.dataTables_filter {
+    float: right;
+    text-align: right;
+}
 
 .pagination > li > a, .pagination > li > span {padding: 2px 6px}
 
@@ -114,10 +117,13 @@ div.dataTables_length select.input-sm, div.dataTables_filter input.input-sm {hei
 div.dataTables_length, div.dataTables_filter {height: 25px}
 
 table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after,
+
 table.dataTable thead .sorting_desc:after {font-family: FontAwesome, sans-serif}
 
 table.dataTable thead th.sorting:after {content: "\f0dc"; color: transparent}
+
 table.dataTable thead th.sorting_asc:after {content: "\f0de"}
+
 table.dataTable thead th.sorting_desc:after {content: "\f0dd"}
 
 tr.child_row {background-color: transparent !important}

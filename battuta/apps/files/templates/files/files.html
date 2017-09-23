@@ -6,7 +6,9 @@
 
             document.title = 'Battuta - Files';
 
-            $('#container').append(new FileTable('files'))
+            var file = new File({root: 'files'});
+
+            $('#container').html(file.selector())
 
         });
     </script>

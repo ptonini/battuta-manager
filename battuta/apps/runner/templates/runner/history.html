@@ -6,13 +6,10 @@
 
             document.title = 'Battuta - Runner history';
 
-            new JobTable($('#history_table_container'))
+            var job = new Job();
+
+            $('#container').html(job.selector())
 
         });
     </script>
-{% endblock %}
-{% block content %}
-    <h3>Runner history</h3>
-    <br>
-    <div id="history_table_container"></div>
 {% endblock %}

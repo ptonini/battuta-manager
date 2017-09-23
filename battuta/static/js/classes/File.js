@@ -30,7 +30,7 @@ function File(param) {
 
 }
 
-File.prototype = Object.create(Base.prototype);
+File.prototype = Object.create(Battuta.prototype);
 
 File.prototype.constructor = File;
 
@@ -501,3 +501,390 @@ File.prototype._openDialog = function (action, callback) {
         .dialog('open');
 
 };
+
+File.prototype.selector = function (owner) {
+
+    var self = this;
+
+    self.folder = window.location.hash.slice(1);
+
+    var roots = {
+        playbooks: {
+            formatter: function (row, file) {
+
+                var cell = $(row).find('td:eq(0)');
+
+                cell.css('cursor', 'pointer');
+
+                if (file.error) cell.css('color', 'red').off().click(function () {
+
+                    var message = preLargeAlert.clone().html(file.error);
+
+                    $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+
+                });
+
+                else cell.off().click(function () {
+
+                    var playArgs = new PlaybookArgs({playbook: file.name, folder: file.folder});
+
+                    playArgs.dialog()
+
+                })
+
+            },
+            button: {
+                text: 'New playbook',
+                className: 'btn-xs',
+                action: function () {
+
+                    $.ajax({
+                        url: '/static/templates/playbook_template.yml',
+                        success: function (data) {
+
+                            var file = new File({root: 'playbooks', folder: self.folder, text: data});
+
+                            file.openEditor(function () {
+
+                                table.DataTable().ajax.reload()
+
+                            })
+
+                        }
+                    });
+                }
+            }
+
+        },
+        roles: {
+
+            button: {
+                text: 'Add role',
+                className: 'btn-xs',
+                action: function () {
+
+                    var role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
+
+                    role.openRoleDialog(function (data, role) {
+
+                        setFolder(role.name);
+
+                    });
+
+                }
+            }
+
+        }
+    }
+
+
+    var container = $('<div>');
+
+    var table = baseTable.clone().attr('id', 'file_table');
+
+    var pathInputField = $('<input>').attr('id', 'path_input');
+
+    var editPathIcon = spanFA.clone().addClass('fa-pencil').attr('title', 'Edit path');
+
+    var editPath = $('<li>').attr('id', 'edit_path').append(editPathIcon).click(function () {
+
+        $('.path_link').remove();
+
+        if (editPathIcon.hasClass('checked_button')) {
+
+            editPathIcon.removeClass('checked_button');
+
+            buildBreadcrumbs()
+
+        }
+
+        else {
+
+            editPathIcon.addClass('checked_button');
+
+            breadCrumb.append($('<li>').attr('class', 'path_link').append(pathInputField));
+
+            pathInputField
+                .off()
+                .focus()
+                .val(self.folder)
+                .css('width', breadCrumb.width() * .90 + 'px')
+                .keypress(function (event) {
+
+                    if (event.keyCode === 13) {
+
+                        var fieldValue = pathInputField.val();
+
+                        var folder = new File({name: fieldValue, type: 'directory', root: self.root, user: owner});
+
+                        if (fieldValue.charAt(fieldValue.length - 1) === '/') {
+
+                            fieldValue = fieldValue.substr(0, fieldValue.length - 1)
+
+                        }
+
+                        folder.exists(function (data) {
+
+                            data.exists && setFolder(fieldValue)
+
+                        });
+
+                    }
+                })
+        }
+    });
+
+    var rootPath = $('<li>').attr('id', 'root_path').html('&lt;root&gt;').click(function () {
+
+        setFolder('')
+
+    });
+
+    var breadCrumb = breadcrumb.clone().attr('id', 'path_links').append(rootPath, editPath);
+
+    var buttons = [
+        {
+            text: '<span class="fa fa-asterisk" title="Create"></span>',
+            className: 'btn-xs',
+            action: function () {
+
+                var file = new File({root: self.root, folder: self.folder, owner: owner});
+
+                file.create(function () {
+
+                    table.DataTable().ajax.reload()
+
+                });
+
+            }
+        },
+        {
+            text: '<span class="fa fa-upload" title="Upload"></span>',
+            className: 'btn-xs',
+            action: function () {
+
+                var file = new File({root: self.root, folder: self.folder, owner: owner});
+
+                file.upload(function () {
+
+                    table.DataTable().ajax.reload()
+
+                });
+
+            }
+        }
+    ];
+
+    var previousFolderRow = $('<tr>').attr('role', 'row').append(
+        $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
+
+            var folderArray = self.folder.split('/');
+
+            folderArray.pop();
+
+            setFolder(folderArray.join('/'));
+
+        }),
+        $('<td>'),
+        $('<td>'),
+        $('<td>')
+    );
+
+    var buildBreadcrumbs = function () {
+
+        $('.path_link').remove();
+
+        editPathIcon.removeClass('checked_button');
+
+        self.folder && $.each(self.folder.split('/'), function (index, value) {
+
+            breadCrumb.append(
+
+                $('<li>')
+                    .attr({id: 'path_link_' + index, class: 'path_link'})
+                    .html(value)
+                    .click(function () {
+
+                        var nextFolder = '';
+
+                        for (var i = 0; i <= index; i++) {
+
+                            nextFolder += $('#path_link_' + i).html();
+
+                            if (i < index) nextFolder += '/'
+
+                        }
+
+                        $(this).nextAll('.path_link').remove();
+
+                        setFolder(nextFolder)
+
+                    })
+            )
+        });
+
+    };
+
+    var setFolder =  function (folder) {
+
+        self.folder = folder;
+
+        console.log(self.folder);
+
+        location.hash = folder;
+
+        table.DataTable().search('');
+
+        table.DataTable().ajax.reload()
+
+    };
+
+    var buildTable = function () {
+
+        table.DataTable({
+            ajax: {
+                url: self.apiPath + 'list/',
+                dataSrc: 'file_list',
+                data: function () {
+
+                    console.log({folder: self.folder, root: self.root, owner: owner});
+
+                    return {folder: self.folder, root: self.root, owner: owner}
+
+                }
+            },
+            columns: [
+                {class: 'col-md-6', title: 'name', data: 'name'},
+                {class: 'col-md-2', title: 'type', data: 'type'},
+                {class: 'col-md-1', title: 'size', data: 'size'},
+                {class: 'col-md-3', title: 'modified', data: 'modified'}
+            ],
+            order: [[0, 'asc']],
+            paging: false,
+            dom: 'Bfrtip',
+            buttons: buttons,
+            rowCallback: function (row, data) {
+
+                var file = new File(data);
+
+                if (file.type === 'directory') {
+
+                    $(row).attr('class', 'directory_row').find('td:eq(0)')
+                        .css({'cursor': 'pointer', 'font-weight': '700'})
+                        .off('click')
+                        .click(function () {
+
+                            file.folder ? setFolder(file.folder + '/' + file.name) : setFolder(file.name)
+
+                        });
+
+                }
+
+                else roots[self.root] && roots[self.root].formatter && roots[self.root].formatter(row, file);
+
+                $(row).find('td:eq(2)').html(humanBytes(file.size));
+
+                $(row).find('td:eq(3)').html('').removeAttr('title').append(
+                    $('<span>').html(file.modified).attr('title', file.modified),
+                    spanRight.clone().append(
+                        spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
+
+                            file.edit(function () {
+
+                                table.DataTable().ajax.reload()
+
+                            });
+
+                        }),
+                        spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
+
+                            file.copy(function () {
+
+                                table.DataTable().ajax.reload()
+
+                            });
+
+                        }),
+                        spanFA.clone()
+                            .addClass('fa-download btn-incell')
+                            .attr('title', 'Download ' + file.name)
+                            .click(function () {
+
+                                window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
+
+                            }),
+                        spanFA.clone()
+                            .addClass('fa-trash-o btn-incell')
+                            .attr('title', 'Delete')
+                            .click(function () {
+
+                                file.delete(function () {
+
+                                    table.DataTable().ajax.reload()
+
+                                })
+
+                            })
+                    )
+                );
+            },
+            drawCallback: function () {
+
+                buildBreadcrumbs();
+
+                table.find('tr.directory_row').reverse().each(function (index, row) {
+
+                    table.prepend($(row))
+
+                });
+
+                if (self.folder) {
+
+                    $('.dataTables_empty').parent().remove();
+
+                    table.prepend(previousFolderRow)
+
+                }
+
+            }
+        });
+
+    };
+
+    roots[self.root] && roots[self.root].button && buttons.unshift(roots[self.root].button);
+
+    container.append(
+        divRow.clone().append(
+            divCol12.clone().append(
+                $('<h3>').html(owner ? owner + ' files' : self.root.capitalize())
+            ),
+            divCol12.clone().append(breadCrumb),
+            divCol12.clone().css('margin-top', '2rem').append(table)
+        )
+    );
+
+    if (self.folder) {
+
+        var folderObj = new File({name: self.folder, type: 'directory', root: self.root, owner: owner});
+
+        folderObj.exists(function (data) {
+
+            if (!data.exists) {
+
+                self.folder = '';
+
+                location.hash = self.folder
+
+            }
+
+            buildTable()
+
+        });
+
+    }
+
+    else buildTable();
+
+    return container
+
+}

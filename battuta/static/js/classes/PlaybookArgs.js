@@ -1,167 +1,208 @@
-function PlaybookArgs(file, args, sameWindow) {
+function PlaybookArgs (param) {
+
+    param = param ? param : {};
 
     var self = this;
 
-    self.user = new User({username: sessionStorage.getItem('user_name')});
+    self.subset = param.subset;
 
-    self.file = file;
+    self.tags = param.tags;
 
-    self.args = args;
+    self.extra_vars = param.extra_vars;
 
-    self.sameWindow = sameWindow;
+    self.skip_tags = param.skip_tags;
 
-    self.form = $('<form>').submit(function (event) {
+    self.playbook = param.playbook;
 
-        event.preventDefault();
+    self.folder = param.folder;
 
-    });
+    self.id = param.id;
 
-    self.argumentsSelector = selectField.clone().change(function () {
+    self.apiPath = '/runner/api/playbook_args/';
+
+    self.type = 'playbook';
+
+}
+
+PlaybookArgs.prototype = Object.create(Battuta.prototype);
+
+PlaybookArgs.prototype.constructor = PlaybookArgs;
+
+PlaybookArgs.prototype.dialog = function () {
+
+    var self = this;
+
+    var file = new File({name: self.playbook, folder: self.folder, root: 'playbooks'});
+
+    var container = largeDialog.clone();
+
+    var argumentsSelector = selectField.clone().change(function () {
 
         var arguments = $('option:selected', this);
 
-        self.loadedArgs = arguments.data();
+        self.constructor(arguments.data());
 
-        self.form.find('input').val('');
+        container.find('input').val('');
 
-        self.checkButton.removeClass('checked_button');
+        container.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
 
-        self.dialog.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
+        checkButton.removeClass('checked_button');
 
-        self.limitField.val(arguments.data('subset'));
+        limitField.val(self.subset);
 
-        self.tagsField.val(arguments.data('tags'));
+        tagsField.val(self.tags);
 
-        self.skipTagsField.val(arguments.data('skip_tags'));
+        skipTagsField.val(self.skip_tags);
 
-        self.extraVarsField.val(arguments.data('extra_vars'));
+        extraVarsField.val(self.extra_vars);
 
     });
 
-    self.limitField = textInputField.clone().val(self.file.subset);
+    var limitField = textInputField.clone().val(self.subset);
 
-    self.patternEditorButton = btnSmall.clone()
-        .attr('title', 'Build pattern')
-        .html(spanFA.clone().addClass('fa-pencil'))
-        .click(function (event) {
-
-            event.preventDefault();
-
-            new PatternBuilder(self.limitField)
-
-        });
-
-    self.limitFieldGroup = divFormGroup.clone().append(
+    var limitFieldGroup = divFormGroup.clone().append(
         $('<label>').html('Limit').append(
             divInputGroup.clone().append(
-                self.limitField,
-                spanBtnGroup.clone().append(self.patternEditorButton)
+                limitField,
+                spanBtnGroup.clone().append(
+                    btnSmall.clone()
+                        .attr('title', 'Build pattern')
+                        .html(spanFA.clone().addClass('fa-pencil'))
+                        .click(function (event) {
+
+                            event.preventDefault();
+
+                            self._patternBuilder(limitField)
+
+                        })
+                )
             )
         )
     );
 
-    self.checkButton = btnSmallClk.clone(true).html('Check');
+    var checkButton = btnSmallClk.clone(true).html('Check');
 
-    self.tagsField = textInputField.clone();
+    var tagsField = textInputField.clone().val(self.tags);
 
-    self.skipTagsField = textInputField.clone();
+    var skipTagsField = textInputField.clone().val(self.skip_tags);
 
-    self.extraVarsField = textInputField.clone();
+    var extraVarsField = textInputField.clone().val(self.extra_vars);
 
-    self.credentialsSelector = self.user.credentialsSelector(null, true);
+    var credentialsSelector = self._runnerCredsSelector();
 
-    self.dialog = largeDialog.clone();
+    var buildArgumentsSelector = function (selectedValue) {
 
-    self.file.read(function (data) {
+        argumentsSelector.empty();
 
-        self.text = data.text;
+        self._getData('list', function (data) {
 
-        self._buildForm();
+            $.each(data.args, function (index, args) {
 
-    });
+                var optionLabel = [];
 
-}
+                args.subset && optionLabel.push('--limit ' + args.subset);
 
-PlaybookArgs.getData = function (args, action, callback) {
+                args.tags && optionLabel.push('--tags ' + args.tags);
 
-    getData(args, paths.runnerApi + 'playbook_args/' + action + '/', callback);
+                args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
 
-};
+                args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
 
-PlaybookArgs.postData = function (args, action, callback) {
+                argumentsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
 
-    postData(args, paths.runnerApi + 'playbook_args/' + action + '/', callback);
+            });
 
-};
+            argumentsSelector.append(
+                $('<option>').html('new').val('new').data(self)
+            );
 
-PlaybookArgs.prototype = {
+            selectedValue ? argumentsSelector.val(selectedValue) : argumentsSelector.val('new');
 
-    _buildForm: function () {
+            argumentsSelector.change();
 
-        var self = this;
+        });
 
-        self.requiresSudoAlert = spanRight.clone()
+    };
+
+    file.read(function (data) {
+
+        var text = data.text;
+
+        var trueValues = ['true', 'yes', '1'];
+
+        $.each(jsyaml.load(text), function (index, play) {
+
+            if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) self.become = true;
+
+        });
+
+        var requiresSudoAlert = spanRight.clone()
             .html('requires sudo')
             .css('font-size', 'x-small')
-            .toggleClass('hidden', !self._requiresSudo());
+            .toggleClass('hidden', !self.become);
 
-        self.dialog.append(
-            divRow.clone().append(
-                divCol12.clone().html($('<h4>').append(self.file.name, self.requiresSudoAlert))
-            ),
-            divRow.clone().append(
-                divCol12.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Saved arguments').append(self.argumentsSelector))
-                )
-            ),
-            self.form.append(
+        container
+            .append(
                 divRow.clone().append(
-                    divCol9.clone().append(self.limitFieldGroup),
-                    divCol3.clone().addClass('text-right').css('margin-top', '19px').append(self.checkButton),
+                    divCol12.clone().html($('<h4>').append(file.name, requiresSudoAlert))
+                ),
+                divRow.clone().append(
+                    divCol12.clone().append(
+                        divFormGroup.clone().append($('<label>').html('Saved arguments').append(argumentsSelector))
+                    )
+                ),
+                divRow.clone().append(
+                    divCol9.clone().append(limitFieldGroup),
+                    divCol3.clone().addClass('text-right').css('margin-top', '19px').append(checkButton),
                     divCol6.clone().append(
-                        divFormGroup.clone().append($('<label>').html('Tags').append(self.tagsField))
+                        divFormGroup.clone().append($('<label>').html('Tags').append(tagsField))
                     ),
                     divCol6.clone().append(
-                        divFormGroup.clone().append($('<label>').html('Skip tags').append(self.skipTagsField))
+                        divFormGroup.clone().append($('<label>').html('Skip tags').append(skipTagsField))
                     ),
                     divCol12.clone().append(
-                        divFormGroup.clone().append($('<label>').html('Extra vars').append(self.extraVarsField))
+                        divFormGroup.clone().append($('<label>').html('Extra vars').append(extraVarsField))
                     ),
                     divCol6.clone().append(
-                        $('<label>').html('Credentials').append(self.credentialsSelector)
+                        $('<label>').html('Credentials').append(credentialsSelector)
                     )
                 )
             )
-        );
-
-        self.dialog
             .dialog({
                 width: 480,
                 buttons: {
                     Run: function () {
 
-                        self._runPlaybook()
+                        self.check = checkButton.hasClass('checked_button');
+
+                        self.subset = limitField.val();
+
+                        self.tags = tagsField.val();
+
+                        self.skip_tags = skipTagsField.val();
+
+                        self.extra_vars = extraVarsField.val();
+
+                        new JobRunner(self, sameWindow);
 
                     },
-
                     Save: function () {
 
-                        if (!(!self.limitField.val() && !self.tagsField.val() && !self.skipTagsField.val() && !self.extraVarsField.val())) {
+                        if (!(!limitField.val() && !tagsField.val() && !skipTagsField.val() && !extraVarsField.val())) {
 
-                            var args = {
-                                id: self.loadedArgs.id,
-                                subset: self.limitField.val(),
-                                tags: self.tagsField.val(),
-                                skip_tags: self.skipTagsField.val(),
-                                extra_vars: self.extraVarsField.val(),
-                                playbook: self.file.name,
-                                folder: self.file.folder
-                            };
+                            self.subset = limitField.val();
 
+                            self.tags = tagsField.val();
 
-                            PlaybookArgs.postData(args, 'save', function (data) {
+                            self.skip_tags = skipTagsField.val();
 
-                                self._buildArgumentsSelector(data.id);
+                            self.extra_vars = extraVarsField.val();
+
+                            self._postData('save', function (data) {
+
+                                self.constructor({playbook: file.name, folder: file.folder});
+
+                                buildArgumentsSelector(data.id);
 
                             });
 
@@ -172,13 +213,11 @@ PlaybookArgs.prototype = {
                     },
                     Delete: function () {
 
-                        new DeleteDialog(function() {
+                        self.delete(function () {
 
-                            PlaybookArgs.postData(self.loadedArgs, 'delete', function () {
+                            self.constructor({playbook: self.file, folder: file.folder});
 
-                                self._buildArgumentsSelector();
-
-                            });
+                            buildArgumentsSelector();
 
                         });
 
@@ -197,94 +236,21 @@ PlaybookArgs.prototype = {
             })
             .dialog('open');
 
-        self.form.find('input').keypress(function (event) {
+        container.find('input').keypress(function (event) {
 
             if (event.keyCode === 13) {
 
                 event.preventDefault();
 
-                self._runPlaybook()
+                container.next().find('button:contains("Run")').click()
 
             }
 
         });
 
-        self._buildArgumentsSelector();
+        buildArgumentsSelector()
 
-    },
+    });
 
-    _runPlaybook: function () {
-
-        var self = this;
-
-        var job = {
-            type: 'playbook',
-            playbook: self.file.name,
-            folder: self.file.folder,
-            become: self._requiresSudo(),
-            check: self.checkButton.hasClass('checked_button'),
-            subset: self.limitField.val(),
-            tags: self.tagsField.val(),
-            skip_tags: self.skipTagsField.val(),
-            extra_vars: self.extraVarsField.val()
-        };
-
-        new JobRunner(job, $('option:selected', self.credentialsSelector).data(), self.sameWindow);
-
-    },
-
-    _requiresSudo: function () {
-
-        var self = this;
-
-        var trueValues = ['true', 'yes', '1'];
-
-        var requireSudo = false;
-
-        $.each(jsyaml.load(self.text), function (index, playbook) {
-
-            if (trueValues.indexOf(playbook.become) > -1 || trueValues.indexOf(playbook.sudo) > -1) requireSudo = true;
-
-        });
-
-        return requireSudo
-
-    },
-
-    _buildArgumentsSelector: function (selectedValue) {
-
-        var self = this;
-
-        self.argumentsSelector.empty();
-
-        PlaybookArgs.getData(self.file, 'list', function (data) {
-
-            $.each(data.args, function (index, args) {
-
-                var optionLabel = [];
-
-                args.subset && optionLabel.push('--limit ' + args.subset);
-
-                args.tags && optionLabel.push('--tags ' + args.tags);
-
-                args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
-
-                args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
-
-                self.argumentsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
-
-            });
-
-            self.argumentsSelector.append(
-                $('<option>').html('new').val('new').data(self.args)
-            );
-
-            selectedValue ? self.argumentsSelector.val(selectedValue) : self.argumentsSelector.val('new');
-
-            self.argumentsSelector.change();
-
-        });
-
-    }
 };
 

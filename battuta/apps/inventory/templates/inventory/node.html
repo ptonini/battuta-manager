@@ -8,11 +8,7 @@
 
             var node = new Node({id: '{{ node.id }}', type: '{{ node.type }}'});
 
-            node.get(function () {
-
-                $('#container').html(new NodeView(node))
-
-            });
+            $('#container').html(node.view())
 
         });
     </script>

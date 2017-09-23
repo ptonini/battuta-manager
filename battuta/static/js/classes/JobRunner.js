@@ -1,15 +1,14 @@
-function JobRunner(job, cred, sameWindow) {
+function JobRunner(job, sameWindow) {
+
     var self = this;
 
-    job.cred = cred.id;
+    self.askUser =  job.cred.id === 0;
 
-    self.askUser =  cred.id === 0;
-
-    self.askUserPass = cred.id === 0 || !cred.password && cred.ask_pass && !cred.rsa_key;
+    self.askUserPass = job.cred.id === 0 || !job.cred.password && job.cred.ask_pass && !job.cred.rsa_key;
 
     self.askSudoUser = false;
 
-    self.askSudoPass =  cred.id === 0 || job.become && !cred.sudo_pass && cred.ask_sudo_pass;
+    self.askSudoPass =  job.cred.id === 0 || job.become && !job.cred.sudo_pass && job.cred.ask_sudo_pass;
 
     if (self.askUser || self.askUserPass || self.askSudoUser || self.askSudoPass) {
 
@@ -23,11 +22,11 @@ function JobRunner(job, cred, sameWindow) {
 
         self.userPassword = passInputField.clone();
 
-        if (cred.username) {
+        if (job.cred.username) {
 
-            self.userField.val(cred.username);
+            self.userField.val(job.cred.username);
 
-            self.userPassFieldTitle.append('Password for user ', $('<i>').html(cred.username));
+            self.userPassFieldTitle.append('Password for user ', $('<i>').html(job.cred.username));
 
         }
 
@@ -98,7 +97,9 @@ function JobRunner(job, cred, sameWindow) {
 // Post Ansible Job
 JobRunner._postJob = function (job, sameWindow) {
 
-    Job.postData(job, 'run', function (data) {
+    job.cred = job.cred.id;
+
+    JobView.postData(job, 'run', function (data) {
 
         var jobUrl = paths.runner + 'job/' + data.job.id + '/';
 

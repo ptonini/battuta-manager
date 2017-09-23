@@ -131,6 +131,10 @@ class UsersView(View):
 
             cred['sudo_pass'] = prefs['password_placeholder']
 
+        if cred['rsa_key']:
+
+            cred['rsa_key'] = prefs['password_placeholder']
+
         return cred
 
     def get(self, request, action):
@@ -345,6 +349,10 @@ class UsersView(View):
                 if cred_dict['sudo_pass'] == prefs['password_placeholder']:
 
                     cred_dict['sudo_pass'] = cred.sudo_pass
+
+                if cred_dict['rsa_key'] == prefs['password_placeholder']:
+
+                    cred_dict['rsa_key'] = cred.rsa_key
 
                 if cred_dict['password'] or cred_dict['rsa_key']:
 

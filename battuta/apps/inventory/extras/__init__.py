@@ -1,8 +1,12 @@
+import json
+
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
-from ansible.inventory import Inventory, Host
+from ansible.inventory import Inventory, Host as AnsibleHost
+from django.shortcuts import get_object_or_404
 
-from apps.inventory.models import Group
+from apps.inventory.models import Host, Group
+from apps.inventory.forms import HostForm, GroupForm
 
 
 def get_node_ancestors(node):
@@ -67,6 +71,76 @@ def get_node_descendants(node):
         return set(), set()
 
 
+def node_to_dict(node):
+
+        default_fields = {
+            'name': node.name,
+            'type': node.type,
+            'description': node.description,
+            'id': node.id,
+        }
+
+        node_dict = default_fields.copy()
+
+        if node.type == 'host':
+
+            facts = json.loads(node.facts)
+
+            host_fields = {
+                'public_address': facts.get('ec2_public_ipv4'),
+                'instance_type': facts.get('ec2_instance_type'),
+                'cores': facts.get('processor_count'),
+                'memory': facts.get('memtotal_mb'),
+                'address': facts.get('default_ipv4', {}).get('address'),
+                'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
+            }
+
+            node_dict.update(host_fields)
+
+        else:
+
+            group_fields = {
+                'members': node.members.all().count(),
+                'parents': node.group_set.all().count(),
+                'children': node.children.all().count(),
+                'variables': node.variable_set.all().count(),
+            }
+
+            node_dict.update(group_fields)
+
+        return node_dict
+
+
+def build_node(node_dict, node_type, user):
+
+    classes = {
+        'host': {'node': Host, 'form': HostForm},
+        'group': {'node': Group, 'form': GroupForm}
+    }
+
+    if node_dict.get('id', False):
+
+        node = get_object_or_404(classes[node_type]['node'], pk=node_dict['id'])
+
+    else:
+
+        node = classes[node_type]['node']()
+
+    group_descendants, host_descendants = get_node_descendants(node)
+
+    setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
+
+    setattr(node, 'form_class', classes[node_type]['form'])
+
+    setattr(node, 'ancestors', get_node_ancestors(node))
+
+    setattr(node, 'group_descendants', group_descendants)
+
+    setattr(node, 'host_descendants', host_descendants)
+
+    return node
+
+
 class AnsibleInventory:
 
     def __init__(self, subset=None):
@@ -89,7 +163,7 @@ class AnsibleInventory:
 
         else:
 
-            host = Host('temp_host')
+            host = AnsibleHost('temp_host')
 
             host.add_group(self.inventory.get_group(node.name))
 

@@ -28,11 +28,13 @@ function User(param) {
 
     self.apiPath = '/users/api/user/';
 
+    self.type = 'user';
+
     self.runner = false;
 
 }
 
-User.prototype = Object.create(Base.prototype);
+User.prototype = Object.create(Battuta.prototype);
 
 User.prototype.constructor = User;
 
@@ -163,7 +165,7 @@ User.prototype.form = function () {
 
 };
 
-User.prototype.passwordForm = function () {
+User.prototype.passwordForm = function (currentUser) {
 
     var self = this;
 
@@ -179,7 +181,7 @@ User.prototype.passwordForm = function () {
                 divCol12.clone().append($('<hr>')),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
-                        $('<label>').html('Current password (' + self.currentUser + ')').append(
+                        $('<label>').html('Current password (' + currentUser + ')').append(
                             currentPassword
                         )
                     )
@@ -511,7 +513,7 @@ User.prototype.groupGrid = function () {
 
             self._selectionDialog({
                 objectType: 'group',
-                url: self.apiPath + 'user/groups/?reverse=true&username=' + self.username,
+                url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
                 ajaxDataKey: 'groups',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -551,3 +553,161 @@ User.prototype.groupGrid = function () {
     return groupGrid
 };
 
+User.prototype.view = function (currentUser) {
+
+    var self = this;
+
+    var container = $('<div>');
+
+    self.get(function () {
+
+        var deleteUserBtn = spanFA.clone()
+            .addClass('fa-trash-o btn-incell')
+            .attr('title', 'Delete')
+            .click(function () {
+
+                self.user.delete(function () {
+
+                    window.open(paths.users + 'users/', '_self')
+
+                })
+
+            });
+
+        var groupsTab = $('<li>').html(aTabs.clone().attr('href', '#groups_tab').html('Groups'));
+
+        var tabsHeader = ulTabs.clone().attr('id','user_' + self.id + '_tabs');
+
+        container.append(
+            $('<h3>').append(
+                $('<small>').html(self.is_superuser ? 'superuser' : 'user'),
+                '&nbsp;',
+                self.username,
+                $('<small>').css('margin-left', '1rem').append(deleteUserBtn)
+            ),
+            tabsHeader.append(
+                liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
+                $('<li>').html(aTabs.clone().attr('href', '#credentials_tab').html('Credentials')),
+                groupsTab
+            ),
+            $('<br>'),
+            divTabContent.clone().append(
+                divActiveTab.clone().attr('id', 'info_tab').append(
+                    divRow.clone().append(
+                        $('<div>').attr('class', 'col-md-1 col-sm-1').html($('<strong>').html('Joined in:')),
+                        $('<div>').attr('class', 'col-md-11 col-sm-11').html(self.date_joined),
+                        $('<div>').attr('class', 'col-md-1 col-sm-1').html($('<strong>').html('Last login:')),
+                        $('<div>').attr('class', 'col-md-11 col-sm-11').html(self.last_login),
+                        divCol6.clone().append(
+                            $('<br>'),
+                            self.form(),
+                            self.passwordForm(currentUser)
+                        )
+                    )
+                ),
+                divTab.clone().attr('id', 'credentials_tab').append(
+                    divRow.clone().append(
+                        divCol6.clone().append(self.credentialsForm())
+                    )
+                ),
+                divTab.clone().attr('id', 'groups_tab').append(
+                    divRow.clone().append(
+                        divCol12.clone().append(self.groupGrid())
+                    )
+                )
+            )
+        );
+
+        if (self.is_superuser) {
+
+            deleteUserBtn.remove();
+
+            groupsTab.remove();
+
+        }
+
+        self._rememberLastTab(tabsHeader.attr('id'));
+
+        return container
+
+
+    });
+
+    return container
+
+};
+
+User.prototype.selector = function () {
+
+    var self = this;
+
+    var container = $('<div>');
+
+    var table = baseTable.clone();
+
+    container.append($('<h3>').html('Users'), $('<br>'), table);
+
+    table.DataTable({
+        ajax: {
+            url: self.apiPath + 'list/',
+            dataSrc: 'users'
+        },
+        paging: false,
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                text: 'Add user',
+                action: function () {
+
+                    var user = new User({id: null});
+
+                    user.edit(function (data) {
+
+                        window.open(paths.users + 'user/' + data.user.username + '/', '_self');
+
+                    });
+
+                },
+                className: 'btn-xs'
+            }
+        ],
+        columns: [
+            {class: 'col-md-4', title: 'user', data: 'username'},
+            {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
+            {class: 'col-md-3', title: 'last login', data: 'last_login'},
+            {class: 'col-md-2', title: 'superuser', data: 'is_superuser'}
+        ],
+        rowCallback: function (row, data) {
+
+            var user = new User(data);
+
+            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function () {
+
+                window.open(paths.users + 'user/' + user.username + '/', '_self')
+
+            });
+
+            var lastCell = $(row).find('td:eq(3)');
+
+            prettyBoolean(lastCell, user.is_superuser);
+
+            if (!user.is_superuser) lastCell.append(
+                spanRight.clone().append(
+                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+
+                        user.delete(function () {
+
+                            table.DataTable().ajax.reload();
+
+                        });
+
+                    })
+                )
+            )
+
+        }
+    });
+
+    return container;
+
+}

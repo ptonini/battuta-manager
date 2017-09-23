@@ -5,7 +5,9 @@
 
             document.title = 'Battuta - Users';
 
-            $('#container').append(new UserTable())
+            var user = new User();
+
+            $('#container').html(user.selector());
 
         });
     </script>

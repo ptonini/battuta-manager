@@ -5,7 +5,9 @@
 
             document.title = 'Battuta - {{ owner }} files';
 
-            $('#container').append(new FileTable('users', '{{ owner }}'));
+            var file = new File({root: 'users'});
+
+            $('#container').html(file.selector('{{ owner }}'))
 
         });
     </script>

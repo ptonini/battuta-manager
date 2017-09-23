@@ -6,7 +6,9 @@
 
             document.title = 'Battuta - Playbooks';
 
-            $('#container').append(new FileTable('playbooks'));
+            var file = new File({root: 'playbooks'});
+
+            $('#container').html(file.selector())
 
         });
     </script>

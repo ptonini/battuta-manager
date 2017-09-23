@@ -4,12 +4,9 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.contrib.auth.models import User, Group as UserGroup
-from django.core.cache import cache
-from django.conf import settings
 
 from apps.projects.models import Project
 from apps.projects.forms import ProjectForm
-from apps.projects.extras import ProjectAuth
 
 from apps.inventory.models import Group as HostGroup
 
@@ -56,7 +53,7 @@ class ProjectView(View):
             'id': p.id,
             'description': p.description,
             'manager': p.manager.username if p.manager else None,
-            'host_group': {'name': p.host_group.name, 'id': p.host_group.id, 'type': 'group'} if p.host_group else {},
+            'host_group': {'name': p.host_group.name, 'id': p.host_group.id, 'type': 'group'} if p.host_group else {'name': ''},
             'can_edit_variables': p.can_edit_variables.name if p.can_edit_variables else None,
             'can_run_tasks': p.can_run_tasks.name if p.can_run_tasks else None,
             'can_edit_tasks': p.can_edit_tasks.name if p.can_edit_tasks else None,

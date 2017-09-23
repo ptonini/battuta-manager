@@ -4,17 +4,12 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var node = new Node({type: '{{ node_type }}'});
+            document.title = 'Battuta - ' + '{{ node_type }}'.capitalize() + 's';
 
-            node.list(function (data) {
+             var node = new Node({type: '{{ node_type }}'});
 
-                new NodeSelector(data.nodes, '{{ node_type }}', $('#nodes_container'));
-
-            });
+            $('#container').html(node.selector());
 
         });
     </script>
 {% endblock%}
-{% block content %}
-    <div id="nodes_container"></div>
-{% endblock %}

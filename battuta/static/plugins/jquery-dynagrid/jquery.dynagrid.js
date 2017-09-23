@@ -260,6 +260,7 @@
                                     _toggleItemSelection(gridBody, $(this), addClass);
 
                                 });
+
                             }),
                         $('<a>')
                             .attr({class: 'btn btn-default btn-xs', title: 'Invert selection'})
