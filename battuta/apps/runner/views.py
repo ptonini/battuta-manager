@@ -153,6 +153,8 @@ class JobView(View):
 
             job_data = request.POST.dict()
 
+            print job_data
+
             job_data['inventory'] = ansible_inventory.inventory
 
             job_data['var_manager'] = ansible_inventory.var_manager

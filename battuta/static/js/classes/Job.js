@@ -6,6 +6,8 @@ function Job(param) {
 
     self.status = param.status;
 
+    self.hosts = param.hosts;
+
     self.subset = param.subset;
 
     self.stats = param.stats;
@@ -103,21 +105,21 @@ Job.prototype.getFacts = function (callback) {
 
     });
 
-    // var intervalId = setInterval(function() {
-    //
-    //     self.get(function (data) {
-    //
-    //         if (!data.job.is_running) {
-    //
-    //             callback && callback();
-    //
-    //             clearInterval(intervalId)
-    //
-    //         }
-    //
-    //     })
-    //
-    // }, 1000)
+    var intervalId = setInterval(function() {
+
+        self.get(function (data) {
+
+            if (!data.job.is_running) {
+
+                callback && callback();
+
+                clearInterval(intervalId)
+
+            }
+
+        })
+
+    }, 1000)
 
 };
 
@@ -247,7 +249,6 @@ Job.prototype.post = function (sameWindow) {
     });
 
 }
-
 
 Job.prototype.selector = function () {
 
