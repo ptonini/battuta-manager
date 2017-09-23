@@ -103,7 +103,7 @@ User.prototype.defaultCred = function (callback) {
 
     var self = this;
 
-    self._postData('default_cred', callback)
+    self._getData('default_cred', callback)
 
 };
 
@@ -710,4 +710,4 @@ User.prototype.selector = function () {
 
     return container;
 
-}
+};

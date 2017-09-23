@@ -199,44 +199,6 @@ function popupCenter(url, title, w) {
 
 }
 
-function gatherFacts(nodeName, callback) {
-
-    var jobKey = 'job_' + Math.random().toString(36).substring(2, 10);
-
-    var user = new User({username: sessionStorage.getItem('user_name')});
-
-    user.defaultCred(function (data) {
-
-        var job = {
-            action: 'run',
-            type: 'gather_facts',
-            hosts: nodeName,
-            job_key: jobKey
-        };
-
-        new JobRunner(job, data.cred)
-
-    });
-
-    var intervalId = setInterval(function() {
-
-        var jobId = sessionStorage.getItem(jobKey);
-
-        jobId && JobView.getData({id: jobId}, 'get', function (data) {
-
-            if (!data.job.is_running) {
-
-                callback && callback();
-
-                clearInterval(intervalId)
-
-            }
-
-        })
-
-    }, 1000)
-
-}
 
 function postData (object, url, callback, failCallback) {
 

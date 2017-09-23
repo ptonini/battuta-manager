@@ -210,11 +210,14 @@ Node.prototype._facts = function (facts) {
 
     var gatherFactsButton = btnXsmall.clone().html('Gather facts').click(function () {
 
-        gatherFacts(self.name, function () {
+        var job = new Job({hosts: self.name});
+
+        job.getFacts(function () {
 
             loadFacts()
 
         });
+
     });
 
     loadFacts();
@@ -1001,7 +1004,9 @@ Node.prototype.selector = function () {
                 className: 'btn-xs btn-incell',
                 action: function () {
 
-                    gatherFacts('all', function () {
+                    var job = new Job({hosts: 'all'});
+
+                    job.getFacts( function () {
 
                         refreshData()
 
