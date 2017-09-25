@@ -747,8 +747,6 @@ File.prototype.selector = function (owner) {
                 dataSrc: 'file_list',
                 data: function () {
 
-                    console.log({folder: self.folder, root: self.root, owner: owner});
-
                     return {folder: self.folder, root: self.root, owner: owner}
 
                 }

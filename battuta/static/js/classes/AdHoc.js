@@ -378,7 +378,9 @@ AdHoc.prototype.dialog = function (pattern, callback) {
 
                 self.arguments = self._argumentsToString(args);
 
-                new JobRunner(self)
+                var job = new Job(self);
+
+                job.run()
 
             },
             Save: function () {
@@ -479,7 +481,9 @@ AdHoc.prototype.commandForm = function (pattern) {
 
             self.arguments = argumentsField.val();
 
-            new JobRunner(self)
+            var job = new Job(self);
+
+            job.run()
 
         });
 

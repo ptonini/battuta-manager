@@ -104,7 +104,7 @@ var btnSmallBlkClk = btnSmallClk.clone(true).addClass('btn-block');
 
 var btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
 
-var btnNavbarGlyph = $('<button>').attr('class', 'btn btn-link navbar-btn');
+var btnNavbarGlyph = $('<button>').attr('class', 'btn btn-link navbar-btn').css('border-radius', '5px');
 
 var spanFA = $('<span>').attr('class', 'fa fa-fw');
 

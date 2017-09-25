@@ -28,7 +28,7 @@ PlaybookArgs.prototype = Object.create(Battuta.prototype);
 
 PlaybookArgs.prototype.constructor = PlaybookArgs;
 
-PlaybookArgs.prototype.dialog = function () {
+PlaybookArgs.prototype.dialog = function (sameWindow) {
 
     var self = this;
 
@@ -183,7 +183,9 @@ PlaybookArgs.prototype.dialog = function () {
 
                         self.extra_vars = extraVarsField.val();
 
-                        new JobRunner(self, sameWindow);
+                        var job = new Job(self);
+
+                        job.run(sameWindow)
 
                     },
                     Save: function () {

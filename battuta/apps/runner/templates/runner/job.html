@@ -4,17 +4,26 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            JobView.getData({id: '{{ job_id }}'}, 'get', function (data) {
+            var job = new Job({id: '{{ job_id }}'})
 
-                new JobView(data.job , $('#result_header'), $('#result_container'));
+            job.get(function (data) {
+
+                document.title = data.job.name;
+
+                $('#menu_container').html(job.header());
+
+                $('#container').html(job.view());
 
             })
 
+            // JobView.getData({id: }, 'get', function (data) {
+
+            //    new JobView(data.job , $('#result_header'), $('#result_container'));
+
+            //})
+
         });
     </script>
-{% endblock %}
-{% block header %}
-    <header id="result_header" class="navbar navbar-default navbar-fixed-top"></header>
 {% endblock %}
 {% block content %}
     <div id="result_container"></div>
