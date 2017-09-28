@@ -1,0 +1,75 @@
+<div class="navbar-header"><a class="navbar-brand" href="/">Battuta</a></div>
+<ul class="nav navbar-nav">
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory</a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="/inventory/hosts/">Hosts</a>
+                <a href="/inventory/groups/">Groups</a>
+            </li>
+            <li class="divider"></li>
+            <li>
+                <a href="/inventory/import/">Import/Export</a>
+            </li>
+        </ul>
+    </li>
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="/runner/adhoc/">Ad-Hoc</a>
+                <a href="/runner/playbooks/">Playbooks</a>
+                <a href="/runner/roles/">Roles</a>
+            <li class="divider"></li>
+            <li>
+                <a href="/runner/history/">History</a>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <a href="/files/">Files</a>
+    </li>
+    <li>
+        <a href="/projects/">Projects</a>
+    </li>
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="/users/users/">Users</a>
+                <a href="/users/groups/">User groups</a>
+            </li>
+            <li class="divider"></li>
+            <li>
+                <a href="/users/user/admin/">admin profile</a>
+                <a href="/users/user/admin/files/">admin files</a>
+            </li>
+        </ul>
+    </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+    <li>
+        <button class="btn btn-link navbar-btn" style="border-radius: 5px;" title="Preferences">
+            <span class="fa fa-fw fa-cog"></span>
+        </button>
+    </li>
+    <li>
+        <form class="navbar-form">
+            <div class="input-group">
+                <input class="form-control input-sm" type="text" title="Search">
+                <span class="input-group-btn">
+                    <button class="btn btn-default btn-sm">
+                        <span class="fa fa-fw fa-search"></span>
+                    </button>
+                </span>
+            </div>
+        </form>
+    </li>
+    <li>
+        <form class="navbar-form">
+            <button class="btn btn-link" title="Logout admin">
+                <span class="fa fa-fw fa-sign-out"></span>
+            </button>
+        </form>
+    </li>
+</ul>

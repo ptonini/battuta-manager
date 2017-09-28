@@ -1,161 +1,90 @@
-function Preferences()  {
+function Preferences(param) {
+
+    param = param ? param : {};
 
     var self = this;
 
-    self.defaultValues = [];
+    self.pubSub = $({});
 
-    self.prefsContainer = $('<div>').css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
+    self.bindings = {};
 
-    self.restoreDialog = smallDialog.clone().addClass('text-center').html(
+    self.set('default', param.default);
+
+    self.set('stored', param.stored ? param.stored : {});
+
+    self.set('user', param.user ? param.user : {});
+
+}
+
+Preferences.prototype = Object.create(Battuta.prototype);
+
+Preferences.prototype.constructor = Preferences;
+
+Preferences.prototype.key = 'prefs';
+
+Preferences.prototype.apiPath = Battuta.prototype.paths.apis.preferences;
+
+Preferences.prototype.load = function () {
+
+    var self = this;
+
+    self.refresh(function () {
+
+        sessionStorage.setItem('user_name', self.user.name);
+
+        sessionStorage.setItem('user_id', self.user.id);
+
+        sessionStorage.setItem('timezone', self.user.tz);
+
+        $.each(self.default, function (i) {
+
+            $.each(self.default[i].items, function (j, item) {
+
+                sessionStorage.setItem(item.name, item.value)
+
+            })
+
+        });
+
+        Object.keys(self.stored).forEach(function (key) {
+
+            sessionStorage.setItem(key, self.stored[key])
+
+        });
+
+    })
+
+};
+
+Preferences.prototype.dialog = function () {
+
+    var self = this;
+
+    var prefsContainer = $('<div>').css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
+
+    var restoreDialog = smallDialog.clone().addClass('text-center').html(
         $('<strong>').html('Restore all preferences to default values?')
     );
 
-    self.restoreDialog.dialog({
-        buttons: {
-            Ok: function() {
-
-                $(this).dialog('close');
-
-                $.each(self.defaultValues, function (index, item) {
-
-                    $('#item_' + item[0] ).val(item[1])
-
-                });
-
-                self._savePreferences(function () {
-
-                    setTimeout(function () {
-
-                        $.bootstrapGrowl('Preferences restored', {
-                            type: 'success',
-                            close_callback: function () {
-
-                                window.location.reload(true)
-
-                            }
-                        })
-
-                    }, 500);
-
-                })
-
-            },
-            Cancel: function() {
-
-                $(this).dialog('close')
-
-            }
-        }
-    });
-
-    self.prefsDialog = largeDialog.clone().append(
+     var prefsDialog = largeDialog.clone().append(
         divRow.clone().append(
             divCol12.clone().append(
                 $('<h3>').css('margin-bottom', '20px').append(
                     $('<span>').html('Preferences'),
                     $('<span>').css('float', 'right').append(
                         btnXsmall.clone().html('Restore defaults').click(function () {
-                            self.restoreDialog.dialog('open')
+
+                            restoreDialog.dialog('open')
+
                         })
                     )
                 )
             )
         ),
-        self.prefsContainer
+        prefsContainer
     );
 
-    self.prefsDialog.dialog({
-        width: 800,
-        buttons: {
-            Reload: function() {
-
-                self.buildCallback = function () {
-
-                    $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
-
-                };
-
-                self._buildContainer()
-            },
-            Save: function() {
-
-                self._savePreferences(function () {
-
-                    $.bootstrapGrowl('Preferences saved', {
-                        type: 'success',
-                        close_callback: function () {
-
-                            window.location.reload(true)
-
-                        }
-                    });
-                })
-
-            },
-            Cancel: function () {
-
-                $(this).dialog('close')
-
-            }
-        },
-        close: function () {
-
-            $(this).remove();
-
-            self.restoreDialog.remove()
-
-        }
-    });
-
-    self._buildContainer();
-}
-
-Preferences.getPreferences = function () {
-
-    Preferences.getData({}, 'basic', function (data) {
-
-        Object.keys(data.prefs).forEach(function (key) {
-
-            sessionStorage.setItem(key, data.prefs[key])
-
-        });
-
-    })
-};
-
-Preferences.validateItemDataType = function (dataType, dataValue) {
-
-    var result = [true, null];
-
-    switch (dataType) {
-
-        case 'str':
-
-            if (typeof dataValue !== 'string') result = [false, 'Value must be a string'];
-
-            break;
-
-        case 'bool':
-
-            if (['true', 'false'].indexOf(dataValue) === -1) result = [false, 'Value must be true/false'];
-
-            break;
-
-        case 'number':
-
-            if (isNaN(dataValue)) result = [false, 'Value must be a number'];
-
-            break;
-
-    }
-    return result
-};
-
-Preferences.prototype = {
-
-    _buildContainer: function () {
-
-        var self = this;
+    var buildContainer = function (callback) {
 
         var booleanField = $('<select>').addClass('select form-control input-sm').append(
             $('<option>').val('true').html('true'),
@@ -166,13 +95,13 @@ Preferences.prototype = {
 
         var defaultValues = [];
 
-        Preferences.getData({}, 'detailed', function(data) {
+        self.refresh(function () {
 
-            self.prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
+            prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
 
-            $.each(data.prefs.default, function (index, item_group) {
+            $.each(self.default, function (index, item_group) {
 
-                self.prefsContainer.append(
+                prefsContainer.append(
                     divRow.clone().append(
                         divCol4.clone().append(
                             $('<h4>')
@@ -219,7 +148,7 @@ Preferences.prototype = {
 
                     defaultValues.push([item.name, item.value]);
 
-                    self.prefsContainer.append(
+                    prefsContainer.append(
                         divRow.clone().append(
                             divCol4.clone().append(
                                 fieldLabel.clone().html(item.name + ':').attr({for: itemId, title: item.description})
@@ -236,38 +165,59 @@ Preferences.prototype = {
                     )
                 });
 
-                if (index !== data.prefs.default.length - 1) self.prefsContainer.append('<hr>');
+                if (index !== self.default.length - 1) prefsContainer.append('<hr>');
 
             });
 
-            self.prefsContainer.data('defaultValues', defaultValues);
+            Object.keys(self.stored).forEach(function (key) {
 
-            self.defaultValues = defaultValues;
-
-            $.each(data.prefs.stored, function (index, item) {
-
-                $('#item_' + item[0] ).val(item[1])
+                $('#item_' + key ).val(self.stored[key]);
 
             });
 
-            self.prefsDialog.dialog('open');
+            callback && callback();
 
-            self.buildCallback && self.buildCallback();
+            prefsDialog.dialog('open');
 
-        })
-    },
+        });
 
-    _savePreferences: function (saveCallback) {
+    };
 
-        var self = this;
+    var savePreferences = function (callback) {
 
         var prefs = {};
 
         var noError = true;
 
-        self.prefsContainer.find('input,select').each(function() {
+        var validate = function (dataType, dataValue) {
 
-            var result = Preferences.validateItemDataType($(this).data('data_type'), $(this).val());
+            switch (dataType) {
+
+                case 'str':
+
+                    return typeof dataValue !== 'string' ? [false, 'Value must be a string'] : [true, null];
+
+                    break;
+
+                case 'bool':
+
+                    return ['true', 'false'].indexOf(dataValue) === -1 ? [false, 'Value must be true/false'] : [true, null];
+
+                    break;
+
+                case 'number':
+
+                    return isNaN(dataValue) ? [false, 'Value must be a number'] : [true, null];
+
+                    break;
+
+            }
+
+        };
+
+        prefsContainer.find('input,select').each(function() {
+
+            var result = validate($(this).data('data_type'), $(this).val());
 
             if (result[0]) prefs[$(this).data('name')] = $(this).val();
 
@@ -283,27 +233,103 @@ Preferences.prototype = {
 
         if (noError) {
 
-            Preferences.postData(prefs, 'save', function () {
+            self.prefs = JSON.stringify(prefs);
 
-                Preferences.getPreferences();
+            self.postData('save', function () {
 
-                saveCallback && saveCallback()
+                self.refresh();
+
+                callback && callback()
 
             });
 
         }
+    };
 
-    }
-};
+    restoreDialog.dialog({
+        autoOpen: false,
+        buttons: {
+            Ok: function() {
 
-Preferences.getData = function (prefs, action, callback) {
+                $(this).dialog('close');
 
-    getData(prefs, paths.preferencesApi + action + '/', callback);
+                $.each(self.default, function (i) {
 
-};
+                    $.each(self.default[i].items, function (j, item) {
 
-Preferences.postData = function (prefs, action, callback) {
+                        $('#item_' + item.name ).val(item.value);
 
-    postData(prefs, paths.preferencesApi + action + '/', callback);
+                    })
+
+                });
+
+                savePreferences(function () {
+
+                    setTimeout(function () {
+
+                        $.bootstrapGrowl('Preferences restored', {
+                            type: 'success',
+                            close_callback: function () {
+
+                                window.location.reload(true)
+
+                            }
+                        })
+
+                    }, 500);
+
+                })
+
+            },
+            Cancel: function() {
+
+                $(this).dialog('close')
+
+            }
+        }
+    });
+
+    prefsDialog.dialog({
+        width: 800,
+        buttons: {
+            Reload: function() {
+
+                buildContainer(function () {
+
+                    $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
+
+                })
+            },
+            Save: function() {
+
+                savePreferences(function () {
+
+                    $.bootstrapGrowl('Preferences saved', {
+                        type: 'success',
+                        close_callback: function () {
+
+                            window.location.reload(true)
+
+                        }
+                    });
+                })
+
+            },
+            Cancel: function () {
+
+                $(this).dialog('close')
+
+            }
+        },
+        close: function () {
+
+            $(this).remove();
+
+            restoreDialog.remove()
+
+        }
+    });
+
+    buildContainer();
 
 };

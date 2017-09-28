@@ -1,7 +1,11 @@
 from apps.users.models import UserData, GroupData, Credential
 
+from apps.preferences.extras import get_preferences
 
-def create_userdata(user, prefs):
+
+def create_userdata(user):
+
+    prefs = get_preferences()
 
     try:
 

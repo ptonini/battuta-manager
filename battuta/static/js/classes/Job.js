@@ -4,49 +4,51 @@ function Job(param) {
 
     var self = this;
 
-    self.status = param.status;
+    self.pubSub = $({});
 
-    self.hosts = param.hosts;
+    self.bindings = {};
 
-    self.subset = param.subset;
+    self.set('status', param.status);
 
-    self.stats = param.stats;
+    self.set('hosts', param.hosts);
 
-    self.name = param.name;
+    self.set('subset', param.subset);
 
-    self.tags = param.tags;
+    self.set('stats', param.stats);
 
-    self.cred = param.cred;
+    self.set('name', param.name);
 
-    self.message = param.message;
+    self.set('tags', param.tags);
 
-    self.pid = param.pid;
+    self.set('cred', param.cred);
 
-    self.created_on = param.created_on;
+    self.set('message', param.message);
 
-    self.is_running = param.is_running;
+    self.set('pid', param.pid);
 
-    self.check = param.check;
+    self.set('created_on', param.created_on);
 
-    self.username = param.username;
+    self.set('is_running', param.is_running);
 
-    self.skip_tags = param.skip_tags;
+    self.set('check', param.check);
 
-    self.user = param.user;
+    self.set('username', param.username);
 
-    self.extra_vars = param.extra_vars;
+    self.set('skip_tags', param.skip_tags);
 
-    self.plays = param.plays ? param.plays : [];
+    self.set('user', param.user);
 
-    self.folder = param.folder;
+    self.set('extra_vars', param.extra_vars);
 
-    self.playbook = param.playbook;
+    self.set('plays', param.plays ? param.plays : []);
 
-    self.type = param.type;
+    self.set('folder', param.folder);
 
-    self.id = param.id;
+    self.set('playbook', param.playbook);
 
-    self.apiPath = '/runner/api/job/';
+    self.set('type', param.type);
+
+    self.set('id', param.id);
 
 }
 
@@ -55,6 +57,8 @@ Job.prototype = Object.create(Battuta.prototype);
 Job.prototype.constructor = Job;
 
 Job.prototype.key = 'job';
+
+Job.prototype.apiPath = Battuta.prototype.paths.apis.job;
 
 Job.prototype.jobStates = {
     running: {color: 'blue'},
@@ -71,9 +75,7 @@ Job.prototype.taskStates = {
     ok: {color: 'green'},
     error: {color: 'red'},
     failed: {color: 'red'}
-}
-
-Job.prototype.resultTopPadding = '50px';
+};
 
 Job.prototype.popupCenter = function (url, title, w) {
 
@@ -127,7 +129,7 @@ Job.prototype.getFacts = function (callback) {
 
     var intervalId = setInterval(function() {
 
-        self.get(function (data) {
+        self.refresh(function (data) {
 
             if (!data.job.is_running) {
 
@@ -159,11 +161,11 @@ Job.prototype.run = function (sameWindow) {
 
         self.cred = self.cred.id;
 
-        self._postData('run', function (data) {
+        self.postData('run', function (data) {
 
             self.constructor(data.job);
 
-            var jobUrl = paths.runner + 'job/' + self.id + '/';
+            var jobUrl = self.paths.views.job + self.id + '/';
 
             if (sameWindow) window.open(jobUrl, '_self');
 
@@ -248,15 +250,8 @@ Job.prototype.run = function (sameWindow) {
                         $(this).dialog('close');
 
                     }
-                },
-                close: function () {
-
-                    $(this).remove()
-
                 }
-
             })
-            .dialog('open')
             .keypress(function (event) {
 
                 if (event.keyCode === 13) $('.ui-button-text:contains("Run")').parent('button').click()
@@ -295,7 +290,7 @@ Job.prototype.selector = function () {
 
             $(row).css({color: self.jobStates[data[4]].color, cursor: 'pointer'}).click(function () {
 
-                self.popupCenter(paths.runner +'job/' + data[5] + '/', data[5], 1000);
+                self.popupCenter(self.paths.views.job + data[5] + '/', data[5], 1000);
 
             })
         }
@@ -317,7 +312,7 @@ Job.prototype.header = function () {
         .hide()
         .attr('title', 'Run playbook again')
         .html(spanFA.clone().addClass('fa-repeat'))
-        .click(function rerunPlaybook() {
+        .click(function () {
 
             var playArgs = new PlaybookArgs( {
                 playbook: self.name,
@@ -336,7 +331,7 @@ Job.prototype.header = function () {
         .hide()
         .attr('title', 'Statistics')
         .html(spanFA.clone().addClass('fa-list'))
-        .click(function showStatsDialog() {
+        .click(function () {
 
             self.statistics(true)
 
@@ -346,32 +341,27 @@ Job.prototype.header = function () {
         .hide()
         .attr('title', 'Print')
         .html(spanFA.clone().addClass('fa-print'))
-        .click(function printReport() {
+        .click(function () {
 
-            // var pageTitle = $(document).find('title').text();
-            //
-            // var statsContainer =  $('<div>');
-            //
-            // // Adjust windows for printing
-            // document.title = pageTitle.replace('.yml', '');
-            //
-            // self.resultContainer.css({'font-size': 'smaller', 'padding-top': '0px'});
-            //
-            // if (self.job.stats && self.job.stats.length > 0) self.resultContainer.append(
-            //
-            //     statsContainer.css('font-size', 'smaller').append(new Statistics(self.job.stats, false))
-            //
-            // );
-            //
-            // // Open print window
-            // window.print();
-            //
-            // // Restore windows settings
-            // self.resultContainer.css({'font-size': 'small', 'padding-top': self.resultContainerTopPadding});
-            //
-            // statsContainer.remove();
-            //
-            // document.title = pageTitle
+            var pageTitle = $(document).find('title').text();
+
+            var statsContainer = $('<div>').css('font-size', 'smaller');
+
+            // Adjust windows for printing
+            document.title = pageTitle.replace('.yml', '');
+
+            if (self.stats && self.stats.length > 0) $(document.body).append(
+
+                statsContainer.append(self.statistics(false))
+
+            );
+
+            // Open print window
+            window.print();
+
+            statsContainer.remove();
+
+            document.title = pageTitle
 
         });
 
@@ -381,7 +371,7 @@ Job.prototype.header = function () {
         .html(spanFA.clone().addClass('fa-times').css('color', 'red'))
         .click(function () {
 
-            self._postData('kill');
+            self.postData('kill');
 
         });
 
@@ -439,7 +429,7 @@ Job.prototype.header = function () {
 
                 self.type === 'playbook' && rerunButton.show();
 
-                self.stats && statsButton.show();
+                self.type === 'playbook' && self.stats && statsButton.show();
 
                 printButton.show();
 
@@ -453,9 +443,9 @@ Job.prototype.header = function () {
 
     else {
 
-        rerunButton.show();
+        self.type === 'playbook' && rerunButton.show();
 
-        statsButton.show();
+        self.type === 'playbook' && self.stats && statsButton.show();
 
         printButton.show();
 
@@ -670,7 +660,7 @@ Job.prototype.view = function () {
 
                                                 self.result = JSON.stringify(result);
 
-                                                self._getData('get_result', function (data) {
+                                                self.getData('get_result', function (data) {
 
                                                     var jsonContainer = $('<div>')
                                                         .attr('class', 'well')
@@ -741,11 +731,9 @@ Job.prototype.view = function () {
         )
     );
 
-    console.log(self);
-
     if (self.is_running) var intervalId = setInterval(function () {
 
-        self.get(function () {
+        self.refresh(function () {
 
             buildResults();
 
@@ -816,14 +804,8 @@ Job.prototype.statistics = function (modal) {
                         $(this).dialog('close')
 
                     }
-                },
-                close: function () {
-
-                    $(this).remove()
-
                 }
-            })
-            .dialog('open');
+            });
     }
 
     else return container.css('margin-top', '20px')

@@ -5,7 +5,7 @@ from django.http import HttpResponse, Http404
 from django.conf import settings
 
 from apps.preferences.models import Item
-from apps.preferences.extras import get_preferences, get_default_value
+from apps.preferences.extras import get_default_value
 
 from apps.users.extras import create_userdata
 
@@ -15,11 +15,11 @@ class PreferencesView(View):
     @staticmethod
     def get(request, action):
 
-        if action == 'basic':
+        if action == 'get':
 
-            pref_dict = get_preferences()
+            create_userdata(request.user)
 
-            create_userdata(request.user, pref_dict)
+            pref_dict = dict()
 
             pref_dict['user_name'] = request.user.username
 
@@ -27,13 +27,15 @@ class PreferencesView(View):
 
             pref_dict['user_timezone'] = request.user.userdata.timezone
 
-        elif action == 'detailed':
-
-            pref_dict = dict()
-
             pref_dict['default'] = settings.DEFAULT_PREFERENCES
 
-            pref_dict['stored'] = [[item.name, item.value] for item in Item.objects.all()]
+            pref_dict['stored'] = {item.name: item.value for item in Item.objects.all()}
+
+            pref_dict['user'] = {
+                'name': request.user.username,
+                'id': request.user.id,
+                'tz': request.user.userdata.timezone
+            }
 
         else:
 
@@ -50,9 +52,11 @@ class PreferencesView(View):
 
             if action == 'save':
 
-                for key in request.POST:
+                prefs_dict = json.loads(request.POST['prefs'])
 
-                    if request.POST[key] == get_default_value(key):
+                for key in prefs_dict:
+
+                    if prefs_dict[key] == get_default_value(key):
 
                         Item.objects.filter(name=key).delete()
 
@@ -60,7 +64,7 @@ class PreferencesView(View):
 
                         item, created = Item.objects.get_or_create(name=key)
 
-                        item.value = request.POST[key]
+                        item.value = prefs_dict[key]
 
                         item.save()
 

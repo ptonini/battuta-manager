@@ -4,23 +4,25 @@ function Node(param) {
 
     var self = this;
 
-    self.name = param.name;
+    self.pubSub = $({});
 
-    self.description = param.description;
+    self.bindings = {};
 
-    self.id = param.id;
+    self.set('name', param.name);
 
-    self.type = param.type;
+    self.set('description', param.description);
 
-    self.basePath = '/inventory/';
+    self.set('id', param.id);
 
-    self.path =  self.basePath  + self.type + '/';
+    self.set('type', param.type);
 
-    self.baseApiPath = self.basePath + 'api/';
+    self.set('memory', param.memory);
 
-    self.apiPath = self.baseApiPath + self.type + '/';
+    self.set('disc', param.disc);
 
-    }
+    self.set('apiPath', self.paths.apis.inventory + self.type + '/');
+
+}
 
 Node.prototype = Object.create(Battuta.prototype);
 
@@ -28,13 +30,13 @@ Node.prototype.constructor = Node;
 
 Node.prototype.key = 'node';
 
-Node.prototype._facts = function (facts) {
+Node.prototype.facts = function (facts) {
 
     var self = this;
 
     var loadFacts = function () {
 
-        self._getData('facts', function (data) {
+        self.getData('facts', function (data) {
 
             if (data.facts) {
 
@@ -85,7 +87,7 @@ Node.prototype._facts = function (facts) {
                     ],
                     rowCallback: function(row, data) {
 
-                        $(row).find('td:eq(2)').html(humanBytes(data.size_total))
+                        $(row).find('td:eq(2)').html(self.humanBytes(data.size_total))
 
                     }
                 });
@@ -106,7 +108,7 @@ Node.prototype._facts = function (facts) {
                         ),
                         divRowEqHeight.clone().append(
                             divCol4L.clone().append('RAM Memory'),
-                            divCol8R.clone().append(humanBytes(data.facts.memtotal_mb, 'MB'))
+                            divCol8R.clone().append(self.humanBytes(data.facts.memtotal_mb, 'MB'))
                         ),
                         divRowEqHeight.clone().append(
                             divCol4L.clone().append('System:'),
@@ -227,7 +229,7 @@ Node.prototype._facts = function (facts) {
 
 };
 
-Node.prototype._relationships = function (callback) {
+Node.prototype.relationships = function (callback) {
 
     var self = this;
 
@@ -243,13 +245,13 @@ Node.prototype._relationships = function (callback) {
     $.each(relations[self.type], function (index, relation) {
 
         var relationGrid = $('<div>').DynaGrid({
-            headerTag: '<h5>',
             gridTitle: relation,
+            headerTag: '<h5>',
             ajaxDataKey: 'nodes',
+            showAddButton: true,
             itemValueKey: 'name',
             showTitle: true,
             showCount: true,
-            showAddButton: true,
             addButtonClass: 'add_relation',
             addButtonTitle: 'Add relationship',
             checkered: true,
@@ -266,7 +268,7 @@ Node.prototype._relationships = function (callback) {
                 gridItem.html('').append(
                     $('<span>').append(name).click(function () {
 
-                        window.open(self.basePath + relationType[relation] + '/' + name, '_self')
+                        window.open(self.paths.inventory.html + relationType[relation] + '/' + name, '_self')
 
                     }),
                     spanFA.clone().addClass('text-right fa-minus-circle')
@@ -276,7 +278,7 @@ Node.prototype._relationships = function (callback) {
 
                             self.selection = JSON.stringify([id]);
 
-                            self._postData('remove_' + relation, function () {
+                            self.postData('remove_' + relation, function () {
 
                                 relationGrid.DynaGrid('load');
 
@@ -290,7 +292,7 @@ Node.prototype._relationships = function (callback) {
             },
             addButtonAction: function () {
 
-                self._selectionDialog({
+                self.selectionDialog({
                     objectType: self.type,
                     url: self.apiPath + relation + '/?related=false&id=' + self.id,
                     ajaxDataKey: 'nodes',
@@ -303,7 +305,7 @@ Node.prototype._relationships = function (callback) {
 
                                 self.selection = JSON.stringify(selectionDialog.DynaGrid('getSelected', 'id'));
 
-                                self._postData('add_' + relation, function () {
+                                self.postData('add_' + relation, function () {
 
                                     relationGrid.DynaGrid('load');
 
@@ -349,7 +351,7 @@ Node.prototype._relationships = function (callback) {
     return container
 };
 
-Node.prototype._variables = function () {
+Node.prototype.variables = function () {
 
     var self = this;
 
@@ -373,7 +375,7 @@ Node.prototype._variables = function () {
                 className: 'btn-xs',
                 action: function () {
 
-                    self._editVariable({id: null}, function () {
+                    self.editVariable({id: null}, function () {
 
                         table.DataTable().ajax.reload()
 
@@ -386,7 +388,7 @@ Node.prototype._variables = function () {
                 className: 'btn-xs',
                 action: function () {
 
-                    self._copyVariables(function () {
+                    self.copyVariables(function () {
 
                         table.DataTable().ajax.reload()
 
@@ -408,7 +410,7 @@ Node.prototype._variables = function () {
                 $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
                     spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
-                        self._editVariable(variable, function () {
+                        self.editVariable(variable, function () {
 
                             table.DataTable().ajax.reload()
 
@@ -419,7 +421,7 @@ Node.prototype._variables = function () {
 
                         self.variable = JSON.stringify(variable);
 
-                        self._postData('delete_var', function () {
+                        self.postData('delete_var', function () {
 
                             table.DataTable().ajax.reload()
 
@@ -435,7 +437,7 @@ Node.prototype._variables = function () {
                     .attr('title', 'Open ' + variable.source)
                     .click(function () {
 
-                        window.open(self.basePath + 'group/' + variable.source + '/', '_self')
+                        window.open(self.paths.inventory.html + 'group/' + variable.source + '/', '_self')
 
                     });
             }
@@ -497,7 +499,7 @@ Node.prototype._variables = function () {
 
                             newRow.find('td:eq(2)').click(function() {
 
-                                window.open(self.basePath + 'group/' + value[0].source, '_self')
+                                window.open(self.paths.inventory.html + 'group/' + value[0].source, '_self')
 
                             });
 
@@ -552,7 +554,7 @@ Node.prototype._variables = function () {
 
 };
 
-Node.prototype._editVariable = function (variable, callback) {
+Node.prototype.editVariable = function (variable, callback) {
 
     var self = this;
 
@@ -585,7 +587,7 @@ Node.prototype._editVariable = function (variable, callback) {
 
                 self.variable = JSON.stringify({key: keyField.val(), value: valueField.val(), id: variable.id});
 
-                self._postData('save_var', function () {
+                self.postData('save_var', function () {
 
                     callback && callback();
 
@@ -625,7 +627,7 @@ Node.prototype._editVariable = function (variable, callback) {
 
 };
 
-Node.prototype._copyVariables = function (callback) {
+Node.prototype.copyVariables = function (callback) {
 
     var self = this;
 
@@ -633,9 +635,9 @@ Node.prototype._copyVariables = function (callback) {
 
         dialog.dialog('close');
 
-        self._selectionDialog({
+        self.selectionDialog({
             objectType: nodeType,
-            url: self.baseApiPath + nodeType + '/list/?exclude=' + self.name,
+            url: self.paths.inventory.html + nodeType + '/list/?exclude=' + self.name,
             ajaxDataKey: 'nodes',
             itemValueKey: 'name',
             showButtons: false,
@@ -647,7 +649,7 @@ Node.prototype._copyVariables = function (callback) {
 
                     self.source = JSON.stringify($(this).data());
 
-                    self._postData('copy_vars', function (data) {
+                    self.postData('copy_vars', function (data) {
 
                         selectionDialog.dialog('close');
 
@@ -725,7 +727,7 @@ Node.prototype.descendants = function () {
 
             gridItem.click(function () {
 
-                window.open(self.basePath + gridContainer.data('nodeType') + '/' + $(this).data('name') + '/', '_self')
+                window.open(self.paths.inventory.html + gridContainer.data('nodeType') + '/' + $(this).data('name') + '/', '_self')
 
             });
         }
@@ -753,7 +755,7 @@ Node.prototype.view = function () {
 
     var container = $('<div>');
 
-    self.get(function () {
+    self.refresh(function () {
 
         var adhoc = new AdHoc({hosts: self.name});
 
@@ -772,7 +774,7 @@ Node.prototype.view = function () {
 
                 self.node.edit(function (data) {
 
-                    window.open(paths.inventory + self.type + '/' + data.name + '/', '_self');
+                    window.open(self.paths.inventory.html + self.type + '/' + data.name + '/', '_self');
 
                 });
 
@@ -785,17 +787,17 @@ Node.prototype.view = function () {
 
                 self.delete(function () {
 
-                    window.open(paths.inventory + self.type + 's/', '_self');
+                    window.open(self.paths.inventory.html + self.type + 's/', '_self');
 
                 })
 
             });
 
-        var nodeInfo = self.type === 'host' ? self._facts() : null;
+        var nodeInfo = self.type === 'host' ? self.facts() : null;
 
         var descendantsContainer = self.type === 'group' ? self.descendants() : null;
 
-        var variableTable = self._variables();
+        var variableTable = self.variables();
 
         container.append(
             $('<h3>').append(
@@ -823,7 +825,7 @@ Node.prototype.view = function () {
                 ),
                 divTab.clone().attr('id', 'relationships_tab').append(
                     divRow.clone().append(
-                        divCol12.clone().append(self._relationships(function () {
+                        divCol12.clone().append(self.relationships(function () {
 
                             variableTable.trigger('reload');
 
@@ -869,7 +871,7 @@ Node.prototype.view = function () {
 
         }
 
-        else self._rememberLastTab(tabsHeader.attr('id'))
+        else self.rememberLastTab(tabsHeader.attr('id'))
 
     });
 
@@ -960,7 +962,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(paths.inventory + node.type + '/' + node.name + '/', '_self')
+                        window.open(self.paths.inventory.html + node.type + '/' + node.name + '/', '_self')
 
                     });
 
@@ -982,9 +984,9 @@ Node.prototype.selector = function () {
 
                     var cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
 
-                    node.memory && $(row).find('td:eq(' + cols[0] + ')').html(humanBytes(node.memory, 'MB'));
+                    node.memory && $(row).find('td:eq(' + cols[0] + ')').html(self.humanBytes(node.memory, 'MB'));
 
-                    node.disc && $(row).find('td:eq(' + cols[1] + ')').html(humanBytes(node.disc))
+                    node.disc && $(row).find('td:eq(' + cols[1] + ')').html(self.humanBytes(node.disc))
 
                 }
             }
@@ -1093,7 +1095,7 @@ Node.prototype.selector = function () {
 
                 gridItem.click(function () {
 
-                    window.open(paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
+                    window.open(self.paths.inventory.html + self.type + '/' + $(this).data('name') + '/', '_self')
 
                 });
 
@@ -1138,7 +1140,7 @@ Node.prototype.selector = function () {
 
     var addNode = function () {
 
-        var node = new Node({name: null, description: null, type: self.nodeType});
+        var node = new Node({name: null, description: null, type: self.type});
 
         node.edit(function () {
 
@@ -1182,7 +1184,7 @@ Node.prototype.selector = function () {
         )
     );
 
-    self._rememberLastTab(tabsHeader.attr('id'));
+    self.rememberLastTab(tabsHeader.attr('id'));
 
     refreshData();
 

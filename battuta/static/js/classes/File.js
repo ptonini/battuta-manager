@@ -4,35 +4,39 @@ function File(param) {
 
     var self = this;
 
-    self.name = param.name ? param.name : '';
+    self.pubSub = $({});
 
-    self.new_name = param.new_name ? param.new_name : self.name;
+    self.bindings = {};
 
-    self.type = param.type ? param.type : '';
+    self.set('name', param.name ? param.name : '');
 
-    self.size = param.size;
+    self.set('new_name', param.new_name ? param.new_name : self.name);
 
-    self.modified = param.modified;
+    self.set('type', param.type ? param.type : '');
 
-    self.root = param.root;
+    self.set('size', param.size);
 
-    self.folder = param.folder;
+    self.set('modified', param.modified);
 
-    self.is_valid = param.is_valid;
+    self.set('root', param.root);
 
-    self.error = param.error;
+    self.set('folder', param.folder);
 
-    self.owner = param.owner;
+    self.set('is_valid', param.is_valid);
 
-    self.text = param.text;
+    self.set('error', param.error);
 
-    self.apiPath = '/files/api/';
+    self.set('owner', param.owner);
+
+    self.set('text', param.text);
 
 }
 
 File.prototype = Object.create(Battuta.prototype);
 
 File.prototype.constructor = File;
+
+File.prototype.apiPath = Battuta.prototype.paths.apis.file;
 
 File.prototype.edit = function (callback) {
 
@@ -56,7 +60,7 @@ File.prototype.edit = function (callback) {
 
     }
 
-    else self._openDialog('rename', callback);
+    else self.dialog('rename', callback);
 
 };
 
@@ -64,7 +68,7 @@ File.prototype.read = function (callback) {
 
     var self = this;
 
-    self._getData('read', callback);
+    self.getData('read', callback);
 
 };
 
@@ -72,7 +76,7 @@ File.prototype.copy = function (callback) {
 
     var self = this;
 
-    self._openDialog('copy', callback);
+    self.dialog('copy', callback);
 
 };
 
@@ -80,7 +84,7 @@ File.prototype.create = function (callback) {
 
     var self = this;
 
-    self._openDialog('create', callback);
+    self.dialog('create', callback);
 
 };
 
@@ -109,9 +113,10 @@ File.prototype.upload = function (callback) {
 
                     self.new_name = loadedFile.name;
 
-                    self.csrfmiddlewaretoken = getCookie('csrftoken');
+                    self.csrfmiddlewaretoken = self.getCookie('csrftoken');
 
                     return self
+
                 }
 
             },
@@ -122,7 +127,7 @@ File.prototype.upload = function (callback) {
 
             uploadDialog.dialog('close');
 
-            self._requestResponse(data.response, callback, function () {
+            self.requestResponse(data.response, callback, function () {
 
                 uploadDialog.find('div.file-caption-main').show();
 
@@ -149,19 +154,13 @@ File.prototype.upload = function (callback) {
                     $(this).dialog('close')
 
                 }
-            },
-            close: function () {
-
-                $(this).remove()
-
             }
         })
         .keypress(function (event) {
 
             if (event.keyCode === 13) uploadField.fileinput('upload')
 
-        })
-        .dialog('open');
+        });
 
 };
 
@@ -169,7 +168,7 @@ File.prototype.exists = function (callback) {
 
     var self = this;
 
-    self._getData('exists', function (data) {
+    self.getData('exists', function (data) {
 
         data.exists || $.bootstrapGrowl('Folder does not exist', failedAlertOptions);
 
@@ -251,7 +250,7 @@ File.prototype.openEditor = function (callback) {
 
                     self.text = textEditor.getValue();
 
-                    self._postData('save', function (data) {
+                    self.postData('save', function (data) {
 
                         editorDialog.dialog('close');
 
@@ -347,7 +346,68 @@ File.prototype.openEditor = function (callback) {
 
 };
 
-File.prototype.openRoleDialog = function (callback) {
+File.prototype.dialog = function (action, callback) {
+
+    var self = this;
+
+    var nameFieldInput = textInputField.clone().attr('value', self.name);
+
+    var nameField =  divCol12.clone().append(
+        $('<label>').attr('class', 'text-capitalize').html(action).append(nameFieldInput)
+    );
+
+    var isFolderInput = chkboxInput.clone();
+
+    var fileDialog = smallDialog.clone().append(nameField);
+
+    if (action === 'create') fileDialog.append(
+        divCol12.clone().append(
+            divChkbox.clone().append($('<label>').append(isFolderInput, ' folder'))
+        )
+    );
+
+    else if (action === 'copy') nameFieldInput.val('copy_' + self.name);
+
+    fileDialog
+        .dialog({
+            buttons: {
+                Save: function () {
+
+                    self.new_name = nameFieldInput.val();
+
+                    if (isFolderInput.is(':checked')) self.type = 'directory';
+
+                    if (self.new_name && self.new_name !== self.name) self.postData(action, function (data) {
+
+                        fileDialog.dialog('close');
+
+                        callback && callback(data);
+
+                    });
+
+                },
+                Cancel: function() {
+
+                    $(this).dialog('close')
+
+                }
+            },
+            close: function() {
+
+                $(this).remove()
+
+            }
+        })
+        .keypress(function (event) {
+
+            if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
+
+        })
+        .dialog('open');
+
+};
+
+File.prototype.roleDialog = function (callback) {
 
     var self = this;
 
@@ -415,7 +475,7 @@ File.prototype.openRoleDialog = function (callback) {
 
                     self.role_folders = JSON.stringify(roleFolders);
 
-                    self._postData('create_role', function (data) {
+                    self.postData('create_role', function (data) {
 
                         callback && callback(data, self);
 
@@ -438,67 +498,6 @@ File.prototype.openRoleDialog = function (callback) {
         .dialog('open');
 
 
-
-};
-
-File.prototype._openDialog = function (action, callback) {
-
-    var self = this;
-
-    var nameFieldInput = textInputField.clone().attr('value', self.name);
-
-    var nameField =  divCol12.clone().append(
-        $('<label>').attr('class', 'text-capitalize').html(action).append(nameFieldInput)
-    );
-
-    var isFolderInput = chkboxInput.clone();
-
-    var fileDialog = smallDialog.clone().append(nameField);
-
-    if (action === 'create') fileDialog.append(
-        divCol12.clone().append(
-            divChkbox.clone().append($('<label>').append(isFolderInput, ' folder'))
-        )
-    );
-
-    else if (action === 'copy') nameFieldInput.val('copy_' + self.name);
-
-    fileDialog
-        .dialog({
-            buttons: {
-                Save: function () {
-
-                    self.new_name = nameFieldInput.val();
-
-                    if (isFolderInput.is(':checked')) self.type = 'directory';
-
-                    if (self.new_name && self.new_name !== self.name) self._postData(action, function (data) {
-
-                        fileDialog.dialog('close');
-
-                        callback && callback(data);
-
-                    });
-
-                },
-                Cancel: function() {
-
-                    $(this).dialog('close')
-
-                }
-            },
-            close: function() {
-
-                $(this).remove()
-
-            }
-        })
-        .keypress(function (event) {
-
-            if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
-
-        })
-        .dialog('open');
 
 };
 
@@ -565,7 +564,7 @@ File.prototype.selector = function (owner) {
 
                     var role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
 
-                    role.openRoleDialog(function (data, role) {
+                    role.roleDialog(function (data, role) {
 
                         setFolder(role.name);
 
@@ -780,7 +779,7 @@ File.prototype.selector = function (owner) {
 
                 else roots[self.root] && roots[self.root].formatter && roots[self.root].formatter(row, file);
 
-                $(row).find('td:eq(2)').html(humanBytes(file.size));
+                $(row).find('td:eq(2)').html(self.humanBytes(file.size));
 
                 $(row).find('td:eq(3)').html('').removeAttr('title').append(
                     $('<span>').html(file.modified).attr('title', file.modified),
@@ -885,4 +884,4 @@ File.prototype.selector = function (owner) {
 
     return container
 
-}
+};

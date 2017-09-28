@@ -87,11 +87,8 @@
                         currentItem
                             .html(itemData[opts.itemValueKey])
                             .attr('title', itemData[opts.itemValueKey])
+                            .css('cursor', opts.itemHoverCursor)
                             .data(itemData)
-                            .hover(function () {
-                                $(this).css('cursor', opts.itemHoverCursor)
-                            })
-
                     }
 
                     else throw '- invalid item data type';

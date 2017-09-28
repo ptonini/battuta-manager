@@ -4,35 +4,35 @@ function Project(param) {
 
     var self = this;
 
-    self.name = param.name;
+    self.pubSub = $({});
 
-    self.id = param.id;
+    self.bindings = {};
 
-    self.description = param.description;
+    self.set('name', param.name);
 
-    self.manager = param.manager;
+    self.set('id', param.id);
 
-    self.host_group = param.host_group;
+    self.set('description', param.description);
 
-    self.can_edit_variables = param.can_edit_variables;
+    self.set('manager', param.manager);
 
-    self.can_run_tasks = param.can_run_tasks;
+    self.set('host_group', param.host_group);
 
-    self.can_edit_tasks = param.can_edit_tasks;
+    self.set('can_edit_variables', param.can_edit_variables);
 
-    self.can_run_playbooks = param.can_run_playbooks;
+    self.set('can_run_tasks', param.can_run_tasks);
 
-    self.can_edit_playbooks = param.can_edit_playbooks;
+    self.set('can_edit_tasks', param.can_edit_tasks);
 
-    self.can_edit_roles = param.can_edit_roles;
+    self.set('can_run_playbooks', param.can_run_playbooks);
 
-    self.playbooks = param.playbooks;
+    self.set('can_edit_playbooks', param.can_edit_playbooks);
 
-    self.roles = param.roles;
+    self.set('can_edit_roles', param.can_edit_roles);
 
-    self.type = 'project';
+    self.set('playbooks', param.playbooks);
 
-    self.apiPath = '/projects/api/'
+    self.set('roles', param.roles);
 
 }
 
@@ -42,21 +42,25 @@ Project.prototype.constructor = Project;
 
 Project.prototype.key = 'project';
 
+Project.prototype.type = 'project';
+
+Project.prototype.apiPath = Battuta.prototype.apis.paths.project;
+
 Project.prototype.properties = {
     manager: {
-        url: paths.usersApi + 'user/list/',
+        url: Battuta.prototype.paths.apis.user + 'list/',
         type: 'user',
         key: 'users',
         item: 'username'
     },
     host_group: {
-        url: paths.inventoryApi + 'group/list/',
+        url: Battuta.prototype.paths.apis.inventory + 'group/list/',
         type: 'group',
         key: 'nodes',
         item: 'name'
     },
     others: {
-        url: paths.usersApi + 'group/list/?editable=true',
+        url: Battuta.prototype.paths.apis.group + 'list/?editable=true',
         type: 'user group',
         key: 'groups',
         item: 'name'
@@ -69,7 +73,7 @@ Project.prototype.setProperty =  function (property, input) {
 
     var propData = property in self.properties ? self.properties[property] : self.properties.others ;
 
-    self._selectionDialog({
+    self.selectionDialog({
         objectType: propData.type,
         url: propData.url,
         ajaxDataKey: propData.key,
@@ -84,7 +88,7 @@ Project.prototype.setProperty =  function (property, input) {
 
                 self.property = JSON.stringify({name: property, value: gridItem.data('id')});
 
-                self._postData('set_property', function () {
+                self.postData('set_property', function () {
 
                     input.val(itemData[propData.item]).data(itemData).change()
 
@@ -104,7 +108,7 @@ Project.prototype.clearProperty = function (property, input) {
 
     self.property = JSON.stringify({name: property});
 
-    self._postData('clear_property', function () {
+    self.postData('clear_property', function () {
 
         input.val('').removeData().change()
 
@@ -199,7 +203,7 @@ Project.prototype.playbookGrid = function () {
 
                             self.playbooks = JSON.stringify([{name: playbook.name, folder: playbook.folder}]);
 
-                            self._postData('remove_playbook', function () {
+                            self.postData('remove_playbook', function () {
 
                                 container.DynaGrid('load')
 
@@ -219,9 +223,9 @@ Project.prototype.playbookGrid = function () {
 
             });
 
-            self._selectionDialog({
+            self.selectionDialog({
                 objectType: 'playbooks',
-                url: paths.filesApi + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
+                url: self.paths.apis.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
                 itemValueKey: 'name',
                 showButtons: true,
                 addButtonAction: null,
@@ -249,7 +253,7 @@ Project.prototype.playbookGrid = function () {
 
                             self.playbooks = JSON.stringify(selection);
 
-                            self._postData( 'add_playbooks', function () {
+                            self.postData( 'add_playbooks', function () {
 
                                 container.DynaGrid('load')
 
@@ -312,7 +316,7 @@ Project.prototype.roleGrid = function () {
 
                             self.roles = JSON.stringify([{name: role.name, folder: role.folder}]);
 
-                            self._postData('remove_role', function () {
+                            self.postData('remove_role', function () {
 
                                 container.DynaGrid('load')
 
@@ -333,9 +337,9 @@ Project.prototype.roleGrid = function () {
 
             });
 
-            self._selectionDialog({
+            self.selectionDialog({
                 objectType: 'roles',
-                url: paths.filesApi + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
+                url: self.paths.apis.files + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
                 ajaxDataKey: 'file_list',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -355,7 +359,7 @@ Project.prototype.roleGrid = function () {
 
                             self.project.roles = JSON.stringify(selection);
 
-                            self._postData('add_roles', function () {
+                            self.postData('add_roles', function () {
 
                                 container.DynaGrid('load')
 
@@ -548,7 +552,7 @@ Project.prototype.view = function () {
 
     var container = $('<div>');
 
-    self.get(function () {
+    self.refresh(function () {
 
         var nameContainer = $('<span>').html(self.name);
 
@@ -578,7 +582,7 @@ Project.prototype.view = function () {
 
                 self.delete(function () {
 
-                    window.open(paths.projects, '_self');
+                    window.open(self.paths.selectors.project, '_self');
 
                 })
 
@@ -644,7 +648,7 @@ Project.prototype.view = function () {
         );
 
 
-        self._rememberLastTab(tabsHeader.attr('id'));
+        self.rememberLastTab(tabsHeader.attr('id'));
 
         return container
 
@@ -680,7 +684,7 @@ Project.prototype.selector = function () {
 
                     project.edit(function (data) {
 
-                        window.open(paths.projects  + data.project.id + '/', '_self');
+                        window.open(self.paths.views.project  + data.project.id + '/', '_self');
 
                     });
 
@@ -699,7 +703,7 @@ Project.prototype.selector = function () {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open(paths.projects + 'project/' + project.id + '/', '_self')
+                window.open(self.paths.views.project + project.id + '/', '_self')
 
             });
 

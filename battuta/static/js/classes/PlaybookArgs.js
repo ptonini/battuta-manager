@@ -4,29 +4,33 @@ function PlaybookArgs (param) {
 
     var self = this;
 
-    self.subset = param.subset;
+    self.pubSub = $({});
 
-    self.tags = param.tags;
+    self.bindings = {};
 
-    self.extra_vars = param.extra_vars;
+    self.set('subset', param.subset);
 
-    self.skip_tags = param.skip_tags;
+    self.set('tags', param.tags);
 
-    self.playbook = param.playbook;
+    self.set('extra_vars', param.extra_vars);
 
-    self.folder = param.folder;
+    self.set('skip_tags', param.skip_tags);
 
-    self.id = param.id;
+    self.set('playbook', param.playbook);
 
-    self.apiPath = '/runner/api/playbook_args/';
+    self.set('folder', param.folder);
 
-    self.type = 'playbook';
+    self.set('id', param.id);
 
 }
 
 PlaybookArgs.prototype = Object.create(Battuta.prototype);
 
 PlaybookArgs.prototype.constructor = PlaybookArgs;
+
+PlaybookArgs.prototype.apiPath = Battuta.prototype.paths.apis.playbook_args;
+
+PlaybookArgs.prototype.type = 'playbook';
 
 PlaybookArgs.prototype.dialog = function (sameWindow) {
 
@@ -72,7 +76,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
                             event.preventDefault();
 
-                            self._patternBuilder(limitField)
+                            self.patternBuilder(limitField)
 
                         })
                 )
@@ -88,13 +92,13 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
     var extraVarsField = textInputField.clone().val(self.extra_vars);
 
-    var credentialsSelector = self._runnerCredsSelector();
+    var credentialsSelector = self.runnerCredsSelector();
 
     var buildArgumentsSelector = function (selectedValue) {
 
         argumentsSelector.empty();
 
-        self._getData('list', function (data) {
+        self.getData('list', function (data) {
 
             $.each(data.args, function (index, args) {
 
@@ -200,7 +204,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
                             self.extra_vars = extraVarsField.val();
 
-                            self._postData('save', function (data) {
+                            self.postData('save', function (data) {
 
                                 self.constructor({playbook: file.name, folder: file.folder});
 
@@ -229,14 +233,8 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
                         $(this).dialog('close');
 
                     }
-                },
-                close: function () {
-
-                    $(this).remove()
-
                 }
-            })
-            .dialog('open');
+            });
 
         container.find('input').keypress(function (event) {
 

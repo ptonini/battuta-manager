@@ -4,19 +4,23 @@ function Inventory(param) {
 
     var self = this;
 
+    self.pubSub = $({});
+
+    self.bindings = {};
+
     Object.keys(param).forEach(function (key) {
 
-        self[key] = param[key]
+        self.set(key, param[key])
 
     });
-
-    self.apiPath = '/inventory/api/';
 
 }
 
 Inventory.prototype = Object.create(Battuta.prototype);
 
 Inventory.prototype.constructor = Inventory;
+
+Inventory.prototype.apiPath = Battuta.prototype.paths.apis.inventory;
 
 Inventory.prototype.import = function () {
 
@@ -71,7 +75,7 @@ Inventory.prototype.import = function () {
 
                 return {
                     format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                    csrfmiddlewaretoken: getCookie('csrftoken')
+                    csrfmiddlewaretoken: self.getCookie('csrftoken')
                 }
 
             },
@@ -139,7 +143,7 @@ Inventory.prototype.export = function () {
 
                 self.format = 'json';
 
-                self._getData('export', function (data) {
+                self.getData('export', function (data) {
 
                     var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
 

@@ -4,21 +4,21 @@ function AdHoc (param) {
 
     var self = this;
 
-    self.become = param.become ? param.become : false;
+    self.pubSub = $({});
 
-    self.hosts = param.hosts ? param.hosts : '';
+    self.bindings = {};
 
-    self.id = param.id;
+    self.set('become', param.become ? param.become : false);
 
-    self.module = param.module;
+    self.set('hosts', param.hosts ? param.hosts : '');
 
-    self.arguments = param.arguments ? param.arguments : {};
+    self.set('id', param.id);
 
-    self.argumentsStr = self._argumentsToString();
+    self.set('module', param.module);
 
-    self.apiPath = '/runner/api/adhoc/';
+    self.set('arguments', param.arguments ? param.arguments : {});
 
-    self.type = 'adhoc';
+    self.set('argumentsStr', self.argumentsToString());
 
 }
 
@@ -27,6 +27,10 @@ AdHoc.prototype = Object.create(Battuta.prototype);
 AdHoc.prototype.constructor = AdHoc;
 
 AdHoc.prototype.key = 'task';
+
+AdHoc.prototype.apiPath = Battuta.prototype.paths.apis.adhoc;
+
+AdHoc.prototype.type = 'adhoc';
 
 AdHoc.prototype.modules = [
     'copy',
@@ -40,7 +44,7 @@ AdHoc.prototype.modules = [
     'file'
 ];
 
-AdHoc.prototype._argumentsToString = function () {
+AdHoc.prototype.argumentsToString = function () {
 
     var self = this;
 
@@ -56,7 +60,7 @@ AdHoc.prototype._argumentsToString = function () {
 
 };
 
-AdHoc.prototype._patternField = function (pattern) {
+AdHoc.prototype.patternField = function (pattern) {
 
     var self = this;
 
@@ -73,7 +77,7 @@ AdHoc.prototype._patternField = function (pattern) {
 
             event.preventDefault();
 
-            self._patternBuilder(patternField)
+            self.patternBuilder(patternField)
 
         });
 
@@ -97,7 +101,7 @@ AdHoc.prototype._patternField = function (pattern) {
 
 };
 
-AdHoc.prototype._isSudoBtn = function () {
+AdHoc.prototype.isSudoBtn = function () {
 
     var self = this;
 
@@ -150,7 +154,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
         $('<label>').html(fileSourceLabel).append(
             $('<small>').attr('class', 'label_link').html('upload files').click(function () {
 
-                window.open(paths.files, '_blank');
+                window.open(self.paths.selectors.file, '_blank');
 
             }),
             fileSourceField
@@ -167,7 +171,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
 
     var argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(argumentsField));
 
-    var sudoButton = self._isSudoBtn();
+    var sudoButton = self.isSudoBtn();
 
     $.each(self.modules.sort(), function (index, value) {
 
@@ -244,7 +248,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
 
             case 'copy':
 
-                fileSourceField.autocomplete({source: paths.filesApi + 'search/?type=file'});
+                fileSourceField.autocomplete({source: self.paths.apis.file + 'search/?type=file'});
 
                 fileSourceLabel.html('Source');
 
@@ -260,7 +264,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
 
             case 'unarchive':
 
-                fileSourceField.autocomplete({source: paths.filesApi + 'search/?type=archive'});
+                fileSourceField.autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
 
                 fileSourceLabel.html('Source');
 
@@ -275,7 +279,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
 
             case 'script':
 
-                fileSourceField.autocomplete({source: paths.filesApi + 'search/?type=file'});
+                fileSourceField.autocomplete({source: self.paths.apis.file + 'search/?type=file'});
 
                 fileSourceLabel.html('Script');
 
@@ -355,7 +359,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
         .append(
             divRow.clone().append(
                 divCol12.clone().append(header),
-                divCol8.clone().append(self._patternField(pattern)),
+                divCol8.clone().append(self.patternField(pattern)),
                 divCol4.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Module').append(moduleSelector)
@@ -365,7 +369,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
             ),
             divRowEqHeight.clone().append(
                 divCol4.clone().append(
-                    $('<label>').html('Credentials').append(self._runnerCredsSelector())
+                    $('<label>').html('Credentials').append(self.runnerCredsSelector())
                 ),
                 divCol8.clone().addClass('text-right').css('margin', 'auto').append(moduleReferenceAnchor)
             )
@@ -376,7 +380,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
         buttons: {
             Run: function () {
 
-                self.arguments = self._argumentsToString(args);
+                self.arguments = self.argumentsToString(args);
 
                 var job = new Job(self);
 
@@ -387,7 +391,7 @@ AdHoc.prototype.dialog = function (pattern, callback) {
 
                 self.arguments = JSON.stringify(args);
 
-                self._postData('save', function () {
+                self.postData('save', function () {
 
                     callback && callback();
 
@@ -458,18 +462,18 @@ AdHoc.prototype.commandForm = function (pattern) {
         .append(
             divRow.clone().append(
                 divCol12.clone().append($('<h4>').html('Run command')),
-                divCol3.clone().append(self._patternField(pattern)),
+                divCol3.clone().append(self.patternField(pattern)),
                 divCol6.clone().append(
                     divFormGroup.clone().append(
                         $('<label>').html('Command').append(
                             divInputGroup.clone().append(
                                 argumentsField,
-                                spanBtnGroup.clone().append(self._isSudoBtn())
+                                spanBtnGroup.clone().append(self.isSudoBtn())
                             )
                         )
                     )
                 ),
-                divCol2.clone().append($('<label>').html('Credentials').append(self._runnerCredsSelector())),
+                divCol2.clone().append($('<label>').html('Credentials').append(self.runnerCredsSelector())),
                 divCol1.clone().addClass('text-right labelless_button').append(
                     btnSmall.clone().html('Run')
                 )
@@ -550,7 +554,7 @@ AdHoc.prototype.selector = function (pattern) {
 
             $(row).find('td:eq(3)').append(
                 spanRight.clone().append(
-                    prettyBoolean($(row).find('td:eq(3)'), adhoc.become),
+                    self.prettyBoolean($(row).find('td:eq(3)'), adhoc.become),
                     spanFA.clone().addClass('fa-play-circle-o btn-incell').attr('title', 'Load').click(function () {
 
                         adhoc.dialog(pattern, function () {
@@ -566,7 +570,7 @@ AdHoc.prototype.selector = function (pattern) {
 
                         adhoc.arguments = JSON.stringify(adhoc.arguments);
 
-                        adhoc._postData('save', function () {
+                        adhoc.postData('save', function () {
 
                             table.DataTable().ajax.reload()
 

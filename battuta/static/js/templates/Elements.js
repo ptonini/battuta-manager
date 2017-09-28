@@ -126,4 +126,6 @@ var ulDropdownMenu = $('<ul>').attr('class', 'dropdown-menu');
 
 var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
 
-var noDescriptionMsg = $('<small>').html($('<i>').html('No description available'))
+var noDescriptionMsg = $('<small>').html($('<i>').html('No description available'));
+
+var failedAlertOptions = {type: 'danger', delay: 3000};

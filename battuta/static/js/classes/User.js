@@ -4,33 +4,31 @@ function User(param) {
 
     var self = this;
 
-    self.id = param.id;
+    self.pubSub = $({});
 
-    self.username = param.username;
+    self.bindings = {};
 
-    self.first_name = param.first_name;
+    self.set('id', param.id);
 
-    self.last_name = param.last_name;
+    self.set('username', param.username);
 
-    self.email = param.email;
+    self.set('password', param.password);
 
-    self.date_joined = param.date_joined;
+    self.set('first_name', param.first_name);
 
-    self.timezone = param.timezone;
+    self.set('last_name', param.last_name);
 
-    self.is_active = param.is_active;
+    self.set('email', param.email);
 
-    self.is_superuser = param.is_superuser;
+    self.set('date_joined', param.date_joined);
 
-    self.last_login = param.last_login;
+    self.set('timezone', param.timezone);
 
-    self.path = '/users/user/';
+    self.set('is_active', param.is_active);
 
-    self.apiPath = '/users/api/user/';
+    self.set('is_superuser', param.is_superuser);
 
-    self.type = 'user';
-
-    self.runner = false;
+    self.set('last_login', param.last_login);
 
 }
 
@@ -39,6 +37,10 @@ User.prototype = Object.create(Battuta.prototype);
 User.prototype.constructor = User;
 
 User.prototype.key = 'user';
+
+User.prototype.apiPath = Battuta.prototype.apis.paths.user;
+
+User.prototype.type = 'user';
 
 User.prototype.edit = function (callback) {
 
@@ -74,7 +76,7 @@ User.prototype.edit = function (callback) {
 
                     if (self.password !== retypePasswordField.val()) $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
 
-                    self._postData('save', function (data) {
+                    self.postData('save', function (data) {
 
                         dialog.dialog('close');
 
@@ -103,7 +105,7 @@ User.prototype.defaultCred = function (callback) {
 
     var self = this;
 
-    self._getData('default_cred', callback)
+    self.getData('default_cred', callback)
 
 };
 
@@ -159,7 +161,7 @@ User.prototype.form = function () {
 
             self.timezone = timezoneField.val();
 
-            self._postData('save');
+            self.postData('save');
 
         });
 
@@ -211,7 +213,7 @@ User.prototype.passwordForm = function (currentUser) {
 
             if (self.current_password) {
 
-                if (self.new_password && self.new_password === retypeNewPassword.val()) self._postData('chgpass');
+                if (self.new_password && self.new_password === retypeNewPassword.val()) self.postData('chgpass');
 
                 else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
 
@@ -380,7 +382,7 @@ User.prototype.credentialsForm = function () {
                     });
 
 
-                    self._postData('save_cred', function (data) {
+                    self.postData('save_cred', function (data) {
 
                         credentialsSelector.trigger('build', data.cred.id);
 
@@ -392,7 +394,7 @@ User.prototype.credentialsForm = function () {
 
                     self.cred = JSON.stringify({id: credentialsForm.data('loadedCred')});
 
-                    self._postData('delete_cred', function (data) {
+                    self.postData('delete_cred', function (data) {
 
                         credentialsSelector.trigger('build', data.cred.id);
 
@@ -416,7 +418,7 @@ User.prototype.credentialsSelector = function (startValue, runner, callback) {
 
     var buildSelector = function (startValue) {
 
-        self._getData('creds', function (data) {
+        self.getData('creds', function (data) {
 
             $.each(data.creds, function (index, cred) {
 
@@ -489,7 +491,7 @@ User.prototype.groupGrid = function () {
             gridItem.removeClass('truncate-text').html('').append(
                 $('<span>').append(name).click(function () {
 
-                    window.open(paths.users + 'group' + '/' + name, '_self')
+                    window.open(self.paths.views.group + name, '_self')
 
                 }),
                 spanFA.clone().addClass('text-right fa-minus-circle')
@@ -499,7 +501,7 @@ User.prototype.groupGrid = function () {
 
                         self.selection = [gridItem.data('id')];
 
-                        self._postData('remove_groups', function () {
+                        self.postData('remove_groups', function () {
 
                             groupGrid.DynaGrid('load')
 
@@ -511,7 +513,7 @@ User.prototype.groupGrid = function () {
         },
         addButtonAction: function () {
 
-            self._selectionDialog({
+            self.selectionDialog({
                 objectType: 'group',
                 url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
                 ajaxDataKey: 'groups',
@@ -524,7 +526,7 @@ User.prototype.groupGrid = function () {
 
                             self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                            self._postData('add_groups', function () {
+                            self.postData('add_groups', function () {
 
                                 groupGrid.DynaGrid('load')
 
@@ -559,7 +561,7 @@ User.prototype.view = function (currentUser) {
 
     var container = $('<div>');
 
-    self.get(function () {
+    self.refresh(function () {
 
         var deleteUserBtn = spanFA.clone()
             .addClass('fa-trash-o btn-incell')
@@ -568,7 +570,7 @@ User.prototype.view = function (currentUser) {
 
                 self.user.delete(function () {
 
-                    window.open(paths.users + 'users/', '_self')
+                    window.open(self.paths.selectors.user, '_self')
 
                 })
 
@@ -626,7 +628,7 @@ User.prototype.view = function (currentUser) {
 
         }
 
-        self._rememberLastTab(tabsHeader.attr('id'));
+        self.rememberLastTab(tabsHeader.attr('id'));
 
         return container
 
@@ -689,7 +691,7 @@ User.prototype.selector = function () {
 
             var lastCell = $(row).find('td:eq(3)');
 
-            prettyBoolean(lastCell, user.is_superuser);
+            self.prettyBoolean(lastCell, user.is_superuser);
 
             if (!user.is_superuser) lastCell.append(
                 spanRight.clone().append(

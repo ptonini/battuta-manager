@@ -4,23 +4,21 @@ function Group(param) {
 
     var self = this;
 
-    self.id = param.id;
+    self.pubSub = $({});
 
-    self.name = param.name;
+    self.bindings = {};
 
-    self.description = param.description;
+    self.set('id', param.id);
 
-    self.permissions = param.permissions;
+    self.set('name', param.name);
 
-    self.member_count = param.member_count;
+    self.set('description', param.description);
 
-    self.editable = param.editable;
+    self.set('permissions', param.permissions);
 
-    self.path = '/users/group/';
+    self.set('member_count', param.member_count);
 
-    self.apiPath = '/users/api/group/';
-
-    self.type = 'user group';
+    self.set('editable', param.editable);
 
 }
 
@@ -28,7 +26,11 @@ Group.prototype = Object.create(Battuta.prototype);
 
 Group.prototype.constructor = Group;
 
+Group.prototype.apiPath = Battuta.prototype.paths.apis.group;
+
 Group.prototype.key = 'group';
+
+Group.prototype.type = 'user group';
 
 Group.prototype.permissionsForm = function () {
 
@@ -148,7 +150,7 @@ Group.prototype.permissionsForm = function () {
 
             self.permissions = JSON.stringify(permissions);
 
-            self._postData('save');
+            self.postData('save');
 
         });
 
@@ -186,20 +188,20 @@ Group.prototype.memberGrid = function () {
 
             var name = gridItem.data('value');
 
-            gridItem.removeClass('truncate-text').html('').append(
+            gridItem.html('').append(
                 $('<span>').append(name).click(function () {
 
-                    window.open(paths.users + 'user' + '/' + name, '_self')
+                    window.open(self.paths.views.user + name + '/', '_self')
 
                 }),
                 spanFA.clone().addClass('text-right fa-minus-circle')
-                    .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                    .css({float: 'right', margin: '.8rem 0'})
                     .attr('title', 'Remove')
                     .click(function () {
 
                         self.selection = [gridItem.data('id')];
 
-                        self._postData('remove_members', function () {
+                        self.postData('remove_members', function () {
 
                             membersGrid.DynaGrid('load')
 
@@ -211,9 +213,9 @@ Group.prototype.memberGrid = function () {
         },
         addButtonAction: function () {
 
-            self._selectionDialog({
+            self.selectionDialog({
                 objectType: 'user',
-                url: paths.usersApi + 'group/members/?reverse=true&name=' + self.name,
+                url: self.paths.apis.group + 'members/?reverse=true&name=' + self.name,
                 ajaxDataKey: 'members',
                 itemValueKey: 'name',
                 showButtons: true,
@@ -224,7 +226,7 @@ Group.prototype.memberGrid = function () {
 
                             self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                            self._postData('add_members', function () {
+                            self.postData('add_members', function () {
 
                                 membersGrid.DynaGrid('load')
 
@@ -260,13 +262,13 @@ Group.prototype.view = function () {
 
     var container = $('<div>');
 
-    self.get(function () {
+    self.refresh(function () {
 
         var editGroupBtn = spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function() {
 
             self.edit(function (data) {
 
-                window.open(self.group.path + data.group.name + '/', '_self')
+                window.open(self.paths.views.group + data.group.name + '/', '_self')
 
             });
 
@@ -276,7 +278,7 @@ Group.prototype.view = function () {
 
             self.delete(function () {
 
-                window.open(paths.users + 'groups/', '_self')
+                window.open(self.paths.selectors.group , '_self')
 
             })
 
@@ -327,7 +329,7 @@ Group.prototype.view = function () {
 
         }
 
-        self._rememberLastTab(tabsHeader.attr('id'));
+        self.rememberLastTab(tabsHeader.attr('id'));
 
         return container
 
@@ -364,7 +366,7 @@ Group.prototype.selector = function () {
 
                     group.edit(function (data) {
 
-                        window.open(paths.users + 'group/' + data.group.name + '/', '_self');
+                        window.open(self.paths.views.group + data.group.name + '/', '_self');
 
                     })
 
@@ -383,7 +385,7 @@ Group.prototype.selector = function () {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                window.open(paths.users + 'group/' + group.name, '_self')
+                window.open(self.paths.views.group + group.name, '_self')
 
             });
 

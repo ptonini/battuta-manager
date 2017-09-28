@@ -95,7 +95,7 @@ class UsersView(View):
 
         prefs = get_preferences()
 
-        create_userdata(user, prefs)
+        create_userdata(user)
 
         tz = timezone(user.userdata.timezone)
 
