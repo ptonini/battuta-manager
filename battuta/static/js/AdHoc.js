@@ -18,8 +18,6 @@ function AdHoc (param) {
 
     self.set('arguments', param.arguments ? param.arguments : {});
 
-    self.set('argumentsStr', self.argumentsToString());
-
 }
 
 AdHoc.prototype = Object.create(Battuta.prototype);
@@ -550,7 +548,7 @@ AdHoc.prototype.selector = function (pattern) {
 
             var adhoc = new AdHoc(data);
 
-            $(row).find('td:eq(2)').html(adhoc.argumentsStr).attr('title', adhoc.argumentsStr);
+            $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
 
             $(row).find('td:eq(3)').append(
                 spanRight.clone().append(

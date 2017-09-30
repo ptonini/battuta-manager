@@ -4,12 +4,12 @@
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory</a>
         <ul class="dropdown-menu">
             <li>
-                <a href="/inventory/hosts/">Hosts</a>
-                <a href="/inventory/groups/">Groups</a>
+                <a id="host_selector_anchor">Hosts</a>
+                <a id="group_selector_anchor" href="#">Groups</a>
             </li>
             <li class="divider"></li>
             <li>
-                <a href="/inventory/import/">Import/Export</a>
+                <a id="import_inventory_anchor" href="#">Import/Export</a>
             </li>
         </ul>
     </li>
@@ -17,46 +17,46 @@
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
         <ul class="dropdown-menu">
             <li>
-                <a href="/runner/adhoc/">Ad-Hoc</a>
-                <a href="/runner/playbooks/">Playbooks</a>
-                <a href="/runner/roles/">Roles</a>
+                <a id="adhoc_selector_anchor" href="#">Ad-Hoc</a>
+                <a id="playbook_selector_anchor" href="#">Playbooks</a>
+                <a id="role_selector_anchor"  href="#">Roles</a>
             <li class="divider"></li>
             <li>
-                <a href="/runner/history/">History</a>
+                <a id="job_selector_anchor" href="#">Job history</a>
             </li>
         </ul>
     </li>
     <li>
-        <a href="/files/">Files</a>
+        <a id="file_selector_anchor" href="#">Files</a>
     </li>
     <li>
-        <a href="/projects/">Projects</a>
+        <a id="project_selector_anchor" href="#">Projects</a>
     </li>
     <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
         <ul class="dropdown-menu">
             <li>
-                <a href="/users/users/">Users</a>
-                <a href="/users/groups/">User groups</a>
+                <a id="user_selector_anchor" href="#">Users</a>
+                <a id="user_group_selector_anchor" href="#">User groups</a>
             </li>
             <li class="divider"></li>
             <li>
-                <a href="/users/user/admin/">admin profile</a>
-                <a href="/users/user/admin/files/">admin files</a>
+                <a id="user_view_anchor" href="#"><span data-bind="username"></span> profile</a>
+                <a id="user_file_anchor" href="#"><span data-bind="username"></span> files</a>
             </li>
         </ul>
     </li>
 </ul>
 <ul class="nav navbar-nav navbar-right">
     <li>
-        <button class="btn btn-link navbar-btn" style="border-radius: 5px;" title="Preferences">
+        <button id="preferences_button" class="btn btn-link navbar-btn" style="border-radius: 5px;" title="Preferences">
             <span class="fa fa-fw fa-cog"></span>
         </button>
     </li>
     <li>
-        <form class="navbar-form">
+        <form id="menu_search_form" class="navbar-form">
             <div class="input-group">
-                <input class="form-control input-sm" type="text" title="Search">
+                <input class="form-control input-sm" type="text" data-bind="pattern" title="Search">
                 <span class="input-group-btn">
                     <button class="btn btn-default btn-sm">
                         <span class="fa fa-fw fa-search"></span>
@@ -67,7 +67,7 @@
     </li>
     <li>
         <form class="navbar-form">
-            <button class="btn btn-link" title="Logout admin">
+            <button id="logout_button" class="btn btn-link" title="Logout">
                 <span class="fa fa-fw fa-sign-out"></span>
             </button>
         </form>

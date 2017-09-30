@@ -16,6 +16,8 @@ function Node(param) {
 
     self.set('type', param.type);
 
+    self.set('editable', param.editable);
+
     self.set('memory', param.memory);
 
     self.set('disc', param.disc);
@@ -233,7 +235,7 @@ Node.prototype.relationships = function (callback) {
 
     var self = this;
 
-    var container = $('<div>');
+    var $container = $('<div>');
 
     var relations = {
         group: ['parents', 'children', 'members'],
@@ -244,7 +246,7 @@ Node.prototype.relationships = function (callback) {
 
     $.each(relations[self.type], function (index, relation) {
 
-        var relationGrid = $('<div>').DynaGrid({
+        var $relationGrid = $('<div>').DynaGrid({
             gridTitle: relation,
             headerTag: '<h5>',
             ajaxDataKey: 'nodes',
@@ -259,16 +261,16 @@ Node.prototype.relationships = function (callback) {
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
             ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
-            formatItem: function (gridContainer, gridItem) {
+            formatItem: function ($gridContainer, $gridItem) {
 
-                var id = gridItem.data('id');
+                var id = $gridItem.data('id');
 
-                var name = gridItem.data('name');
+                var name = $gridItem.data('name');
 
-                gridItem.html('').append(
+                $gridItem.html('').append(
                     $('<span>').append(name).click(function () {
 
-                        window.open(self.paths.inventory.html + relationType[relation] + '/' + name, '_self')
+                        window.open(self.paths.inventory + relationType[relation] + '/' + name, '_self')
 
                     }),
                     spanFA.clone().addClass('text-right fa-minus-circle')
@@ -280,7 +282,7 @@ Node.prototype.relationships = function (callback) {
 
                             self.postData('remove_' + relation, function () {
 
-                                relationGrid.DynaGrid('load');
+                                $relationGrid.DynaGrid('load');
 
                                 callback && callback()
 
@@ -298,16 +300,16 @@ Node.prototype.relationships = function (callback) {
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
                     showButtons: true,
-                    loadCallback: function (gridContainer, selectionDialog) {
+                    loadCallback: function ($gridContainer, $selectionDialog) {
 
-                        selectionDialog.dialog('option', 'buttons', {
+                        $selectionDialog.dialog('option', 'buttons', {
                             Add: function () {
 
-                                self.selection = JSON.stringify(selectionDialog.DynaGrid('getSelected', 'id'));
+                                self.selection = JSON.stringify($selectionDialog.DynaGrid('getSelected', 'id'));
 
                                 self.postData('add_' + relation, function () {
 
-                                    relationGrid.DynaGrid('load');
+                                    $relationGrid.DynaGrid('load');
 
                                     callback && callback()
 
@@ -327,13 +329,13 @@ Node.prototype.relationships = function (callback) {
                         });
 
                     },
-                    addButtonAction: function (selectionDialog) {
+                    addButtonAction: function ($selectionDialog) {
 
                         var node = new Node({name: null, description: null, type: relationType});
 
                         node.edit(function () {
 
-                            selectionDialog.DynaGrid('load')
+                            $selectionDialog.DynaGrid('load')
 
                         });
 
@@ -344,28 +346,28 @@ Node.prototype.relationships = function (callback) {
             }
         });
 
-        container.append(relationGrid, $('<br>'));
+        $container.append($relationGrid, $('<br>'));
 
     });
 
-    return container
+    return $container
 };
 
 Node.prototype.variables = function () {
 
     var self = this;
 
-    var container = $('<div>').on('reload', function () {
+    var $container = $('<div>').on('reload', function () {
 
-        table.DataTable().ajax.reload()
+        $table.DataTable().ajax.reload()
 
     });
 
-    var table = baseTable.clone();
+    var $table = baseTable.clone();
 
-    container.append(table);
+    $container.append($table);
 
-    table.DataTable({
+    $table.DataTable({
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
         paging: false,
         dom: 'Bfrtip',
@@ -377,7 +379,7 @@ Node.prototype.variables = function () {
 
                     self.editVariable({id: null}, function () {
 
-                        table.DataTable().ajax.reload()
+                        $table.DataTable().ajax.reload()
 
                     });
 
@@ -390,7 +392,7 @@ Node.prototype.variables = function () {
 
                     self.copyVariables(function () {
 
-                        table.DataTable().ajax.reload()
+                        $table.DataTable().ajax.reload()
 
                     });
 
@@ -412,7 +414,7 @@ Node.prototype.variables = function () {
 
                         self.editVariable(variable, function () {
 
-                            table.DataTable().ajax.reload()
+                            $table.DataTable().ajax.reload()
 
                         })
 
@@ -423,13 +425,14 @@ Node.prototype.variables = function () {
 
                         self.postData('delete_var', function () {
 
-                            table.DataTable().ajax.reload()
+                            $table.DataTable().ajax.reload()
 
                         });
 
                     })
                 )
             }
+
             else {
                 $(row).find('td:eq(2)')
                     .css('cursor', 'pointer')
@@ -437,10 +440,11 @@ Node.prototype.variables = function () {
                     .attr('title', 'Open ' + variable.source)
                     .click(function () {
 
-                        window.open(self.paths.inventory.html + 'group/' + variable.source + '/', '_self')
+                        window.open(self.paths.inventory + 'group/' + variable.source + '/', '_self')
 
                     });
             }
+
         },
         drawCallback: function() {
 
@@ -495,15 +499,15 @@ Node.prototype.variables = function () {
 
                         else {
 
-                            var newRow = $(value[1]).clone().css('color', '#777');
+                            var $newRow = $(value[1]).clone().css('color', '#777');
 
-                            newRow.find('td:eq(2)').click(function() {
+                            $newRow.find('td:eq(2)').click(function() {
 
                                 window.open(self.paths.inventory.html + 'group/' + value[0].source, '_self')
 
                             });
 
-                            rowArray.push(newRow);
+                            rowArray.push($newRow);
 
                             $(value[1]).remove()
 
@@ -550,7 +554,7 @@ Node.prototype.variables = function () {
         }
     });
 
-    return container;
+    return $container;
 
 };
 
@@ -558,72 +562,52 @@ Node.prototype.editVariable = function (variable, callback) {
 
     var self = this;
 
-    var header = $('<h4>');
+    var $dialog = largeDialog.clone();
 
-    var keyField = textInputField.clone();
+    $dialog.load(self.paths.templates + 'editVariableDialog.html', function () {
 
-    var valueField = textAreaField.clone();
+        self.bind($dialog);
 
-    var dialog = largeDialog.clone().append(
-        header,
-        divRow.clone().append(
-            divCol12.clone().append(
-                divFormGroup.clone().append(
-                    $('<label>').html('Key').append(keyField.val(variable.key))
-                ),
-                divFormGroup.clone().append(
-                    $('<label>').html('Value').append(valueField.val(variable.value))
-                )
-            )
-        )
-    );
+        self.set('header', variable.id ? 'Edit variable' : 'Add variable');
 
-    header.html(variable.id ? 'Edit variable' : 'Add variable');
+        self.set('key', variable.key);
 
-    dialog.dialog({
-        closeOnEscape: false,
-        buttons: {
-            Save: function () {
+        self.set('value', variable.value);
 
-                self.variable = JSON.stringify({key: keyField.val(), value: valueField.val(), id: variable.id});
+        $dialog.dialog({
+            closeOnEscape: false,
+            buttons: {
+                Save: function () {
 
-                self.postData('save_var', function () {
+                    self.variable = JSON.stringify({key: self.key, value: self.value, id: variable.id});
 
-                    callback && callback();
+                    delete self.key;
 
-                    self.variable.id && self.dialog.dialog('close');
+                    delete self.value;
 
-                    dialog.find('input, textarea').val('');
+                    self.postData('save_var', function () {
 
-                    keyField.focus();
+                        callback && callback();
 
-                });
+                        variable.id && $dialog.dialog('close');
 
-            },
-            Close: function () {
+                        $dialog.find('input, textarea').val('');
 
-                $(this).dialog('close');
+                        $dialog.find('[data-bind="key"]').focus();
 
+                    });
+
+                },
+                Close: function () {
+
+                    $(this).dialog('close');
+
+                }
             }
-        },
-        close: function() {
-
-            $(this).remove()
-
-        }
-    });
-
-    dialog.find('input').keypress(function (event) {
-
-        if (event.keyCode === 13) {
-
-            event.preventDefault();
-
-        }
 
     });
 
-    dialog.dialog('open');
+    })
 
 };
 
@@ -631,73 +615,54 @@ Node.prototype.copyVariables = function (callback) {
 
     var self = this;
 
-    var selectionDialog = function(nodeType, callback) {
+    var $dialog = smallDialog.clone();
 
-        dialog.dialog('close');
+    $dialog.load(self.paths.templates + 'copyVariablesDialog.html', function () {
 
-        self.selectionDialog({
-            objectType: nodeType,
-            url: self.paths.inventory.html + nodeType + '/list/?exclude=' + self.name,
-            ajaxDataKey: 'nodes',
-            itemValueKey: 'name',
-            showButtons: false,
-            loadCallback: null,
-            addButtonAction: null,
-            formatItem: function (gridItem, selectionDialog) {
+        $dialog
+            .dialog({
+                width: 280,
+                buttons: {
+                    Cancel: function () {
 
-                gridItem.click(function () {
+                        $(this).dialog('close')
 
-                    self.source = JSON.stringify($(this).data());
-
-                    self.postData('copy_vars', function (data) {
-
-                        selectionDialog.dialog('close');
-
-                        callback && callback(data)
-
-                    });
-
-                });
-            }
-        });
-
-    };
-
-    var hostsButton = btnXsmall.clone().css('margin-right', '20px').html('Hosts').click(function() {
-
-        selectionDialog('host', callback);
-
-    });
-
-    var groupsButton = btnXsmall.clone().html('Groups').click(function() {
-
-        selectionDialog('group', callback);
-
-    });
-
-    var dialog = smallDialog.clone().append(
-        divRow.clone().addClass('text-center').clone().append(
-            divCol12.clone().css('margin-bottom', '1rem').append($('<h4>').html('Select source type')),
-            divCol4.clone().addClass('col-md-offset-2').append(hostsButton),
-            divCol4.clone().append(groupsButton)
-        )
-    );
-
-    dialog
-        .dialog({
-            width: 280,
-            buttons: {
-                Cancel: function () {
-
-                    $(this).dialog('close')
-
+                    }
                 }
-            },
+            })
+            .find('button').click(function () {
 
-            close: function() {$(this).remove()}
+                $dialog.dialog('close');
 
-        })
-        .dialog('open');
+                self.selectionDialog({
+                    objectType: $(this).data('type'),
+                    url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
+                    ajaxDataKey: 'nodes',
+                    itemValueKey: 'name',
+                    showButtons: false,
+                    loadCallback: null,
+                    addButtonAction: null,
+                    formatItem: function ($gridItem, $selectionDialog) {
+
+                        $gridItem.click(function () {
+
+                            self.source = JSON.stringify($(this).data());
+
+                            self.postData('copy_vars', function (data) {
+
+                                $selectionDialog.dialog('close');
+
+                                callback && callback(data)
+
+                            });
+
+                        });
+                    }
+                });
+
+            })
+
+    });
 
 };
 
@@ -705,13 +670,7 @@ Node.prototype.descendants = function () {
 
     var self = this;
 
-    var container = $('<div>').on('reload', function () {
-
-        groupList.DynaGrid('load');
-
-        hostList.DynaGrid('load');
-
-    });
+    var $container = $('<div>');
 
     var gridOptions = {
         headerTag: '<h5>',
@@ -727,25 +686,33 @@ Node.prototype.descendants = function () {
 
             gridItem.click(function () {
 
-                window.open(self.paths.inventory.html + gridContainer.data('nodeType') + '/' + $(this).data('name') + '/', '_self')
+                window.open(self.paths.inventory.html + gridContainer.data('type') + '/' + $(this).data('name') + '/', '_self')
 
             });
         }
     };
 
-    var groupList = $('<div>').data('nodeType', 'group').DynaGrid($.extend({}, gridOptions, {
-        gridTitle: 'Groups',
-        ajaxUrl: self.apiPath + 'descendants/?type=groups&id=' + self.id
-    }));
+    $container.load(self.paths.templates + 'descendants.html', function () {
 
-    var hostList = $('<div>').data('nodeType', 'host').DynaGrid($.extend({}, gridOptions, {
-        gridTitle: 'Hosts',
-        ajaxUrl: self.apiPath + 'descendants/?type=hosts&id=' + self.id
-    }));
+        $container.on('reload', function () {
 
-    container.append(groupList, hostList);
+            $container.find('.descendants_grid').DynaGrid('load');
 
-    return container
+        });
+
+        $container.find('#group_descendants_grid').DynaGrid($.extend({}, gridOptions, {
+            gridTitle: 'Groups',
+            ajaxUrl: self.apiPath + 'descendants/?type=groups&id=' + self.id
+        }));
+
+        $container.find('#host_descendants_grid').DynaGrid($.extend({}, gridOptions, {
+            gridTitle: 'Hosts',
+            ajaxUrl: self.apiPath + 'descendants/?type=hosts&id=' + self.id
+        }));
+
+    });
+
+    return $container
 
 };
 
@@ -753,129 +720,69 @@ Node.prototype.view = function () {
 
     var self = this;
 
-    var container = $('<div>');
+    var $container = $('<div>');
 
     self.refresh(function () {
 
         var adhoc = new AdHoc({hosts: self.name});
 
-        var tabsHeader = ulTabs.clone().attr('id', self.type + '_' + self.name + '_tabs');
+        var $relationships = self.relationships(function () {
 
-        var descendantsTabSelector = $('<li>').html(aTabs.clone().attr('href', '#descendants_tab').html('Descendants'));
+            $variables.trigger('reload');
 
-        var infoTab = divActiveTab.clone().attr('id', 'info_tab');
+            $descendants.trigger('reload');
 
-        var variablesTab = divTab.clone().attr('id', 'variables_tab');
+        });
 
-        var editNodeBtn = spanFA.clone()
-            .addClass('fa-pencil btn-incell')
-            .attr('title', 'Edit')
-            .click(function() {
+        var $descendants = self.descendants();
 
-                self.node.edit(function (data) {
+        var $variables = self.variables();
 
-                    window.open(self.paths.inventory.html + self.type + '/' + data.name + '/', '_self');
+        var $adhoc = $('<div>').append(adhoc.commandForm(self.name), adhoc.selector(self.name));
+
+        $container.load(self.paths.templates + 'entityView.html', function () {
+
+            self.bind($container);
+
+            $('#edit_button').toggle(self.editable).click(function() {
+
+                self.edit(function (data) {
+
+                    window.open(self.paths.inventory + self.type + '/' + data.group.name + '/', '_self')
 
                 });
 
             });
 
-        var deleteNodeBtn = spanFA.clone()
-            .addClass('fa-trash-o btn-incell')
-            .attr('title', 'Delete')
-            .click(function() {
+            $('#delete_button').toggle(self.editable).click(function() {
 
                 self.delete(function () {
 
-                    window.open(self.paths.inventory.html + self.type + 's/', '_self');
+                    window.open(self.paths.inventory + self.type + 's/' , '_self')
 
                 })
 
             });
 
-        var nodeInfo = self.type === 'host' ? self.facts() : null;
+            $('#info_container').html(self.type === 'host' ? self.facts() : null);
 
-        var descendantsContainer = self.type === 'group' ? self.descendants() : null;
+            self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-        var variableTable = self.variables();
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('relationships', $relationships, $container);
 
-        container.append(
-            $('<h3>').append(
-                $('<small>').html(self.type),
-                '&nbsp;',
-                self.name,
-                $('<small>').css('margin-left', '1rem').append(editNodeBtn, deleteNodeBtn)
-            ),
-            tabsHeader.append(
-                liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
-                $('<li>').html(aTabs.clone().attr('href', '#relationships_tab').html('Relationships')),
-                descendantsTabSelector,
-                $('<li>').html(aTabs.clone().attr('href', '#variables_tab').html('Variables')),
-                $('<li>').html(aTabs.clone().attr('href', '#adhoc_tab').html('Ad-Hoc'))
-            ),
-            $('<br>'),
-            divTabContent.clone().append(
-                infoTab.append(
-                    divRow.clone().append(
-                        divCol12.clone().append(
-                            $('<h4>').css('margin-bottom', '30px').html(self.description || noDescriptionMsg),
-                            nodeInfo
-                        )
-                    )
-                ),
-                divTab.clone().attr('id', 'relationships_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(self.relationships(function () {
+            if (self.type === 'group' && self.name !== 'all') self.addTabs('descendants', $descendants, $container);
 
-                            variableTable.trigger('reload');
+            self.addTabs('variables', $variables, $container);
 
-                            self.type === 'group' && descendantsContainer.trigger('reload');
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', $adhoc, $container);
 
-                        }))
-                    )
-                ),
-                divTab.clone().attr('id', 'descendants_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(descendantsContainer)
-                    )
-                ),
-                variablesTab.append(
-                    divRow.clone().append(
-                        divCol12.clone().append(variableTable)
-                    )
-                ),
-                divTab.clone().attr('id', 'adhoc_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(
-                            adhoc.commandForm(self.name),
-                            adhoc.selector(self.name)
-                        )
-                    )
-                )
-            )
-        );
+            $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').lastTab();
 
-        self.type === 'host' && descendantsTabSelector.hide();
-
-        if (self.type === 'group' && self.name === 'all') {
-
-            tabsHeader.remove();
-
-            editNodeBtn.remove();
-
-            deleteNodeBtn.remove();
-
-            infoTab.removeClass('in active');
-
-            variablesTab.addClass('in active').prepend($('<h4>').html('Variables'))
-
-        }
-
-        else self.rememberLastTab(tabsHeader.attr('id'))
+        });
 
     });
 
-    return container;
+    return $container;
 
 };
 
@@ -885,25 +792,25 @@ Node.prototype.selector = function () {
 
     var createTable = function () {
 
-        var container = $('<div>')
+        var $container = $('<div>')
             .on('download', function () {
 
-                table.DataTable().buttons('.hidden').trigger()
+                $table.DataTable().buttons('.hidden').trigger()
 
             })
             .on('load', function (event, nodes) {
 
-                table.DataTable().clear();
+                $table.DataTable().clear();
 
-                table.DataTable().rows.add(nodes);
+                $table.DataTable().rows.add(nodes);
 
-                table.DataTable().draw();
+                $table.DataTable().draw();
 
             });
 
-        var table = baseTable.clone();
+        var $table = baseTable.clone();
 
-        container.append(table);
+        $container.append($table);
 
         if (self.type === 'host') {
 
@@ -929,7 +836,7 @@ Node.prototype.selector = function () {
         }
 
         else if (self.type === 'group') columns = [
-            {class: 'col-md-2', title: 'GroupView', data: 'name'},
+            {class: 'col-md-2', title: 'Group', data: 'name'},
             {class: 'col-md-4', title: 'Description', data: 'description'},
             {class: 'col-md-1', title: 'Members', data: 'members'},
             {class: 'col-md-1', title: 'Parents', data: 'parents'},
@@ -938,7 +845,7 @@ Node.prototype.selector = function () {
             {class: 'col-md-1', title: '', defaultContent: ''}
         ];
 
-        table.DataTable({
+        $table.DataTable({
             paging: false,
             columns: columns,
             dom: 'Bfrtip',
@@ -962,11 +869,11 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(self.paths.inventory.html + node.type + '/' + node.name + '/', '_self')
+                        window.open(self.paths.inventory + node.type + '/' + node.name + '/', '_self')
 
                     });
 
-                if (node.type !== 'group' || node.name !== 'all') $(row).find('td:last').html(
+                if (node.editable) $(row).find('td:last').html(
                     spanRight.clone().append(
                         spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
@@ -992,7 +899,7 @@ Node.prototype.selector = function () {
             }
         });
 
-        new $.fn.dataTable.Buttons(table.DataTable(), {
+        new $.fn.dataTable.Buttons($table.DataTable(), {
             buttons: [{
                 extend: 'csv',
                 text: '<span class="fa fa-download" title="Download"></span>',
@@ -1000,7 +907,7 @@ Node.prototype.selector = function () {
             }]
         });
 
-        new $.fn.dataTable.Buttons(table.DataTable(), {
+        new $.fn.dataTable.Buttons($table.DataTable(), {
             buttons: [{
                 text: 'Gather facts',
                 className: 'btn-xs btn-incell',
@@ -1017,12 +924,12 @@ Node.prototype.selector = function () {
             }]
         });
 
-        $(table.DataTable().table().container()).append(
-            $(table.DataTable().buttons( 1, null ).container()).css('margin-top', '1rem'),
-            $(table.DataTable().buttons( 2, null ).container()).css('margin-top', '1rem')
+        $($table.DataTable().table().container()).append(
+            $($table.DataTable().buttons( 1, null ).container()).css('margin-top', '1rem'),
+            $($table.DataTable().buttons( 2, null ).container()).css('margin-top', '1rem')
         );
 
-        return container
+        return $container
 
     };
 

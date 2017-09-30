@@ -28,25 +28,26 @@
     <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ace.js' %}"></script>
     <script type="text/javascript" src="{% static 'plugins/jquery-bootstrap-growl/jquery.bootstrap-growl.js' %}"></script>
     <script type="text/javascript" src="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/templates/Elements.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Battuta.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/AdHoc.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/File.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Group.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Inventory.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Job.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Node.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/PlaybookArgs.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Preferences.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/User.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Project.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/jquery-lastTab/jquery-lastTab.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Elements.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Battuta.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/AdHoc.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/File.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Group.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Inventory.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Job.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Node.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/PlaybookArgs.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Preferences.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/User.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Project.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var battuta = new Battuta();
+            var battuta = new Battuta({username: '{{ user.username }}'});
 
             $('#menu_container').html(
-                battuta.mainMenu('{{ user.username }}', '{% if user.is_authenticated %}True{% endif %}')
+                battuta.mainMenu('{% if user.is_authenticated %}True{% endif %}')
             )
 
         })
@@ -63,22 +64,18 @@
     <title>Battuta</title>
 </head>
 <body>
-{% block header %}
     <header class="navbar navbar-default">
         <div id="menu_container" class="container"></div>
     </header>
-{% endblock %}
-<section class="container">
-    <div class="row">
-        <div class="col-md-12 main" id="container">
-            {% block content %}{% endblock %}
+    <section class="container">
+        <div class="row">
+            <div class="col-md-12 main" id="container"></div>
         </div>
-    </div>
-</section>
-<footer class="footer">
-    <div class="container">
-        {% block footer %}{% endblock %}
-    </div>
-</footer>
+    </section>
+    <footer class="footer">
+        <div class="container">
+            {% block footer %}{% endblock %}
+        </div>
+    </footer>
 </body>
 </html>

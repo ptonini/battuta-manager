@@ -240,14 +240,16 @@ class InventoryView(View):
 
             exclude_pattern = request.GET.get('exclude')
 
-            for node in classes[request.GET['type']].objects.all():
+            for node_dict in classes[request.GET['type']].objects.all().values():
 
                 match_conditions = {
-                    not filter_pattern or node.name.find(filter_pattern) > -1,
-                    not exclude_pattern or node.name.find(exclude_pattern) <= -1
+                    not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
+                    not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
                 }
 
                 if False not in match_conditions:
+
+                    node = build_node(node_dict, request.GET['type'], request.user)
 
                     node_list.append(node_to_dict(node))
 
@@ -479,11 +481,15 @@ class NodeView(View):
 
             related_class = Group
 
+            related_type = 'group'
+
         elif action == 'children':
 
             related_set = node.children
 
             related_class = Group
+
+            related_type = 'group'
 
         elif action == 'members':
 
@@ -491,38 +497,19 @@ class NodeView(View):
 
             related_class = Host
 
+            related_type = 'host'
+
         else:
 
             raise Http404('Invalid relation: ' + action)
 
-        return related_set, related_class
+        return related_set, related_class, related_type
 
     def get(self, request, node_type, action):
 
         node = build_node(request.GET.dict(), node_type, request.user)
 
-        if action == 'list':
-
-            node_list = list()
-
-            filter_pattern = request.GET.get('filter')
-
-            exclude_pattern = request.GET.get('exclude')
-
-            for node in node.__class__.objects.all():
-
-                match_conditions = {
-                    not filter_pattern or node.name.find(filter_pattern) > -1,
-                    not exclude_pattern or node.name.find(exclude_pattern) <= -1
-                }
-
-                if False not in match_conditions:
-
-                    node_list.append(node_to_dict(node))
-
-            data = {'status': 'ok', 'nodes': node_list}
-
-        elif action == 'get':
+        if action == 'get':
 
             data = {'status': 'ok', 'node': node_to_dict(node)}
 
@@ -614,9 +601,9 @@ class NodeView(View):
 
             data = {'status': 'ok', 'var_list': var_list}
 
-        elif action in ['parents','children', 'members']:
+        elif action in ['parents', 'children', 'members']:
 
-            related_set, related_class = self._get_relationships(node, action)
+            related_set, related_class, related_type = self._get_relationships(node, action)
 
             if 'related' not in request.GET or request.GET['related'] == 'true':
 

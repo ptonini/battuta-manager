@@ -12,7 +12,7 @@ function User(param) {
 
     self.set('username', param.username);
 
-    self.set('password', param.password);
+    self.set('password', param.password ? param.password : '');
 
     self.set('first_name', param.first_name);
 
@@ -38,7 +38,7 @@ User.prototype.constructor = User;
 
 User.prototype.key = 'user';
 
-User.prototype.apiPath = Battuta.prototype.apis.paths.user;
+User.prototype.apiPath = Battuta.prototype.paths.apis.user;
 
 User.prototype.type = 'user';
 
@@ -164,6 +164,31 @@ User.prototype.form = function () {
             self.postData('save');
 
         });
+
+};
+
+User.prototype.login = function () {
+
+    var self = this;
+
+    self.submitRequest('POST', self, self.paths.apis.login + 'login/', function () {
+
+        window.open('/', '_self');
+
+    });
+
+};
+
+User.prototype.logout = function () {
+
+    var self = this;
+
+    self.submitRequest('POST', self, self.paths.apis.login + 'logout/', function () {
+
+        window.open('/', '_self');
+
+    });
+
 
 };
 

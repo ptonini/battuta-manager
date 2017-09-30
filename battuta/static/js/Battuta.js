@@ -1,6 +1,14 @@
-function Battuta () {
+function Battuta (param) {
+
+    param = param ? param : {};
 
     var self = this;
+
+    self.pubSub = $({});
+
+    self.bindings = {};
+
+    self.set('username', param.username);
 
     // Add CSRF token to AJAX requests
     $.ajaxSetup({
@@ -122,13 +130,13 @@ Battuta.prototype = {
             project: '/projects/',
             node: {
                 host: '/inventory/hosts/',
-                group: 'inventory/groups/'
+                group: '/inventory/groups/'
             }
         },
         views: {
             job: '/runner/job/',
             user: '/users/user/',
-            group: 'users/group/',
+            group: '/users/group/',
             project: '/projects/project/',
             node: {
                 host: '/inventory/host/',
@@ -136,7 +144,7 @@ Battuta.prototype = {
             }
         },
         inventory: '/inventory/',
-        templates: '/static/js/templates/'
+        templates: '/static/templates/'
     },
 
     getCookie: function (name) {
@@ -249,7 +257,7 @@ Battuta.prototype = {
 
     },
 
-    bind: function (container) {
+    bind: function ($container) {
 
         var self = this;
 
@@ -257,9 +265,19 @@ Battuta.prototype = {
 
         var message = bindId + ':change';
 
-        self.bindings[bindId] = container;
+        var loadData =  function ($element, value) {
 
-        container
+            if ($element.is('input, textarea, select')) $element.val(value);
+
+            else if ($element.is('checkbox')) $element.attr('checked', value);
+
+            else $element.html(value);
+
+        };
+
+        self.bindings[bindId] = $container;
+
+        $container
             .on('change', '[data-bind]', function () {
 
                 self.pubSub.trigger(message, [$(this).data('bind'), $(this).val()]);
@@ -267,19 +285,17 @@ Battuta.prototype = {
             })
             .find('[data-bind]').each(function () {
 
-                var value = self[$(this).data('bind')];
-
-                $(this).is('input, textarea, select') ? $(this).val(value) : $(this).html(value);
+                loadData($(this), self[$(this).data('bind')]);
 
             });
 
         self.pubSub.on(message, function (event, property, value) {
 
-            container.find('[data-bind=' + property + ']').each(function () {
+            $container.find('[data-bind=' + property + ']').each(function () {
 
                 self[property] = value;
 
-                $(this).is('input, textarea, select') ? $(this).val(value) : $(this).html(value);
+                loadData($(this), value);
 
             });
 
@@ -354,6 +370,20 @@ Battuta.prototype = {
         var activeTab = sessionStorage.getItem(keyName);
 
         activeTab && $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
+
+    },
+
+    addTabs: function (title, $content, $container) {
+
+        $container.find('ul.nav-tabs').append(
+            $('<li>').append(
+                $('<a>').attr({href: '#' + title + '_tab', 'data-toggle': 'tab', class: 'text-capitalize'}).html(title)
+            )
+        );
+
+        $container.find('div.tab-content').append(
+            $('<div>').attr({id: title + '_tab', class: 'tab-pane'}).html($content)
+        )
 
     },
 
@@ -553,38 +583,36 @@ Battuta.prototype = {
 
         var self = this;
 
-        self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
-
         var $dialog = largeDialog.clone();
 
-        $dialog
-            .dialog({
-                 buttons: {
-                    Save: function() {
+        $dialog.load(self.paths.templates + 'entityDialog.html', function () {
 
-                        self.postData('save', function (data) {
+            self.bind($dialog);
 
-                            $dialog.dialog('close');
+            self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
 
-                            callback && callback(data);
+            $dialog.dialog({
+                    buttons: {
+                        Save: function() {
 
-                        })
+                            self.postData('save', function (data) {
 
-                    },
-                    Cancel: function() {
+                                $dialog.dialog('close');
 
-                        $(this).dialog('close');
+                                callback && callback(data);
 
+                            })
+
+                        },
+                        Cancel: function() {
+
+                            $(this).dialog('close');
+
+                        }
                     }
-                }
-            })
-            .load(self.paths.templates + 'editEntity.html', function () {
+                })
 
-                self.bind($dialog);
-
-                $dialog.dialog('open')
-
-            })
+        })
 
     },
 
@@ -624,7 +652,7 @@ Battuta.prototype = {
 
     },
 
-    mainMenu: function (username, is_authenticated) {
+    mainMenu: function (authenticated) {
 
         var self = this;
 
@@ -632,146 +660,84 @@ Battuta.prototype = {
 
         var prefs = new Preferences();
 
-        // container.append(
-        //     $('<div>').attr('class', 'navbar-header').append(
-        //         $('<a>').attr({class: 'navbar-brand', href: '/'}).html('Battuta')
-        //     )
-        // );
+        var user = new User({username: self.username});
 
-        is_authenticated = (is_authenticated === 'True');
+        if (authenticated === 'True') {
 
-        is_authenticated && prefs.load();
-
-        // var mainMenu = $('<ul>').attr('class', 'nav navbar-nav').append(
-        //     liDropdown.clone().append(
-        //         liDropdownAnchor.clone().html('Inventory'),
-        //         ulDropdownMenu.clone().append(
-        //             $('<li>').append(
-        //                 $('<a>').attr('href', self.paths.inventory.html + 'hosts/').html('Hosts'),
-        //                 $('<a>').attr('href', self.paths.inventory.html + 'groups/').html('Groups'),
-        //                 $('<li>').attr('class', 'divider'),
-        //                 $('<a>').attr('href', self.paths.inventory.html + 'import/').html('Import/Export')
-        //             )
-        //         )
-        //     ),
-        //     liDropdown.clone().append(
-        //         liDropdownAnchor.clone().html('Runner'),
-        //         ulDropdownMenu.clone().append(
-        //             $('<li>').append(
-        //                 $('<a>').attr('href', self.paths.adhoc.selector).html('Ad-Hoc'),
-        //                 $('<a>').attr('href', self.paths.playbook.selector).html('Playbooks'),
-        //                 $('<a>').attr('href', self.paths.role.selector).html('Roles'),
-        //                 $('<li>').attr('class', 'divider'),
-        //                 $('<a>').attr('href', self.paths.job.selector).html('History')
-        //             )
-        //         )
-        //     ),
-        //     $('<li>').append($('<a>').attr('href', self.paths.file.selector).html('Files')),
-        //     $('<li>').append($('<a>').attr('href', self.paths.project.selector).html('Projects')),
-        //     liDropdown.clone().append(
-        //         liDropdownAnchor.clone().html('Users'),
-        //         ulDropdownMenu.clone().append(
-        //             $('<li>').append(
-        //                 $('<a>').attr('href', self.paths.user.selector).html('Users'),
-        //                 $('<a>').attr('href', self.paths.group.selector).html('User groups'),
-        //                 $('<li>').attr('class', 'divider'),
-        //                 $('<a>').attr('href', self.paths.user.view + username + '/').html(username + ' profile'),
-        //                 $('<a>').attr('href', self.paths.user.view + username + '/files/').html(username + ' files')
-        //             )
-        //         )
-        //     )
-        // );
-
-        // var preferencesButton = btnNavbarGlyph.clone()
-        //     .attr('title', 'Preferences')
-        //     .append(spanFA.clone().addClass('fa-cog'))
-        //     .click(function () {
-        //
-        //         prefs.dialog()
-        //
-        //     });
-        //
-        // var searchBox = textInputField.clone().attr('title', 'Search');
-        //
-        // var searchForm = $('<form>')
-        //     .attr('class', 'navbar-form')
-        //     .submit(function (event) {
-        //
-        //         event.preventDefault();
-        //
-        //         var pattern = searchBox.val();
-        //
-        //         pattern && window.open('/search/' + pattern, '_self')
-        //
-        //     })
-        //     .append(
-        //         $('<div>').attr('class', 'input-group').append(
-        //             searchBox,
-        //             spanBtnGroup.clone().append(
-        //                 btnSmall.clone().html(spanFA.clone().addClass('fa-search'))
-        //             )
-        //         )
-        //     );
-        //
-        // var loginFormUserField = textInputField.clone().attr('placeholder', 'Username').css('margin-right', '5px');
-        //
-        // var loginFormPassField = passInputField.clone().attr('placeholder', 'Password').css('margin-right', '5px');
-        //
-        // var loginButton = $('<button>').attr('class', 'btn btn-link')
-        //     .attr('title', 'Login')
-        //     .append(spanFA.clone().addClass('fa-sign-in'));
-        //
-        // var logoutButton = $('<button>').attr('class', 'btn btn-link')
-        //     .attr('title', 'Logout ' + username)
-        //     .append(spanFA.clone().addClass('fa-sign-out'));
-        //
-        // var loginForm = $('<form>').attr('class', 'navbar-form').submit(function (event) {
-        //
-        //     event.preventDefault();
-        //
-        //     var action = is_authenticated ? 'logout' : 'login';
-        //
-        //     var user_data = {
-        //         username: loginFormUserField.val(),
-        //         password: loginFormPassField.val()
-        //     };
-        //
-        //     self.submitRequest('POST', user_data, self.paths.login.api + action + '/', function () {
-        //
-        //         window.open('/', '_self');
-        //
-        //     });
-        //
-        //     loginFormPassField.val('');
-        //
-        // });
-        //
-        // var rightMenu = $('<ul>').attr('class', 'nav navbar-nav navbar-right').append(
-        //     $('<li>').append(loginForm)
-        // );
-        //
-        // container.append(rightMenu);
-
-        if (is_authenticated) {
+            prefs.load();
 
             $container.load(self.paths.templates + 'mainMenu.html', function () {
 
+                self.set('pattern', '');
 
+                self.bind($container);
 
+                $('#host_selector_anchor').attr('href', self.paths.selectors.node.host);
+
+                $('#group_selector_anchor').attr('href', self.paths.selectors.node.group);
+
+                $('#import_inventory_anchor').attr('href', self.paths.inventory + 'import/');
+
+                $('#adhoc_selector_anchor').attr('href', self.paths.selectors.adhoc);
+
+                $('#playbook_selector_anchor').attr('href', self.paths.selectors.playbook);
+
+                $('#role_selector_anchor').attr('href', self.paths.selectors.role);
+
+                $('#job_selector_anchor').attr('href', self.paths.selectors.job);
+
+                $('#file_selector_anchor').attr('href', self.paths.selectors.file);
+
+                $('#project_selector_anchor').attr('href', self.paths.selectors.project);
+
+                $('#user_selector_anchor').attr('href', self.paths.selectors.user);
+
+                $('#user_group_selector_anchor').attr('href', self.paths.selectors.group);
+
+                $('#user_view_anchor').attr('href', self.paths.views.user + self.username + '/');
+
+                $('#user_file_anchor').attr('href', self.paths.views.user + self.username + '/files/');
+
+                $('#preferences_button').click(function () {
+
+                    prefs.dialog()
+
+                });
+
+                $('#menu_search_form').submit(function (event) {
+
+                    event.preventDefault();
+
+                    self.pattern && window.open('/search/' + self.pattern, '_self')
+
+                });
+
+                $('#logout_button').click(function () {
+
+                    user.logout()
+
+                })
 
             })
 
-            // loginForm.append(logoutButton);
-            //
-            // rightMenu.prepend($('<li>').html(searchForm));
-            //
-            // rightMenu.prepend($('<li>').html(preferencesButton));
-            //
-            // container.append(mainMenu);
-
         }
 
-        else loginForm.append(loginFormUserField, loginFormPassField, loginButton);
+        else {
+
+            $container.load(self.paths.templates + 'loginMenu.html', function () {
+
+                user.bind($container);
+
+                $('#login_form').submit(function (event) {
+
+                    event.preventDefault();
+
+                    user.login()
+
+                })
+
+            });
+        }
 
         return $container
 

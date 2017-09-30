@@ -44,7 +44,7 @@ Project.prototype.key = 'project';
 
 Project.prototype.type = 'project';
 
-Project.prototype.apiPath = Battuta.prototype.apis.paths.project;
+Project.prototype.apiPath = Battuta.prototype.paths.apis.project;
 
 Project.prototype.properties = {
     manager: {

@@ -49,17 +49,15 @@ small.badge {background-color: #cacaca}
 
 /* File manager path container *******/
 
-#path_links.breadcrumb {margin-bottom: 0; line-height: 22px}
+#path_links.breadcrumb {margin-bottom: 0; line-height: 2rem}
 
 li.path_link, #root_path, #edit_path {cursor: pointer}
 
 #root_path {font-weight: bold; font-style: italic;}
 
-#edit_path {float: right}
+#edit_path::before {content: none}
 
-#edit_path::before {content: ''}
-
-#edit_path > span {padding: 2px 4px 5px 4px; border-radius: 3px;}
+#edit_path {padding: 0 .5rem; border-radius: .5rem; float: right}
 
 #path_input {border: none; padding: 0}
 

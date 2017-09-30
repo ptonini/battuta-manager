@@ -169,7 +169,7 @@ class FilesView(View):
     @staticmethod
     def _create_file(new_name, new_path, file_type):
 
-        print new_path
+        print new_path, new_name
 
         if os.path.exists(new_path):
 
@@ -419,7 +419,7 @@ class FilesView(View):
 
                 elif action == 'create_role':
 
-                    result = self._create_file(request.POST['name'], new_path, 'directory')
+                    result = self._create_file(request.POST['new_name'], new_path, 'directory')
 
                     if result == 'ok':
 

@@ -80,6 +80,10 @@ def node_to_dict(node):
             'id': node.id,
         }
 
+        if hasattr(node, 'editable'):
+
+            default_fields['editable'] = node.editable
+
         node_dict = default_fields.copy()
 
         if node.type == 'host':
@@ -137,6 +141,8 @@ def build_node(node_dict, node_type, user):
     setattr(node, 'group_descendants', group_descendants)
 
     setattr(node, 'host_descendants', host_descendants)
+
+    node.editable = False if node.type == 'group' and node.name == 'all' else node.editable
 
     return node
 
