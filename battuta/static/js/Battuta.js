@@ -67,6 +67,23 @@ function Battuta (param) {
     // Add reverse method to JQuery
     $.fn.reverse = [].reverse;
 
+    // Add remember last tab plugin to JQuery
+    $.fn.lastTab = function () {
+
+        var keyName = $(this).attr('id') + '_activeTab';
+
+        $(this).find('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
+
+            sessionStorage.setItem(keyName, $(event.target).attr('href'));
+
+        });
+
+        var activeTab = sessionStorage.getItem(keyName);
+
+        activeTab && $(this).find('a[href="' + activeTab + '"]').tab('show');
+
+    };
+
     // Modal dialog options
     $.extend($.ui.dialog.prototype.options, {
         width: '360',
@@ -322,56 +339,62 @@ Battuta.prototype = {
 
     selectionDialog: function (options) {
 
-        var $dialog = largeDialog.clone();
+        var self = this;
 
-        $dialog
-            .DynaGrid({
-                gridTitle: 'selection',
-                showFilter: true,
-                showAddButton: (options.addButtonAction),
-                addButtonTitle: 'Add ' + options.objectType,
-                maxHeight: 400,
-                itemToggle: options.showButtons,
-                truncateItemText: true,
-                checkered: true,
-                columns: sessionStorage.getItem('selection_modal_columns'),
-                ajaxUrl: options.url,
-                ajaxData: options.data,
-                ajaxDataKey: options.ajaxDataKey,
-                itemValueKey: options.itemValueKey,
-                loadCallback: function (gridContainer) {
+        $(document.body).append(
+            $('<div>').load(self.paths.templates + 'selectionDialog.html', function () {
 
-                    options.loadCallback && options.loadCallback(gridContainer, $dialog)
+                $('#selection_dialog')
+                    .DynaGrid({
+                        gridTitle: 'selection',
+                        showFilter: true,
+                        showAddButton: (options.addButtonAction),
+                        addButtonTitle: 'Add ' + options.objectType,
+                        maxHeight: 400,
+                        itemToggle: options.showButtons,
+                        truncateItemText: true,
+                        checkered: true,
+                        columns: sessionStorage.getItem('selection_modal_columns'),
+                        ajaxUrl: options.url,
+                        ajaxData: options.data,
+                        ajaxDataKey: options.ajaxDataKey,
+                        itemValueKey: options.itemValueKey,
+                        loadCallback: function ($gridContainer) {
 
-                },
-                addButtonAction: function () {
+                            options.loadCallback && options.loadCallback($gridContainer, $('#selection_dialog'))
 
-                    options.addButtonAction && options.addButtonAction($dialog)
+                        },
+                        addButtonAction: function () {
 
-                },
-                formatItem: function(gridContainer, gridItem) {
+                            options.addButtonAction && options.addButtonAction($('#selection_dialog'))
 
-                    options.formatItem && options.formatItem(gridItem, $dialog)
+                        },
+                        formatItem: function($gridContainer, $gridItem) {
 
-                }
+                            options.formatItem && options.formatItem($gridItem, $('#selection_dialog'))
+
+                        }
+                    })
+                    .dialog({
+                        minWidth: 700,
+                        minHeight: 500,
+                        buttons: {
+                            Cancel: function () {
+
+                                $(this).dialog('close')
+
+                            }
+                        },
+                        close: function() {
+
+                            $(this).remove()
+
+                        }
+                    })
+
             })
-            .dialog({
-                minWidth: 700,
-                minHeight: 500,
-                buttons: {
-                    Cancel: function () {
+        )
 
-                        $(this).dialog('close')
-
-                    }
-                },
-                close: function() {
-
-                    $(this).remove()
-
-                }
-            })
-            .dialog('open');
     },
 
     rememberLastTab: function (tabId) {
@@ -390,15 +413,15 @@ Battuta.prototype = {
 
     },
 
-    addTabs: function (title, $content, $container) {
+    addTabs: function (title, $content) {
 
-        $container.find('ul.nav-tabs').append(
+        $('ul.nav-tabs').append(
             $('<li>').append(
                 $('<a>').attr({href: '#' + title + '_tab', 'data-toggle': 'tab', class: 'text-capitalize'}).html(title)
             )
         );
 
-        $container.find('div.tab-content').append(
+        $('div.tab-content').append(
             $('<div>').attr({id: title + '_tab', class: 'tab-pane'}).html($content)
         )
 
@@ -408,103 +431,97 @@ Battuta.prototype = {
 
         var self = this;
 
-        self.set('pattern', '');
+        $(document.body).append(
+            $('<div>').load(self.paths.templates + 'patternEditor.html', function () {
 
-        var $dialog = largeDialog.clone();
+                self.bind($(this));
 
-        var separator = {select: ':', and: ':&', exclude: ':!'};
+                self.set('pattern', '');
 
-        var selectNodes = function (type, action) {
+                $('#pattern_dialog')
+                    .dialog({
+                        width: 520,
+                        buttons: {
+                            Use: function () {
 
-            if (action !== 'select' && self.pattern === '') {
-
-                $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
-
-            }
-
-            else self.selectionDialog({
-                objectType: type,
-                url: self.paths.apis.inventory + type + '/list/',
-                ajaxDataKey: 'nodes',
-                itemValueKey: 'name',
-                showButtons: true,
-                loadCallback: function (gridContainer, selectionDialog) {
-
-                    selectionDialog
-                        .dialog('option', 'buttons', {
-                            Add: function () {
-
-                                var selection = selectionDialog.DynaGrid('getSelected', 'name');
-
-                                for (var i = 0; i < selection.length; i++) {
-
-                                    if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
-
-                                    self.set('pattern', self.pattern + selection[i])
-
-                                }
+                                $patternField.val(self.pattern);
 
                                 $(this).dialog('close');
 
                             },
-                            Cancel: function () {
+                            Reset: function () {
 
-                                $('.filter_box').val('');
+                                self.set('pattern', '');
+
+                            },
+                            Cancel: function () {
 
                                 $(this).dialog('close');
 
                             }
-                        })
-                },
-                addButtonAction: function (selectionDialog) {
+                        }
+                    })
+                    .find('button').click(function () {
 
-                    var node = new Node({name: null, description: null, type: type});
+                        var type = $(this).data('type');
 
-                    node.edit(function () {
+                        var action = $(this).data('action');
 
-                        selectionDialog.DynaGrid('load')
+                        var separator = {select: ':', and: ':&', exclude: ':!'};
+
+                        if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+
+                        else self.selectionDialog({
+                            objectType: type,
+                            url: self.paths.apis.inventory + 'list/?type=' + type,
+                            ajaxDataKey: 'nodes',
+                            itemValueKey: 'name',
+                            showButtons: true,
+                            loadCallback: function ($gridContainer, $selectionDialog) {
+
+                                $selectionDialog.dialog('option', 'buttons', {
+                                    Add: function () {
+
+                                        var selection = $selectionDialog.DynaGrid('getSelected', 'name');
+
+                                        for (var i = 0; i < selection.length; i++) {
+
+                                            if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
+
+                                            self.set('pattern', self.pattern + selection[i])
+
+                                        }
+
+                                        $(this).dialog('close');
+
+                                    },
+                                    Cancel: function () {
+
+                                        $('.filter_box').val('');
+
+                                        $(this).dialog('close');
+
+                                    }
+                                })
+                            },
+                            addButtonAction: function (selectionDialog) {
+
+                                var node = new Node({name: null, description: null, type: type});
+
+                                node.edit(function () {
+
+                                    selectionDialog.DynaGrid('load')
+
+                                })
+
+                            },
+                            formatItem: null
+                        });
 
                     })
 
-                },
-                formatItem: null
-            });
-        };
-
-        $dialog.load(self.paths.templates + 'patternEditor.html', function () {
-
-            self.bind($dialog);
-
-            $dialog
-                .dialog({
-                    width: 520,
-                    buttons: {
-                        Use: function () {
-
-                            $patternField.val(self.pattern);
-
-                            $(this).dialog('close');
-
-                        },
-                        Reset: function () {
-
-                            self.set('pattern', '');
-
-                        },
-                        Cancel: function () {
-
-                            $(this).dialog('close');
-
-                        }
-                    }
-                })
-                .find('button').click(function () {
-
-                    selectNodes($(this).data('type'), $(this).data('action'))
-
-                })
-
-        })
+            })
+        );
 
     },
 
@@ -514,13 +531,13 @@ Battuta.prototype = {
 
         var user = new User({username: sessionStorage.getItem('user_name')});
 
-        var selector = user.credentialsSelector(null, true, function () {
+        var $selector = user.credentialsSelector(null, true, function () {
 
-            self.cred = $('option:selected', selector).data()
+            self.cred = $('option:selected', $selector).data()
 
         });
 
-        return selector
+        return $selector
 
     },
 
@@ -685,84 +702,77 @@ Battuta.prototype = {
 
         var user = new User({username: self.username});
 
-        if (authenticated === 'True') {
+        if (authenticated === 'True') return $('<div>').load(self.paths.templates + 'mainMenu.html', function () {
 
-            return $('<div>').load(self.paths.templates + 'mainMenu.html', function () {
+            self.set('pattern', '');
 
-                self.set('pattern', '');
+            self.bind($(this));
 
-                self.bind($(this));
+            var prefs = new Preferences();
 
-                var prefs = new Preferences();
+            prefs.load();
 
-                prefs.load();
+            $('#host_selector_anchor').attr('href', self.paths.selectors.node.host);
 
-                $('#host_selector_anchor').attr('href', self.paths.selectors.node.host);
+            $('#group_selector_anchor').attr('href', self.paths.selectors.node.group);
 
-                $('#group_selector_anchor').attr('href', self.paths.selectors.node.group);
+            $('#import_inventory_anchor').attr('href', self.paths.inventory + 'import/');
 
-                $('#import_inventory_anchor').attr('href', self.paths.inventory + 'import/');
+            $('#adhoc_selector_anchor').attr('href', self.paths.selectors.adhoc);
 
-                $('#adhoc_selector_anchor').attr('href', self.paths.selectors.adhoc);
+            $('#playbook_selector_anchor').attr('href', self.paths.selectors.playbook);
 
-                $('#playbook_selector_anchor').attr('href', self.paths.selectors.playbook);
+            $('#role_selector_anchor').attr('href', self.paths.selectors.role);
 
-                $('#role_selector_anchor').attr('href', self.paths.selectors.role);
+            $('#job_selector_anchor').attr('href', self.paths.selectors.job);
 
-                $('#job_selector_anchor').attr('href', self.paths.selectors.job);
+            $('#file_selector_anchor').attr('href', self.paths.selectors.file);
 
-                $('#file_selector_anchor').attr('href', self.paths.selectors.file);
+            $('#project_selector_anchor').attr('href', self.paths.selectors.project);
 
-                $('#project_selector_anchor').attr('href', self.paths.selectors.project);
+            $('#user_selector_anchor').attr('href', self.paths.selectors.user);
 
-                $('#user_selector_anchor').attr('href', self.paths.selectors.user);
+            $('#user_group_selector_anchor').attr('href', self.paths.selectors.group);
 
-                $('#user_group_selector_anchor').attr('href', self.paths.selectors.group);
+            $('#user_view_anchor').attr('href', self.paths.views.user + self.username + '/');
 
-                $('#user_view_anchor').attr('href', self.paths.views.user + self.username + '/');
+            $('#user_file_anchor').attr('href', self.paths.views.user + self.username + '/files/');
 
-                $('#user_file_anchor').attr('href', self.paths.views.user + self.username + '/files/');
+            $('#preferences_button').click(function () {
 
-                $('#preferences_button').click(function () {
+                prefs.dialog()
 
-                    prefs.dialog()
+            });
 
-                });
+            $('#menu_search_form').submit(function (event) {
 
-                $('#menu_search_form').submit(function (event) {
+                event.preventDefault();
 
-                    event.preventDefault();
+                self.pattern && window.open('/search/' + self.pattern, '_self')
 
-                    self.pattern && window.open('/search/' + self.pattern, '_self')
+            });
 
-                });
+            $('#logout_button').click(function () {
 
-                $('#logout_button').click(function () {
-
-                    user.logout()
-
-                })
+                user.logout()
 
             })
 
-        }
+        });
 
-        else {
+        else return $('<div>').load(self.paths.templates + 'loginMenu.html', function () {
 
-            return $('<div>').load(self.paths.templates + 'loginMenu.html', function () {
+            user.bind($container);
 
-                user.bind($container);
+            $('#login_form').submit(function (event) {
 
-                $('#login_form').submit(function (event) {
+                event.preventDefault();
 
-                    event.preventDefault();
+                user.login()
 
-                    user.login()
+            })
 
-                })
-
-            });
-        }
+        });
 
     },
 

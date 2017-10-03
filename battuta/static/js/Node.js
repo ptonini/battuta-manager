@@ -649,13 +649,13 @@ Node.prototype.view = function () {
 
         var $container = $(this);
 
-        self.bind($container);
-
         var adhoc = new AdHoc({hosts: self.name});
 
         var $adhoc = $('<div>').append(adhoc.commandForm(self.name), adhoc.selector(self.name));
 
         self.refresh(function () {
+
+            self.bind($container);
 
             $('#edit_button').toggle(self.editable).click(function() {
 
@@ -681,13 +681,13 @@ Node.prototype.view = function () {
 
             self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('relationships', self.relationships(), $container);
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('relationships', self.relationships());
 
-            if (self.type === 'group' && self.name !== 'all') self.addTabs('descendants', self.descendants(), $container);
+            if (self.type === 'group' && self.name !== 'all') self.addTabs('descendants', self.descendants());
 
-            self.addTabs('variables', self.variables(), $container);
+            self.addTabs('variables', self.variables());
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', $adhoc, $container);
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', $adhoc);
 
             $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').lastTab();
 
