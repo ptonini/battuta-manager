@@ -219,7 +219,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
                     },
                     Delete: function () {
 
-                        self.delete(function () {
+                        self.del(function () {
 
                             self.constructor({playbook: self.file, folder: file.folder});
 

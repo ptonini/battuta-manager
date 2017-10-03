@@ -36,13 +36,11 @@ Group.prototype.permissionsForm = function () {
 
     var self = this;
 
-    var $form = $('<form>');
+    return $('<div>').load(self.paths.templates + 'permissionsForm.html', function () {
 
-    $form.load(self.paths.templates + 'permissionsForm.html', function () {
+        self.bind($(this));
 
-        self.bind($form);
-
-        $form
+        $('#permissions_form')
             .submit(function (event) {
 
                 event.preventDefault();
@@ -76,94 +74,96 @@ Group.prototype.permissionsForm = function () {
 
     });
 
-    return $form
-
 };
 
 Group.prototype.memberGrid = function () {
 
     var self = this;
 
-    return $('<div>').DynaGrid({
-        gridTitle: 'Members',
-        headerTag: '<h4>',
-        showAddButton: true,
-        ajaxDataKey: 'members',
-        itemValueKey: 'name',
-        addButtonTitle: 'Add members',
-        addButtonType: 'text',
-        addButtonClass: 'btn btn-default btn-xs',
-        checkered: true,
-        showCount: true,
-        gridBodyBottomMargin: '20px',
-        columns: sessionStorage.getItem('node_grid_columns'),
-        ajaxUrl: self.apiPath + 'members/?name=' + self.name,
-        formatItem: function (gridContainer, gridItem) {
+    return $('<div>').load(self.paths.templates + 'membersGrid.html', function () {
 
-            var name = gridItem.data('value');
+        $('#members_grid').DynaGrid({
+            gridTitle: 'Members',
+            headerTag: '<h4>',
+            showAddButton: true,
+            ajaxDataKey: 'members',
+            itemValueKey: 'name',
+            addButtonTitle: 'Add members',
+            addButtonType: 'text',
+            addButtonClass: 'btn btn-default btn-xs',
+            checkered: true,
+            showCount: true,
+            gridBodyBottomMargin: '20px',
+            columns: sessionStorage.getItem('node_grid_columns'),
+            ajaxUrl: self.apiPath + 'members/?name=' + self.name,
+            formatItem: function ($gridContainer, $gridItem) {
 
-            gridItem.html('').append(
-                $('<span>').append(name).click(function () {
+                var name = $gridItem.data('value');
 
-                    window.open(self.paths.views.user + name + '/', '_self')
+                $gridItem.html('').append(
+                    $('<span>').append(name).click(function () {
 
-                }),
-                spanFA.clone().addClass('text-right fa-minus-circle')
-                    .css({float: 'right', margin: '.8rem 0'})
-                    .attr('title', 'Remove')
-                    .click(function () {
+                        window.open(self.paths.views.user + name + '/', '_self')
 
-                        self.selection = [gridItem.data('id')];
+                    }),
+                    spanFA.clone().addClass('text-right fa-minus-circle')
+                        .css({float: 'right', margin: '.8rem 0'})
+                        .attr('title', 'Remove')
+                        .click(function () {
 
-                        self.postData('remove_members', function () {
+                            self.selection = [$gridItem.data('id')];
 
-                            $membersGrid.DynaGrid('load')
+                            self.postData('remove_members', function () {
 
-                        });
-
-                    })
-            )
-
-        },
-        addButtonAction: function () {
-
-            self.selectionDialog({
-                objectType: 'user',
-                url: self.paths.apis.group + 'members/?reverse=true&name=' + self.name,
-                ajaxDataKey: 'members',
-                itemValueKey: 'name',
-                showButtons: true,
-                loadCallback: function (gridContainer, selectionDialog) {
-
-                    selectionDialog.dialog('option', 'buttons', {
-                        Add: function () {
-
-                            self.selection = selectionDialog.DynaGrid('getSelected', 'id');
-
-                            self.postData('add_members', function () {
-
-                                $membersGrid.DynaGrid('load')
+                                $('#members_grid').DynaGrid('load')
 
                             });
 
-                            $(this).dialog('close');
+                        })
+                )
 
-                        },
-                        Cancel: function () {
+            },
+            addButtonAction: function () {
 
-                            $('.filter_box').val('');
+                self.selectionDialog({
+                    objectType: 'user',
+                    url: self.paths.apis.group + 'members/?reverse=true&name=' + self.name,
+                    ajaxDataKey: 'members',
+                    itemValueKey: 'name',
+                    showButtons: true,
+                    loadCallback: function (gridContainer, selectionDialog) {
 
-                            $(this).dialog('close');
+                        selectionDialog.dialog('option', 'buttons', {
+                            Add: function () {
 
-                        }
-                    });
+                                self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                },
-                addButtonAction: null,
-                formatItem: null
-            });
+                                self.postData('add_members', function () {
 
-        }
+                                    $('#members_grid').DynaGrid('load')
+
+                                });
+
+                                $(this).dialog('close');
+
+                            },
+                            Cancel: function () {
+
+                                $('.filter_box').val('');
+
+                                $(this).dialog('close');
+
+                            }
+                        });
+
+                    },
+                    addButtonAction: null,
+                    formatItem: null
+                });
+
+            }
+        })
+
     });
 
 };
@@ -172,11 +172,11 @@ Group.prototype.view = function () {
 
     var self = this;
 
-    var $container = $('<div>');
+    return $('<div>').load(self.paths.templates + 'entityView.html', function () {
 
-    self.refresh(function () {
+        var $container = $(this);
 
-        $container.load(self.paths.templates + 'entityView.html', function () {
+        self.refresh(function () {
 
             self.bind($container);
 
@@ -192,7 +192,7 @@ Group.prototype.view = function () {
 
             $('#delete_button').toggle(self.editable).click(function() {
 
-                self.delete(function () {
+                self.del(function () {
 
                     window.open(self.paths.selectors.group , '_self')
 
@@ -212,76 +212,80 @@ Group.prototype.view = function () {
 
     });
 
-    return $container
-
 };
 
 Group.prototype.selector = function () {
 
     var self = this;
 
-    var container = $('<div>');
+    var $container = $('<div>');
 
-    var table = baseTable.clone();
+    $container.load(self.paths.templates + 'entitySelector.html', function () {
 
-    container.append($('<h3>').html('User groups'), $('<br>'), table);
+        self.set('title', 'User groups');
 
-    table.DataTable({
-        ajax: {
-            url: self.apiPath + 'list/',
-            dataSrc: 'groups'
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                text: 'Add user group',
-                className: 'btn-xs',
-                action: function () {
+        self.bind($container);
 
-                    var group = new Group({id: null, name: null, description: null});
+        $('#entity_table').DataTable({
+            ajax: {
+                url: self.apiPath + 'list/',
+                dataSrc: 'groups'
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    text: 'Add user group',
+                    className: 'btn-xs',
+                    action: function () {
 
-                    group.edit(function (data) {
+                        var group = new Group({id: null, name: null, description: null});
 
-                        window.open(self.paths.views.group + data.group.name + '/', '_self');
+                        group.edit(function (data) {
 
-                    })
-
-                }
-            }
-        ],
-        paging: false,
-        columns: [
-            {class: 'col-md-3', title: 'name', data: 'name'},
-            {class: 'col-md-7', title: 'description', data: 'description'},
-            {class: 'col-md-2', title: 'members', data: 'member_count'}
-        ],
-        rowCallback: function (row, data) {
-
-            var group = new Group(data);
-
-            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
-
-                window.open(self.paths.views.group + group.name, '_self')
-
-            });
-
-            if (group.editable) $(row).find('td:eq(-1)').append(
-                spanRight.clone().append(
-                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
-
-                        group.delete(function () {
-
-                            table.DataTable().ajax.reload();
+                            window.open(self.paths.views.group + data.group.name + '/', '_self');
 
                         })
 
-                    })
-                )
-            )
+                    }
+                }
+            ],
+            paging: false,
+            columns: [
+                {class: 'col-md-3', title: 'name', data: 'name'},
+                {class: 'col-md-7', title: 'description', data: 'description'},
+                {class: 'col-md-2', title: 'members', data: 'member_count'}
+            ],
+            rowCallback: function (row, data) {
 
-        }
+                var $table = $(this);
+
+                var group = new Group(data);
+
+                $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
+
+                    window.open(self.paths.views.group + group.name, '_self')
+
+                });
+
+                if (group.editable) $(row).find('td:eq(-1)').append(
+                    spanRight.clone().append(
+                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+
+                            group.del(function () {
+
+                                $table.DataTable().ajax.reload();
+
+                            })
+
+                        })
+                    )
+                )
+
+            }
+        })
+
     });
 
-    return container
+    return $container
 
 };

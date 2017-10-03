@@ -577,7 +577,7 @@ AdHoc.prototype.selector = function (pattern) {
                     }),
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                        adhoc.delete(function () {
+                        adhoc.del(function () {
 
                             table.DataTable().ajax.reload()
 

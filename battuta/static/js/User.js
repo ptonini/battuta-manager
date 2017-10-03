@@ -593,7 +593,7 @@ User.prototype.view = function (currentUser) {
             .attr('title', 'Delete')
             .click(function () {
 
-                self.user.delete(function () {
+                self.del(function () {
 
                     window.open(self.paths.selectors.user, '_self')
 
@@ -722,7 +722,7 @@ User.prototype.selector = function () {
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                        user.delete(function () {
+                        user.del(function () {
 
                             table.DataTable().ajax.reload();
 

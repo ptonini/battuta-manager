@@ -1,15 +1,19 @@
-<div class="row">
-    <div class="col-md-12">
-        <label class="text-capitalize">
-            <span data-bind="action"></span>
-            <input data-bind="new_name" class="form-control input-sm" type="text" value="">
-        </label>
-    </div>
-    <div class="col-md-12">
-        <div type="checkbox">
-            <label>
-                <input data-bind="is_folder" type="checkbox"> folder
+<div id="file_dialog">
+    <div class="row">
+        <div class="col-md-12">
+            <label class="text-capitalize">
+                <span data-bind="action"></span>
+                <input data-bind="new_name" class="form-control input-sm" type="text" value="">
             </label>
+        </div>
+        <div class="col-md-12">
+            <div type="checkbox">
+                <label>
+                    <input data-bind="is_folder" type="checkbox">
+                    folder
+                </label>
+            </div>
         </div>
     </div>
 </div>
+

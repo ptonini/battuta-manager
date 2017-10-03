@@ -1,7 +1,16 @@
-<h4 data-bind="header">Edit variable</h4>
-<div class="form-group">
-    <label>Key<input data-bind="key" class="form-control input-sm" type="text"></label>
+<div id="variable_dialog" class="large_dialog">
+    <h4 data-bind="header">Edit variable</h4>
+    <div class="form-group">
+        <label>
+            Key
+            <input data-bind="variable.key" class="form-control input-sm" type="text">
+        </label>
+    </div>
+    <div class="form-group">
+        <label>
+            Value
+            <textarea data-bind="variable.value" class="textarea form-control input-sm"></textarea>
+        </label>
+    </div>
 </div>
-<div class="form-group">
-    <label>Value<textarea data-bind="value" class="textarea form-control input-sm"></textarea></label>
-</div>
+

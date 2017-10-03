@@ -580,7 +580,7 @@ Project.prototype.view = function () {
             .attr('title', 'Delete')
             .click(function() {
 
-                self.delete(function () {
+                self.del(function () {
 
                     window.open(self.paths.selectors.project, '_self');
 
@@ -711,7 +711,7 @@ Project.prototype.selector = function () {
                 spanRight.clone().append(
                     spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                        project.delete(function () {
+                        project.del(function () {
 
                             table.DataTable().ajax.reload();
 

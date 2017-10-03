@@ -741,7 +741,7 @@ class NodeView(View):
 
             if node.editable:
 
-                related_set, related_class = self._get_relationships(node, action.split('_')[1])
+                related_set, related_class, related_type = self._get_relationships(node, action.split('_')[1])
 
                 for selected in json.loads(request.POST['selection']):
 
@@ -757,7 +757,7 @@ class NodeView(View):
 
             if node.editable:
 
-                related_set, related_class = self._get_relationships(node, action.split('_')[1])
+                related_set, related_class, related_type = self._get_relationships(node, action.split('_')[1])
 
                 for selected in json.loads(request.POST['selection']):
 

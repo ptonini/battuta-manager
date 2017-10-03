@@ -32,42 +32,88 @@ Node.prototype.constructor = Node;
 
 Node.prototype.key = 'node';
 
-Node.prototype.facts = function (facts) {
+Node.prototype.loadHostInfo = function (callback) {
 
     var self = this;
 
-    var loadFacts = function () {
+    self.getData('facts', function (data) {
 
-        self.getData('facts', function (data) {
+        self.facts = data.facts;
 
-            if (data.facts) {
+        if (data.facts) {
 
-                var divCol4L = divCol4.clone().addClass('report_field_left');
+            self.set('info.hostname', self.facts.fqdn);
 
-                var divCol8R = divCol8.clone().addClass('report_field_right truncate-text');
+            self.set('info.processor', self.facts.processor[1]);
 
-                var divFactsCol6 = divCol6.clone().css('margin-bottom', '15px');
+            self.set('info.cores', self.facts.processor_count);
 
-                var divFactsCol10 = divCol10.clone().css('margin-bottom', '15px');
+            self.set('info.ram', self.humanBytes(data.facts.memtotal_mb, 'MB'));
 
-                var os = data.facts.os_family + ' - ' + data.facts.distribution + ' ' + data.facts.distribution_version;
+            self.set('info.system', self.facts.system);
 
-                var factsDate = data.facts.date_time.date + ' ' + data.facts.date_time.time + ' ' + data.facts.date_time.tz;
+            self.set('info.os', self.facts.os_family + ' - ' + self.facts.distribution + ' ' + self.facts.distribution_version);
 
-                var interfaceTable = baseTable.clone();
+            self.set('info.factsDate', self.facts.date_time.date + ' ' + self.facts.date_time.time + ' ' + self.facts.date_time.tz);
 
-                var mountTable = baseTable.clone();
+            self.set('info.vendor', self.facts.system_vendor);
 
-                var interfacesArray = [];
+            self.set('info.product', self.facts.product_name);
 
-                $.each(data.facts.interfaces, function (index, value) {
+            self.set('info.serial', self.facts.product_serial);
 
-                    interfacesArray.push(data.facts[value])
+            self.set('info.form_factor', self.facts.form_factor);
 
-                });
+            self.set('info.ec2_hostname', data.facts.ec2_hostname);
 
-                interfaceTable.DataTable({
-                    data: interfacesArray,
+            self.set('info.public_address', data.facts.ec2_public_ipv4);
+
+            self.set('info.instance_type', data.facts.ec2_instance_type);
+
+            self.set('info.ec2_instance_id', data.facts.ec2_instance_id);
+
+            self.set('info.ec2_az', data.facts.ec2_placement_availability_zone)
+
+            self.info.interfacesArray = [];
+
+            $.each(self.facts.interfaces, function (index, value) {
+
+                self.info.interfacesArray.push(self.facts[value])
+
+            });
+
+        }
+
+        callback && callback()
+
+    })
+
+
+};
+
+Node.prototype.hostInfo = function () {
+
+    var self = this;
+
+    return $('<div>').load(self.paths.templates + 'hostInfo.html', function () {
+
+        var $container = $(this);
+
+        self.loadHostInfo(function () {
+
+            self.bind($container);
+
+            if (self.facts) {
+
+                if (self.facts.virtualization_role === 'host' || !self.info.ec2_hostname) $('#guest_info_row').hide();
+
+                if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
+
+                $('#interface_table').DataTable({
+                    data: self.info.interfacesArray,
+                    filter: false,
+                    paging: false,
+                    info: false,
                     columns: [
                         {class: 'col-md-2', title: 'interface', data: 'device'},
                         {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
@@ -78,8 +124,11 @@ Node.prototype.facts = function (facts) {
                     ]
                 });
 
-                mountTable.DataTable({
-                    data: data.facts.mounts,
+                $('#storage_table').DataTable({
+                    data: self.facts.mounts,
+                    filter: false,
+                    paging: false,
+                    info: false,
                     columns: [
                         {class: 'col-md-2', title: 'device', data: 'device'},
                         {class: 'col-md-3', title: 'mount point', data: 'mount'},
@@ -94,467 +143,396 @@ Node.prototype.facts = function (facts) {
                     }
                 });
 
-                var factsRow = divRow.clone().append(
-                    divFactsCol6.clone().append(
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('Full hostname:'),
-                            divCol8R.clone().append(data.facts.fqdn)
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('Processor:'),
-                            divCol8R.clone().append(data.facts.processor[1])
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('Cores:'),
-                            divCol8R.clone().append(data.facts.processor_count)
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('RAM Memory'),
-                            divCol8R.clone().append(self.humanBytes(data.facts.memtotal_mb, 'MB'))
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('System:'),
-                            divCol8R.clone().append(data.facts.system)
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('OS:'),
-                            divCol8R.clone().append(os)
-                        )
-                    )
-                );
-
-                if (data.facts.virtualization_role === 'host') factsRow.append(
-                    divFactsCol6.clone().append(
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('System vendor:'), divCol8R.clone().append(data.facts.system_vendor)
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('Product name:'), divCol8R.clone().append(data.facts.product_name)
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('Product serial:'), divCol8R.clone().append(data.facts.product_serial)
-                        ),
-                        divRowEqHeight.clone().append(
-                            divCol4L.clone().append('Form factor:'), divCol8R.clone().append(data.facts.form_factor)
-                        )
-                    )
-                );
-
-                else if (data.facts.virtualization_role === 'guest') {
-
-                    if (sessionStorage.getItem('use_ec2_facts') === 'true' && data.facts.hasOwnProperty('ec2_hostname')) {
-
-                        factsRow.append(
-                            divFactsCol6.clone().append(
-                                divRowEqHeight.clone().append(
-                                    divCol4L.clone().append('EC2 hostname:'),
-                                    divCol8R.clone().append(data.facts.ec2_hostname)
-                                ),
-                                divRowEqHeight.clone().append(
-                                    divCol4L.clone().append('EC2 public address:'),
-                                    divCol8R.clone().append(data.facts.ec2_public_ipv4)
-                                ),
-                                divRowEqHeight.clone().append(
-                                    divCol4L.clone().append('EC2 instance type:'),
-                                    divCol8R.clone().append(data.facts.ec2_instance_type)
-                                ),
-                                divRowEqHeight.clone().append(
-                                    divCol4L.clone().append('EC2 instance id:'),
-                                    divCol8R.clone().append(data.facts.ec2_instance_id)
-                                ),
-                                divRowEqHeight.clone().append(
-                                    divCol4L.clone().append('EC2 avaliability zone:'),
-                                    divCol8R.clone().append(data.facts.ec2_placement_availability_zone)
-                                )
-                            )
-                        )
-
-                    }
-
-                }
-
-                var allFactsContainer = divWell.clone().hide().JSONView(data.facts, {'collapsed': true});
-
-                var showFactsButton = btnXsmall.clone().html('Show facts').css('margin-right', '5px').click(function () {
+                $('#show_facts').css('margin-right', '5px').click(function () {
 
                     if ($(this).html() === 'Show facts') $(this).html('Hide facts');
 
                     else $(this).html('Show facts');
 
-                    allFactsContainer.toggle();
+                    $('#facts_container').toggle();
 
                 });
 
-                container.empty().append(
-                    factsRow,
-                    divRow.clone().append(
-                        divFactsCol10.clone().append($('<h5>').html('Networking'), interfaceTable),
-                        divFactsCol10.clone().append($('<h5>').html('Storage'), mountTable),
-                        divFactsCol10.clone().append(
-                            $('<span>').append(showFactsButton, gatherFactsButton),
-                            spanRight.clone().html('Facts gathered in ').append($('<strong>').html(factsDate))
-                        ),
-                        divCol10.clone().append(allFactsContainer)
-                    )
-                );
+                $('#facts_container').hide().JSONView(self.facts, {'collapsed': true});
 
             }
 
-            else container.append(gatherFactsButton)
+            else $('.hide_when_empty').hide();
 
-        });
+            $('#gather_facts').click(function () {
 
-    };
+                var job = new Job({hosts: self.name});
 
-    var container = $('<div>').on('reload', function () {
+                job.getFacts();
 
-        loadFacts()
-
-    });
-
-    var gatherFactsButton = btnXsmall.clone().html('Gather facts').click(function () {
-
-        var job = new Job({hosts: self.name});
-
-        job.getFacts(function () {
-
-            loadFacts()
+            });
 
         });
 
     });
-
-    loadFacts();
-
-    return container
-
 
 };
 
-Node.prototype.relationships = function (callback) {
+Node.prototype.relationships = function () {
 
     var self = this;
 
-    var $container = $('<div>');
+    return $('<div>').load(self.paths.templates + 'relationships.html', function () {
 
-    var relations = {
-        group: ['parents', 'children', 'members'],
-        host: ['parents']
-    };
+        var relations = {
+            group: ['parents', 'children', 'members'],
+            host: ['parents']
+        };
 
-    var relationType = {parents: 'group', children: 'group', members: 'host'};
+        var relationType = {parents: 'group', children: 'group', members: 'host'};
 
-    $.each(relations[self.type], function (index, relation) {
+        var reloadData = function ($gridContainer) {
 
-        var $relationGrid = $('<div>').DynaGrid({
-            gridTitle: relation,
-            headerTag: '<h5>',
-            ajaxDataKey: 'nodes',
-            showAddButton: true,
-            itemValueKey: 'name',
-            showTitle: true,
-            showCount: true,
-            addButtonClass: 'add_relation',
-            addButtonTitle: 'Add relationship',
-            checkered: true,
-            gridBodyTopMargin: '10px',
-            hideBodyIfEmpty: true,
-            columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
-            formatItem: function ($gridContainer, $gridItem) {
+            $gridContainer.DynaGrid('load');
 
-                var id = $gridItem.data('id');
+            $('#variable_table').DataTable().ajax.reload();
 
-                var name = $gridItem.data('name');
+            $('#group_descendants_grid').DynaGrid('load');
 
-                $gridItem.html('').append(
-                    $('<span>').append(name).click(function () {
+            $('#host_descendants_grid').DynaGrid('load');
 
-                        window.open(self.paths.inventory + relationType[relation] + '/' + name, '_self')
+        };
 
-                    }),
-                    spanFA.clone().addClass('text-right fa-minus-circle')
-                        .css({float: 'right', margin: '.8rem 0'})
-                        .attr('title', 'Remove')
-                        .click(function () {
+        $.each(relations[self.type], function (index, relation) {
 
-                            self.selection = JSON.stringify([id]);
-
-                            self.postData('remove_' + relation, function () {
-
-                                $relationGrid.DynaGrid('load');
-
-                                callback && callback()
-
-                            });
-
-                        })
-                )
-
-            },
-            addButtonAction: function () {
-
-                self.selectionDialog({
-                    objectType: self.type,
-                    url: self.apiPath + relation + '/?related=false&id=' + self.id,
+            $('#' + relation + '_grid')
+                .css('margin-bottom', '2rem')
+                .DynaGrid({
+                    gridTitle: relation,
+                    headerTag: '<h5>',
                     ajaxDataKey: 'nodes',
+                    showAddButton: true,
                     itemValueKey: 'name',
-                    showButtons: true,
-                    loadCallback: function ($gridContainer, $selectionDialog) {
+                    showTitle: true,
+                    showCount: true,
+                    addButtonClass: 'add_relation',
+                    addButtonTitle: 'Add relationship',
+                    checkered: true,
+                    gridBodyTopMargin: '10px',
+                    hideBodyIfEmpty: true,
+                    columns: sessionStorage.getItem('node_grid_columns'),
+                    ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
+                    formatItem: function ($gridContainer, $gridItem) {
 
-                        $selectionDialog.dialog('option', 'buttons', {
-                            Add: function () {
+                        var id = $gridItem.data('id');
 
-                                self.selection = JSON.stringify($selectionDialog.DynaGrid('getSelected', 'id'));
+                        var name = $gridItem.data('name');
 
-                                self.postData('add_' + relation, function () {
+                        $gridItem.html('').append(
+                            $('<span>').append(name).click(function () {
 
-                                    $relationGrid.DynaGrid('load');
+                                window.open(self.paths.inventory + relationType[relation] + '/' + name, '_self')
 
-                                    callback && callback()
+                            }),
+                            spanFA.clone().addClass('text-right fa-minus-circle')
+                                .css({float: 'right', margin: '.8rem 0'})
+                                .attr('title', 'Remove')
+                                .click(function () {
+
+                                    self.selection = JSON.stringify([id]);
+
+                                    self.postData('remove_' + relation, function () {
+
+                                        reloadData($('#' + relation + '_grid'))
+
+                                    });
+
+                                })
+                        )
+
+                    },
+                    addButtonAction: function () {
+
+                        self.selectionDialog({
+                            objectType: self.type,
+                            url: self.apiPath + relation + '/?related=false&id=' + self.id,
+                            ajaxDataKey: 'nodes',
+                            itemValueKey: 'name',
+                            showButtons: true,
+                            loadCallback: function ($gridContainer, $selectionDialog) {
+
+                                $selectionDialog.dialog('option', 'buttons', {
+                                    Add: function () {
+
+                                        self.selection = JSON.stringify($selectionDialog.DynaGrid('getSelected', 'id'));
+
+                                        self.postData('add_' + relation, function () {
+
+                                            reloadData($('#' + relation + '_grid'))
+
+                                        });
+
+                                        $(this).dialog('close');
+
+                                    },
+                                    Cancel: function () {
+
+                                        $('.filter_box').val('');
+
+
+                                        $(this).dialog('close');
+
+                                    }
+                                });
+
+                            },
+                            addButtonAction: function ($selectionDialog) {
+
+                                var node = new Node({name: null, description: null, type: relationType});
+
+                                node.edit(function () {
+
+                                    $selectionDialog.DynaGrid('load')
 
                                 });
 
-                                $(this).dialog('close');
-
                             },
-                            Cancel: function () {
-
-                                $('.filter_box').val('');
-
-
-                                $(this).dialog('close');
-
-                            }
+                            formatItem: null
                         });
 
-                    },
-                    addButtonAction: function ($selectionDialog) {
-
-                        var node = new Node({name: null, description: null, type: relationType});
-
-                        node.edit(function () {
-
-                            $selectionDialog.DynaGrid('load')
-
-                        });
-
-                    },
-                    formatItem: null
+                }
                 });
-
-            }
         });
-
-        $container.append($relationGrid, $('<br>'));
 
     });
 
-    return $container
+};
+
+Node.prototype.descendants = function () {
+
+    var self = this;
+
+    return $('<div>').load(self.paths.templates + 'descendants.html', function () {
+
+        $.each(['group', 'host'], function (index, type) {
+
+            $('#' + type + '_descendants_grid').DynaGrid({
+                gridTitle: type.capitalize() + 's',
+                ajaxUrl: self.apiPath + 'descendants/?type=' + type + 's&id=' + self.id,
+                headerTag: '<h5>',
+                showTitle: true,
+                hideIfEmpty: true,
+                checkered: true,
+                showCount: true,
+                ajaxDataKey: 'descendants',
+                truncateItemText: true,
+                gridBodyBottomMargin: '20px',
+                columns: sessionStorage.getItem('node_grid_columns'),
+                formatItem: function (gridContainer, gridItem) {
+
+                    gridItem.click(function () {
+
+                        window.open(self.paths.inventory + gridContainer.data('type') + '/' + $(this).data('name') + '/', '_self')
+
+                    });
+                }
+            });
+
+        });
+
+    });
+
 };
 
 Node.prototype.variables = function () {
 
     var self = this;
 
-    var $container = $('<div>').on('reload', function () {
+    return $('<div>').load(self.paths.templates + 'variableTable.html', function () {
 
-        $table.DataTable().ajax.reload()
+        $('#variable_table').DataTable({
+            order: [[ 2, 'asc' ], [ 0, 'asc' ]],
+            paging: false,
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    text: 'Add variable',
+                    className: 'btn-xs',
+                    action: function () {
 
-    });
+                        self.editVariable({id: null}, function () {
 
-    var $table = baseTable.clone();
-
-    $container.append($table);
-
-    $table.DataTable({
-        order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-        paging: false,
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                text: 'Add variable',
-                className: 'btn-xs',
-                action: function () {
-
-                    self.editVariable({id: null}, function () {
-
-                        $table.DataTable().ajax.reload()
-
-                    });
-
-                }
-            },
-            {
-                text: '<span class="fa fa-clone" title="Copy from node"></span>',
-                className: 'btn-xs',
-                action: function () {
-
-                    self.copyVariables(function () {
-
-                        $table.DataTable().ajax.reload()
-
-                    });
-
-                }
-            }
-        ],
-        ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
-        columns: [
-            {class: 'col-md-3', title: 'key', data: 'key'},
-            {class: 'col-md-7', title: 'value', data: 'value'},
-            {class: 'col-md-2', title: 'source', data: 'source'}
-        ],
-        rowCallback: function(row, variable) {
-
-            if (!variable.source) {
-
-                $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
-                    spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
-
-                        self.editVariable(variable, function () {
-
-                            $table.DataTable().ajax.reload()
-
-                        })
-
-                    }),
-                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
-
-                        self.variable = JSON.stringify(variable);
-
-                        self.postData('delete_var', function () {
-
-                            $table.DataTable().ajax.reload()
+                            $('#variable_table').DataTable().ajax.reload()
 
                         });
 
-                    })
-                )
-            }
+                    }
+                },
+                {
+                    text: '<span class="fa fa-clone" title="Copy from node"></span>',
+                    className: 'btn-xs',
+                    action: function () {
 
-            else {
-                $(row).find('td:eq(2)')
-                    .css('cursor', 'pointer')
-                    .html(variable.source.italics())
-                    .attr('title', 'Open ' + variable.source)
-                    .click(function () {
+                        self.copyVariables(function () {
 
-                        window.open(self.paths.inventory + 'group/' + variable.source + '/', '_self')
+                            $('#variable_table').DataTable().ajax.reload()
 
-                    });
-            }
-
-        },
-        drawCallback: function() {
-
-            var table = this;
-
-            var variableKeys = table.api().columns(0).data()[0];
-
-            var duplicates = {};
-
-            table.api().rows().every(function () {
-
-                this.child.isShown() && this.child.hide();
-
-                var rowKey = this.data().key;
-
-                var isMain = this.data().primary;
-
-                var rowData = [this.data(), this.node()];
-
-                var keyIndexes = [];
-
-                var i = -1;
-
-                while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
-
-                if (keyIndexes.length > 1)  {
-
-                    if (duplicates.hasOwnProperty(rowKey)) {
-
-                        if (isMain) duplicates[rowKey].hasMainValue = true;
-
-                        duplicates[rowKey].values.push(rowData);
+                        });
 
                     }
-
-                    else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
-
                 }
-            });
+            ],
+            ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
+            columns: [
+                {class: 'col-md-3', title: 'key', data: 'key'},
+                {class: 'col-md-7', title: 'value', data: 'value'},
+                {class: 'col-md-2', title: 'source', data: 'source'}
+            ],
+            rowCallback: function(row, variable) {
 
-            Object.keys(duplicates).forEach(function (key) {
+                if (!variable.source) {
 
-                if (duplicates[key].hasMainValue) {
+                    $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
+                        spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
 
-                    var mainValue = null;
+                            self.editVariable(variable, function () {
 
-                    var rowArray = [];
+                                $('#variable_table').DataTable().ajax.reload()
 
-                    $.each(duplicates[key]['values'], function (index, value) {
+                            })
 
-                        if (value[0]['primary']) mainValue = value;
+                        }),
+                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                        else {
+                            self.variable = JSON.stringify(variable);
 
-                            var $newRow = $(value[1]).clone().css('color', '#777');
+                            self.postData('delete_var', function () {
 
-                            $newRow.find('td:eq(2)').click(function() {
-
-                                window.open(self.paths.inventory.html + 'group/' + value[0].source, '_self')
+                                $('#variable_table').DataTable().ajax.reload()
 
                             });
 
-                            rowArray.push($newRow);
+                        })
+                    )
+                }
 
-                            $(value[1]).remove()
+                else {
+                    $(row).find('td:eq(2)')
+                        .css('cursor', 'pointer')
+                        .html(variable.source.italics())
+                        .attr('title', 'Open ' + variable.source)
+                        .click(function () {
+
+                            window.open(self.paths.inventory + 'group/' + variable.source + '/', '_self')
+
+                        });
+                }
+
+            },
+            drawCallback: function() {
+
+                var table = this;
+
+                var variableKeys = table.api().columns(0).data()[0];
+
+                var duplicates = {};
+
+                table.api().rows().every(function () {
+
+                    this.child.isShown() && this.child.hide();
+
+                    var rowKey = this.data().key;
+
+                    var isMain = this.data().primary;
+
+                    var rowData = [this.data(), this.node()];
+
+                    var keyIndexes = [];
+
+                    var i = -1;
+
+                    while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
+
+                    if (keyIndexes.length > 1)  {
+
+                        if (duplicates.hasOwnProperty(rowKey)) {
+
+                            if (isMain) duplicates[rowKey].hasMainValue = true;
+
+                            duplicates[rowKey].values.push(rowData);
 
                         }
 
-                    });
-
-                    if (mainValue) {
-
-                        var rowApi = table.DataTable().row(mainValue[1]);
-
-                        $(mainValue[1]).find('td:eq(0)').html('').append(
-                            $('<span>').html(mainValue[0].key),
-                            spanFA.clone().addClass('fa-chevron-down btn-incell').off().click(function () {
-
-                                if (rowApi.child.isShown()) {
-
-                                    $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
-
-                                    $(mainValue[1]).css('font-weight', 'normal');
-
-                                    rowApi.child.hide()
-
-                                }
-
-                                else {
-
-                                    $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
-
-                                    $(mainValue[1]).css('font-weight', 'bold');
-
-                                    rowApi.child(rowArray).show();
-
-                                }
-
-                            })
-                        );
+                        else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
 
                     }
-                }
+                });
 
-            });
+                Object.keys(duplicates).forEach(function (key) {
 
-        }
+                    if (duplicates[key].hasMainValue) {
+
+                        var mainValue = null;
+
+                        var rowArray = [];
+
+                        $.each(duplicates[key]['values'], function (index, value) {
+
+                            if (value[0]['primary']) mainValue = value;
+
+                            else {
+
+                                var $newRow = $(value[1]).clone().css('color', '#777');
+
+                                $newRow.find('td:eq(2)').click(function() {
+
+                                    window.open(self.paths.inventory.html + 'group/' + value[0].source, '_self')
+
+                                });
+
+                                rowArray.push($newRow);
+
+                                $(value[1]).remove()
+
+                            }
+
+                        });
+
+                        if (mainValue) {
+
+                            var rowApi = table.DataTable().row(mainValue[1]);
+
+                            $(mainValue[1]).find('td:eq(0)').html('').append(
+                                $('<span>').html(mainValue[0].key),
+                                spanFA.clone().addClass('fa-chevron-down btn-incell').off().click(function () {
+
+                                    if (rowApi.child.isShown()) {
+
+                                        $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
+
+                                        $(mainValue[1]).css('font-weight', 'normal');
+
+                                        rowApi.child.hide()
+
+                                    }
+
+                                    else {
+
+                                        $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
+
+                                        $(mainValue[1]).css('font-weight', 'bold');
+
+                                        rowApi.child(rowArray).show();
+
+                                    }
+
+                                })
+                            );
+
+                        }
+                    }
+
+                });
+
+            }
+        })
+
     });
-
-    return $container;
 
 };
 
@@ -562,52 +540,49 @@ Node.prototype.editVariable = function (variable, callback) {
 
     var self = this;
 
-    var $dialog = largeDialog.clone();
+    $(document.body).append(
+        $('<div>').load(self.paths.templates + 'editVariableDialog.html', function () {
 
-    $dialog.load(self.paths.templates + 'editVariableDialog.html', function () {
+            self.bind($(this));
 
-        self.bind($dialog);
+            self.set('header', variable.id ? 'Edit variable' : 'Add variable');
 
-        self.set('header', variable.id ? 'Edit variable' : 'Add variable');
+            self.set('variable.key', variable.key);
 
-        self.set('key', variable.key);
+            self.set('variable.value', variable.value);
 
-        self.set('value', variable.value);
+            $('#variable_dialog').dialog({
+                closeOnEscape: false,
+                buttons: {
+                    Save: function () {
 
-        $dialog.dialog({
-            closeOnEscape: false,
-            buttons: {
-                Save: function () {
+                        var $dialog = $(this);
 
-                    self.variable = JSON.stringify({key: self.key, value: self.value, id: variable.id});
+                        self.variable = JSON.stringify(self.variable);
 
-                    delete self.key;
+                        self.postData('save_var', function () {
 
-                    delete self.value;
+                            callback && callback();
 
-                    self.postData('save_var', function () {
+                            variable.id && $dialog.dialog('close');
 
-                        callback && callback();
+                            $dialog.find('input, textarea').val('');
 
-                        variable.id && $dialog.dialog('close');
+                            $dialog.find('[data-bind="key"]').focus();
 
-                        $dialog.find('input, textarea').val('');
+                        });
 
-                        $dialog.find('[data-bind="key"]').focus();
+                    },
+                    Close: function () {
 
-                    });
+                        $(this).dialog('close');
 
-                },
-                Close: function () {
-
-                    $(this).dialog('close');
-
+                    }
                 }
-            }
+            }).dialog('open');
 
-    });
-
-    })
+        })
+    )
 
 };
 
@@ -615,24 +590,23 @@ Node.prototype.copyVariables = function (callback) {
 
     var self = this;
 
-    var $dialog = smallDialog.clone();
+    $(document.body).append(
+        $('<div>').load(self.paths.templates + 'copyVariablesDialog.html', function () {
 
-    $dialog.load(self.paths.templates + 'copyVariablesDialog.html', function () {
+            $('#copy_variables_dialog')
+                .dialog({
+                    width: 280,
+                    buttons: {
+                        Cancel: function () {
 
-        $dialog
-            .dialog({
-                width: 280,
-                buttons: {
-                    Cancel: function () {
+                            $(this).dialog('close')
 
-                        $(this).dialog('close')
-
+                        }
                     }
-                }
-            })
-            .find('button').click(function () {
+                })
+                .find('button').click(function () {
 
-                $dialog.dialog('close');
+                $('#copy_variables_dialog').dialog('close');
 
                 self.selectionDialog({
                     objectType: $(this).data('type'),
@@ -662,57 +636,8 @@ Node.prototype.copyVariables = function (callback) {
 
             })
 
-    });
-
-};
-
-Node.prototype.descendants = function () {
-
-    var self = this;
-
-    var $container = $('<div>');
-
-    var gridOptions = {
-        headerTag: '<h5>',
-        showTitle: true,
-        hideIfEmpty: true,
-        checkered: true,
-        showCount: true,
-        ajaxDataKey: 'descendants',
-        truncateItemText: true,
-        gridBodyBottomMargin: '20px',
-        columns: sessionStorage.getItem('node_grid_columns'),
-        formatItem: function (gridContainer, gridItem) {
-
-            gridItem.click(function () {
-
-                window.open(self.paths.inventory.html + gridContainer.data('type') + '/' + $(this).data('name') + '/', '_self')
-
-            });
-        }
-    };
-
-    $container.load(self.paths.templates + 'descendants.html', function () {
-
-        $container.on('reload', function () {
-
-            $container.find('.descendants_grid').DynaGrid('load');
-
-        });
-
-        $container.find('#group_descendants_grid').DynaGrid($.extend({}, gridOptions, {
-            gridTitle: 'Groups',
-            ajaxUrl: self.apiPath + 'descendants/?type=groups&id=' + self.id
-        }));
-
-        $container.find('#host_descendants_grid').DynaGrid($.extend({}, gridOptions, {
-            gridTitle: 'Hosts',
-            ajaxUrl: self.apiPath + 'descendants/?type=hosts&id=' + self.id
-        }));
-
-    });
-
-    return $container
+        })
+    )
 
 };
 
@@ -720,29 +645,17 @@ Node.prototype.view = function () {
 
     var self = this;
 
-    var $container = $('<div>');
+    return $('<div>').load(self.paths.templates + 'entityView.html', function () {
 
-    self.refresh(function () {
+        var $container = $(this);
+
+        self.bind($container);
 
         var adhoc = new AdHoc({hosts: self.name});
 
-        var $relationships = self.relationships(function () {
-
-            $variables.trigger('reload');
-
-            $descendants.trigger('reload');
-
-        });
-
-        var $descendants = self.descendants();
-
-        var $variables = self.variables();
-
         var $adhoc = $('<div>').append(adhoc.commandForm(self.name), adhoc.selector(self.name));
 
-        $container.load(self.paths.templates + 'entityView.html', function () {
-
-            self.bind($container);
+        self.refresh(function () {
 
             $('#edit_button').toggle(self.editable).click(function() {
 
@@ -756,7 +669,7 @@ Node.prototype.view = function () {
 
             $('#delete_button').toggle(self.editable).click(function() {
 
-                self.delete(function () {
+                self.del(function () {
 
                     window.open(self.paths.inventory + self.type + 's/' , '_self')
 
@@ -764,15 +677,15 @@ Node.prototype.view = function () {
 
             });
 
-            $('#info_container').html(self.type === 'host' ? self.facts() : null);
+            $('#info_container').html(self.type === 'host' ? self.hostInfo() : null);
 
             self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('relationships', $relationships, $container);
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('relationships', self.relationships(), $container);
 
-            if (self.type === 'group' && self.name !== 'all') self.addTabs('descendants', $descendants, $container);
+            if (self.type === 'group' && self.name !== 'all') self.addTabs('descendants', self.descendants(), $container);
 
-            self.addTabs('variables', $variables, $container);
+            self.addTabs('variables', self.variables(), $container);
 
             if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', $adhoc, $container);
 
@@ -781,8 +694,6 @@ Node.prototype.view = function () {
         });
 
     });
-
-    return $container;
 
 };
 
@@ -877,7 +788,7 @@ Node.prototype.selector = function () {
                     spanRight.clone().append(
                         spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                            node.delete(function () {
+                            node.del(function () {
 
                                 refreshData();
 
@@ -969,7 +880,7 @@ Node.prototype.selector = function () {
 
                 inventory.selection = JSON.stringify(dialog.DynaGrid('getSelected', 'id'));
 
-                inventory.delete(function () {
+                inventory.del(function () {
 
                     self._refreshData()
 
@@ -1002,7 +913,7 @@ Node.prototype.selector = function () {
 
                 gridItem.click(function () {
 
-                    window.open(self.paths.inventory.html + self.type + '/' + $(this).data('name') + '/', '_self')
+                    window.open(self.paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
 
                 });
 

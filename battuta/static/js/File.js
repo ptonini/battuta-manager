@@ -54,7 +54,7 @@ File.prototype.edit = function (callback) {
 
             self.text = data.text;
 
-            self.openEditor(callback);
+            self.editorDialog(callback);
 
         });
 
@@ -92,75 +92,76 @@ File.prototype.upload = function (callback) {
 
     var self = this;
 
-    var uploadField = fileInputField.clone();
+    $(document.body).append($('<div>').load(self.paths.templates + 'uploadDialog.html', function () {
 
-    var uploadFieldLabel = $('<span>').html('Select file');
+        self.set('title', 'Select file');
 
-    var uploadDialog = smallDialog.clone().append(
-        $('<label>').append(uploadFieldLabel, uploadField)
-    );
+        self.bind($(this));
 
-    uploadField
-        .fileinput({
-            uploadUrl: self.apiPath + 'upload/',
-            uploadExtraData: function () {
+        $('#upload_field')
+            .fileinput({
+                uploadUrl: self.apiPath + 'upload/',
+                uploadExtraData: function () {
 
-                var loadedFile = uploadField.fileinput('getFileStack')[0];
+                    var loadedFile = $('#upload_field').fileinput('getFileStack')[0];
 
-                if (loadedFile) {
+                    if (loadedFile) {
 
-                    self.name = loadedFile.name;
+                        self.name = loadedFile.name;
 
-                    self.new_name = loadedFile.name;
+                        self.new_name = loadedFile.name;
 
-                    self.csrfmiddlewaretoken = self.getCookie('csrftoken');
+                        self.csrfmiddlewaretoken = self.getCookie('csrftoken');
 
-                    return self
+                        return self
 
-                }
-
-            },
-            uploadAsync: true,
-            progressClass: 'progress-bar progress-bar-success active'
-        })
-        .on('fileuploaded', function (event, data) {
-
-            uploadDialog.dialog('close');
-
-            self.requestResponse(data.response, callback, function () {
-
-                uploadDialog.find('div.file-caption-main').show();
-
-                uploadFieldLabel.html('Select file');
-
-            })
-
-        });
-
-    uploadDialog
-        .dialog({
-            buttons: {
-                Upload: function () {
-
-                    uploadField.fileinput('upload');
-
-                    uploadFieldLabel.html('Uploading file');
-
-                    uploadDialog.find('div.file-caption-main').hide()
+                    }
 
                 },
-                Cancel: function () {
+                uploadAsync: true,
+                progressClass: 'progress-bar progress-bar-success active'
+            })
+            .on('fileuploaded', function (event, data) {
 
-                    $(this).dialog('close')
+                $('#upload_dialog').dialog('close');
 
+                self.requestResponse(data.response, callback, function () {
+
+                    $('#upload_dialog').find('div.file-caption-main').show();
+
+                    self.self('title', 'Select file');
+
+                })
+
+            });
+
+        $('#upload_dialog')
+            .dialog({
+                buttons: {
+                    Upload: function () {
+
+                        $('#upload_field').fileinput('upload');
+
+                        self.set('title', 'Uploading file');
+
+                        $(this).find('div.file-caption-main').hide()
+
+                    },
+                    Cancel: function () {
+
+                        $(this).dialog('close')
+
+                    }
                 }
-            }
-        })
-        .keypress(function (event) {
+            })
+            .keypress(function (event) {
 
-            if (event.keyCode === 13) uploadField.fileinput('upload')
+                if (event.keyCode === 13) $('#upload_field').fileinput('upload')
 
-        });
+            });
+
+
+    }));
 
 };
 
@@ -178,39 +179,38 @@ File.prototype.exists = function (callback) {
 
 };
 
-File.prototype.openEditor = function (callback) {
+File.prototype.editorDialog = function (callback) {
 
     var self = this;
 
-    var modes = [
-        {name: 'apache_conf', label: 'Apache conf'},
-        {name: 'batchfile', label: 'BatchFile'},
-        {name: 'css', label: 'CSS'},
-        {name: 'dockerfile', label: 'Dockerfile'},
-        {name: 'gitignore', label: 'Gitignore'},
-        {name: 'ini', label: 'INI'},
-        {name: 'java', label: 'Java'},
-        {name: 'javascript', label: 'JavaScript'},
-        {name: 'json', label: 'JSON'},
-        {name: 'php', label: 'PHP'},
-        {name: 'powershell', label: 'Powershell'},
-        {name: 'properties', label: 'Properties'},
-        {name: 'python', label: 'Python'},
-        {name: 'sh', label: 'SH'},
-        {name: 'sql', label: 'SQL'},
-        {name: 'text', label: 'Text'},
-        {name: 'vbscript', label: 'VBScript'},
-        {name: 'xml', label: 'XML'},
-        {name: 'yaml', label: 'YAML'}
-    ];
+    $(document.body).append(
+        $('<div>').load(self.paths.templates + 'fileEditorDialog.html', function () {
 
-    var $dialog = largeDialog.clone();
-
-    $dialog.load(self.paths.templates + 'fileEditor.html', function () {
-
-        self.bind($dialog);
+        self.bind($(this));
 
         var aceMode = 'text';
+
+        var modes = [
+            {name: 'apache_conf', label: 'Apache conf'},
+            {name: 'batchfile', label: 'BatchFile'},
+            {name: 'css', label: 'CSS'},
+            {name: 'dockerfile', label: 'Dockerfile'},
+            {name: 'gitignore', label: 'Gitignore'},
+            {name: 'ini', label: 'INI'},
+            {name: 'java', label: 'Java'},
+            {name: 'javascript', label: 'JavaScript'},
+            {name: 'json', label: 'JSON'},
+            {name: 'php', label: 'PHP'},
+            {name: 'powershell', label: 'Powershell'},
+            {name: 'properties', label: 'Properties'},
+            {name: 'python', label: 'Python'},
+            {name: 'sh', label: 'SH'},
+            {name: 'sql', label: 'SQL'},
+            {name: 'text', label: 'Text'},
+            {name: 'vbscript', label: 'VBScript'},
+            {name: 'xml', label: 'XML'},
+            {name: 'yaml', label: 'YAML'}
+        ];
 
         var textEditor = ace.edit('editor_container');
 
@@ -285,44 +285,41 @@ File.prototype.openEditor = function (callback) {
 
         $('div.ui-dialog-buttonpane').css('border-top', 'none');
 
-        $dialog
-            .dialog({buttons: {
-                Save: function () {
+        $('#editor_dialog').dialog({
+            width: 900,
+            closeOnEscape: false,
+            buttons: {
+            Save: function () {
 
-                    if (self.new_name) {
+                if (self.new_name) {
 
-                        self.text = textEditor.getValue();
+                    self.text = textEditor.getValue();
 
-                        self.postData('save', function (data) {
+                    self.postData('save', function (data) {
 
-                            $dialog.dialog('close');
+                        $('#editor_dialog').dialog('close');
 
-                            callback && callback(data);
+                        callback && callback(data);
 
-                        });
-
-                    }
-
-                    else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
-
-                },
-                Cancel: function () {
-
-                    $(this).dialog('close');
+                    });
 
                 }
-            }})
-            .dialog('open');
+
+                else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
+
+            },
+            Cancel: function () {
+
+                $(this).dialog('close');
+
+            }
+        }
+        });
 
         textEditor.focus();
 
-    });
-
-    $dialog.dialog({
-        autoOpen: false,
-        width: 900,
-        closeOnEscape: false
-    });
+    })
+    );
 
 };
 
@@ -330,19 +327,18 @@ File.prototype.dialog = function (action, callback) {
 
     var self = this;
 
-    var $dialog = smallDialog.clone();
+    $(document.body).append(
+        $('<div>').load(self.paths.templates + 'fileDialog.html', function () {
 
-    if (action === 'copy') self.set('new_name', 'copy_' + self.name);
+        self.bind($(this));
 
-    self.set('action', action);
+        self.set('action', action);
 
-    self.set('is_folder', false);
+        self.set('is_folder', false);
 
-    $dialog.load(self.paths.templates + 'fileDialog.html', function () {
+        action === 'copy' && self.set('new_name', 'copy_' + self.name);
 
-        self.bind($dialog);
-
-        $dialog
+        $('#file_dialog')
             .dialog({
                 buttons: {
                     Save: function () {
@@ -351,7 +347,7 @@ File.prototype.dialog = function (action, callback) {
 
                         if (self.new_name && self.new_name !== self.name) self.postData(action, function (data) {
 
-                            $dialog.dialog('close');
+                            $('#file_dialog').dialog('close');
 
                             callback && callback(data);
 
@@ -370,7 +366,9 @@ File.prototype.dialog = function (action, callback) {
                 if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
 
             })
-    });
+
+    })
+    );
 
 };
 
@@ -378,20 +376,19 @@ File.prototype.roleDialog = function (callback) {
 
     var self = this;
 
-    var $dialog = smallDialog.clone();
+    $(document.body).append(
+        $('<div>').load(self.paths.templates + 'roleDialog.html', function () {
 
-    $dialog.load(self.paths.templates + 'roleDialog.html', function () {
+        self.bind($(this));
 
-        self.bind($dialog);
-
-        $dialog
+        $('#role_dialog')
             .dialog({
                 buttons: {
                     Save: function() {
 
                         var roleFolders = [];
 
-                        $dialog.find('button.checked_button').each(function() {
+                        $('#role_dialog').find('button.checked_button').each(function() {
 
                             roleFolders.push($(this).data())
 
@@ -403,7 +400,7 @@ File.prototype.roleDialog = function (callback) {
 
                             callback && callback(data, self);
 
-                            $dialog.dialog('close');
+                            $('#role_dialog').dialog('close');
 
                         });
 
@@ -412,7 +409,7 @@ File.prototype.roleDialog = function (callback) {
 
                         $(this).dialog('close')
                     }
-                },
+                }
             })
             .find('button').click(function () {
 
@@ -420,6 +417,7 @@ File.prototype.roleDialog = function (callback) {
 
             })
     })
+    )
 
 };
 
@@ -427,84 +425,82 @@ File.prototype.selector = function (owner) {
 
     var self = this;
 
-    self.folder = window.location.hash.slice(1);
-
-    var roots = {
-        playbooks: {
-            formatter: function (row, file) {
-
-                var cell = $(row).find('td:eq(0)');
-
-                cell.css('cursor', 'pointer');
-
-                if (file.error) cell.css('color', 'red').off().click(function () {
-
-                    var message = preLargeAlert.clone().html(file.error);
-
-                    $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
-
-                });
-
-                else cell.off().click(function () {
-
-                    var playArgs = new PlaybookArgs({playbook: file.name, folder: file.folder});
-
-                    playArgs.dialog()
-
-                })
-
-            },
-            button: {
-                text: 'New playbook',
-                className: 'btn-xs',
-                action: function () {
-
-                    $.ajax({
-                        url: '/static/templates/playbook_template.yml',
-                        success: function (data) {
-
-                            var file = new File({root: 'playbooks', folder: self.folder, text: data});
-
-                            file.openEditor(function () {
-
-                                $table.DataTable().ajax.reload()
-
-                            })
-
-                        }
-                    });
-                }
-            }
-
-        },
-        roles: {
-
-            button: {
-                text: 'Add role',
-                className: 'btn-xs',
-                action: function () {
-
-                    var role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
-
-                    role.roleDialog(function (data, role) {
-
-                        setFolder(role.name);
-
-                    });
-
-                }
-            }
-
-        }
-    };
-
-    var $container = $('<div>');
-
-    $container.load(self.paths.templates + 'fileSelector.html', function () {
-
-        self.bind($container);
+    return $('<div>').load(self.paths.templates + 'fileSelector.html', function () {
 
         self.set('title', owner ? owner + ' files' : self.root.capitalize());
+
+        self.bind($(this));
+
+        self.folder = window.location.hash.slice(1);
+
+        var roots = {
+            playbooks: {
+                formatter: function (row, file) {
+
+                    var cell = $(row).find('td:eq(0)');
+
+                    cell.css('cursor', 'pointer');
+
+                    if (file.error) cell.css('color', 'red').off().click(function () {
+
+                        var message = preLargeAlert.clone().html(file.error);
+
+                        $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
+
+                    });
+
+                    else cell.off().click(function () {
+
+                        var playArgs = new PlaybookArgs({playbook: file.name, folder: file.folder});
+
+                        playArgs.dialog()
+
+                    })
+
+                },
+                button: {
+                    text: 'New playbook',
+                    className: 'btn-xs',
+                    action: function () {
+
+                        $.ajax({
+                            url: '/static/templates/playbook_template.yml',
+                            success: function (data) {
+
+                                var file = new File({root: 'playbooks', folder: self.folder, text: data});
+
+                                file.editorDialog(function () {
+
+                                    $table.DataTable().ajax.reload()
+
+                                })
+
+                            }
+                        });
+                    }
+                }
+
+            },
+            roles: {
+
+                button: {
+                    text: 'Add role',
+                    className: 'btn-xs',
+                    action: function () {
+
+                        var role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
+
+                        role.roleDialog(function (data, role) {
+
+                            setFolder(role.name);
+
+                        });
+
+                    }
+                }
+
+            }
+        };
 
         var $table = $('#file_table');
 
@@ -684,7 +680,7 @@ File.prototype.selector = function (owner) {
                                 .attr('title', 'Delete')
                                 .click(function () {
 
-                                    file.delete(function () {
+                                    file.del(function () {
 
                                         $table.DataTable().ajax.reload()
 
@@ -797,26 +793,5 @@ File.prototype.selector = function (owner) {
 
 
     });
-
-
-
-
-
-
-
-
-    // $container.append(
-    //     divRow.clone().append(
-    //         divCol12.clone().append(
-    //             $('<h3>').html(owner ? owner + ' files' : self.root.capitalize())
-    //         ),
-    //         divCol12.clone().append($breadCrumb),
-    //         divCol12.clone().css('margin-top', '2rem').append($table)
-    //     )
-    // );
-
-
-
-    return $container
 
 };

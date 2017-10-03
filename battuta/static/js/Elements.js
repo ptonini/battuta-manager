@@ -12,21 +12,15 @@ var divCol2 = $('<div>').attr('class', 'col-md-2');
 
 var divCol3 = $('<div>').attr('class', 'col-md-3');
 
-var divCol4 = $('<div>').attr('class', 'col-md-4');
-
-// var divCol5 = $('<div>').attr('class', 'col-md-5');
+var divCol4 = $('<div>').attr('class', 'col-md-4');;
 
 var divCol6 = $('<div>').attr('class', 'col-md-6');
-
-// var divCol7 = $('<div>').attr('class', 'col-md-7');
 
 var divCol8 = $('<div>').attr('class', 'col-md-8');
 
 var divCol9 = $('<div>').attr('class', 'col-md-9');
 
 var divCol10 = $('<div>').attr('class', 'col-md-10');
-
-// var divCol11 = $('<div>').attr('class', 'col-md-11');
 
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
@@ -41,10 +35,6 @@ var baseTable = $('<table>').attr('class', 'table table-condensed table-hover ta
 var divFormGroup = $('<div>').attr('class', 'form-group');
 
 var divInputGroup = $('<div>').attr('class', 'input-group');
-
-var divBtnGroup = $('<div>').attr('class', 'btn-group');
-
-var divChkbox =  $('<div>').attr('type', 'checkbox');
 
 var divRadio = $('<div>').attr('class', 'radio');
 
@@ -62,8 +52,6 @@ var textAreaField = $('<textarea>').attr('class', 'textarea form-control input-s
 var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
 
 var fileInputField = $('<input>').attr({class: 'input-file', type: 'file'});
-
-var chkboxInput =  $('<input>').attr('type', 'checkbox');
 
 var radioInput =  $('<input>').attr('type', 'radio');
 
@@ -100,8 +88,6 @@ var btnSmallClk = $('<button>').attr({type: 'button', class: 'btn btn-default bt
 
 });
 
-var btnSmallBlkClk = btnSmallClk.clone(true).addClass('btn-block');
-
 var btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
 
 var btnNavbarGlyph = $('<button>').attr('class', 'btn btn-link navbar-btn').css('border-radius', '5px');
@@ -110,19 +96,9 @@ var spanFA = $('<span>').attr('class', 'fa fa-fw');
 
 var spanRight = $('<span>').css('float', 'right');
 
-var divWell = $('<div>').attr('class', 'well');
-
-var breadcrumb = $('<ol>').attr('class', 'breadcrumb');
-
 var divLargeAlert = $('<div>').attr('class', 'large-alert');
 
 var preLargeAlert = $('<pre>').attr('class', 'large-alert');
-
-var liDropdown = $('<li>').attr('class', 'dropdown');
-
-var liDropdownAnchor = $('<a>').attr({href: '#', class: 'dropdown-toggle', 'data-toggle': 'dropdown'});
-
-var ulDropdownMenu = $('<ul>').attr('class', 'dropdown-menu');
 
 var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
 

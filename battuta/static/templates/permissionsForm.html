@@ -1,95 +1,98 @@
-<div class="col-md-12">
-    <div class="row">
-        <div class="col-md-12"><h5>Inventory</h5></div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_hosts" class="btn btn-default btn-sm btn-block permBtn">Edit hosts</button>
+<form id="permissions_form">
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-12"><h5>Inventory</h5></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_hosts" class="btn btn-default btn-sm btn-block permBtn">Edit hosts</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_groups" class="btn btn-default btn-sm btn-block permBtn">Edit groups</button>
+                </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_groups" class="btn btn-default btn-sm btn-block permBtn">Edit groups</button>
+        <div class="row">
+            <div class="col-md-12"><h5>Runner</h5></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="execute_jobs" class="btn btn-default btn-sm btn-block permBtn">Execute jobs</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_tasks" class="btn btn-default btn-sm btn-block permBtn">Edit tasks</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_playbooks" class="btn btn-default btn-sm btn-block permBtn">Edit playbooks</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_roles" class="btn btn-default btn-sm btn-block permBtn">Edit roles</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="view_job_history" class="btn btn-default btn-sm btn-block permBtn">View job history</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12"><h5>Files</h5></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_files" class="btn btn-default btn-sm btn-block permBtn">Edit files</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12"><h5>Projects</h5></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_projects" class="btn btn-default btn-sm btn-block permBtn">Edit projects</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12"><h5>Users</h5></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_users" class="btn btn-default btn-sm btn-block permBtn">Edit users</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_user_groups" class="btn btn-default btn-sm btn-block permBtn">Edit user groups</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_user_files" class="btn btn-default btn-sm btn-block permBtn">Edit user files</button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_permissions" class="btn btn-default btn-sm btn-block permBtn">Edit permissions</button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12"><h5>Preferences</h5></div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <button type="button" data-permission="edit_preferences" class="btn btn-default btn-sm btn-block permBtn">Edit preferences</button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12"><h5>Runner</h5></div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="execute_jobs" class="btn btn-default btn-sm btn-block permBtn">Execute jobs</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_tasks" class="btn btn-default btn-sm btn-block permBtn">Edit tasks</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_playbooks" class="btn btn-default btn-sm btn-block permBtn">Edit playbooks</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_roles" class="btn btn-default btn-sm btn-block permBtn">Edit roles</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="view_job_history" class="btn btn-default btn-sm btn-block permBtn">View job history</button>
-            </div>
+    <div class="col-md-12">
+        <div class="form-group">
+            <button class="btn btn-default btn-xs">Save</button>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12"><h5>Files</h5></div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_files" class="btn btn-default btn-sm btn-block permBtn">Edit files</button>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12"><h5>Projects</h5></div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_projects" class="btn btn-default btn-sm btn-block permBtn">Edit projects</button>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12"><h5>Users</h5></div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_users" class="btn btn-default btn-sm btn-block permBtn">Edit users</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_user_groups" class="btn btn-default btn-sm btn-block permBtn">Edit user groups</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_user_files" class="btn btn-default btn-sm btn-block permBtn">Edit user files</button>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_permissions" class="btn btn-default btn-sm btn-block permBtn">Edit permissions</button>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12"><h5>Preferences</h5></div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <button type="button" data-permission="edit_preferences" class="btn btn-default btn-sm btn-block permBtn">Edit preferences</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="col-md-12">
-    <div class="form-group">
-        <button class="btn btn-default btn-xs">Save</button>
-    </div>
-</div>
+</form>
+

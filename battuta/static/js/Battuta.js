@@ -219,7 +219,7 @@ Battuta.prototype = {
 
         var data = {};
 
-        var excludeKeys = ['apiPath', 'pubSub', 'bindings'];
+        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts'];
 
         for (var p in obj) {
 
@@ -285,15 +285,32 @@ Battuta.prototype = {
             })
             .find('[data-bind]').each(function () {
 
-                loadData($(this), self[$(this).data('bind')]);
+                var propArray = $(this).data('bind').split('.');
+
+                if (propArray.length === 1) loadData($(this), self[propArray[0]]);
+
+                else if (propArray.length === 2 && self.hasOwnProperty(propArray[0])) {
+
+                    loadData($(this), self[propArray[0]][propArray[1]]);
+
+                }
 
             });
 
         self.pubSub.on(message, function (event, property, value) {
 
-            $container.find('[data-bind=' + property + ']').each(function () {
+            var propArray = property.split('.');
 
-                self[property] = value;
+            if (propArray.length === 1) self[propArray[0]] = value;
+
+            else if (propArray.length === 2) {
+
+                if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
+
+                self[propArray[0]][propArray[1]] = value;
+            }
+
+            $container.find('[data-bind="' + property + '"]').each(function () {
 
                 loadData($(this), value);
 
@@ -387,7 +404,7 @@ Battuta.prototype = {
 
     },
 
-    patternBuilder: function (patternField) {
+    patternBuilder: function ($patternField) {
 
         var self = this;
 
@@ -464,7 +481,7 @@ Battuta.prototype = {
                     buttons: {
                         Use: function () {
 
-                            patternField.val(self.pattern);
+                            $patternField.val(self.pattern);
 
                             $(this).dialog('close');
 
@@ -487,7 +504,6 @@ Battuta.prototype = {
 
                 })
 
-
         })
 
     },
@@ -508,13 +524,13 @@ Battuta.prototype = {
 
     },
 
-    prettyBoolean: function (element, value) {
+    prettyBoolean: function ($element, value) {
 
-        element.removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');
+        $element.removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');
 
-        if (value) element.html($('<span>').attr('class', 'fa fa-check'));
+        if (value) $element.html($('<span>').attr('class', 'fa fa-check'));
 
-        else element.html('');
+        else $element.html('');
 
     },
 
@@ -542,36 +558,37 @@ Battuta.prototype = {
 
         var self = this;
 
-        var $dialog = smallDialog.clone().addClass('text-center').append(
-            $('<strong>').html('This action cannot be undone')
-        );
+        $(document.body).append(
+            $('<div>').load(self.paths.templates + 'deleteDialog.html', function () {
 
-        $dialog
-            .dialog({
-                width: '320',
-                buttons: {
-                    Delete: function () {
+                $('#delete_dialog').dialog({
+                    width: '320',
+                    buttons: {
+                        Delete: function () {
 
-                        self.postData(action, function (data) {
+                            self.postData(action, function (data) {
 
-                            callback && callback(data)
+                                callback && callback(data)
 
-                        });
+                            });
 
-                        $(this).dialog('close');
+                            $(this).dialog('close');
 
-                    },
-                    Cancel: function () {
+                        },
+                        Cancel: function () {
 
-                        $(this).dialog('close')
+                            $(this).dialog('close')
 
+                        }
                     }
-                }
+                })
+
             })
+        );
 
     },
 
-    delete: function (callback) {
+    del: function (callback) {
 
         var self = this;
 
@@ -583,36 +600,36 @@ Battuta.prototype = {
 
         var self = this;
 
-        var $dialog = largeDialog.clone();
+        $(document.body).append(
+            $('<div>').load(self.paths.templates + 'entityDialog.html', function () {
 
-        $dialog.load(self.paths.templates + 'entityDialog.html', function () {
+                self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
 
-            self.bind($dialog);
+                self.bind($(this));
 
-            self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
+                $('#entity_dialog').dialog({
+                        buttons: {
+                            Save: function() {
 
-            $dialog.dialog({
-                    buttons: {
-                        Save: function() {
+                                self.postData('save', function (data) {
 
-                            self.postData('save', function (data) {
+                                    $('#entity_dialog').dialog('close');
 
-                                $dialog.dialog('close');
+                                    callback && callback(data);
 
-                                callback && callback(data);
+                                })
 
-                            })
+                            },
+                            Cancel: function() {
 
-                        },
-                        Cancel: function() {
+                                $(this).dialog('close');
 
-                            $(this).dialog('close');
-
+                            }
                         }
-                    }
-                })
+                    })
 
-        })
+            })
+        );
 
     },
 
@@ -620,7 +637,17 @@ Battuta.prototype = {
 
         var self = this;
 
-        self[property] = value;
+        var propArray = property.split('.');
+
+        if (propArray.length === 1) self[propArray[0]] = value;
+
+        else if (propArray.length === 2) {
+
+            if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
+
+            self[propArray[0]][propArray[1]] = value;
+
+        }
 
         for (var bindId in self.bindings) {
 
@@ -656,21 +683,19 @@ Battuta.prototype = {
 
         var self = this;
 
-        var $container = $('<div>');
-
-        var prefs = new Preferences();
-
         var user = new User({username: self.username});
 
         if (authenticated === 'True') {
 
-            prefs.load();
-
-            $container.load(self.paths.templates + 'mainMenu.html', function () {
+            return $('<div>').load(self.paths.templates + 'mainMenu.html', function () {
 
                 self.set('pattern', '');
 
-                self.bind($container);
+                self.bind($(this));
+
+                var prefs = new Preferences();
+
+                prefs.load();
 
                 $('#host_selector_anchor').attr('href', self.paths.selectors.node.host);
 
@@ -724,7 +749,7 @@ Battuta.prototype = {
 
         else {
 
-            $container.load(self.paths.templates + 'loginMenu.html', function () {
+            return $('<div>').load(self.paths.templates + 'loginMenu.html', function () {
 
                 user.bind($container);
 
@@ -739,50 +764,46 @@ Battuta.prototype = {
             });
         }
 
-        return $container
-
     },
 
     search: function (pattern) {
 
         var self = this;
 
-        var $container = $('<div>');
+        return $('<div>').load(self.paths.templates + 'search.html', function () {
 
-        var searchGrid = function (type) {
+            self.bind($(this));
 
-            return $('<div>').DynaGrid({
-                gridTitle: type + 's',
-                showTitle: true,
-                ajaxDataKey: 'nodes',
-                itemValueKey: 'name',
-                showCount: true,
-                hideIfEmpty: true,
-                checkered: true,
-                headerTag: '<h5>',
-                headerBottomMargin: '0',
-                gridBodyBottomMargin: '20px',
-                columns: sessionStorage.getItem('node_grid_columns'),
-                ajaxUrl: self.paths.apis.inventory + type + '/list/?filter=' + pattern,
-                formatItem: function (gridContainer, gridItem) {
+            self.set('pattern', pattern);
 
-                    gridItem.click(function () {
+            $.each(['group', 'host'], function (index, type) {
 
-                        window.open(self.paths.inventory + type + '/' + $(this).data('name') + '/', '_self')
+                $('#' + type + '_result_grid').DynaGrid({
+                    gridTitle: type + 's',
+                    showTitle: true,
+                    ajaxDataKey: 'nodes',
+                    itemValueKey: 'name',
+                    showCount: true,
+                    hideIfEmpty: true,
+                    checkered: true,
+                    headerTag: '<h5>',
+                    headerBottomMargin: '0',
+                    gridBodyBottomMargin: '20px',
+                    columns: sessionStorage.getItem('node_grid_columns'),
+                    ajaxUrl: self.paths.apis.inventory + 'list/?filter=' + pattern + '&type=' + type,
+                    formatItem: function ($gridContainer, $gridItem) {
 
-                    });
+                        $gridItem.click(function () {
 
-                }
+                            window.open(self.paths.inventory + type + '/' + $(this).data('name') + '/', '_self')
+
+                        });
+
+                    }
+                });
+
             });
-        };
-
-        $container.append(
-            $('<h4>').html('Search results for "' + pattern + '":').css('margin-top', '2rem'),
-            searchGrid('host'),
-            searchGrid('group')
-        );
-
-        return $container
+        })
 
     }
 
