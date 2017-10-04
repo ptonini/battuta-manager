@@ -859,7 +859,7 @@ Node.prototype.selector = function () {
 
                             node.del(function () {
 
-                                refreshData();
+                                loadData();
 
                             });
 

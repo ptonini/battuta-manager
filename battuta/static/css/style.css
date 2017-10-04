@@ -48,6 +48,8 @@ small.badge {background-color: #cacaca}
 
 div.reference_link_container {margin: auto; text-align: right; font-size: x-small}
 
+#view_header {margin-bottom: 2rem}
+
 /* Adhoc dialog **********************/
 
 #module_fields_container {max-height: 320px; overflow-y: auto; margin-top: 10px;}

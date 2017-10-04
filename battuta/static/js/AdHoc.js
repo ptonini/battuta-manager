@@ -58,47 +58,6 @@ AdHoc.prototype.argumentsToString = function () {
 
 };
 
-AdHoc.prototype.patternField = function (pattern) {
-
-    var self = this;
-
-    var patternField = textInputField.clone().val(self.hosts).change(function () {
-
-        self.hosts = $(this).val()
-
-    });
-
-    var patternEditorButton = btnSmall.clone()
-        .attr('title', 'Build pattern')
-        .html(spanFA.clone().addClass('fa-pencil'))
-        .click(function (event) {
-
-            event.preventDefault();
-
-            self.patternField(patternField)
-
-        });
-
-    if (pattern) {
-
-        patternField.prop('disabled', true);
-
-        patternEditorButton.prop('disabled', true)
-
-    }
-
-    return divFormGroup.clone().append(
-        $('<label>').html('Hosts').append(
-            divInputGroup.clone().append(
-                patternField,
-                spanBtnGroup.clone().append(patternEditorButton)
-            )
-        )
-    );
-
-
-};
-
 AdHoc.prototype.isSudoBtn = function () {
 
     var self = this;
@@ -155,6 +114,7 @@ AdHoc.prototype.dialog = function (callback) {
                                 callback && callback();
 
                                 self.set('title', 'Edit AdHoc task');
+
                             });
 
                         },
@@ -166,11 +126,9 @@ AdHoc.prototype.dialog = function (callback) {
                 })
             );
 
-            $('#pattern_editor').click(function () {
+            $('#pattern_field_label').append(self.patternField(self.hosts));
 
-                self.patternField($(this))
-
-            });
+            $('#credentials_selector_label').append(self.runnerCredsSelector());
 
             $.each(self.modules.sort(), function (index, value) {
 
@@ -178,14 +136,24 @@ AdHoc.prototype.dialog = function (callback) {
 
             });
 
+            $moduleSelector.change(function () {
+
+                self.name = '[adhoc task] ' + this.value;
+
+                self.module = this.value;
+
+                $('#module_reference_anchor').attr('href', 'http://docs.ansible.com/ansible/'+ self.module + '_module.html');
+
+                $('#module_parameters_container').load(self.paths.templates + 'moduleArgs-' + this.value + '.html', function () {
+
+                })
+
+            });
+
             $(this).remove()
 
         })
     );
-
-
-
-
 
     // var argumentsField = textInputField.clone();
     //
@@ -222,7 +190,6 @@ AdHoc.prototype.dialog = function (callback) {
     //
     // var sudoButton = self.isSudoBtn();
     //
-
 
     // moduleSelector.change(function () {
     //
@@ -451,7 +418,6 @@ AdHoc.prototype.dialog = function (callback) {
     //         }
     //     });
 
-
     // if (self.id) {
     //
     //     moduleSelector.val(self.module).change();
@@ -538,7 +504,9 @@ AdHoc.prototype.view = function () {
                     className: 'btn-xs',
                     action: function () {
 
-                        self.dialog(function () {
+                        var adhoc = new AdHoc({hosts: self.hosts});
+
+                        adhoc.dialog(function () {
 
                             $('#adhoc_table').DataTable().ajax.reload()
 

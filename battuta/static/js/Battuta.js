@@ -439,110 +439,115 @@ Battuta.prototype = {
 
     },
 
-    patternField: function (pattern, locked) {
+    patternField: function (pattern) {
 
         var self = this;
 
         return $('<div>').load(self.paths.templates + 'patternField.html', function () {
 
-            var $patternEditor = $('#pattern_editor');
+            var $patternEditor = $(this).find('.pattern_editor');
 
-            var $patternField = $('#pattern_field');
-
-            var $dialog = $('#pattern_dialog');
+            var $patternField = $(this).find('.pattern_field');
 
             self.set('pattern', pattern);
 
             self.bind($(this));
 
-            self.bind(
-                $dialog.dialog({
-                    autoOpen: false,
-                    width: 520,
-                    buttons: {
-                        Use: function () {
-
-                            $patternField.val(self.pattern);
-
-                            $(this).dialog('close');
-
-                        },
-                        Reset: function () {
-
-                            self.set('pattern', '');
-
-                        },
-                        Cancel: function () {
-
-                            $(this).dialog('close');
-
-                        }
-                   }
-               })
-            );
-
-            $dialog.find('button').click(function () {
-
-                var type = $(this).data('type');
-
-                var action = $(this).data('action');
-
-                var separator = {select: ':', and: ':&', exclude: ':!'};
-
-                if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
-
-                else self.selectionDialog({
-                    objectType: type,
-                    url: self.paths.apis.inventory + 'list/?type=' + type,
-                    ajaxDataKey: 'nodes',
-                    itemValueKey: 'name',
-                    showButtons: true,
-                    loadCallback: function ($gridContainer, $selectionDialog) {
-
-                        $selectionDialog.dialog('option', 'buttons', {
-                            Add: function () {
-
-                                var selection = $selectionDialog.DynaGrid('getSelected', 'name');
-
-                                for (var i = 0; i < selection.length; i++) {
-
-                                    if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
-
-                                    self.set('pattern', self.pattern + selection[i])
-
-                                }
-
-                                $(this).dialog('close');
-
-                            },
-                            Cancel: function () {
-
-                                $('.filter_box').val('');
-
-                                $(this).dialog('close');
-
-                            }
-                        })
-                    },
-                    addButtonAction: function ($selectionDialog) {
-
-                        var node = new Node({name: null, description: null, type: type});
-
-                        node.edit(function () {
-
-                            $selectionDialog.DynaGrid('load')
-
-                        })
-
-                    },
-                    formatItem: null
-                });
-
-            });
-
             $patternEditor.click(function () {
 
-                $dialog.dialog('open')
+                $(document.body).append(
+                    $('<div>').load(self.paths.templates + 'patternDialog.html', function () {
+
+                        var $dialog = $('#pattern_dialog');
+
+                        self.bind($dialog);
+
+                        $dialog
+                            .dialog({
+                                width: 520,
+                                buttons: {
+                                    Use: function () {
+
+                                        $patternField.val(self.pattern);
+
+                                        $(this).dialog('close');
+
+                                    },
+                                    Reset: function () {
+
+                                        self.set('pattern', '');
+
+                                    },
+                                    Cancel: function () {
+
+                                        $(this).dialog('close');
+
+                                    }
+                                }
+                            })
+                            .find('button').click(function () {
+
+                                var type = $(this).data('type');
+
+                                var action = $(this).data('action');
+
+                                var separator = {select: ':', and: ':&', exclude: ':!'};
+
+                                if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+
+                                else self.selectionDialog({
+                                    objectType: type,
+                                    url: self.paths.apis.inventory + 'list/?type=' + type,
+                                    ajaxDataKey: 'nodes',
+                                    itemValueKey: 'name',
+                                    showButtons: true,
+                                    loadCallback: function ($gridContainer, $selectionDialog) {
+
+                                        $selectionDialog.dialog('option', 'buttons', {
+                                            Add: function () {
+
+                                                var selection = $selectionDialog.DynaGrid('getSelected', 'name');
+
+                                                for (var i = 0; i < selection.length; i++) {
+
+                                                    if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
+
+                                                    self.set('pattern', self.pattern + selection[i])
+
+                                                }
+
+                                                $(this).dialog('close');
+
+                                            },
+                                            Cancel: function () {
+
+                                                $('.filter_box').val('');
+
+                                                $(this).dialog('close');
+
+                                            }
+                                        })
+                                    },
+                                    addButtonAction: function ($selectionDialog) {
+
+                                        var node = new Node({name: null, description: null, type: type});
+
+                                        node.edit(function () {
+
+                                            $selectionDialog.DynaGrid('load')
+
+                                        })
+
+                                    },
+                                    formatItem: null
+                                });
+
+                            });
+
+                        $(this).remove();
+
+                    })
+                )
 
             });
 
@@ -555,103 +560,6 @@ Battuta.prototype = {
             }
 
         })
-
-
-        // $(document.body).append(
-        //     $('<div>').load(self.paths.templates + 'patternDialog.html', function () {
-        //
-        //         var $dialog = $('#pattern_dialog')
-        //
-        //         self.set('pattern', '');
-        //
-        //         self.bind(
-        //             $dialog.dialog({
-        //                     width: 520,
-        //                     buttons: {
-        //                         Use: function () {
-        //
-        //                             $patternField.val(self.pattern);
-        //
-        //                             $(this).dialog('close');
-        //
-        //                         },
-        //                         Reset: function () {
-        //
-        //                             self.set('pattern', '');
-        //
-        //                         },
-        //                         Cancel: function () {
-        //
-        //                             $(this).dialog('close');
-        //
-        //                         }
-        //                     }
-        //                 })
-        //         );
-        //
-        //         $dialog.find('button').click(function () {
-        //
-        //             var type = $(this).data('type');
-        //
-        //             var action = $(this).data('action');
-        //
-        //             var separator = {select: ':', and: ':&', exclude: ':!'};
-        //
-        //             if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
-        //
-        //             else self.selectionDialog({
-        //                 objectType: type,
-        //                 url: self.paths.apis.inventory + 'list/?type=' + type,
-        //                 ajaxDataKey: 'nodes',
-        //                 itemValueKey: 'name',
-        //                 showButtons: true,
-        //                 loadCallback: function ($gridContainer, $selectionDialog) {
-        //
-        //                     $selectionDialog.dialog('option', 'buttons', {
-        //                         Add: function () {
-        //
-        //                             var selection = $selectionDialog.DynaGrid('getSelected', 'name');
-        //
-        //                             for (var i = 0; i < selection.length; i++) {
-        //
-        //                                 if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
-        //
-        //                                 self.set('pattern', self.pattern + selection[i])
-        //
-        //                             }
-        //
-        //                             $(this).dialog('close');
-        //
-        //                         },
-        //                         Cancel: function () {
-        //
-        //                             $('.filter_box').val('');
-        //
-        //                             $(this).dialog('close');
-        //
-        //                         }
-        //                     })
-        //                 },
-        //                 addButtonAction: function ($selectionDialog) {
-        //
-        //                     var node = new Node({name: null, description: null, type: type});
-        //
-        //                     node.edit(function () {
-        //
-        //                         $selectionDialog.DynaGrid('load')
-        //
-        //                     })
-        //
-        //                 },
-        //                 formatItem: null
-        //             });
-        //
-        //         })
-        //
-        //         $(this).remove()
-        //
-        //     })
-        // );
 
     },
 
