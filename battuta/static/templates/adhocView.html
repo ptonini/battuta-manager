@@ -1,0 +1,45 @@
+<div id="view_header">
+    <h3>AdHoc tasks</h3>
+    <br>
+</div>
+<h4>Run command</h4>
+<form id="adhoc_command_form">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label id="command_pattern_field_label">
+                    Hosts
+                </label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>
+                    Command
+                    <div class="input-group">
+                        <input id="command_arguments_field" data-bind="arguments" class="form-control input-sm" type="text">
+                        <span class="input-group-btn">
+                            <button data-bind="become" class="btn btn-default btn-sm" title="Run with sudo" >Sudo</button>
+                        </span>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="command_credentials_selector_label">
+                    Credentials
+                </label>
+            </div>
+        </div>
+        <div class="col-md-1 text-right">
+            <div class="form-group">
+                <label></label>
+                <button class="btn btn-default btn-sm">Run</button>
+            </div>
+        </div>
+    </div>
+</form>
+<br>
+<h4>AdHoc table</h4>
+<table id="adhoc_table" class="table table-condensed table-hover table-striped"></table>

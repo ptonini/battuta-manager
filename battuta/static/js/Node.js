@@ -72,7 +72,7 @@ Node.prototype.loadHostInfo = function (callback) {
 
             self.set('info.ec2_instance_id', data.facts.ec2_instance_id);
 
-            self.set('info.ec2_az', data.facts.ec2_placement_availability_zone)
+            self.set('info.ec2_az', data.facts.ec2_placement_availability_zone);
 
             self.info.interfacesArray = [];
 
@@ -87,7 +87,6 @@ Node.prototype.loadHostInfo = function (callback) {
         callback && callback()
 
     })
-
 
 };
 
@@ -543,43 +542,45 @@ Node.prototype.editVariable = function (variable, callback) {
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'editVariableDialog.html', function () {
 
-            self.bind($(this));
-
             self.set('header', variable.id ? 'Edit variable' : 'Add variable');
 
             self.set('variable.key', variable.key);
 
             self.set('variable.value', variable.value);
 
-            $('#variable_dialog').dialog({
-                closeOnEscape: false,
-                buttons: {
-                    Save: function () {
+            self.bind(
+                $('#variable_dialog').dialog({
+                    closeOnEscape: false,
+                    buttons: {
+                        Save: function () {
 
-                        var $dialog = $(this);
+                            var $dialog = $(this);
 
-                        self.variable = JSON.stringify(self.variable);
+                            self.variable = JSON.stringify(self.variable);
 
-                        self.postData('save_var', function () {
+                            self.postData('save_var', function () {
 
-                            callback && callback();
+                                callback && callback();
 
-                            variable.id && $dialog.dialog('close');
+                                variable.id && $dialog.dialog('close');
 
-                            $dialog.find('input, textarea').val('');
+                                $dialog.find('input, textarea').val('');
 
-                            $dialog.find('[data-bind="key"]').focus();
+                                $dialog.find('[data-bind="key"]').focus();
 
-                        });
+                            });
 
-                    },
-                    Close: function () {
+                        },
+                        Close: function () {
 
-                        $(this).dialog('close');
+                            $(this).dialog('close');
 
+                        }
                     }
-                }
-            }).dialog('open');
+                })
+            );
+
+            $(this).remove();
 
         })
     )
@@ -606,35 +607,37 @@ Node.prototype.copyVariables = function (callback) {
                 })
                 .find('button').click(function () {
 
-                $('#copy_variables_dialog').dialog('close');
+                    $('#copy_variables_dialog').dialog('close');
 
-                self.selectionDialog({
-                    objectType: $(this).data('type'),
-                    url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
-                    ajaxDataKey: 'nodes',
-                    itemValueKey: 'name',
-                    showButtons: false,
-                    loadCallback: null,
-                    addButtonAction: null,
-                    formatItem: function ($gridItem, $selectionDialog) {
+                    self.selectionDialog({
+                        objectType: $(this).data('type'),
+                        url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
+                        ajaxDataKey: 'nodes',
+                        itemValueKey: 'name',
+                        showButtons: false,
+                        loadCallback: null,
+                        addButtonAction: null,
+                        formatItem: function ($gridItem, $selectionDialog) {
 
-                        $gridItem.click(function () {
+                            $gridItem.click(function () {
 
-                            self.source = JSON.stringify($(this).data());
+                                self.source = JSON.stringify($(this).data());
 
-                            self.postData('copy_vars', function (data) {
+                                self.postData('copy_vars', function (data) {
 
-                                $selectionDialog.dialog('close');
+                                    $selectionDialog.dialog('close');
 
-                                callback && callback(data)
+                                    callback && callback(data)
+
+                                });
 
                             });
+                        }
+                    });
 
-                        });
-                    }
                 });
 
-            })
+            $(this).remove();
 
         })
     )
@@ -649,11 +652,9 @@ Node.prototype.view = function () {
 
         var $container = $(this);
 
-        var adhoc = new AdHoc({hosts: self.name});
-
-        var $adhoc = $('<div>').append(adhoc.commandForm(self.name), adhoc.selector(self.name));
-
         self.refresh(function () {
+
+            var adhoc = new AdHoc({hosts: self.name});
 
             self.bind($container);
 
@@ -661,7 +662,7 @@ Node.prototype.view = function () {
 
                 self.edit(function (data) {
 
-                    window.open(self.paths.inventory + self.type + '/' + data.group.name + '/', '_self')
+                    window.open(self.paths.inventory + data.type + '/' + data.name + '/', '_self')
 
                 });
 
@@ -687,7 +688,7 @@ Node.prototype.view = function () {
 
             self.addTabs('variables', self.variables());
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', $adhoc);
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', adhoc.view());
 
             $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').lastTab();
 
@@ -701,27 +702,95 @@ Node.prototype.selector = function () {
 
     var self = this;
 
-    var createTable = function () {
+    return $('<div>').load(self.paths.templates + 'nodeSelector.html', function () {
 
-        var $container = $('<div>')
-            .on('download', function () {
+        self.bind($(this));
 
-                $table.DataTable().buttons('.hidden').trigger()
+        var inventory = new Inventory({type: self.type});
 
-            })
-            .on('load', function (event, nodes) {
+        var $table = $('#node_table');
+
+        var $grid = $('#node_grid');
+
+        var $deleteModeBtn = $('#delete_mode').click(function () {
+
+            $(this).toggleClass('checked_button');
+
+            $('#delete_button').toggle();
+
+            if ($(this).hasClass('checked_button')) $grid.DynaGrid(Object.assign({dataArray: $grid.DynaGrid('getData')}, deleteOptions));
+
+            else $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions))
+
+        });
+
+        var baseOptions = {
+            loadCallback: function ($gridContainer) {
+
+                $gridContainer.DynaGrid('getCount') === 0 ? $deleteModeBtn.hide() : $deleteModeBtn.show()
+
+            },
+            dataSource: 'array',
+            itemValueKey: 'name',
+            checkered: true,
+            showFilter: true,
+            truncateItemText: true,
+            headerBottomPadding: 20,
+            topAlignHeader: true,
+            columns: sessionStorage.getItem('node_grid_columns')
+        };
+
+        var openOptions = Object.assign({
+            showAddButton: true,
+            addButtonType: 'text',
+            addButtonClass: 'btn btn-default btn-xs',
+            addButtonTitle: 'Add ' + self.type,
+            formatItem: function ($gridContainer, $gridItem) {
+
+                $gridItem.click(function () {
+
+                    window.open(self.paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
+
+                });
+
+            },
+            addButtonAction: function () {
+
+                addNode()
+
+            }
+
+        }, baseOptions);
+
+        var deleteOptions = Object.assign({itemToggle: true}, baseOptions);
+
+        var loadData = function () {
+
+            inventory.list(function (data) {
+
+                $grid.DynaGrid(Object.assign({dataArray: data.nodes}, openOptions));
 
                 $table.DataTable().clear();
 
-                $table.DataTable().rows.add(nodes);
+                $table.DataTable().rows.add(data.nodes);
 
                 $table.DataTable().draw();
 
+            })
+
+        };
+
+        var addNode = function () {
+
+            var node = new Node({name: null, description: null, type: self.type});
+
+            node.edit(function () {
+
+                loadData()
+
             });
 
-        var $table = baseTable.clone();
-
-        $container.append($table);
+        };
 
         if (self.type === 'host') {
 
@@ -826,11 +895,8 @@ Node.prototype.selector = function () {
 
                     var job = new Job({hosts: 'all'});
 
-                    job.getFacts( function () {
+                    job.getFacts()
 
-                        refreshData()
-
-                    })
                 }
             }]
         });
@@ -840,172 +906,26 @@ Node.prototype.selector = function () {
             $($table.DataTable().buttons( 2, null ).container()).css('margin-top', '1rem')
         );
 
-        return $container
+        $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions));
 
-    };
+        $('#delete_button').click(function () {
 
-    var createGrid = function () {
+            var inventory = new Inventory({type: self.type});
 
-        var container = $('<div>')
-            .on('open', function (event, nodes) {
+            inventory.selection = JSON.stringify($grid.DynaGrid('getSelected', 'id'));
 
-                dialog.DynaGrid(Object.assign({dataArray: nodes ? nodes : dialog.DynaGrid('getData')}, openOptions));
+            inventory.del(function () {
 
-
-            })
-            .on('delete', function () {
-
-                dialog.DynaGrid(Object.assign({dataArray: dialog.DynaGrid('getData')}, deleteOptions))
+                loadData()
 
             });
 
-        var deleteModeBtn = btnXsmall.clone().html('Delete mode').click(function () {
-
-            deleteModeBtn.toggleClass('checked_button');
-
-            deleteBtn.toggle();
-
-            if (deleteModeBtn.hasClass('checked_button')) container.trigger('delete');
-
-            else container.trigger('open');
-
         });
 
-        var deleteBtn = btnXsmall.clone()
-            .attr('title', 'Delete')
-            .append(spanFA.clone().addClass('fa-trash-o'))
-            .click(function () {
+        $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').lastTab();
 
-                var inventory = new Inventory({type: self.type});
+        loadData()
 
-                inventory.selection = JSON.stringify(dialog.DynaGrid('getSelected', 'id'));
-
-                inventory.del(function () {
-
-                    self._refreshData()
-
-                });
-
-            });
-
-        var baseOptions = {
-            loadCallback: function (gridContainer) {
-
-                gridContainer.DynaGrid('getCount') === 0 ? deleteModeBtn.hide() : deleteModeBtn.show()
-
-            },
-            dataSource: 'array',
-            itemValueKey: 'name',
-            checkered: true,
-            showFilter: true,
-            truncateItemText: true,
-            headerBottomPadding: 20,
-            topAlignHeader: true,
-            columns: sessionStorage.getItem('node_grid_columns')
-        };
-
-        var openOptions = Object.assign({
-            showAddButton: true,
-            addButtonType: 'text',
-            addButtonClass: 'btn btn-default btn-xs',
-            addButtonTitle: 'Add ' + self.type,
-            formatItem: function (gridContainer, gridItem) {
-
-                gridItem.click(function () {
-
-                    window.open(self.paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
-
-                });
-
-            },
-            addButtonAction: function () {
-
-                addNode()
-
-            }
-
-        }, baseOptions);
-
-        var deleteOptions = Object.assign({itemToggle: true}, baseOptions);
-
-        var dialog = $('<div>');
-
-        container.append(
-            dialog,
-            $('<div>').css('margin-top', '20px').append(
-                deleteModeBtn,
-                spanRight.clone().append(deleteBtn.hide())
-            )
-        );
-
-        return container;
-
-    };
-
-    var refreshData = function () {
-
-        var inventory = new Inventory({type: self.type});
-
-        inventory.list(function (data) {
-
-            table.trigger('load', [data.nodes]);
-
-            grid.trigger('open', [data.nodes]);
-
-        });
-
-    };
-
-    var addNode = function () {
-
-        var node = new Node({name: null, description: null, type: self.type});
-
-        node.edit(function () {
-
-            refreshData()
-
-        });
-    };
-
-    var table = createTable();
-
-    var grid = createGrid();
-
-    var tabsHeader = ulTabs.clone().attr('id', 'select_' + self.type + 'tabs');
-
-    var container = $('<div>');
-
-    container.append(
-        divRow.clone().append(
-            divCol12.clone().append(
-                $('<h3>').html(self.type + 's').css('text-transform', 'capitalize')
-            ),
-            divCol12.clone().append(
-                tabsHeader.append(
-                    liActive.clone().append(
-                        aTabs.clone().attr('href', '#table_tab').append(
-                            spanFA.clone().addClass('fa-list')
-                        )
-                    ),
-                    $('<li>').append(
-                        aTabs.clone().attr('href', '#grid_tab').append(
-                            spanFA.clone().addClass('fa-th')
-                        )
-                    )
-                ),
-                divTabContent.clone().append(
-                    divActiveTab.clone().attr('id', 'table_tab').append($('<br>'),table),
-                    divTab.clone().attr('id', 'grid_tab').append($('<br>'), grid)
-                )
-
-            )
-        )
-    );
-
-    self.rememberLastTab(tabsHeader.attr('id'));
-
-    refreshData();
-
-    return container;
+    });
 
 };

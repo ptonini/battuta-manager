@@ -96,7 +96,32 @@ File.prototype.upload = function (callback) {
 
         self.set('title', 'Select file');
 
-        self.bind($(this));
+        self.bind(
+            $('#upload_dialog')
+                .dialog({
+                    buttons: {
+                        Upload: function () {
+
+                            $('#upload_field').fileinput('upload');
+
+                            self.set('title', 'Uploading file');
+
+                            $(this).find('div.file-caption-main').hide()
+
+                        },
+                        Cancel: function () {
+
+                            $(this).dialog('close')
+
+                        }
+                    }
+                })
+                .keypress(function (event) {
+
+                    if (event.keyCode === 13) $('#upload_field').fileinput('upload')
+
+                })
+        );
 
         $('#upload_field')
             .fileinput({
@@ -135,31 +160,7 @@ File.prototype.upload = function (callback) {
 
             });
 
-        $('#upload_dialog')
-            .dialog({
-                buttons: {
-                    Upload: function () {
-
-                        $('#upload_field').fileinput('upload');
-
-                        self.set('title', 'Uploading file');
-
-                        $(this).find('div.file-caption-main').hide()
-
-                    },
-                    Cancel: function () {
-
-                        $(this).dialog('close')
-
-                    }
-                }
-            })
-            .keypress(function (event) {
-
-                if (event.keyCode === 13) $('#upload_field').fileinput('upload')
-
-            });
-
+        $(this).remove();
 
     }));
 
@@ -186,139 +187,141 @@ File.prototype.editorDialog = function (callback) {
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'fileEditorDialog.html', function () {
 
-        self.bind($(this));
+            var aceMode = 'text';
 
-        var aceMode = 'text';
+            var modes = [
+                {name: 'apache_conf', label: 'Apache conf'},
+                {name: 'batchfile', label: 'BatchFile'},
+                {name: 'css', label: 'CSS'},
+                {name: 'dockerfile', label: 'Dockerfile'},
+                {name: 'gitignore', label: 'Gitignore'},
+                {name: 'ini', label: 'INI'},
+                {name: 'java', label: 'Java'},
+                {name: 'javascript', label: 'JavaScript'},
+                {name: 'json', label: 'JSON'},
+                {name: 'php', label: 'PHP'},
+                {name: 'powershell', label: 'Powershell'},
+                {name: 'properties', label: 'Properties'},
+                {name: 'python', label: 'Python'},
+                {name: 'sh', label: 'SH'},
+                {name: 'sql', label: 'SQL'},
+                {name: 'text', label: 'Text'},
+                {name: 'vbscript', label: 'VBScript'},
+                {name: 'xml', label: 'XML'},
+                {name: 'yaml', label: 'YAML'}
+            ];
 
-        var modes = [
-            {name: 'apache_conf', label: 'Apache conf'},
-            {name: 'batchfile', label: 'BatchFile'},
-            {name: 'css', label: 'CSS'},
-            {name: 'dockerfile', label: 'Dockerfile'},
-            {name: 'gitignore', label: 'Gitignore'},
-            {name: 'ini', label: 'INI'},
-            {name: 'java', label: 'Java'},
-            {name: 'javascript', label: 'JavaScript'},
-            {name: 'json', label: 'JSON'},
-            {name: 'php', label: 'PHP'},
-            {name: 'powershell', label: 'Powershell'},
-            {name: 'properties', label: 'Properties'},
-            {name: 'python', label: 'Python'},
-            {name: 'sh', label: 'SH'},
-            {name: 'sql', label: 'SQL'},
-            {name: 'text', label: 'Text'},
-            {name: 'vbscript', label: 'VBScript'},
-            {name: 'xml', label: 'XML'},
-            {name: 'yaml', label: 'YAML'}
-        ];
+            var textEditor = ace.edit('editor_container');
 
-        var textEditor = ace.edit('editor_container');
+            if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
 
-        if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
+                var fileNameArray = self.name.split('.');
 
-            var fileNameArray = self.name.split('.');
+                var fileExtension = fileNameArray[fileNameArray.length - 1];
 
-            var fileExtension = fileNameArray[fileNameArray.length - 1];
+                if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
 
-            if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
+                if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
 
-            if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
+                else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
 
-            else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
+                else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
 
-            else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
+                else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
 
-            else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
+                else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
 
-            else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
+                else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
 
-            else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
+                else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
 
-            else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
-
-            else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
-
-        }
-
-        else if (self.type === 'application/xml') aceMode = 'xml';
-
-        else if (self.type === 'application/json') aceMode = 'json';
-
-        else if (self.type === 'text/x-shellscript') aceMode = 'sh';
-
-        else if (self.type === 'text/yaml') aceMode = 'yaml';
-
-        else if (self.type === 'text/x-python') aceMode = 'python';
-
-        $.each(modes, function (index, mode){
-
-            $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
-
-        });
-
-        $('#mode_selector')
-            .change(function () {
-
-                textEditor.getSession().setMode('ace/mode/' + $(this).val())
-
-            })
-            .val(aceMode)
-            .change();
-
-        textEditor.setTheme('ace/theme/chrome');
-
-        textEditor.renderer.setShowPrintMargin(false);
-
-        textEditor.setHighlightActiveLine(false);
-
-        textEditor.setFontSize(13);
-
-        textEditor.$blockScrolling = Infinity;
-
-        textEditor.setValue(self.text);
-
-        textEditor.session.getUndoManager().reset();
-
-        textEditor.selection.moveCursorFileStart();
-
-        $('#editor_container').css('height', window.innerHeight * .7);
-
-        $('div.ui-dialog-buttonpane').css('border-top', 'none');
-
-        $('#editor_dialog').dialog({
-            width: 900,
-            closeOnEscape: false,
-            buttons: {
-            Save: function () {
-
-                if (self.new_name) {
-
-                    self.text = textEditor.getValue();
-
-                    self.postData('save', function (data) {
-
-                        $('#editor_dialog').dialog('close');
-
-                        callback && callback(data);
-
-                    });
-
-                }
-
-                else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
-
-            },
-            Cancel: function () {
-
-                $(this).dialog('close');
+                else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
 
             }
-        }
-        });
 
-        textEditor.focus();
+            else if (self.type === 'application/xml') aceMode = 'xml';
 
-    })
+            else if (self.type === 'application/json') aceMode = 'json';
+
+            else if (self.type === 'text/x-shellscript') aceMode = 'sh';
+
+            else if (self.type === 'text/yaml') aceMode = 'yaml';
+
+            else if (self.type === 'text/x-python') aceMode = 'python';
+
+            self.bind(
+                $('#editor_dialog').dialog({
+                    width: 900,
+                    closeOnEscape: false,
+                    buttons: {
+                        Save: function () {
+
+                            if (self.new_name) {
+
+                                self.text = textEditor.getValue();
+
+                                self.postData('save', function (data) {
+
+                                    $('#editor_dialog').dialog('close');
+
+                                    callback && callback(data);
+
+                                });
+
+                            }
+
+                            else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
+
+                        },
+                        Cancel: function () {
+
+                            $(this).dialog('close');
+
+                        }
+                    }
+                })
+            );
+
+            $.each(modes, function (index, mode){
+
+                $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
+
+            });
+
+            $('#mode_selector')
+                .change(function () {
+
+                    textEditor.getSession().setMode('ace/mode/' + $(this).val())
+
+                })
+                .val(aceMode)
+                .change();
+
+            textEditor.setTheme('ace/theme/chrome');
+
+            textEditor.renderer.setShowPrintMargin(false);
+
+            textEditor.setHighlightActiveLine(false);
+
+            textEditor.setFontSize(13);
+
+            textEditor.$blockScrolling = Infinity;
+
+            textEditor.setValue(self.text);
+
+            textEditor.session.getUndoManager().reset();
+
+            textEditor.selection.moveCursorFileStart();
+
+            $('#editor_container').css('height', window.innerHeight * .7);
+
+            $('div.ui-dialog-buttonpane').css('border-top', 'none');
+
+            textEditor.focus();
+
+            $(this).remove();
+
+        })
     );
 
 };
@@ -330,44 +333,46 @@ File.prototype.dialog = function (action, callback) {
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'fileDialog.html', function () {
 
-        self.bind($(this));
+            self.set('action', action);
 
-        self.set('action', action);
+            self.set('is_folder', false);
 
-        self.set('is_folder', false);
+            action === 'copy' && self.set('new_name', 'copy_' + self.name);
 
-        action === 'copy' && self.set('new_name', 'copy_' + self.name);
+            self.bind(
+                $('#file_dialog')
+                    .dialog({
+                        buttons: {
+                            Save: function () {
 
-        $('#file_dialog')
-            .dialog({
-                buttons: {
-                    Save: function () {
+                                if (self.is_folder) self.type = 'directory';
 
-                        if (self.is_folder) self.type = 'directory';
+                                if (self.new_name && self.new_name !== self.name) self.postData(action, function (data) {
 
-                        if (self.new_name && self.new_name !== self.name) self.postData(action, function (data) {
+                                    $('#file_dialog').dialog('close');
 
-                            $('#file_dialog').dialog('close');
+                                    callback && callback(data);
 
-                            callback && callback(data);
+                                });
 
-                        });
+                            },
+                            Cancel: function() {
 
-                    },
-                    Cancel: function() {
+                                $(this).dialog('close')
 
-                        $(this).dialog('close')
+                            }
+                        }
+                    })
+                    .keypress(function (event) {
 
-                    }
-                }
-            })
-            .keypress(function (event) {
+                        if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
 
-                if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
+                    })
+            );
 
-            })
+            $(this).remove();
 
-    })
+        })
     );
 
 };
@@ -379,44 +384,45 @@ File.prototype.roleDialog = function (callback) {
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'roleDialog.html', function () {
 
-        self.bind($(this));
+            self.bind(
+                $('#role_dialog')
+                    .dialog({
+                        buttons: {
+                            Save: function() {
 
-        $('#role_dialog')
-            .dialog({
-                buttons: {
-                    Save: function() {
+                                var roleFolders = [];
 
-                        var roleFolders = [];
+                                $('#role_dialog').find('button.checked_button').each(function() {
 
-                        $('#role_dialog').find('button.checked_button').each(function() {
+                                    roleFolders.push($(this).data())
 
-                            roleFolders.push($(this).data())
+                                });
 
-                        });
+                                self.role_folders = JSON.stringify(roleFolders);
 
-                        self.role_folders = JSON.stringify(roleFolders);
+                                self.postData('create_role', function (data) {
 
-                        self.postData('create_role', function (data) {
+                                    callback && callback(data, self);
 
-                            callback && callback(data, self);
+                                    $('#role_dialog').dialog('close');
 
-                            $('#role_dialog').dialog('close');
+                                });
 
-                        });
+                            },
+                            Cancel: function() {
 
-                    },
-                    Cancel: function() {
+                                $(this).dialog('close')
+                            }
+                        }
+                    })
+                    .find('button').click(function () {
 
-                        $(this).dialog('close')
-                    }
-                }
-            })
-            .find('button').click(function () {
+                    $(this).toggleClass('checked_button')
 
-                $(this).toggleClass('checked_button')
+                })
+            );
 
-            })
-    })
+        })
     )
 
 };

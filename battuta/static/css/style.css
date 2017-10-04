@@ -46,6 +46,12 @@ small.badge {background-color: #cacaca}
 
 .runner_error_box {margin-top: 20px; color: red; font-size: 12px}
 
+div.reference_link_container {margin: auto; text-align: right; font-size: x-small}
+
+/* Adhoc dialog **********************/
+
+#module_fields_container {max-height: 320px; overflow-y: auto; margin-top: 10px;}
+
 
 /* File manager path container *******/
 
@@ -139,7 +145,7 @@ tr.child_row {background-color: transparent !important}
 .row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}
 
 /* Elements using Kanit font */
-h3, h4, h5, label, th, small, ul.nav a, ul.pagination a, .chkbox_label,
+h3, h4, h5, label, th, small, ul.nav a, ul.pagination a, .chkbox_label, .reference_link_container,
 .navbar, .report_field_left, .dataTables_info, #runner_status {font-family: "Kanit", sans-serif}
 
 /* Elements using Actor font */
@@ -149,9 +155,6 @@ a.btn, button.btn, span.ui-button-text {font-family: "Actor", sans-serif;}
 input, select, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-
-/* Labelless buttons*/
-.labelless_button {margin-top: 19px}
 
 /* Settings for small dialogs */
 .small_dialog {padding: 20px !important;}

@@ -8,11 +8,7 @@
 
             var adhoc = new AdHoc();
 
-            $('#container').append(
-                $('<h3>').html('AdHoc tasks'),
-                adhoc.commandForm(),
-                adhoc.selector()
-            );
+            $('#container').append(adhoc.view());
 
         });
     </script>

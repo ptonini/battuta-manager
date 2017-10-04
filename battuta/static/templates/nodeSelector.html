@@ -1,0 +1,31 @@
+<div class="row">
+    <div class="col-md-12">
+        <h3 style="text-transform: capitalize;"><span data-bind="type"></span>s</h3>
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#table_tab"><span class="fa fa-fw fa-list"></span></a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#grid_tab"><span class="fa fa-fw fa-th"></span></a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane in active" id="table_tab">
+                <br>
+                <table id="node_table" class="table table-condensed table-hover table-striped"></table>
+            </div>
+            <div class="tab-pane" id="grid_tab">
+                <br>
+                <div id="node_grid"></div>
+                <div>
+                    <button id="delete_mode" class="btn btn-default btn-xs">Delete mode</button>
+                    <span style="float: right;">
+                        <button id="delete_button" class="btn btn-default btn-xs" title="Delete" style="display: none;">
+                            <span class="fa fa-fw fa-trash-o"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

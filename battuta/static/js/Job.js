@@ -50,6 +50,12 @@ function Job(param) {
 
     self.set('id', param.id);
 
+    self.set('become', param.become ? param.become : false);
+
+    self.set('module', param.module);
+
+    self.set('arguments', param.arguments ? param.arguments : '');
+
 }
 
 Job.prototype = Object.create(Battuta.prototype);

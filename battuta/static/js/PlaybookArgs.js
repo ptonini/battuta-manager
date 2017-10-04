@@ -76,7 +76,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
                             event.preventDefault();
 
-                            self.patternBuilder(limitField)
+                            self.patternField(limitField)
 
                         })
                 )
