@@ -57,41 +57,43 @@ AdHoc.prototype.dialog = function (callback) {
 
             var $moduleSelector = $('#module_selector');
 
-            self.bind(
-                $('#adhoc_dialog').dialog({
-                    autoOpen: false,
-                    width: 600,
-                    closeOnEscape: false,
-                    buttons: {
-                        Run: function () {
+            var $dialog = $('#adhoc_dialog').dialog({
+                autoOpen: false,
+                width: 600,
+                closeOnEscape: false,
+                buttons: {
+                    Run: function () {
 
-                            self.arguments = self.argumentsToString();
+                        console.log(self);
 
-                            var job = new Job(self);
+                        self.arguments = self.argumentsToString();
 
-                            job.run()
+                        var job = new Job(self);
 
-                        },
-                        Save: function () {
+                        job.run()
 
-                            self.arguments = JSON.stringify(self.arguments);
+                    },
+                    Save: function () {
 
-                            self.postData('save', function () {
+                        console.log(self);
 
-                                callback && callback();
+                        self.arguments = JSON.stringify(self.arguments);
 
-                                self.set('title', 'Edit AdHoc task');
+                        self.save(function () {
 
-                            });
+                            callback && callback();
 
-                        },
-                        Close: function () {
+                            self.set('title', 'Edit AdHoc task');
 
-                            $(this).dialog('close');
-                        }
+                        });
+
+                    },
+                    Close: function () {
+
+                        $(this).dialog('close');
                     }
-                })
-            );
+                }
+            });
 
             self.set('title', self.id ? 'AdHoc Task' : 'New AdHoc task');
 
@@ -99,7 +101,7 @@ AdHoc.prototype.dialog = function (callback) {
 
             $('#credentials_selector_label').append(self.runnerCredsSelector());
 
-            self.getData('modules', function (data) {
+            self.getData('modules', true, function (data) {
 
                 $.each(data.modules, function (index, value) {
 
@@ -118,7 +120,7 @@ AdHoc.prototype.dialog = function (callback) {
 
                         $('#module_arguments_container').load(self.paths.modules + self.module + '.html', function () {
 
-                            self.bind($(this));
+                            self.bind($dialog);
 
                             $('a.label_link').attr('href', self.paths.selectors.file);
 
@@ -128,17 +130,19 @@ AdHoc.prototype.dialog = function (callback) {
 
                             else if (self.module === 'unarchive') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
 
-                            $('#adhoc_dialog').find('input').keypress(function (event) {
+                            $dialog
+                                .dialog('open')
+                                .find('input').keypress(function (event) {
 
-                                if (event.keyCode === 13) {
+                                    if (event.keyCode === 13) {
 
-                                    event.preventDefault();
+                                        event.preventDefault();
 
-                                    $(this).next().find('button:contains("Run")').click()
+                                        $(this).next().find('button:contains("Run")').click()
 
-                                }
+                                    }
 
-                            })
+                                })
 
                         })
 
@@ -147,8 +151,6 @@ AdHoc.prototype.dialog = function (callback) {
                 if (self.id) $moduleSelector.val(self.module).change();
 
                 else $moduleSelector.val('shell').change();
-
-                $('#adhoc_dialog').dialog('open')
 
             });
 
@@ -244,7 +246,7 @@ AdHoc.prototype.view = function () {
 
                             adhoc.arguments = JSON.stringify(adhoc.arguments);
 
-                            adhoc.postData('save', function () {
+                            adhoc.save(function () {
 
                                 $('#adhoc_table').DataTable().ajax.reload()
 

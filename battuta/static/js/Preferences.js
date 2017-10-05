@@ -28,7 +28,7 @@ Preferences.prototype.load = function () {
 
     var self = this;
 
-    self.refresh(function () {
+    self.refresh(false, function () {
 
         sessionStorage.setItem('user_name', self.user.name);
 
@@ -95,7 +95,7 @@ Preferences.prototype.dialog = function () {
 
         var defaultValues = [];
 
-        self.refresh(function () {
+        self.refresh(false, function () {
 
             prefsContainer.empty().css('max-height', window.innerHeight * 0.7 + 'px');
 
@@ -235,9 +235,9 @@ Preferences.prototype.dialog = function () {
 
             self.prefs = JSON.stringify(prefs);
 
-            self.postData('save', function () {
+            self.save(function () {
 
-                self.refresh();
+                self.refresh(false);
 
                 callback && callback()
 

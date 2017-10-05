@@ -143,7 +143,7 @@ Inventory.prototype.export = function () {
 
                 self.format = 'json';
 
-                self.getData('export', function (data) {
+                self.getData('export', false, function (data) {
 
                     var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
 

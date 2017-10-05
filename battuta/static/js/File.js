@@ -68,7 +68,7 @@ File.prototype.read = function (callback) {
 
     var self = this;
 
-    self.getData('read', callback);
+    self.getData('read', false, callback);
 
 };
 
@@ -170,7 +170,7 @@ File.prototype.exists = function (callback) {
 
     var self = this;
 
-    self.getData('exists', function (data) {
+    self.getData('exists', false, function (data) {
 
         data.exists || $.bootstrapGrowl('Folder does not exist', failedAlertOptions);
 
@@ -260,7 +260,7 @@ File.prototype.editorDialog = function (callback) {
 
                                 self.text = textEditor.getValue();
 
-                                self.postData('save', function (data) {
+                                self.save(function (data) {
 
                                     $('#editor_dialog').dialog('close');
 
@@ -347,7 +347,7 @@ File.prototype.dialog = function (action, callback) {
 
                                 if (self.is_folder) self.type = 'directory';
 
-                                if (self.new_name && self.new_name !== self.name) self.postData(action, function (data) {
+                                if (self.new_name && self.new_name !== self.name) self.save(function (data) {
 
                                     $('#file_dialog').dialog('close');
 
@@ -400,7 +400,7 @@ File.prototype.roleDialog = function (callback) {
 
                                 self.role_folders = JSON.stringify(roleFolders);
 
-                                self.postData('create_role', function (data) {
+                                self.postData('create_role', false, function (data) {
 
                                     callback && callback(data, self);
 

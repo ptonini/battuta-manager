@@ -6,7 +6,7 @@
 
             var job = new Job({id: '{{ job_id }}'})
 
-            job.refresh(function (data) {
+            job.refresh(false, function (data) {
 
                 document.title = data.job.name;
 

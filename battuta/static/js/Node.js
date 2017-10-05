@@ -36,7 +36,7 @@ Node.prototype.loadHostInfo = function (callback) {
 
     var self = this;
 
-    self.getData('facts', function (data) {
+    self.getData('facts', false, function (data) {
 
         self.facts = data.facts;
 
@@ -235,7 +235,7 @@ Node.prototype.relationships = function () {
 
                                     self.selection = JSON.stringify([id]);
 
-                                    self.postData('remove_' + relation, function () {
+                                    self.postData('remove_' + relation, false, function () {
 
                                         reloadData($('#' + relation + '_grid'))
 
@@ -260,7 +260,7 @@ Node.prototype.relationships = function () {
 
                                         self.selection = JSON.stringify($selectionDialog.DynaGrid('getSelected', 'id'));
 
-                                        self.postData('add_' + relation, function () {
+                                        self.postData('add_' + relation, false, function () {
 
                                             reloadData($('#' + relation + '_grid'))
 
@@ -400,7 +400,7 @@ Node.prototype.variables = function () {
 
                             self.variable = JSON.stringify(variable);
 
-                            self.postData('delete_var', function () {
+                            self.postData('delete_var', false, function () {
 
                                 $('#variable_table').DataTable().ajax.reload()
 
@@ -558,7 +558,7 @@ Node.prototype.editVariable = function (variable, callback) {
 
                             self.variable = JSON.stringify(self.variable);
 
-                            self.postData('save_var', function () {
+                            self.postData('save_var', true, function () {
 
                                 callback && callback();
 
@@ -623,7 +623,7 @@ Node.prototype.copyVariables = function (callback) {
 
                                 self.source = JSON.stringify($(this).data());
 
-                                self.postData('copy_vars', function (data) {
+                                self.postData('copy_vars', false, function (data) {
 
                                     $selectionDialog.dialog('close');
 
@@ -652,7 +652,7 @@ Node.prototype.view = function () {
 
         var $container = $(this);
 
-        self.refresh(function () {
+        self.refresh(false, function () {
 
             var adhoc = new AdHoc({hosts: self.name});
 
@@ -766,7 +766,7 @@ Node.prototype.selector = function () {
 
         var loadData = function () {
 
-            inventory.list(function (data) {
+            inventory.list(false, function (data) {
 
                 $grid.DynaGrid(Object.assign({dataArray: data.nodes}, openOptions));
 

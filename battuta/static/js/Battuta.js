@@ -10,16 +10,6 @@ function Battuta (param) {
 
     self.set('username', param.username);
 
-    // Add CSRF token to AJAX requests
-    $.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-
-            !self.csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self.getCookie('csrftoken'));
-
-        },
-        cache: false
-    });
-
     // DataTables
     $.fn.dataTableExt.sErrMode = 'throw';
 
@@ -233,13 +223,13 @@ Battuta.prototype = {
 
     },
 
-    submitRequest: function (type, obj, url, callback, failCallback) {
+    submitRequest: function (type, obj, url, blockUI, callback, failCallback) {
 
         var self = this;
 
         var data = {};
 
-        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'args'];
+        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
 
         for (var p in obj) {
 
@@ -252,38 +242,55 @@ Battuta.prototype = {
             type: type,
             dataType: 'json',
             data: data,
+            cache: false,
+            beforeSend: function (xhr, settings) {
+
+                blockUI && $.blockUI({
+                    message: $('<span>').attr('class', 'fa fa-cog fa-spin fa-fw fa-3x').css('color', '#777'),
+                    css: {
+                        border: 'none',
+                        backgroundColor: 'transparent'
+
+                    },
+                    overlayCSS: { backgroundColor: 'transparent' }
+                });
+
+                !self.csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self.getCookie('csrftoken'));
+
+            },
             success: function (data) {
 
                 self.requestResponse(data, callback, failCallback)
+
+            },
+            complete: function () {
+
+                blockUI && $.unblockUI();
 
             }
         });
 
     },
 
-    getData: function (action, callback, failCallback) {
+    getData: function (action, blockUI, callback, failCallback) {
 
         var self = this;
 
-        self.submitRequest('GET', self, self.apiPath + action + '/', callback, failCallback);
+        self.submitRequest('GET', self, self.apiPath + action + '/', blockUI, callback, failCallback);
 
     },
 
-    postData: function (action, callback, failCallback) {
+    postData: function (action, blockUI, callback, failCallback) {
 
         var self = this;
 
-        self.submitRequest('POST', self, self.apiPath + action + '/', callback, failCallback);
+        self.submitRequest('POST', self, self.apiPath + action + '/', blockUI, callback, failCallback);
 
     },
 
     bind: function ($container) {
 
         var self = this;
-
-        var bindId = Math.random().toString(36).substring(2, 10);
-
-        var message = bindId + ':change';
 
         var loadData =  function ($element, value) {
 
@@ -297,11 +304,23 @@ Battuta.prototype = {
 
         };
 
+        var previousId = false;
+
+        Object.keys(self.bindings).forEach(function (key) {
+
+            if (self.bindings[key] === $container) previousId = key
+
+        });
+
+        var bindId = previousId ? previousId : Math.random().toString(36).substring(2, 10);
+
+        var message = bindId + ':change';
+
         self.bindings[bindId] = $container;
 
-        $container.on('change', '[data-bind]', function () {
+        $container.off('change').on('change', '[data-bind]', function () {
 
-            self.pubSub.trigger(message, [$(this).data('bind'), $(this).val()]);
+            self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]);
 
         });
 
@@ -309,7 +328,7 @@ Battuta.prototype = {
 
             $(this).attr('type', 'button').toggleClass('checked_button');
 
-            self.pubSub.trigger(message, [$(this).data('bind'), $(this).hasClass('checked_button')]);
+            self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
 
         });
 
@@ -327,24 +346,35 @@ Battuta.prototype = {
 
         });
 
-        self.pubSub.on(message, function (event, property, value) {
+        self.pubSub.off(message).on(message, function (event, source, property, value) {
 
-            var propArray = property.split('.');
+            if (source === 'dom') {
 
-            if (propArray.length === 1) self[propArray[0]] = value;
+                var propArray = property.split('.');
 
-            else if (propArray.length === 2) {
+                if (propArray.length === 1) self[propArray[0]] = value;
 
-                if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
+                else if (propArray.length === 2) {
 
-                self[propArray[0]][propArray[1]] = value;
+                    if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
+
+                    self[propArray[0]][propArray[1]] = value;
+
+                    console.log(self)
+
+                }
+
             }
 
-            $container.find('[data-bind="' + property + '"]').each(function () {
+            else if (source === 'model') {
 
-                loadData($(this), value);
+                $container.find('[data-bind="' + property + '"]').each(function () {
 
-            });
+                    loadData($(this), value);
+
+                });
+
+            }
 
         });
 
@@ -612,7 +642,7 @@ Battuta.prototype = {
 
     },
 
-    deleteDialog: function (action, callback) {
+    del: function (callback) {
 
         var self = this;
 
@@ -624,7 +654,7 @@ Battuta.prototype = {
                     buttons: {
                         Delete: function () {
 
-                            self.postData(action, function (data) {
+                            self.postData('delete', false, function (data) {
 
                                 callback && callback(data)
 
@@ -646,12 +676,6 @@ Battuta.prototype = {
             })
         );
 
-    },
-
-    del: function (callback) {
-
-        var self = this;
-
         self.deleteDialog('delete', callback)
 
     },
@@ -670,7 +694,7 @@ Battuta.prototype = {
                         buttons: {
                             Save: function() {
 
-                                self.postData('save', function (data) {
+                                self.save(function (data) {
 
                                     $('#entity_dialog').dialog('close');
 
@@ -713,17 +737,17 @@ Battuta.prototype = {
 
         for (var bindId in self.bindings) {
 
-            self.pubSub.trigger(bindId + ':change', [property, value]);
+            self.pubSub.trigger(bindId + ':change', ['model', property, value]);
 
         }
 
     },
 
-    refresh: function (callback) {
+    refresh: function (blockUI, callback) {
 
         var self = this;
 
-        self.getData('get', function (data){
+        self.getData('get', blockUI, function (data){
 
             data[self.key] && self.constructor(data[self.key]);
 
@@ -733,11 +757,19 @@ Battuta.prototype = {
 
     },
 
-    list: function (callback) {
+    list: function (blockUI, callback) {
 
         var self = this;
 
-        self.getData('list', callback)
+        self.getData('list', blockUI, callback)
+
+    },
+
+    save: function (callback) {
+
+        var self = this;
+
+        self.postData('save', true, callback)
 
     },
 

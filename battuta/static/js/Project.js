@@ -88,7 +88,7 @@ Project.prototype.setProperty =  function (property, input) {
 
                 self.property = JSON.stringify({name: property, value: gridItem.data('id')});
 
-                self.postData('set_property', function () {
+                self.postData('set_property', false, function () {
 
                     input.val(itemData[propData.item]).data(itemData).change()
 
@@ -108,7 +108,7 @@ Project.prototype.clearProperty = function (property, input) {
 
     self.property = JSON.stringify({name: property});
 
-    self.postData('clear_property', function () {
+    self.postData('clear_property', false, function () {
 
         input.val('').removeData().change()
 
@@ -203,7 +203,7 @@ Project.prototype.playbookGrid = function () {
 
                             self.playbooks = JSON.stringify([{name: playbook.name, folder: playbook.folder}]);
 
-                            self.postData('remove_playbook', function () {
+                            self.postData('remove_playbook', false, function () {
 
                                 container.DynaGrid('load')
 
@@ -253,7 +253,7 @@ Project.prototype.playbookGrid = function () {
 
                             self.playbooks = JSON.stringify(selection);
 
-                            self.postData( 'add_playbooks', function () {
+                            self.postData( 'add_playbooks', false, function () {
 
                                 container.DynaGrid('load')
 
@@ -316,7 +316,7 @@ Project.prototype.roleGrid = function () {
 
                             self.roles = JSON.stringify([{name: role.name, folder: role.folder}]);
 
-                            self.postData('remove_role', function () {
+                            self.postData('remove_role', false, function () {
 
                                 container.DynaGrid('load')
 
@@ -359,7 +359,7 @@ Project.prototype.roleGrid = function () {
 
                             self.project.roles = JSON.stringify(selection);
 
-                            self.postData('add_roles', function () {
+                            self.postData('add_roles', false, function () {
 
                                 container.DynaGrid('load')
 
@@ -552,7 +552,7 @@ Project.prototype.view = function () {
 
     var container = $('<div>');
 
-    self.refresh(function () {
+    self.refresh(false, function () {
 
         var nameContainer = $('<span>').html(self.name);
 

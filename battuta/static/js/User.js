@@ -76,7 +76,7 @@ User.prototype.edit = function (callback) {
 
                     if (self.password !== retypePasswordField.val()) $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
 
-                    self.postData('save', function (data) {
+                    self.save(function (data) {
 
                         dialog.dialog('close');
 
@@ -105,7 +105,7 @@ User.prototype.defaultCred = function (callback) {
 
     var self = this;
 
-    self.getData('default_cred', callback)
+    self.getData('default_cred', false, callback)
 
 };
 
@@ -161,7 +161,7 @@ User.prototype.form = function () {
 
             self.timezone = timezoneField.val();
 
-            self.postData('save');
+            self.save();
 
         });
 
@@ -171,7 +171,7 @@ User.prototype.login = function () {
 
     var self = this;
 
-    self.submitRequest('POST', self, self.paths.apis.login + 'login/', function () {
+    self.submitRequest('POST', self, self.paths.apis.login + 'login/', false, function () {
 
         window.open('/', '_self');
 
@@ -183,7 +183,7 @@ User.prototype.logout = function () {
 
     var self = this;
 
-    self.submitRequest('POST', self, self.paths.apis.login + 'logout/', function () {
+    self.submitRequest('POST', self, self.paths.apis.login + 'logout/', false, function () {
 
         window.open('/', '_self');
 
@@ -407,7 +407,7 @@ User.prototype.credentialsForm = function () {
                     });
 
 
-                    self.postData('save_cred', function (data) {
+                    self.postData('save_cred', true, function (data) {
 
                         credentialsSelector.trigger('build', data.cred.id);
 
@@ -419,7 +419,7 @@ User.prototype.credentialsForm = function () {
 
                     self.cred = JSON.stringify({id: credentialsForm.data('loadedCred')});
 
-                    self.postData('delete_cred', function (data) {
+                    self.postData('delete_cred', false, function (data) {
 
                         credentialsSelector.trigger('build', data.cred.id);
 
@@ -443,7 +443,7 @@ User.prototype.credentialsSelector = function (startValue, runner, callback) {
 
     var buildSelector = function (startValue) {
 
-        self.getData('creds', function (data) {
+        self.getData('creds', false, function (data) {
 
             $.each(data.creds, function (index, cred) {
 
@@ -526,7 +526,7 @@ User.prototype.groupGrid = function () {
 
                         self.selection = [gridItem.data('id')];
 
-                        self.postData('remove_groups', function () {
+                        self.postData('remove_groups', false, function () {
 
                             groupGrid.DynaGrid('load')
 
@@ -551,7 +551,7 @@ User.prototype.groupGrid = function () {
 
                             self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                            self.postData('add_groups', function () {
+                            self.postData('add_groups', false, function () {
 
                                 groupGrid.DynaGrid('load')
 
@@ -586,7 +586,7 @@ User.prototype.view = function (currentUser) {
 
     var container = $('<div>');
 
-    self.refresh(function () {
+    self.refresh(false, function () {
 
         var deleteUserBtn = spanFA.clone()
             .addClass('fa-trash-o btn-incell')

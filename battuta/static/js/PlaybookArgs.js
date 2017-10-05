@@ -98,7 +98,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
         argumentsSelector.empty();
 
-        self.getData('list', function (data) {
+        self.getData('list', false, function (data) {
 
             $.each(data.args, function (index, args) {
 
@@ -204,7 +204,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
                             self.extra_vars = extraVarsField.val();
 
-                            self.postData('save', function (data) {
+                            self.save(function (data) {
 
                                 self.constructor({playbook: file.name, folder: file.folder});
 

@@ -66,7 +66,8 @@ Job.prototype.key = 'job';
 
 Job.prototype.apiPath = Battuta.prototype.paths.apis.job;
 
-Job.prototype.jobStates = {
+Job.prototype.states = {
+    starting: {color: 'blue'},
     running: {color: 'blue'},
     finished: {color: 'green'},
     'finished with errors': {color: 'orange'},
@@ -85,18 +86,13 @@ Job.prototype.taskStates = {
 
 Job.prototype.popupCenter = function (url, title, w) {
 
-    // Fixes dual-screen position                         Most browsers      Firefox
-    var dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left;
+    var dualScreenLeft = window.screenLeft ? window.screenLeft : screen.left;
 
-    var dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top;
+    var dualScreenTop = window.screenTop ? window.screenTop : screen.top;
 
-    var width = window.innerWidth
-        ? window.innerWidth : document.documentElement.clientWidth
-            ? document.documentElement.clientWidth : screen.width;
+    var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
 
-    var height = window.innerHeight
-        ? window.innerHeight : document.documentElement.clientHeight
-            ? document.documentElement.clientHeight : screen.height;
+    var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
 
     var h = height - 50;
 
@@ -115,7 +111,7 @@ Job.prototype.stateColor = function () {
 
     var self = this;
 
-    return self.status ? self.jobStates[self.status].color : 'black'
+    return self.status ? self.states[self.status].color : 'black'
 
 };
 
@@ -135,7 +131,7 @@ Job.prototype.getFacts = function (callback) {
 
     var intervalId = setInterval(function() {
 
-        self.refresh(function (data) {
+        self.refresh(false, function (data) {
 
             if (!data.job.is_running) {
 
@@ -167,7 +163,7 @@ Job.prototype.run = function (sameWindow) {
 
         self.cred = self.cred.id;
 
-        self.postData('run', function (data) {
+        self.postData('run', true, function (data) {
 
             self.constructor(data.job);
 
@@ -294,7 +290,9 @@ Job.prototype.selector = function () {
         order: [[0, "desc"]],
         rowCallback: function (row, data) {
 
-            $(row).css({color: self.jobStates[data[4]].color, cursor: 'pointer'}).click(function () {
+            console.log(data);
+
+            $(row).css({color: self.states[data[4]].color, cursor: 'pointer'}).click(function () {
 
                 self.popupCenter(self.paths.views.job + data[5] + '/', data[5], 1000);
 
@@ -377,7 +375,7 @@ Job.prototype.header = function () {
         .html(spanFA.clone().addClass('fa-times').css('color', 'red'))
         .click(function () {
 
-            self.postData('kill');
+            self.postData('kill', false);
 
         });
 
@@ -666,7 +664,7 @@ Job.prototype.view = function () {
 
                                                 self.result = JSON.stringify(result);
 
-                                                self.getData('get_result', function (data) {
+                                                self.getData('get_result', false, function (data) {
 
                                                     var jsonContainer = $('<div>')
                                                         .attr('class', 'well')
@@ -739,7 +737,7 @@ Job.prototype.view = function () {
 
     if (self.is_running) var intervalId = setInterval(function () {
 
-        self.refresh(function () {
+        self.refresh(false, function () {
 
             buildResults();
 

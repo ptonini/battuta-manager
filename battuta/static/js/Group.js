@@ -55,7 +55,7 @@ Group.prototype.permissionsForm = function () {
 
                 self.permissions = JSON.stringify(permissions);
 
-                self.postData('save');
+                self.save(false);
 
             })
             .find('button.permBtn').each(function () {
@@ -113,7 +113,7 @@ Group.prototype.memberGrid = function () {
 
                             self.selection = [$gridItem.data('id')];
 
-                            self.postData('remove_members', function () {
+                            self.postData('remove_members', false, function () {
 
                                 $('#members_grid').DynaGrid('load')
 
@@ -138,7 +138,7 @@ Group.prototype.memberGrid = function () {
 
                                 self.selection = selectionDialog.DynaGrid('getSelected', 'id');
 
-                                self.postData('add_members', function () {
+                                self.postData('add_members', false, function () {
 
                                     $('#members_grid').DynaGrid('load')
 
@@ -176,7 +176,7 @@ Group.prototype.view = function () {
 
         var $container = $(this);
 
-        self.refresh(function () {
+        self.refresh(false, function () {
 
             self.bind($container);
 
