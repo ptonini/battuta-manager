@@ -82,6 +82,8 @@ function Battuta (param) {
 
         activeTab && $(this).find('a[href="' + activeTab + '"]').tab('show');
 
+        return $(this);
+
     };
 
     // Modal dialog options
@@ -861,4 +863,3 @@ Battuta.prototype = {
     }
 
 };
-
