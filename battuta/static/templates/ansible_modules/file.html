@@ -1,0 +1,41 @@
+<div class="row">
+    <div class="col-md-8">
+        <div class="form-group">
+            <label>
+                Path
+                <input class="form-control input-sm" type="text" data-bind="arguments.path">
+            </label>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <div class="form-group">
+                <label>
+                    State
+                    <select class="select form-control input-sm" data-bind="arguments.state">
+                        <option value="file">File</option>
+                        <option value="link">Link</option>
+                        <option value="directory">Directory</option>
+                        <option value="hard">Hard</option>
+                        <option value="touch">Touch</option>
+                        <option value="absent">Absent</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <div class="form-group">
+            <label>
+                Arguments
+                <input class="form-control input-sm" type="text" data-bind="arguments.otherArgs">
+            </label>
+        </div>
+    </div>
+    <div class="col-md-2 text-right">
+        <div class="form_group">
+            <label></label>
+            <button class="btn btn-default btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+        </div>
+    </div>
+</div>

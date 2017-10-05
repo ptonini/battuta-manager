@@ -710,7 +710,7 @@ User.prototype.selector = function () {
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function () {
 
-                window.open(paths.users + 'user/' + user.username + '/', '_self')
+                window.open(self.paths.views.user + user.username + '/', '_self')
 
             });
 

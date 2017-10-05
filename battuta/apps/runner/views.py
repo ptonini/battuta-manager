@@ -419,6 +419,12 @@ class AdHocView(View):
 
             data = {'status': 'ok', 'task_list': task_list}
 
+        elif action == 'modules':
+
+            module_templates = os.listdir(os.path.join(settings.STATICFILES_DIRS[0], 'templates', 'ansible_modules'))
+
+            data = {'status': 'ok', 'modules': [m.split('.')[0] for m in module_templates]}
+
         else:
 
             raise Http404('Invalid action')

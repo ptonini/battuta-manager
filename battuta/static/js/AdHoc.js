@@ -30,23 +30,13 @@ AdHoc.prototype.apiPath = Battuta.prototype.paths.apis.adhoc;
 
 AdHoc.prototype.type = 'adhoc';
 
-AdHoc.prototype.modules = [
-    'copy',
-    'ec2_facts',
-    'ping',
-    'script',
-    'service',
-    'shell',
-    'setup',
-    'unarchive',
-    'file'
-];
-
 AdHoc.prototype.argumentsToString = function () {
 
     var self = this;
 
     var dataString = '';
+
+    if (self.arguments.script) self.arguments.script = ' ' + self.arguments.script;
 
     Object.keys(self.arguments).forEach(function (key) {
 
@@ -58,24 +48,6 @@ AdHoc.prototype.argumentsToString = function () {
 
 };
 
-AdHoc.prototype.isSudoBtn = function () {
-
-    var self = this;
-
-    return btnSmall.clone()
-        .html('Sudo')
-        .attr({title: 'Run with sudo', type: 'button'})
-        .toggleClass('checked_button', self.become)
-        .click(function () {
-
-            $(this).toggleClass('checked_button');
-
-            self.become = $(this).hasClass('checked_button')
-
-        });
-
-};
-
 AdHoc.prototype.dialog = function (callback) {
 
     var self = this;
@@ -83,22 +55,17 @@ AdHoc.prototype.dialog = function (callback) {
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'adhocDialog.html', function () {
 
-            var args = {};
-
             var $moduleSelector = $('#module_selector');
-
-            for (var k in self.arguments) args[k] = self.arguments[k];
-
-            self.set('title', self.id ? 'AdHoc Task' : 'New AdHoc task');
 
             self.bind(
                 $('#adhoc_dialog').dialog({
+                    autoOpen: false,
                     width: 600,
                     closeOnEscape: false,
                     buttons: {
                         Run: function () {
 
-                            self.arguments = self.argumentsToString(args);
+                            self.arguments = self.argumentsToString();
 
                             var job = new Job(self);
 
@@ -107,7 +74,7 @@ AdHoc.prototype.dialog = function (callback) {
                         },
                         Save: function () {
 
-                            self.arguments = JSON.stringify(args);
+                            self.arguments = JSON.stringify(self.arguments);
 
                             self.postData('save', function () {
 
@@ -126,27 +93,62 @@ AdHoc.prototype.dialog = function (callback) {
                 })
             );
 
+            self.set('title', self.id ? 'AdHoc Task' : 'New AdHoc task');
+
             $('#pattern_field_label').append(self.patternField(self.hosts));
 
             $('#credentials_selector_label').append(self.runnerCredsSelector());
 
-            $.each(self.modules.sort(), function (index, value) {
+            self.getData('modules', function (data) {
 
-                $moduleSelector.append($('<option>').attr('value', value).append(value))
+                $.each(data.modules, function (index, value) {
 
-            });
+                    $moduleSelector.append($('<option>').attr('value', value).append(value))
 
-            $moduleSelector.change(function () {
+                });
 
-                self.name = '[adhoc task] ' + this.value;
+                $moduleSelector
+                    .change(function () {
 
-                self.module = this.value;
+                        self.module = this.value;
 
-                $('#module_reference_anchor').attr('href', 'http://docs.ansible.com/ansible/'+ self.module + '_module.html');
+                        self.name = '[adhoc task] ' + self.module;
 
-                $('#module_parameters_container').load(self.paths.templates + 'moduleArgs-' + this.value + '.html', function () {
+                        $('#module_reference_anchor').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
 
-                })
+                        $('#module_arguments_container').load(self.paths.modules + self.module + '.html', function () {
+
+                            self.bind($(this));
+
+                            $('a.label_link').attr('href', self.paths.selectors.file);
+
+                            if (self.module === 'copy') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+
+                            else if (self.module === 'script') $(this).find('[data-bind="arguments.script"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+
+                            else if (self.module === 'unarchive') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
+
+                            $('#adhoc_dialog').find('input').keypress(function (event) {
+
+                                if (event.keyCode === 13) {
+
+                                    event.preventDefault();
+
+                                    $(this).next().find('button:contains("Run")').click()
+
+                                }
+
+                            })
+
+                        })
+
+                    });
+
+                if (self.id) $moduleSelector.val(self.module).change();
+
+                else $moduleSelector.val('shell').change();
+
+                $('#adhoc_dialog').dialog('open')
 
             });
 
@@ -154,303 +156,6 @@ AdHoc.prototype.dialog = function (callback) {
 
         })
     );
-
-    // var argumentsField = textInputField.clone();
-    //
-    //
-    //
-    // var moduleReferenceAnchor = $('<a>').attr('target', '_blank').append(
-    //     $('<small>').html('module reference')
-    // );
-    //
-    // var fileSourceLabel = $('<span>').html('Source');
-    //
-    // var fileSourceField = textInputField.clone().attr('data-parameter', 'src');
-    //
-    // var fileSourceGroup = divFormGroup.clone().append(
-    //     $('<label>').html(fileSourceLabel).append(
-    //         $('<small>').attr('class', 'label_link').html('upload files').click(function () {
-    //
-    //             window.open(self.paths.selectors.file, '_blank');
-    //
-    //         }),
-    //         fileSourceField
-    //     )
-    // );
-    //
-    // var fileDestGroup = divFormGroup.clone().append(
-    //     $('<label>').html('Destination').append(textInputField.clone().attr('data-parameter', 'dest'))
-    // );
-    //
-    // var stateSelect = selectField.clone().attr('data-parameter', 'state');
-    //
-    // var stateSelectGroup = divFormGroup.clone().append($('<label>').html('State').append(stateSelect));
-    //
-    // var argumentsGroup = divFormGroup.clone().append($('<label>').html('Arguments').append(argumentsField));
-    //
-    // var sudoButton = self.isSudoBtn();
-    //
-
-    // moduleSelector.change(function () {
-    //
-    //     self.name = '[adhoc task] ' + this.value;
-    //
-    //     self.module = this.value;
-    //
-    //     sudoButton.removeClass('checked_button');
-    //
-    //     argumentsField.val('');
-    //
-    //     moduleFieldsContainer.empty();
-    //
-    //     stateSelect.empty();
-    //
-    //     moduleReferenceAnchor.show().attr('href', 'http://docs.ansible.com/ansible/'+ self.module + '_module.html');
-    //
-    //     switch (self.module) {
-    //
-    //         case 'ping':
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol12.clone().addClass('labelless_button').append(sudoButton)
-    //             );
-    //
-    //             break;
-    //
-    //         case 'shell':
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol10.clone().append(argumentsGroup),
-    //                 divCol2.clone().addClass('text-right labelless_button').append(sudoButton)
-    //             );
-    //
-    //             break;
-    //
-    //         case 'service':
-    //
-    //             stateSelect.data('parameter', 'state').append(
-    //                 $('<option>').attr('value', 'started').html('Started'),
-    //                 $('<option>').attr('value', 'stopped').html('Stopped'),
-    //                 $('<option>').attr('value', 'restarted').html('Restarted'),
-    //                 $('<option>').attr('value', 'reloaded').html('Reloaded')
-    //             );
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol8.clone().append(
-    //                     divFormGroup.clone().append(
-    //                         $('<label>').html('Name').append(textInputField.clone().attr('data-parameter', 'name'))
-    //                     )
-    //                 ),
-    //                 divCol4.clone().append(divFormGroup.clone().append(stateSelectGroup)),
-    //                 divCol10.clone().append(argumentsGroup),
-    //                 divCol2.clone().addClass('text-right labelless_button').append(sudoButton),
-    //                 divCol4.clone().append(
-    //                     divFormGroup.clone().append(
-    //                         $('<label>').html('Enabled').append(
-    //                             selectField.clone().attr('data-parameter', 'enabled').append(
-    //                                 $('<option>').attr('value', 'yes').html('Yes'),
-    //                                 $('<option>').attr('value', 'no').html('No')
-    //                             )
-    //                         )
-    //                     )
-    //                 )
-    //             );
-    //
-    //             break;
-    //
-    //         case 'copy':
-    //
-    //             fileSourceField.autocomplete({source: self.paths.apis.file + 'search/?type=file'});
-    //
-    //             fileSourceLabel.html('Source');
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol12.clone().append(fileSourceGroup),
-    //                 divCol12.clone().append(fileDestGroup),
-    //                 divCol10.clone().append(argumentsGroup),
-    //                 divCol2.clone().addClass('text-right labelless_button').append(sudoButton)
-    //
-    //             );
-    //
-    //             break;
-    //
-    //         case 'unarchive':
-    //
-    //             fileSourceField.autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
-    //
-    //             fileSourceLabel.html('Source');
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol12.clone().append(fileSourceGroup),
-    //                 divCol12.clone().append(fileDestGroup),
-    //                 divCol10.clone().append(argumentsGroup),
-    //                 divCol2.clone().addClass('text-right labelless_button').append(sudoButton)
-    //             );
-    //
-    //             break;
-    //
-    //         case 'script':
-    //
-    //             fileSourceField.autocomplete({source: self.paths.apis.file + 'search/?type=file'});
-    //
-    //             fileSourceLabel.html('Script');
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol12.clone().append(fileSourceGroup),
-    //                 divCol10.clone().append(argumentsGroup),
-    //                 divCol2.clone().addClass('text-right labelless_button').append(sudoButton)
-    //             );
-    //
-    //             break;
-    //
-    //         case 'file':
-    //
-    //             stateSelect.append(
-    //                 $('<option>').attr('value', 'file').html('File'),
-    //                 $('<option>').attr('value', 'link').html('Link'),
-    //                 $('<option>').attr('value', 'directory').html('Directory'),
-    //                 $('<option>').attr('value', 'hard').html('Hard'),
-    //                 $('<option>').attr('value', 'touch').html('Touch'),
-    //                 $('<option>').attr('value', 'absent').html('Absent')
-    //             );
-    //
-    //             moduleFieldsContainer.append(
-    //                 divCol8.clone().append(
-    //                     divFormGroup.clone().append(
-    //                         $('<label>').html('Path').append(textInputField.clone().attr('data-parameter', 'path'))
-    //                     )
-    //                 ),
-    //                 divCol4.clone().append($('<div>').attr('class', 'form-group').append(stateSelectGroup)),
-    //                 divCol10.clone().append(argumentsGroup),
-    //                 divCol2.clone().addClass('text-right labelless_button').append(sudoButton)
-    //             );
-    //
-    //             break;
-    //
-    //     }
-    //
-    //     container.find('input').keypress(function (event) {
-    //
-    //         if (event.keyCode === 13) {
-    //
-    //             event.preventDefault();
-    //
-    //             container.next().find('button:contains("Run")').click()
-    //
-    //         }
-    //
-    //     });
-    //
-    //     argumentsField.keyup(function () {
-    //
-    //         args.otherArgs = $(this).val();
-    //
-    //     });
-    //
-    //     var action = function () {
-    //
-    //         if (self.module === 'script') args.script = ' ' + fileSourceField.val();
-    //
-    //         else if ($(this).val()) args[$(this).attr('data-parameter')] = $(this).val();
-    //
-    //         else delete args[$(this).attr('data-parameter')];
-    //
-    //     };
-    //
-    //     $.each(moduleFieldsContainer.find("[data-parameter]"), function () {
-    //
-    //         $(this).is('input') && $(this).keyup(action);
-    //
-    //         $(this).is('select') && $(this).change(action);
-    //
-    //     });
-    //
-    // });
-
-    // container
-    //     .append(
-    //         divRow.clone().append(
-    //             divCol12.clone().append(header),
-    //             divCol8.clone().append(self.patternField(self.hosts)),
-    //             divCol4.clone().append(
-    //                 divFormGroup.clone().append(
-    //                     $('<label>').html('Module').append(moduleSelector)
-    //                 )
-    //             ),
-    //             divCol12.clone().append(moduleFieldsContainer)
-    //         ),
-    //         divRowEqHeight.clone().append(
-    //             divCol4.clone().append(
-    //                 $('<label>').html('Credentials').append(self.runnerCredsSelector())
-    //             ),
-    //             divCol8.clone().addClass('text-right').css('margin', 'auto').append(moduleReferenceAnchor)
-    //         )
-    //     )
-    //         .dialog({
-    //         width: 600,
-    //         closeOnEscape: false,
-    //         buttons: {
-    //             Run: function () {
-    //
-    //                 self.arguments = self.argumentsToString(args);
-    //
-    //                 var job = new Job(self);
-    //
-    //                 job.run()
-    //
-    //             },
-    //             Save: function () {
-    //
-    //                 self.arguments = JSON.stringify(args);
-    //
-    //                 self.postData('save', function () {
-    //
-    //                     callback && callback();
-    //
-    //                     header.html('Edit AdHoc task');
-    //                 });
-    //
-    //             },
-    //             Close: function () {
-    //
-    //                 $(this).dialog('close');
-    //             }
-    //         }
-    //     });
-
-    // if (self.id) {
-    //
-    //     moduleSelector.val(self.module).change();
-    //
-    //     argumentsField.val(self.arguments.otherArgs);
-    //
-    //     sudoButton.toggleClass('checked_button', self.become);
-    //
-    //     switch (self.name) {
-    //
-    //         case 'script':
-    //
-    //             fileSourceField.val(self.arguments.script);
-    //
-    //             break;
-    //
-    //         default:
-    //
-    //             Object.keys(self.arguments).forEach(function (key) {
-    //
-    //                 var formField = moduleFieldsContainer.find("[data-parameter='" + key + "']");
-    //
-    //                 if (formField.length > 0) formField.val(self.arguments[key]);
-    //
-    //             });
-    //
-    //     }
-    //
-    // }
-    //
-    // else moduleSelector.val('shell').change();
-
-    // container.dialog('open');
 
 };
 

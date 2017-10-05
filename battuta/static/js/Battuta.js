@@ -161,7 +161,8 @@ Battuta.prototype = {
             }
         },
         inventory: '/inventory/',
-        templates: '/static/templates/'
+        templates: '/static/templates/',
+        modules: '/static/templates/ansible_modules/'
     },
 
     getCookie: function (name) {
@@ -236,7 +237,7 @@ Battuta.prototype = {
 
         var data = {};
 
-        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts'];
+        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'args'];
 
         for (var p in obj) {
 
