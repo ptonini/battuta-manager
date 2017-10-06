@@ -16,7 +16,7 @@ function AdHoc (param) {
 
     self.set('module', param.module);
 
-    self.set('arguments', param.arguments ? param.arguments : '');
+    self.set('arguments', param.arguments ? param.arguments : {});
 
 }
 
@@ -40,11 +40,11 @@ AdHoc.prototype.argumentsToString = function () {
 
     Object.keys(self.arguments).forEach(function (key) {
 
-        if (key !== 'otherArgs' && self.arguments[key]) dataString += key + '=' + self.arguments[key] + ' ';
+        if (key !== 'other' && self.arguments[key]) dataString += key + '=' + self.arguments[key] + ' ';
 
     });
 
-    return dataString + self.arguments['otherArgs']
+    return dataString + self.arguments['other']
 
 };
 
@@ -64,7 +64,9 @@ AdHoc.prototype.dialog = function (callback) {
                 buttons: {
                     Run: function () {
 
-                        console.log(self);
+                        console.log(self, self.argumentsToString());
+
+                        self.hosts = self.pattern;
 
                         self.arguments = self.argumentsToString();
 
@@ -75,7 +77,9 @@ AdHoc.prototype.dialog = function (callback) {
                     },
                     Save: function () {
 
-                        console.log(self);
+                        console.log(self, JSON.stringify(self.arguments));
+
+                        self.hosts = self.pattern;
 
                         self.arguments = JSON.stringify(self.arguments);
 

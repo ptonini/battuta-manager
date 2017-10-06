@@ -443,7 +443,7 @@ class AdHocView(View):
 
         if True in auth:
 
-            adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST['id'] else AdHocTask()
+            adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST.get('id') else AdHocTask()
 
             form = AdHocTaskForm(request.POST or None, instance=adhoc)
 

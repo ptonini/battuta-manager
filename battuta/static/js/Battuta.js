@@ -58,7 +58,7 @@ function Battuta (param) {
     $.fn.reverse = [].reverse;
 
     // Add remember last tab method to JQuery
-    $.fn.lastTab = function () {
+    $.fn.rememberTab = function () {
 
         var keyName = $(this).attr('id') + '_activeTab';
 
@@ -292,18 +292,6 @@ Battuta.prototype = {
 
         var self = this;
 
-        var loadData =  function ($element, value) {
-
-            if ($element.is('input, textarea, select')) $element.val(value);
-
-            else if ($element.is('checkbox')) $element.attr('checked', value);
-
-            else if ($element.is('button')) $element.toggleClass('checked_button', value);
-
-            else $element.html(value);
-
-        };
-
         var previousId = false;
 
         Object.keys(self.bindings).forEach(function (key) {
@@ -316,35 +304,47 @@ Battuta.prototype = {
 
         var message = bindId + ':change';
 
+        var loadData =  function ($element, value) {
+
+            if ($element.is('input, textarea, select')) value && $element.val(value);
+
+            else if ($element.is('checkbox')) $element.attr('checked', value);
+
+            else if ($element.is('button')) $element.toggleClass('checked_button', value);
+
+            else $element.html(value);
+
+        };
+
         self.bindings[bindId] = $container;
 
-        $container.off('change').on('change', '[data-bind]', function () {
+        $container
+            .off('change click')
+            .on('change', '[data-bind]', function () {
 
-            self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]);
+                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]);
 
-        });
+            })
+            .on('click', 'button[data-bind]', function () {
 
-        $container.find('button[data-bind]').click(function () {
+                $(this).attr('type', 'button').toggleClass('checked_button');
 
-            $(this).attr('type', 'button').toggleClass('checked_button');
+                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
 
-            self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
+            })
+            .find('[data-bind]').each(function () {
 
-        });
+                var propArray = $(this).data('bind').split('.');
 
-        $container.find('[data-bind]').each(function () {
+                if (propArray.length === 1) loadData($(this), self[propArray[0]]);
 
-            var propArray = $(this).data('bind').split('.');
+                else if (propArray.length === 2 && self.hasOwnProperty(propArray[0])) {
 
-            if (propArray.length === 1) loadData($(this), self[propArray[0]]);
+                    loadData($(this), self[propArray[0]][propArray[1]]);
 
-            else if (propArray.length === 2 && self.hasOwnProperty(propArray[0])) {
+                }
 
-                loadData($(this), self[propArray[0]][propArray[1]]);
-
-            }
-
-        });
+            });
 
         self.pubSub.off(message).on(message, function (event, source, property, value) {
 
@@ -359,8 +359,6 @@ Battuta.prototype = {
                     if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
 
                     self[propArray[0]][propArray[1]] = value;
-
-                    console.log(self)
 
                 }
 
@@ -642,7 +640,7 @@ Battuta.prototype = {
 
     },
 
-    del: function (callback) {
+    deleteDialog: function (action, callback) {
 
         var self = this;
 
@@ -654,7 +652,7 @@ Battuta.prototype = {
                     buttons: {
                         Delete: function () {
 
-                            self.postData('delete', false, function (data) {
+                            self.postData(action, false, function (data) {
 
                                 callback && callback(data)
 
@@ -676,10 +674,15 @@ Battuta.prototype = {
             })
         );
 
+    },
+
+    del: function (callback) {
+
+        var self = this;
+
         self.deleteDialog('delete', callback)
 
     },
-
     edit: function (callback) {
 
         var self = this;

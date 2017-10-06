@@ -419,7 +419,7 @@ User.prototype.credentialsForm = function () {
 
                     self.cred = JSON.stringify({id: credentialsForm.data('loadedCred')});
 
-                    self.postData('delete_cred', false, function (data) {
+                    self.deleteDialog('delete_cred', function (data) {
 
                         credentialsSelector.trigger('build', data.cred.id);
 

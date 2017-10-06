@@ -400,7 +400,7 @@ Node.prototype.variables = function () {
 
                             self.variable = JSON.stringify(variable);
 
-                            self.postData('delete_var', false, function () {
+                            self.deleteDialog('delete_var', function () {
 
                                 $('#variable_table').DataTable().ajax.reload()
 
@@ -542,6 +542,8 @@ Node.prototype.editVariable = function (variable, callback) {
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'editVariableDialog.html', function () {
 
+            variable.id && self.set('variable.id', variable.id);
+
             self.set('header', variable.id ? 'Edit variable' : 'Add variable');
 
             self.set('variable.key', variable.key);
@@ -557,6 +559,8 @@ Node.prototype.editVariable = function (variable, callback) {
                             var $dialog = $(this);
 
                             self.variable = JSON.stringify(self.variable);
+
+                            console.log(self.variable);
 
                             self.postData('save_var', true, function () {
 
@@ -690,7 +694,7 @@ Node.prototype.view = function () {
 
             if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', adhoc.view());
 
-            $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').lastTab();
+            $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
         });
 
@@ -922,7 +926,7 @@ Node.prototype.selector = function () {
 
         });
 
-        $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').lastTab();
+        $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
         loadData()
 

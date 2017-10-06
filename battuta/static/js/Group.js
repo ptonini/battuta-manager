@@ -206,7 +206,7 @@ Group.prototype.view = function () {
 
             self.addTabs('permissions', self.permissionsForm(), $container);
 
-            $('ul.nav-tabs').attr('id','user_group_' + self.id + '_tabs').lastTab();
+            $('ul.nav-tabs').attr('id','user_group_' + self.id + '_tabs').rememberTab();
 
         });
 

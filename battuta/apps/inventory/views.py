@@ -681,7 +681,7 @@ class NodeView(View):
 
                 var_dict = json.loads(request.POST['variable'])
 
-                variable = get_object_or_404(Variable, pk=var_dict['id']) if var_dict['id'] else Variable()
+                variable = get_object_or_404(Variable, pk=var_dict['id']) if var_dict.get('id') else Variable()
 
                 var_dict[node_type] = node.id
 
