@@ -233,7 +233,7 @@ Node.prototype.relationships = function () {
                                 .attr('title', 'Remove')
                                 .click(function () {
 
-                                    self.selection = JSON.stringify([id]);
+                                    self.selection = [id];
 
                                     self.postData('remove_' + relation, false, function () {
 
@@ -258,7 +258,7 @@ Node.prototype.relationships = function () {
                                 $selectionDialog.dialog('option', 'buttons', {
                                     Add: function () {
 
-                                        self.selection = JSON.stringify($selectionDialog.DynaGrid('getSelected', 'id'));
+                                        self.selection = $selectionDialog.DynaGrid('getSelected', 'id');
 
                                         self.postData('add_' + relation, false, function () {
 
@@ -398,7 +398,7 @@ Node.prototype.variables = function () {
                         }),
                         spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
 
-                            self.variable = JSON.stringify(variable);
+                            self.variable = variable;
 
                             self.deleteDialog('delete_var', function () {
 
@@ -558,10 +558,6 @@ Node.prototype.editVariable = function (variable, callback) {
 
                             var $dialog = $(this);
 
-                            self.variable = JSON.stringify(self.variable);
-
-                            console.log(self.variable);
-
                             self.postData('save_var', true, function () {
 
                                 callback && callback();
@@ -625,7 +621,7 @@ Node.prototype.copyVariables = function (callback) {
 
                             $gridItem.click(function () {
 
-                                self.source = JSON.stringify($(this).data());
+                                self.source = $(this).data();
 
                                 self.postData('copy_vars', false, function (data) {
 
@@ -916,7 +912,7 @@ Node.prototype.selector = function () {
 
             var inventory = new Inventory({type: self.type});
 
-            inventory.selection = JSON.stringify($grid.DynaGrid('getSelected', 'id'));
+            inventory.selection = $grid.DynaGrid('getSelected', 'id');
 
             inventory.del(function () {
 

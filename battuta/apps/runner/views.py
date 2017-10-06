@@ -153,8 +153,6 @@ class JobView(View):
 
             job_data = request.POST.dict()
 
-            print job_data
-
             job_data['inventory'] = ansible_inventory.inventory
 
             job_data['var_manager'] = ansible_inventory.var_manager
@@ -220,7 +218,7 @@ class JobView(View):
                             'tasks': [{
                                 'action': {
                                     'module': job_data['module'],
-                                    'args': job_data['arguments']
+                                    'args': json.loads(job_data['arguments'])
                                 }
                             }]
                         }
@@ -413,7 +411,7 @@ class AdHocView(View):
 
                 if auth == {True}:
 
-                    task['arguments'] = json.loads(task['arguments'])
+                    task['arguments'] = json.loads(task['arguments']) if task['arguments'] else ''
 
                     task_list.append(task)
 

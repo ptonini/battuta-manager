@@ -34,17 +34,15 @@ AdHoc.prototype.argumentsToString = function () {
 
     var self = this;
 
-    var dataString = '';
-
-    if (self.arguments.script) self.arguments.script = ' ' + self.arguments.script;
+    var dataString = self.arguments._raw_params ?  self.arguments._raw_params + ' ' :  '';
 
     Object.keys(self.arguments).forEach(function (key) {
 
-        if (key !== 'other' && self.arguments[key]) dataString += key + '=' + self.arguments[key] + ' ';
+        if (key !== 'other' && key !== '_raw_params' && self.arguments[key]) dataString += key + '=' + self.arguments[key] + ' ';
 
     });
 
-    return dataString + self.arguments['other']
+    return self.arguments['other'] ? dataString + self.arguments['other'] : dataString
 
 };
 
@@ -64,11 +62,7 @@ AdHoc.prototype.dialog = function (callback) {
                 buttons: {
                     Run: function () {
 
-                        console.log(self, self.argumentsToString());
-
                         self.hosts = self.pattern;
-
-                        self.arguments = self.argumentsToString();
 
                         var job = new Job(self);
 
@@ -77,11 +71,7 @@ AdHoc.prototype.dialog = function (callback) {
                     },
                     Save: function () {
 
-                        console.log(self, JSON.stringify(self.arguments));
-
                         self.hosts = self.pattern;
-
-                        self.arguments = JSON.stringify(self.arguments);
 
                         self.save(function () {
 
@@ -130,7 +120,7 @@ AdHoc.prototype.dialog = function (callback) {
 
                             if (self.module === 'copy') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
 
-                            else if (self.module === 'script') $(this).find('[data-bind="arguments.script"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+                            else if (self.module === 'script') $(this).find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
 
                             else if (self.module === 'unarchive') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
 
@@ -247,8 +237,6 @@ AdHoc.prototype.view = function () {
                         spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
 
                             adhoc.id = '';
-
-                            adhoc.arguments = JSON.stringify(adhoc.arguments);
 
                             adhoc.save(function () {
 

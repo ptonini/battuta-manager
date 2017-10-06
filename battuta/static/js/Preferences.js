@@ -233,7 +233,7 @@ Preferences.prototype.dialog = function () {
 
         if (noError) {
 
-            self.prefs = JSON.stringify(prefs);
+            self.prefs = prefs;
 
             self.save(function () {
 

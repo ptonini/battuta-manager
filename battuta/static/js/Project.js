@@ -86,7 +86,7 @@ Project.prototype.setProperty =  function (property, input) {
 
             gridItem.click(function () {
 
-                self.property = JSON.stringify({name: property, value: gridItem.data('id')});
+                self.property = {name: property, value: gridItem.data('id')};
 
                 self.postData('set_property', false, function () {
 
@@ -106,7 +106,7 @@ Project.prototype.clearProperty = function (property, input) {
 
     var self = this;
 
-    self.property = JSON.stringify({name: property});
+    self.property = {name: property};
 
     self.postData('clear_property', false, function () {
 
@@ -201,7 +201,7 @@ Project.prototype.playbookGrid = function () {
                         .attr('title', 'Remove')
                         .click(function () {
 
-                            self.playbooks = JSON.stringify([{name: playbook.name, folder: playbook.folder}]);
+                            self.playbooks = [{name: playbook.name, folder: playbook.folder}];
 
                             self.postData('remove_playbook', false, function () {
 
@@ -243,15 +243,13 @@ Project.prototype.playbookGrid = function () {
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
-                            var selection = [];
+                            self.playbooks = [];
 
                             $.each(selectionDialog.DynaGrid('getSelected'), function (index, playbook) {
 
-                                selection.push({name: playbook.name, folder: playbook.folder})
+                                self.playbooks.push({name: playbook.name, folder: playbook.folder})
 
                             });
-
-                            self.playbooks = JSON.stringify(selection);
 
                             self.postData( 'add_playbooks', false, function () {
 
@@ -314,7 +312,7 @@ Project.prototype.roleGrid = function () {
                         .attr('title', 'Remove')
                         .click(function () {
 
-                            self.roles = JSON.stringify([{name: role.name, folder: role.folder}]);
+                            self.roles = [{name: role.name, folder: role.folder}];
 
                             self.postData('remove_role', false, function () {
 
@@ -349,15 +347,13 @@ Project.prototype.roleGrid = function () {
                     selectionDialog.dialog('option', 'buttons', {
                         Add: function () {
 
-                            var selection = [];
+                            self.roles = [];
 
                             $.each(selectionDialog.DynaGrid('getSelected'), function (index, role) {
 
-                                selection.push({name: role.name, folder: role.folder})
+                                self.roles.push({name: role.name, folder: role.folder})
 
                             });
-
-                            self.project.roles = JSON.stringify(selection);
 
                             self.postData('add_roles', false, function () {
 

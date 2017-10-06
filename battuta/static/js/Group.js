@@ -45,15 +45,13 @@ Group.prototype.permissionsForm = function () {
 
                 event.preventDefault();
 
-                var permissions = [];
+                self.permissions = [];
 
                 $form.find('button.permBtn').each(function () {
 
                     permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
 
                 });
-
-                self.permissions = JSON.stringify(permissions);
 
                 self.save(false);
 

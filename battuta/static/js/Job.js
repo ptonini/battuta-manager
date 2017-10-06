@@ -649,7 +649,7 @@ Job.prototype.view = function () {
 
                                         var rowApi = this;
 
-                                        var result = rowApi.data();
+                                        self.result = rowApi.data();
 
                                         $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
 
@@ -661,8 +661,6 @@ Job.prototype.view = function () {
                                             }
 
                                             else {
-
-                                                self.result = JSON.stringify(result);
 
                                                 self.getData('get_result', false, function (data) {
 

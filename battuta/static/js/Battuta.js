@@ -189,6 +189,61 @@ Battuta.prototype = {
 
     },
 
+    ajaxRequest: function (type, obj, url, blockUI, callback, failCallback) {
+
+        var self = this;
+
+        var data = {};
+
+        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
+
+        for (var p in obj) {
+
+            if (obj.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1 && p !== null) {
+
+                if (typeof obj[p] === 'object') data[p] = JSON.stringify(obj[p]);
+
+                else data[p] = obj[p]
+
+            }
+
+        }
+
+        $.ajax({
+            url: url,
+            type: type,
+            dataType: 'json',
+            data: data,
+            cache: false,
+            beforeSend: function (xhr, settings) {
+
+                blockUI && $.blockUI({
+                    message: $('<span>').attr('class', 'fa fa-cog fa-spin fa-fw fa-3x').css('color', '#777'),
+                    css: {
+                        border: 'none',
+                        backgroundColor: 'transparent'
+
+                    },
+                    overlayCSS: {backgroundColor: 'transparent'}
+                });
+
+                !self.csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self.getCookie('csrftoken'));
+
+            },
+            success: function (data) {
+
+                self.requestResponse(data, callback, failCallback)
+
+            },
+            complete: function () {
+
+                blockUI && $.unblockUI();
+
+            }
+        });
+
+    },
+
     requestResponse: function (data, callback, failCallback) {
 
         switch (data.status) {
@@ -223,60 +278,11 @@ Battuta.prototype = {
 
     },
 
-    submitRequest: function (type, obj, url, blockUI, callback, failCallback) {
-
-        var self = this;
-
-        var data = {};
-
-        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
-
-        for (var p in obj) {
-
-            if (obj.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1) data[p] = obj[p];
-
-        }
-
-        $.ajax({
-            url: url,
-            type: type,
-            dataType: 'json',
-            data: data,
-            cache: false,
-            beforeSend: function (xhr, settings) {
-
-                blockUI && $.blockUI({
-                    message: $('<span>').attr('class', 'fa fa-cog fa-spin fa-fw fa-3x').css('color', '#777'),
-                    css: {
-                        border: 'none',
-                        backgroundColor: 'transparent'
-
-                    },
-                    overlayCSS: { backgroundColor: 'transparent' }
-                });
-
-                !self.csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self.getCookie('csrftoken'));
-
-            },
-            success: function (data) {
-
-                self.requestResponse(data, callback, failCallback)
-
-            },
-            complete: function () {
-
-                blockUI && $.unblockUI();
-
-            }
-        });
-
-    },
-
     getData: function (action, blockUI, callback, failCallback) {
 
         var self = this;
 
-        self.submitRequest('GET', self, self.apiPath + action + '/', blockUI, callback, failCallback);
+        self.ajaxRequest('GET', self, self.apiPath + action + '/', blockUI, callback, failCallback);
 
     },
 
@@ -284,7 +290,7 @@ Battuta.prototype = {
 
         var self = this;
 
-        self.submitRequest('POST', self, self.apiPath + action + '/', blockUI, callback, failCallback);
+        self.ajaxRequest('POST', self, self.apiPath + action + '/', blockUI, callback, failCallback);
 
     },
 
@@ -306,7 +312,7 @@ Battuta.prototype = {
 
         var loadData =  function ($element, value) {
 
-            if ($element.is('input, textarea, select')) value && $element.val(value);
+            if ($element.is('input, textarea, select')) $element.val(value);
 
             else if ($element.is('checkbox')) $element.attr('checked', value);
 

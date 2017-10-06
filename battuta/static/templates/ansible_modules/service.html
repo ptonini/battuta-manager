@@ -13,7 +13,7 @@
                 <label>
                     <span>State</span>
                     <select class="select form-control input-sm" data-bind="arguments.state">
-                        <option value="started" selected="selected">Started</option>
+                        <option value="started">Started</option>
                         <option value="stopped">Stopped</option>
                         <option value="restarted">Restarted</option>
                         <option value="reloaded">Reloaded</option>
@@ -24,7 +24,10 @@
     </div>
     <div class="col-md-10">
         <div class="form-group">
-            <label>Arguments<input class="form-control input-sm" type="text" data-bind="arguments.other"></label>
+            <label>
+                <span>Arguments</span>
+                <input class="form-control input-sm" type="text" data-bind="arguments.other">
+            </label>
         </div>
     </div>
     <div class="col-md-2 text-right">
@@ -38,7 +41,7 @@
             <label>
                 <span>Enabled</span>
                 <select class="select form-control input-sm" data-bind="arguments.enabled">
-                    <option value="yes" selected="selected">Yes</option>
+                    <option value="yes">Yes</option>
                     <option value="no">No</option>
                 </select>
             </label>

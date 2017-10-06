@@ -171,7 +171,7 @@ User.prototype.login = function () {
 
     var self = this;
 
-    self.submitRequest('POST', self, self.paths.apis.login + 'login/', false, function () {
+    self.ajaxRequest('POST', self, self.paths.apis.login + 'login/', false, function () {
 
         window.open('/', '_self');
 
@@ -183,7 +183,7 @@ User.prototype.logout = function () {
 
     var self = this;
 
-    self.submitRequest('POST', self, self.paths.apis.login + 'logout/', false, function () {
+    self.ajaxRequest('POST', self, self.paths.apis.login + 'logout/', false, function () {
 
         window.open('/', '_self');
 
@@ -391,7 +391,7 @@ User.prototype.credentialsForm = function () {
 
                 case 'Save':
 
-                    self.cred = JSON.stringify({
+                    self.cred = {
                         user: self.id,
                         id: credentialsForm.data('loadedCred'),
                         title:titleField.val(),
@@ -404,7 +404,7 @@ User.prototype.credentialsForm = function () {
                         ask_pass: askPassButton.hasClass('checked_button'),
                         ask_sudo_pass: askSudoPassButton.hasClass('checked_button'),
                         rsa_key: rsaKeyField.val()
-                    });
+                    };
 
 
                     self.postData('save_cred', true, function (data) {
@@ -417,7 +417,7 @@ User.prototype.credentialsForm = function () {
 
                 case 'Delete':
 
-                    self.cred = JSON.stringify({id: credentialsForm.data('loadedCred')});
+                    self.cred = {id: credentialsForm.data('loadedCred')};
 
                     self.deleteDialog('delete_cred', function (data) {
 

@@ -249,6 +249,41 @@ File.prototype.editorDialog = function (callback) {
 
             else if (self.type === 'text/x-python') aceMode = 'python';
 
+            $.each(modes, function (index, mode){
+
+                $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
+
+            });
+
+            $('#mode_selector')
+                .val(aceMode)
+                .change(function () {
+
+                    textEditor.getSession().setMode('ace/mode/' + $(this).val())
+
+                })
+                .change();
+
+            textEditor.setTheme('ace/theme/chrome');
+
+            textEditor.renderer.setShowPrintMargin(false);
+
+            textEditor.setHighlightActiveLine(false);
+
+            textEditor.setFontSize(13);
+
+            textEditor.$blockScrolling = Infinity;
+
+            textEditor.setValue(self.text);
+
+            textEditor.session.getUndoManager().reset();
+
+            textEditor.selection.moveCursorFileStart();
+
+            $('#editor_container').css('height', window.innerHeight * .7);
+
+            $('div.ui-dialog-buttonpane').css('border-top', 'none');
+
             self.bind(
                 $('#editor_dialog').dialog({
                     width: 900,
@@ -281,41 +316,6 @@ File.prototype.editorDialog = function (callback) {
                     }
                 })
             );
-
-            $.each(modes, function (index, mode){
-
-                $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
-
-            });
-
-            $('#mode_selector')
-                .change(function () {
-
-                    textEditor.getSession().setMode('ace/mode/' + $(this).val())
-
-                })
-                .val(aceMode)
-                .change();
-
-            textEditor.setTheme('ace/theme/chrome');
-
-            textEditor.renderer.setShowPrintMargin(false);
-
-            textEditor.setHighlightActiveLine(false);
-
-            textEditor.setFontSize(13);
-
-            textEditor.$blockScrolling = Infinity;
-
-            textEditor.setValue(self.text);
-
-            textEditor.session.getUndoManager().reset();
-
-            textEditor.selection.moveCursorFileStart();
-
-            $('#editor_container').css('height', window.innerHeight * .7);
-
-            $('div.ui-dialog-buttonpane').css('border-top', 'none');
 
             textEditor.focus();
 
@@ -390,15 +390,13 @@ File.prototype.roleDialog = function (callback) {
                         buttons: {
                             Save: function() {
 
-                                var roleFolders = [];
+                                self.role_folders = [];
 
                                 $('#role_dialog').find('button.checked_button').each(function() {
 
-                                    roleFolders.push($(this).data())
+                                    self.role_folders.push($(this).data())
 
                                 });
-
-                                self.role_folders = JSON.stringify(roleFolders);
 
                                 self.postData('create_role', false, function (data) {
 
