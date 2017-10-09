@@ -683,6 +683,12 @@ Battuta.prototype = {
 
     },
 
+    loadTemplate: function () {
+
+        return
+
+    },
+
     del: function (callback) {
 
         var self = this;

@@ -302,11 +302,11 @@ Job.prototype.selector = function () {
 
 };
 
-Job.prototype.header = function () {
+Job.prototype.navbar = function () {
 
     var self = this;
 
-    return $('<div>').load(self.paths.templates + 'jobHeader.html', function () {
+    return $('<div>').load(self.paths.templates + 'jobNavBar.html', function () {
 
         var $header = $(this);
 
