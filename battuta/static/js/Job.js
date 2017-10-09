@@ -269,38 +269,36 @@ Job.prototype.selector = function () {
 
     var self = this;
 
-    var container = $('<div>');
+    return $('<div>').load(self.paths.templates + 'entitySelector.html', function () {
 
-    var table = baseTable.clone();
+        self.set('title', 'Job history');
 
-    container.append($('<h3>').html('Job history'), $('<br>'), table);
+        self.bind($(this));
 
-    table.DataTable({
-        ajax: {url: self.apiPath + 'list/'},
-        columns: [
-            {class: 'col-md-2', title: 'run data'},
-            {class: 'col-md-2', title: 'user'},
-            {class: 'col-md-2', title: 'name'},
-            {class: 'col-md-2', title: 'hosts/subset'},
-            {class: 'col-md-2', title: 'status'}
-        ],
-        pageLength: 10,
-        serverSide: true,
-        processing: true,
-        order: [[0, "desc"]],
-        rowCallback: function (row, data) {
+        $('#entity_table').DataTable({
+            ajax: {url: self.apiPath + 'list/'},
+            columns: [
+                {class: 'col-md-2', title: 'run data'},
+                {class: 'col-md-2', title: 'user'},
+                {class: 'col-md-2', title: 'name'},
+                {class: 'col-md-2', title: 'hosts/subset'},
+                {class: 'col-md-2', title: 'status'}
+            ],
+            pageLength: 10,
+            serverSide: true,
+            processing: true,
+            order: [[0, "desc"]],
+            rowCallback: function (row, data) {
 
-            console.log(data);
+                $(row).css({color: self.states[data[4]].color, cursor: 'pointer'}).click(function () {
 
-            $(row).css({color: self.states[data[4]].color, cursor: 'pointer'}).click(function () {
+                    self.popupCenter(self.paths.views.job + data[5] + '/', data[5], 1000);
 
-                self.popupCenter(self.paths.views.job + data[5] + '/', data[5], 1000);
+                })
+            }
+        });
 
-            })
-        }
     });
-
-    return container
 
 };
 
@@ -308,15 +306,25 @@ Job.prototype.header = function () {
 
     var self = this;
 
-    var container = $('<header>').attr('class', 'navbar navbar-default navbar-fixed-top');
+    return $('<div>').load(self.paths.templates + 'jobHeader.html', function () {
 
-    var cog = $('<span>').css('margin', '0 1rem').attr('class', 'fa fa-cog fa-spin fa-fw').hide();
+        var $header = $(this);
 
-    var rerunButton = btnNavbarGlyph.clone()
-        .hide()
-        .attr('title', 'Run playbook again')
-        .html(spanFA.clone().addClass('fa-repeat'))
-        .click(function () {
+        self.bind($header);
+
+        $header.find('[data-bind="status"]').css('color', self.stateColor());
+
+        var $jobGog = $('#job_cog');
+
+        var $cancelBtn = $('#cancel_button').click(function () {
+
+            self.postData('kill', false);
+
+        });
+
+        var $scrollBtn = $('#scroll_button');
+
+        var $rerunBtn = $('#rerun_button').click(function () {
 
             var playArgs = new PlaybookArgs( {
                 playbook: self.name,
@@ -331,21 +339,13 @@ Job.prototype.header = function () {
 
         });
 
-    var statsButton = btnNavbarGlyph.clone()
-        .hide()
-        .attr('title', 'Statistics')
-        .html(spanFA.clone().addClass('fa-list'))
-        .click(function () {
+        var $statsBtn = $('#stats_button').click(function () {
 
             self.statistics(true)
 
         });
 
-    var printButton = btnNavbarGlyph.clone()
-        .hide()
-        .attr('title', 'Print')
-        .html(spanFA.clone().addClass('fa-print'))
-        .click(function () {
+        var $printBtn = $('#print_button').click(function () {
 
             var pageTitle = $(document).find('title').text();
 
@@ -369,93 +369,57 @@ Job.prototype.header = function () {
 
         });
 
-    var cancelButton = btnNavbarGlyph.clone()
-        .hide()
-        .attr('title', 'Cancel')
-        .html(spanFA.clone().addClass('fa-times').css('color', 'red'))
-        .click(function () {
+        if (self.is_running) {
 
-            self.postData('kill', false);
+            self.set('auto_scroll', true);
 
-        });
+            $rerunBtn.hide();
 
-    var autoScrollButton = btnNavbarGlyph.clone()
-        .hide()
-        .attr('title', 'Auto scroll')
-        .addClass('checked_button')
-        .html(spanFA.clone().addClass('fa-angle-double-down'))
-        .click(function () {
+            $statsBtn.hide();
 
-            $(this).toggleClass('checked_button');
+            $printBtn.hide();
 
-            self.autoScroll = $(this).hasClass('checked_button');
+            var intervalId = setInterval(function () {
 
-        });
+                $header.find('[data-bind="status"]').css('color', self.stateColor());
 
-    var jobStatus = $('<small>').html(self.status).css({'margin-left': '2rem', color: self.stateColor()});
+                if (!self.is_running) {
 
-    container.append(
-        $('<div>').attr('class', 'container').append(
-            $('<div>').attr('class', 'navbar-header').append(
-                $('<span>').attr('class', 'navbar-brand').append(self.name, jobStatus, cog)
-            ),
-            $('<ul>').attr('class','nav navbar-nav navbar-right').append(
-                $('<li>').html(cancelButton),
-                $('<li>').html(autoScrollButton),
-                $('<li>').html(rerunButton),
-                $('<li>').html(statsButton),
-                $('<li>').html(printButton)
-            )
-        )
-    );
+                    $jobGog.hide();
 
-    if (self.is_running) {
+                    $cancelBtn.hide();
 
-        cog.show();
+                    $scrollBtn.hide();
 
-        cancelButton.show();
+                    self.type === 'playbook' && $rerunBtn.show();
 
-        autoScrollButton.show();
+                    self.type === 'playbook' && self.stats && $statsBtn.show();
 
-        self.autoScroll = true;
+                    $printBtn.show();
 
-        var intervalId = setInterval(function () {
+                    clearInterval(intervalId)
 
-            jobStatus.css('color', self.stateColor()).html(self.status);
+                }
 
-            if (!self.is_running) {
+            }, 1000)
 
-                cog.hide();
+        }
 
-                cancelButton.hide();
+        else {
 
-                autoScrollButton.hide();
+            $jobGog.hide();
 
-                self.type === 'playbook' && rerunButton.show();
+            $cancelBtn.hide();
 
-                self.type === 'playbook' && self.stats && statsButton.show();
+            $scrollBtn.hide();
 
-                printButton.show();
+            self.type === 'playbook' || $rerunBtn.hide();
 
-                clearInterval(intervalId)
+            (self.type === 'playbook' && self.stats) || $statsBtn.hide();
 
-            }
+        }
 
-        }, 1000)
-
-    }
-
-    else {
-
-        self.type === 'playbook' && rerunButton.show();
-
-        self.type === 'playbook' && self.stats && statsButton.show();
-
-        printButton.show();
-
-    }
-
-    return container
+    });
 
 };
 

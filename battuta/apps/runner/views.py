@@ -211,6 +211,18 @@ class JobView(View):
 
                     if adhoc_form.is_valid():
 
+                        arguments = json.loads(job_data['arguments'])
+
+                        if 'extra_params' in arguments:
+
+                            for arg in arguments['extra_params'].split():
+
+                                key, value = arg.split('=')
+
+                                arguments[key] = value
+
+                            arguments.pop('extra_params')
+
                         job_data['adhoc_task'] = {
                             'name': job_data['name'],
                             'hosts': job_data['hosts'],
@@ -218,7 +230,7 @@ class JobView(View):
                             'tasks': [{
                                 'action': {
                                     'module': job_data['module'],
-                                    'args': json.loads(job_data['arguments'])
+                                    'args': arguments
                                 }
                             }]
                         }

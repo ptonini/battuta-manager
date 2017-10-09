@@ -392,7 +392,7 @@ File.prototype.roleDialog = function (callback) {
 
                                 self.role_folders = [];
 
-                                $('#role_dialog').find('button.checked_button').each(function() {
+                                $(this).find('button.checked_button').each(function() {
 
                                     self.role_folders.push($(this).data())
 
@@ -415,9 +415,9 @@ File.prototype.roleDialog = function (callback) {
                     })
                     .find('button').click(function () {
 
-                    $(this).toggleClass('checked_button')
+                        $(this).toggleClass('checked_button')
 
-                })
+                    })
             );
 
         })

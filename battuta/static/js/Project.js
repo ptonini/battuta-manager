@@ -54,7 +54,7 @@ Project.prototype.properties = {
         item: 'username'
     },
     host_group: {
-        url: Battuta.prototype.paths.apis.inventory + 'group/list/',
+        url: Battuta.prototype.paths.apis.inventory + 'list/?type=group',
         type: 'group',
         key: 'nodes',
         item: 'name'
@@ -80,13 +80,13 @@ Project.prototype.setProperty =  function (property, input) {
         itemValueKey: propData.item,
         showButtons: false,
         loadCallback: null,
-        formatItem: function (gridItem, selectionDialog) {
+        formatItem: function ($gridItem) {
 
-            var itemData = gridItem.data();
+            var itemData = $gridItem.data();
 
-            gridItem.click(function () {
+            $gridItem.click(function () {
 
-                self.property = {name: property, value: gridItem.data('id')};
+                self.property = {name: property, value: $gridItem.data('id')};
 
                 self.postData('set_property', false, function () {
 
@@ -94,7 +94,7 @@ Project.prototype.setProperty =  function (property, input) {
 
                 });
 
-                selectionDialog.dialog('close')
+                $('#selection_dialog').dialog('close')
 
             })
 
@@ -229,23 +229,23 @@ Project.prototype.playbookGrid = function () {
                 itemValueKey: 'name',
                 showButtons: true,
                 addButtonAction: null,
-                formatItem: function(gridItem) {
+                formatItem: function($gridItem) {
 
-                    var playbook = gridItem.data();
+                    var playbook = $gridItem.data();
 
                     var itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
 
-                    gridItem.attr('title', itemTitle).html(itemTitle)
+                    $gridItem.attr('title', itemTitle).html(itemTitle)
 
                 },
-                loadCallback: function (gridContainer, selectionDialog) {
+                loadCallback: function ($gridContainer) {
 
-                    selectionDialog.dialog('option', 'buttons', {
+                    $('#selection_dialog').dialog('option', 'buttons', {
                         Add: function () {
 
                             self.playbooks = [];
 
-                            $.each(selectionDialog.DynaGrid('getSelected'), function (index, playbook) {
+                            $.each($gridContainer.DynaGrid('getSelected'), function (index, playbook) {
 
                                 self.playbooks.push({name: playbook.name, folder: playbook.folder})
 
@@ -337,19 +337,19 @@ Project.prototype.roleGrid = function () {
 
             self.selectionDialog({
                 objectType: 'roles',
-                url: self.paths.apis.files + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
+                url: self.paths.apis.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
                 ajaxDataKey: 'file_list',
                 itemValueKey: 'name',
                 showButtons: true,
                 addButtonAction: null,
-                loadCallback: function (gridContainer, selectionDialog) {
+                loadCallback: function ($gridContainer) {
 
-                    selectionDialog.dialog('option', 'buttons', {
+                    $('#selection_dialog').dialog('option', 'buttons', {
                         Add: function () {
 
                             self.roles = [];
 
-                            $.each(selectionDialog.DynaGrid('getSelected'), function (index, role) {
+                            $.each($gridContainer.DynaGrid('getSelected'), function (index, role) {
 
                                 self.roles.push({name: role.name, folder: role.folder})
 

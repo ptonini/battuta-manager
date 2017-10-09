@@ -129,12 +129,12 @@ Group.prototype.memberGrid = function () {
                     ajaxDataKey: 'members',
                     itemValueKey: 'name',
                     showButtons: true,
-                    loadCallback: function (gridContainer, selectionDialog) {
+                    loadCallback: function ($gridContainer) {
 
-                        selectionDialog.dialog('option', 'buttons', {
+                        $('#selection_dialog').dialog('option', 'buttons', {
                             Add: function () {
 
-                                self.selection = selectionDialog.DynaGrid('getSelected', 'id');
+                                self.selection = $gridContainer.DynaGrid('getSelected', 'id');
 
                                 self.postData('add_members', false, function () {
 
@@ -216,13 +216,11 @@ Group.prototype.selector = function () {
 
     var self = this;
 
-    var $container = $('<div>');
-
-    $container.load(self.paths.templates + 'entitySelector.html', function () {
+    return $('<div>').load(self.paths.templates + 'entitySelector.html', function () {
 
         self.set('title', 'User groups');
 
-        self.bind($container);
+        self.bind($(this));
 
         $('#entity_table').DataTable({
             ajax: {
@@ -255,8 +253,6 @@ Group.prototype.selector = function () {
             ],
             rowCallback: function (row, data) {
 
-                var $table = $(this);
-
                 var group = new Group(data);
 
                 $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
@@ -271,7 +267,7 @@ Group.prototype.selector = function () {
 
                             group.del(function () {
 
-                                $table.DataTable().ajax.reload();
+                                $('#entity_table').DataTable().ajax.reload();
 
                             })
 
@@ -283,7 +279,5 @@ Group.prototype.selector = function () {
         })
 
     });
-
-    return $container
 
 };

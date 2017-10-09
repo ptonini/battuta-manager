@@ -34,19 +34,19 @@ AdHoc.prototype.argumentsToString = function () {
 
     var self = this;
 
-    var dataString = self.arguments._raw_params ?  self.arguments._raw_params + ' ' :  '';
+    var dataString = self.arguments._raw_params ? self.arguments._raw_params + ' ' :  '';
 
     Object.keys(self.arguments).forEach(function (key) {
 
-        if (key !== 'other' && key !== '_raw_params' && self.arguments[key]) dataString += key + '=' + self.arguments[key] + ' ';
+        if (key !== 'extra_params' && key !== '_raw_params' && self.arguments[key]) dataString += key + '=' + self.arguments[key] + ' ';
 
     });
 
-    return self.arguments['other'] ? dataString + self.arguments['other'] : dataString
+    return self.arguments['extra_params'] ? dataString + self.arguments['extra_params'] : dataString
 
 };
 
-AdHoc.prototype.dialog = function (callback) {
+AdHoc.prototype.dialog = function (locked, callback) {
 
     var self = this;
 
@@ -73,11 +73,13 @@ AdHoc.prototype.dialog = function (callback) {
 
                         self.hosts = self.pattern;
 
+                        console.log(2, self);
+
                         self.save(function () {
 
                             callback && callback();
 
-                            self.set('title', 'Edit AdHoc task');
+                            //self.set('title', 'Edit AdHoc task');
 
                         });
 
@@ -89,15 +91,15 @@ AdHoc.prototype.dialog = function (callback) {
                 }
             });
 
-            self.set('title', self.id ? 'AdHoc Task' : 'New AdHoc task');
-
-            $('#pattern_field_label').append(self.patternField(self.hosts));
+            $('#pattern_field_label').append(self.patternField(locked, self.hosts));
 
             $('#credentials_selector_label').append(self.runnerCredsSelector());
 
             self.getData('modules', true, function (data) {
 
-                $.each(data.modules, function (index, value) {
+                data.modules.sort();
+
+                $.each(data.modules.sort(), function (index, value) {
 
                     $moduleSelector.append($('<option>').attr('value', value).append(value))
 
@@ -123,6 +125,12 @@ AdHoc.prototype.dialog = function (callback) {
                             else if (self.module === 'script') $(this).find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
 
                             else if (self.module === 'unarchive') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
+
+                            Object.keys(self.arguments).forEach(function (key) {
+
+                                if ($dialog.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
+
+                            });
 
                             $dialog
                                 .dialog('open')
@@ -155,7 +163,7 @@ AdHoc.prototype.dialog = function (callback) {
 
 };
 
-AdHoc.prototype.view = function () {
+AdHoc.prototype.view = function (locked) {
 
     var self = this;
 
@@ -181,7 +189,7 @@ AdHoc.prototype.view = function () {
 
         if (self.hosts) $('#view_header').remove();
 
-        $('#command_pattern_field_label').append(self.patternField(self.hosts));
+        $('#command_pattern_field_label').append(self.patternField(locked, self.hosts));
 
         $('#command_credentials_selector_label').append(self.runnerCredsSelector());
 
@@ -207,7 +215,7 @@ AdHoc.prototype.view = function () {
 
                         var adhoc = new AdHoc({hosts: self.hosts});
 
-                        adhoc.dialog(function () {
+                        adhoc.dialog(locked, function () {
 
                             $('#adhoc_table').DataTable().ajax.reload()
 
@@ -227,7 +235,7 @@ AdHoc.prototype.view = function () {
                         self.prettyBoolean($(row).find('td:eq(3)'), adhoc.become),
                         spanFA.clone().addClass('fa-play-circle-o btn-incell').attr('title', 'Load').click(function () {
 
-                            adhoc.dialog(function () {
+                            adhoc.dialog(locked, function () {
 
                                 $('#adhoc_table').DataTable().ajax.reload()
 

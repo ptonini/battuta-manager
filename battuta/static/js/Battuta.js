@@ -391,7 +391,7 @@ Battuta.prototype = {
         $(document.body).append(
             $('<div>').load(self.paths.templates + 'selectionDialog.html', function () {
 
-                $('#selection_dialog')
+                $('#selection_grid')
                     .DynaGrid({
                         gridTitle: 'selection',
                         showFilter: true,
@@ -408,21 +408,22 @@ Battuta.prototype = {
                         itemValueKey: options.itemValueKey,
                         loadCallback: function ($gridContainer) {
 
-                            options.loadCallback && options.loadCallback($gridContainer, $('#selection_dialog'))
+                            options.loadCallback && options.loadCallback($gridContainer)
 
                         },
                         addButtonAction: function () {
 
-                            options.addButtonAction && options.addButtonAction($('#selection_dialog'))
+                            options.addButtonAction && options.addButtonAction()
 
                         },
                         formatItem: function($gridContainer, $gridItem) {
 
-                            options.formatItem && options.formatItem($gridItem, $('#selection_dialog'))
+                            options.formatItem && options.formatItem($gridItem)
 
                         }
-                    })
-                    .dialog({
+                    });
+
+                $('#selection_dialog').dialog({
                         minWidth: 700,
                         minHeight: 500,
                         buttons: {
@@ -476,7 +477,7 @@ Battuta.prototype = {
 
     },
 
-    patternField: function (pattern) {
+    patternField: function (locked, pattern) {
 
         var self = this;
 
@@ -538,12 +539,12 @@ Battuta.prototype = {
                                     ajaxDataKey: 'nodes',
                                     itemValueKey: 'name',
                                     showButtons: true,
-                                    loadCallback: function ($gridContainer, $selectionDialog) {
+                                    loadCallback: function ($gridContainer) {
 
-                                        $selectionDialog.dialog('option', 'buttons', {
+                                        $('#selection_dialog').dialog('option', 'buttons', {
                                             Add: function () {
 
-                                                var selection = $selectionDialog.DynaGrid('getSelected', 'name');
+                                                var selection = $gridContainer.DynaGrid('getSelected', 'name');
 
                                                 for (var i = 0; i < selection.length; i++) {
 
@@ -565,13 +566,13 @@ Battuta.prototype = {
                                             }
                                         })
                                     },
-                                    addButtonAction: function ($selectionDialog) {
+                                    addButtonAction: function () {
 
                                         var node = new Node({name: null, description: null, type: type});
 
                                         node.edit(function () {
 
-                                            $selectionDialog.DynaGrid('load')
+                                            $('#selection_grid').DynaGrid('load')
 
                                         })
 
@@ -588,7 +589,7 @@ Battuta.prototype = {
 
             });
 
-            if (pattern) {
+            if (locked) {
 
                 $patternField.prop('disabled', true);
 
@@ -689,6 +690,7 @@ Battuta.prototype = {
         self.deleteDialog('delete', callback)
 
     },
+
     edit: function (callback) {
 
         var self = this;
@@ -802,7 +804,7 @@ Battuta.prototype = {
 
             $('#group_selector_anchor').attr('href', self.paths.selectors.node.group);
 
-            $('#import_inventory_anchor').attr('href', self.paths.inventory + 'import/');
+            $('#manage_inventory_anchor').attr('href', self.paths.inventory + 'manage/');
 
             $('#adhoc_selector_anchor').attr('href', self.paths.selectors.adhoc);
 

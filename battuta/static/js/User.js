@@ -544,12 +544,12 @@ User.prototype.groupGrid = function () {
                 ajaxDataKey: 'groups',
                 itemValueKey: 'name',
                 showButtons: true,
-                loadCallback: function (gridContainer, selectionDialog) {
+                loadCallback: function ($gridContainer) {
 
-                    selectionDialog.dialog('option', 'buttons', {
+                    $('#selection_dialog').dialog('option', 'buttons', {
                         Add: function () {
 
-                            self.selection = selectionDialog.DynaGrid('getSelected', 'id');
+                            self.selection = $gridContainer.DynaGrid('getSelected', 'id');
 
                             self.postData('add_groups', false, function () {
 

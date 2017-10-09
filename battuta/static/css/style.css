@@ -12,7 +12,7 @@ html {overflow-y: scroll}
 
 body {font-size: small}
 
-header {font-size: 14px}
+header {font-size: 14px; border-radius: 0 !important;}
 
 footer {height: 25px}
 
@@ -74,6 +74,7 @@ li.path_link, #root_path, #edit_path {cursor: pointer}
 
 header.navbar .dropdown-menu {font-size: small}
 
+button.menu-btn {border-radius: .5rem}
 
 /* JQuery UI options *****************/
 

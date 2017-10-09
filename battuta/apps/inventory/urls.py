@@ -5,7 +5,7 @@ from . import views
 
 urlpatterns = [
 
-    url(r'^import/$', login_required(views.PageView.as_view()), kwargs={'page': 'import'}),
+    url(r'^manage/$', login_required(views.PageView.as_view()), kwargs={'page': 'manage'}),
 
     url(r'^(?P<node_type_plural>hosts|groups)/$', login_required(views.PageView.as_view()), kwargs={'page': 'nodes'}),
 

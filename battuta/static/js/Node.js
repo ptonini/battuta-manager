@@ -253,12 +253,12 @@ Node.prototype.relationships = function () {
                             ajaxDataKey: 'nodes',
                             itemValueKey: 'name',
                             showButtons: true,
-                            loadCallback: function ($gridContainer, $selectionDialog) {
+                            loadCallback: function ($gridContainer) {
 
-                                $selectionDialog.dialog('option', 'buttons', {
+                                $('#selection_dialog').dialog('option', 'buttons', {
                                     Add: function () {
 
-                                        self.selection = $selectionDialog.DynaGrid('getSelected', 'id');
+                                        self.selection = $gridContainer.DynaGrid('getSelected', 'id');
 
                                         self.postData('add_' + relation, false, function () {
 
@@ -617,7 +617,7 @@ Node.prototype.copyVariables = function (callback) {
                         showButtons: false,
                         loadCallback: null,
                         addButtonAction: null,
-                        formatItem: function ($gridItem, $selectionDialog) {
+                        formatItem: function ($gridItem) {
 
                             $gridItem.click(function () {
 
@@ -625,7 +625,7 @@ Node.prototype.copyVariables = function (callback) {
 
                                 self.postData('copy_vars', false, function (data) {
 
-                                    $selectionDialog.dialog('close');
+                                    $('#selection_dialog').dialog('close');
 
                                     callback && callback(data)
 
@@ -688,7 +688,7 @@ Node.prototype.view = function () {
 
             self.addTabs('variables', self.variables());
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', adhoc.view());
+            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', adhoc.view(true));
 
             $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
@@ -766,7 +766,7 @@ Node.prototype.selector = function () {
 
         var loadData = function () {
 
-            inventory.list(false, function (data) {
+            inventory.list(true, function (data) {
 
                 $grid.DynaGrid(Object.assign({dataArray: data.nodes}, openOptions));
 

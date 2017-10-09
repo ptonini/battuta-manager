@@ -30,9 +30,9 @@ class PageView(View):
     @staticmethod
     def get(request, **kwargs):
 
-        if kwargs['page'] == 'import':
+        if kwargs['page'] == 'manage':
 
-            return render(request, 'inventory/inventory.html')
+            return render(request, 'inventory/manage.html')
 
         elif kwargs['page'] == 'nodes':
 
@@ -292,7 +292,7 @@ class InventoryView(View):
 
                         except ValueError:
 
-                            data['status':] = 'failed'
+                            data['status'] = 'failed'
 
                             data['msg'] = 'Error: could not find hosts column'
 
@@ -334,7 +334,7 @@ class InventoryView(View):
 
                                             var.save()
 
-                            data['status':] = 'ok'
+                            data['status'] = 'ok'
 
                     # Import from JSON
                     elif request.POST['format'] == 'json':
@@ -346,7 +346,7 @@ class InventoryView(View):
 
                         except ValueError:
 
-                            data['status':] = 'failed'
+                            data['status'] = 'failed'
 
                             data['msg'] = 'Error: File does not contain valid JSON'
 
@@ -441,7 +441,7 @@ class InventoryView(View):
 
                                 group.save()
 
-                            data['status':] = 'ok'
+                            data['status'] = 'ok'
 
                     else:
 

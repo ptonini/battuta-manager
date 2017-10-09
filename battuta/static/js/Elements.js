@@ -4,10 +4,6 @@
 
 var divRow = $('<div>').attr('class', 'row');
 
-var divRowEqHeight = $('<div>').attr('class', 'row row-eq-height');
-
-var divCol1 = $('<div>').attr('class', 'col-md-1');
-
 var divCol2 = $('<div>').attr('class', 'col-md-2');
 
 var divCol3 = $('<div>').attr('class', 'col-md-3');
@@ -19,8 +15,6 @@ var divCol6 = $('<div>').attr('class', 'col-md-6');
 var divCol8 = $('<div>').attr('class', 'col-md-8');
 
 var divCol9 = $('<div>').attr('class', 'col-md-9');
-
-var divCol10 = $('<div>').attr('class', 'col-md-10');
 
 var divCol12 = $('<div>').attr('class', 'col-md-12');
 
@@ -36,8 +30,6 @@ var divFormGroup = $('<div>').attr('class', 'form-group');
 
 var divInputGroup = $('<div>').attr('class', 'input-group');
 
-var divRadio = $('<div>').attr('class', 'radio');
-
 var spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
 
 
@@ -50,10 +42,6 @@ var textInputField = $('<input>').attr({class: 'form-control input-sm', type: 't
 var textAreaField = $('<textarea>').attr('class', 'textarea form-control input-sm');
 
 var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
-
-var fileInputField = $('<input>').attr({class: 'input-file', type: 'file'});
-
-var radioInput =  $('<input>').attr('type', 'radio');
 
 
 // Dialogs
