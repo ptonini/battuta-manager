@@ -2,7 +2,7 @@ function Group(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -34,7 +34,7 @@ Group.prototype.type = 'user group';
 
 Group.prototype.permissionsForm = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'permissionsForm.html', function () {
 
@@ -76,7 +76,7 @@ Group.prototype.permissionsForm = function () {
 
 Group.prototype.memberGrid = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'membersGrid.html', function () {
 
@@ -96,7 +96,7 @@ Group.prototype.memberGrid = function () {
             ajaxUrl: self.apiPath + 'members/?name=' + self.name,
             formatItem: function ($gridContainer, $gridItem) {
 
-                var name = $gridItem.data('value');
+                let name = $gridItem.data('value');
 
                 $gridItem.html('').append(
                     $('<span>').append(name).click(function () {
@@ -168,11 +168,11 @@ Group.prototype.memberGrid = function () {
 
 Group.prototype.view = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'entityView.html', function () {
 
-        var $container = $(this);
+        let $container = $(this);
 
         self.refresh(false, function () {
 
@@ -214,7 +214,7 @@ Group.prototype.view = function () {
 
 Group.prototype.selector = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'entitySelector.html', function () {
 
@@ -234,7 +234,7 @@ Group.prototype.selector = function () {
                     className: 'btn-xs',
                     action: function () {
 
-                        var group = new Group({id: null, name: null, description: null});
+                        let group = new Group({id: null, name: null, description: null});
 
                         group.edit(function (data) {
 
@@ -253,7 +253,7 @@ Group.prototype.selector = function () {
             ],
             rowCallback: function (row, data) {
 
-                var group = new Group(data);
+                let group = new Group(data);
 
                 $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 

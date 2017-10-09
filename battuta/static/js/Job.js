@@ -2,7 +2,7 @@ function Job(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -86,21 +86,21 @@ Job.prototype.taskStates = {
 
 Job.prototype.popupCenter = function (url, title, w) {
 
-    var dualScreenLeft = window.screenLeft ? window.screenLeft : screen.left;
+    let dualScreenLeft = window.screenLeft ? window.screenLeft : screen.left;
 
-    var dualScreenTop = window.screenTop ? window.screenTop : screen.top;
+    let dualScreenTop = window.screenTop ? window.screenTop : screen.top;
 
-    var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+    let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
 
-    var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+    let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
 
-    var h = height - 50;
+    let h = height - 50;
 
-    var left = ((width / 2) - (w / 2)) + dualScreenLeft;
+    let left = ((width / 2) - (w / 2)) + dualScreenLeft;
 
-    var top = ((height / 2) - (h / 2)) + dualScreenTop;
+    let top = ((height / 2) - (h / 2)) + dualScreenTop;
 
-    var newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+    let newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
 
     // Puts focus on the newWindow
     window.focus && newWindow.focus();
@@ -109,7 +109,7 @@ Job.prototype.popupCenter = function (url, title, w) {
 
 Job.prototype.stateColor = function () {
 
-    var self = this;
+    let self = this;
 
     return self.status ? self.states[self.status].color : 'black'
 
@@ -117,9 +117,9 @@ Job.prototype.stateColor = function () {
 
 Job.prototype.getFacts = function (callback) {
 
-    var self = this;
+    let self = this;
 
-    var user = new User({username: sessionStorage.getItem('user_name')});
+    let user = new User({username: sessionStorage.getItem('user_name')});
 
     user.defaultCred(function (data) {
 
@@ -129,7 +129,7 @@ Job.prototype.getFacts = function (callback) {
 
     });
 
-    var intervalId = setInterval(function() {
+    let intervalId = setInterval(function() {
 
         self.refresh(false, function (data) {
 
@@ -149,17 +149,17 @@ Job.prototype.getFacts = function (callback) {
 
 Job.prototype.run = function (sameWindow) {
 
-    var self = this;
+    let self = this;
 
-    var askUser =  self.cred.id === 0;
+    let askUser =  self.cred.id === 0;
 
-    var askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
+    let askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
 
-    var askSudoUser = false;
+    let askSudoUser = false;
 
-    var askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
+    let askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
 
-    var post = function () {
+    let post = function () {
 
         self.cred = self.cred.id;
 
@@ -167,13 +167,13 @@ Job.prototype.run = function (sameWindow) {
 
             self.constructor(data.job);
 
-            var jobUrl = self.paths.views.job + self.id + '/';
+            let jobUrl = self.paths.views.job + self.id + '/';
 
             if (sameWindow) window.open(jobUrl, '_self');
 
             else {
 
-                var windowTitle;
+                let windowTitle;
 
                 if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
 
@@ -189,15 +189,15 @@ Job.prototype.run = function (sameWindow) {
 
     if (askUser || askUserPass || askSudoUser || askSudoPass) {
 
-        var userGroup = divFormGroup.clone().toggleClass('hidden', (!askUser));
+        let userGroup = divFormGroup.clone().toggleClass('hidden', (!askUser));
 
-        var userField = textInputField.clone();
+        let userField = textInputField.clone();
 
-        var userPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askUserPass));
+        let userPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askUserPass));
 
-        var userPassFieldTitle = $('<span>');
+        let userPassFieldTitle = $('<span>');
 
-        var userPassword = passInputField.clone();
+        let userPassword = passInputField.clone();
 
         if (self.cred.username) {
 
@@ -209,15 +209,15 @@ Job.prototype.run = function (sameWindow) {
 
         else userPassFieldTitle.html('Password');
 
-        var sudoUserGroup = divFormGroup.clone().toggleClass('hidden', (!askSudoUser));
+        let sudoUserGroup = divFormGroup.clone().toggleClass('hidden', (!askSudoUser));
 
-        var sudoUserField = textInputField.clone();
+        let sudoUserField = textInputField.clone();
 
-        var sudoPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askSudoPass));
+        let sudoPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askSudoPass));
 
-        var sudoPassword = passInputField.clone();
+        let sudoPassword = passInputField.clone();
 
-        var passwordDialog = $('<div>').attr('class', 'small_dialog').append(
+        let passwordDialog = $('<div>').attr('class', 'small_dialog').append(
             userGroup.append($('<label>').html('Username').append(userField)),
             userPasswordGroup.append($('<label>').html(userPassFieldTitle).append(userPassword)),
             sudoUserGroup.append($('<label>').html('Sudo user').append(sudoUserField)),
@@ -267,7 +267,7 @@ Job.prototype.run = function (sameWindow) {
 
 Job.prototype.selector = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'entitySelector.html', function () {
 
@@ -304,29 +304,29 @@ Job.prototype.selector = function () {
 
 Job.prototype.navbar = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'jobNavBar.html', function () {
 
-        var $header = $(this);
+        let $header = $(this);
 
         self.bind($header);
 
         $header.find('[data-bind="status"]').css('color', self.stateColor());
 
-        var $jobGog = $('#job_cog');
+        let $jobGog = $('#job_cog');
 
-        var $cancelBtn = $('#cancel_button').click(function () {
+        let $cancelBtn = $('#cancel_button').click(function () {
 
             self.postData('kill', false);
 
         });
 
-        var $scrollBtn = $('#scroll_button');
+        let $scrollBtn = $('#scroll_button');
 
-        var $rerunBtn = $('#rerun_button').click(function () {
+        let $rerunBtn = $('#rerun_button').click(function () {
 
-            var playArgs = new PlaybookArgs( {
+            let playArgs = new PlaybookArgs( {
                 playbook: self.name,
                 folder: self.folder,
                 subset: self.subset,
@@ -339,17 +339,17 @@ Job.prototype.navbar = function () {
 
         });
 
-        var $statsBtn = $('#stats_button').click(function () {
+        let $statsBtn = $('#stats_button').click(function () {
 
             self.statistics(true)
 
         });
 
-        var $printBtn = $('#print_button').click(function () {
+        let $printBtn = $('#print_button').click(function () {
 
-            var pageTitle = $(document).find('title').text();
+            let pageTitle = $(document).find('title').text();
 
-            var statsContainer = $('<div>').css('font-size', 'smaller');
+            let statsContainer = $('<div>').css('font-size', 'smaller');
 
             // Adjust windows for printing
             document.title = pageTitle.replace('.yml', '');
@@ -379,7 +379,7 @@ Job.prototype.navbar = function () {
 
             $printBtn.hide();
 
-            var intervalId = setInterval(function () {
+            let intervalId = setInterval(function () {
 
                 $header.find('[data-bind="status"]').css('color', self.stateColor());
 
@@ -425,23 +425,23 @@ Job.prototype.navbar = function () {
 
 Job.prototype.view = function () {
 
-    var self = this;
+    let self = this;
 
-    var divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');
+    let divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');
 
-    var divColInfoLeft = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
+    let divColInfoLeft = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
 
-    var divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
+    let divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
 
-    var playContainers = {};
+    let playContainers = {};
 
-    var taskContainers = {};
+    let taskContainers = {};
 
-    var container = $('<div>');
+    let container = $('<div>');
 
-    var footerAnchor = $('<div>').attr('id', 'footer_anchor');
+    let footerAnchor = $('<div>').attr('id', 'footer_anchor');
 
-    var playbookOnlyFields = $('<div>').append(
+    let playbookOnlyFields = $('<div>').append(
         divColInfo.clone().append(
             divRow.clone().append(
                 divColInfoLeft.clone().html('Subset:'),
@@ -474,7 +474,7 @@ Job.prototype.view = function () {
         )
     );
 
-    var buildResults = function () {
+    let buildResults = function () {
 
         if (self.message) container.empty().append(
 
@@ -486,14 +486,16 @@ Job.prototype.view = function () {
 
             if (!playContainers.hasOwnProperty(play.id)) {
 
+                let separator, headerFirstLine, headerLastLine = $('<br>');
+
                 // Set playbook only elements
                 if (self.type === 'playbook' || self.type === 'gather_facts') {
 
-                    var separator = $('<hr>');
+                    separator = $('<hr>');
 
-                    var headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
+                    headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
 
-                    var headerLastLine = divCol12.clone().addClass('report_field_left').html('Tasks:');
+                    headerLastLine = divCol12.clone().addClass('report_field_left').html('Tasks:');
 
                 }
 
@@ -571,7 +573,7 @@ Job.prototype.view = function () {
 
                     if (task.module !== 'include' || task.host_count > 0) {
 
-                        var table = baseTable.clone().hide();
+                        let table = baseTable.clone().hide();
 
                         table.DataTable({
                             paginate: false,
@@ -588,7 +590,7 @@ Job.prototype.view = function () {
                             ],
                             rowCallback: function (row, result) {
 
-                                var table = this;
+                                let table = this;
 
                                 $(table).show();
 
@@ -599,11 +601,11 @@ Job.prototype.view = function () {
                             },
                             drawCallback: function () {
 
-                                 var table = this;
+                                let table = this;
 
-                                var task = table.api().ajax.json();
+                                let task = table.api().ajax.json();
 
-                                var rowCount = table.DataTable().rows().count();
+                                let rowCount = table.DataTable().rows().count();
 
                                 rowCount && taskContainers[task.id].badge.html(rowCount).css('display', 'inline');
 
@@ -611,7 +613,7 @@ Job.prototype.view = function () {
 
                                     table.DataTable().rows().every(function () {
 
-                                        var rowApi = this;
+                                        let rowApi = this;
 
                                         self.result = rowApi.data();
 
@@ -628,7 +630,7 @@ Job.prototype.view = function () {
 
                                                 self.getData('get_result', false, function (data) {
 
-                                                    var jsonContainer = $('<div>')
+                                                    let jsonContainer = $('<div>')
                                                         .attr('class', 'well')
                                                         .JSONView(data.result.response, {collapsed: true});
 
@@ -650,7 +652,9 @@ Job.prototype.view = function () {
                         });
                     }
 
-                    if (self.is_running) var intervalId = setInterval(function () {
+                    let intervalId;
+
+                    if (self.is_running) intervalId = setInterval(function () {
 
                         updateResults(intervalId, table)
 
@@ -664,11 +668,11 @@ Job.prototype.view = function () {
 
     };
 
-    var updateResults = function (intervalId, table) {
+    let updateResults = function (intervalId, table) {
 
         table.DataTable().ajax.reload(null, false);
 
-        var task = table.DataTable().ajax.json();
+        let task = table.DataTable().ajax.json();
 
         if (!task.is_running || !self.is_running) clearInterval(intervalId);
 
@@ -697,7 +701,9 @@ Job.prototype.view = function () {
         )
     );
 
-    if (self.is_running) var intervalId = setInterval(function () {
+    let intervalId;
+
+    if (self.is_running) intervalId = setInterval(function () {
 
         self.refresh(false, function () {
 
@@ -731,11 +737,11 @@ Job.prototype.view = function () {
 
 Job.prototype.statistics = function (modal) {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
-    var table = baseTable.clone();
+    let table = baseTable.clone();
 
     container.append($('<h4>').html('Statistics'), table);
 
@@ -755,7 +761,7 @@ Job.prototype.statistics = function (modal) {
 
     if (modal) {
 
-        var dialog = largeDialog.clone();
+        let dialog = largeDialog.clone();
 
         table.wrap('<div style="overflow-y: auto; max-height: 360px">');
 

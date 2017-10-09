@@ -2,7 +2,7 @@ function Node(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -34,7 +34,7 @@ Node.prototype.key = 'node';
 
 Node.prototype.loadHostInfo = function (callback) {
 
-    var self = this;
+    let self = this;
 
     self.getData('facts', false, function (data) {
 
@@ -92,11 +92,11 @@ Node.prototype.loadHostInfo = function (callback) {
 
 Node.prototype.hostInfo = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'hostInfo.html', function () {
 
-        var $container = $(this);
+        let $container = $(this);
 
         self.loadHostInfo(function () {
 
@@ -160,7 +160,7 @@ Node.prototype.hostInfo = function () {
 
             $('#gather_facts').click(function () {
 
-                var job = new Job({hosts: self.name});
+                let job = new Job({hosts: self.name});
 
                 job.getFacts();
 
@@ -174,18 +174,18 @@ Node.prototype.hostInfo = function () {
 
 Node.prototype.relationships = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'relationships.html', function () {
 
-        var relations = {
+        let relations = {
             group: ['parents', 'children', 'members'],
             host: ['parents']
         };
 
-        var relationType = {parents: 'group', children: 'group', members: 'host'};
+        let relationType = {parents: 'group', children: 'group', members: 'host'};
 
-        var reloadData = function ($gridContainer) {
+        let reloadData = function ($gridContainer) {
 
             $gridContainer.DynaGrid('load');
 
@@ -218,9 +218,9 @@ Node.prototype.relationships = function () {
                     ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
                     formatItem: function ($gridContainer, $gridItem) {
 
-                        var id = $gridItem.data('id');
+                        let id = $gridItem.data('id');
 
-                        var name = $gridItem.data('name');
+                        let name = $gridItem.data('name');
 
                         $gridItem.html('').append(
                             $('<span>').append(name).click(function () {
@@ -282,7 +282,7 @@ Node.prototype.relationships = function () {
                             },
                             addButtonAction: function ($selectionDialog) {
 
-                                var node = new Node({name: null, description: null, type: relationType});
+                                let node = new Node({name: null, description: null, type: relationType});
 
                                 node.edit(function () {
 
@@ -304,7 +304,7 @@ Node.prototype.relationships = function () {
 
 Node.prototype.descendants = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'descendants.html', function () {
 
@@ -340,7 +340,7 @@ Node.prototype.descendants = function () {
 
 Node.prototype.variables = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'variableTable.html', function () {
 
@@ -425,25 +425,25 @@ Node.prototype.variables = function () {
             },
             drawCallback: function() {
 
-                var table = this;
+                let table = this;
 
-                var variableKeys = table.api().columns(0).data()[0];
+                let variableKeys = table.api().columns(0).data()[0];
 
-                var duplicates = {};
+                let duplicates = {};
 
                 table.api().rows().every(function () {
 
                     this.child.isShown() && this.child.hide();
 
-                    var rowKey = this.data().key;
+                    let rowKey = this.data().key;
 
-                    var isMain = this.data().primary;
+                    let isMain = this.data().primary;
 
-                    var rowData = [this.data(), this.node()];
+                    let rowData = [this.data(), this.node()];
 
-                    var keyIndexes = [];
+                    let keyIndexes = [];
 
-                    var i = -1;
+                    let i = -1;
 
                     while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
 
@@ -466,9 +466,9 @@ Node.prototype.variables = function () {
 
                     if (duplicates[key].hasMainValue) {
 
-                        var mainValue = null;
+                        let mainValue = null;
 
-                        var rowArray = [];
+                        let rowArray = [];
 
                         $.each(duplicates[key]['values'], function (index, value) {
 
@@ -476,7 +476,7 @@ Node.prototype.variables = function () {
 
                             else {
 
-                                var $newRow = $(value[1]).clone().css('color', '#777');
+                                let $newRow = $(value[1]).clone().css('color', '#777');
 
                                 $newRow.find('td:eq(2)').click(function() {
 
@@ -494,7 +494,7 @@ Node.prototype.variables = function () {
 
                         if (mainValue) {
 
-                            var rowApi = table.DataTable().row(mainValue[1]);
+                            let rowApi = table.DataTable().row(mainValue[1]);
 
                             $(mainValue[1]).find('td:eq(0)').html('').append(
                                 $('<span>').html(mainValue[0].key),
@@ -537,7 +537,7 @@ Node.prototype.variables = function () {
 
 Node.prototype.editVariable = function (variable, callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'editVariableDialog.html', function () {
@@ -556,7 +556,7 @@ Node.prototype.editVariable = function (variable, callback) {
                     buttons: {
                         Save: function () {
 
-                            var $dialog = $(this);
+                            let $dialog = $(this);
 
                             self.postData('save_var', true, function () {
 
@@ -589,7 +589,7 @@ Node.prototype.editVariable = function (variable, callback) {
 
 Node.prototype.copyVariables = function (callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'copyVariablesDialog.html', function () {
@@ -646,15 +646,15 @@ Node.prototype.copyVariables = function (callback) {
 
 Node.prototype.view = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'entityView.html', function () {
 
-        var $container = $(this);
+        let $container = $(this);
 
         self.refresh(false, function () {
 
-            var adhoc = new AdHoc({hosts: self.name});
+            let adhoc = new AdHoc({hosts: self.name});
 
             self.bind($container);
 
@@ -700,19 +700,19 @@ Node.prototype.view = function () {
 
 Node.prototype.selector = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'nodeSelector.html', function () {
 
         self.bind($(this));
 
-        var inventory = new Inventory({type: self.type});
+        let inventory = new Inventory({type: self.type});
 
-        var $table = $('#node_table');
+        let $table = $('#node_table');
 
-        var $grid = $('#node_grid');
+        let $grid = $('#node_grid');
 
-        var $deleteModeBtn = $('#delete_mode').click(function () {
+        let $deleteModeBtn = $('#delete_mode').click(function () {
 
             $(this).toggleClass('checked_button');
 
@@ -724,7 +724,7 @@ Node.prototype.selector = function () {
 
         });
 
-        var baseOptions = {
+        let baseOptions = {
             loadCallback: function ($gridContainer) {
 
                 $gridContainer.DynaGrid('getCount') === 0 ? $deleteModeBtn.hide() : $deleteModeBtn.show()
@@ -740,7 +740,7 @@ Node.prototype.selector = function () {
             columns: sessionStorage.getItem('node_grid_columns')
         };
 
-        var openOptions = Object.assign({
+        let openOptions = Object.assign({
             showAddButton: true,
             addButtonType: 'text',
             addButtonClass: 'btn btn-default btn-xs',
@@ -762,9 +762,9 @@ Node.prototype.selector = function () {
 
         }, baseOptions);
 
-        var deleteOptions = Object.assign({itemToggle: true}, baseOptions);
+        let deleteOptions = Object.assign({itemToggle: true}, baseOptions);
 
-        var loadData = function () {
+        let loadData = function () {
 
             inventory.list(true, function (data) {
 
@@ -780,9 +780,9 @@ Node.prototype.selector = function () {
 
         };
 
-        var addNode = function () {
+        let addNode = function () {
 
-            var node = new Node({name: null, description: null, type: self.type});
+            let node = new Node({name: null, description: null, type: self.type});
 
             node.edit(function () {
 
@@ -792,9 +792,11 @@ Node.prototype.selector = function () {
 
         };
 
+        let columns;
+
         if (self.type === 'host') {
 
-            if (sessionStorage.getItem('use_ec2_facts') === 'true') var columns = [
+            if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = [
                 {class: 'col-md-2', title: 'Host', data: 'name'},
                 {class: 'col-md-2', title: 'Address', data: 'address'},
                 {class: 'col-md-2', title: 'Public address', data: 'public_address'},
@@ -843,7 +845,7 @@ Node.prototype.selector = function () {
             order: [[0, "asc"]],
             rowCallback: function(row, data) {
 
-                var node = new Node(data);
+                let node = new Node(data);
 
                 $(row).find('td:eq(0)')
                     .css('cursor', 'pointer')
@@ -869,7 +871,7 @@ Node.prototype.selector = function () {
 
                 if (node.type === 'host') {
 
-                    var cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
+                    let cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
 
                     node.memory && $(row).find('td:eq(' + cols[0] + ')').html(self.humanBytes(node.memory, 'MB'));
 
@@ -893,7 +895,7 @@ Node.prototype.selector = function () {
                 className: 'btn-xs btn-incell',
                 action: function () {
 
-                    var job = new Job({hosts: 'all'});
+                    let job = new Job({hosts: 'all'});
 
                     job.getFacts()
 
@@ -910,7 +912,7 @@ Node.prototype.selector = function () {
 
         $('#delete_button').click(function () {
 
-            var inventory = new Inventory({type: self.type});
+            let inventory = new Inventory({type: self.type});
 
             inventory.selection = $grid.DynaGrid('getSelected', 'id');
 

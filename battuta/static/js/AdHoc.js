@@ -2,7 +2,7 @@ function AdHoc (param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -32,9 +32,9 @@ AdHoc.prototype.type = 'adhoc';
 
 AdHoc.prototype.argumentsToString = function () {
 
-    var self = this;
+    let self = this;
 
-    var dataString = self.arguments._raw_params ? self.arguments._raw_params + ' ' :  '';
+    let dataString = self.arguments._raw_params ? self.arguments._raw_params + ' ' :  '';
 
     Object.keys(self.arguments).forEach(function (key) {
 
@@ -48,14 +48,14 @@ AdHoc.prototype.argumentsToString = function () {
 
 AdHoc.prototype.dialog = function (locked, callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'adhocDialog.html', function () {
 
-            var $moduleSelector = $('#module_selector');
+            let $moduleSelector = $('#module_selector');
 
-            var $dialog = $('#adhoc_dialog').dialog({
+            let $dialog = $('#adhoc_dialog').dialog({
                 autoOpen: false,
                 width: 600,
                 closeOnEscape: false,
@@ -64,7 +64,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
                         self.hosts = self.pattern;
 
-                        var job = new Job(self);
+                        let job = new Job(self);
 
                         job.run()
 
@@ -91,7 +91,9 @@ AdHoc.prototype.dialog = function (locked, callback) {
                 }
             });
 
-            $('#pattern_field_label').append(self.patternField(locked, self.hosts));
+            self.patternField(locked, self.hosts, $('#pattern_field_label'));
+
+            //$('#pattern_field_label').append(self.patternField(locked, self.hosts));
 
             $('#credentials_selector_label').append(self.runnerCredsSelector());
 
@@ -165,7 +167,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
 AdHoc.prototype.view = function (locked) {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'adhocView.html', function () {
 
@@ -180,7 +182,7 @@ AdHoc.prototype.view = function (locked) {
 
                 self.hosts = self.pattern;
 
-                var job = new Job(self);
+                let job = new Job(self);
 
                 job.run()
 
@@ -189,7 +191,7 @@ AdHoc.prototype.view = function (locked) {
 
         if (self.hosts) $('#view_header').remove();
 
-        $('#command_pattern_field_label').append(self.patternField(locked, self.hosts));
+        self.patternField(locked, self.hosts, $('#command_pattern_field_label'));
 
         $('#command_credentials_selector_label').append(self.runnerCredsSelector());
 
@@ -213,7 +215,7 @@ AdHoc.prototype.view = function (locked) {
                     className: 'btn-xs',
                     action: function () {
 
-                        var adhoc = new AdHoc({hosts: self.hosts});
+                        let adhoc = new AdHoc({hosts: self.hosts});
 
                         adhoc.dialog(locked, function () {
 
@@ -226,7 +228,7 @@ AdHoc.prototype.view = function (locked) {
             ],
             rowCallback: function (row, data) {
 
-                var adhoc = new AdHoc(data);
+                let adhoc = new AdHoc(data);
 
                 $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
 

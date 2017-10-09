@@ -2,7 +2,7 @@ function PlaybookArgs (param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -34,15 +34,15 @@ PlaybookArgs.prototype.type = 'playbook';
 
 PlaybookArgs.prototype.dialog = function (sameWindow) {
 
-    var self = this;
+    let self = this;
 
-    var file = new File({name: self.playbook, folder: self.folder, root: 'playbooks'});
+    let file = new File({name: self.playbook, folder: self.folder, root: 'playbooks'});
 
-    var container = largeDialog.clone();
+    let container = largeDialog.clone();
 
-    var argumentsSelector = selectField.clone().change(function () {
+    let argumentsSelector = selectField.clone().change(function () {
 
-        var arguments = $('option:selected', this);
+        let arguments = $('option:selected', this);
 
         self.constructor(arguments.data());
 
@@ -62,9 +62,9 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
     });
 
-    var limitField = textInputField.clone().val(self.subset);
+    let limitField = textInputField.clone().val(self.subset);
 
-    var limitFieldGroup = divFormGroup.clone().append(
+    let limitFieldGroup = divFormGroup.clone().append(
         $('<label>').html('Limit').append(
             divInputGroup.clone().append(
                 limitField,
@@ -84,17 +84,17 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
         )
     );
 
-    var checkButton = btnSmallClk.clone(true).html('Check');
+    let checkButton = btnSmallClk.clone(true).html('Check');
 
-    var tagsField = textInputField.clone().val(self.tags);
+    let tagsField = textInputField.clone().val(self.tags);
 
-    var skipTagsField = textInputField.clone().val(self.skip_tags);
+    let skipTagsField = textInputField.clone().val(self.skip_tags);
 
-    var extraVarsField = textInputField.clone().val(self.extra_vars);
+    let extraVarsField = textInputField.clone().val(self.extra_vars);
 
-    var credentialsSelector = self.runnerCredsSelector();
+    let credentialsSelector = self.runnerCredsSelector();
 
-    var buildArgumentsSelector = function (selectedValue) {
+    let buildArgumentsSelector = function (selectedValue) {
 
         argumentsSelector.empty();
 
@@ -102,7 +102,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
             $.each(data.args, function (index, args) {
 
-                var optionLabel = [];
+                let optionLabel = [];
 
                 args.subset && optionLabel.push('--limit ' + args.subset);
 
@@ -130,9 +130,9 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
     file.read(function (data) {
 
-        var text = data.text;
+        let text = data.text;
 
-        var trueValues = ['true', 'yes', '1'];
+        let trueValues = ['true', 'yes', '1'];
 
         $.each(jsyaml.load(text), function (index, play) {
 
@@ -140,7 +140,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
         });
 
-        var requiresSudoAlert = spanRight.clone()
+        let requiresSudoAlert = spanRight.clone()
             .html('requires sudo')
             .css('font-size', 'x-small')
             .toggleClass('hidden', !self.become);
@@ -187,7 +187,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
                         self.extra_vars = extraVarsField.val();
 
-                        var job = new Job(self);
+                        let job = new Job(self);
 
                         job.run(sameWindow)
 

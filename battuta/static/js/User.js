@@ -2,7 +2,7 @@ function User(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -44,15 +44,15 @@ User.prototype.type = 'user';
 
 User.prototype.edit = function (callback) {
 
-    var self = this;
+    let self = this;
 
-    var credUserField = textInputField.clone();
+    let credUserField = textInputField.clone();
 
-    var credPassField = passInputField.clone();
+    let credPassField = passInputField.clone();
 
-    var retypePasswordField = passInputField.clone();
+    let retypePasswordField = passInputField.clone();
 
-    var dialog = largeDialog.clone().append(
+    let dialog = largeDialog.clone().append(
         $('<h4>').html('Add user'),
         divRow.clone().append(
             divCol12.clone().append(
@@ -103,7 +103,7 @@ User.prototype.edit = function (callback) {
 
 User.prototype.defaultCred = function (callback) {
 
-    var self = this;
+    let self = this;
 
     self.getData('default_cred', false, callback)
 
@@ -111,15 +111,15 @@ User.prototype.defaultCred = function (callback) {
 
 User.prototype.form = function () {
 
-    var self = this;
+    let self = this;
 
-    var firstNameField = textInputField.clone().val(self.first_name);
+    let firstNameField = textInputField.clone().val(self.first_name);
 
-    var lastNameField = textInputField.clone().val(self.last_name);
+    let lastNameField = textInputField.clone().val(self.last_name);
 
-    var emailField = textInputField.clone().val(self.email);
+    let emailField = textInputField.clone().val(self.email);
 
-    var timezoneField = selectField.clone().timezones().val(self.timezone);
+    let timezoneField = selectField.clone().timezones().val(self.timezone);
 
     return $('<form>')
         .append(
@@ -169,9 +169,9 @@ User.prototype.form = function () {
 
 User.prototype.login = function () {
 
-    var self = this;
+    let self = this;
 
-    self.ajaxRequest('POST', self, self.paths.apis.login + 'login/', false, function () {
+    self.jsonRequest('POST', self, self.paths.apis.login + 'login/', false, function () {
 
         window.open('/', '_self');
 
@@ -181,9 +181,9 @@ User.prototype.login = function () {
 
 User.prototype.logout = function () {
 
-    var self = this;
+    let self = this;
 
-    self.ajaxRequest('POST', self, self.paths.apis.login + 'logout/', false, function () {
+    self.jsonRequest('POST', self, self.paths.apis.login + 'logout/', false, function () {
 
         window.open('/', '_self');
 
@@ -194,13 +194,13 @@ User.prototype.logout = function () {
 
 User.prototype.passwordForm = function (currentUser) {
 
-    var self = this;
+    let self = this;
 
-    var currentPassword = passInputField.clone();
+    let currentPassword = passInputField.clone();
 
-    var newPassword = passInputField.clone();
+    let newPassword = passInputField.clone();
 
-    var retypeNewPassword = passInputField.clone();
+    let retypeNewPassword = passInputField.clone();
 
     return $('<form>')
         .append(
@@ -252,9 +252,9 @@ User.prototype.passwordForm = function (currentUser) {
 
 User.prototype.credentialsForm = function () {
 
-    var self = this;
+    let self = this;
 
-    var resetCredentialsForm =  function () {
+    let resetCredentialsForm =  function () {
 
         credentialsForm.find('input, textarea').val('');
 
@@ -274,9 +274,9 @@ User.prototype.credentialsForm = function () {
 
     };
 
-    var loadCredentialsForm = function () {
+    let loadCredentialsForm = function () {
 
-        var credentials = $('option:selected', credentialsSelector).data();
+        let credentials = $('option:selected', credentialsSelector).data();
 
         resetCredentialsForm();
 
@@ -314,33 +314,33 @@ User.prototype.credentialsForm = function () {
 
     };
 
-    var titleField = textInputField.clone();
+    let titleField = textInputField.clone();
 
-    var isSharedButton = btnSmallClk.clone(true).html('Shared');
+    let isSharedButton = btnSmallClk.clone(true).html('Shared');
 
-    var isDefaultButton = btnSmallClk.clone(true).html('Default');
+    let isDefaultButton = btnSmallClk.clone(true).html('Default');
 
-    var credUserField = textInputField.clone();
+    let credUserField = textInputField.clone();
 
-    var credPassField = passInputField.clone();
+    let credPassField = passInputField.clone();
 
-    var askPassButton = btnSmallClk.clone(true).html('Ask');
+    let askPassButton = btnSmallClk.clone(true).html('Ask');
 
-    var rsaKeyField = textAreaField.clone();
+    let rsaKeyField = textAreaField.clone();
 
-    var sudoUserField = textInputField.clone().attr('placeholder', 'root');
+    let sudoUserField = textInputField.clone().attr('placeholder', 'root');
 
-    var sudoPassField = passInputField.clone();
+    let sudoPassField = passInputField.clone();
 
-    var askSudoPassButton = btnSmallClk.clone(true).html('Ask');
+    let askSudoPassButton = btnSmallClk.clone(true).html('Ask');
 
-    var credentialsSelector = self.credentialsSelector(null, false, function () {
+    let credentialsSelector = self.credentialsSelector(null, false, function () {
 
         loadCredentialsForm();
 
     });
     
-    var credentialsForm = $('<form>')
+    let credentialsForm = $('<form>')
         .append(
             divRow.clone().append(
                 divCol12.clone().append(
@@ -437,17 +437,17 @@ User.prototype.credentialsForm = function () {
 
 User.prototype.credentialsSelector = function (startValue, runner, callback) {
 
-    var self = this;
+    let self = this;
 
     self.runner = runner;
 
-    var buildSelector = function (startValue) {
+    let buildSelector = function (startValue) {
 
         self.getData('creds', false, function (data) {
 
             $.each(data.creds, function (index, cred) {
 
-                var display = cred.title;
+                let display = cred.title;
 
                 if (cred.is_default && !startValue) {
 
@@ -472,7 +472,7 @@ User.prototype.credentialsSelector = function (startValue, runner, callback) {
 
     };
 
-    var selector = selectField.clone()
+    let selector = selectField.clone()
         .change(function () {
 
             callback && callback()
@@ -492,9 +492,9 @@ User.prototype.credentialsSelector = function (startValue, runner, callback) {
 
 User.prototype.groupGrid = function () {
 
-    var self = this;
+    let self = this;
 
-    var groupGrid = $('<div>').DynaGrid({
+    let groupGrid = $('<div>').DynaGrid({
         gridTitle: 'Groups',
         headerTag: '<h4>',
         showAddButton: true,
@@ -511,7 +511,7 @@ User.prototype.groupGrid = function () {
         ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
         formatItem: function (gridContainer, gridItem) {
 
-            var name = gridItem.data('value');
+            let name = gridItem.data('value');
 
             gridItem.removeClass('truncate-text').html('').append(
                 $('<span>').append(name).click(function () {
@@ -582,13 +582,13 @@ User.prototype.groupGrid = function () {
 
 User.prototype.view = function (currentUser) {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
     self.refresh(false, function () {
 
-        var deleteUserBtn = spanFA.clone()
+        let deleteUserBtn = spanFA.clone()
             .addClass('fa-trash-o btn-incell')
             .attr('title', 'Delete')
             .click(function () {
@@ -601,9 +601,9 @@ User.prototype.view = function (currentUser) {
 
             });
 
-        var groupsTab = $('<li>').html(aTabs.clone().attr('href', '#groups_tab').html('Groups'));
+        let groupsTab = $('<li>').html(aTabs.clone().attr('href', '#groups_tab').html('Groups'));
 
-        var tabsHeader = ulTabs.clone().attr('id','user_' + self.id + '_tabs');
+        let tabsHeader = ulTabs.clone().attr('id','user_' + self.id + '_tabs');
 
         container.append(
             $('<h3>').append(
@@ -666,11 +666,11 @@ User.prototype.view = function (currentUser) {
 
 User.prototype.selector = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
-    var table = baseTable.clone();
+    let table = baseTable.clone();
 
     container.append($('<h3>').html('Users'), $('<br>'), table);
 
@@ -686,7 +686,7 @@ User.prototype.selector = function () {
                 text: 'Add user',
                 action: function () {
 
-                    var user = new User({id: null});
+                    let user = new User({id: null});
 
                     user.edit(function (data) {
 
@@ -706,7 +706,7 @@ User.prototype.selector = function () {
         ],
         rowCallback: function (row, data) {
 
-            var user = new User(data);
+            let user = new User(data);
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function () {
 
@@ -714,7 +714,7 @@ User.prototype.selector = function () {
 
             });
 
-            var lastCell = $(row).find('td:eq(3)');
+            let lastCell = $(row).find('td:eq(3)');
 
             self.prettyBoolean(lastCell, user.is_superuser);
 

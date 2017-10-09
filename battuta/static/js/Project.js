@@ -2,7 +2,7 @@ function Project(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -69,9 +69,9 @@ Project.prototype.properties = {
 
 Project.prototype.setProperty =  function (property, input) {
 
-    var self = this;
+    let self = this;
 
-    var propData = property in self.properties ? self.properties[property] : self.properties.others ;
+    let propData = property in self.properties ? self.properties[property] : self.properties.others ;
 
     self.selectionDialog({
         objectType: propData.type,
@@ -82,7 +82,7 @@ Project.prototype.setProperty =  function (property, input) {
         loadCallback: null,
         formatItem: function ($gridItem) {
 
-            var itemData = $gridItem.data();
+            let itemData = $gridItem.data();
 
             $gridItem.click(function () {
 
@@ -104,7 +104,7 @@ Project.prototype.setProperty =  function (property, input) {
 
 Project.prototype.clearProperty = function (property, input) {
 
-    var self = this;
+    let self = this;
 
     self.property = {name: property};
 
@@ -118,32 +118,32 @@ Project.prototype.clearProperty = function (property, input) {
 
 Project.prototype.hosts = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = divRow.clone();
+    let container = divRow.clone();
 
-    var descendantsContainer = divCol12.clone();
+    let descendantsContainer = divCol12.clone();
 
-    var hostGroupInput = textInputField.clone()
+    let hostGroupInput = textInputField.clone()
         .attr('title', 'Host group')
         .prop('readonly', true)
         .val(self.host_group.name)
         .data(self.host_group)
         .change(function () {
 
-            var hostGroup = new Node($(this).data());
+            let hostGroup = new Node($(this).data());
 
             descendantsContainer.html(hostGroup.descendants())
 
         });
 
-    var setHostGroupBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setHostGroupBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('host_group', hostGroupInput);
 
     });
 
-    var hostGroup = new Node(self.host_group);
+    let hostGroup = new Node(self.host_group);
 
     self.host_group.id && descendantsContainer.html(hostGroup.descendants());
 
@@ -167,9 +167,9 @@ Project.prototype.hosts = function () {
 
 Project.prototype.playbookGrid = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
     container.DynaGrid({
         gridTitle: 'Playbooks',
@@ -188,9 +188,9 @@ Project.prototype.playbookGrid = function () {
         ajaxUrl: self.apiPath + 'playbooks/?id=' + self.id,
         formatItem: function(gridContainer, gridItem) {
 
-            var playbook = gridItem.data();
+            let playbook = gridItem.data();
 
-            var itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+            let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
 
             gridItem.attr('title', itemTitle)
                 .html(itemTitle)
@@ -215,7 +215,7 @@ Project.prototype.playbookGrid = function () {
         },
         addButtonAction: function () {
 
-            var currentPlaybooks = [];
+            let currentPlaybooks = [];
 
             $.each(container.DynaGrid('getData'), function (index, playbook) {
 
@@ -231,9 +231,9 @@ Project.prototype.playbookGrid = function () {
                 addButtonAction: null,
                 formatItem: function($gridItem) {
 
-                    var playbook = $gridItem.data();
+                    let playbook = $gridItem.data();
 
-                    var itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+                    let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
 
                     $gridItem.attr('title', itemTitle).html(itemTitle)
 
@@ -280,9 +280,9 @@ Project.prototype.playbookGrid = function () {
 
 Project.prototype.roleGrid = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
     container.DynaGrid({
         gridTitle: 'Roles',
@@ -301,7 +301,7 @@ Project.prototype.roleGrid = function () {
         ajaxUrl: self.apiPath + 'roles/?id=' + self.id,
         formatItem: function(gridContainer, gridItem) {
 
-            var role = gridItem.data();
+            let role = gridItem.data();
 
             gridItem
                 .attr('title', role.folder ? role.folder + '/' + role.name : role.name)
@@ -327,7 +327,7 @@ Project.prototype.roleGrid = function () {
         },
         addButtonAction: function () {
 
-            var currentRoles = [];
+            let currentRoles = [];
 
             $.each(container.DynaGrid('getData'), function (index, role) {
 
@@ -385,89 +385,89 @@ Project.prototype.roleGrid = function () {
 
 Project.prototype.userGroups = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = divRow.clone();
+    let container = divRow.clone();
 
-    var canEditVariablesInput = textInputField.clone().prop('readonly', true).val(self.can_edit_variables);
+    let canEditVariablesInput = textInputField.clone().prop('readonly', true).val(self.can_edit_variables);
 
-    var setCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('can_edit_variables', canEditVariablesInput);
 
     });
 
-    var clearCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    let clearCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
 
         self.clearProperty('can_edit_variables', canEditVariablesInput)
 
     });
 
-    var canRunTasksInput = textInputField.clone().prop('readonly', true).val(self.can_run_tasks);
+    let canRunTasksInput = textInputField.clone().prop('readonly', true).val(self.can_run_tasks);
 
-    var setCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('can_run_tasks', canRunTasksInput);
 
     });
 
-    var clearCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    let clearCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
 
         self.clearProperty('can_run_tasks', canRunTasksInput)
 
     });
 
-    var canEditTasksInput = textInputField.clone().prop('readonly', true).val(self.can_edit_tasks);
+    let canEditTasksInput = textInputField.clone().prop('readonly', true).val(self.can_edit_tasks);
 
-    var setCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('can_edit_tasks', canEditTasksInput);
 
     });
 
-    var clearCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    let clearCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
 
         self.clearProperty('can_edit_tasks', canEditTasksInput);
 
     });
 
-    var canRunPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.can_run_playbooks);
+    let canRunPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.can_run_playbooks);
 
-    var setCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('can_run_playbooks', canRunPlaybooksInput);
 
     });
 
-    var clearCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    let clearCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
 
         self.clearProperty('can_run_playbooks', canRunPlaybooksInput)
 
     });
 
-    var canEditPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.can_edit_playbooks);
+    let canEditPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.can_edit_playbooks);
 
-    var setCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('can_edit_playbooks', canEditPlaybooksInput);
 
     });
 
-    var clearCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    let clearCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
 
         self.clearProperty('can_edit_playbooks', canEditPlaybooksInput)
 
     });
 
-    var canEditRolesInput = textInputField.clone().prop('readonly', true).val(self.can_edit_roles);
+    let canEditRolesInput = textInputField.clone().prop('readonly', true).val(self.can_edit_roles);
 
-    var setCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    let setCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
         self.setProperty('can_edit_roles', canEditRolesInput);
 
     });
 
-    var clearCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    let clearCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
 
         self.clearProperty('can_edit_roles', canEditRolesInput)
 
@@ -544,19 +544,19 @@ Project.prototype.userGroups = function () {
 
 Project.prototype.view = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
     self.refresh(false, function () {
 
-        var nameContainer = $('<span>').html(self.name);
+        let nameContainer = $('<span>').html(self.name);
 
-        var descriptionContainer = $('<h4>')
+        let descriptionContainer = $('<h4>')
             .css('margin-bottom', '30px')
             .html(self.description || noDescriptionMsg);
 
-        var editProjectBtn = spanFA.clone()
+        let editProjectBtn = spanFA.clone()
             .addClass('fa-pencil btn-incell')
             .attr('title', 'Edit')
             .click(function() {
@@ -571,7 +571,7 @@ Project.prototype.view = function () {
 
             });
 
-        var deleteProjectBtn = spanFA.clone()
+        let deleteProjectBtn = spanFA.clone()
             .addClass('fa-trash-o btn-incell')
             .attr('title', 'Delete')
             .click(function() {
@@ -584,18 +584,18 @@ Project.prototype.view = function () {
 
             });
 
-        var managerInput = textInputField.clone()
+        let managerInput = textInputField.clone()
             .attr('title', 'Project manager')
             .prop('readonly', true)
             .val(self.manager);
 
-        var setManagerBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+        let setManagerBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
 
             self.setProperty('manager', managerInput)
 
         });
 
-        var tabsHeader = ulTabs.clone().attr('id','project_' + self.id + '_tabs');
+        let tabsHeader = ulTabs.clone().attr('id','project_' + self.id + '_tabs');
 
         container.append(
             $('<h3>').append(
@@ -656,11 +656,11 @@ Project.prototype.view = function () {
 
 Project.prototype.selector = function () {
 
-    var self = this;
+    let self = this;
 
-    var container = $('<div>');
+    let container = $('<div>');
 
-    var table = baseTable.clone();
+    let table = baseTable.clone();
 
     container.append($('<h3>').html('Projects'),$('<br>'), table);
 
@@ -676,7 +676,7 @@ Project.prototype.selector = function () {
                 className: 'btn-xs',
                 action: function () {
 
-                    var project = new Project({id: null});
+                    let project = new Project({id: null});
 
                     project.edit(function (data) {
 
@@ -695,7 +695,7 @@ Project.prototype.selector = function () {
         ],
         rowCallback: function (row, data) {
 
-            var project = new Project(data);
+            let project = new Project(data);
 
             $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 

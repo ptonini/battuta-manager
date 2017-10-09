@@ -2,94 +2,92 @@
 
 // Bootstrap Grip
 
-var divRow = $('<div>').attr('class', 'row');
+let divRow = $('<div>').attr('class', 'row');
 
-var divCol2 = $('<div>').attr('class', 'col-md-2');
+let divCol2 = $('<div>').attr('class', 'col-md-2');
 
-var divCol3 = $('<div>').attr('class', 'col-md-3');
+let divCol3 = $('<div>').attr('class', 'col-md-3');
 
-var divCol4 = $('<div>').attr('class', 'col-md-4');;
+let divCol4 = $('<div>').attr('class', 'col-md-4');;
 
-var divCol6 = $('<div>').attr('class', 'col-md-6');
+let divCol6 = $('<div>').attr('class', 'col-md-6');
 
-var divCol8 = $('<div>').attr('class', 'col-md-8');
+let divCol8 = $('<div>').attr('class', 'col-md-8');
 
-var divCol9 = $('<div>').attr('class', 'col-md-9');
+let divCol9 = $('<div>').attr('class', 'col-md-9');
 
-var divCol12 = $('<div>').attr('class', 'col-md-12');
+let divCol12 = $('<div>').attr('class', 'col-md-12');
 
 
 // Bootstrap tables
 
-var baseTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
+let baseTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
 
 
 // Form groups
 
-var divFormGroup = $('<div>').attr('class', 'form-group');
+let divFormGroup = $('<div>').attr('class', 'form-group');
 
-var divInputGroup = $('<div>').attr('class', 'input-group');
+let divInputGroup = $('<div>').attr('class', 'input-group');
 
-var spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
+let spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
 
 
 // Input elements
 
-var selectField = $('<select>').attr('class', 'select form-control input-sm');
+let selectField = $('<select>').attr('class', 'select form-control input-sm');
 
-var textInputField = $('<input>').attr({class: 'form-control input-sm', type: 'text'});
+let textInputField = $('<input>').attr({class: 'form-control input-sm', type: 'text'});
 
-var textAreaField = $('<textarea>').attr('class', 'textarea form-control input-sm');
+let textAreaField = $('<textarea>').attr('class', 'textarea form-control input-sm');
 
-var passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
+let passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
 
 
 // Dialogs
 
-var largeDialog = $('<div>').attr('class', 'large_dialog');
+let largeDialog = $('<div>').attr('class', 'large_dialog');
 
-var smallDialog = $('<div>').attr('class', 'small_dialog');
+let smallDialog = $('<div>').attr('class', 'small_dialog');
 
 
 // Tabs
 
-var ulTabs = $('<ul>').attr('class', 'nav nav-tabs');
+let ulTabs = $('<ul>').attr('class', 'nav nav-tabs');
 
-var liActive = $('<li>').attr('class', 'active');
+let liActive = $('<li>').attr('class', 'active');
 
-var aTabs = $('<a>').attr('data-toggle', 'tab');
+let aTabs = $('<a>').attr('data-toggle', 'tab');
 
-var divTabContent =  $('<div>').attr('class', 'tab-content');
+let divTabContent =  $('<div>').attr('class', 'tab-content');
 
-var divActiveTab = $('<div>').attr('class', 'tab-pane in active');
+let divActiveTab = $('<div>').attr('class', 'tab-pane in active');
 
-var divTab = $('<div>').attr('class', 'tab-pane');
+let divTab = $('<div>').attr('class', 'tab-pane');
 
 
 // Other element templates
 
-var btnSmall = $('<button>').attr('class', 'btn btn-default btn-sm');
+let btnSmall = $('<button>').attr('class', 'btn btn-default btn-sm');
 
-var btnSmallClk = $('<button>').attr({type: 'button', class: 'btn btn-default btn-sm'}).click(function () {
+let btnSmallClk = $('<button>').attr({type: 'button', class: 'btn btn-default btn-sm'}).click(function () {
 
     $(this).toggleClass('checked_button')
 
 });
 
-var btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
+let btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
 
-var btnNavbarGlyph = $('<button>').attr('class', 'btn btn-link navbar-btn').css('border-radius', '5px');
+let spanFA = $('<span>').attr('class', 'fa fa-fw');
 
-var spanFA = $('<span>').attr('class', 'fa fa-fw');
+let spanRight = $('<span>').css('float', 'right');
 
-var spanRight = $('<span>').css('float', 'right');
+let divLargeAlert = $('<div>').attr('class', 'large-alert');
 
-var divLargeAlert = $('<div>').attr('class', 'large-alert');
+let preLargeAlert = $('<pre>').attr('class', 'large-alert');
 
-var preLargeAlert = $('<pre>').attr('class', 'large-alert');
+let submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
 
-var submitErrorAlert = divLargeAlert.clone().html($('<h5>').html('Submit error:'));
+let noDescriptionMsg = $('<small>').html($('<i>').html('No description available'));
 
-var noDescriptionMsg = $('<small>').html($('<i>').html('No description available'));
-
-var failedAlertOptions = {type: 'danger', delay: 3000};
+let failedAlertOptions = {type: 'danger', delay: 3000};

@@ -2,7 +2,7 @@ function File(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -46,7 +46,7 @@ File.prototype.editable = [
 
 File.prototype.edit = function (callback) {
 
-    var self = this;
+    let self = this;
 
     if (self.type.split('/')[0] === 'text' || self.editable.indexOf(self.type) > -1) {
 
@@ -66,7 +66,7 @@ File.prototype.edit = function (callback) {
 
 File.prototype.read = function (callback) {
 
-    var self = this;
+    let self = this;
 
     self.getData('read', false, callback);
 
@@ -74,7 +74,7 @@ File.prototype.read = function (callback) {
 
 File.prototype.copy = function (callback) {
 
-    var self = this;
+    let self = this;
 
     self.dialog('copy', callback);
 
@@ -82,7 +82,7 @@ File.prototype.copy = function (callback) {
 
 File.prototype.create = function (callback) {
 
-    var self = this;
+    let self = this;
 
     self.dialog('create', callback);
 
@@ -90,7 +90,7 @@ File.prototype.create = function (callback) {
 
 File.prototype.upload = function (callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append($('<div>').load(self.paths.templates + 'uploadDialog.html', function () {
 
@@ -128,7 +128,7 @@ File.prototype.upload = function (callback) {
                 uploadUrl: self.apiPath + 'upload/',
                 uploadExtraData: function () {
 
-                    var loadedFile = $('#upload_field').fileinput('getFileStack')[0];
+                    let loadedFile = $('#upload_field').fileinput('getFileStack')[0];
 
                     if (loadedFile) {
 
@@ -168,7 +168,7 @@ File.prototype.upload = function (callback) {
 
 File.prototype.exists = function (callback) {
 
-    var self = this;
+    let self = this;
 
     self.getData('exists', false, function (data) {
 
@@ -182,14 +182,14 @@ File.prototype.exists = function (callback) {
 
 File.prototype.editorDialog = function (callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'fileEditorDialog.html', function () {
 
-            var aceMode = 'text';
+            let aceMode = 'text';
 
-            var modes = [
+            let modes = [
                 {name: 'apache_conf', label: 'Apache conf'},
                 {name: 'batchfile', label: 'BatchFile'},
                 {name: 'css', label: 'CSS'},
@@ -211,13 +211,13 @@ File.prototype.editorDialog = function (callback) {
                 {name: 'yaml', label: 'YAML'}
             ];
 
-            var textEditor = ace.edit('editor_container');
+            let textEditor = ace.edit('editor_container');
 
             if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
 
-                var fileNameArray = self.name.split('.');
+                let fileNameArray = self.name.split('.');
 
-                var fileExtension = fileNameArray[fileNameArray.length - 1];
+                let fileExtension = fileNameArray[fileNameArray.length - 1];
 
                 if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
 
@@ -328,7 +328,7 @@ File.prototype.editorDialog = function (callback) {
 
 File.prototype.dialog = function (action, callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'fileDialog.html', function () {
@@ -379,7 +379,7 @@ File.prototype.dialog = function (action, callback) {
 
 File.prototype.roleDialog = function (callback) {
 
-    var self = this;
+    let self = this;
 
     $(document.body).append(
         $('<div>').load(self.paths.templates + 'roleDialog.html', function () {
@@ -427,7 +427,7 @@ File.prototype.roleDialog = function (callback) {
 
 File.prototype.selector = function (owner) {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'fileSelector.html', function () {
 
@@ -437,17 +437,17 @@ File.prototype.selector = function (owner) {
 
         self.folder = window.location.hash.slice(1);
 
-        var roots = {
+        let roots = {
             playbooks: {
                 formatter: function (row, file) {
 
-                    var cell = $(row).find('td:eq(0)');
+                    let cell = $(row).find('td:eq(0)');
 
                     cell.css('cursor', 'pointer');
 
                     if (file.error) cell.css('color', 'red').off().click(function () {
 
-                        var message = preLargeAlert.clone().html(file.error);
+                        let message = preLargeAlert.clone().html(file.error);
 
                         $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
 
@@ -455,7 +455,7 @@ File.prototype.selector = function (owner) {
 
                     else cell.off().click(function () {
 
-                        var playArgs = new PlaybookArgs({playbook: file.name, folder: file.folder});
+                        let playArgs = new PlaybookArgs({playbook: file.name, folder: file.folder});
 
                         playArgs.dialog()
 
@@ -471,7 +471,7 @@ File.prototype.selector = function (owner) {
                             url: '/static/templates/playbook_template.yml',
                             success: function (data) {
 
-                                var file = new File({root: 'playbooks', folder: self.folder, text: data});
+                                let file = new File({root: 'playbooks', folder: self.folder, text: data});
 
                                 file.editorDialog(function () {
 
@@ -492,7 +492,7 @@ File.prototype.selector = function (owner) {
                     className: 'btn-xs',
                     action: function () {
 
-                        var role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
+                        let role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
 
                         role.roleDialog(function (data, role) {
 
@@ -506,16 +506,16 @@ File.prototype.selector = function (owner) {
             }
         };
 
-        var $table = $('#file_table');
+        let $table = $('#file_table');
 
-        var $breadCrumb = $('#path_links');
+        let $breadCrumb = $('#path_links');
 
-        var $pathInputField = $('<input>').attr('id', 'path_input');
+        let $pathInputField = $('<input>').attr('id', 'path_input');
 
-        var $previousFolderRow = $('<tr>').attr('role', 'row').append(
+        let $previousFolderRow = $('<tr>').attr('role', 'row').append(
             $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
 
-                var folderArray = self.folder.split('/');
+                let folderArray = self.folder.split('/');
 
                 folderArray.pop();
 
@@ -527,13 +527,13 @@ File.prototype.selector = function (owner) {
             $('<td>')
         );
 
-        var buttons = [
+        let buttons = [
             {
                 text: '<span class="fa fa-asterisk" title="Create"></span>',
                 className: 'btn-xs',
                 action: function () {
 
-                    var file = new File({root: self.root, folder: self.folder, owner: owner});
+                    let file = new File({root: self.root, folder: self.folder, owner: owner});
 
                     file.create(function () {
 
@@ -548,7 +548,7 @@ File.prototype.selector = function (owner) {
                 className: 'btn-xs',
                 action: function () {
 
-                    var file = new File({root: self.root, folder: self.folder, owner: owner});
+                    let file = new File({root: self.root, folder: self.folder, owner: owner});
 
                     file.upload(function () {
 
@@ -560,7 +560,7 @@ File.prototype.selector = function (owner) {
             }
         ];
 
-        var buildBreadcrumbs = function () {
+        let buildBreadcrumbs = function () {
 
             $('.path_link').remove();
 
@@ -575,9 +575,9 @@ File.prototype.selector = function (owner) {
                         .html(value)
                         .click(function () {
 
-                            var nextFolder = '';
+                            let nextFolder = '';
 
-                            for (var i = 0; i <= index; i++) {
+                            for (let i = 0; i <= index; i++) {
 
                                 nextFolder += $('#path_link_' + i).html();
 
@@ -595,7 +595,7 @@ File.prototype.selector = function (owner) {
 
         };
 
-        var setFolder =  function (folder) {
+        let setFolder =  function (folder) {
 
             self.folder = folder;
 
@@ -607,7 +607,7 @@ File.prototype.selector = function (owner) {
 
         };
 
-        var buildTable = function () {
+        let buildTable = function () {
 
             $table.DataTable({
                 ajax: {
@@ -631,7 +631,7 @@ File.prototype.selector = function (owner) {
                 buttons: buttons,
                 rowCallback: function (row, data) {
 
-                    var file = new File(data);
+                    let file = new File(data);
 
                     if (file.type === 'directory') {
 
@@ -750,9 +750,9 @@ File.prototype.selector = function (owner) {
 
                         if (event.keyCode === 13) {
 
-                            var fieldValue = $pathInputField.val();
+                            let fieldValue = $pathInputField.val();
 
-                            var folder = new File({name: fieldValue, type: 'directory', root: self.root, user: owner});
+                            let folder = new File({name: fieldValue, type: 'directory', root: self.root, user: owner});
 
                             if (fieldValue.charAt(fieldValue.length - 1) === '/') {
 
@@ -775,7 +775,7 @@ File.prototype.selector = function (owner) {
 
         if (self.folder) {
 
-            var folderObj = new File({name: self.folder, type: 'directory', root: self.root, owner: owner});
+            let folderObj = new File({name: self.folder, type: 'directory', root: self.root, owner: owner});
 
             folderObj.exists(function (data) {
 

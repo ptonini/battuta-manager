@@ -2,7 +2,7 @@ function Preferences(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -26,7 +26,7 @@ Preferences.prototype.apiPath = Battuta.prototype.paths.apis.preferences;
 
 Preferences.prototype.load = function () {
 
-    var self = this;
+    let self = this;
 
     self.refresh(false, function () {
 
@@ -58,15 +58,15 @@ Preferences.prototype.load = function () {
 
 Preferences.prototype.dialog = function () {
 
-    var self = this;
+    let self = this;
 
-    var prefsContainer = $('<div>').css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
+    let prefsContainer = $('<div>').css({'overflow-y': 'auto', 'overflow-x': 'hidden', 'padding-right': '10px'});
 
-    var restoreDialog = smallDialog.clone().addClass('text-center').html(
+    let restoreDialog = smallDialog.clone().addClass('text-center').html(
         $('<strong>').html('Restore all preferences to default values?')
     );
 
-     var prefsDialog = largeDialog.clone().append(
+     let prefsDialog = largeDialog.clone().append(
         divRow.clone().append(
             divCol12.clone().append(
                 $('<h3>').css('margin-bottom', '20px').append(
@@ -84,16 +84,16 @@ Preferences.prototype.dialog = function () {
         prefsContainer
     );
 
-    var buildContainer = function (callback) {
+    let buildContainer = function (callback) {
 
-        var booleanField = $('<select>').addClass('select form-control input-sm').append(
+        let booleanField = $('<select>').addClass('select form-control input-sm').append(
             $('<option>').val('true').html('true'),
             $('<option>').val('false').html('false')
         );
 
-        var fieldLabel = $('<label>').css({'font-size': '13px', padding: '6px 0'}).data('toggle', 'tooltip');
+        let fieldLabel = $('<label>').css({'font-size': '13px', padding: '6px 0'}).data('toggle', 'tooltip');
 
-        var defaultValues = [];
+        let defaultValues = [];
 
         self.refresh(false, function () {
 
@@ -114,15 +114,15 @@ Preferences.prototype.dialog = function () {
 
                 $.each(item_group.items, function(index, item) {
 
-                    var itemId = 'item_' + item.name;
+                    let itemId = 'item_' + item.name;
 
                     switch (item.data_type) {
 
                         case 'str':
 
-                            var itemField = textInputField.clone();
+                            let itemField = textInputField.clone();
 
-                            var columnClass = 'col-md-5';
+                            let columnClass = 'col-md-5';
 
                             break;
 
@@ -183,13 +183,13 @@ Preferences.prototype.dialog = function () {
 
     };
 
-    var savePreferences = function (callback) {
+    let savePreferences = function (callback) {
 
-        var prefs = {};
+        let prefs = {};
 
-        var noError = true;
+        let noError = true;
 
-        var validate = function (dataType, dataValue) {
+        let validate = function (dataType, dataValue) {
 
             switch (dataType) {
 
@@ -217,7 +217,7 @@ Preferences.prototype.dialog = function () {
 
         prefsContainer.find('input,select').each(function() {
 
-            var result = validate($(this).data('data_type'), $(this).val());
+            let result = validate($(this).data('data_type'), $(this).val());
 
             if (result[0]) prefs[$(this).data('name')] = $(this).val();
 

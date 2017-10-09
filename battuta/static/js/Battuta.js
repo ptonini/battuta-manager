@@ -2,7 +2,7 @@ function Battuta (param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -40,11 +40,11 @@ function Battuta (param) {
             from: 'bottom',
             amount: function (alert) {
 
-                var tempAlert = alert.clone().css('visibility', 'hidden');
+                let tempAlert = alert.clone().css('visibility', 'hidden');
 
                 $('body').append(tempAlert);
 
-                var offset = (window.innerHeight - tempAlert.height()) / 2;
+                let offset = (window.innerHeight - tempAlert.height()) / 2;
 
                 tempAlert.remove();
 
@@ -60,7 +60,7 @@ function Battuta (param) {
     // Add remember last tab method to JQuery
     $.fn.rememberTab = function () {
 
-        var keyName = $(this).attr('id') + '_activeTab';
+        let keyName = $(this).attr('id') + '_activeTab';
 
         $(this).find('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
 
@@ -68,7 +68,7 @@ function Battuta (param) {
 
         });
 
-        var activeTab = sessionStorage.getItem(keyName);
+        let activeTab = sessionStorage.getItem(keyName);
 
         activeTab && $(this).find('a[href="' + activeTab + '"]').tab('show');
 
@@ -159,15 +159,15 @@ Battuta.prototype = {
 
     getCookie: function (name) {
 
-        var cookieValue = null;
+        let cookieValue = null;
 
         if (document.cookie && document.cookie !== '') {
 
-            var cookies = document.cookie.split(';');
+            let cookies = document.cookie.split(';');
 
-            for (var i = 0; i < cookies.length; i++) {
+            for (let i = 0; i < cookies.length; i++) {
 
-                var cookie = jQuery.trim(cookies[i]);
+                let cookie = jQuery.trim(cookies[i]);
 
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
 
@@ -189,15 +189,15 @@ Battuta.prototype = {
 
     },
 
-    ajaxRequest: function (type, obj, url, blockUI, callback, failCallback) {
+    jsonRequest: function (type, obj, url, blockUI, callback, failCallback) {
 
-        var self = this;
+        let self = this;
 
-        var data = {};
+        let data = {};
 
-        var excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
+        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
 
-        for (var p in obj) {
+        for (let p in obj) {
 
             if (obj.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1 && p !== null) {
 
@@ -280,25 +280,25 @@ Battuta.prototype = {
 
     getData: function (action, blockUI, callback, failCallback) {
 
-        var self = this;
+        let self = this;
 
-        self.ajaxRequest('GET', self, self.apiPath + action + '/', blockUI, callback, failCallback);
+        self.jsonRequest('GET', self, self.apiPath + action + '/', blockUI, callback, failCallback);
 
     },
 
     postData: function (action, blockUI, callback, failCallback) {
 
-        var self = this;
+        let self = this;
 
-        self.ajaxRequest('POST', self, self.apiPath + action + '/', blockUI, callback, failCallback);
+        self.jsonRequest('POST', self, self.apiPath + action + '/', blockUI, callback, failCallback);
 
     },
 
     bind: function ($container) {
 
-        var self = this;
+        let self = this;
 
-        var previousId = false;
+        let previousId = false;
 
         Object.keys(self.bindings).forEach(function (key) {
 
@@ -306,11 +306,11 @@ Battuta.prototype = {
 
         });
 
-        var bindId = previousId ? previousId : Math.random().toString(36).substring(2, 10);
+        let bindId = previousId ? previousId : Math.random().toString(36).substring(2, 10);
 
-        var message = bindId + ':change';
+        let message = bindId + ':change';
 
-        var loadData =  function ($element, value) {
+        let loadData =  function ($element, value) {
 
             if ($element.is('input, textarea, select')) $element.val(value);
 
@@ -340,7 +340,7 @@ Battuta.prototype = {
             })
             .find('[data-bind]').each(function () {
 
-                var propArray = $(this).data('bind').split('.');
+                let propArray = $(this).data('bind').split('.');
 
                 if (propArray.length === 1) loadData($(this), self[propArray[0]]);
 
@@ -356,7 +356,7 @@ Battuta.prototype = {
 
             if (source === 'dom') {
 
-                var propArray = property.split('.');
+                let propArray = property.split('.');
 
                 if (propArray.length === 1) self[propArray[0]] = value;
 
@@ -386,7 +386,7 @@ Battuta.prototype = {
 
     selectionDialog: function (options) {
 
-        var self = this;
+        let self = this;
 
         $(document.body).append(
             $('<div>').load(self.paths.templates + 'selectionDialog.html', function () {
@@ -449,7 +449,7 @@ Battuta.prototype = {
 
     rememberLastTab: function (tabId) {
 
-        var keyName = tabId + '_activeTab';
+        let keyName = tabId + '_activeTab';
 
         $('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
 
@@ -457,7 +457,7 @@ Battuta.prototype = {
 
         });
 
-        var activeTab = sessionStorage.getItem(keyName);
+        let activeTab = sessionStorage.getItem(keyName);
 
         activeTab && $('#' + tabId + ' a[href="' + activeTab + '"]').tab('show');
 
@@ -477,26 +477,24 @@ Battuta.prototype = {
 
     },
 
-    patternField: function (locked, pattern) {
+    patternField: function (locked, pattern, $container) {
 
-        var self = this;
+        let self = this;
 
-        return $('<div>').load(self.paths.templates + 'patternField.html', function () {
-
-            var $patternEditor = $(this).find('.pattern_editor');
-
-            var $patternField = $(this).find('.pattern_field');
+        self.loadTemplate('patternField.html', $container).then( ($element) => {
 
             self.set('pattern', pattern);
 
-            self.bind($(this));
+            self.bind($element);
 
-            $patternEditor.click(function () {
+            $('.pattern_field').prop('disabled', locked);
+
+            $('.pattern_editor').prop('disabled', locked).click(function () {
 
                 $(document.body).append(
                     $('<div>').load(self.paths.templates + 'patternDialog.html', function () {
 
-                        var $dialog = $('#pattern_dialog');
+                        let $dialog = $('#pattern_dialog');
 
                         self.bind($dialog);
 
@@ -506,7 +504,7 @@ Battuta.prototype = {
                                 buttons: {
                                     Use: function () {
 
-                                        $patternField.val(self.pattern);
+                                        $('.pattern_field').val(self.pattern);
 
                                         $(this).dialog('close');
 
@@ -525,62 +523,62 @@ Battuta.prototype = {
                             })
                             .find('button').click(function () {
 
-                                var type = $(this).data('type');
+                            let type = $(this).data('type');
 
-                                var action = $(this).data('action');
+                            let action = $(this).data('action');
 
-                                var separator = {select: ':', and: ':&', exclude: ':!'};
+                            let separator = {select: ':', and: ':&', exclude: ':!'};
 
-                                if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+                            if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
 
-                                else self.selectionDialog({
-                                    objectType: type,
-                                    url: self.paths.apis.inventory + 'list/?type=' + type,
-                                    ajaxDataKey: 'nodes',
-                                    itemValueKey: 'name',
-                                    showButtons: true,
-                                    loadCallback: function ($gridContainer) {
+                            else self.selectionDialog({
+                                objectType: type,
+                                url: self.paths.apis.inventory + 'list/?type=' + type,
+                                ajaxDataKey: 'nodes',
+                                itemValueKey: 'name',
+                                showButtons: true,
+                                loadCallback: function ($gridContainer) {
 
-                                        $('#selection_dialog').dialog('option', 'buttons', {
-                                            Add: function () {
+                                    $('#selection_dialog').dialog('option', 'buttons', {
+                                        Add: function () {
 
-                                                var selection = $gridContainer.DynaGrid('getSelected', 'name');
+                                            let selection = $gridContainer.DynaGrid('getSelected', 'name');
 
-                                                for (var i = 0; i < selection.length; i++) {
+                                            for (let i = 0; i < selection.length; i++) {
 
-                                                    if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
+                                                if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
 
-                                                    self.set('pattern', self.pattern + selection[i])
-
-                                                }
-
-                                                $(this).dialog('close');
-
-                                            },
-                                            Cancel: function () {
-
-                                                $('.filter_box').val('');
-
-                                                $(this).dialog('close');
+                                                self.set('pattern', self.pattern + selection[i])
 
                                             }
-                                        })
-                                    },
-                                    addButtonAction: function () {
 
-                                        var node = new Node({name: null, description: null, type: type});
+                                            $(this).dialog('close');
 
-                                        node.edit(function () {
+                                        },
+                                        Cancel: function () {
 
-                                            $('#selection_grid').DynaGrid('load')
+                                            $('.filter_box').val('');
 
-                                        })
+                                            $(this).dialog('close');
 
-                                    },
-                                    formatItem: null
-                                });
+                                        }
+                                    })
+                                },
+                                addButtonAction: function () {
 
+                                    let node = new Node({name: null, description: null, type: type});
+
+                                    node.edit(function () {
+
+                                        $('#selection_grid').DynaGrid('load')
+
+                                    })
+
+                                },
+                                formatItem: null
                             });
+
+                        });
 
                         $(this).remove();
 
@@ -589,25 +587,137 @@ Battuta.prototype = {
 
             });
 
-            if (locked) {
+        });
 
-                $patternField.prop('disabled', true);
 
-                $patternEditor.prop('disabled', true)
 
-            }
-
-        })
+        // return $('<div>').load(self.paths.templates + 'patternField.html', function () {
+        //
+        //     let $patternEditor = $(this).find('.pattern_editor');
+        //
+        //     let $patternField = $(this).find('.pattern_field');
+        //
+        //     self.set('pattern', pattern);
+        //
+        //     self.bind($(this));
+        //
+        //     $patternEditor.click(function () {
+        //
+        //         $(document.body).append(
+        //             $('<div>').load(self.paths.templates + 'patternDialog.html', function () {
+        //
+        //                 let $dialog = $('#pattern_dialog');
+        //
+        //                 self.bind($dialog);
+        //
+        //                 $dialog
+        //                     .dialog({
+        //                         width: 520,
+        //                         buttons: {
+        //                             Use: function () {
+        //
+        //                                 $patternField.val(self.pattern);
+        //
+        //                                 $(this).dialog('close');
+        //
+        //                             },
+        //                             Reset: function () {
+        //
+        //                                 self.set('pattern', '');
+        //
+        //                             },
+        //                             Cancel: function () {
+        //
+        //                                 $(this).dialog('close');
+        //
+        //                             }
+        //                         }
+        //                     })
+        //                     .find('button').click(function () {
+        //
+        //                         let type = $(this).data('type');
+        //
+        //                         let action = $(this).data('action');
+        //
+        //                         let separator = {select: ':', and: ':&', exclude: ':!'};
+        //
+        //                         if (action !== 'select' && self.pattern === '') $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+        //
+        //                         else self.selectionDialog({
+        //                             objectType: type,
+        //                             url: self.paths.apis.inventory + 'list/?type=' + type,
+        //                             ajaxDataKey: 'nodes',
+        //                             itemValueKey: 'name',
+        //                             showButtons: true,
+        //                             loadCallback: function ($gridContainer) {
+        //
+        //                                 $('#selection_dialog').dialog('option', 'buttons', {
+        //                                     Add: function () {
+        //
+        //                                         let selection = $gridContainer.DynaGrid('getSelected', 'name');
+        //
+        //                                         for (let i = 0; i < selection.length; i++) {
+        //
+        //                                             if (self.pattern !== '') self.set('pattern', self.pattern + separator[action]);
+        //
+        //                                             self.set('pattern', self.pattern + selection[i])
+        //
+        //                                         }
+        //
+        //                                         $(this).dialog('close');
+        //
+        //                                     },
+        //                                     Cancel: function () {
+        //
+        //                                         $('.filter_box').val('');
+        //
+        //                                         $(this).dialog('close');
+        //
+        //                                     }
+        //                                 })
+        //                             },
+        //                             addButtonAction: function () {
+        //
+        //                                 let node = new Node({name: null, description: null, type: type});
+        //
+        //                                 node.edit(function () {
+        //
+        //                                     $('#selection_grid').DynaGrid('load')
+        //
+        //                                 })
+        //
+        //                             },
+        //                             formatItem: null
+        //                         });
+        //
+        //                     });
+        //
+        //                 $(this).remove();
+        //
+        //             })
+        //         )
+        //
+        //     });
+        //
+        //     if (locked) {
+        //
+        //         $patternField.prop('disabled', true);
+        //
+        //         $patternEditor.prop('disabled', true)
+        //
+        //     }
+        //
+        // })
 
     },
 
     runnerCredsSelector: function () {
 
-        var self = this;
+        let self = this;
 
-        var user = new User({username: sessionStorage.getItem('user_name')});
+        let user = new User({username: sessionStorage.getItem('user_name')});
 
-        var $selector = user.credentialsSelector(null, true, function () {
+        let $selector = user.credentialsSelector(null, true, function () {
 
             self.cred = $('option:selected', $selector).data()
 
@@ -631,7 +741,7 @@ Battuta.prototype = {
 
         if (!suffix) suffix = 'B';
 
-        var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 
         value = parseInt(value) * Math.pow(1024, sizes.indexOf(suffix));
 
@@ -639,7 +749,7 @@ Battuta.prototype = {
 
         else {
 
-            var i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
+            let i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
 
             return parseFloat(value / Math.pow(1024, i)).toFixed(i < 4 ? 0 : 2) + ' ' + sizes[i];
 
@@ -649,10 +759,10 @@ Battuta.prototype = {
 
     deleteDialog: function (action, callback) {
 
-        var self = this;
+        let self = this;
 
-        $(document.body).append(
-            $('<div>').load(self.paths.templates + 'deleteDialog.html', function () {
+        self.loadTemplate('deleteDialog.html', $(document.body))
+            .then( ($element) => {
 
                 $('#delete_dialog').dialog({
                     width: '320',
@@ -676,22 +786,66 @@ Battuta.prototype = {
                     }
                 });
 
-                $(this).remove()
-
             })
-        );
+
+        //
+        // $(document.body).append(
+        //     $('<div>').load(self.paths.templates + 'deleteDialog.html', function () {
+        //
+        //         $('#delete_dialog').dialog({
+        //             width: '320',
+        //             buttons: {
+        //                 Delete: function () {
+        //
+        //                     self.postData(action, false, function (data) {
+        //
+        //                         callback && callback(data)
+        //
+        //                     });
+        //
+        //                     $(this).dialog('close');
+        //
+        //                 },
+        //                 Cancel: function () {
+        //
+        //                     $(this).dialog('close')
+        //
+        //                 }
+        //             }
+        //         });
+        //
+        //         $(this).remove()
+        //
+        //     })
+        // );
 
     },
 
-    loadTemplate: function () {
+    loadTemplate: function (template, $container) {
 
-        return
+        let self = this;
+
+        return fetch(self.paths.templates + template)
+            .then( (response) => {
+
+                return response.text()
+
+            })
+            .then( (text) => {
+
+                let $element = $(text);
+
+                $container.append($element);
+
+                return $element
+
+            })
 
     },
 
     del: function (callback) {
 
-        var self = this;
+        let self = this;
 
         self.deleteDialog('delete', callback)
 
@@ -699,7 +853,7 @@ Battuta.prototype = {
 
     edit: function (callback) {
 
-        var self = this;
+        let self = this;
 
         $(document.body).append(
             $('<div>').load(self.paths.templates + 'entityDialog.html', function () {
@@ -738,9 +892,9 @@ Battuta.prototype = {
 
     set: function (property, value) {
 
-        var self = this;
+        let self = this;
 
-        var propArray = property.split('.');
+        let propArray = property.split('.');
 
         if (propArray.length === 1) self[propArray[0]] = value;
 
@@ -752,7 +906,7 @@ Battuta.prototype = {
 
         }
 
-        for (var bindId in self.bindings) {
+        for (let bindId in self.bindings) {
 
             self.pubSub.trigger(bindId + ':change', ['model', property, value]);
 
@@ -762,7 +916,7 @@ Battuta.prototype = {
 
     refresh: function (blockUI, callback) {
 
-        var self = this;
+        let self = this;
 
         self.getData('get', blockUI, function (data){
 
@@ -776,7 +930,7 @@ Battuta.prototype = {
 
     list: function (blockUI, callback) {
 
-        var self = this;
+        let self = this;
 
         self.getData('list', blockUI, callback)
 
@@ -784,7 +938,7 @@ Battuta.prototype = {
 
     save: function (callback) {
 
-        var self = this;
+        let self = this;
 
         self.postData('save', true, callback)
 
@@ -792,9 +946,9 @@ Battuta.prototype = {
 
     mainMenu: function (authenticated) {
 
-        var self = this;
+        let self = this;
 
-        var user = new User({username: self.username});
+        let user = new User({username: self.username});
 
         if (authenticated === 'True') return $('<div>').load(self.paths.templates + 'mainMenu.html', function () {
 
@@ -802,7 +956,7 @@ Battuta.prototype = {
 
             self.bind($(this));
 
-            var prefs = new Preferences();
+            let prefs = new Preferences();
 
             prefs.load();
 
@@ -872,7 +1026,7 @@ Battuta.prototype = {
 
     search: function (pattern) {
 
-        var self = this;
+        let self = this;
 
         return $('<div>').load(self.paths.templates + 'search.html', function () {
 

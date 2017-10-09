@@ -44,11 +44,11 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var battuta = new Battuta({username: '{{ user.username }}'});
+            let battuta = new Battuta({username: '{{ user.username }}'});
 
             $('#menu_container').html(
                 battuta.mainMenu('{% if user.is_authenticated %}True{% endif %}')
-            )
+            );
 
         })
     </script>

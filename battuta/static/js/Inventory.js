@@ -2,7 +2,7 @@ function Inventory(param) {
 
     param = param ? param : {};
 
-    var self = this;
+    let self = this;
 
     self.pubSub = $({});
 
@@ -24,11 +24,11 @@ Inventory.prototype.apiPath = Battuta.prototype.paths.apis.inventory;
 
 Inventory.prototype.manage = function () {
 
-    var self = this;
+    let self = this;
 
     return $('<div>').load(self.paths.templates + 'manageInventory.html', function () {
 
-        var $container = $(this);
+        let $container = $(this);
 
         $('#upload_field')
             .fileinput({
@@ -99,9 +99,9 @@ Inventory.prototype.manage = function () {
 
                     self.getData('export', false, function (data) {
 
-                        var jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
+                        let jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
 
-                        var link = document.createElement('a');
+                        let link = document.createElement('a');
 
                         link.setAttribute('href', jsonString);
 
