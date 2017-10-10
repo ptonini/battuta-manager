@@ -643,8 +643,7 @@ Project.prototype.view = function () {
             )
         );
 
-
-        self.rememberLastTab(tabsHeader.attr('id'));
+        tabsHeader.rememberTab();
 
         return container
 

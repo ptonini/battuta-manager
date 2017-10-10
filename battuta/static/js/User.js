@@ -653,7 +653,7 @@ User.prototype.view = function (currentUser) {
 
         }
 
-        self.rememberLastTab(tabsHeader.attr('id'));
+        tabsHeader.rememberTab();
 
         return container
 
@@ -714,9 +714,7 @@ User.prototype.selector = function () {
 
             });
 
-            let lastCell = $(row).find('td:eq(3)');
-
-            self.prettyBoolean(lastCell, user.is_superuser);
+            let lastCell = $(row).find('td:eq(3)').prettyBoolean();
 
             if (!user.is_superuser) lastCell.append(
                 spanRight.clone().append(

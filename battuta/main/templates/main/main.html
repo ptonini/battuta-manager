@@ -46,9 +46,7 @@
 
             let battuta = new Battuta({username: '{{ user.username }}'});
 
-            $('#menu_container').html(
-                battuta.mainMenu('{% if user.is_authenticated %}True{% endif %}')
-            );
+            battuta.mainMenu('{% if user.is_authenticated %}True{% endif %}')
 
         })
     </script>
@@ -65,11 +63,12 @@
 </head>
 <body>
     <header class="navbar navbar-default">
-        <div id="menu_container" class="container"></div>
+        <div id="navbar_container" class="container"></div>
     </header>
     <section class="container">
         <div class="row">
             <div class="col-md-12 main" id="container"></div>
+            <div class="col-md-12 main" id="content_container"></div>
         </div>
     </section>
     <footer class="footer">

@@ -50,118 +50,111 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
     let self = this;
 
-    $(document.body).append(
-        $('<div>').load(self.paths.templates + 'adhocDialog.html', function () {
+    self.loadTemplate('adhocDialog.html').then( ($element) => {
 
-            let $moduleSelector = $('#module_selector');
+        let $selector = $('#module_selector');
 
-            let $dialog = $('#adhoc_dialog').dialog({
-                autoOpen: false,
-                width: 600,
-                closeOnEscape: false,
-                buttons: {
-                    Run: function () {
+        let $argumentsContainer = $('#module_arguments_container');
 
-                        self.hosts = self.pattern;
+        $element.dialog({
+            autoOpen: false,
+            width: 600,
+            closeOnEscape: false,
+            buttons: {
+                Run: function () {
 
-                        let job = new Job(self);
+                    self.hosts = self.pattern;
 
-                        job.run()
+                    let job = new Job(self);
 
-                    },
-                    Save: function () {
+                    job.run()
 
-                        self.hosts = self.pattern;
+                },
+                Save: function () {
 
-                        console.log(2, self);
+                    self.hosts = self.pattern;
 
-                        self.save(function () {
+                    self.save(function () {
 
-                            callback && callback();
-
-                            //self.set('title', 'Edit AdHoc task');
-
-                        });
-
-                    },
-                    Close: function () {
-
-                        $(this).dialog('close');
-                    }
-                }
-            });
-
-            self.patternField(locked, self.hosts, $('#pattern_field_label'));
-
-            //$('#pattern_field_label').append(self.patternField(locked, self.hosts));
-
-            $('#credentials_selector_label').append(self.runnerCredsSelector());
-
-            self.getData('modules', true, function (data) {
-
-                data.modules.sort();
-
-                $.each(data.modules.sort(), function (index, value) {
-
-                    $moduleSelector.append($('<option>').attr('value', value).append(value))
-
-                });
-
-                $moduleSelector
-                    .change(function () {
-
-                        self.module = this.value;
-
-                        self.name = '[adhoc task] ' + self.module;
-
-                        $('#module_reference_anchor').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
-
-                        $('#module_arguments_container').load(self.paths.modules + self.module + '.html', function () {
-
-                            self.bind($dialog);
-
-                            $('a.label_link').attr('href', self.paths.selectors.file);
-
-                            if (self.module === 'copy') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
-
-                            else if (self.module === 'script') $(this).find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
-
-                            else if (self.module === 'unarchive') $(this).find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
-
-                            Object.keys(self.arguments).forEach(function (key) {
-
-                                if ($dialog.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
-
-                            });
-
-                            $dialog
-                                .dialog('open')
-                                .find('input').keypress(function (event) {
-
-                                    if (event.keyCode === 13) {
-
-                                        event.preventDefault();
-
-                                        $(this).next().find('button:contains("Run")').click()
-
-                                    }
-
-                                })
-
-                        })
+                        callback && callback();
 
                     });
 
-                if (self.id) $moduleSelector.val(self.module).change();
+                },
+                Close: function () {
 
-                else $moduleSelector.val('shell').change();
+                    $(this).dialog('close');
+                }
+            }
+        });
+
+        self.patternField(locked, self.hosts, $('#pattern_field_label'));
+
+        self.runnerCredsSelector($('#credentials_selector_label'));
+
+        $selector.change(function () {
+
+            self.module = $(this).val();
+
+            self.name = '[adhoc task] ' + self.module;
+
+            $('#module_reference_anchor').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
+
+            $argumentsContainer.empty();
+
+            self.loadTemplate('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
+
+                self.bind($element);
+
+                $('a.label_link').attr('href', self.paths.selectors.file);
+
+                if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+
+                else if (self.module === 'script') $element.find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+
+                else if (self.module === 'unarchive') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
+
+                Object.keys(self.arguments).forEach(function (key) {
+
+                    if ($element.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
+
+                });
+
+                $element
+                    .dialog('open')
+                    .find('input').keypress(function (event) {
+
+                        if (event.keyCode === 13) {
+
+                            event.preventDefault();
+
+                            $(this).next().find('button:contains("Run")').click()
+
+                        }
+
+                    })
+
+            })
+
+        });
+
+        self.getData('modules', true, function (data) {
+
+            data.modules.sort();
+
+            $.each(data.modules.sort(), function (index, value) {
+
+                $selector.append($('<option>').attr('value', value).append(value))
 
             });
 
-            $(this).remove()
+            if (self.id) $selector.val(self.module).change();
 
-        })
-    );
+            else $selector.val('shell').change();
+
+        });
+
+    });
 
 };
 
@@ -193,7 +186,7 @@ AdHoc.prototype.view = function (locked) {
 
         self.patternField(locked, self.hosts, $('#command_pattern_field_label'));
 
-        $('#command_credentials_selector_label').append(self.runnerCredsSelector());
+        self.runnerCredsSelector($('#command_credentials_selector_label'));
 
         $('#adhoc_table').DataTable({
             pageLength: 50,
@@ -232,9 +225,8 @@ AdHoc.prototype.view = function (locked) {
 
                 $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
 
-                $(row).find('td:eq(3)').append(
+                $(row).find('td:eq(3)').prettyBoolean().append(
                     spanRight.clone().append(
-                        self.prettyBoolean($(row).find('td:eq(3)'), adhoc.become),
                         spanFA.clone().addClass('fa-play-circle-o btn-incell').attr('title', 'Load').click(function () {
 
                             adhoc.dialog(locked, function () {
