@@ -50,7 +50,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
     let self = this;
 
-    self.loadTemplate('adhocDialog.html').then( ($element) => {
+    self.loadTemplate('adhocDialog.html').then($element => {
 
         let $selector = $('#module_selector');
 
@@ -158,35 +158,35 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
 };
 
-AdHoc.prototype.view = function (locked) {
+AdHoc.prototype.view = function (locked, $container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'adhocView.html', function () {
+    self.loadTemplate('adhocView.html', $container).then($element => {
 
-        self.bind(
-            $('#adhoc_command_form').submit(function (event) {
+        self.bind($element);
 
-                event.preventDefault();
-
-                self.name ='[adhoc task] shell';
-
-                self.module = 'shell';
-
-                self.hosts = self.pattern;
-
-                let job = new Job(self);
-
-                job.run()
-
-            })
-        );
-
-        if (self.hosts) $('#view_header').remove();
+        self.hosts && $('#view_header').remove();
 
         self.patternField(locked, self.hosts, $('#command_pattern_field_label'));
 
         self.runnerCredsSelector($('#command_credentials_selector_label'));
+
+        $('#adhoc_command_form').submit(function (event) {
+
+            event.preventDefault();
+
+            self.name ='[adhoc task] shell';
+
+            self.module = 'shell';
+
+            self.hosts = self.pattern;
+
+            let job = new Job(self);
+
+            job.run()
+
+        });
 
         $('#adhoc_table').DataTable({
             pageLength: 50,

@@ -92,36 +92,36 @@ File.prototype.upload = function (callback) {
 
     let self = this;
 
-    $(document.body).append($('<div>').load(self.paths.templates + 'uploadDialog.html', function () {
+    self.loadTemplate('uploadDialog.html').then($element => {
+
+        self.bind($element);
 
         self.set('title', 'Select file');
 
-        self.bind(
-            $('#upload_dialog')
-                .dialog({
-                    buttons: {
-                        Upload: function () {
+        $element
+            .dialog({
+                buttons: {
+                    Upload: function () {
 
-                            $('#upload_field').fileinput('upload');
+                        $('#upload_field').fileinput('upload');
 
-                            self.set('title', 'Uploading file');
+                        self.set('title', 'Uploading file');
 
-                            $(this).find('div.file-caption-main').hide()
+                        $(this).find('div.file-caption-main').hide()
 
-                        },
-                        Cancel: function () {
+                    },
+                    Cancel: function () {
 
-                            $(this).dialog('close')
+                        $(this).dialog('close')
 
-                        }
                     }
-                })
-                .keypress(function (event) {
+                }
+            })
+            .keypress(function (event) {
 
-                    if (event.keyCode === 13) $('#upload_field').fileinput('upload')
+                if (event.keyCode === 13) $('#upload_field').fileinput('upload')
 
-                })
-        );
+            });
 
         $('#upload_field')
             .fileinput({
@@ -148,21 +148,19 @@ File.prototype.upload = function (callback) {
             })
             .on('fileuploaded', function (event, data) {
 
-                $('#upload_dialog').dialog('close');
+                $element.dialog('close');
 
                 self.requestResponse(data.response, callback, function () {
 
-                    $('#upload_dialog').find('div.file-caption-main').show();
+                    $element.find('div.file-caption-main').show();
 
-                    self.self('title', 'Select file');
+                    self.set('title', 'Select file');
 
                 })
 
             });
 
-        $(this).remove();
-
-    }));
+    });
 
 };
 
@@ -184,145 +182,141 @@ File.prototype.editorDialog = function (callback) {
 
     let self = this;
 
-    $(document.body).append(
-        $('<div>').load(self.paths.templates + 'fileEditorDialog.html', function () {
+    self.loadTemplate('fileEditorDialog.html').then($element => {
 
-            let aceMode = 'text';
+        self.bind($element);
 
-            let modes = [
-                {name: 'apache_conf', label: 'Apache conf'},
-                {name: 'batchfile', label: 'BatchFile'},
-                {name: 'css', label: 'CSS'},
-                {name: 'dockerfile', label: 'Dockerfile'},
-                {name: 'gitignore', label: 'Gitignore'},
-                {name: 'ini', label: 'INI'},
-                {name: 'java', label: 'Java'},
-                {name: 'javascript', label: 'JavaScript'},
-                {name: 'json', label: 'JSON'},
-                {name: 'php', label: 'PHP'},
-                {name: 'powershell', label: 'Powershell'},
-                {name: 'properties', label: 'Properties'},
-                {name: 'python', label: 'Python'},
-                {name: 'sh', label: 'SH'},
-                {name: 'sql', label: 'SQL'},
-                {name: 'text', label: 'Text'},
-                {name: 'vbscript', label: 'VBScript'},
-                {name: 'xml', label: 'XML'},
-                {name: 'yaml', label: 'YAML'}
-            ];
+        let aceMode = 'text';
 
-            let textEditor = ace.edit('editor_container');
+        let modes = [
+            {name: 'apache_conf', label: 'Apache conf'},
+            {name: 'batchfile', label: 'BatchFile'},
+            {name: 'css', label: 'CSS'},
+            {name: 'dockerfile', label: 'Dockerfile'},
+            {name: 'gitignore', label: 'Gitignore'},
+            {name: 'ini', label: 'INI'},
+            {name: 'java', label: 'Java'},
+            {name: 'javascript', label: 'JavaScript'},
+            {name: 'json', label: 'JSON'},
+            {name: 'php', label: 'PHP'},
+            {name: 'powershell', label: 'Powershell'},
+            {name: 'properties', label: 'Properties'},
+            {name: 'python', label: 'Python'},
+            {name: 'sh', label: 'SH'},
+            {name: 'sql', label: 'SQL'},
+            {name: 'text', label: 'Text'},
+            {name: 'vbscript', label: 'VBScript'},
+            {name: 'xml', label: 'XML'},
+            {name: 'yaml', label: 'YAML'}
+        ];
 
-            if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
+        let textEditor = ace.edit('editor_container');
 
-                let fileNameArray = self.name.split('.');
+        if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
 
-                let fileExtension = fileNameArray[fileNameArray.length - 1];
+            let fileNameArray = self.name.split('.');
 
-                if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
+            let fileExtension = fileNameArray[fileNameArray.length - 1];
 
-                if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
+            if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
 
-                else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
+            if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
 
-                else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
+            else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
 
-                else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
+            else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
 
-                else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
+            else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
 
-                else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
+            else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
 
-                else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
+            else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
 
-                else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
+            else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
 
-            }
+            else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
 
-            else if (self.type === 'application/xml') aceMode = 'xml';
+        }
 
-            else if (self.type === 'application/json') aceMode = 'json';
+        else if (self.type === 'application/xml') aceMode = 'xml';
 
-            else if (self.type === 'text/x-shellscript') aceMode = 'sh';
+        else if (self.type === 'application/json') aceMode = 'json';
 
-            else if (self.type === 'text/yaml') aceMode = 'yaml';
+        else if (self.type === 'text/x-shellscript') aceMode = 'sh';
 
-            else if (self.type === 'text/x-python') aceMode = 'python';
+        else if (self.type === 'text/yaml') aceMode = 'yaml';
 
-            $.each(modes, function (index, mode){
+        else if (self.type === 'text/x-python') aceMode = 'python';
 
-                $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
+        $.each(modes, function (index, mode){
 
-            });
+            $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
 
-            $('#mode_selector')
-                .val(aceMode)
-                .change(function () {
+        });
 
-                    textEditor.getSession().setMode('ace/mode/' + $(this).val())
+        $('#mode_selector')
+            .val(aceMode)
+            .change(function () {
 
-                })
-                .change();
+                textEditor.getSession().setMode('ace/mode/' + $(this).val())
 
-            textEditor.setTheme('ace/theme/chrome');
+            })
+            .change();
 
-            textEditor.renderer.setShowPrintMargin(false);
+        textEditor.setTheme('ace/theme/chrome');
 
-            textEditor.setHighlightActiveLine(false);
+        textEditor.renderer.setShowPrintMargin(false);
 
-            textEditor.setFontSize(13);
+        textEditor.setHighlightActiveLine(false);
 
-            textEditor.$blockScrolling = Infinity;
+        textEditor.setFontSize(13);
 
-            textEditor.setValue(self.text);
+        textEditor.$blockScrolling = Infinity;
 
-            textEditor.session.getUndoManager().reset();
+        textEditor.setValue(self.text);
 
-            textEditor.selection.moveCursorFileStart();
+        textEditor.session.getUndoManager().reset();
 
-            $('#editor_container').css('height', window.innerHeight * .7);
+        textEditor.selection.moveCursorFileStart();
 
-            $('div.ui-dialog-buttonpane').css('border-top', 'none');
+        $('#editor_container').css('height', window.innerHeight * .7);
 
-            self.bind(
-                $('#editor_dialog').dialog({
-                    width: 900,
-                    closeOnEscape: false,
-                    buttons: {
-                        Save: function () {
+        $('div.ui-dialog-buttonpane').css('border-top', 'none');
 
-                            if (self.new_name) {
+        $element.dialog({
+                width: 900,
+                closeOnEscape: false,
+                buttons: {
+                    Save: function () {
 
-                                self.text = textEditor.getValue();
+                        if (self.new_name) {
 
-                                self.save(function (data) {
+                            self.text = textEditor.getValue();
 
-                                    $('#editor_dialog').dialog('close');
+                            self.save(data => {
 
-                                    callback && callback(data);
+                                $(this).dialog('close');
 
-                                });
+                                callback && callback(data);
 
-                            }
-
-                            else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
-
-                        },
-                        Cancel: function () {
-
-                            $(this).dialog('close');
+                            });
 
                         }
+
+                        else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
+
+                    },
+                    Cancel: function () {
+
+                        $(this).dialog('close');
+
                     }
-                })
-            );
+                }
+            });
 
-            textEditor.focus();
+        textEditor.focus();
 
-            $(this).remove();
-
-        })
-    );
+    });
 
 };
 
@@ -330,50 +324,46 @@ File.prototype.dialog = function (action, callback) {
 
     let self = this;
 
-    $(document.body).append(
-        $('<div>').load(self.paths.templates + 'fileDialog.html', function () {
+    self.loadTemplate('fileDialog.html').then($element =>  {
 
-            self.set('action', action);
+        self.bind($element);
 
-            self.set('is_folder', false);
+        self.set('action', action);
 
-            action === 'copy' && self.set('new_name', 'copy_' + self.name);
+        self.set('is_folder', false);
 
-            self.bind(
-                $('#file_dialog')
-                    .dialog({
-                        buttons: {
-                            Save: function () {
+        action === 'copy' && self.set('new_name', 'copy_' + self.name);
 
-                                if (self.is_folder) self.type = 'directory';
+        $element
+            .dialog({
+                buttons: {
+                    Save: function () {
 
-                                if (self.new_name && self.new_name !== self.name) self.save(function (data) {
+                        if (self.is_folder) self.type = 'directory';
 
-                                    $('#file_dialog').dialog('close');
+                        if (self.new_name && self.new_name !== self.name) self.save(function (data) {
 
-                                    callback && callback(data);
+                            $('#file_dialog').dialog('close');
 
-                                });
+                            callback && callback(data);
 
-                            },
-                            Cancel: function() {
+                        });
 
-                                $(this).dialog('close')
+                    },
+                    Cancel: function() {
 
-                            }
-                        }
-                    })
-                    .keypress(function (event) {
+                        $(this).dialog('close')
 
-                        if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
+                    }
+                }
+            })
+            .keypress(function (event) {
 
-                    })
-            );
+                if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
 
-            $(this).remove();
+            });
 
-        })
-    );
+    });
 
 };
 
@@ -381,47 +371,45 @@ File.prototype.roleDialog = function (callback) {
 
     let self = this;
 
-    $(document.body).append(
-        $('<div>').load(self.paths.templates + 'roleDialog.html', function () {
+    self.loadTemplate('roleDialog.html').then($element => {
 
-            self.bind(
-                $('#role_dialog')
-                    .dialog({
-                        buttons: {
-                            Save: function() {
+        self.bind($element);
 
-                                self.role_folders = [];
+        $element
+            .dialog({
+                buttons: {
+                    Save: function() {
 
-                                $(this).find('button.checked_button').each(function() {
+                        self.role_folders = [];
 
-                                    self.role_folders.push($(this).data())
+                        $(this).find('button.checked_button').each(function() {
 
-                                });
+                            self.role_folders.push($(this).data())
 
-                                self.postData('create_role', false, function (data) {
+                        });
 
-                                    callback && callback(data, self);
+                        self.postData('create_role', false, (data) => {
 
-                                    $('#role_dialog').dialog('close');
+                            callback && callback(data, self);
 
-                                });
+                            $(this).dialog('close');
 
-                            },
-                            Cancel: function() {
+                        });
 
-                                $(this).dialog('close')
-                            }
-                        }
-                    })
-                    .find('button').click(function () {
+                    },
+                    Cancel: function() {
 
-                        $(this).toggleClass('checked_button')
+                        $(this).dialog('close')
+                    }
+                }
+            })
+            .find('button').click(function () {
 
-                    })
-            );
+                $(this).toggleClass('checked_button')
 
-        })
-    )
+            });
+
+    })
 
 };
 
@@ -429,13 +417,34 @@ File.prototype.selector = function (owner) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'fileSelector.html', function () {
+    self.loadTemplate('fileSelector.html', $('#content_container')).then($element => {
+
+        self.bind($element);
 
         self.set('title', owner ? owner + ' files' : self.root.capitalize());
 
-        self.bind($(this));
-
         self.folder = window.location.hash.slice(1);
+
+        let $table = $('#file_table');
+
+        let $breadCrumb = $('#path_links');
+
+        let $pathInputField = $('<input>').attr('id', 'path_input');
+
+        let $previousFolderRow = $('<tr>').attr('role', 'row').append(
+            $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
+
+                let folderArray = self.folder.split('/');
+
+                folderArray.pop();
+
+                setFolder(folderArray.join('/'));
+
+            }),
+            $('<td>'),
+            $('<td>'),
+            $('<td>')
+        );
 
         let roots = {
             playbooks: {
@@ -506,27 +515,6 @@ File.prototype.selector = function (owner) {
             }
         };
 
-        let $table = $('#file_table');
-
-        let $breadCrumb = $('#path_links');
-
-        let $pathInputField = $('<input>').attr('id', 'path_input');
-
-        let $previousFolderRow = $('<tr>').attr('role', 'row').append(
-            $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
-
-                let folderArray = self.folder.split('/');
-
-                folderArray.pop();
-
-                setFolder(folderArray.join('/'));
-
-            }),
-            $('<td>'),
-            $('<td>'),
-            $('<td>')
-        );
-
         let buttons = [
             {
                 text: '<span class="fa fa-asterisk" title="Create"></span>',
@@ -560,7 +548,7 @@ File.prototype.selector = function (owner) {
             }
         ];
 
-        let buildBreadcrumbs = function () {
+        let buildBreadcrumbs = () => {
 
             $('.path_link').remove();
 
@@ -595,7 +583,7 @@ File.prototype.selector = function (owner) {
 
         };
 
-        let setFolder =  function (folder) {
+        let setFolder = folder => {
 
             self.folder = folder;
 
@@ -607,7 +595,7 @@ File.prototype.selector = function (owner) {
 
         };
 
-        let buildTable = function () {
+        let buildTable = () => {
 
             $table.DataTable({
                 ajax: {
@@ -794,7 +782,6 @@ File.prototype.selector = function (owner) {
         }
 
         else buildTable();
-
 
     });
 

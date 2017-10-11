@@ -90,17 +90,15 @@ Node.prototype.loadHostInfo = function (callback) {
 
 };
 
-Node.prototype.hostInfo = function () {
+Node.prototype.hostInfo = function ($container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'hostInfo.html', function () {
+    self.loadTemplate('hostInfo.html', $container).then($element => {
 
-        let $container = $(this);
+        self.bind($element);
 
         self.loadHostInfo(function () {
-
-            self.bind($container);
 
             if (self.facts) {
 
@@ -172,11 +170,13 @@ Node.prototype.hostInfo = function () {
 
 };
 
-Node.prototype.relationships = function () {
+Node.prototype.relationships = function ($container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'relationships.html', function () {
+    self.loadTemplate('relationships.html', $container).then($element => {
+
+        self.bind($element);
 
         let relations = {
             group: ['parents', 'children', 'members'],
@@ -185,7 +185,7 @@ Node.prototype.relationships = function () {
 
         let relationType = {parents: 'group', children: 'group', members: 'host'};
 
-        let reloadData = function ($gridContainer) {
+        let reloadData = $gridContainer => {
 
             $gridContainer.DynaGrid('load');
 
@@ -200,6 +200,7 @@ Node.prototype.relationships = function () {
         $.each(relations[self.type], function (index, relation) {
 
             $('#' + relation + '_grid')
+                .addClass('relationship_grid')
                 .css('margin-bottom', '2rem')
                 .DynaGrid({
                     gridTitle: relation,
@@ -294,19 +295,20 @@ Node.prototype.relationships = function () {
                             formatItem: null
                         });
 
-                }
+                    }
                 });
         });
 
     });
-
 };
 
-Node.prototype.descendants = function () {
+Node.prototype.descendants = function ($container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'descendants.html', function () {
+    self.loadTemplate('descendants.html', $container).then($element => {
+
+        self.bind($element);
 
         $.each(['group', 'host'], function (index, type) {
 
@@ -338,11 +340,13 @@ Node.prototype.descendants = function () {
 
 };
 
-Node.prototype.variables = function () {
+Node.prototype.variables = function ($container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'variableTable.html', function () {
+    self.loadTemplate('variableTable.html', $container).then($element => {
+
+        self.bind($element);
 
         $('#variable_table').DataTable({
             order: [[ 2, 'asc' ], [ 0, 'asc' ]],
@@ -539,51 +543,46 @@ Node.prototype.editVariable = function (variable, callback) {
 
     let self = this;
 
-    $(document.body).append(
-        $('<div>').load(self.paths.templates + 'editVariableDialog.html', function () {
+    self.loadTemplate('editVariableDialog.html').then($element => {
 
-            variable.id && self.set('variable.id', variable.id);
+        self.bind($element);
 
-            self.set('header', variable.id ? 'Edit variable' : 'Add variable');
+        variable.id && self.set('variable.id', variable.id);
 
-            self.set('variable.key', variable.key);
+        self.set('header', variable.id ? 'Edit variable' : 'Add variable');
 
-            self.set('variable.value', variable.value);
+        self.set('variable.key', variable.key);
 
-            self.bind(
-                $('#variable_dialog').dialog({
-                    closeOnEscape: false,
-                    buttons: {
-                        Save: function () {
+        self.set('variable.value', variable.value);
 
-                            let $dialog = $(this);
+        $element.dialog({
+            closeOnEscape: false,
+            buttons: {
+                Save: function () {
 
-                            self.postData('save_var', true, function () {
+                    self.postData('save_var', true, () => {
 
-                                callback && callback();
+                        callback && callback();
 
-                                variable.id && $dialog.dialog('close');
+                        variable.id && $(this).dialog('close');
 
-                                $dialog.find('input, textarea').val('');
+                        $(this).find('input, textarea').val('');
 
-                                $dialog.find('[data-bind="key"]').focus();
+                        $(this).find('[data-bind="key"]').focus();
 
-                            });
+                    });
 
-                        },
-                        Close: function () {
+                },
+                Close: function () {
 
-                            $(this).dialog('close');
+                    $(this).dialog('close');
 
-                        }
-                    }
-                })
-            );
-
-            $(this).remove();
-
+                }
+            }
         })
-    )
+
+
+    })
 
 };
 
@@ -591,56 +590,52 @@ Node.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    $(document.body).append(
-        $('<div>').load(self.paths.templates + 'copyVariablesDialog.html', function () {
+    self.loadTemplate('copyVariablesDialog.html').then($element => {
 
-            $('#copy_variables_dialog')
-                .dialog({
-                    width: 280,
-                    buttons: {
-                        Cancel: function () {
+        $element
+            .dialog({
+                width: 280,
+                buttons: {
+                    Cancel: function () {
 
-                            $(this).dialog('close')
+                        $(this).dialog('close')
 
-                        }
                     }
-                })
-                .find('button').click(function () {
+                }
+            })
+            .find('button').click(function () {
 
-                    $('#copy_variables_dialog').dialog('close');
+                $element.dialog('close');
 
-                    self.selectionDialog({
-                        objectType: $(this).data('type'),
-                        url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
-                        ajaxDataKey: 'nodes',
-                        itemValueKey: 'name',
-                        showButtons: false,
-                        loadCallback: null,
-                        addButtonAction: null,
-                        formatItem: function ($gridItem) {
+                self.selectionDialog({
+                    objectType: $(this).data('type'),
+                    url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
+                    ajaxDataKey: 'nodes',
+                    itemValueKey: 'name',
+                    showButtons: false,
+                    loadCallback: null,
+                    addButtonAction: null,
+                    formatItem: function ($gridItem) {
 
-                            $gridItem.click(function () {
+                        $gridItem.click(function () {
 
-                                self.source = $(this).data();
+                            self.source = $(this).data();
 
-                                self.postData('copy_vars', false, function (data) {
+                            self.postData('copy_vars', false, function (data) {
 
-                                    $('#selection_dialog').dialog('close');
+                                $('#selection_dialog').dialog('close');
 
-                                    callback && callback(data)
-
-                                });
+                                callback && callback(data)
 
                             });
-                        }
-                    });
 
+                        });
+                    }
                 });
 
-            $(this).remove();
+            });
 
-        })
-    )
+    });
 
 };
 
@@ -648,15 +643,13 @@ Node.prototype.view = function () {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'entityView.html', function () {
-
-        let $container = $(this);
+    self.loadTemplate('entityView.html', $('#content_container')).then($element => {
 
         self.refresh(false, function () {
 
-            let adhoc = new AdHoc({hosts: self.name});
+            self.bind($element);
 
-            self.bind($container);
+            let adhoc = new AdHoc({hosts: self.name});
 
             $('#edit_button').toggle(self.editable).click(function() {
 
@@ -678,17 +671,17 @@ Node.prototype.view = function () {
 
             });
 
-            $('#info_container').html(self.type === 'host' ? self.hostInfo() : null);
-
             self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('relationships', self.relationships());
+            if (self.type === 'host') self.hostInfo($('#info_container'));
 
-            if (self.type === 'group' && self.name !== 'all') self.addTabs('descendants', self.descendants());
+            if (self.type === 'host' || self.name !== 'all') self.relationships(self.addTab('relationships'));
 
-            self.addTabs('variables', self.variables());
+            if (self.type === 'group' && self.name !== 'all') self.descendants(self.addTab('descendants'));
 
-            if (self.type === 'host' || self.name !== 'all') self.addTabs('adhoc', adhoc.view(true));
+            self.variables(self.addTab('variables'));
+
+            if (self.type === 'host' || self.name !== 'all') adhoc.view(true, self.addTab('adhoc'));
 
             $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
@@ -702,15 +695,15 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'nodeSelector.html', function () {
+    self.loadTemplate('nodeSelector.html', $('#content_container')).then($element => {
 
-        self.bind($(this));
+        self.bind($element);
 
         let inventory = new Inventory({type: self.type});
 
-        let $table = $('#node_table');
+        let $table = $element.find('#node_table');
 
-        let $grid = $('#node_grid');
+        let $grid = $element.find('#node_grid');
 
         let $deleteModeBtn = $('#delete_mode').click(function () {
 
@@ -764,7 +757,7 @@ Node.prototype.selector = function () {
 
         let deleteOptions = Object.assign({itemToggle: true}, baseOptions);
 
-        let loadData = function () {
+        let loadData = () => {
 
             inventory.list(true, function (data) {
 
@@ -780,7 +773,7 @@ Node.prototype.selector = function () {
 
         };
 
-        let addNode = function () {
+        let addNode = () => {
 
             let node = new Node({name: null, description: null, type: self.type});
 

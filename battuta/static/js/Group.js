@@ -14,7 +14,7 @@ function Group(param) {
 
     self.set('description', param.description);
 
-    self.set('permissions', param.permissions);
+    self.set('permissions', param.permissions ? param.permissions : []);
 
     self.set('member_count', param.member_count);
 
@@ -32,22 +32,22 @@ Group.prototype.key = 'group';
 
 Group.prototype.type = 'user group';
 
-Group.prototype.permissionsForm = function () {
+Group.prototype.permissionsForm = function ($container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'permissionsForm.html', function () {
+    self.loadTemplate('permissionsForm.html', $container).then($element => {
 
-        self.bind($(this));
+        self.bind($element);
 
-        $('#permissions_form')
+        $element
             .submit(function (event) {
 
                 event.preventDefault();
 
                 self.permissions = [];
 
-                $form.find('button.permBtn').each(function () {
+                $element.find('button.permBtn').each(function () {
 
                     permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
 
@@ -68,19 +68,19 @@ Group.prototype.permissionsForm = function () {
 
             });
 
-        self.editable || $form.find('input, textarea, button, select').attr('disabled','disabled');
+        self.editable || $element.find('input, textarea, button, select').attr('disabled','disabled');
 
     });
 
 };
 
-Group.prototype.memberGrid = function () {
+Group.prototype.memberGrid = function ($container) {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'membersGrid.html', function () {
+    self.loadTemplate('membersGrid.html', $container).then($element => {
 
-        $('#members_grid').DynaGrid({
+        $element.DynaGrid({
             gridTitle: 'Members',
             headerTag: '<h4>',
             showAddButton: true,
@@ -170,13 +170,11 @@ Group.prototype.view = function () {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'entityView.html', function () {
+    self.loadTemplate('entityView.html', $('#content_container')).then($element => {
 
-        let $container = $(this);
+        self.bind($element);
 
         self.refresh(false, function () {
-
-            self.bind($container);
 
             $('#edit_button').toggle(self.editable).click(function() {
 
@@ -200,9 +198,9 @@ Group.prototype.view = function () {
 
             self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-            self.addTabs('members', self.memberGrid(), $container);
+            self.memberGrid(self.addTab('members'));
 
-            self.addTabs('permissions', self.permissionsForm(), $container);
+            self.permissionsForm(self.addTab('permissions'));
 
             $('ul.nav-tabs').attr('id','user_group_' + self.id + '_tabs').rememberTab();
 
@@ -216,11 +214,11 @@ Group.prototype.selector = function () {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'entitySelector.html', function () {
+    self.loadTemplate('entitySelector.html', $('#content_container')).then($element => {
+
+        self.bind($element);
 
         self.set('title', 'User groups');
-
-        self.bind($(this));
 
         $('#entity_table').DataTable({
             ajax: {

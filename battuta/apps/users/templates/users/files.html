@@ -5,9 +5,9 @@
 
             document.title = 'Battuta - {{ owner }} files';
 
-            var file = new File({root: 'users'});
+            let file = new File({root: 'users'});
 
-            $('#container').html(file.selector('{{ owner }}'))
+            file.selector('{{ owner }}')
 
         });
     </script>

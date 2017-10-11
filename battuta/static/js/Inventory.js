@@ -26,23 +26,23 @@ Inventory.prototype.manage = function () {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'manageInventory.html', function () {
+    self.loadTemplate('manageInventory.html', $('#content_container')).then($element => {
 
-        let $container = $(this);
+        self.bind($element);
 
         $('#upload_field')
             .fileinput({
-            uploadUrl: self.apiPath + 'import/',
-            uploadExtraData: function () {
+                uploadUrl: self.apiPath + 'import/',
+                uploadExtraData: function () {
 
-                return {
-                    format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                    csrfmiddlewaretoken: self.getCookie('csrftoken')
-                }
+                    return {
+                        format: $('input[type="radio"][name="import_file_type"]:checked').val(),
+                        csrfmiddlewaretoken: self.getCookie('csrftoken')
+                    }
 
-            },
-            uploadAsync: true
-        })
+                },
+                uploadAsync: true
+            })
             .on('fileuploaded', function (event, data) {
 
                 $('#upload_field').fileinput('clear').fileinput('enable');
@@ -51,25 +51,23 @@ Inventory.prototype.manage = function () {
 
                 $('#import_button').prop('disabled', true);
 
-                $container.find('div.file-caption-main').show();
+                $element.find('div.file-caption-main').show();
 
-                if (data.response.status === 'ok') {
+                self.requestResponse(data.response, function() {
 
-                    $('<div>').load(self.paths.templates + 'importResult.html', function() {
+                    self.loadTemplate('importResult.html', $('<div>')).then($element => {
 
-                        $(this).find('#host_count').html(data.response.added_hosts);
+                        $element.find('#host_count').html(data.response.added_hosts);
 
-                        $(this).find('#group_count').html(data.response.added_groups);
+                        $element.find('#group_count').html(data.response.added_groups);
 
-                        $(this).find('#var_count').html(data.response.added_vars);
+                        $element.find('#var_count').html(data.response.added_vars);
 
-                        $.bootstrapGrowl($(this), {type: 'success', delay: 0});
+                        $.bootstrapGrowl($element, {type: 'success', delay: 0});
 
                     });
 
-                }
-
-                else if (data.response.result === 'denied') $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                });
 
             })
             .on('fileloaded', function () {
@@ -83,7 +81,7 @@ Inventory.prototype.manage = function () {
 
                         $('#upload_field_title').html('Uploading file');
 
-                        $container.find('div.file-caption-main').hide()
+                        $element.find('div.file-caption-main').hide()
 
                     });
 
@@ -99,7 +97,7 @@ Inventory.prototype.manage = function () {
 
                     self.getData('export', false, function (data) {
 
-                        let jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data, null, 4));
+                        let jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data.inventory, null, 4));
 
                         let link = document.createElement('a');
 
@@ -121,12 +119,12 @@ Inventory.prototype.manage = function () {
 
                     window.open(self.apiPath + 'export/?format=zip', '_self');
 
-                    break
+                    break;
 
             }
 
         });
 
-    })
+    });
 
 };

@@ -323,7 +323,7 @@ Battuta.prototype = {
 
         let message = bindId + ':change';
 
-        let loadData =  function ($element, value) {
+        let loadData = ($element, value) => {
 
             if ($element.is('input, textarea, select')) $element.val(value);
 
@@ -401,7 +401,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('selectionDialog.html').then( ($element) => {
+        self.loadTemplate('selectionDialog.html').then($element => {
 
             $element.dialog({
                 minWidth: 700,
@@ -450,7 +450,9 @@ Battuta.prototype = {
 
     },
 
-    addTabs: function (title, $content) {
+    addTab: function (title) {
+
+        let $tabContentContainer = $('<div>').attr({id: title + '_tab', class: 'tab-pane'});
 
         $('ul.nav-tabs').append(
             $('<li>').append(
@@ -458,9 +460,9 @@ Battuta.prototype = {
             )
         );
 
-        $('div.tab-content').append(
-            $('<div>').attr({id: title + '_tab', class: 'tab-pane'}).html($content)
-        )
+        $('div.tab-content').append($tabContentContainer);
+
+        return $tabContentContainer
 
     },
 
@@ -468,7 +470,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('patternField.html', $container).then( ($element) => {
+        self.loadTemplate('patternField.html', $container).then($element => {
 
             self.bind($element);
 
@@ -624,10 +626,9 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('deleteDialog.html')
-            .then( () => {
+        self.loadTemplate('deleteDialog.html').then($element => {
 
-                $('#delete_dialog').dialog({
+                $element.dialog({
                     width: '320',
                     buttons: {
                         Delete: function () {
@@ -658,18 +659,16 @@ Battuta.prototype = {
         let self = this;
 
         return fetch(self.paths.templates + template)
-            .then( (response) => {
+            .then(response => {
 
                 return response.text()
 
             })
-            .then( (text) => {
+            .then(text => {
 
                 let $element = $(text);
 
-                if ($container) $container.append($element);
-
-                else $(document.body).append($element);
+                $container ? $container.append($element) : $(document.body).append($element);
 
                 return $element
 
@@ -689,7 +688,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('entityDialog.html').then( ($element) => {
+        self.loadTemplate('entityDialog.html').then($element => {
 
             self.bind($element);
 
@@ -699,9 +698,9 @@ Battuta.prototype = {
                 buttons: {
                     Save: function() {
 
-                        self.save(function (data) {
+                        self.save(data => {
 
-                            $element.dialog('close');
+                            $(this).dialog('close');
 
                             callback && callback(data);
 
@@ -774,7 +773,7 @@ Battuta.prototype = {
 
     },
 
-    mainMenu: function (authenticated) {
+    navBar: function (authenticated) {
 
         let self = this;
 
@@ -782,7 +781,7 @@ Battuta.prototype = {
 
         let $container = $('#navbar_container');
 
-        if (authenticated === 'True') self.loadTemplate('mainMenu.html', $container).then( ($element) => {
+        if (authenticated === 'True') self.loadTemplate('navBar.html', $container).then($element => {
 
             self.bind($element);
 
@@ -840,7 +839,7 @@ Battuta.prototype = {
 
         });
 
-        else return self.loadTemplate('loginMenu.html', $container).then( ($element) => {
+        else return self.loadTemplate('loginMenu.html', $container).then($element => {
 
             user.bind($element);
 
@@ -860,7 +859,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('search.html', $('#content_container')).then( ($element) => {
+        self.loadTemplate('search.html', $('#content_container')).then($element => {
 
             self.bind($element);
 

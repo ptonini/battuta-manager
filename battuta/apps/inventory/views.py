@@ -353,15 +353,15 @@ class InventoryView(View):
                         else:
 
                             # Iterate over JSON data host vars
-                            for host_name, variables in json_data['_meta']['hostvars'].iteritems():
+                            for host_name in json_data['_meta']['hostvars']:
 
                                 host, created = Host.objects.get_or_create(name=host_name)
 
-                                if created:
+                                data['added_hosts'] += 1 if created else 0
 
-                                    data['added_hosts'] += 1
+                                for key in json_data['_meta']['hostvars'][host_name]:
 
-                                for key, value in variables.iteritems():
+                                    value = json_data['_meta']['hostvars'][host_name][key]
 
                                     if key == '_description':
 
@@ -371,9 +371,7 @@ class InventoryView(View):
 
                                         var, created = Variable.objects.get_or_create(key=key, host=host)
 
-                                        if created:
-
-                                            data['added_vars'] += 1
+                                        data['added_vars'] += 1 if created else 0
 
                                         var.value = value
 
@@ -384,58 +382,50 @@ class InventoryView(View):
                             json_data.pop('_meta', None)
 
                             # Iterate over JSON data groups
-                            for group_name, group_dict in json_data.iteritems():
+                            for group_name in json_data:
 
                                 group, created = Group.objects.get_or_create(name=group_name)
 
-                                if created:
-
-                                    data['added_groups'] += 1
+                                data['added_groups'] += 1 if created else 0
 
                                 # Iterate over group children
-                                if 'children' in group_dict:
+                                if 'children' in json_data[group_name]:
 
-                                    for child_name in group_dict['children']:
+                                    for child_name in json_data[group_name]['children']:
 
                                         child, created = Group.objects.get_or_create(name=child_name)
 
-                                        if created:
-
-                                            data['added_groups'] += 1
+                                        data['added_groups'] += 1 if created else 0
 
                                         group.children.add(child)
 
                                 # Iterate over group hosts
-                                if 'hosts' in group_dict:
+                                if 'hosts' in json_data[group_name]:
 
-                                    for host_name in group_dict['hosts']:
+                                    for host_name in json_data[group_name]['hosts']:
 
                                         host, created = Host.objects.get_or_create(name=host_name)
 
-                                        if created:
-
-                                            data['added_hosts'] += 1
+                                        data['added_hosts'] += 1 if created else 0
 
                                         group.members.add(host)
 
                                 # Iterate over group vars
-                                if 'vars' in group_dict:
+                                if 'vars' in json_data[group_name]:
 
-                                    for key, value in group_dict['vars'].iteritems():
+                                    for key in json_data[group_name]['vars']:
 
                                         if key == '_description':
 
-                                            group.description = value
+                                            group.description = json_data[group_name]['vars'][key]
 
                                         else:
 
                                             var, created = Variable.objects.get_or_create(key=key, group=group)
 
-                                            if created:
+                                            data['added_vars'] += 1 if created else 0
 
-                                                data['added_vars'] += 1
-
-                                            var.value = value
+                                            var.value = json_data[group_name]['vars'][key]
 
                                             var.save()
 
@@ -577,19 +567,19 @@ class NodeView(View):
 
             var_list = list()
 
-            for key, values in variables.iteritems():
+            for key in variables:
 
-                primary_count = len([value for value in values if value['primary']])
+                primary_count = len([value for value in variables[key] if value['primary']])
 
-                if primary_count == 0 and len(values) == 1:
+                if primary_count == 0 and len(variables[key]) == 1:
 
-                    values[0]['primary'] = True
+                    variables[key][0]['primary'] = True
 
-                elif primary_count == 0 and len(values) > 1:
+                elif primary_count == 0 and len(variables[key]) > 1:
 
                     actual_value = inventory.get_variable(key, node)
 
-                    for value in values:
+                    for value in variables[key]:
 
                         if value['value'] == actual_value:
 
@@ -597,7 +587,7 @@ class NodeView(View):
 
                             break
 
-                var_list += values
+                var_list += variables[key]
 
             data = {'status': 'ok', 'var_list': var_list}
 
