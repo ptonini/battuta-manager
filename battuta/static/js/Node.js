@@ -724,10 +724,6 @@ Node.prototype.selector = function () {
 
             if ($(this).hasClass('checked_button')) {
 
-                //console.log($grid.DynaGrid('getData'));
-
-                //deleteOptions.dataArray = $grid.DynaGrid('getData');
-
                 $grid.DynaGrid(Object.assign({dataArray: self.nodes}, deleteOptions));
 
             }
@@ -749,7 +745,7 @@ Node.prototype.selector = function () {
             truncateItemText: true,
             headerBottomPadding: 20,
             topAlignHeader: true,
-            maxHeight: window.innerHeight - 340,
+            maxHeight: window.innerHeight - 300,
             columns: sessionStorage.getItem('node_grid_columns')
         };
 
@@ -789,7 +785,7 @@ Node.prototype.selector = function () {
 
                 $table.DataTable().rows.add(self.nodes);
 
-                $table.DataTable().draw();
+                $table.DataTable().columns.adjust().draw();
 
             })
 
@@ -844,7 +840,7 @@ Node.prototype.selector = function () {
 
         $table.DataTable({
             paging: false,
-            scrollY: (window.innerHeight - 380).toString() + 'px',
+            scrollY: (window.innerHeight - 340).toString() + 'px',
             scrollCollapse: true,
             columns: columns,
             dom: 'Bfrtip',

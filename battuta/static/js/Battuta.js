@@ -61,9 +61,15 @@ function Battuta (param) {
 
         let keyName = $(this).attr('id') + '_activeTab';
 
-        $(this).find('a[data-toggle="tab"]').on('show.bs.tab', function(event) {
+        $(this).find('a[data-toggle="tab"]').on('show.bs.tab', function () {
 
-            sessionStorage.setItem(keyName, $(event.target).attr('href'));
+            sessionStorage.setItem(keyName, $(this).attr('href'));
+
+        });
+
+        $(this).find('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+
+            $($(this).attr('href')).find('.dataTables_scrollBody table').DataTable().columns.adjust().draw()
 
         });
 

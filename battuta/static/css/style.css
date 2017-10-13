@@ -12,7 +12,7 @@ html {overflow-y: scroll}
 
 body {font-size: small}
 
-header {font-size: 14px; border-radius: 0 !important;}
+header {font-size: 14px; border-radius: 0 !important; margin-bottom: 10px !important;}
 
 footer {height: 25px}
 

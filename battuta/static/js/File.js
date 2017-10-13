@@ -598,7 +598,7 @@ File.prototype.selector = function (owner) {
         let buildTable = () => {
 
             $table.DataTable({
-                scrollY: (window.innerHeight - 380).toString() + 'px',
+                scrollY: (window.innerHeight - 320).toString() + 'px',
                 scrollCollapse: true,
                 ajax: {
                     url: self.apiPath + 'list/',
