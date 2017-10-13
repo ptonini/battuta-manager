@@ -256,22 +256,6 @@ Battuta.prototype = {
 
     },
 
-    calculateTableHeight: function ($table) {
-
-        let scrollTop = $(window).scrollTop();
-
-        let elementOffset = $table.offset().top;
-
-        let distance = (elementOffset - scrollTop);
-
-        let availableSpace = window.innerHeight - distance;
-
-        console.log(elementOffset, scrollTop, window.innerHeight, availableSpace);
-
-        return (availableSpace - 20).toString() + 'px';
-
-    },
-
     requestResponse: function (data, callback, failCallback) {
 
         switch (data.status) {

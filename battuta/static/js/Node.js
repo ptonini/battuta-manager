@@ -538,7 +538,7 @@ Node.prototype.variables = function ($container) {
                 });
 
             }
-        })
+        });
 
     });
 
@@ -692,6 +692,12 @@ Node.prototype.view = function () {
 
         });
 
+        setTimeout(() => {
+
+            $(document.body).find('table.dataTable').DataTable().columns.adjust().draw()
+
+        }, 200)
+
     });
 
 };
@@ -718,11 +724,11 @@ Node.prototype.selector = function () {
 
             if ($(this).hasClass('checked_button')) {
 
-                console.log($grid.DynaGrid('getData'));
+                //console.log($grid.DynaGrid('getData'));
 
-                deleteOptions.dataArray = $grid.DynaGrid('getData');
+                //deleteOptions.dataArray = $grid.DynaGrid('getData');
 
-                $grid.DynaGrid(deleteOptions);
+                $grid.DynaGrid(Object.assign({dataArray: self.nodes}, deleteOptions));
 
             }
 
@@ -775,11 +781,13 @@ Node.prototype.selector = function () {
 
             inventory.list(true, function (data) {
 
-                $grid.DynaGrid(Object.assign({dataArray: data.nodes}, openOptions));
+                self.nodes = data.nodes;
+
+                $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions));
 
                 $table.DataTable().clear();
 
-                $table.DataTable().rows.add(data.nodes);
+                $table.DataTable().rows.add(self.nodes);
 
                 $table.DataTable().draw();
 
