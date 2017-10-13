@@ -19,7 +19,7 @@ urlpatterns = [
 
     url(r'^api/(login|logout)/$', views.LoginView.as_view()),
 
-    url(r'^api/user/([a-z_]+)/$', login_required(views.UsersView.as_view())),
+    url(r'^api/user/([a-z_]+)/$', login_required(views.UserView.as_view())),
 
     url(r'^api/group/([a-z_]+)/$', login_required(views.UserGroupView.as_view())),
 ]

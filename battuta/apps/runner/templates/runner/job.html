@@ -4,23 +4,9 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var job = new Job({id: '{{ job_id }}'})
+            let job = new Job({id: '{{ job_id }}'});
 
-            job.refresh(false, function (data) {
-
-                document.title = data.job.name;
-
-                $('#menu_container').html(job.navbar());
-
-                $('#container').html(job.view());
-
-            })
-
-            // JobView.getData({id: }, 'get', function (data) {
-
-            //    new JobView(data.job , $('#result_header'), $('#result_container'));
-
-            //})
+            job.view();
 
         });
     </script>

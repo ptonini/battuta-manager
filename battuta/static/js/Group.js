@@ -221,6 +221,8 @@ Group.prototype.selector = function () {
         self.set('title', 'User groups');
 
         $('#entity_table').DataTable({
+            scrollY: (window.innerHeight * .7).toString() + 'px',
+            scrollCollapse: true,
             ajax: {
                 url: self.apiPath + 'list/',
                 dataSrc: 'groups'

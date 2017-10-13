@@ -114,15 +114,17 @@ Preferences.prototype.dialog = function () {
 
                 $.each(item_group.items, function(index, item) {
 
-                    let itemId = 'item_' + item.name;
+                    let itemId = 'item_' + item.name,
+                        itemField,
+                        columnClass;
 
                     switch (item.data_type) {
 
                         case 'str':
 
-                            let itemField = textInputField.clone();
+                            itemField = textInputField.clone();
 
-                            let columnClass = 'col-md-5';
+                            columnClass = 'col-md-5';
 
                             break;
 

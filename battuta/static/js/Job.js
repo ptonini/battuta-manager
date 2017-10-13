@@ -151,117 +151,87 @@ Job.prototype.run = function (sameWindow) {
 
     let self = this;
 
-    let askUser =  self.cred.id === 0;
+    self.loadTemplate('passwordDialog.html').then($element => {
 
-    let askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
+        self.bind($element);
 
-    let askSudoUser = false;
+        self.cred.username && self.set('remote_user', self.cred.username);
 
-    let askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
+        let askUser =  self.cred.id === 0;
 
-    let post = function () {
+        let askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
 
-        self.cred = self.cred.id;
+        let askSudoUser = false;
 
-        self.postData('run', true, function (data) {
+        let askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
 
-            self.constructor(data.job);
+        let post = () => {
 
-            let jobUrl = self.paths.views.job + self.id + '/';
+            self.cred = self.cred.id;
 
-            if (sameWindow) window.open(jobUrl, '_self');
+            self.postData('run', true, function (data) {
 
-            else {
+                self.constructor(data.job);
 
-                let windowTitle;
+                let jobUrl = self.paths.views.job + self.id + '/';
 
-                if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
+                if (sameWindow) window.open(jobUrl, '_self');
 
-                else windowTitle = self.id;
+                else {
 
-                self.popupCenter(jobUrl, windowTitle, 1000);
+                    let windowTitle;
 
-            }
+                    if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
 
-        });
+                    else windowTitle = self.id;
 
-    };
+                    self.popupCenter(jobUrl, windowTitle, 1000);
 
-    if (askUser || askUserPass || askSudoUser || askSudoPass) {
+                }
 
-        let userGroup = divFormGroup.clone().toggleClass('hidden', (!askUser));
+            });
 
-        let userField = textInputField.clone();
+        };
 
-        let userPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askUserPass));
+        if (askUser || askUserPass || askSudoUser || askSudoPass) {
 
-        let userPassFieldTitle = $('<span>');
+            $element
+                .dialog({
+                    width: '360',
+                    buttons: {
+                        Run: function () {
 
-        let userPassword = passInputField.clone();
+                            $(this).dialog('close');
 
-        if (self.cred.username) {
+                            post(sameWindow)
 
-            userField.val(self.cred.username);
+                        },
+                        Cancel: function () {
 
-            userPassFieldTitle.append('Password for user ', $('<i>').html(self.cred.username));
+                            $(this).dialog('close');
+
+                        }
+                    }
+                })
+                .keypress(function (event) {
+
+                    if (event.keyCode === 13) $('.ui-button-text:contains("Run")').parent('button').click()
+
+                });
+
+            $('#username_form_group').toggleClass('hidden', (!askUser));
+
+            $('#password_form_group').toggleClass('hidden', (!askUserPass));
+
+            $('#sudo_user_form_group').toggleClass('hidden', (!askSudoUser));
+
+            $('#sudo_pass_form_group').toggleClass('hidden', (!askSudoPass))
 
         }
 
-        else userPassFieldTitle.html('Password');
+        else post(sameWindow)
 
-        let sudoUserGroup = divFormGroup.clone().toggleClass('hidden', (!askSudoUser));
-
-        let sudoUserField = textInputField.clone();
-
-        let sudoPasswordGroup = divFormGroup.clone().toggleClass('hidden', (!askSudoPass));
-
-        let sudoPassword = passInputField.clone();
-
-        let passwordDialog = $('<div>').attr('class', 'small_dialog').append(
-            userGroup.append($('<label>').html('Username').append(userField)),
-            userPasswordGroup.append($('<label>').html(userPassFieldTitle).append(userPassword)),
-            sudoUserGroup.append($('<label>').html('Sudo user').append(sudoUserField)),
-            sudoPasswordGroup.append(
-                $('<label>').html('Sudo password').append(
-                    $('<span>').attr('class', 'user_pass_group').html(' (defaults to user)'), sudoPassword
-                )
-            )
-        );
-
-        passwordDialog
-            .dialog({
-                width: '360',
-                buttons: {
-                    Run: function () {
-
-                        $(this).dialog('close');
-
-                        if (userField.val()) self.remote_user = userField.val();
-
-                        if (userPassword.val()) self.remote_pass = userPassword.val();
-
-                        if (sudoUserField.val()) self.become_user = sudoUserField.val();
-
-                        if (sudoPassword.val()) self.become_pass = sudoPassword.val();
-
-                        post(sameWindow)
-
-                    },
-                    Cancel: function () {
-
-                        $(this).dialog('close');
-
-                    }
-                }
-            })
-            .keypress(function (event) {
-
-                if (event.keyCode === 13) $('.ui-button-text:contains("Run")').parent('button').click()
-
-            })
-    }
-
-    else post(sameWindow)
+       });
 
 };
 
@@ -269,11 +239,11 @@ Job.prototype.selector = function () {
 
     let self = this;
 
-    return $('<div>').load(self.paths.templates + 'entitySelector.html', function () {
+    self.loadTemplate('entitySelector.html', $('#content_container')).then($element => {
+
+        self.bind($element);
 
         self.set('title', 'Job history');
-
-        self.bind($(this));
 
         $('#entity_table').DataTable({
             ajax: {url: self.apiPath + 'list/'},
@@ -287,6 +257,8 @@ Job.prototype.selector = function () {
             pageLength: 10,
             serverSide: true,
             processing: true,
+            scrollY: (window.innerHeight - 340).toString() + 'px',
+            scrollCollapse: true,
             order: [[0, "desc"]],
             rowCallback: function (row, data) {
 
@@ -298,128 +270,8 @@ Job.prototype.selector = function () {
             }
         });
 
-    });
 
-};
-
-Job.prototype.navbar = function () {
-
-    let self = this;
-
-    return $('<div>').load(self.paths.templates + 'jobNavBar.html', function () {
-
-        let $header = $(this);
-
-        self.bind($header);
-
-        $header.find('[data-bind="status"]').css('color', self.stateColor());
-
-        let $jobGog = $('#job_cog');
-
-        let $cancelBtn = $('#cancel_button').click(function () {
-
-            self.postData('kill', false);
-
-        });
-
-        let $scrollBtn = $('#scroll_button');
-
-        let $rerunBtn = $('#rerun_button').click(function () {
-
-            let playArgs = new PlaybookArgs( {
-                playbook: self.name,
-                folder: self.folder,
-                subset: self.subset,
-                tags: self.tags,
-                skip_tags: self.skip_tags,
-                extra_vars: self.extra_vars
-            });
-
-            playArgs.dialog(true);
-
-        });
-
-        let $statsBtn = $('#stats_button').click(function () {
-
-            self.statistics(true)
-
-        });
-
-        let $printBtn = $('#print_button').click(function () {
-
-            let pageTitle = $(document).find('title').text();
-
-            let statsContainer = $('<div>').css('font-size', 'smaller');
-
-            // Adjust windows for printing
-            document.title = pageTitle.replace('.yml', '');
-
-            if (self.stats && self.stats.length > 0) $(document.body).append(
-
-                statsContainer.append(self.statistics(false))
-
-            );
-
-            // Open print window
-            window.print();
-
-            statsContainer.remove();
-
-            document.title = pageTitle
-
-        });
-
-        if (self.is_running) {
-
-            self.set('auto_scroll', true);
-
-            $rerunBtn.hide();
-
-            $statsBtn.hide();
-
-            $printBtn.hide();
-
-            let intervalId = setInterval(function () {
-
-                $header.find('[data-bind="status"]').css('color', self.stateColor());
-
-                if (!self.is_running) {
-
-                    $jobGog.hide();
-
-                    $cancelBtn.hide();
-
-                    $scrollBtn.hide();
-
-                    self.type === 'playbook' && $rerunBtn.show();
-
-                    self.type === 'playbook' && self.stats && $statsBtn.show();
-
-                    $printBtn.show();
-
-                    clearInterval(intervalId)
-
-                }
-
-            }, 1000)
-
-        }
-
-        else {
-
-            $jobGog.hide();
-
-            $cancelBtn.hide();
-
-            $scrollBtn.hide();
-
-            self.type === 'playbook' || $rerunBtn.hide();
-
-            (self.type === 'playbook' && self.stats) || $statsBtn.hide();
-
-        }
-
-    });
+    })
 
 };
 
@@ -427,311 +279,317 @@ Job.prototype.view = function () {
 
     let self = this;
 
-    let divColInfo = $('<div>').attr('class', 'col-md-4 col-xs-6');
+    self.refresh(false, function () {
 
-    let divColInfoLeft = $('<div>').attr('class', 'col-md-3 col-xs-3 report_field_left');
-
-    let divColInfoRight = $('<div>').attr('class', 'col-md-9 col-xs-9 report_field_right truncate-text').css('font-weight', 'bold');
-
-    let playContainers = {};
-
-    let taskContainers = {};
-
-    let container = $('<div>');
-
-    let footerAnchor = $('<div>').attr('id', 'footer_anchor');
-
-    let playbookOnlyFields = $('<div>').append(
-        divColInfo.clone().append(
-            divRow.clone().append(
-                divColInfoLeft.clone().html('Subset:'),
-                divColInfoRight.clone().html(self.subset)
-            )
-        ),
-        divColInfo.clone().append(
-            divRow.clone().append(
-                divColInfoLeft.clone().html('Tags:'),
-                divColInfoRight.clone().html(self.tags)
-            )
-        ),
-        divColInfo.clone().addClass('col-md-push-8').append(
-            divRow.clone().append(
-                divColInfoLeft.clone().html('Skip tags:'),
-                divColInfoRight.clone().html(self.skip_tags)
-            )
-        ),
-        divColInfo.clone().append(
-            divRow.clone().append(
-                divColInfoLeft.clone().html('Extra vars:'),
-                divColInfoRight.clone().html(self.extra_vars)
-            )
-        ),
-        divColInfo.clone().addClass('col-md-pull-8').append(
-            divRow.clone().append(
-                divColInfoLeft.clone().html('Check:'),
-                divColInfoRight.clone().html(self.check.toString())
-            )
-        )
-    );
-
-    let buildResults = function () {
-
-        if (self.message) container.empty().append(
-
-            $('<pre>').attr('class', 'runner_error_box').html(self.message)
-
-        );
-
-        else $.each(self.plays, function (index, play) {
-
-            if (!playContainers.hasOwnProperty(play.id)) {
-
-                let separator, headerFirstLine, headerLastLine = $('<br>');
-
-                // Set playbook only elements
-                if (self.type === 'playbook' || self.type === 'gather_facts') {
-
-                    separator = $('<hr>');
-
-                    headerFirstLine = divCol12.clone().html($('<h4>').html(play.name));
-
-                    headerLastLine = divCol12.clone().addClass('report_field_left').html('Tasks:');
-
-                }
-
-                else {
-
-                    separator = null;
-
-                    headerFirstLine = null;
-
-                    headerLastLine = $('<br>');
-
-                }
-
-                playContainers[play.id] = $('<div>');
-
-                playContainers[play.id].append(
-                    separator,
-                    divRow.clone().append(
-                        headerFirstLine,
-                        divColInfo.clone().append(
-                            divRow.clone().append(
-                                divColInfoLeft.clone().html('Hosts:'),
-                                divColInfoRight.clone().html(play.hosts),
-                                divColInfoLeft.clone().html('Become:'),
-                                divColInfoRight.clone().html(play.become.toString())
-                            )
-                        ),
-                        headerLastLine
-                    )
-                );
-                container.append(playContainers[play.id])
+        let templates = {
+            playbook: {
+                view: 'jobView_playbook.html',
+                header: 'playHeader_playbook.html',
+            },
+            adhoc: {
+                view: 'jobView_adhoc.html',
+                header: 'playHeader_adhoc.html',
+            },
+            gather_facts: {
+                view: 'jobView_adhoc.html',
+                header: 'playHeader_adhoc.html',
             }
+        };
 
-            if (play.message) playContainers[play.id].append(
+        let playContainers = {};
 
-                $('<pre>').css('margin-top', '20px').html(play.message)
+        let taskContainers = {};
 
-            );
+        let buildResults = () => {
 
-            else $.each(play.tasks, function (index, task) {
+            $.each(self.plays, (index, play) => {
 
-                if (!taskContainers.hasOwnProperty(task.id)) {
+                if (!playContainers.hasOwnProperty(play.id)) {
 
-                    taskContainers[task.id] = {
-                        header: divRow.clone(),
-                        title: $('<span>').append(
-                            $('<strong>').css('margin-right', '5px').html(task.name)
-                        ),
-                        badge: $('<small>').attr('class', 'badge').html('0').hide()
-                    };
+                    self.loadTemplate(templates[self.type].header, $('<div>'))
+                        .then($element => {
 
-                    if (sessionStorage.getItem('show_empty_tasks') === 'false') taskContainers[task.id].header.hide();
+                            playContainers[play.id] = $element;
 
-                    if (self.type === 'playbook' || self.type === 'gather_facts') {
-                        taskContainers[task.id].header.append(
-                            divCol12.clone().css('margin-top', '10px').append(
-                                taskContainers[task.id].title,
-                                taskContainers[task.id].badge
-                            )
-                        )
-                    }
+                            $element.find('h4').html(play.name);
 
-                    else if (self.type === 'adhoc') {
-                        taskContainers[task.id].header.append(
-                            divColInfo.clone().append(
-                                divRow.clone().append(
-                                    divColInfoLeft.clone().html('Task:'),
-                                    divColInfoRight.clone()
-                                        .css('font-weight', 'normal')
-                                        .html(taskContainers[task.id].title)
-                                )
-                            )
-                        )
-                    }
+                            $element.find('#host_field').html(self.hosts ? self.host : '&nbsp;');
 
-                    if (task.module !== 'include' || task.host_count > 0) {
+                            $element.find('#become_field').html(self.become.toString());
 
-                        let table = baseTable.clone().hide();
+                            $('#result_container').append($element);
 
-                        table.DataTable({
-                            paginate: false,
-                            searching: false,
-                            info: true,
-                            ajax: {
-                                url: self.apiPath + 'get_task/?id=' + self.id + '&task_id=' + task.id,
-                                dataSrc: 'results'
-                            },
-                            columns: [
-                                {class: 'col-md-3', title: 'host', data: 'host'},
-                                {class: 'col-md-2', title: 'status', data: 'status'},
-                                {class: 'col-md-7', title: 'message', data: 'message'}
-                            ],
-                            rowCallback: function (row, result) {
+                            return self.loadTemplate('taskTable.html')
 
-                                let table = this;
+                        })
+                        .then($element => {
 
-                                $(table).show();
+                            $.each(play.tasks, function (index, task) {
 
-                                taskContainers[task.id].header.show();
+                                if (!taskContainers.hasOwnProperty(task.id)) {
 
-                                $(row).css('color', self.taskStates[result.status].color);
+                                    taskContainers[task.id] = $element.clone();
 
-                            },
-                            drawCallback: function () {
+                                    taskContainers[task.id].find('strong').html(task.name);
 
-                                let table = this;
+                                    if (task.module !== 'include' || task.host_count > 0) {
 
-                                let task = table.api().ajax.json();
+                                        taskContainers[task.id].find('table').DataTable({
+                                            paginate: false,
+                                            searching: false,
+                                            info: false,
+                                            ajax: {
+                                                url: self.apiPath + 'get_task/?id=' + self.id + '&task_id=' + task.id,
+                                                dataSrc: 'results'
+                                            },
+                                            columns: [
+                                                {class: 'col-md-3', title: 'host', data: 'host'},
+                                                {class: 'col-md-2', title: 'status', data: 'status'},
+                                                {class: 'col-md-7', title: 'message', data: 'message'}
+                                            ],
+                                            rowCallback: function (row, result) {
 
-                                let rowCount = table.DataTable().rows().count();
+                                                $(row).css('color', self.taskStates[result.status].color);
 
-                                rowCount && taskContainers[task.id].badge.html(rowCount).css('display', 'inline');
+                                            },
+                                            drawCallback: function () {
 
-                                if (task && !task.is_running || !self.is_running) {
+                                                let rowCount = $(this).DataTable().rows().count();
 
-                                    table.DataTable().rows().every(function () {
+                                                rowCount && taskContainers[task.id].find('.badge').html(rowCount).css('display', 'inline');
 
-                                        let rowApi = this;
+                                                if (task && !task.is_running || !self.is_running) {
 
-                                        self.result = rowApi.data();
+                                                    $(this).DataTable().rows().every(function () {
 
-                                        $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
+                                                        let rowApi = this;
 
-                                            if (rowApi.child.isShown()) {
+                                                        self.result = rowApi.data();
 
-                                                $(rowApi.node()).css('font-weight', 'normal');
+                                                        $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
 
-                                                rowApi.child.hide()
-                                            }
+                                                            if (rowApi.child.isShown()) {
 
-                                            else {
+                                                                $(rowApi.node()).css('font-weight', 'normal');
 
-                                                self.getData('get_result', false, function (data) {
+                                                                rowApi.child.hide()
+                                                            }
 
-                                                    let jsonContainer = $('<div>')
-                                                        .attr('class', 'well')
-                                                        .JSONView(data.result.response, {collapsed: true});
+                                                            else {
 
-                                                    rowApi.child(jsonContainer).show();
+                                                                self.getData('get_result', false, function (data) {
 
-                                                    $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                                                    let jsonContainer = $('<div>')
+                                                                        .attr('class', 'well')
+                                                                        .JSONView(data.result.response, {collapsed: true});
 
-                                                });
+                                                                    rowApi.child(jsonContainer).show();
+
+                                                                    $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+
+                                                                });
+
+                                                            }
+
+                                                        })
+
+                                                    });
+
+                                                }
 
                                             }
+                                        });
+                                    }
 
-                                        })
+                                    if (self.is_running) {
 
-                                    });
+                                        let intervalId;
+
+                                        intervalId = setInterval(function () {
+
+                                            updateResults(intervalId, taskContainers[task.id].find('table'))
+
+                                        }, 1000);
+
+                                    }
+
+                                    $('#result_container').append(taskContainers[task.id])
 
                                 }
 
-                            }
-                        });
-                    }
+                            });
 
-                    let intervalId;
+                        })
 
-                    if (self.is_running) intervalId = setInterval(function () {
-
-                        updateResults(intervalId, table)
-
-                    }, 1000);
-
-                    playContainers[play.id].append(taskContainers[task.id].header, table);
                 }
+
             })
 
-        })
+        };
 
-    };
+        let updateResults = (intervalId, $table) => {
 
-    let updateResults = function (intervalId, table) {
+            $table.DataTable().ajax.reload(null, false);
 
-        table.DataTable().ajax.reload(null, false);
+            let task = $table.DataTable().ajax.json();
 
-        let task = table.DataTable().ajax.json();
+            if (!task.is_running || !self.is_running) clearInterval(intervalId);
 
-        if (!task.is_running || !self.is_running) clearInterval(intervalId);
+        };
 
-    };
+        self.loadTemplate('jobNavBar.html', $('#navbar_container')).then($element => {
 
-    container.append(
-        $('<h4>').attr('class', 'visible-print-block').hide().append(
-            $('<strong>').html(self.name)
-        ),
-        divRow.clone().append(
-            divColInfo.clone().append(
-                divRow.clone().append(
-                    divColInfoLeft.clone().html('User:'),
-                    divColInfoRight.clone().html(self.username)
-                )
-            ),
-            self.type === 'playbook' ? playbookOnlyFields : null
-        ),
-        divRow.clone().append(
-            divColInfo.clone().append(
-                divRow.clone().append(
-                    divColInfoLeft.clone().html('Run date:'),
-                    divColInfoRight.clone().html(self.created_on)
-                )
-            )
-        )
-    );
+            self.bind($element);
 
-    let intervalId;
+            $element.find('[data-bind="status"]').css('color', self.stateColor());
 
-    if (self.is_running) intervalId = setInterval(function () {
+            let $jobGog = $('#job_cog');
 
-        self.refresh(false, function () {
+            let $cancelBtn = $('#cancel_button').click(function () {
+
+                self.postData('kill', false);
+
+            });
+
+            let $scrollBtn = $('#scroll_button');
+
+            let $rerunBtn = $('#rerun_button').click(function () {
+
+                let playArgs = new PlaybookArgs( {
+                    playbook: self.name,
+                    folder: self.folder,
+                    subset: self.subset,
+                    tags: self.tags,
+                    skip_tags: self.skip_tags,
+                    extra_vars: self.extra_vars
+                });
+
+                playArgs.dialog(true);
+
+            });
+
+            let $statsBtn = $('#stats_button').click(function () {
+
+                self.statistics(true)
+
+            });
+
+            let $printBtn = $('#print_button').click(function () {
+
+
+                self.statistics().then()
+
+                let pageTitle = $(document).find('title').text();
+
+                let statsContainer = $('<div>').css('font-size', 'smaller');
+
+                // Adjust windows for printing
+                document.title = pageTitle.replace('.yml', '');
+
+                if (self.stats && self.stats.length > 0) $(document.body).append(
+
+                    statsContainer.append(self.statistics(false))
+
+                );
+
+                // Open print window
+                window.print();
+
+                statsContainer.remove();
+
+                document.title = pageTitle
+
+            });
+
+            if (self.is_running) {
+
+                self.set('auto_scroll', true);
+
+                $rerunBtn.hide();
+
+                $statsBtn.hide();
+
+                $printBtn.hide();
+
+                let intervalId = setInterval(function () {
+
+                    $element.find('[data-bind="status"]').css('color', self.stateColor());
+
+                    if (!self.is_running) {
+
+                        $jobGog.hide();
+
+                        $cancelBtn.hide();
+
+                        $scrollBtn.hide();
+
+                        self.type === 'playbook' && $rerunBtn.show();
+
+                        self.type === 'playbook' && self.stats && $statsBtn.show();
+
+                        $printBtn.show();
+
+                        clearInterval(intervalId)
+
+                    }
+
+                }, 1000)
+
+            }
+
+            else {
+
+                $jobGog.hide();
+
+                $cancelBtn.hide();
+
+                $scrollBtn.hide();
+
+                self.type === 'playbook' || $rerunBtn.hide();
+
+                (self.type === 'playbook' && self.stats) || $statsBtn.hide();
+
+            }
+
+        });
+
+        self.loadTemplate(templates[self.type].view, $('#content_container')).then($element => {
+
+            self.bind($element);
 
             buildResults();
 
-            self.autoScroll && $('html, body').animate({scrollTop: (footerAnchor.offset().top)}, 500);
+            if (self.is_running) {
 
-            if (!self.is_running) {
+                let intervalId = setInterval(function () {
 
-                clearInterval(intervalId);
+                    self.refresh(false, function () {
 
-                self.autoScroll && setTimeout(function () {
+                        buildResults();
 
-                    $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
+                        self.auto_scroll && $('html, body').animate({scrollTop: ($('#footer_anchor').offset().top)}, 500);
 
-                }, 2000)
+                        if (!self.is_running) {
+
+                            clearInterval(intervalId);
+
+                            self.auto_scroll && setTimeout(function () {
+
+                                $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
+
+                            }, 2000)
+
+                        }
+
+                    })
+
+                }, 1000);
 
             }
 
         })
 
-    }, 1000);
-
-    buildResults();
-
-    container.append(footerAnchor);
-
-    return container
+    });
 
 };
 
@@ -739,47 +597,59 @@ Job.prototype.statistics = function (modal) {
 
     let self = this;
 
-    let container = $('<div>');
+    return self.loadTemplate('jobStatistics.html').then($element => {
 
-    let table = baseTable.clone();
+        let tableOptions = {
+            paging: false,
+            filter: false,
+            autoWidth: false,
+            data: self.stats,
+            columns: [
+                {class: 'col-md-3', title: 'host'},
+                {class: 'col-md-1', title: 'ok'},
+                {class: 'col-md-1', title: 'changed'},
+                {class: 'col-md-1', title: 'dark'},
+                {class: 'col-md-1', title: 'failures'},
+                {class: 'col-md-1', title: 'skip'}
+            ]
+        };
 
-    container.append($('<h4>').html('Statistics'), table);
+        if (modal) {
 
-    table.DataTable({
-        paging: false,
-        filter: false,
-        data: self.stats,
-        columns: [
-            {class: 'col-md-3', title: 'host'},
-            {class: 'col-md-1', title: 'ok'},
-            {class: 'col-md-1', title: 'changed'},
-            {class: 'col-md-1', title: 'dark'},
-            {class: 'col-md-1', title: 'failures'},
-            {class: 'col-md-1', title: 'skip'}
-        ]
+            tableOptions.scrollY = '360px';
+
+            tableOptions.scrollCollapse = true;
+
+            $element.find('table').DataTable(tableOptions);
+
+            $('<div>').addClass('large_dialog').append($element)
+                .dialog({
+                    width: '700px',
+                    buttons: {
+                        Close: function () {
+
+                            $(this).dialog('close')
+
+                        }
+                    }
+                });
+
+        }
+
+        else {
+
+            $element.find('table').DataTable(tableOptions);
+
+            $('#result_container').append($element);
+
+        }
+
+        $element.find('table').DataTable().columns.adjust().draw();
+
+        return $element
+
     });
 
-    if (modal) {
 
-        let dialog = largeDialog.clone();
-
-        table.wrap('<div style="overflow-y: auto; max-height: 360px">');
-
-        dialog
-            .append(container)
-            .dialog({
-                width: '70%',
-                maxWidth: 800,
-                buttons: {
-                    Close: function () {
-
-                        $(this).dialog('close')
-
-                    }
-                }
-            });
-    }
-
-    else return container.css('margin-top', '20px')
 
 };

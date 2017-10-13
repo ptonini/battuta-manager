@@ -403,7 +403,7 @@ User.prototype.credentialsForm = function () {
                         is_default: isDefaultButton.hasClass('checked_button'),
                         ask_pass: askPassButton.hasClass('checked_button'),
                         ask_sudo_pass: askSudoPassButton.hasClass('checked_button'),
-                        rsa_key: rsaKeyField.val()
+                        rsa_key: rsaKeyField.val() ? rsaKeyField.val() : ""
                     };
 
 

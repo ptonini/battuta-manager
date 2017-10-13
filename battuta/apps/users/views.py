@@ -88,7 +88,7 @@ class LoginView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class UsersView(View):
+class UserView(View):
 
     @staticmethod
     def _user_to_dict(user):
@@ -333,13 +333,8 @@ class UsersView(View):
                 cred_dict = json.loads(form_data['cred'])
 
                 # Build credential object
-                if cred_dict.get('id'):
 
-                    cred = get_object_or_404(Credential, pk=cred_dict['id'])
-
-                else:
-
-                    cred = Credential(user=user)
+                cred = get_object_or_404(Credential, pk=cred_dict['id']) if cred_dict.get('id') else Credential(user=user)
 
                 # Set form data passwords
                 if cred_dict['password'] == prefs['password_placeholder']:

@@ -15,7 +15,6 @@ function Battuta (param) {
 
     $.extend($.fn.dataTable.defaults, {
         stateSave: true,
-        autoWidth: false,
         language: {'emptyTable': ' '},
         pageLength: 10,
         lengthMenu: [5, 10, 25, 50, 100],
@@ -257,6 +256,22 @@ Battuta.prototype = {
 
     },
 
+    calculateTableHeight: function ($table) {
+
+        let scrollTop = $(window).scrollTop();
+
+        let elementOffset = $table.offset().top;
+
+        let distance = (elementOffset - scrollTop);
+
+        let availableSpace = window.innerHeight - distance;
+
+        console.log(elementOffset, scrollTop, window.innerHeight, availableSpace);
+
+        return (availableSpace - 20).toString() + 'px';
+
+    },
+
     requestResponse: function (data, callback, failCallback) {
 
         switch (data.status) {
@@ -325,13 +340,17 @@ Battuta.prototype = {
 
         let loadData = ($element, value) => {
 
-            if ($element.is('input, textarea, select')) $element.val(value);
+            if (value !== undefined && value !== null) {
 
-            else if ($element.is('checkbox')) $element.attr('checked', value);
+                if ($element.is('input, textarea, select')) $element.val(value);
 
-            else if ($element.is('button')) $element.toggleClass('checked_button', value);
+                else if ($element.is('checkbox')) $element.attr('checked', value);
 
-            else $element.html(value);
+                else if ($element.is('button')) $element.toggleClass('checked_button', value);
+
+                else $element.html(value.toString());
+
+            }
 
         };
 
@@ -367,31 +386,23 @@ Battuta.prototype = {
 
         self.pubSub.off(message).on(message, function (event, source, property, value) {
 
-            if (source === 'dom') {
+            let propArray = property.split('.');
 
-                let propArray = property.split('.');
+            if (propArray.length === 1) self[propArray[0]] = value;
 
-                if (propArray.length === 1) self[propArray[0]] = value;
+            else if (propArray.length === 2) {
 
-                else if (propArray.length === 2) {
+                if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
 
-                    if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
-
-                    self[propArray[0]][propArray[1]] = value;
-
-                }
+                self[propArray[0]][propArray[1]] = value;
 
             }
 
-            else if (source === 'model') {
+            $container.find('[data-bind="' + property + '"]').each(function () {
 
-                $container.find('[data-bind="' + property + '"]').each(function () {
+                loadData($(this), value);
 
-                    loadData($(this), value);
-
-                });
-
-            }
+            });
 
         });
 
@@ -668,7 +679,7 @@ Battuta.prototype = {
 
                 let $element = $(text);
 
-                $container ? $container.append($element) : $(document.body).append($element);
+                $container ? $container.html($element) : $('#draw_container').append($element);
 
                 return $element
 

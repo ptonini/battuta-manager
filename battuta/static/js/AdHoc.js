@@ -189,6 +189,9 @@ AdHoc.prototype.view = function (locked, $container) {
         });
 
         $('#adhoc_table').DataTable({
+            scrollY: (window.innerHeight * .4).toString() + 'px',
+            scrollCollapse: true,
+            autoWidth: false,
             pageLength: 50,
             ajax: {
                 url: self.apiPath + 'list/?pattern=' + self.hosts,

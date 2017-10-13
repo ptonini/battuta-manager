@@ -108,6 +108,7 @@ Node.prototype.hostInfo = function ($container) {
 
                 $('#interface_table').DataTable({
                     data: self.info.interfacesArray,
+                    autoWidth: false,
                     filter: false,
                     paging: false,
                     info: false,
@@ -123,6 +124,7 @@ Node.prototype.hostInfo = function ($container) {
 
                 $('#storage_table').DataTable({
                     data: self.facts.mounts,
+                    autoWidth: false,
                     filter: false,
                     paging: false,
                     info: false,
@@ -349,6 +351,9 @@ Node.prototype.variables = function ($container) {
         self.bind($element);
 
         $('#variable_table').DataTable({
+            scrollY: (window.innerHeight - 380).toString() + 'px',
+            scrollCollapse: true,
+            autoWidth: false,
             order: [[ 2, 'asc' ], [ 0, 'asc' ]],
             paging: false,
             dom: 'Bfrtip',
@@ -711,7 +716,15 @@ Node.prototype.selector = function () {
 
             $('#delete_button').toggle();
 
-            if ($(this).hasClass('checked_button')) $grid.DynaGrid(Object.assign({dataArray: $grid.DynaGrid('getData')}, deleteOptions));
+            if ($(this).hasClass('checked_button')) {
+
+                console.log($grid.DynaGrid('getData'));
+
+                deleteOptions.dataArray = $grid.DynaGrid('getData');
+
+                $grid.DynaGrid(deleteOptions);
+
+            }
 
             else $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions))
 
@@ -730,6 +743,7 @@ Node.prototype.selector = function () {
             truncateItemText: true,
             headerBottomPadding: 20,
             topAlignHeader: true,
+            maxHeight: window.innerHeight - 340,
             columns: sessionStorage.getItem('node_grid_columns')
         };
 
@@ -822,6 +836,8 @@ Node.prototype.selector = function () {
 
         $table.DataTable({
             paging: false,
+            scrollY: (window.innerHeight - 380).toString() + 'px',
+            scrollCollapse: true,
             columns: columns,
             dom: 'Bfrtip',
             buttons: [
