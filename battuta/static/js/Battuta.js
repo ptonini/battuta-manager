@@ -203,11 +203,9 @@ Battuta.prototype = {
 
     jsonRequest: function (type, obj, url, blockUI, callback, failCallback) {
 
-        let self = this;
-
-        let data = {};
-
-        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
+        let self = this,
+            data = {},
+            excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
 
         for (let p in obj) {
 
