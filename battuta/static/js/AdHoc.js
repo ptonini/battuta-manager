@@ -52,9 +52,9 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
     self.loadTemplate('adhocDialog.html').then($element => {
 
-        let $selector = $('#module_selector');
+        let $selector = $element.find('#module_selector');
 
-        let $argumentsContainer = $('#module_arguments_container');
+        let $argumentsContainer = $element.find('#module_arguments_container');
 
         $element.dialog({
             autoOpen: false,
@@ -168,11 +168,11 @@ AdHoc.prototype.view = function (locked, $container) {
 
         self.hosts && $('#view_header').remove();
 
-        self.patternField(locked, self.hosts, $('#command_pattern_field_label'));
+        self.patternField(locked, self.hosts, $element.find('#command_pattern_field_label'));
 
-        self.runnerCredsSelector($('#command_credentials_selector_label'));
+        self.runnerCredsSelector($element.find('#command_credentials_selector_label'));
 
-        $('#adhoc_command_form').submit(function (event) {
+        $element.find('#adhoc_command_form').submit(function (event) {
 
             event.preventDefault();
 
@@ -188,8 +188,8 @@ AdHoc.prototype.view = function (locked, $container) {
 
         });
 
-        $('#adhoc_table').DataTable({
-            scrollY: (window.innerHeight * .4).toString() + 'px',
+        $element.find('#adhoc_table').DataTable({
+            scrollY: (window.innerHeight - locked ? 450 : 400).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
             pageLength: 50,

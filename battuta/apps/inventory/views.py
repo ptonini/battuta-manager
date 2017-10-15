@@ -386,7 +386,6 @@ class InventoryView(View):
 
                                 group, created = Group.objects.get_or_create(name=group_name)
 
-                                data['added_groups'] += 1 if created else 0
 
                                 # Iterate over group children
                                 if 'children' in json_data[group_name]:
@@ -429,7 +428,15 @@ class InventoryView(View):
 
                                             var.save()
 
-                                group.save()
+                                if group.name != 'ungrouped':
+
+                                    group.save()
+
+                                    data['added_groups'] += 1 if created else 0
+
+                                else:
+
+                                    group.delete()
 
                             data['status'] = 'ok'
 
@@ -735,7 +742,7 @@ class NodeView(View):
 
                 for selected in json.loads(request.POST['selection']):
 
-                    related_set.add(get_object_or_404(related_class, pk=selected))
+                    related_set.add(get_object_or_404(related_class, pk=selected['id']))
 
                 data = {'status': 'ok'}
 
@@ -751,7 +758,7 @@ class NodeView(View):
 
                 for selected in json.loads(request.POST['selection']):
 
-                    related_set.remove(get_object_or_404(related_class, pk=selected))
+                    related_set.remove(get_object_or_404(related_class, pk=selected['id']))
 
                 data = {'status': 'ok'}
 

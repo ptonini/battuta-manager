@@ -109,11 +109,11 @@ Group.prototype.memberGrid = function ($container) {
                         .attr('title', 'Remove')
                         .click(function () {
 
-                            self.selection = [$gridItem.data('id')];
+                            self.selection = [$gridItem.data()];
 
                             self.postData('remove_members', false, function () {
 
-                                $('#members_grid').DynaGrid('load')
+                                $gridContainer.DynaGrid('load')
 
                             });
 
@@ -124,39 +124,22 @@ Group.prototype.memberGrid = function ($container) {
             addButtonAction: function () {
 
                 self.selectionDialog({
+                    type: 'many',
                     objectType: 'user',
                     url: self.paths.apis.group + 'members/?reverse=true&name=' + self.name,
                     ajaxDataKey: 'members',
                     itemValueKey: 'name',
-                    showButtons: true,
-                    loadCallback: function ($gridContainer) {
+                    action: function (selection) {
 
-                        $('#selection_dialog').dialog('option', 'buttons', {
-                            Add: function () {
+                        self.selection = selection;
 
-                                self.selection = $gridContainer.DynaGrid('getSelected', 'id');
+                        self.postData('add_members', false, function () {
 
-                                self.postData('add_members', false, function () {
+                            $element.DynaGrid('load')
 
-                                    $('#members_grid').DynaGrid('load')
-
-                                });
-
-                                $(this).dialog('close');
-
-                            },
-                            Cancel: function () {
-
-                                $('.filter_box').val('');
-
-                                $(this).dialog('close');
-
-                            }
                         });
 
-                    },
-                    addButtonAction: null,
-                    formatItem: null
+                    }
                 });
 
             }

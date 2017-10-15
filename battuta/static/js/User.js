@@ -539,39 +539,22 @@ User.prototype.groupGrid = function () {
         addButtonAction: function () {
 
             self.selectionDialog({
+                type: 'many',
                 objectType: 'group',
                 url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
                 ajaxDataKey: 'groups',
                 itemValueKey: 'name',
-                showButtons: true,
-                loadCallback: function ($gridContainer) {
+                action: function (selection) {
 
-                    $('#selection_dialog').dialog('option', 'buttons', {
-                        Add: function () {
+                    self.selection = selection;
 
-                            self.selection = $gridContainer.DynaGrid('getSelected', 'id');
+                    self.postData('add_groups', false, function () {
 
-                            self.postData('add_groups', false, function () {
+                        groupGrid.DynaGrid('load')
 
-                                groupGrid.DynaGrid('load')
-
-                            });
-
-                            $(this).dialog('close');
-
-                        },
-                        Cancel: function () {
-
-                            $('.filter_box').val('');
-
-                            $(this).dialog('close');
-
-                        }
                     });
 
-                },
-                addButtonAction: null,
-                formatItem: null
+                }
             });
 
         }

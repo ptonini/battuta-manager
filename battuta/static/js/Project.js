@@ -48,55 +48,48 @@ Project.prototype.apiPath = Battuta.prototype.paths.apis.project;
 
 Project.prototype.properties = {
     manager: {
-        url: Battuta.prototype.paths.apis.user + 'list/',
+        url: Battuta.prototype.paths.apis.user + 'list/?',
         type: 'user',
         key: 'users',
         item: 'username'
     },
     host_group: {
-        url: Battuta.prototype.paths.apis.inventory + 'list/?type=group',
+        url: Battuta.prototype.paths.apis.inventory + 'list/?type=group&',
         type: 'group',
         key: 'nodes',
         item: 'name'
     },
     others: {
-        url: Battuta.prototype.paths.apis.group + 'list/?editable=true',
+        url: Battuta.prototype.paths.apis.group + 'list/?editable=true&',
         type: 'user group',
         key: 'groups',
         item: 'name'
     }
 };
 
-Project.prototype.setProperty =  function (property, input) {
+Project.prototype.setProperty =  function (property, $input) {
 
     let self = this;
 
     let propData = property in self.properties ? self.properties[property] : self.properties.others ;
 
     self.selectionDialog({
+        type: 'one',
         objectType: propData.type,
-        url: propData.url,
+        url: propData.url + 'exclude=' + $input.val(),
         ajaxDataKey: propData.key,
         itemValueKey: propData.item,
-        showButtons: false,
-        loadCallback: null,
-        formatItem: function ($gridItem) {
+        action: function (selection, $dialog) {
 
-            let itemData = $gridItem.data();
+            self.property = {name: property, value: selection.id};
 
-            $gridItem.click(function () {
+            self.postData('set_property', false, function () {
 
-                self.property = {name: property, value: $gridItem.data('id')};
+                $input.val(selection[propData.item]).data(selection).change()
 
-                self.postData('set_property', false, function () {
+            });
 
-                    input.val(itemData[propData.item]).data(itemData).change()
-
-                });
-
-                $('#selection_dialog').dialog('close')
-
-            })
+            $dialog.dialog('close')
 
         }
     });
@@ -224,48 +217,24 @@ Project.prototype.playbookGrid = function () {
             });
 
             self.selectionDialog({
+                type: 'many',
                 objectType: 'playbooks',
                 url: self.paths.apis.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
                 itemValueKey: 'name',
-                showButtons: true,
-                addButtonAction: null,
-                formatItem: function($gridItem) {
+                action: function (selection) {
 
-                    let playbook = $gridItem.data();
+                    self.playbooks = [];
 
-                    let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+                    $.each(selection, function (index, playbook) {
 
-                    $gridItem.attr('title', itemTitle).html(itemTitle)
+                        self.playbooks.push({name: playbook.name, folder: playbook.folder})
 
-                },
-                loadCallback: function ($gridContainer) {
+                    });
 
-                    $('#selection_dialog').dialog('option', 'buttons', {
-                        Add: function () {
+                    self.postData( 'add_playbooks', false, function () {
 
-                            self.playbooks = [];
+                        container.DynaGrid('load')
 
-                            $.each($gridContainer.DynaGrid('getSelected'), function (index, playbook) {
-
-                                self.playbooks.push({name: playbook.name, folder: playbook.folder})
-
-                            });
-
-                            self.postData( 'add_playbooks', false, function () {
-
-                                container.DynaGrid('load')
-
-                            });
-
-                            $(this).dialog('close');
-                        },
-                        Cancel: function () {
-
-                            $('.filter_box').val('');
-
-                            $(this).dialog('close');
-
-                        }
                     });
 
                 }
@@ -336,40 +305,25 @@ Project.prototype.roleGrid = function () {
             });
 
             self.selectionDialog({
+                type: 'many',
                 objectType: 'roles',
                 url: self.paths.apis.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
                 ajaxDataKey: 'file_list',
                 itemValueKey: 'name',
-                showButtons: true,
-                addButtonAction: null,
-                loadCallback: function ($gridContainer) {
+                action: function (selection) {
 
-                    $('#selection_dialog').dialog('option', 'buttons', {
-                        Add: function () {
+                    self.roles = [];
 
-                            self.roles = [];
+                    $.each(selection, function (index, role) {
 
-                            $.each($gridContainer.DynaGrid('getSelected'), function (index, role) {
+                        self.roles.push({name: role.name, folder: role.folder})
 
-                                self.roles.push({name: role.name, folder: role.folder})
+                    });
 
-                            });
+                    self.postData('add_roles', false, function () {
 
-                            self.postData('add_roles', false, function () {
+                        container.DynaGrid('load')
 
-                                container.DynaGrid('load')
-
-                            });
-
-                            $(this).dialog('close');
-                        },
-                        Cancel: function () {
-
-                            $('.filter_box').val('');
-
-                            $(this).dialog('close');
-
-                        }
                     });
 
                 }

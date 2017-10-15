@@ -402,25 +402,44 @@ Battuta.prototype = {
 
         self.loadTemplate('selectionDialog.html').then($element => {
 
+            let $grid = $element.find('#selection_grid');
+
+            let cancelBtnFunction = function () {
+
+                $('input.filter_box').val('');
+
+                $(this).dialog('close');
+
+            };
+
+            if (options.type === 'many') options.buttons = {
+                Add: function () {
+
+                    options.action($grid.DynaGrid('getSelected'));
+
+                    $(this).dialog('close');
+
+                },
+                Cancel: cancelBtnFunction,
+            };
+
+            else if (options.type === 'one') options.buttons = {
+                Cancel: cancelBtnFunction
+            };
+
             $element.dialog({
                 minWidth: 700,
                 minHeight: 500,
-                buttons: {
-                    Cancel: function () {
-
-                        $(this).dialog('close')
-
-                    }
-                },
+                buttons: options.buttons,
             });
 
-            $('#selection_grid').DynaGrid({
+            $grid.DynaGrid({
                 gridTitle: 'selection',
                 showFilter: true,
-                showAddButton: (options.addButtonAction),
-                addButtonTitle: 'Add ' + options.objectType,
+                showAddButton: (options.newEntity),
+                addButtonTitle: 'Add ' + options.entityType,
                 maxHeight: 400,
-                itemToggle: options.showButtons,
+                itemToggle: (options.type === 'many'),
                 truncateItemText: true,
                 checkered: true,
                 columns: sessionStorage.getItem('selection_modal_columns'),
@@ -428,19 +447,26 @@ Battuta.prototype = {
                 ajaxData: options.data,
                 ajaxDataKey: options.ajaxDataKey,
                 itemValueKey: options.itemValueKey,
-                loadCallback: function ($gridContainer) {
+                addButtonAction: function ($gridContainer) {
 
-                    options.loadCallback && options.loadCallback($gridContainer)
+                    options.newEntity.edit(function () {
 
-                },
-                addButtonAction: function () {
+                        $gridContainer.DynaGrid('load')
 
-                    options.addButtonAction && options.addButtonAction()
+                    });
 
                 },
                 formatItem: function($gridContainer, $gridItem) {
 
-                    options.formatItem && options.formatItem($gridItem)
+                    if (options.type === 'one') {
+
+                        $gridItem.click(function () {
+
+                            options.action && options.action($(this).data(), $element)
+
+                        });
+
+                    }
 
                 }
             });
@@ -512,7 +538,7 @@ Battuta.prototype = {
 
                             let action = $(this).data('action');
 
-                            let separator = {select: ':', and: ':&', exclude: ':!'};
+                            let sep = {select: ':', and: ':&', exclude: ':!'};
 
                             if (action !== 'select' && self.pattern === '') {
 
@@ -523,54 +549,24 @@ Battuta.prototype = {
                             else {
 
                                 self.selectionDialog({
-                                    objectType: type,
+                                    type: 'many',
+                                    entityType: type,
                                     url: self.paths.apis.inventory + 'list/?type=' + type,
                                     ajaxDataKey: 'nodes',
                                     itemValueKey: 'name',
-                                    showButtons: true,
-                                    loadCallback: function ($gridContainer) {
+                                    newEntity: new Node({name: null, description: null, type: type}),
+                                    action: function (selection) {
 
-                                        $('#selection_dialog').dialog('option', 'buttons', {
-                                            Add: function () {
+                                        for (let i = 0; i < selection.length; i++) {
 
-                                                let selection = $gridContainer.DynaGrid('getSelected', 'name');
+                                            if (self.pattern !== '') self.set('pattern', self.pattern + sep[action]);
 
-                                                for (let i = 0; i < selection.length; i++) {
+                                            self.set('pattern', self.pattern + selection[i])
 
-                                                    if (self.pattern !== '') {
+                                        }
 
-                                                        self.set('pattern', self.pattern + separator[action]);
+                                    }
 
-                                                    }
-
-                                                    self.set('pattern', self.pattern + selection[i])
-
-                                                }
-
-                                                $(this).dialog('close');
-
-                                            },
-                                            Cancel: function () {
-
-                                                $('.filter_box').val('');
-
-                                                $(this).dialog('close');
-
-                                            }
-                                        })
-                                    },
-                                    addButtonAction: function () {
-
-                                        let node = new Node({name: null, description: null, type: type});
-
-                                        node.edit(function () {
-
-                                            $('#selection_grid').DynaGrid('load')
-
-                                        })
-
-                                    },
-                                    formatItem: null
                                 });
                             }
 

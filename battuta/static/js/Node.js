@@ -203,7 +203,6 @@ Node.prototype.relationships = function ($container) {
 
             $('#' + relation + '_grid')
                 .addClass('relationship_grid')
-                .css('margin-bottom', '2rem')
                 .DynaGrid({
                     gridTitle: relation,
                     headerTag: '<h5>',
@@ -236,7 +235,7 @@ Node.prototype.relationships = function ($container) {
                                 .attr('title', 'Remove')
                                 .click(function () {
 
-                                    self.selection = [id];
+                                    self.selection = [$gridItem.data()];
 
                                     self.postData('remove_' + relation, false, function () {
 
@@ -251,50 +250,23 @@ Node.prototype.relationships = function ($container) {
                     addButtonAction: function () {
 
                         self.selectionDialog({
+                            type: 'many',
                             objectType: self.type,
                             url: self.apiPath + relation + '/?related=false&id=' + self.id,
                             ajaxDataKey: 'nodes',
                             itemValueKey: 'name',
-                            showButtons: true,
-                            loadCallback: function ($gridContainer) {
+                            newEntity: new Node({name: null, description: null, type: relationType}),
+                            action: function (selection) {
 
-                                $('#selection_dialog').dialog('option', 'buttons', {
-                                    Add: function () {
+                                self.selection = selection;
 
-                                        self.selection = $gridContainer.DynaGrid('getSelected', 'id');
+                                self.postData('add_' + relation, false, function () {
 
-                                        self.postData('add_' + relation, false, function () {
-
-                                            reloadData($('#' + relation + '_grid'))
-
-                                        });
-
-                                        $(this).dialog('close');
-
-                                    },
-                                    Cancel: function () {
-
-                                        $('.filter_box').val('');
-
-
-                                        $(this).dialog('close');
-
-                                    }
-                                });
-
-                            },
-                            addButtonAction: function ($selectionDialog) {
-
-                                let node = new Node({name: null, description: null, type: relationType});
-
-                                node.edit(function () {
-
-                                    $selectionDialog.DynaGrid('load')
+                                    reloadData($('#' + relation + '_grid'))
 
                                 });
 
-                            },
-                            formatItem: null
+                            }
                         });
 
                     }
@@ -302,6 +274,7 @@ Node.prototype.relationships = function ($container) {
         });
 
     });
+
 };
 
 Node.prototype.descendants = function ($container) {
@@ -351,7 +324,7 @@ Node.prototype.variables = function ($container) {
         self.bind($element);
 
         $('#variable_table').DataTable({
-            scrollY: (window.innerHeight - 380).toString() + 'px',
+            scrollY: (window.innerHeight - 330).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
             order: [[ 2, 'asc' ], [ 0, 'asc' ]],
@@ -613,28 +586,23 @@ Node.prototype.copyVariables = function (callback) {
                 $element.dialog('close');
 
                 self.selectionDialog({
+                    type: 'one',
                     objectType: $(this).data('type'),
                     url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
-                    showButtons: false,
-                    loadCallback: null,
-                    addButtonAction: null,
-                    formatItem: function ($gridItem) {
+                    action: function (selection, $dialog) {
 
-                        $gridItem.click(function () {
+                        self.source = selection;
 
-                            self.source = $(this).data();
+                        self.postData('copy_vars', false, function (data) {
 
-                            self.postData('copy_vars', false, function (data) {
+                            $dialog.dialog('close');
 
-                                $('#selection_dialog').dialog('close');
+                            callback && callback(data)
 
-                                callback && callback(data)
+                        })
 
-                            });
-
-                        });
                     }
                 });
 
@@ -691,12 +659,6 @@ Node.prototype.view = function () {
             $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
         });
-
-        setTimeout(() => {
-
-            $(document.body).find('table.dataTable').DataTable().columns.adjust().draw()
-
-        }, 200)
 
     });
 

@@ -210,7 +210,7 @@ File.prototype.editorDialog = function (callback) {
             {name: 'yaml', label: 'YAML'}
         ];
 
-        let textEditor = ace.edit('editor_container');
+        let textEditor = ace.edit($element.find('#editor_container')[0]);
 
         if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
 
@@ -279,9 +279,7 @@ File.prototype.editorDialog = function (callback) {
 
         textEditor.selection.moveCursorFileStart();
 
-        $('#editor_container').css('height', window.innerHeight * .7);
-
-        $('div.ui-dialog-buttonpane').css('border-top', 'none');
+        $element.find('#editor_container').css('height', window.innerHeight * .7);
 
         $element.dialog({
                 width: 900,

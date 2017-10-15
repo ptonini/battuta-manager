@@ -235,6 +235,65 @@ Job.prototype.run = function (sameWindow) {
 
 };
 
+Job.prototype.statistics = function (modal) {
+
+    let self = this;
+
+    return self.loadTemplate('jobStatistics.html').then($element => {
+
+        let tableOptions = {
+            paging: false,
+            filter: false,
+            autoWidth: false,
+            data: self.stats,
+            columns: [
+                {class: 'col-md-3', title: 'host'},
+                {class: 'col-md-1', title: 'ok'},
+                {class: 'col-md-1', title: 'changed'},
+                {class: 'col-md-1', title: 'dark'},
+                {class: 'col-md-1', title: 'failures'},
+                {class: 'col-md-1', title: 'skip'}
+            ]
+        };
+
+        if (modal) {
+
+            tableOptions.scrollY = '360px';
+
+            tableOptions.scrollCollapse = true;
+
+            $element.find('table').DataTable(tableOptions);
+
+            $('<div>').addClass('large_dialog').append($element)
+                .dialog({
+                    width: '700px',
+                    buttons: {
+                        Close: function () {
+
+                            $(this).dialog('close')
+
+                        }
+                    }
+                });
+
+        }
+
+        else {
+
+            $element.find('table').DataTable(tableOptions);
+
+            $('#result_container').append($element);
+
+        }
+
+        $element.find('table').DataTable().columns.adjust().draw();
+
+        return $element
+
+    });
+
+};
+
 Job.prototype.selector = function () {
 
     let self = this;
@@ -476,8 +535,7 @@ Job.prototype.view = function () {
 
             let $printBtn = $('#print_button').click(function () {
 
-
-                self.statistics().then()
+                self.statistics().then();
 
                 let pageTitle = $(document).find('title').text();
 
@@ -590,66 +648,5 @@ Job.prototype.view = function () {
         })
 
     });
-
-};
-
-Job.prototype.statistics = function (modal) {
-
-    let self = this;
-
-    return self.loadTemplate('jobStatistics.html').then($element => {
-
-        let tableOptions = {
-            paging: false,
-            filter: false,
-            autoWidth: false,
-            data: self.stats,
-            columns: [
-                {class: 'col-md-3', title: 'host'},
-                {class: 'col-md-1', title: 'ok'},
-                {class: 'col-md-1', title: 'changed'},
-                {class: 'col-md-1', title: 'dark'},
-                {class: 'col-md-1', title: 'failures'},
-                {class: 'col-md-1', title: 'skip'}
-            ]
-        };
-
-        if (modal) {
-
-            tableOptions.scrollY = '360px';
-
-            tableOptions.scrollCollapse = true;
-
-            $element.find('table').DataTable(tableOptions);
-
-            $('<div>').addClass('large_dialog').append($element)
-                .dialog({
-                    width: '700px',
-                    buttons: {
-                        Close: function () {
-
-                            $(this).dialog('close')
-
-                        }
-                    }
-                });
-
-        }
-
-        else {
-
-            $element.find('table').DataTable(tableOptions);
-
-            $('#result_container').append($element);
-
-        }
-
-        $element.find('table').DataTable().columns.adjust().draw();
-
-        return $element
-
-    });
-
-
 
 };

@@ -143,7 +143,7 @@ class UserView(View):
 
             if request.user.has_perm('users.edit_users'):
 
-                data = {'status': 'ok', 'users': [self._user_to_dict(user) for user in User.objects.all()]}
+                data = {'status': 'ok', 'users': [self._user_to_dict(user) for user in User.objects.all().exclude(username=request.GET.get('exclude'))]}
 
             else:
 
@@ -318,7 +318,7 @@ class UserView(View):
 
                 if request.user.has_perm('users.edit_user_groups'):
 
-                    for selected in request.POST.getlist('selection[]'):
+                    for selected in json.loads(request.POST['selection']):
 
                         user.groups.remove(get_object_or_404(Group, pk=selected))
 
@@ -436,13 +436,11 @@ class UserGroupView(View):
 
         if action == 'list':
 
-            if 'editable' in request.GET and request.GET['editable'] == 'true':
+            query_set = Group.objects.all().exclude(name=request.GET.get('exclude'))
 
-                query_set = Group.objects.all().filter(groupdata__editable=True)
+            if request.GET.get('editable') == 'true':
 
-            else:
-
-                query_set = Group.objects.all()
+                query_set = query_set.filter(groupdata__editable=True)
 
             group_list = list()
 
@@ -567,9 +565,9 @@ class UserGroupView(View):
 
             if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
-                for selected in request.POST.getlist('selection[]'):
+                for selected in json.loads(request.POST['selection']):
 
-                    group.user_set.add(get_object_or_404(User, pk=selected))
+                    group.user_set.add(get_object_or_404(User, pk=selected['id']))
 
                 data = {'status': 'ok'}
 
@@ -581,9 +579,9 @@ class UserGroupView(View):
 
             if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
-                for selected in request.POST.getlist('selection[]'):
+                for selected in json.loads(request.POST['selection']):
 
-                    group.user_set.remove(get_object_or_404(User, pk=selected))
+                    group.user_set.remove(get_object_or_404(User, pk=selected['id']))
 
                 data = {'status': 'ok'}
 
