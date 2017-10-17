@@ -10,7 +10,7 @@ function Battuta (param) {
 
     // DataTables
     $.fn.dataTableExt.sErrMode = 'throw';
- 
+
     $.extend($.fn.dataTable.defaults, {
         stateSave: true,
         language: {'emptyTable': ' '},

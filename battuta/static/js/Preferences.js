@@ -137,7 +137,9 @@ Preferences.prototype.dialog = function () {
 
                 Object.keys(self.stored).forEach(function (key) {
 
-                    $element.find('#item_' + key).val(self.stored[key].toString());
+                    console.log('#item_' + key, $container.find('#item_' + key));
+
+                    $container.find('#item_' + key).val(self.stored[key].toString());
 
                 });
 
@@ -182,6 +184,8 @@ Preferences.prototype.dialog = function () {
             if (noError) {
 
                 self.prefs = prefs;
+
+                console.log(prefs);
 
                 self.save(function () {
 

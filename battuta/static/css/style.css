@@ -52,7 +52,9 @@ a.label_link {float: right; font-size: x-small}
 
 #view_header .relationship_grid {margin-bottom: 2rem}
 
-#play_header_container, .task_table_container, #adhoc_table_container, #stats_table_container {margin-top: 2rem}
+.play_container_template, .task_table_container, #adhoc_table_container, #stats_table_container {margin-top: 2rem}
+
+#job_container {margin-top: 60px}
 
 #playbook_args_container {margin-top: 1rem}
 

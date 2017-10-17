@@ -78,22 +78,6 @@ File.prototype.read = function (callback) {
 
 };
 
-File.prototype.copy = function (callback) {
-
-    let self = this;
-
-    self.dialog('copy', callback);
-
-};
-
-File.prototype.create = function (callback) {
-
-    let self = this;
-
-    self.dialog('create', callback);
-
-};
-
 File.prototype.upload = function (callback) {
 
     let self = this;
@@ -129,7 +113,7 @@ File.prototype.upload = function (callback) {
 
             });
 
-        $('#upload_field')
+        $element.find('#upload_field')
             .fileinput({
                 uploadUrl: self.apiPath + 'upload/',
                 uploadExtraData: function () {
@@ -191,6 +175,8 @@ File.prototype.editorDialog = function (callback) {
     self.loadHtmlFile('fileEditorDialog.html').then($element => {
 
         self.bind($element);
+
+        let $selector = $element.find('#mode_selector');
 
         let aceMode = 'text';
 
@@ -256,11 +242,11 @@ File.prototype.editorDialog = function (callback) {
 
         $.each(modes, function (index, mode){
 
-            $('#mode_selector').append($('<option>').attr('value', mode.name).html(mode.label))
+            $selector.append($('<option>').attr('value', mode.name).html(mode.label))
 
         });
 
-        $('#mode_selector')
+        $element.find('#mode_selector')
             .val(aceMode)
             .change(function () {
 
@@ -527,7 +513,7 @@ File.prototype.selector = function (owner) {
 
                     let file = new File({root: self.root, folder: self.folder, owner: owner});
 
-                    file.create(function () {
+                    file.dialog('create', function () {
 
                         $table.DataTable().ajax.reload()
 
@@ -658,7 +644,7 @@ File.prototype.selector = function (owner) {
                             }),
                             spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
 
-                                file.copy(function () {
+                                file.dialog('copy', function () {
 
                                     $table.DataTable().ajax.reload()
 

@@ -21,12 +21,6 @@ class PreferencesView(View):
 
             pref_dict = dict()
 
-            pref_dict['user_name'] = request.user.username
-
-            pref_dict['user_id'] = request.user.id
-
-            pref_dict['user_timezone'] = request.user.userdata.timezone
-
             pref_dict['default'] = settings.DEFAULT_PREFERENCES
 
             pref_dict['stored'] = {item.name: item.value for item in Item.objects.all()}

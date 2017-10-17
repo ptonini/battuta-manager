@@ -335,7 +335,6 @@ Job.prototype.selector = function () {
             }
         });
 
-
     })
 
 };
@@ -346,169 +345,21 @@ Job.prototype.view = function () {
 
     self.refresh(false, function () {
 
-        let templates = {
-            playbook: {
-                view: 'jobView_playbook.html',
-                header: 'playHeader_playbook.html',
-            },
-            adhoc: {
-                view: 'jobView_adhoc.html',
-                header: 'playHeader_adhoc.html',
-            },
-            gather_facts: {
-                view: 'jobView_adhoc.html',
-                header: 'playHeader_adhoc.html',
-            }
-        };
-
-        let playContainers = {};
-
-        let taskContainers = {};
-
-        let buildResults = () => {
-
-            $.each(self.plays, (index, play) => {
-
-                if (!playContainers.hasOwnProperty(play.id)) {
-
-                    self.loadHtmlFile(templates[self.type].header)
-                        .then($element => {
-
-                            playContainers[play.id] = $element;
-
-                            $element.find('h4').html(play.name);
-
-                            $element.find('#host_field').html(self.hosts ? self.host : '&nbsp;');
-
-                            $element.find('#become_field').html(self.become.toString());
-
-                            $('#result_container').append($element);
-
-                            return self.loadHtmlFile('taskTable.html')
-
-                        })
-                        .then($element => {
-
-                            $.each(play.tasks, function (index, task) {
-
-                                if (!taskContainers.hasOwnProperty(task.id)) {
-
-                                    taskContainers[task.id] = $element.clone();
-
-                                    taskContainers[task.id].find('strong').html(task.name);
-
-                                    if (task.module !== 'include' || task.host_count > 0) {
-
-                                        taskContainers[task.id].find('table').DataTable({
-                                            paginate: false,
-                                            searching: false,
-                                            info: false,
-                                            ajax: {
-                                                url: self.apiPath + 'get_task/?id=' + self.id + '&task_id=' + task.id,
-                                                dataSrc: 'results'
-                                            },
-                                            columns: [
-                                                {class: 'col-md-3', title: 'host', data: 'host'},
-                                                {class: 'col-md-2', title: 'status', data: 'status'},
-                                                {class: 'col-md-7', title: 'message', data: 'message'}
-                                            ],
-                                            rowCallback: function (row, result) {
-
-                                                $(row).css('color', self.taskStates[result.status].color);
-
-                                            },
-                                            drawCallback: function () {
-
-                                                let rowCount = $(this).DataTable().rows().count();
-
-                                                rowCount && taskContainers[task.id].find('.counter').html(rowCount).css('display', 'inline');
-
-                                                if (task && !task.is_running || !self.is_running) {
-
-                                                    $(this).DataTable().rows().every(function () {
-
-                                                        let rowApi = this;
-
-                                                        self.result = rowApi.data();
-
-                                                        $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
-
-                                                            if (rowApi.child.isShown()) {
-
-                                                                $(rowApi.node()).css('font-weight', 'normal');
-
-                                                                rowApi.child.hide()
-                                                            }
-
-                                                            else {
-
-                                                                self.getData('get_result', false, function (data) {
-
-                                                                    let jsonContainer = $('<div>')
-                                                                        .attr('class', 'well')
-                                                                        .JSONView(data.result.response, {collapsed: true});
-
-                                                                    rowApi.child(jsonContainer).show();
-
-                                                                    $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
-
-                                                                });
-
-                                                            }
-
-                                                        })
-
-                                                    });
-
-                                                }
-
-                                            }
-                                        });
-                                    }
-
-                                    if (self.is_running) {
-
-                                        let intervalId;
-
-                                        intervalId = setInterval(function () {
-
-                                            updateResults(intervalId, taskContainers[task.id].find('table'))
-
-                                        }, 1000);
-
-                                    }
-
-                                    $('#result_container').append(taskContainers[task.id])
-
-                                }
-
-                            });
-
-                        })
-
-                }
-
-            })
-
-        };
-
-        let updateResults = (intervalId, $table) => {
-
-            $table.DataTable().ajax.reload(null, false);
-
-            let task = $table.DataTable().ajax.json();
-
-            if (!task.is_running || !self.is_running) clearInterval(intervalId);
-
-        };
-
         $(document).find('title').text(self.name);
+
+        let templates = {
+            playbook: 'jobView_playbook.html',
+            adhoc: 'jobView_adhoc.html',
+            gather_facts: 'jobView_adhoc.html'
+        };
 
         self.loadHtmlFile('jobNavBar.html', $('#navbar_container')).then($element => {
 
             self.bind($element);
 
             $element.find('[data-bind="status"]').css('color', self.stateColor());
+
+            $('header.navbar').addClass('navbar-fixed-top');
 
             let $jobGog = $('#job_cog');
 
@@ -545,7 +396,13 @@ Job.prototype.view = function () {
 
                 self.statistics().then($element => {
 
+                    let $container = $('#job_container');
+
+                    let topMargin = $container.css('margin-top');
+
                     let pageTitle = $(document).find('title').text();
+
+                    $container.css('margin-top', 0);
 
                     // Adjust windows for printing
                     document.title = pageTitle.replace('.yml', '');
@@ -555,7 +412,11 @@ Job.prototype.view = function () {
 
                     $element.remove();
 
-                    document.title = pageTitle
+                    document.title = pageTitle;
+
+                    $container.css('margin-top', topMargin);
+
+
 
                 });
 
@@ -613,9 +474,168 @@ Job.prototype.view = function () {
 
         });
 
-        self.loadHtmlFile(templates[self.type].view, $('#content_container')).then($element => {
+        self.loadHtmlFile(templates[self.type]).then($element => {
 
-            self.bind($element);
+            let $jobContainer = $element.find('#job_container');
+
+            let $resultContainer = $element.find('#result_container');
+
+            let $playContainerTemplate = $element.find('.play_container_template');
+
+            let playContainers = {};
+
+            let taskContainers = {};
+
+            let buildResults = () => {
+
+                $.each(self.plays, (index, play) => {
+
+                    if (!playContainers.hasOwnProperty(play.id)) {
+
+                        playContainers[play.id] = $playContainerTemplate.clone();
+
+                        playContainers[play.id].find('h4').html(play.name);
+
+                        playContainers[play.id].find('#host_field').html(self.hosts ? self.host : '&nbsp;');
+
+                        playContainers[play.id].find('#become_field').html(self.become.toString());
+
+                        $resultContainer.append(playContainers[play.id]);
+
+                        if (play.message) $resultContainer.append(
+                            $('<h4>').attr('class', 'error_message text-danger').html(play.message)
+                        );
+
+                    }
+
+                    self.loadHtmlFile('taskTable.html').then($element => {
+
+                        $.each(play.tasks, function (index, task) {
+
+                            if (!taskContainers.hasOwnProperty(task.id)) {
+
+                                taskContainers[task.id] = $element.clone();
+
+                                taskContainers[task.id].find('strong').html(task.name);
+
+                                if (task.module !== 'include' || task.host_count > 0) {
+
+                                    taskContainers[task.id].find('table').DataTable({
+                                        paginate: false,
+                                        searching: false,
+                                        info: false,
+                                        ajax: {
+                                            url: self.apiPath + 'get_task/?id=' + self.id + '&task_id=' + task.id,
+                                            dataSrc: 'results'
+                                        },
+                                        columns: [
+                                            {class: 'col-md-3', title: 'host', data: 'host'},
+                                            {class: 'col-md-2', title: 'status', data: 'status'},
+                                            {class: 'col-md-7', title: 'message', data: 'message'}
+                                        ],
+                                        rowCallback: function (row, result) {
+
+                                            $(row).css('color', self.taskStates[result.status].color);
+
+                                        },
+                                        drawCallback: function () {
+
+                                            let rowCount = $(this).DataTable().rows().count();
+
+                                            if (rowCount > 0) {
+
+                                                taskContainers[task.id].show().find('.counter').html(rowCount).css('display', 'inline')
+
+                                            }
+
+                                            else if (!task.is_running && sessionStorage.getItem('show_empty_tasks')) {
+
+                                                taskContainers[task.id].hide()
+
+                                            }
+
+                                            if (task && !task.is_running || !self.is_running) {
+
+                                                $(this).DataTable().rows().every(function () {
+
+                                                    let rowApi = this;
+
+                                                    self.result = rowApi.data();
+
+                                                    $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
+
+                                                        if (rowApi.child.isShown()) {
+
+                                                            $(rowApi.node()).css('font-weight', 'normal');
+
+                                                            rowApi.child.hide()
+                                                        }
+
+                                                        else {
+
+                                                            self.getData('get_result', false, function (data) {
+
+                                                                let jsonContainer = $('<div>')
+                                                                    .attr('class', 'well')
+                                                                    .JSONView(data.result.response, {collapsed: true});
+
+                                                                rowApi.child(jsonContainer).show();
+
+                                                                $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
+
+                                                            });
+
+                                                        }
+
+                                                    })
+
+                                                });
+
+                                            }
+
+                                        }
+                                    });
+                                }
+
+                                if (self.is_running) {
+
+                                    let intervalId;
+
+                                    intervalId = setInterval(function () {
+
+                                        updateResults(intervalId, taskContainers[task.id].find('table'))
+
+                                    }, 1000);
+
+                                }
+
+                                $resultContainer.append(taskContainers[task.id])
+
+                            }
+
+                        });
+
+                    })
+
+                })
+
+            };
+
+            let updateResults = (intervalId, $table) => {
+
+                $table.DataTable().ajax.reload(null, false);
+
+                let task = $table.DataTable().ajax.json();
+
+                if (!task.is_running || !self.is_running) clearInterval(intervalId);
+
+            };
+
+            self.bind($jobContainer);
+
+            self.message && $.bootstrapGrowl(self.message, failedAlertOptions);
+
+            $('#content_container').append($jobContainer);
 
             buildResults();
 
