@@ -1,14 +1,12 @@
 function Battuta (param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
 
-    self.set('username', param.username);
+    self.loadParam(param ? param : {});
 
     // DataTables
     $.fn.dataTableExt.sErrMode = 'throw';
@@ -138,7 +136,7 @@ Battuta.prototype = {
             file: '/files/api/',
             inventory: '/inventory/api/',
             adhoc: '/runner/api/adhoc/',
-            playbook_arg: '/runner/api/playbook_args/',
+            playbook_args: '/runner/api/playbook_args/',
             job: '/runner/api/job/',
             login: '/users/api/',
             user: '/users/api/user/',
@@ -173,6 +171,14 @@ Battuta.prototype = {
         inventory: '/inventory/',
         templates: '/static/templates/',
         modules: '/static/templates/ansible_modules/'
+    },
+
+    loadParam: function (param) {
+
+        let self = this;
+
+        self.set('username', param.username);
+
     },
 
     getCookie: function (name) {
@@ -318,7 +324,7 @@ Battuta.prototype = {
 
         Object.keys(self.bindings).forEach(function (key) {
 
-            if (self.bindings[key] === $container) previousId = key
+            if (self.bindings[key] === $container) previousId = key;
 
         });
 
@@ -400,7 +406,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('selectionDialog.html').then($element => {
+        self.loadHtmlFile('selectionDialog.html').then($element => {
 
             let $grid = $element.find('#selection_grid');
 
@@ -495,7 +501,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('patternField.html', $container).then($element => {
+        self.loadHtmlFile('patternField.html', $container).then($element => {
 
             self.bind($element);
 
@@ -505,7 +511,7 @@ Battuta.prototype = {
 
             $element.find('.pattern_editor').prop('disabled', locked).click(function () {
 
-                self.loadTemplate('patternDialog.html').then( ($element) => {
+                self.loadHtmlFile('patternDialog.html').then($element => {
 
                     self.bind($element);
 
@@ -561,7 +567,7 @@ Battuta.prototype = {
 
                                             if (self.pattern !== '') self.set('pattern', self.pattern + sep[action]);
 
-                                            self.set('pattern', self.pattern + selection[i])
+                                            self.set('pattern', self.pattern + selection[i].name)
 
                                         }
 
@@ -573,7 +579,6 @@ Battuta.prototype = {
                         });
 
                 });
-
 
             });
 
@@ -587,13 +592,17 @@ Battuta.prototype = {
 
         let user = new User({username: sessionStorage.getItem('user_name')});
 
-        let $selector = user.credentialsSelector(null, true, function () {
+        user.credentialsSelector(null, true, $container).then($element => {
 
-            self.cred = $('option:selected', $selector).data()
+            $element
+                .change(function () {
+
+                    self.cred = $('option:selected', $element).data();
+
+                })
+                .change()
 
         });
-
-        $container.append($selector)
 
     },
 
@@ -621,14 +630,14 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('deleteDialog.html').then($element => {
+        self.loadHtmlFile('deleteDialog.html').then($element => {
 
                 $element.dialog({
                     width: '320',
                     buttons: {
                         Delete: function () {
 
-                            self.postData(action, false, function (data) {
+                            self.postData(action, true, function (data) {
 
                                 callback && callback(data)
 
@@ -649,11 +658,11 @@ Battuta.prototype = {
 
     },
 
-    loadTemplate: function (template, $container) {
+    loadHtmlFile: function (htmlFile, $container) {
 
         let self = this;
 
-        return fetch(self.paths.templates + template)
+        return fetch(self.paths.templates + htmlFile)
             .then(response => {
 
                 return response.text()
@@ -663,7 +672,7 @@ Battuta.prototype = {
 
                 let $element = $(text);
 
-                $container ? $container.html($element) : $('#draw_container').append($element);
+                $container ? $container.html($element) : $('<div>').append($element);
 
                 return $element
 
@@ -683,7 +692,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('entityDialog.html').then($element => {
+        self.loadHtmlFile('entityDialog.html').then($element => {
 
             self.bind($element);
 
@@ -718,24 +727,27 @@ Battuta.prototype = {
 
         let self = this;
 
-        let propArray = property.split('.');
+        if (value !== null) {
 
-        if (propArray.length === 1) self[propArray[0]] = value;
+            let propArray = property.split('.');
 
-        else if (propArray.length === 2) {
+            if (propArray.length === 1) self[propArray[0]] = value;
 
-            if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
+            else if (propArray.length === 2) {
 
-            self[propArray[0]][propArray[1]] = value;
+                if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
+
+                self[propArray[0]][propArray[1]] = value;
+
+            }
+
+            for (let bindId in self.bindings) {
+
+                self.pubSub.trigger(bindId + ':change', ['model', property, value]);
+
+            }
 
         }
-
-        for (let bindId in self.bindings) {
-
-            self.pubSub.trigger(bindId + ':change', ['model', property, value]);
-
-        }
-
     },
 
     refresh: function (blockUI, callback) {
@@ -744,7 +756,7 @@ Battuta.prototype = {
 
         self.getData('get', blockUI, function (data){
 
-            data[self.key] && self.constructor(data[self.key]);
+            data[self.key] && self.loadParam(data[self.key]);
 
             callback && callback(data)
 
@@ -776,7 +788,7 @@ Battuta.prototype = {
 
         let $container = $('#navbar_container');
 
-        if (authenticated === 'True') self.loadTemplate('navBar.html', $container).then($element => {
+        if (authenticated === 'True') self.loadHtmlFile('navBar.html', $container).then($element => {
 
             self.bind($element);
 
@@ -834,7 +846,7 @@ Battuta.prototype = {
 
         });
 
-        else return self.loadTemplate('loginMenu.html', $container).then($element => {
+        else return self.loadHtmlFile('loginMenu.html', $container).then($element => {
 
             user.bind($element);
 
@@ -854,7 +866,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadTemplate('search.html', $('#content_container')).then($element => {
+        self.loadHtmlFile('search.html', $('#content_container')).then($element => {
 
             self.bind($element);
 

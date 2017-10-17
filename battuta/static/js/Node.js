@@ -1,12 +1,24 @@
 function Node(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
+
+    self.loadParam(param ? param : {})
+
+}
+
+Node.prototype = Object.create(Battuta.prototype);
+
+Node.prototype.constructor = Node;
+
+Node.prototype.key = 'node';
+
+Node.prototype.loadParam = function (param) {
+
+    let self = this;
 
     self.set('name', param.name);
 
@@ -25,12 +37,6 @@ function Node(param) {
     self.set('apiPath', self.paths.apis.inventory + self.type + '/');
 
 }
-
-Node.prototype = Object.create(Battuta.prototype);
-
-Node.prototype.constructor = Node;
-
-Node.prototype.key = 'node';
 
 Node.prototype.loadHostInfo = function (callback) {
 
@@ -94,7 +100,7 @@ Node.prototype.hostInfo = function ($container) {
 
     let self = this;
 
-    self.loadTemplate('hostInfo.html', $container).then($element => {
+    self.loadHtmlFile('hostInfo.html', $container).then($element => {
 
         self.bind($element);
 
@@ -176,7 +182,7 @@ Node.prototype.relationships = function ($container) {
 
     let self = this;
 
-    self.loadTemplate('relationships.html', $container).then($element => {
+    self.loadHtmlFile('relationships.html', $container).then($element => {
 
         self.bind($element);
 
@@ -281,7 +287,7 @@ Node.prototype.descendants = function ($container) {
 
     let self = this;
 
-    self.loadTemplate('descendants.html', $container).then($element => {
+    self.loadHtmlFile('descendants.html', $container).then($element => {
 
         self.bind($element);
 
@@ -319,7 +325,7 @@ Node.prototype.variables = function ($container) {
 
     let self = this;
 
-    self.loadTemplate('variableTable.html', $container).then($element => {
+    self.loadHtmlFile('variableTable.html', $container).then($element => {
 
         self.bind($element);
 
@@ -521,7 +527,7 @@ Node.prototype.editVariable = function (variable, callback) {
 
     let self = this;
 
-    self.loadTemplate('editVariableDialog.html').then($element => {
+    self.loadHtmlFile('editVariableDialog.html').then($element => {
 
         self.bind($element);
 
@@ -568,7 +574,7 @@ Node.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    self.loadTemplate('copyVariablesDialog.html').then($element => {
+    self.loadHtmlFile('copyVariablesDialog.html').then($element => {
 
         $element
             .dialog({
@@ -616,7 +622,7 @@ Node.prototype.view = function () {
 
     let self = this;
 
-    self.loadTemplate('entityView.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('entityView.html', $('#content_container')).then($element => {
 
         self.refresh(false, function () {
 
@@ -668,7 +674,7 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    self.loadTemplate('nodeSelector.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('nodeSelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -707,7 +713,7 @@ Node.prototype.selector = function () {
             truncateItemText: true,
             headerBottomPadding: 20,
             topAlignHeader: true,
-            maxHeight: window.innerHeight - 300,
+            maxHeight: window.innerHeight - 299,
             columns: sessionStorage.getItem('node_grid_columns')
         };
 

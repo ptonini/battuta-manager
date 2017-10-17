@@ -16,7 +16,6 @@ urlpatterns = [
 
     url(r'^group/([a-zA-Z0-9-._" "]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'group'}),
 
-
     url(r'^api/(login|logout)/$', views.LoginView.as_view()),
 
     url(r'^api/user/([a-z_]+)/$', login_required(views.UserView.as_view())),

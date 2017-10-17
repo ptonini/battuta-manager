@@ -1,38 +1,12 @@
 function Project(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
 
-    self.set('name', param.name);
-
-    self.set('id', param.id);
-
-    self.set('description', param.description);
-
-    self.set('manager', param.manager);
-
-    self.set('host_group', param.host_group);
-
-    self.set('can_edit_variables', param.can_edit_variables);
-
-    self.set('can_run_tasks', param.can_run_tasks);
-
-    self.set('can_edit_tasks', param.can_edit_tasks);
-
-    self.set('can_run_playbooks', param.can_run_playbooks);
-
-    self.set('can_edit_playbooks', param.can_edit_playbooks);
-
-    self.set('can_edit_roles', param.can_edit_roles);
-
-    self.set('playbooks', param.playbooks);
-
-    self.set('roles', param.roles);
+    self.loadParam(param ? param : {})
 
 }
 
@@ -66,6 +40,38 @@ Project.prototype.properties = {
         item: 'name'
     }
 };
+
+Project.prototype.loadParam = function (param) {
+
+    let self = this;
+
+    self.set('name', param.name);
+
+    self.set('id', param.id);
+
+    self.set('description', param.description);
+
+    self.set('manager', param.manager);
+
+    self.set('host_group', param.host_group);
+
+    self.set('can_edit_variables', param.can_edit_variables);
+
+    self.set('can_run_tasks', param.can_run_tasks);
+
+    self.set('can_edit_tasks', param.can_edit_tasks);
+
+    self.set('can_run_playbooks', param.can_run_playbooks);
+
+    self.set('can_edit_playbooks', param.can_edit_playbooks);
+
+    self.set('can_edit_roles', param.can_edit_roles);
+
+    self.set('playbooks', param.playbooks);
+
+    self.set('roles', param.roles);
+
+}
 
 Project.prototype.setProperty =  function (property, $input) {
 
@@ -618,6 +624,8 @@ Project.prototype.selector = function () {
     container.append($('<h3>').html('Projects'),$('<br>'), table);
 
     table.DataTable({
+        scrollY: (window.innerHeight - 271).toString() + 'px',
+        scrollCollapse: true,
         ajax: {
             url: self.apiPath + 'list/',
             dataSrc: 'projects'
@@ -675,4 +683,4 @@ Project.prototype.selector = function () {
 
     return container
 
-}
+};

@@ -216,7 +216,9 @@ class UserView(View):
 
             form_data = request.POST.dict()
 
-            if form_data['id']:
+            print form_data
+
+            if form_data.get('id'):
 
                 user = get_object_or_404(User, pk=form_data['id'])
 
@@ -242,7 +244,7 @@ class UserView(View):
 
                     user = user_form.save()
 
-                    if not form_data['id']:
+                    if not form_data.get('id'):
 
                         user.set_password(form_data['password'])
 

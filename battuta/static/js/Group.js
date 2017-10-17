@@ -1,24 +1,12 @@
 function Group(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
 
-    self.set('id', param.id);
-
-    self.set('name', param.name);
-
-    self.set('description', param.description);
-
-    self.set('permissions', param.permissions ? param.permissions : []);
-
-    self.set('member_count', param.member_count);
-
-    self.set('editable', param.editable);
+    self.loadParam(param ? param : {})
 
 }
 
@@ -32,11 +20,29 @@ Group.prototype.key = 'group';
 
 Group.prototype.type = 'user group';
 
+Group.prototype.loadParam = function (param) {
+
+    let self = this;
+
+    self.set('id', param.id);
+
+    self.set('name', param.name);
+
+    self.set('description', param.description);
+
+    self.set('permissions', param.permissions ? param.permissions : []);
+
+    self.set('member_count', param.member_count);
+
+    self.set('editable', param.editable);
+
+};
+
 Group.prototype.permissionsForm = function ($container) {
 
     let self = this;
 
-    self.loadTemplate('permissionsForm.html', $container).then($element => {
+    self.loadHtmlFile('permissionsForm.html', $container).then($element => {
 
         self.bind($element);
 
@@ -78,7 +84,7 @@ Group.prototype.memberGrid = function ($container) {
 
     let self = this;
 
-    self.loadTemplate('membersGrid.html', $container).then($element => {
+    self.loadHtmlFile('membersGrid.html', $container).then($element => {
 
         $element.DynaGrid({
             gridTitle: 'Members',
@@ -153,7 +159,7 @@ Group.prototype.view = function () {
 
     let self = this;
 
-    self.loadTemplate('entityView.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('entityView.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -197,14 +203,14 @@ Group.prototype.selector = function () {
 
     let self = this;
 
-    self.loadTemplate('entitySelector.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
         self.set('title', 'User groups');
 
         $('#entity_table').DataTable({
-            scrollY: (window.innerHeight * .7).toString() + 'px',
+            scrollY: (window.innerHeight - 271).toString() + 'px',
             scrollCollapse: true,
             ajax: {
                 url: self.apiPath + 'list/',
@@ -217,7 +223,7 @@ Group.prototype.selector = function () {
                     className: 'btn-xs',
                     action: function () {
 
-                        let group = new Group({id: null, name: null, description: null});
+                        let group = new Group();
 
                         group.edit(function (data) {
 

@@ -46,15 +46,22 @@ a.label_link {float: right; font-size: x-small}
 
 .runner_error_box {margin-top: 20px; color: red; font-size: 12px}
 
-.reference_link_container {margin: auto; text-align: right; font-size: x-small}
+.reference_link_container, .sudo_alert {margin: auto; text-align: right; font-size: x-small}
 
 .navbar-brand * {margin-right: 1rem;}
 
 #view_header .relationship_grid {margin-bottom: 2rem}
 
-#play_header_container, .task_table_container {margin-top: 2rem}
-/* Adhoc dialog **********************/
+#play_header_container, .task_table_container, #adhoc_table_container, #stats_table_container {margin-top: 2rem}
 
+#playbook_args_container {margin-top: 1rem}
+
+#preferences_container {overflow-y: auto; overflow-x: hidden}
+
+.preference_item_row {margin-bottom: .1rem}
+
+
+/* Adhoc dialog **********************/
 #module_arguments_container {height: 30rem; overflow-x: hidden; margin-top: 1rem;}
 
 

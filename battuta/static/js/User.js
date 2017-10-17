@@ -1,12 +1,28 @@
 function User(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
+
+    self.loadParam(param ? param : {})
+
+}
+
+User.prototype = Object.create(Battuta.prototype);
+
+User.prototype.constructor = User;
+
+User.prototype.key = 'user';
+
+User.prototype.apiPath = Battuta.prototype.paths.apis.user;
+
+User.prototype.type = 'user';
+
+User.prototype.loadParam = function (param) {
+
+    let self = this;
 
     self.set('id', param.id);
 
@@ -30,17 +46,7 @@ function User(param) {
 
     self.set('last_login', param.last_login);
 
-}
-
-User.prototype = Object.create(Battuta.prototype);
-
-User.prototype.constructor = User;
-
-User.prototype.key = 'user';
-
-User.prototype.apiPath = Battuta.prototype.paths.apis.user;
-
-User.prototype.type = 'user';
+};
 
 User.prototype.edit = function (callback) {
 
@@ -435,58 +441,53 @@ User.prototype.credentialsForm = function () {
 
 };
 
-User.prototype.credentialsSelector = function (startValue, runner, callback) {
+User.prototype.credentialsSelector = function (startValue, runner, $container) {
 
     let self = this;
 
-    self.runner = runner;
+    return self.loadHtmlFile('credsSelector.html', $container).then($element => {
 
-    let buildSelector = function (startValue) {
+        self.runner = runner;
 
-        self.getData('creds', false, function (data) {
+        $element
+            .on('build', function (event, startValue) {
 
-            $.each(data.creds, function (index, cred) {
+                self.getData('creds', false, function (data) {
 
-                let display = cred.title;
+                    $.each(data.creds, function (index, cred) {
 
-                if (cred.is_default && !startValue) {
+                        let display = cred.title;
 
-                    display += ' (default)';
+                        if (cred.is_default && !startValue) {
 
-                    startValue = cred.id;
+                            display += ' (default)';
 
-                }
+                            startValue = cred.id;
 
-                selector.append($('<option>').val(cred.id).data(cred).append(display));
+                        }
 
-            });
+                        $element.find('select').append($('<option>').val(cred.id).data(cred).append(display));
 
-            if (self.runner) selector.append($('<option>').val('').html('ask').data('id', 0));
+                    });
 
-            else selector.append($('<option>').val('new').append('new'));
+                    if (self.runner) $element.find('select').append($('<option>').val('').html('ask').data('id', 0));
 
-            selector.val(startValue).change();
+                    else $element.find('select').append($('<option>').val('new').append('new'));
 
-        });
+                    $element.find('select').val(startValue).change();
 
+                });
 
-    };
+            })
+            .trigger('build', startValue);
 
-    let selector = selectField.clone()
-        .change(function () {
+        if (self.runner) $element.find('span').html('Credentials');
 
-            callback && callback()
+        else $element.find('span').html('Saved credentials');
 
-        })
-        .on('build', function (event, startValue) {
+        return $element
 
-            buildSelector(startValue)
-
-        });
-
-    buildSelector(startValue);
-
-    return selector;
+    })
 
 };
 
@@ -658,6 +659,8 @@ User.prototype.selector = function () {
     container.append($('<h3>').html('Users'), $('<br>'), table);
 
     table.DataTable({
+        scrollY: (window.innerHeight - 271).toString() + 'px',
+        scrollCollapse: true,
         ajax: {
             url: self.apiPath + 'list/',
             dataSrc: 'users'
@@ -669,11 +672,11 @@ User.prototype.selector = function () {
                 text: 'Add user',
                 action: function () {
 
-                    let user = new User({id: null});
+                    let user = new User();
 
                     user.edit(function (data) {
 
-                        window.open(paths.users + 'user/' + data.user.username + '/', '_self');
+                        window.open(self.paths.views.user + data.user.username + '/', '_self');
 
                     });
 

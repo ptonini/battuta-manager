@@ -1,22 +1,12 @@
 function AdHoc (param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
 
-    self.set('become', param.become ? param.become : false);
-
-    self.set('hosts', param.hosts ? param.hosts : '');
-
-    self.set('id', param.id);
-
-    self.set('module', param.module);
-
-    self.set('arguments', param.arguments ? param.arguments : {});
+    self.loadParam(param ? param : {})
 
 }
 
@@ -29,6 +19,22 @@ AdHoc.prototype.key = 'task';
 AdHoc.prototype.apiPath = Battuta.prototype.paths.apis.adhoc;
 
 AdHoc.prototype.type = 'adhoc';
+
+AdHoc.prototype.loadParam = function (param) {
+
+    let self = this;
+
+    self.set('become', param.become ? param.become : false);
+
+    self.set('hosts', param.hosts ? param.hosts : '');
+
+    self.set('id', param.id);
+
+    self.set('module', param.module);
+
+    self.set('arguments', param.arguments ? param.arguments : {});
+
+};
 
 AdHoc.prototype.argumentsToString = function () {
 
@@ -50,7 +56,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
     let self = this;
 
-    self.loadTemplate('adhocDialog.html').then($element => {
+    self.loadHtmlFile('adhocDialog.html').then($element => {
 
         let $selector = $element.find('#module_selector');
 
@@ -102,7 +108,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
             $argumentsContainer.empty();
 
-            self.loadTemplate('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
+            self.loadHtmlFile('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
 
                 self.bind($element);
 
@@ -162,7 +168,7 @@ AdHoc.prototype.view = function (locked, $container) {
 
     let self = this;
 
-    self.loadTemplate('adhocView.html', $container).then($element => {
+    self.loadHtmlFile('adhocView.html', $container).then($element => {
 
         self.bind($element);
 
@@ -189,7 +195,7 @@ AdHoc.prototype.view = function (locked, $container) {
         });
 
         $element.find('#adhoc_table').DataTable({
-            scrollY: (window.innerHeight - locked ? 450 : 400).toString() + 'px',
+            scrollY: (window.innerHeight - (locked ? 468 : 400)).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
             pageLength: 50,

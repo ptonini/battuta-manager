@@ -1,12 +1,44 @@
 function Job(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
+
+    self.loadParam(param ? param : {})
+
+}
+
+Job.prototype = Object.create(Battuta.prototype);
+
+Job.prototype.constructor = Job;
+
+Job.prototype.key = 'job';
+
+Job.prototype.apiPath = Battuta.prototype.paths.apis.job;
+
+Job.prototype.states = {
+    starting: {color: 'blue'},
+    running: {color: 'blue'},
+    finished: {color: 'green'},
+    'finished with errors': {color: 'orange'},
+    failed: {color: 'red'},
+    canceled: {color: 'gray'}
+
+};
+
+Job.prototype.taskStates = {
+    unreachable: {color: 'gray'},
+    changed: {color: 'orange'},
+    ok: {color: 'green'},
+    error: {color: 'red'},
+    failed: {color: 'red'}
+};
+
+Job.prototype.loadParam = function (param) {
+
+    let self = this;
 
     self.set('status', param.status);
 
@@ -50,38 +82,12 @@ function Job(param) {
 
     self.set('id', param.id);
 
-    self.set('become', param.become ? param.become : false);
+    self.set('become', !!param.become);
 
     self.set('module', param.module);
 
     self.set('arguments', param.arguments ? param.arguments : '');
 
-}
-
-Job.prototype = Object.create(Battuta.prototype);
-
-Job.prototype.constructor = Job;
-
-Job.prototype.key = 'job';
-
-Job.prototype.apiPath = Battuta.prototype.paths.apis.job;
-
-Job.prototype.states = {
-    starting: {color: 'blue'},
-    running: {color: 'blue'},
-    finished: {color: 'green'},
-    'finished with errors': {color: 'orange'},
-    failed: {color: 'red'},
-    canceled: {color: 'gray'}
-
-};
-
-Job.prototype.taskStates = {
-    unreachable: {color: 'gray'},
-    changed: {color: 'orange'},
-    ok: {color: 'green'},
-    error: {color: 'red'},
-    failed: {color: 'red'}
 };
 
 Job.prototype.popupCenter = function (url, title, w) {
@@ -123,7 +129,7 @@ Job.prototype.getFacts = function (callback) {
 
     user.defaultCred(function (data) {
 
-        self.constructor({type: 'gather_facts', hosts: self.hosts, cred: data.cred});
+        self.loadParam({type: 'gather_facts', hosts: self.hosts, cred: data.cred});
 
         self.run()
 
@@ -151,7 +157,7 @@ Job.prototype.run = function (sameWindow) {
 
     let self = this;
 
-    self.loadTemplate('passwordDialog.html').then($element => {
+    self.loadHtmlFile('passwordDialog.html').then($element => {
 
         self.bind($element);
 
@@ -171,7 +177,7 @@ Job.prototype.run = function (sameWindow) {
 
             self.postData('run', true, function (data) {
 
-                self.constructor(data.job);
+                self.loadParam(data.job);
 
                 let jobUrl = self.paths.views.job + self.id + '/';
 
@@ -239,7 +245,7 @@ Job.prototype.statistics = function (modal) {
 
     let self = this;
 
-    return self.loadTemplate('jobStatistics.html').then($element => {
+    return self.loadHtmlFile('jobStatistics.html').then($element => {
 
         let tableOptions = {
             paging: false,
@@ -282,7 +288,7 @@ Job.prototype.statistics = function (modal) {
 
             $element.find('table').DataTable(tableOptions);
 
-            $('#result_container').append($element);
+            $('#stats_table_container').append($element);
 
         }
 
@@ -298,7 +304,7 @@ Job.prototype.selector = function () {
 
     let self = this;
 
-    self.loadTemplate('entitySelector.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -316,7 +322,7 @@ Job.prototype.selector = function () {
             pageLength: 10,
             serverSide: true,
             processing: true,
-            scrollY: (window.innerHeight - 340).toString() + 'px',
+            scrollY: (window.innerHeight - 272).toString() + 'px',
             scrollCollapse: true,
             order: [[0, "desc"]],
             rowCallback: function (row, data) {
@@ -365,7 +371,7 @@ Job.prototype.view = function () {
 
                 if (!playContainers.hasOwnProperty(play.id)) {
 
-                    self.loadTemplate(templates[self.type].header, $('<div>'))
+                    self.loadHtmlFile(templates[self.type].header)
                         .then($element => {
 
                             playContainers[play.id] = $element;
@@ -378,7 +384,7 @@ Job.prototype.view = function () {
 
                             $('#result_container').append($element);
 
-                            return self.loadTemplate('taskTable.html')
+                            return self.loadHtmlFile('taskTable.html')
 
                         })
                         .then($element => {
@@ -415,7 +421,7 @@ Job.prototype.view = function () {
 
                                                 let rowCount = $(this).DataTable().rows().count();
 
-                                                rowCount && taskContainers[task.id].find('.badge').html(rowCount).css('display', 'inline');
+                                                rowCount && taskContainers[task.id].find('.counter').html(rowCount).css('display', 'inline');
 
                                                 if (task && !task.is_running || !self.is_running) {
 
@@ -496,7 +502,9 @@ Job.prototype.view = function () {
 
         };
 
-        self.loadTemplate('jobNavBar.html', $('#navbar_container')).then($element => {
+        $(document).find('title').text(self.name);
+
+        self.loadHtmlFile('jobNavBar.html', $('#navbar_container')).then($element => {
 
             self.bind($element);
 
@@ -535,27 +543,21 @@ Job.prototype.view = function () {
 
             let $printBtn = $('#print_button').click(function () {
 
-                self.statistics().then();
+                self.statistics().then($element => {
 
-                let pageTitle = $(document).find('title').text();
+                    let pageTitle = $(document).find('title').text();
 
-                let statsContainer = $('<div>').css('font-size', 'smaller');
+                    // Adjust windows for printing
+                    document.title = pageTitle.replace('.yml', '');
 
-                // Adjust windows for printing
-                document.title = pageTitle.replace('.yml', '');
+                    // Open print window
+                    window.print();
 
-                if (self.stats && self.stats.length > 0) $(document.body).append(
+                    $element.remove();
 
-                    statsContainer.append(self.statistics(false))
+                    document.title = pageTitle
 
-                );
-
-                // Open print window
-                window.print();
-
-                statsContainer.remove();
-
-                document.title = pageTitle
+                });
 
             });
 
@@ -605,13 +607,13 @@ Job.prototype.view = function () {
 
                 self.type === 'playbook' || $rerunBtn.hide();
 
-                (self.type === 'playbook' && self.stats) || $statsBtn.hide();
+                self.type === 'playbook' && self.stats || $statsBtn.hide();
 
             }
 
         });
 
-        self.loadTemplate(templates[self.type].view, $('#content_container')).then($element => {
+        self.loadHtmlFile(templates[self.type].view, $('#content_container')).then($element => {
 
             self.bind($element);
 

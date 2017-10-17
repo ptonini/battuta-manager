@@ -1,18 +1,12 @@
 function Inventory(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
 
-    Object.keys(param).forEach(function (key) {
-
-        self.set(key, param[key])
-
-    });
+    self.loadParam(param ? param : {})
 
 }
 
@@ -22,11 +16,23 @@ Inventory.prototype.constructor = Inventory;
 
 Inventory.prototype.apiPath = Battuta.prototype.paths.apis.inventory;
 
+Inventory.prototype.loadParam = function (param) {
+
+    let self = this;
+
+    Object.keys(param).forEach(function (key) {
+
+        self.set(key, param[key])
+
+    });
+
+};
+
 Inventory.prototype.manage = function () {
 
     let self = this;
 
-    self.loadTemplate('manageInventory.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('manageInventory.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -55,7 +61,7 @@ Inventory.prototype.manage = function () {
 
                 self.requestResponse(data.response, function() {
 
-                    self.loadTemplate('importResult.html', $('<div>')).then($element => {
+                    self.loadHtmlFile('importResult.html').then($element => {
 
                         $element.find('#host_count').html(data.response.added_hosts);
 

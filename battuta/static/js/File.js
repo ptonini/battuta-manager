@@ -1,12 +1,30 @@
 function File(param) {
 
-    param = param ? param : {};
-
     let self = this;
 
     self.pubSub = $({});
 
     self.bindings = {};
+
+    self.loadParam(param ? param : {})
+
+}
+
+File.prototype = Object.create(Battuta.prototype);
+
+File.prototype.constructor = File;
+
+File.prototype.apiPath = Battuta.prototype.paths.apis.file;
+
+File.prototype.editable = [
+    'inode/x-empty',
+    'application/xml',
+    'application/json'
+];
+
+File.prototype.loadParam = function (param) {
+
+    let self = this;
 
     self.set('name', param.name ? param.name : '');
 
@@ -30,19 +48,7 @@ function File(param) {
 
     self.set('text', param.text);
 
-}
-
-File.prototype = Object.create(Battuta.prototype);
-
-File.prototype.constructor = File;
-
-File.prototype.apiPath = Battuta.prototype.paths.apis.file;
-
-File.prototype.editable = [
-    'inode/x-empty',
-    'application/xml',
-    'application/json'
-];
+};
 
 File.prototype.edit = function (callback) {
 
@@ -92,7 +98,7 @@ File.prototype.upload = function (callback) {
 
     let self = this;
 
-    self.loadTemplate('uploadDialog.html').then($element => {
+    self.loadHtmlFile('uploadDialog.html').then($element => {
 
         self.bind($element);
 
@@ -182,7 +188,7 @@ File.prototype.editorDialog = function (callback) {
 
     let self = this;
 
-    self.loadTemplate('fileEditorDialog.html').then($element => {
+    self.loadHtmlFile('fileEditorDialog.html').then($element => {
 
         self.bind($element);
 
@@ -322,7 +328,7 @@ File.prototype.dialog = function (action, callback) {
 
     let self = this;
 
-    self.loadTemplate('fileDialog.html').then($element =>  {
+    self.loadHtmlFile('fileDialog.html').then($element =>  {
 
         self.bind($element);
 
@@ -369,7 +375,7 @@ File.prototype.roleDialog = function (callback) {
 
     let self = this;
 
-    self.loadTemplate('roleDialog.html').then($element => {
+    self.loadHtmlFile('roleDialog.html').then($element => {
 
         self.bind($element);
 
@@ -415,7 +421,7 @@ File.prototype.selector = function (owner) {
 
     let self = this;
 
-    self.loadTemplate('fileSelector.html', $('#content_container')).then($element => {
+    self.loadHtmlFile('fileSelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -596,7 +602,7 @@ File.prototype.selector = function (owner) {
         let buildTable = () => {
 
             $table.DataTable({
-                scrollY: (window.innerHeight - 320).toString() + 'px',
+                scrollY: (window.innerHeight - 310).toString() + 'px',
                 scrollCollapse: true,
                 ajax: {
                     url: self.apiPath + 'list/',
