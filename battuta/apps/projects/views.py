@@ -108,7 +108,7 @@ class ProjectView(View):
 
         if request.user.has_perm('users.edit_projects'):
 
-            project = get_object_or_404(Project, pk=request.POST['id']) if request.POST['id'] else Project()
+            project = get_object_or_404(Project, pk=request.POST['id']) if 'id' in request.POST else Project()
 
             if action == 'save':
 

@@ -28,7 +28,7 @@ a, label, .fa {color: #777}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
-small.badge {background-color: #cacaca}
+span.badge {background-color: #cacaca}
 
 a.label_link {float: right; font-size: x-small}
 
@@ -50,15 +50,18 @@ a.label_link {float: right; font-size: x-small}
 
 .navbar-brand * {margin-right: 1rem;}
 
-#view_header .relationship_grid {margin-bottom: 2rem}
+#view_header .relationship_grid, .descendants_grid {margin-bottom: 2rem}
 
-.play_container_template, .task_table_container, #adhoc_table_container, #stats_table_container {margin-top: 2rem}
+.play_container_template, .task_table_container, #adhoc_table_container,
+#stats_table_container {margin-top: 2rem}
+
+pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
 
 #job_container {margin-top: 60px}
 
 #playbook_args_container {margin-top: 1rem}
 
-#preferences_container {overflow-y: auto; overflow-x: hidden}
+#preferences_container, #relationships_container {overflow-y: auto; overflow-x: hidden}
 
 .preference_item_row {margin-bottom: .1rem}
 

@@ -230,55 +230,11 @@
                     )
                 );
 
-            if (opts.topAlignHeader) $gridHeader.addClass('top-align');
+            opts.topAlignHeader && $gridHeader.addClass('top-align');
 
-            if (opts.showTitle) {
-                $gridHeader.append(
-                    $('<span>').css('text-transform', 'capitalize').append(opts.gridTitle.replace(/_/g, ' ')),
-                    $('<span>').attr({id: opts.gridTitle + '_count', class: 'badge'}),
-                    $('<span>').css('margin-right', '.5rem')
-                )
-            }
-
-            if (opts.itemToggle) {
-                $gridHeader
-                    .append(
-                        $('<a>')
-                            .attr({
-                                id: opts.gridTitle + '_toggle_all',
-                                class: 'btn btn-default btn-xs',
-                                title: 'Select all'
-                            })
-                            .data('add_class', true)
-                            .html($('<span>').attr('class', 'fa fa-fw fa-square-o'))
-                            .click(function (event) {
-
-                                event.preventDefault();
-
-                                var addClass = $(this).data('add_class');
-
-                                $gridBody.children('.dynagrid-item:not(".hidden")').each(function () {
-
-                                    _toggleItemSelection($gridBody, $(this), addClass);
-
-                                });
-
-                            }),
-                        $('<a>')
-                            .attr({class: 'btn btn-default btn-xs', title: 'Invert selection'})
-                            .html($('<span>').attr('class', 'fa fa-adjust fa-fw'))
-                            .click(function (event) {
-
-                                event.preventDefault();
-
-                                $gridBody.children('.dynagrid-item:not(".hidden")').each(function () {
-
-                                    _toggleItemSelection($gridBody, $(this));
-
-                                });
-                            })
-                    )
-            }
+            opts.showTitle && $gridHeader.append(
+                $('<strong>').css('text-transform', 'capitalize').append(opts.gridTitle.replace(/_/g, ' ')),
+            );
 
             if (opts.showAddButton) {
 
@@ -303,38 +259,76 @@
                 }))
             }
 
-            if (opts.showFilter) {
+            opts.itemToggle && $gridHeader.append(
+                $('<a>')
+                    .attr({
+                        id: opts.gridTitle + '_toggle_all',
+                        class: 'btn btn-default btn-xs',
+                        title: 'Select all'
+                    })
+                    .data('add_class', true)
+                    .html($('<span>').attr('class', 'fa fa-fw fa-square-o'))
+                    .click(function (event) {
 
-                $gridHeader.parent().after(
-                    $('<div>').attr('class', 'col-md-6 form-inline').append(
-                        $('<span>').css('float', 'right').append(
-                            $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
-                                'Search:',
-                                $('<input>')
-                                    .attr({class: 'form-control input-sm', type: 'search'})
-                                    .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
-                                    .keyup(function () {
+                        event.preventDefault();
 
-                                        var pattern = $(this).val();
+                        var addClass = $(this).data('add_class');
 
-                                        $gridBody.children('div.dynagrid-item').each(function () {
+                        $gridBody.children('.dynagrid-item:not(".hidden")').each(function () {
 
-                                            var value = $(this).html();
+                            _toggleItemSelection($gridBody, $(this), addClass);
 
-                                            if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
+                        });
 
-                                            else $(this).addClass('hidden');
+                    }),
+                $('<a>')
+                    .attr({class: 'btn btn-default btn-xs', title: 'Invert selection'})
+                    .html($('<span>').attr('class', 'fa fa-adjust fa-fw'))
+                    .click(function (event) {
 
-                                        });
+                        event.preventDefault();
 
-                                        _formatGrid($gridBody, opts)
+                        $gridBody.children('.dynagrid-item:not(".hidden")').each(function () {
 
-                                    })
-                            )
+                            _toggleItemSelection($gridBody, $(this));
+
+                        });
+                    })
+            );
+
+            opts.showCount && $gridHeader.append(
+                $('<span>').attr({id: opts.gridTitle + '_count', class: 'badge'}),
+            );
+
+            opts.showFilter && $gridHeader.parent().after(
+                $('<div>').attr('class', 'col-md-6 form-inline').append(
+                    $('<span>').css('float', 'right').append(
+                        $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
+                            'Search:',
+                            $('<input>')
+                                .attr({class: 'form-control input-sm', type: 'search'})
+                                .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
+                                .keyup(function () {
+
+                                    var pattern = $(this).val();
+
+                                    $gridBody.children('div.dynagrid-item').each(function () {
+
+                                        var value = $(this).html();
+
+                                        if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
+
+                                        else $(this).addClass('hidden');
+
+                                    });
+
+                                    _formatGrid($gridBody, opts)
+
+                                })
                         )
                     )
                 )
-            }
+            );
 
             if (opts.maxHeight) $gridBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
 

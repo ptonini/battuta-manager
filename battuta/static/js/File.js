@@ -82,7 +82,7 @@ File.prototype.upload = function (callback) {
 
     let self = this;
 
-    self.loadHtmlFile('uploadDialog.html').then($element => {
+    self.loadHtml('uploadDialog.html').then($element => {
 
         self.bind($element);
 
@@ -172,7 +172,7 @@ File.prototype.editorDialog = function (callback) {
 
     let self = this;
 
-    self.loadHtmlFile('fileEditorDialog.html').then($element => {
+    self.loadHtml('fileEditorDialog.html').then($element => {
 
         self.bind($element);
 
@@ -314,7 +314,7 @@ File.prototype.dialog = function (action, callback) {
 
     let self = this;
 
-    self.loadHtmlFile('fileDialog.html').then($element =>  {
+    self.loadHtml('fileDialog.html').then($element =>  {
 
         self.bind($element);
 
@@ -331,9 +331,9 @@ File.prototype.dialog = function (action, callback) {
 
                         if (self.is_folder) self.type = 'directory';
 
-                        if (self.new_name && self.new_name !== self.name) self.save(function (data) {
+                        if (self.new_name && self.new_name !== self.name) self.save((data) => {
 
-                            $('#file_dialog').dialog('close');
+                            $(this).dialog('close');
 
                             callback && callback(data);
 
@@ -361,7 +361,7 @@ File.prototype.roleDialog = function (callback) {
 
     let self = this;
 
-    self.loadHtmlFile('roleDialog.html').then($element => {
+    self.loadHtml('roleDialog.html').then($element => {
 
         self.bind($element);
 
@@ -407,7 +407,7 @@ File.prototype.selector = function (owner) {
 
     let self = this;
 
-    self.loadHtmlFile('fileSelector.html', $('#content_container')).then($element => {
+    self.loadHtml('fileSelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -588,7 +588,7 @@ File.prototype.selector = function (owner) {
         let buildTable = () => {
 
             $table.DataTable({
-                scrollY: (window.innerHeight - 310).toString() + 'px',
+                scrollY: (window.innerHeight - 305).toString() + 'px',
                 scrollCollapse: true,
                 ajax: {
                     url: self.apiPath + 'list/',

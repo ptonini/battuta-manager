@@ -16,6 +16,13 @@ Node.prototype.constructor = Node;
 
 Node.prototype.key = 'node';
 
+Node.prototype.relations = {
+    group: ['parents', 'children', 'members'],
+    host: ['parents']
+};
+
+Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
+
 Node.prototype.loadParam = function (param) {
 
     let self = this;
@@ -100,7 +107,7 @@ Node.prototype.hostInfo = function ($container) {
 
     let self = this;
 
-    self.loadHtmlFile('hostInfo.html', $container).then($element => {
+    self.loadHtml('hostInfo.html', $container).then($element => {
 
         self.bind($element);
 
@@ -178,20 +185,13 @@ Node.prototype.hostInfo = function ($container) {
 
 };
 
-Node.prototype.relationships = function ($container) {
+Node.prototype.relationships = function (relation, $container) {
 
     let self = this;
 
-    self.loadHtmlFile('relationships.html', $container).then($element => {
+    self.loadHtml('relationships.html', $container).then($element => {
 
         self.bind($element);
-
-        let relations = {
-            group: ['parents', 'children', 'members'],
-            host: ['parents']
-        };
-
-        let relationType = {parents: 'group', children: 'group', members: 'host'};
 
         let reloadData = $gridContainer => {
 
@@ -205,78 +205,76 @@ Node.prototype.relationships = function ($container) {
 
         };
 
-        $.each(relations[self.type], function (index, relation) {
+        $element.find('.relationship_grid').attr('id', relation + '_gris').DynaGrid({
+            gridTitle: relation,
+            headerTag: '<div>',
+            ajaxDataKey: 'nodes',
+            showAddButton: true,
+            showFilter: true,
+            itemValueKey: 'name',
+            showTitle: false,
+            showCount: true,
+            addButtonType: 'text',
+            addButtonClass: 'btn btn-default btn-xs',
+            addButtonTitle: 'Add ' + relation,
+            checkered: true,
+            gridBodyTopMargin: '10px',
+            maxHeight: window.innerHeight - 299,
+            hideBodyIfEmpty: true,
+            columns: sessionStorage.getItem('node_grid_columns'),
+            ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
+            formatItem: function ($gridContainer, $gridItem) {
 
-            $('#' + relation + '_grid')
-                .addClass('relationship_grid')
-                .DynaGrid({
-                    gridTitle: relation,
-                    headerTag: '<h5>',
+                let id = $gridItem.data('id');
+
+                let name = $gridItem.data('name');
+
+                $gridItem.html('').append(
+                    $('<span>').append(name).click(function () {
+
+                        window.open(self.paths.inventory + self.relationType[relation] + '/' + name, '_self')
+
+                    }),
+                    spanFA.clone().addClass('text-right fa-minus-circle')
+                        .css({float: 'right', margin: '.8rem 0'})
+                        .attr('title', 'Remove')
+                        .click(function () {
+
+                            self.selection = [$gridItem.data()];
+
+                            self.postData('remove_' + relation, true, function () {
+
+                                reloadData($gridContainer)
+
+                            });
+
+                        })
+                )
+
+            },
+            addButtonAction: function ($gridContainer) {
+
+                self.selectionDialog({
+                    type: 'many',
+                    objectType: self.type,
+                    url: self.apiPath + relation + '/?related=false&id=' + self.id,
                     ajaxDataKey: 'nodes',
-                    showAddButton: true,
                     itemValueKey: 'name',
-                    showTitle: true,
-                    showCount: true,
-                    addButtonClass: 'add_relation',
-                    addButtonTitle: 'Add relationship',
-                    checkered: true,
-                    gridBodyTopMargin: '10px',
-                    hideBodyIfEmpty: true,
-                    columns: sessionStorage.getItem('node_grid_columns'),
-                    ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
-                    formatItem: function ($gridContainer, $gridItem) {
+                    newEntity: new Node({name: null, description: null, type: self.relationType[relation]}),
+                    action: function (selection) {
 
-                        let id = $gridItem.data('id');
+                        self.selection = selection;
 
-                        let name = $gridItem.data('name');
+                        self.postData('add_' + relation, true, function () {
 
-                        $gridItem.html('').append(
-                            $('<span>').append(name).click(function () {
+                            reloadData($gridContainer)
 
-                                window.open(self.paths.inventory + relationType[relation] + '/' + name, '_self')
-
-                            }),
-                            spanFA.clone().addClass('text-right fa-minus-circle')
-                                .css({float: 'right', margin: '.8rem 0'})
-                                .attr('title', 'Remove')
-                                .click(function () {
-
-                                    self.selection = [$gridItem.data()];
-
-                                    self.postData('remove_' + relation, false, function () {
-
-                                        reloadData($('#' + relation + '_grid'))
-
-                                    });
-
-                                })
-                        )
-
-                    },
-                    addButtonAction: function () {
-
-                        self.selectionDialog({
-                            type: 'many',
-                            objectType: self.type,
-                            url: self.apiPath + relation + '/?related=false&id=' + self.id,
-                            ajaxDataKey: 'nodes',
-                            itemValueKey: 'name',
-                            newEntity: new Node({name: null, description: null, type: relationType}),
-                            action: function (selection) {
-
-                                self.selection = selection;
-
-                                self.postData('add_' + relation, false, function () {
-
-                                    reloadData($('#' + relation + '_grid'))
-
-                                });
-
-                            }
                         });
 
                     }
                 });
+
+            }
         });
 
     });
@@ -287,7 +285,7 @@ Node.prototype.descendants = function ($container) {
 
     let self = this;
 
-    self.loadHtmlFile('descendants.html', $container).then($element => {
+    self.loadHtml('descendants.html', $container).then($element => {
 
         self.bind($element);
 
@@ -296,7 +294,8 @@ Node.prototype.descendants = function ($container) {
             $('#' + type + '_descendants_grid').DynaGrid({
                 gridTitle: type.capitalize() + 's',
                 ajaxUrl: self.apiPath + 'descendants/?type=' + type + 's&id=' + self.id,
-                headerTag: '<h5>',
+                headerTag: '<div>',
+                showFilter: true,
                 showTitle: true,
                 hideIfEmpty: true,
                 checkered: true,
@@ -304,6 +303,7 @@ Node.prototype.descendants = function ($container) {
                 ajaxDataKey: 'descendants',
                 truncateItemText: true,
                 gridBodyBottomMargin: '20px',
+                maxHeight: (window.innerHeight - 350) / 2,
                 columns: sessionStorage.getItem('node_grid_columns'),
                 formatItem: function (gridContainer, gridItem) {
 
@@ -325,12 +325,12 @@ Node.prototype.variables = function ($container) {
 
     let self = this;
 
-    self.loadHtmlFile('variableTable.html', $container).then($element => {
+    self.loadHtml('variableTable.html', $container).then($element => {
 
         self.bind($element);
 
         $('#variable_table').DataTable({
-            scrollY: (window.innerHeight - 330).toString() + 'px',
+            scrollY: (window.innerHeight - 307).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
             order: [[ 2, 'asc' ], [ 0, 'asc' ]],
@@ -527,7 +527,7 @@ Node.prototype.editVariable = function (variable, callback) {
 
     let self = this;
 
-    self.loadHtmlFile('editVariableDialog.html').then($element => {
+    self.loadHtml('editVariableDialog.html').then($element => {
 
         self.bind($element);
 
@@ -574,7 +574,7 @@ Node.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    self.loadHtmlFile('copyVariablesDialog.html').then($element => {
+    self.loadHtml('copyVariablesDialog.html').then($element => {
 
         $element
             .dialog({
@@ -622,7 +622,7 @@ Node.prototype.view = function () {
 
     let self = this;
 
-    self.loadHtmlFile('entityView.html', $('#content_container')).then($element => {
+    self.loadHtml('entityView.html', $('#content_container')).then($element => {
 
         self.refresh(false, function () {
 
@@ -654,9 +654,17 @@ Node.prototype.view = function () {
 
             if (self.type === 'host') self.hostInfo($('#info_container'));
 
-            if (self.type === 'host' || self.name !== 'all') self.relationships(self.addTab('relationships'));
+            if (self.type === 'host' || self.name !== 'all') self.relationships('parents', self.addTab('parents'));
 
-            if (self.type === 'group' && self.name !== 'all') self.descendants(self.addTab('descendants'));
+            if (self.type === 'group' && self.name !== 'all') {
+
+                self.relationships('children', self.addTab('children'));
+
+                self.relationships('members', self.addTab('members'));
+
+            }
+
+             if (self.type === 'group' && self.name !== 'all') self.descendants(self.addTab('descendants'));
 
             self.variables(self.addTab('variables'));
 
@@ -674,7 +682,7 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtmlFile('nodeSelector.html', $('#content_container')).then($element => {
+    self.loadHtml('nodeSelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -706,6 +714,7 @@ Node.prototype.selector = function () {
                 $gridContainer.DynaGrid('getCount') === 0 ? $deleteModeBtn.hide() : $deleteModeBtn.show()
 
             },
+            headerTag: '<div>',
             dataSource: 'array',
             itemValueKey: 'name',
             checkered: true,

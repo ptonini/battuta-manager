@@ -369,11 +369,17 @@ class FilesView(View):
 
                         try:
 
-                            with open(new_path, 'w') as f:
+                            if is_directory:
 
-                                f.write(request.POST['text'].encode('utf8'))
+                                os.makedirs(new_path)
 
-                                data = {'status': 'ok', 'msg': request.POST['new_name'] + ' saved'}
+                            else:
+
+                                with open(new_path, 'w') as f:
+
+                                    f.write(request.POST.get('text', '').encode('utf8'))
+
+                            data = {'status': 'ok', 'msg': request.POST['new_name'] + ' saved'}
 
                         except Exception as e:
 

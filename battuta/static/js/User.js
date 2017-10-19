@@ -445,7 +445,7 @@ User.prototype.credentialsSelector = function (startValue, runner, $container) {
 
     let self = this;
 
-    return self.loadHtmlFile('credsSelector.html', $container).then($element => {
+    return self.loadHtml('credsSelector.html', $container).then($element => {
 
         self.runner = runner;
 

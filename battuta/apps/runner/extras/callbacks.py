@@ -136,8 +136,6 @@ class BattutaCallback(CallbackBase):
 
     def v2_playbook_on_play_start(self, play):
 
-        self._gather_facts = False
-
         self._finish_current_play_tasks()
 
         if len(play._variable_manager._inventory.get_hosts(play.__dict__['_ds']['hosts'])) == 0:
@@ -163,11 +161,13 @@ class BattutaCallback(CallbackBase):
 
             become = True if play.__dict__['_attributes']['become'] else False
 
-            self._gather_facts = play.__dict__['_attributes'].get('gather_facts', False)
+            self._gather_facts = True if play.__dict__['_attributes']['gather_facts'] else False
 
         else:
 
             self._execute_query('update', 'UPDATE runner_job SET subset=%s WHERE id=%s', (hosts, self._job.id))
+
+            self._gather_facts = False
 
             if self._job.type == 'adhoc':
 
@@ -219,6 +219,8 @@ class BattutaCallback(CallbackBase):
         self._execute_query('update', 'UPDATE runner_job SET stats=%s WHERE id=%s', (str(stats_list), self._job.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
+
+        print pp.pprint(result._result)
 
         self._job.data['has_exceptions'] = True
 

@@ -32,7 +32,7 @@ Inventory.prototype.manage = function () {
 
     let self = this;
 
-    self.loadHtmlFile('manageInventory.html', $('#content_container')).then($element => {
+    self.loadHtml('manageInventory.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -61,7 +61,7 @@ Inventory.prototype.manage = function () {
 
                 self.requestResponse(data.response, function() {
 
-                    self.loadHtmlFile('importResult.html').then($element => {
+                    self.loadHtml('importResult.html').then($element => {
 
                         $element.find('#host_count').html(data.response.added_hosts);
 

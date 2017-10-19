@@ -56,7 +56,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
     let self = this;
 
-    self.loadHtmlFile('adhocDialog.html').then($element => {
+    self.loadHtml('adhocDialog.html').then($element => {
 
         let $selector = $element.find('#module_selector');
 
@@ -108,7 +108,7 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
             $argumentsContainer.empty();
 
-            self.loadHtmlFile('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
+            self.loadHtml('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
 
                 self.bind($element);
 
@@ -168,7 +168,7 @@ AdHoc.prototype.view = function (locked, $container) {
 
     let self = this;
 
-    self.loadHtmlFile('adhocView.html', $container).then($element => {
+    self.loadHtml('adhocView.html', $container).then($element => {
 
         self.bind($element);
 

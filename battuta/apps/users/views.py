@@ -508,7 +508,7 @@ class UserGroupView(View):
 
         form_data = request.POST.dict()
 
-        if form_data['id']:
+        if form_data.get('id'):
 
             group = get_object_or_404(Group, pk=request.POST['id'])
 
@@ -530,7 +530,7 @@ class UserGroupView(View):
 
                     GroupData.objects.get_or_create(group=group)
 
-                    group.groupdata.description = request.POST['description']
+                    group.groupdata.description = request.POST.get('description', '')
 
                     group.groupdata.save()
 

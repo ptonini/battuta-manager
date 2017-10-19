@@ -42,7 +42,7 @@ Group.prototype.permissionsForm = function ($container) {
 
     let self = this;
 
-    self.loadHtmlFile('permissionsForm.html', $container).then($element => {
+    self.loadHtml('permissionsForm.html', $container).then($element => {
 
         self.bind($element);
 
@@ -84,7 +84,7 @@ Group.prototype.memberGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtmlFile('membersGrid.html', $container).then($element => {
+    self.loadHtml('membersGrid.html', $container).then($element => {
 
         $element.DynaGrid({
             gridTitle: 'Members',
@@ -159,7 +159,7 @@ Group.prototype.view = function () {
 
     let self = this;
 
-    self.loadHtmlFile('entityView.html', $('#content_container')).then($element => {
+    self.loadHtml('entityView.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -203,14 +203,14 @@ Group.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtmlFile('entitySelector.html', $('#content_container')).then($element => {
+    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
         self.set('title', 'User groups');
 
         $('#entity_table').DataTable({
-            scrollY: (window.innerHeight - 271).toString() + 'px',
+            scrollY: (window.innerHeight - 267).toString() + 'px',
             scrollCollapse: true,
             ajax: {
                 url: self.apiPath + 'list/',

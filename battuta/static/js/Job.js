@@ -90,29 +90,6 @@ Job.prototype.loadParam = function (param) {
 
 };
 
-Job.prototype.popupCenter = function (url, title, w) {
-
-    let dualScreenLeft = window.screenLeft ? window.screenLeft : screen.left;
-
-    let dualScreenTop = window.screenTop ? window.screenTop : screen.top;
-
-    let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
-
-    let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
-
-    let h = height - 50;
-
-    let left = ((width / 2) - (w / 2)) + dualScreenLeft;
-
-    let top = ((height / 2) - (h / 2)) + dualScreenTop;
-
-    let newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
-
-    // Puts focus on the newWindow
-    window.focus && newWindow.focus();
-
-};
-
 Job.prototype.stateColor = function () {
 
     let self = this;
@@ -157,7 +134,7 @@ Job.prototype.run = function (sameWindow) {
 
     let self = this;
 
-    self.loadHtmlFile('passwordDialog.html').then($element => {
+    self.loadHtml('passwordDialog.html').then($element => {
 
         self.bind($element);
 
@@ -201,6 +178,14 @@ Job.prototype.run = function (sameWindow) {
 
         if (askUser || askUserPass || askSudoUser || askSudoPass) {
 
+            $element.find('#username_form_group').toggleClass('hidden', (!askUser));
+
+            $element.find('#password_form_group').toggleClass('hidden', (!askUserPass));
+
+            $element.find('#sudo_user_form_group').toggleClass('hidden', (!askSudoUser));
+
+            $element.find('#sudo_pass_form_group').toggleClass('hidden', (!askSudoPass));
+
             $element
                 .dialog({
                     width: '360',
@@ -225,14 +210,6 @@ Job.prototype.run = function (sameWindow) {
 
                 });
 
-            $('#username_form_group').toggleClass('hidden', (!askUser));
-
-            $('#password_form_group').toggleClass('hidden', (!askUserPass));
-
-            $('#sudo_user_form_group').toggleClass('hidden', (!askSudoUser));
-
-            $('#sudo_pass_form_group').toggleClass('hidden', (!askSudoPass))
-
         }
 
         else post(sameWindow)
@@ -245,7 +222,7 @@ Job.prototype.statistics = function (modal) {
 
     let self = this;
 
-    return self.loadHtmlFile('jobStatistics.html').then($element => {
+    return self.loadHtml('jobStatistics.html').then($element => {
 
         let tableOptions = {
             paging: false,
@@ -304,7 +281,7 @@ Job.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtmlFile('entitySelector.html', $('#content_container')).then($element => {
+    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -322,7 +299,7 @@ Job.prototype.selector = function () {
             pageLength: 10,
             serverSide: true,
             processing: true,
-            scrollY: (window.innerHeight - 272).toString() + 'px',
+            scrollY: (window.innerHeight - 267).toString() + 'px',
             scrollCollapse: true,
             order: [[0, "desc"]],
             rowCallback: function (row, data) {
@@ -353,7 +330,7 @@ Job.prototype.view = function () {
             gather_facts: 'jobView_adhoc.html'
         };
 
-        self.loadHtmlFile('jobNavBar.html', $('#navbar_container')).then($element => {
+        self.loadHtml('jobNavBar.html', $('#navbar_container')).then($element => {
 
             self.bind($element);
 
@@ -416,8 +393,6 @@ Job.prototype.view = function () {
 
                     $container.css('margin-top', topMargin);
 
-
-
                 });
 
             });
@@ -474,7 +449,7 @@ Job.prototype.view = function () {
 
         });
 
-        self.loadHtmlFile(templates[self.type]).then($element => {
+        self.loadHtml(templates[self.type]).then($element => {
 
             let $jobContainer = $element.find('#job_container');
 
@@ -496,19 +471,19 @@ Job.prototype.view = function () {
 
                         playContainers[play.id].find('h4').html(play.name);
 
-                        playContainers[play.id].find('#host_field').html(self.hosts ? self.host : '&nbsp;');
+                        playContainers[play.id].find('#host_field').html(play.hosts ? play.hosts : '&nbsp;');
 
-                        playContainers[play.id].find('#become_field').html(self.become.toString());
+                        playContainers[play.id].find('#become_field').html(play.become.toString());
 
                         $resultContainer.append(playContainers[play.id]);
 
                         if (play.message) $resultContainer.append(
-                            $('<h4>').attr('class', 'error_message text-danger').html(play.message)
+                            $('<pre>').attr('class', 'text-danger').html(play.message)
                         );
 
                     }
 
-                    self.loadHtmlFile('taskTable.html').then($element => {
+                    self.loadHtml('taskTable.html').then($element => {
 
                         $.each(play.tasks, function (index, task) {
 
@@ -535,7 +510,43 @@ Job.prototype.view = function () {
                                         ],
                                         rowCallback: function (row, result) {
 
+                                            let rowApi = this.DataTable().row(row);
+
                                             $(row).css('color', self.taskStates[result.status].color);
+
+                                            if (!task.is_running || !self.is_running) {
+
+                                                $(row).css('cursor', 'pointer').off().click(function () {
+
+                                                    if (rowApi.child.isShown()) {
+
+                                                        $(row).css('font-weight', 'normal');
+
+                                                        rowApi.child.hide()
+
+                                                    }
+
+                                                    else {
+
+                                                        self.result = result;
+
+                                                        self.getData('get_result', true, function (data) {
+
+                                                            let jsonContainer = $('<div>')
+                                                                .attr('class', 'well')
+                                                                .JSONView(data.result.response, {collapsed: true});
+
+                                                            rowApi.child(jsonContainer).show();
+
+                                                            $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+
+                                                        });
+
+                                                    }
+
+                                                })
+                                            }
+
 
                                         },
                                         drawCallback: function () {
@@ -551,45 +562,6 @@ Job.prototype.view = function () {
                                             else if (!task.is_running && sessionStorage.getItem('show_empty_tasks')) {
 
                                                 taskContainers[task.id].hide()
-
-                                            }
-
-                                            if (task && !task.is_running || !self.is_running) {
-
-                                                $(this).DataTable().rows().every(function () {
-
-                                                    let rowApi = this;
-
-                                                    self.result = rowApi.data();
-
-                                                    $(rowApi.node()).css('cursor', 'pointer').off().click(function () {
-
-                                                        if (rowApi.child.isShown()) {
-
-                                                            $(rowApi.node()).css('font-weight', 'normal');
-
-                                                            rowApi.child.hide()
-                                                        }
-
-                                                        else {
-
-                                                            self.getData('get_result', false, function (data) {
-
-                                                                let jsonContainer = $('<div>')
-                                                                    .attr('class', 'well')
-                                                                    .JSONView(data.result.response, {collapsed: true});
-
-                                                                rowApi.child(jsonContainer).show();
-
-                                                                $(rowApi.node()).css('font-weight', 'bold').next().attr('class', 'child_row')
-
-                                                            });
-
-                                                        }
-
-                                                    })
-
-                                                });
 
                                             }
 
@@ -623,17 +595,21 @@ Job.prototype.view = function () {
 
             let updateResults = (intervalId, $table) => {
 
-                $table.DataTable().ajax.reload(null, false);
+                $table.DataTable().ajax.reload(function () {
 
-                let task = $table.DataTable().ajax.json();
+                    let task = $table.DataTable().ajax.json();
 
-                if (!task.is_running || !self.is_running) clearInterval(intervalId);
+                    if (!task.is_running || !self.is_running) clearInterval(intervalId);
+
+                }, false);
 
             };
 
             self.bind($jobContainer);
 
-            self.message && $.bootstrapGrowl(self.message, failedAlertOptions);
+            self.message && $resultContainer.append(
+                $('<pre>').attr('class', 'text-danger').html(self.message)
+            );
 
             $('#content_container').append($jobContainer);
 

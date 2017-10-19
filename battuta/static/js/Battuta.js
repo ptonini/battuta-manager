@@ -406,7 +406,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtmlFile('selectionDialog.html').then($element => {
+        self.loadHtml('selectionDialog.html').then($element => {
 
             let $grid = $element.find('#selection_grid');
 
@@ -501,7 +501,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtmlFile('patternField.html', $container).then($element => {
+        self.loadHtml('patternField.html', $container).then($element => {
 
             self.bind($element);
 
@@ -511,7 +511,7 @@ Battuta.prototype = {
 
             $element.find('.pattern_editor').prop('disabled', locked).click(function () {
 
-                self.loadHtmlFile('patternDialog.html').then($element => {
+                self.loadHtml('patternDialog.html').then($element => {
 
                     self.bind($element);
 
@@ -606,6 +606,33 @@ Battuta.prototype = {
 
     },
 
+    popupCenter:function (url, title, w) {
+
+        let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left;
+
+        let dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top;
+
+        let width = window.innerWidth
+            ? window.innerWidth : document.documentElement.clientWidth
+                ? document.documentElement.clientWidth : screen.width;
+
+        let height = window.innerHeight
+            ? window.innerHeight : document.documentElement.clientHeight
+                ? document.documentElement.clientHeight : screen.height;
+
+        let h = height - 50;
+
+        let left = ((width / 2) - (w / 2)) + dualScreenLeft;
+
+        let top = ((height / 2) - (h / 2)) + dualScreenTop;
+
+        let newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+        // Puts focus on the newWindow
+        window.focus && newWindow.focus();
+
+    },
+
     humanBytes: function (value, suffix) {
 
         if (!suffix) suffix = 'B';
@@ -630,7 +657,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtmlFile('deleteDialog.html').then($element => {
+        self.loadHtml('deleteDialog.html').then($element => {
 
                 $element.dialog({
                     width: '320',
@@ -658,11 +685,11 @@ Battuta.prototype = {
 
     },
 
-    loadHtmlFile: function (htmlFile, $container) {
+    loadHtml: function (file, $container) {
 
         let self = this;
 
-        return fetch(self.paths.templates + htmlFile)
+        return fetch(self.paths.templates + file)
             .then(response => {
 
                 return response.text()
@@ -692,7 +719,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtmlFile('entityDialog.html').then($element => {
+        self.loadHtml('entityDialog.html').then($element => {
 
             self.bind($element);
 
@@ -788,7 +815,7 @@ Battuta.prototype = {
 
         let $container = $('#navbar_container');
 
-        if (authenticated === 'True') self.loadHtmlFile('navBar.html', $container).then($element => {
+        if (authenticated === 'True') self.loadHtml('navBar.html', $container).then($element => {
 
             self.bind($element);
 
@@ -846,7 +873,7 @@ Battuta.prototype = {
 
         });
 
-        else return self.loadHtmlFile('loginMenu.html', $container).then($element => {
+        else return self.loadHtml('loginMenu.html', $container).then($element => {
 
             user.bind($element);
 
@@ -866,7 +893,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtmlFile('search.html', $('#content_container')).then($element => {
+        self.loadHtml('search.html', $('#content_container')).then($element => {
 
             self.bind($element);
 

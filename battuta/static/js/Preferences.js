@@ -66,7 +66,7 @@ Preferences.prototype.dialog = function () {
 
     let self = this;
 
-    self.loadHtmlFile('preferencesDialog.html').then($element => {
+    self.loadHtml('preferencesDialog.html').then($element => {
 
         let $prefsDialog = $element.find('#preferences_dialog');
 
