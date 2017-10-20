@@ -119,65 +119,202 @@ Node.prototype.hostInfo = function ($container) {
 
                 if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
 
-                $('#interface_table').DataTable({
-                    data: self.info.interfacesArray,
-                    autoWidth: false,
-                    filter: false,
-                    paging: false,
-                    info: false,
-                    columns: [
-                        {class: 'col-md-2', title: 'interface', data: 'device'},
-                        {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
-                        {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
-                        {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
-                        {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
-                        {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
-                    ]
-                });
+                let tablesInfo = {
+                    networking: {
+                        data: self.info.interfacesArray,
+                        columns:  [
+                            {class: 'col-md-2', title: 'interface', data: 'device'},
+                            {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
+                            {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
+                            {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
+                            {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
+                            {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
+                        ],
+                        rowCallback: function(row, data) {}
 
-                $('#storage_table').DataTable({
-                    data: self.facts.mounts,
-                    autoWidth: false,
-                    filter: false,
-                    paging: false,
-                    info: false,
-                    columns: [
-                        {class: 'col-md-2', title: 'device', data: 'device'},
-                        {class: 'col-md-3', title: 'mount point', data: 'mount'},
-                        {class: 'col-md-2', title: 'size', data: 'size_total'},
-                        {class: 'col-md-2', title: 'type', data: 'fstype'},
-                        {class: 'col-md-3', title: 'options', data: 'options'}
-                    ],
-                    rowCallback: function(row, data) {
+                    },
+                    storage: {
+                        data: self.facts.mounts,
+                        columns: [
+                            {class: 'col-md-2', title: 'device', data: 'device'},
+                            {class: 'col-md-3', title: 'mount point', data: 'mount'},
+                            {class: 'col-md-2', title: 'size', data: 'size_total'},
+                            {class: 'col-md-2', title: 'type', data: 'fstype'},
+                            {class: 'col-md-3', title: 'options', data: 'options'}
+                        ],
+                        rowCallback: function(row, data) {
 
-                        $(row).find('td:eq(2)').html(self.humanBytes(data.size_total))
+                            $(row).find('td:eq(2)').html(self.humanBytes(data.size_total))
 
-                    }
-                });
+                        }
+                    },
+                };
+
+                for (let key in tablesInfo) {
+
+                    $element.find('#show_' + key).click(function () {
+
+                        self.loadHtml('tableDialog.html').then($element => {
+
+                            $element.find('h4').html(key);
+
+                            $element.find('table').DataTable({
+                                data: tablesInfo[key].data,
+                                autoWidth: false,
+                                scrollY: '360px',
+                                scrollCollapse: true,
+                                filter: false,
+                                paging: false,
+                                info: false,
+                                columns: tablesInfo[key].columns,
+                                rowCallback: tablesInfo[key].rowCallback
+                            });
+
+                            $element.dialog({
+                                width: '700px',
+                                buttons: {
+                                    Close: function () {
+
+                                        $(this).dialog('close')
+
+                                    }
+                                }
+                            });
+
+                            $element.find('table').DataTable().columns.adjust().draw();
+
+                        });
+
+                    });
+
+                }
+
+
+                // $('#show_networking').click(function () {
+                //
+                //     self.loadHtml('tableDialog.html').then($element => {
+                //
+                //         $element.find('h4').html('Networking');
+                //
+                //         $element.find('table').DataTable({
+                //             data: self.info.interfacesArray,
+                //             autoWidth: false,
+                //             scrollY:'360px',
+                //             scrollCollapse: true,
+                //             filter: false,
+                //             paging: false,
+                //             info: false,
+                //             columns: [
+                //                 {class: 'col-md-2', title: 'interface', data: 'device'},
+                //                 {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
+                //                 {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
+                //                 {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
+                //                 {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
+                //                 {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
+                //             ]
+                //         });
+                //
+                //         $element.dialog({
+                //             width: '700px',
+                //             buttons: {
+                //                 Close: function () {
+                //
+                //                     $(this).dialog('close')
+                //
+                //                 }
+                //             }
+                //         });
+                //
+                //         $element.find('table').DataTable().columns.adjust().draw();
+                //
+                //     });
+                //
+                // });
+                //
+                // $('#show_storage').click(function () {
+                //
+                //     self.loadHtml('tableDialog.html').then($element => {
+                //
+                //         $element.find('h4').html('Storage');
+                //
+                //         $element.find('table').DataTable({
+                //             data: self.facts.mounts,
+                //             autoWidth: false,
+                //             scrollY:'360px',
+                //             scrollCollapse: true,
+                //             filter: false,
+                //             paging: false,
+                //             info: false,
+                //             columns: [
+                //                 {class: 'col-md-2', title: 'device', data: 'device'},
+                //                 {class: 'col-md-3', title: 'mount point', data: 'mount'},
+                //                 {class: 'col-md-2', title: 'size', data: 'size_total'},
+                //                 {class: 'col-md-2', title: 'type', data: 'fstype'},
+                //                 {class: 'col-md-3', title: 'options', data: 'options'}
+                //             ],
+                //             rowCallback: function(row, data) {
+                //
+                //                 $(row).find('td:eq(2)').html(self.humanBytes(data.size_total))
+                //
+                //             }
+                //         });
+                //
+                //         $element.dialog({
+                //             width: '700px',
+                //             buttons: {
+                //                 Close: function () {
+                //
+                //                     $(this).dialog('close')
+                //
+                //                 }
+                //             }
+                //         });
+                //
+                //         $element.find('table').DataTable().columns.adjust().draw();
+                //
+                //     });
+                //
+                // });
+
 
                 $('#show_facts').css('margin-right', '5px').click(function () {
 
-                    if ($(this).html() === 'Show facts') $(this).html('Hide facts');
+                    self.loadHtml('factsDialog.html').then($element => {
 
-                    else $(this).html('Show facts');
+                        self.bind($element);
 
-                    $('#facts_container').toggle();
+                        $element.find('#facts_container')
+                            .css('max-height', (window.innerHeight * .6).toString() + 'px')
+                            .JSONView(self.facts, {'collapsed': true});
+
+                        $element.dialog({
+                            width: 900,
+                            buttons: {
+                                Close: function () {
+
+                                    $(this).dialog('close')
+
+                                }
+                            }
+                        })
+
+                    });
 
                 });
 
-                $('#facts_container').hide().JSONView(self.facts, {'collapsed': true});
-
             }
 
-            else $('.hide_when_empty').hide();
+            else $element.find('.hide_when_empty').hide();
 
-            $('#gather_facts').click(function () {
+            $element.find('#gather_facts').click(function () {
 
                 let job = new Job({hosts: self.name});
 
                 job.getFacts();
 
             });
+
+            $container.append($container)
 
         });
 

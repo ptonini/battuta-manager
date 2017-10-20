@@ -46,33 +46,35 @@ Group.prototype.permissionsForm = function ($container) {
 
         self.bind($element);
 
-        $element
-            .submit(function (event) {
+        $element.submit(function (event) {
 
-                event.preventDefault();
+            event.preventDefault();
 
-                self.permissions = [];
+            self.permissions = [];
 
-                $element.find('button.permBtn').each(function () {
+            $element.find('button.permBtn').each(function () {
 
-                    permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
-
-                });
-
-                self.save(false);
-
-            })
-            .find('button.permBtn').each(function () {
-
-                $(this).click(function () {
-
-                    $(this).toggleClass('checked_button')
-
-                });
-
-                if (self.permissions.indexOf($(this).data('permission')) > -1) $(this).addClass('checked_button')
+                permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
 
             });
+
+            self.save(false);
+
+        });
+
+        $element.find('.permissions_container').css('max-height', (window.innerHeight - 300).toString() + 'px');
+
+        $element.find('button.permBtn').each(function () {
+
+            $(this).click(function () {
+
+                $(this).toggleClass('checked_button')
+
+            });
+
+            if (self.permissions.indexOf($(this).data('permission')) > -1) $(this).addClass('checked_button')
+
+        });
 
         self.editable || $element.find('input, textarea, button, select').attr('disabled','disabled');
 
@@ -86,9 +88,11 @@ Group.prototype.memberGrid = function ($container) {
 
     self.loadHtml('membersGrid.html', $container).then($element => {
 
-        $element.DynaGrid({
+        $element.find('#members_grid').DynaGrid({
             gridTitle: 'Members',
-            headerTag: '<h4>',
+            headerTag: '<div>',
+            showFilter: true,
+            maxHeight: window.innerHeight - 299,
             showAddButton: true,
             ajaxDataKey: 'members',
             itemValueKey: 'name',
@@ -127,7 +131,7 @@ Group.prototype.memberGrid = function ($container) {
                 )
 
             },
-            addButtonAction: function () {
+            addButtonAction: function ($gridContainer) {
 
                 self.selectionDialog({
                     type: 'many',
@@ -141,7 +145,7 @@ Group.prototype.memberGrid = function ($container) {
 
                         self.postData('add_members', false, function () {
 
-                            $element.DynaGrid('load')
+                            $gridContainer.DynaGrid('load')
 
                         });
 

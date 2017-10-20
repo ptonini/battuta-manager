@@ -8,7 +8,6 @@
     src: url(/static/components/actor-googlefont/Actor-Regular.ttf)
 }
 
-html {overflow-y: scroll}
 
 body {font-size: small}
 
@@ -53,7 +52,7 @@ a.label_link {float: right; font-size: x-small}
 #view_header .relationship_grid, .descendants_grid {margin-bottom: 2rem}
 
 .play_container_template, .task_table_container, #adhoc_table_container,
-#stats_table_container {margin-top: 2rem}
+#stats_table_container, #facts_buttons_container {margin-top: 2rem}
 
 pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
 
@@ -61,10 +60,9 @@ pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
 
 #playbook_args_container {margin-top: 1rem}
 
-#preferences_container, #relationships_container {overflow-y: auto; overflow-x: hidden}
+#preferences_container, #relationships_container, #facts_container, .permissions_container {overflow-y: auto; overflow-x: hidden}
 
 .preference_item_row {margin-bottom: .1rem}
-
 
 /* Adhoc dialog **********************/
 #module_arguments_container {height: 30rem; overflow-x: hidden; margin-top: 1rem;}
