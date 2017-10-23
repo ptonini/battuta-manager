@@ -665,9 +665,9 @@ Node.prototype.view = function () {
 
     self.loadHtml('entityView.html', $('#content_container')).then($element => {
 
-        self.refresh(false, function () {
+        self.bind($element);
 
-            self.bind($element);
+        self.refresh(false, function () {
 
             let adhoc = new AdHoc({hosts: self.name});
 

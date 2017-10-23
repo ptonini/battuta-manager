@@ -73,7 +73,7 @@ Project.prototype.loadParam = function (param) {
 
     self.set('editable', param.editable);
 
-}
+};
 
 Project.prototype.setProperty =  function (property, $input) {
 
@@ -114,6 +114,18 @@ Project.prototype.clearProperty = function (property, input) {
         input.val('').removeData().change()
 
     });
+
+};
+
+Project.prototype.info = function ($container) {
+
+    let self = this;
+
+    self.loadHtml('projectInfo.html', $container).then($element => {
+
+        self.bind($element)
+
+    })
 
 };
 
@@ -536,11 +548,16 @@ Project.prototype.view = function () {
 
             self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
+            self.info($('#info_container'));
+
+            $('ul.nav-tabs').attr('id','project_' + self.id + '_tabs').rememberTab();
+
         })
 
     });
 
-
+    // let container = $('#content_container');
+    //
     // self.refresh(false, function () {
     //
     //     let nameContainer = $('<span>').html(self.name);
