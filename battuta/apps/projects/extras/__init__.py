@@ -5,13 +5,12 @@ import yaml
 from django.conf import settings
 
 from apps.projects.models import Project
-from apps.inventory.extras import get_node_descendants
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 
-class ProjectAuth:
+class Authorizer:
 
     def __init__(self, user):
 
@@ -73,7 +72,7 @@ class ProjectAuth:
 
         for project in self._can_edit_variables:
 
-            group_descendants, host_descendants = get_node_descendants(project.host_group)
+            group_descendants, host_descendants = project.host_group.get_descendants()
 
             self._editable_nodes.update(host_descendants)
 
@@ -81,13 +80,13 @@ class ProjectAuth:
 
         for project in self._can_run_tasks:
 
-            group_descendants, host_descendants = get_node_descendants(project.host_group)
+            group_descendants, host_descendants = project.host_group.get_descendants()
 
             self._runnable_task_hosts.update({host.name for host in host_descendants})
 
         for project in self._can_edit_tasks:
 
-            group_descendants, host_descendants = get_node_descendants(project.host_group)
+            group_descendants, host_descendants = project.host_group.get_descendants()
 
             self._editable_task_hosts.update({host.name for host in host_descendants})
 
@@ -124,6 +123,11 @@ class ProjectAuth:
                     for d in dirs:
 
                         self._editable_files.add(os.path.join(root, d))
+
+    @staticmethod
+    def list():
+
+        pass
 
     def is_manager(self):
 

@@ -22,7 +22,7 @@ from apps.inventory.forms import VariableForm
 from apps.inventory.extras import AnsibleInventory, node_to_dict, build_node
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import ProjectAuth
+from apps.projects.extras import Authorizer
 
 
 class PageView(View):
@@ -528,19 +528,11 @@ class NodeView(View):
 
         elif action == 'descendants':
 
-            if request.GET['type'] == 'groups':
-
-                descendants = [node_to_dict(group) for group in node.group_descendants]
-
-            elif request.GET['type'] == 'hosts':
-
-                descendants = [node_to_dict(host) for host in node.host_descendants]
-
-            else:
-
-                raise Http404('Invalid node type')
-
-            data = {'status': 'ok', 'descendants': descendants}
+            data = {
+                'status': 'ok',
+                'group_descendants': [node_to_dict(group) for group in node.group_descendants],
+                'host_descendants': [node_to_dict(host) for host in node.host_descendants]
+            }
 
         elif action == 'vars':
 
@@ -552,7 +544,7 @@ class NodeView(View):
 
                 variables[var.key] = [{'key': var.key, 'value': var.value, 'source': '', 'id': var.id, 'primary': True}]
 
-            for ancestor in node.ancestors:
+            for ancestor in node.get_ancestors():
 
                 for var in ancestor.variable_set.all():
 
@@ -620,9 +612,9 @@ class NodeView(View):
 
                     candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.group_descendants])
 
-                elif action == 'children' and node.ancestors:
+                elif action == 'children' and node.get_ancestors():
 
-                    candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.ancestors])
+                    candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.get_ancestors()])
 
                 node_list = [node_to_dict(candidate) for candidate in candidate_set]
 
@@ -638,7 +630,7 @@ class NodeView(View):
 
         node = build_node(request.POST.dict(), node_type, request.user)
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'save':
 

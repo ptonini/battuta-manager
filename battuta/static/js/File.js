@@ -628,7 +628,7 @@ File.prototype.selector = function (owner) {
 
                     else roots[self.root] && roots[self.root].formatter && roots[self.root].formatter(row, file);
 
-                    $(row).find('td:eq(2)').html(self.humanBytes(file.size));
+                    $(row).find('td:eq(2)').humanBytes();
 
                     $(row).find('td:eq(3)').html('').removeAttr('title').append(
                         $('<span>').html(file.modified).attr('title', file.modified),

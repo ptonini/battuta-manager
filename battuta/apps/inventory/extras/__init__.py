@@ -9,68 +9,6 @@ from apps.inventory.models import Host, Group
 from apps.inventory.forms import HostForm, GroupForm
 
 
-def get_node_ancestors(node):
-
-    ancestors = set()
-
-    if node.id:
-
-        parents = node.group_set.all()
-
-        while len(parents) > 0:
-
-            step_list = list()
-
-            for parent in parents:
-
-                if parent not in ancestors:
-
-                    ancestors.add(parent)
-
-                for group in parent.group_set.all():
-
-                    step_list.append(group)
-
-            parents = step_list
-
-        if node.name != 'all':
-
-            ancestors.add(Group.objects.get(name='all'))
-
-    return ancestors
-
-
-def get_node_descendants(node):
-
-    if node.type == 'group' and node.id:
-
-        group_descendants = set()
-
-        children = node.children.all()
-
-        while len(children) > 0:
-
-            step_list = set()
-
-            for child in children:
-
-                group_descendants.add(child)
-
-                for grandchild in child.children.all():
-
-                    step_list.add(grandchild)
-
-            children = step_list
-
-        members = {host for host in node.members.all()}
-
-        return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
-
-    else:
-
-        return set(), set()
-
-
 def node_to_dict(node):
 
         default_fields = {
@@ -130,13 +68,11 @@ def build_node(node_dict, node_type, user):
 
         node = classes[node_type]['node']()
 
-    group_descendants, host_descendants = get_node_descendants(node)
+    group_descendants, host_descendants = node.get_descendants()
 
     setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
 
     setattr(node, 'form_class', classes[node_type]['form'])
-
-    setattr(node, 'ancestors', get_node_ancestors(node))
 
     setattr(node, 'group_descendants', group_descendants)
 

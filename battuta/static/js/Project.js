@@ -71,6 +71,8 @@ Project.prototype.loadParam = function (param) {
 
     self.set('roles', param.roles);
 
+    self.set('editable', param.editable);
+
 }
 
 Project.prototype.setProperty =  function (property, $input) {
@@ -506,35 +508,23 @@ Project.prototype.view = function () {
 
     let self = this;
 
-    let container = $('<div>');
+    self.loadHtml('entityView.html', $('#content_container')).then($element => {
 
-    self.refresh(false, function () {
+        self.bind($element);
 
-        let nameContainer = $('<span>').html(self.name);
+        self.refresh(false, function () {
 
-        let descriptionContainer = $('<h4>')
-            .css('margin-bottom', '30px')
-            .html(self.description || noDescriptionMsg);
+            $('#edit_button').toggle(self.editable).click(function() {
 
-        let editProjectBtn = spanFA.clone()
-            .addClass('fa-pencil btn-incell')
-            .attr('title', 'Edit')
-            .click(function() {
+               self.edit(function (data) {
 
-                self.edit(function (data) {
-
-                    nameContainer.html(data.name);
-
-                    descriptionContainer.html(data.description ? data.description : noDescriptionMsg);
+                    self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
                 });
 
             });
 
-        let deleteProjectBtn = spanFA.clone()
-            .addClass('fa-trash-o btn-incell')
-            .attr('title', 'Delete')
-            .click(function() {
+            $('#delete_button').toggle(self.editable).click(function() {
 
                 self.del(function () {
 
@@ -544,72 +534,113 @@ Project.prototype.view = function () {
 
             });
 
-        let managerInput = textInputField.clone()
-            .attr('title', 'Project manager')
-            .prop('readonly', true)
-            .val(self.manager);
+            self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-        let setManagerBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-            self.setProperty('manager', managerInput)
-
-        });
-
-        let tabsHeader = ulTabs.clone().attr('id','project_' + self.id + '_tabs');
-
-        container.append(
-            $('<h3>').append(
-                $('<small>').html('project'),
-                '&nbsp;',
-                nameContainer,
-                $('<small>').css('margin-left', '1rem').append(editProjectBtn, deleteProjectBtn)
-            ),
-            tabsHeader.append(
-                liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
-                $('<li>').html(aTabs.clone().attr('href', '#hosts_tab').html('Hosts')),
-                $('<li>').html(aTabs.clone().attr('href', '#playbook_tab').html('Playbooks')),
-                $('<li>').html(aTabs.clone().attr('href', '#role_tab').html('Roles')),
-                $('<li>').html(aTabs.clone().attr('href', '#users_tab').html('User groups'))
-            ),
-            $('<br>'),
-            divTabContent.clone().append(
-                divActiveTab.clone().attr('id', 'info_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(descriptionContainer),
-                        divCol3.clone().append(
-                            divFormGroup.clone().append(
-                                $('<label>').html('Manager').append(
-                                    $('<div>').attr('class', 'input-group').append(
-                                        managerInput,
-                                        spanBtnGroup.clone().append(setManagerBtn)
-                                    )
-                                )
-                            )
-                        )
-                    )
-                ),
-                divTab.clone().attr('id', 'hosts_tab').append(self.hosts()),
-                divTab.clone().attr('id', 'playbook_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(self.playbookGrid())
-                    )
-                ),
-                divTab.clone().attr('id', 'role_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(self.roleGrid())
-                    )
-                ),
-                divTab.clone().attr('id', 'users_tab').append(self.userGroups())
-            )
-        );
-
-        tabsHeader.rememberTab();
-
-        return container
+        })
 
     });
 
-    return container;
+
+    // self.refresh(false, function () {
+    //
+    //     let nameContainer = $('<span>').html(self.name);
+    //
+    //     let descriptionContainer = $('<h4>')
+    //         .css('margin-bottom', '30px')
+    //         .html(self.description || noDescriptionMsg);
+    //
+    //     let editProjectBtn = spanFA.clone()
+    //         .addClass('fa-pencil btn-incell')
+    //         .attr('title', 'Edit')
+    //         .click(function() {
+    //
+    //             self.edit(function (data) {
+    //
+    //                 nameContainer.html(data.name);
+    //
+    //                 descriptionContainer.html(data.description ? data.description : noDescriptionMsg);
+    //
+    //             });
+    //
+    //         });
+    //
+    //     let deleteProjectBtn = spanFA.clone()
+    //         .addClass('fa-trash-o btn-incell')
+    //         .attr('title', 'Delete')
+    //         .click(function() {
+    //
+    //             self.del(function () {
+    //
+    //                 window.open(self.paths.selectors.project, '_self');
+    //
+    //             })
+    //
+    //         });
+    //
+    //     let managerInput = textInputField.clone()
+    //         .attr('title', 'Project manager')
+    //         .prop('readonly', true)
+    //         .val(self.manager);
+    //
+    //     let setManagerBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+    //
+    //         self.setProperty('manager', managerInput)
+    //
+    //     });
+    //
+    //     let tabsHeader = ulTabs.clone().attr('id','project_' + self.id + '_tabs');
+    //
+    //     container.append(
+    //         $('<h3>').append(
+    //             $('<small>').html('project'),
+    //             '&nbsp;',
+    //             nameContainer,
+    //             $('<small>').css('margin-left', '1rem').append(editProjectBtn, deleteProjectBtn)
+    //         ),
+    //         tabsHeader.append(
+    //             liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
+    //             $('<li>').html(aTabs.clone().attr('href', '#hosts_tab').html('Hosts')),
+    //             $('<li>').html(aTabs.clone().attr('href', '#playbook_tab').html('Playbooks')),
+    //             $('<li>').html(aTabs.clone().attr('href', '#role_tab').html('Roles')),
+    //             $('<li>').html(aTabs.clone().attr('href', '#users_tab').html('User groups'))
+    //         ),
+    //         $('<br>'),
+    //         divTabContent.clone().append(
+    //             divActiveTab.clone().attr('id', 'info_tab').append(
+    //                 divRow.clone().append(
+    //                     divCol12.clone().append(descriptionContainer),
+    //                     divCol3.clone().append(
+    //                         divFormGroup.clone().append(
+    //                             $('<label>').html('Manager').append(
+    //                                 $('<div>').attr('class', 'input-group').append(
+    //                                     managerInput,
+    //                                     spanBtnGroup.clone().append(setManagerBtn)
+    //                                 )
+    //                             )
+    //                         )
+    //                     )
+    //                 )
+    //             ),
+    //             divTab.clone().attr('id', 'hosts_tab').append(self.hosts()),
+    //             divTab.clone().attr('id', 'playbook_tab').append(
+    //                 divRow.clone().append(
+    //                     divCol12.clone().append(self.playbookGrid())
+    //                 )
+    //             ),
+    //             divTab.clone().attr('id', 'role_tab').append(
+    //                 divRow.clone().append(
+    //                     divCol12.clone().append(self.roleGrid())
+    //                 )
+    //             ),
+    //             divTab.clone().attr('id', 'users_tab').append(self.userGroups())
+    //         )
+    //     );
+    //
+    //     tabsHeader.rememberTab();
+    //
+    //     return container
+    //
+    // });
 
 };
 
@@ -617,70 +648,70 @@ Project.prototype.selector = function () {
 
     let self = this;
 
-    let container = $('<div>');
+    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
 
-    let table = baseTable.clone();
+        self.bind($element);
 
-    container.append($('<h3>').html('Projects'),$('<br>'), table);
+        self.set('title', 'Projects');
 
-    table.DataTable({
-        scrollY: (window.innerHeight - 271).toString() + 'px',
-        scrollCollapse: true,
-        ajax: {
-            url: self.apiPath + 'list/',
-            dataSrc: 'projects'
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                text: 'Add project',
-                className: 'btn-xs',
-                action: function () {
+        $('#entity_table').DataTable({
+            scrollY: (window.innerHeight - 271).toString() + 'px',
+            scrollCollapse: true,
+            ajax: {
+                url: self.apiPath + 'list/',
+                dataSrc: 'projects'
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    text: 'Add project',
+                    className: 'btn-xs',
+                    action: function () {
 
-                    let project = new Project({id: null});
+                        let project = new Project({id: null});
 
-                    project.edit(function (data) {
+                        project.edit(function (data) {
 
-                        window.open(self.paths.views.project  + data.project.id + '/', '_self');
-
-                    });
-
-                }}
-        ],
-        paging: false,
-        columns: [
-            {class: 'col-md-2', title: 'name', data: 'name'},
-            {class: 'col-md-4', title: 'description', data: 'description'},
-            {class: 'col-md-3', title: 'manager', data: 'manager'},
-            {class: 'col-md-3', title: 'host group', data: 'host_group.name'}
-        ],
-        rowCallback: function (row, data) {
-
-            let project = new Project(data);
-
-            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
-
-                window.open(self.paths.views.project + project.id + '/', '_self')
-
-            });
-
-            $(row).find('td:eq(3)').append(
-                spanRight.clone().append(
-                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
-
-                        project.del(function () {
-
-                            table.DataTable().ajax.reload();
+                            window.open(self.paths.views.project  + data.project.id + '/', '_self');
 
                         });
 
-                    })
+                    }}
+            ],
+            paging: false,
+            columns: [
+                {class: 'col-md-2', title: 'name', data: 'name'},
+                {class: 'col-md-4', title: 'description', data: 'description'},
+                {class: 'col-md-3', title: 'manager', data: 'manager'},
+                {class: 'col-md-3', title: 'host group', data: 'host_group.name'}
+            ],
+            rowCallback: function (row, data) {
+
+                let project = new Project(data);
+
+                $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
+
+                    window.open(self.paths.views.project + project.id + '/', '_self')
+
+                });
+
+                $(row).find('td:eq(3)').append(
+                    spanRight.clone().append(
+                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+
+                            project.del(function () {
+
+                                table.DataTable().ajax.reload();
+
+                            });
+
+                        })
+                    )
                 )
-            )
 
-        }
+            }
+        });
+
     });
-
-    return container
 
 };

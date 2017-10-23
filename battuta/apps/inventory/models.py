@@ -2,7 +2,74 @@ from django.db import models
 from django.core.validators import RegexValidator
 
 
-class Host(models.Model):
+class Node(models.Model):
+
+    def get_descendants(self):
+
+        if self.type == 'group' and self.id:
+
+            group_descendants = set()
+
+            children = self.children.all()
+
+            while len(children) > 0:
+
+                step_list = set()
+
+                for child in children:
+
+                    group_descendants.add(child)
+
+                    for grandchild in child.children.all():
+
+                        step_list.add(grandchild)
+
+                children = step_list
+
+            members = {host for host in self.members.all()}
+
+            return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
+
+        else:
+
+            return set(), set()
+
+    def get_ancestors(self):
+
+        ancestors = set()
+
+        if self.id:
+
+            parents = self.group_set.all()
+
+            while len(parents) > 0:
+
+                step_list = list()
+
+                for parent in parents:
+
+                    if parent not in ancestors:
+
+                        ancestors.add(parent)
+
+                    for group in parent.group_set.all():
+
+                        step_list.append(group)
+
+                parents = step_list
+
+            if self.name != 'all':
+
+                ancestors.add(Group.objects.get(name='all'))
+
+        return ancestors
+
+    class Meta:
+
+        abstract = True
+
+
+class Host(Node):
 
     name = models.CharField(max_length=64, blank=False, unique=True)
 
@@ -12,14 +79,12 @@ class Host(models.Model):
 
     type = 'host'
 
-    relations = ['parents']
-
     def __str__(self):
 
         return self.name
 
 
-class Group(models.Model):
+class Group(Node):
 
     name = models.CharField(max_length=64, blank=False, unique=True)
 
@@ -30,8 +95,6 @@ class Group(models.Model):
     members = models.ManyToManyField('Host', blank=True)
 
     type = 'group'
-
-    relations = ['parents', 'children', 'members']
 
     def __str__(self):
 

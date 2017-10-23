@@ -57,8 +57,7 @@
 
                 if (opts.hideBodyIfEmpty) $gridBody.closest('div.row').hide();
 
-                if (opts.showCount) $('#' + opts.gridTitle + '_count').css('display', 'none')
-
+                if (opts.showCount) $('#' + opts.gridTitle + '_count').addClass('hidden')
             }
 
             else {
@@ -67,7 +66,7 @@
 
                 $gridBody.closest('div.row').show();
 
-                if (opts.showCount) $('#' + opts.gridTitle + '_count').css('display', 'inline');
+                if (opts.showCount) $('#' + opts.gridTitle + '_count').removeClass('hidden');
 
                 $.each(opts.dataArray, function (index, itemData) {
 
@@ -198,9 +197,9 @@
             }
         }
 
-        var $gridContainer = this;
+        let $gridContainer = this;
 
-        var opts;
+        let opts;
 
         if (typeof options === 'object' || options === null) {
 
@@ -208,10 +207,10 @@
 
             $gridContainer.data('dynagridOptions', opts);
 
-            var $gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.gridTitle});
+            let $gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.gridTitle});
 
-            var $gridBody = $('<div>')
-                .attr({class: 'dynagrid', id: opts.gridTitle + '_grid'})
+            let $gridBody = $('<div>')
+                .attr({class: 'dynagrid', id: opts.gridTitle + '_grid_body'})
                 .css({
                     'margin-bottom': opts.gridBodyBottomMargin,
                     'margin-top': opts.gridBodyTopMargin,
@@ -338,7 +337,7 @@
 
         else {
 
-            $gridBody = $gridContainer.find('div.dynagrid');
+            let $gridBody = $gridContainer.find('div.dynagrid');
 
             opts = $.extend({}, $.fn.DynaGrid.defaults, $gridContainer.data('dynagridOptions'));
 
@@ -354,9 +353,9 @@
 
                 case 'getSelected':
 
-                    var key = arguments[1];
+                    let key = arguments[1];
 
-                    var selection = [];
+                    let selection = [];
 
                     $gridBody.children('.toggle-on:not(".hidden")').each(function () {
 
@@ -377,6 +376,22 @@
                 case 'getCount':
 
                     return $gridBody.find('.dynagrid-item').length;
+
+                    break;
+
+                case 'option':
+
+                    if (arguments[2]) {
+
+                        opts[arguments[1]] = arguments[2];
+
+                        $gridContainer.data('dynagridOptions', opts);
+
+                        _load($gridContainer, $gridBody, opts);
+
+                    }
+
+                    else return opts[arguments[1]];
 
                     break;
 

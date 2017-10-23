@@ -16,11 +16,6 @@ Node.prototype.constructor = Node;
 
 Node.prototype.key = 'node';
 
-Node.prototype.relations = {
-    group: ['parents', 'children', 'members'],
-    host: ['parents']
-};
-
 Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
 
 Node.prototype.loadParam = function (param) {
@@ -43,64 +38,6 @@ Node.prototype.loadParam = function (param) {
 
     self.set('apiPath', self.paths.apis.inventory + self.type + '/');
 
-}
-
-Node.prototype.loadHostInfo = function (callback) {
-
-    let self = this;
-
-    self.getData('facts', false, function (data) {
-
-        self.facts = data.facts;
-
-        if (data.facts) {
-
-            self.set('info.hostname', self.facts.fqdn);
-
-            self.set('info.processor', self.facts.processor[1]);
-
-            self.set('info.cores', self.facts.processor_count);
-
-            self.set('info.ram', self.humanBytes(data.facts.memtotal_mb, 'MB'));
-
-            self.set('info.system', self.facts.system);
-
-            self.set('info.os', self.facts.os_family + ' - ' + self.facts.distribution + ' ' + self.facts.distribution_version);
-
-            self.set('info.factsDate', self.facts.date_time.date + ' ' + self.facts.date_time.time + ' ' + self.facts.date_time.tz);
-
-            self.set('info.vendor', self.facts.system_vendor);
-
-            self.set('info.product', self.facts.product_name);
-
-            self.set('info.serial', self.facts.product_serial);
-
-            self.set('info.form_factor', self.facts.form_factor);
-
-            self.set('info.ec2_hostname', data.facts.ec2_hostname);
-
-            self.set('info.public_address', data.facts.ec2_public_ipv4);
-
-            self.set('info.instance_type', data.facts.ec2_instance_type);
-
-            self.set('info.ec2_instance_id', data.facts.ec2_instance_id);
-
-            self.set('info.ec2_az', data.facts.ec2_placement_availability_zone);
-
-            self.info.interfacesArray = [];
-
-            $.each(self.facts.interfaces, function (index, value) {
-
-                self.info.interfacesArray.push(self.facts[value])
-
-            });
-
-        }
-
-        callback && callback()
-
-    })
-
 };
 
 Node.prototype.hostInfo = function ($container) {
@@ -111,17 +48,30 @@ Node.prototype.hostInfo = function ($container) {
 
         self.bind($element);
 
-        self.loadHostInfo(function () {
+        self.getData('facts', false, function (data) {
+
+            self.set('facts', data.facts);
 
             if (self.facts) {
 
-                if (self.facts.virtualization_role === 'host' || !self.info.ec2_hostname) $('#guest_info_row').hide();
+                if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $('#guest_info_row').hide();
 
                 if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
 
-                let tablesInfo = {
+                let infoTables = {
                     networking: {
-                        data: self.info.interfacesArray,
+                        data: (function () {
+
+                            let interfacesArray = [];
+
+                            $.each(self.facts.interfaces, function (index, value) {
+
+                                interfacesArray.push(self.facts[value])
+
+                            });
+
+                            return interfacesArray
+                        })(),
                         columns:  [
                             {class: 'col-md-2', title: 'interface', data: 'device'},
                             {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
@@ -142,15 +92,15 @@ Node.prototype.hostInfo = function ($container) {
                             {class: 'col-md-2', title: 'type', data: 'fstype'},
                             {class: 'col-md-3', title: 'options', data: 'options'}
                         ],
-                        rowCallback: function(row, data) {
+                        rowCallback: function(row) {
 
-                            $(row).find('td:eq(2)').html(self.humanBytes(data.size_total))
+                            $(row).find('td:eq(2)').humanBytes()
 
                         }
                     },
                 };
 
-                for (let key in tablesInfo) {
+                for (let key in infoTables) {
 
                     $element.find('#show_' + key).click(function () {
 
@@ -159,15 +109,15 @@ Node.prototype.hostInfo = function ($container) {
                             $element.find('h4').html(key);
 
                             $element.find('table').DataTable({
-                                data: tablesInfo[key].data,
+                                data: infoTables[key].data,
                                 autoWidth: false,
                                 scrollY: '360px',
                                 scrollCollapse: true,
                                 filter: false,
                                 paging: false,
                                 info: false,
-                                columns: tablesInfo[key].columns,
-                                rowCallback: tablesInfo[key].rowCallback
+                                columns: infoTables[key].columns,
+                                rowCallback: infoTables[key].rowCallback
                             });
 
                             $element.dialog({
@@ -188,94 +138,6 @@ Node.prototype.hostInfo = function ($container) {
                     });
 
                 }
-
-
-                // $('#show_networking').click(function () {
-                //
-                //     self.loadHtml('tableDialog.html').then($element => {
-                //
-                //         $element.find('h4').html('Networking');
-                //
-                //         $element.find('table').DataTable({
-                //             data: self.info.interfacesArray,
-                //             autoWidth: false,
-                //             scrollY:'360px',
-                //             scrollCollapse: true,
-                //             filter: false,
-                //             paging: false,
-                //             info: false,
-                //             columns: [
-                //                 {class: 'col-md-2', title: 'interface', data: 'device'},
-                //                 {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
-                //                 {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
-                //                 {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
-                //                 {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
-                //                 {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
-                //             ]
-                //         });
-                //
-                //         $element.dialog({
-                //             width: '700px',
-                //             buttons: {
-                //                 Close: function () {
-                //
-                //                     $(this).dialog('close')
-                //
-                //                 }
-                //             }
-                //         });
-                //
-                //         $element.find('table').DataTable().columns.adjust().draw();
-                //
-                //     });
-                //
-                // });
-                //
-                // $('#show_storage').click(function () {
-                //
-                //     self.loadHtml('tableDialog.html').then($element => {
-                //
-                //         $element.find('h4').html('Storage');
-                //
-                //         $element.find('table').DataTable({
-                //             data: self.facts.mounts,
-                //             autoWidth: false,
-                //             scrollY:'360px',
-                //             scrollCollapse: true,
-                //             filter: false,
-                //             paging: false,
-                //             info: false,
-                //             columns: [
-                //                 {class: 'col-md-2', title: 'device', data: 'device'},
-                //                 {class: 'col-md-3', title: 'mount point', data: 'mount'},
-                //                 {class: 'col-md-2', title: 'size', data: 'size_total'},
-                //                 {class: 'col-md-2', title: 'type', data: 'fstype'},
-                //                 {class: 'col-md-3', title: 'options', data: 'options'}
-                //             ],
-                //             rowCallback: function(row, data) {
-                //
-                //                 $(row).find('td:eq(2)').html(self.humanBytes(data.size_total))
-                //
-                //             }
-                //         });
-                //
-                //         $element.dialog({
-                //             width: '700px',
-                //             buttons: {
-                //                 Close: function () {
-                //
-                //                     $(this).dialog('close')
-                //
-                //                 }
-                //             }
-                //         });
-                //
-                //         $element.find('table').DataTable().columns.adjust().draw();
-                //
-                //     });
-                //
-                // });
-
 
                 $('#show_facts').css('margin-right', '5px').click(function () {
 
@@ -304,9 +166,15 @@ Node.prototype.hostInfo = function ($container) {
 
             }
 
-            else $element.find('.hide_when_empty').hide();
+            else {
 
-            $element.find('#gather_facts').click(function () {
+                $element.find('.hide_when_empty').hide();
+
+                $element.find('#gather_facts').html('Gather facts').addClass('pull-right')
+
+            }
+
+            $element.find('#gather_facts').toggleClass('pull-right', self.facts).click(function () {
 
                 let job = new Job({hosts: self.name});
 
@@ -314,7 +182,6 @@ Node.prototype.hostInfo = function ($container) {
 
             });
 
-            $container.append($container)
 
         });
 
@@ -326,7 +193,7 @@ Node.prototype.relationships = function (relation, $container) {
 
     let self = this;
 
-    self.loadHtml('relationships.html', $container).then($element => {
+    self.loadHtml('entityGrid.html', $container).then($element => {
 
         self.bind($element);
 
@@ -336,13 +203,11 @@ Node.prototype.relationships = function (relation, $container) {
 
             $('#variable_table').DataTable().ajax.reload();
 
-            $('#group_descendants_grid').DynaGrid('load');
-
-            $('#host_descendants_grid').DynaGrid('load');
+            $('#descendants_container').trigger('load');
 
         };
 
-        $element.find('.relationship_grid').attr('id', relation + '_gris').DynaGrid({
+        $element.find('.entity_grid').attr('id', relation + '_grid').DynaGrid({
             gridTitle: relation,
             headerTag: '<div>',
             ajaxDataKey: 'nodes',
@@ -355,7 +220,6 @@ Node.prototype.relationships = function (relation, $container) {
             addButtonClass: 'btn btn-default btn-xs',
             addButtonTitle: 'Add ' + relation,
             checkered: true,
-            gridBodyTopMargin: '10px',
             maxHeight: window.innerHeight - 299,
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
@@ -426,35 +290,75 @@ Node.prototype.descendants = function ($container) {
 
         self.bind($element);
 
-        $.each(['group', 'host'], function (index, type) {
+        let offset = 299;
 
-            $('#' + type + '_descendants_grid').DynaGrid({
-                gridTitle: type.capitalize() + 's',
-                ajaxUrl: self.apiPath + 'descendants/?type=' + type + 's&id=' + self.id,
-                headerTag: '<div>',
-                showFilter: true,
-                showTitle: true,
-                hideIfEmpty: true,
-                checkered: true,
-                showCount: true,
-                ajaxDataKey: 'descendants',
-                truncateItemText: true,
-                gridBodyBottomMargin: '20px',
-                maxHeight: (window.innerHeight - 350) / 2,
-                columns: sessionStorage.getItem('node_grid_columns'),
-                formatItem: function (gridContainer, gridItem) {
+        let factor = 1;
 
-                    gridItem.click(function () {
+        let descendantGrids = {};
 
-                        window.open(self.paths.inventory + gridContainer.data('type') + '/' + $(this).data('name') + '/', '_self')
+        let load = () => {
 
-                    });
+            self.getData('descendants', false, function (data) {
+
+                descendantGrids.host = data.host_descendants;
+
+                descendantGrids.group = data.group_descendants;
+
+                if (data.host_descendants.length > 0 && data.group_descendants.length > 0) {
+
+                    offset = 359;
+
+                    factor = 2;
+
                 }
-            });
+
+                for (let key in descendantGrids) {
+
+                    if (descendantGrids[key].length > 0){
+
+                        $('#' + key + '_descendants_grid').DynaGrid({
+                            gridTitle: key.capitalize() + 's',
+                            dataArray: descendantGrids[key],
+                            dataSource: 'array',
+                            headerTag: '<div>',
+                            showFilter: true,
+                            showTitle: true,
+                            checkered: true,
+                            showCount: true,
+                            truncateItemText: true,
+                            gridBodyBottomMargin: '20px',
+                            maxHeight: (window.innerHeight - offset) / factor,
+                            columns: sessionStorage.getItem('node_grid_columns'),
+                            formatItem: function (gridContainer, gridItem) {
+
+                                gridItem.click(function () {
+
+                                    window.open(self.paths.inventory + gridContainer.data('type') + '/' + $(this).data('name') + '/', '_self')
+
+                                });
+
+                            }
+                        });
+
+                    }
+
+                    else $('#' + key + '_descendants_grid').addClass('hidden')
+                }
+            })
+
+        };
+
+        $element.on('load', function () {
+
+            console.log('load');
+
+            load()
 
         });
 
-    });
+        load();
+
+    })
 
 };
 
@@ -1000,9 +904,9 @@ Node.prototype.selector = function () {
 
                     let cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
 
-                    node.memory && $(row).find('td:eq(' + cols[0] + ')').html(self.humanBytes(node.memory, 'MB'));
+                    node.memory && $(row).find('td:eq(' + cols[0] + ')').humanBytes('MB');
 
-                    node.disc && $(row).find('td:eq(' + cols[1] + ')').html(self.humanBytes(node.disc))
+                    node.disc && $(row).find('td:eq(' + cols[1] + ')').humanBytes();
 
                 }
             }

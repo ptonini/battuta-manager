@@ -61,7 +61,8 @@ class ProjectView(View):
             'can_edit_playbooks': p.can_edit_playbooks.name if p.can_edit_playbooks else None,
             'can_edit_roles': p.can_edit_roles.name if p.can_edit_roles else None,
             'playbooks': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.playbooks)],
-            'roles': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.roles)]
+            'roles': [{'name': f['name'], 'folder': f['folder']} for f in json.loads(p.roles)],
+            'editable': True
         }
 
     def get(self, request, action):
@@ -117,6 +118,8 @@ class ProjectView(View):
                 if project_form.is_valid():
 
                     project = project_form.save()
+
+                    project.save()
 
                     data = {'status': 'ok', 'project': self._project_to_dict(project)}
 

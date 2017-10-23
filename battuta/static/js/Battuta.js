@@ -57,15 +57,15 @@ function Battuta (param) {
     // Add remember last tab method to JQuery
     $.fn.rememberTab = function () {
 
-        let keyName = $(this).attr('id') + '_activeTab';
+        let keyName = this.attr('id') + '_activeTab';
 
-        $(this).find('a[data-toggle="tab"]').on('show.bs.tab', function () {
+        this.find('a[data-toggle="tab"]').on('show.bs.tab', function () {
 
             sessionStorage.setItem(keyName, $(this).attr('href'));
 
         });
 
-        $(this).find('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+        this.find('a[data-toggle="tab"]').on('shown.bs.tab', function () {
 
             $($(this).attr('href')).find('.dataTables_scrollBody table').DataTable().columns.adjust().draw()
 
@@ -75,20 +75,42 @@ function Battuta (param) {
 
         activeTab && $(this).find('a[href="' + activeTab + '"]').tab('show');
 
-        return $(this);
+        return this;
 
     };
 
     // Prettify boolean values
     $.fn.prettyBoolean = function () {
 
-        $(this).removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');
+        this.removeAttr('data-toggle').removeAttr('title').removeClass('truncate-text');
 
-        if ($(this).html()) $(this).html($('<span>').attr('class', 'fa fa-check'));
+        if (this.html()) this.html($('<span>').attr('class', 'fa fa-check'));
 
-        else $(this).html('');
+        else this.html('');
 
-        return $(this);
+        return this;
+
+    };
+
+    $.fn.humanBytes = function (suffix) {
+
+        if (!suffix) suffix = 'B';
+
+        let sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        let value = parseInt(this.html()) * Math.pow(1024, sizes.indexOf(suffix));
+
+        if (value === 0) this.html(value);
+
+        else {
+
+            let i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
+
+            this.html(parseFloat(value / Math.pow(1024, i)).toFixed(i < 4 ? 0 : 2) + ' ' + sizes[i]);
+
+        }
+
+        return this;
 
     };
 
@@ -171,6 +193,61 @@ Battuta.prototype = {
         inventory: '/inventory/',
         templates: '/static/templates/',
         modules: '/static/templates/ansible_modules/'
+    },
+
+    set: function (key, value) {
+
+        let self = this;
+
+        let setValue = (keyArray, value, obj) => {
+
+            if (keyArray.length === 1) obj[keyArray[0]] = value;
+
+            else {
+
+                if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
+
+                obj = obj[keyArray.shift()];
+
+                setValue(keyArray, value, obj)
+
+            }
+
+        };
+
+        let updateDOM = (key, value) => {
+
+            if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
+
+            else for (let k in value) updateDOM(key + '.' + k, value[k])
+
+        };
+
+        if (value !== null) {
+
+            setValue(key.split('.'), value, self);
+
+            updateDOM(key, value);
+
+        }
+    },
+
+    get: function(key) {
+
+        let value = this;
+
+        let keyArray = key.split('.');
+
+        for (let i = 0; i < keyArray.length; ++i) {
+
+            if (keyArray[i] in value) value = value[keyArray[i]];
+
+            else return
+
+        }
+
+        return value
+
     },
 
     loadParam: function (param) {
@@ -342,6 +419,8 @@ Battuta.prototype = {
 
                 else if ($element.is('button')) $element.toggleClass('checked_button', value);
 
+                else if ($element.is('a')) $element.attr('href', value);
+
                 else $element.html(value.toString());
 
             }
@@ -350,47 +429,30 @@ Battuta.prototype = {
 
         self.bindings[bindId] = $container;
 
-        $container
-            .off('change click')
-            .on('change', '[data-bind]', function () {
+        $container.find('button[data-bind]').off('click').attr('type', 'button').click(function () {
+
+            $(this).toggleClass('checked_button');
+
+            self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
+
+        });
+
+        $container.find('[data-bind]')
+            .off('change')
+            .on('change', function () {
 
                 self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]);
 
             })
-            .on('click', 'button[data-bind]', function () {
+            .each(function () {
 
-                $(this).attr('type', 'button').toggleClass('checked_button');
-
-                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
-
-            })
-            .find('[data-bind]').each(function () {
-
-                let propArray = $(this).data('bind').split('.');
-
-                if (propArray.length === 1) loadData($(this), self[propArray[0]]);
-
-                else if (propArray.length === 2 && self.hasOwnProperty(propArray[0])) {
-
-                    loadData($(this), self[propArray[0]][propArray[1]]);
-
-                }
+                loadData($(this), self.get($(this).data('bind')));
 
             });
 
         self.pubSub.off(message).on(message, function (event, source, property, value) {
 
-            let propArray = property.split('.');
-
-            if (propArray.length === 1) self[propArray[0]] = value;
-
-            else if (propArray.length === 2) {
-
-                if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
-
-                self[propArray[0]][propArray[1]] = value;
-
-            }
+            if (source === 'dom') self.set(property, value);
 
             $container.find('[data-bind="' + property + '"]').each(function () {
 
@@ -633,26 +695,6 @@ Battuta.prototype = {
 
     },
 
-    humanBytes: function (value, suffix) {
-
-        if (!suffix) suffix = 'B';
-
-        let sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-
-        value = parseInt(value) * Math.pow(1024, sizes.indexOf(suffix));
-
-        if (value === 0) return value;
-
-        else {
-
-            let i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
-
-            return parseFloat(value / Math.pow(1024, i)).toFixed(i < 4 ? 0 : 2) + ' ' + sizes[i];
-
-        }
-
-    },
-
     deleteDialog: function (action, callback) {
 
         let self = this;
@@ -750,33 +792,6 @@ Battuta.prototype = {
 
     },
 
-    set: function (property, value) {
-
-        let self = this;
-
-        if (value !== null) {
-
-            let propArray = property.split('.');
-
-            if (propArray.length === 1) self[propArray[0]] = value;
-
-            else if (propArray.length === 2) {
-
-                if (typeof self[propArray[0]] === 'undefined') self[propArray[0]] = {};
-
-                self[propArray[0]][propArray[1]] = value;
-
-            }
-
-            for (let bindId in self.bindings) {
-
-                self.pubSub.trigger(bindId + ':change', ['model', property, value]);
-
-            }
-
-        }
-    },
-
     refresh: function (blockUI, callback) {
 
         let self = this;
@@ -803,8 +818,13 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.postData('save', true, callback)
+        self.postData('save', true,function (data){
 
+            data[self.key] && self.loadParam(data[self.key]);
+
+            callback && callback(data)
+
+        })
     },
 
     navBar: function (authenticated) {
@@ -825,27 +845,7 @@ Battuta.prototype = {
 
             prefs.load();
 
-            $('#host_selector_anchor').attr('href', self.paths.selectors.node.host);
-
-            $('#group_selector_anchor').attr('href', self.paths.selectors.node.group);
-
             $('#manage_inventory_anchor').attr('href', self.paths.inventory + 'manage/');
-
-            $('#adhoc_selector_anchor').attr('href', self.paths.selectors.adhoc);
-
-            $('#playbook_selector_anchor').attr('href', self.paths.selectors.playbook);
-
-            $('#role_selector_anchor').attr('href', self.paths.selectors.role);
-
-            $('#job_selector_anchor').attr('href', self.paths.selectors.job);
-
-            $('#file_selector_anchor').attr('href', self.paths.selectors.file);
-
-            $('#project_selector_anchor').attr('href', self.paths.selectors.project);
-
-            $('#user_selector_anchor').attr('href', self.paths.selectors.user);
-
-            $('#user_group_selector_anchor').attr('href', self.paths.selectors.group);
 
             $('#user_view_anchor').attr('href', self.paths.views.user + self.username + '/');
 

@@ -15,7 +15,7 @@ from apps.users.forms import UserForm, UserDataForm, GroupForm, CredentialForm
 from apps.users.extras import create_userdata, create_groupdata
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import ProjectAuth
+from apps.projects.extras import Authorizer
 
 
 class PageView(View):
@@ -91,7 +91,7 @@ class LoginView(View):
 class UserView(View):
 
     @staticmethod
-    def _user_to_dict(user):
+    def _user_to_dict(user, request):
 
         prefs = get_preferences()
 
@@ -109,7 +109,8 @@ class UserView(View):
             'timezone': user.userdata.timezone,
             'is_active': user.is_active,
             'is_superuser': user.is_superuser,
-            'last_login': user.last_login
+            'last_login': user.last_login,
+            'editable': request.user.has_perm('users.edit_users') or request.user.id == request.POST['id']
         }
 
         if user.last_login is not None:
@@ -143,7 +144,7 @@ class UserView(View):
 
             if request.user.has_perm('users.edit_users'):
 
-                data = {'status': 'ok', 'users': [self._user_to_dict(user) for user in User.objects.all().exclude(username=request.GET.get('exclude'))]}
+                data = {'status': 'ok', 'users': [self._user_to_dict(user, request) for user in User.objects.all().exclude(username=request.GET.get('exclude'))]}
 
             else:
 
@@ -157,7 +158,7 @@ class UserView(View):
 
                 if action == 'get':
 
-                    data = {'status': 'ok', 'user': self._user_to_dict(user)}
+                    data = {'status': 'ok', 'user': self._user_to_dict(user, request)}
 
                 elif action == 'groups':
 
@@ -216,8 +217,6 @@ class UserView(View):
 
             form_data = request.POST.dict()
 
-            print form_data
-
             if form_data.get('id'):
 
                 user = get_object_or_404(User, pk=form_data['id'])
@@ -264,7 +263,7 @@ class UserView(View):
 
                     userdata.save()
 
-                    data = {'status': 'ok', 'user': self._user_to_dict(user), 'msg': 'User saved'}
+                    data = {'status': 'ok', 'user': self._user_to_dict(user, request), 'msg': 'User saved'}
 
                 else:
 
@@ -306,9 +305,9 @@ class UserView(View):
 
                 if request.user.has_perm('users.edit_user_groups'):
 
-                    for selected in request.POST.getlist('selection[]'):
+                    for selected in json.loads(request.POST['selection']):
 
-                        user.groups.add(get_object_or_404(Group, pk=selected))
+                        user.groups.add(get_object_or_404(Group, pk=selected['id']))
 
                     data = {'status': 'ok'}
 
@@ -322,7 +321,7 @@ class UserView(View):
 
                     for selected in json.loads(request.POST['selection']):
 
-                        user.groups.remove(get_object_or_404(Group, pk=selected))
+                        user.groups.remove(get_object_or_404(Group, pk=selected['id']))
 
                     data = {'status': 'ok'}
 
@@ -333,6 +332,8 @@ class UserView(View):
             elif action == 'save_cred':
 
                 cred_dict = json.loads(form_data['cred'])
+
+                cred_dict['user'] = cred_dict['user_id']
 
                 # Build credential object
 
@@ -434,7 +435,7 @@ class UserGroupView(View):
 
     def get(self, request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'list':
 
@@ -504,7 +505,7 @@ class UserGroupView(View):
 
     def post(self, request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         form_data = request.POST.dict()
 

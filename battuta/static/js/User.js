@@ -46,45 +46,29 @@ User.prototype.loadParam = function (param) {
 
     self.set('last_login', param.last_login);
 
+    self.set('editable', param.editable);
+
 };
 
 User.prototype.edit = function (callback) {
 
     let self = this;
 
-    let credUserField = textInputField.clone();
+    self.loadHtml('userDialog.html').then($element => {
 
-    let credPassField = passInputField.clone();
+        self.bind($element);
 
-    let retypePasswordField = passInputField.clone();
-
-    let dialog = largeDialog.clone().append(
-        $('<h4>').html('Add user'),
-        divRow.clone().append(
-            divCol12.clone().append(
-                divFormGroup.clone().append($('<label>').html('Username').append(credUserField)),
-                divFormGroup.clone().append($('<label>').html('Password').append(credPassField)),
-                divFormGroup.clone().append($('<label>').html('Retype password').append(retypePasswordField))
-            )
-        )
-    );
-
-    dialog
-        .dialog({
+        $element.dialog({
             buttons: {
                 Save: function() {
 
-                    self.username = credUserField.val();
-
-                    self.password = credPassField.val();
-
                     self.timezone = sessionStorage.getItem('default_timezone');
 
-                    if (self.password !== retypePasswordField.val()) $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
+                    if (self.password !== self.retype_pass) $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
 
-                    self.save(function (data) {
+                    self.save(data => {
 
-                        dialog.dialog('close');
+                        $(this).dialog('close');
 
                         callback && callback(data);
 
@@ -96,80 +80,10 @@ User.prototype.edit = function (callback) {
                     $(this).dialog('close');
 
                 }
-            },
-            close: function() {
-
-                $(this).remove()
-
             }
         })
-        .dialog('open');
 
-};
-
-User.prototype.defaultCred = function (callback) {
-
-    let self = this;
-
-    self.getData('default_cred', false, callback)
-
-};
-
-User.prototype.form = function () {
-
-    let self = this;
-
-    let firstNameField = textInputField.clone().val(self.first_name);
-
-    let lastNameField = textInputField.clone().val(self.last_name);
-
-    let emailField = textInputField.clone().val(self.email);
-
-    let timezoneField = selectField.clone().timezones().val(self.timezone);
-
-    return $('<form>')
-        .append(
-            divRow.clone().append(
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('First name').append(firstNameField)
-                    )
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Last name').append(lastNameField)
-                    )
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('E-mail').append(emailField)
-                    )
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Timezone').append(timezoneField)
-                    )
-                ),
-                divCol12.clone().append(
-                    btnXsmall.clone().html('Save')
-                )
-            )
-        )
-        .submit(function (event) {
-
-            event.preventDefault();
-
-            self.first_name = firstNameField.val();
-
-            self.last_name = lastNameField.val();
-
-            self.email = emailField.val();
-
-            self.timezone = timezoneField.val();
-
-            self.save();
-
-        });
+    });
 
 };
 
@@ -198,252 +112,130 @@ User.prototype.logout = function () {
 
 };
 
-User.prototype.passwordForm = function (currentUser) {
+User.prototype.defaultCred = function (callback) {
 
     let self = this;
 
-    let currentPassword = passInputField.clone();
+    self.getData('default_cred', false, callback)
 
-    let newPassword = passInputField.clone();
+};
 
-    let retypeNewPassword = passInputField.clone();
+User.prototype.forms = function (current_user, $container) {
 
-    return $('<form>')
-        .append(
-            divRow.clone().append(
-                divCol12.clone().append($('<hr>')),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Current password (' + currentUser + ')').append(
-                            currentPassword
-                        )
-                    )
-                )
-            ),
-            divRow.clone().append(
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('New password').append(newPassword)
-                    )
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Retype new password').append(retypeNewPassword)
-                    )
-                ),
-                divCol12.clone().append(btnXsmall.clone().html('Change password'))
-            )
-        )
-        .submit(function (event) {
+    let self = this;
+
+    self.loadHtml('userForm.html', $container).then($element => {
+
+        $('[data-bind="timezone"]').timezones();
+
+        self.bind($element);
+
+        self.set('current_user', current_user);
+
+        $('#user_form').submit(function (event) {
 
             event.preventDefault();
 
-            self.current_password = currentPassword.val();
+            self.save();
 
-            self.new_password = newPassword.val();
+        });
+
+        $('#password_form').submit(function (event) {
+
+            event.preventDefault();
+
 
             if (self.current_password) {
 
-                if (self.new_password && self.new_password === retypeNewPassword.val()) self.postData('chgpass');
+                if (self.new_password && self.new_password === self.retype_pass) self.postData('chgpass');
 
                 else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
 
             }
 
+            else $.bootstrapGrowl('Enter current user password', failedAlertOptions);
+
             $(this).find('input').val('');
 
         });
 
+    });
+
 };
 
-User.prototype.credentialsForm = function () {
+User.prototype.credentialsForm = function ($container) {
 
     let self = this;
 
-    let resetCredentialsForm =  function () {
+    self.loadHtml('credentialsForm.html', $container)
+        .then($element => {
 
-        credentialsForm.find('input, textarea').val('');
+            self.bind($element);
 
-        credentialsForm.find('button:contains("Delete")').addClass('hidden');
+            $element.submit(function (event) {
 
-        credentialsForm.removeData('loadedCred');
+                event.preventDefault();
 
-        isSharedButton.removeClass('checked_button');
+                switch ($(document.activeElement).html()) {
 
-        isDefaultButton.removeClass('checked_button');
+                    case 'Save':
 
-        sudoUserField.attr('placeholder', 'root');
+                        self.postData('save_cred', true, function (data) {
 
-        askPassButton.addClass('checked_button').prop('disabled', false);
+                            $('#credentials_selector').trigger('build', data.cred.id);
 
-        askSudoPassButton.addClass('checked_button').prop('disabled', false);
+                        });
 
-    };
+                        break;
 
-    let loadCredentialsForm = function () {
+                    case 'Delete':
 
-        let credentials = $('option:selected', credentialsSelector).data();
+                        self.deleteDialog('delete_cred', function (data) {
 
-        resetCredentialsForm();
+                            $('#credentials_selector').trigger('build', data.cred.id);
 
-        if (credentials.title) {
+                        });
 
-            credentialsForm.find('button:contains("Delete")').removeClass('hidden');
+                        break;
 
-            credentialsForm.data('loadedCred', credentials.id);
+                }
 
-            titleField.val(credentials.title);
-
-            credUserField.val(credentials.username);
-
-            sudoUserField.val(credentials.sudo_user);
-
-            rsaKeyField.val(credentials.rsa_key);
-
-            isSharedButton.toggleClass('checked_button', credentials.is_shared);
-
-            isDefaultButton.toggleClass('checked_button', credentials.is_default);
-
-            credPassField.val(credentials.password);
-
-            sudoPassField.val(credentials.sudo_pass);
-
-            askPassButton
-                .toggleClass('checked_button', credentials.ask_pass)
-                .prop('disabled', (credentials.password || credentials.rsa_key ));
-
-            askSudoPassButton
-                .toggleClass('checked_button', credentials.ask_sudo_pass)
-                .prop('disabled', credentials.sudo_pass);
-
-        }
-
-    };
-
-    let titleField = textInputField.clone();
-
-    let isSharedButton = btnSmallClk.clone(true).html('Shared');
-
-    let isDefaultButton = btnSmallClk.clone(true).html('Default');
-
-    let credUserField = textInputField.clone();
-
-    let credPassField = passInputField.clone();
-
-    let askPassButton = btnSmallClk.clone(true).html('Ask');
-
-    let rsaKeyField = textAreaField.clone();
-
-    let sudoUserField = textInputField.clone().attr('placeholder', 'root');
-
-    let sudoPassField = passInputField.clone();
-
-    let askSudoPassButton = btnSmallClk.clone(true).html('Ask');
-
-    let credentialsSelector = self.credentialsSelector(null, false, function () {
-
-        loadCredentialsForm();
-
-    });
-    
-    let credentialsForm = $('<form>')
-        .append(
-            divRow.clone().append(
-                divCol12.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Saved credentials').append(credentialsSelector))
-                ),
-                divCol8.clone().append(divFormGroup.clone().append($('<label>').html('Title').append(titleField))),
-                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(isSharedButton),
-                divCol2.addClass('text-right').css('margin-top', '19px').clone().append(isDefaultButton),
-                divCol6.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Username').append(credUserField))
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Password').append(
-                            divInputGroup.clone().append(
-                                credPassField, spanBtnGroup.clone().append(askPassButton)
-                            )
-                        )
-                    )
-                ),
-                divCol12.clone().append(
-                    divFormGroup.clone().append($('<label>').html('RSA key').append(rsaKeyField))
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append($('<label>').html('Sudo Username').append(sudoUserField))
-                ),
-                divCol6.clone().append(
-                    divFormGroup.clone().append(
-                        $('<label>').html('Sudo Password').append(
-                            divInputGroup.clone().append(
-                                sudoPassField,
-                                spanBtnGroup.clone().append(askSudoPassButton)
-                            )
-                        )
-                    )
-                ),
-                divCol12.clone().append(
-                    btnXsmall.clone().css('margin-right', '5px').html('Save'),
-                    btnXsmall.clone().css('margin-right', '5px').html('Delete')
-                )
-            )
-        )
-        .submit(function (event) {
-
-            event.preventDefault();
-
-            switch ($(document.activeElement).html()) {
-
-                case 'Save':
-
-                    self.cred = {
-                        user: self.id,
-                        id: credentialsForm.data('loadedCred'),
-                        title:titleField.val(),
-                        username: credUserField.val(),
-                        password: credPassField.val(),
-                        sudo_user: sudoUserField.val(),
-                        sudo_pass: sudoPassField.val(),
-                        is_shared: isSharedButton.hasClass('checked_button'),
-                        is_default: isDefaultButton.hasClass('checked_button'),
-                        ask_pass: askPassButton.hasClass('checked_button'),
-                        ask_sudo_pass: askSudoPassButton.hasClass('checked_button'),
-                        rsa_key: rsaKeyField.val() ? rsaKeyField.val() : ""
-                    };
+            });
 
 
-                    self.postData('save_cred', true, function (data) {
+            return self.credentialsSelector(null, false, $('#credentials_selector_label'))
 
-                        credentialsSelector.trigger('build', data.cred.id);
+        })
+        .then($element => {
 
-                    });
+            $element.change(function () {
 
-                    break;
+                self.set('cred', $('option:selected', $(this)).data());
 
-                case 'Delete':
+            });
 
-                    self.cred = {id: credentialsForm.data('loadedCred')};
-
-                    self.deleteDialog('delete_cred', function (data) {
-
-                        credentialsSelector.trigger('build', data.cred.id);
-
-                    });
-
-                    break;
-
-            }
-
-        });
-
-    return credentialsForm;
+        })
 
 };
 
 User.prototype.credentialsSelector = function (startValue, runner, $container) {
 
     let self = this;
+
+    let emptyCred = {
+        ask_pass: true,
+        ask_sudo_pass: true,
+        id: '',
+        is_default: false,
+        is_shared: false,
+        password: '',
+        rsa_key: '',
+        sudo_pass: '',
+        sudo_user: '',
+        title: '',
+        user_id: self.id,
+        username: ''
+    };
 
     return self.loadHtml('credsSelector.html', $container).then($element => {
 
@@ -453,6 +245,8 @@ User.prototype.credentialsSelector = function (startValue, runner, $container) {
             .on('build', function (event, startValue) {
 
                 self.getData('creds', false, function (data) {
+
+                    $element.find('select').empty();
 
                     $.each(data.creds, function (index, cred) {
 
@@ -472,7 +266,7 @@ User.prototype.credentialsSelector = function (startValue, runner, $container) {
 
                     if (self.runner) $element.find('select').append($('<option>').val('').html('ask').data('id', 0));
 
-                    else $element.find('select').append($('<option>').val('new').append('new'));
+                    else $element.find('select').append($('<option>').val('new').data(emptyCred).append('new'));
 
                     $element.find('select').val(startValue).change();
 
@@ -491,160 +285,119 @@ User.prototype.credentialsSelector = function (startValue, runner, $container) {
 
 };
 
-User.prototype.groupGrid = function () {
+User.prototype.groupGrid = function ($container) {
 
     let self = this;
 
-    let groupGrid = $('<div>').DynaGrid({
-        gridTitle: 'Groups',
-        headerTag: '<h4>',
-        showAddButton: true,
-        ajaxDataKey: 'groups',
-        itemValueKey: 'name',
-        addButtonClass: 'btn btn-default btn-xs',
-        addButtonTitle: 'Join group',
-        addButtonType: 'text',
-        checkered: true,
-        showCount: true,
-        buildNow: (self.username),
-        gridBodyBottomMargin: '20px',
-        columns: sessionStorage.getItem('user_grid_columns'),
-        ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
-        formatItem: function (gridContainer, gridItem) {
+    self.loadHtml('entityGrid.html', $container).then($element => {
 
-            let name = gridItem.data('value');
+        $element.find('.entity_grid').DynaGrid({
+            gridTitle: 'Groups',
+            headerTag: '<div>',
+            showFilter: true,
+            showAddButton: true,
+            ajaxDataKey: 'groups',
+            itemValueKey: 'name',
+            addButtonTitle: 'Add to group',
+            addButtonType: 'text',
+            addButtonClass: 'btn btn-default btn-xs',
+            checkered: true,
+            showCount: true,
+            gridBodyBottomMargin: '20px',
+            columns: sessionStorage.getItem('user_grid_columns'),
+            ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
+            formatItem: function ($gridContainer, $gridItem) {
 
-            gridItem.removeClass('truncate-text').html('').append(
-                $('<span>').append(name).click(function () {
+                let name = $gridItem.data('value');
 
-                    window.open(self.paths.views.group + name, '_self')
+                $gridItem.removeClass('truncate-text').html('').append(
+                    $('<span>').append(name).click(function () {
 
-                }),
-                spanFA.clone().addClass('text-right fa-minus-circle')
-                    .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
-                    .attr('title', 'Remove')
-                    .click(function () {
+                        window.open(self.paths.views.group + name, '_self')
 
-                        self.selection = [gridItem.data('id')];
+                    }),
+                    spanFA.clone().addClass('text-right fa-minus-circle')
+                        .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
+                        .attr('title', 'Remove')
+                        .click(function () {
 
-                        self.postData('remove_groups', false, function () {
+                            self.selection = [$gridItem.data()];
 
-                            groupGrid.DynaGrid('load')
+                            self.postData('remove_groups', false, function () {
+
+                                $gridContainer.DynaGrid('load')
+
+                            });
+
+                        })
+                )
+
+            },
+            addButtonAction: function ($gridContainer) {
+
+                self.selectionDialog({
+                    type: 'many',
+                    objectType: 'group',
+                    url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
+                    ajaxDataKey: 'groups',
+                    itemValueKey: 'name',
+                    action: function (selection) {
+
+                        self.selection = selection;
+
+                        self.postData('add_groups', false, function () {
+
+                            $gridContainer.DynaGrid('load')
 
                         });
 
-                    })
-            )
+                    }
+                });
 
-        },
-        addButtonAction: function () {
+            }
+        });
 
-            self.selectionDialog({
-                type: 'many',
-                objectType: 'group',
-                url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
-                ajaxDataKey: 'groups',
-                itemValueKey: 'name',
-                action: function (selection) {
-
-                    self.selection = selection;
-
-                    self.postData('add_groups', false, function () {
-
-                        groupGrid.DynaGrid('load')
-
-                    });
-
-                }
-            });
-
-        }
     });
 
-    return groupGrid
 };
 
-User.prototype.view = function (currentUser) {
+User.prototype.view = function (current_user) {
 
     let self = this;
 
-    let container = $('<div>');
+    self.loadHtml('entityView.html', $('#content_container')).then($element => {
 
-    self.refresh(false, function () {
+        self.bind($element);
 
-        let deleteUserBtn = spanFA.clone()
-            .addClass('fa-trash-o btn-incell')
-            .attr('title', 'Delete')
-            .click(function () {
+        self.refresh(false, function () {
+
+            self.set('type', self.is_superuser ? 'superuser' : 'user');
+
+            self.set('name', self.username);
+
+            $('#edit_button').toggle(false);
+
+            $('#delete_button').toggle(self.editable).click(function() {
 
                 self.del(function () {
 
-                    window.open(self.paths.selectors.user, '_self')
+                    window.open(self.paths.selectors.user , '_self')
 
                 })
 
             });
 
-        let groupsTab = $('<li>').html(aTabs.clone().attr('href', '#groups_tab').html('Groups'));
+            self.forms(current_user, $("#info_tab").empty());
 
-        let tabsHeader = ulTabs.clone().attr('id','user_' + self.id + '_tabs');
+            self.credentialsForm(self.addTab('Credentials'));
 
-        container.append(
-            $('<h3>').append(
-                $('<small>').html(self.is_superuser ? 'superuser' : 'user'),
-                '&nbsp;',
-                self.username,
-                $('<small>').css('margin-left', '1rem').append(deleteUserBtn)
-            ),
-            tabsHeader.append(
-                liActive.clone().html(aTabs.clone().attr('href', '#info_tab').html('Info')),
-                $('<li>').html(aTabs.clone().attr('href', '#credentials_tab').html('Credentials')),
-                groupsTab
-            ),
-            $('<br>'),
-            divTabContent.clone().append(
-                divActiveTab.clone().attr('id', 'info_tab').append(
-                    divRow.clone().append(
-                        $('<div>').attr('class', 'col-md-1 col-sm-1').html($('<strong>').html('Joined in:')),
-                        $('<div>').attr('class', 'col-md-11 col-sm-11').html(self.date_joined),
-                        $('<div>').attr('class', 'col-md-1 col-sm-1').html($('<strong>').html('Last login:')),
-                        $('<div>').attr('class', 'col-md-11 col-sm-11').html(self.last_login),
-                        divCol6.clone().append(
-                            $('<br>'),
-                            self.form(),
-                            self.passwordForm(currentUser)
-                        )
-                    )
-                ),
-                divTab.clone().attr('id', 'credentials_tab').append(
-                    divRow.clone().append(
-                        divCol6.clone().append(self.credentialsForm())
-                    )
-                ),
-                divTab.clone().attr('id', 'groups_tab').append(
-                    divRow.clone().append(
-                        divCol12.clone().append(self.groupGrid())
-                    )
-                )
-            )
-        );
+            if (!self.is_superuser) self.groupGrid(self.addTab('Groups'));
 
-        if (self.is_superuser) {
+            $('ul.nav-tabs').attr('id','user_' + self.id + '_tabs').rememberTab();
 
-            deleteUserBtn.remove();
-
-            groupsTab.remove();
-
-        }
-
-        tabsHeader.rememberTab();
-
-        return container
-
+        })
 
     });
-
-    return container
 
 };
 
@@ -652,73 +405,73 @@ User.prototype.selector = function () {
 
     let self = this;
 
-    let container = $('<div>');
+    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
 
-    let table = baseTable.clone();
+        self.bind($element);
 
-    container.append($('<h3>').html('Users'), $('<br>'), table);
+        self.set('title', 'Users');
 
-    table.DataTable({
-        scrollY: (window.innerHeight - 271).toString() + 'px',
-        scrollCollapse: true,
-        ajax: {
-            url: self.apiPath + 'list/',
-            dataSrc: 'users'
-        },
-        paging: false,
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                text: 'Add user',
-                action: function () {
+        $('#entity_table').DataTable({
+            scrollY: (window.innerHeight - 271).toString() + 'px',
+            scrollCollapse: true,
+            ajax: {
+                url: self.apiPath + 'list/',
+                dataSrc: 'users'
+            },
+            paging: false,
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    text: 'Add user',
+                    action: function () {
 
-                    let user = new User();
+                        let user = new User();
 
-                    user.edit(function (data) {
+                        user.edit(function (data) {
 
-                        window.open(self.paths.views.user + data.user.username + '/', '_self');
-
-                    });
-
-                },
-                className: 'btn-xs'
-            }
-        ],
-        columns: [
-            {class: 'col-md-4', title: 'user', data: 'username'},
-            {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
-            {class: 'col-md-3', title: 'last login', data: 'last_login'},
-            {class: 'col-md-2', title: 'superuser', data: 'is_superuser'}
-        ],
-        rowCallback: function (row, data) {
-
-            let user = new User(data);
-
-            $(row).find('td:eq(0)').css('cursor', 'pointer').click(function () {
-
-                window.open(self.paths.views.user + user.username + '/', '_self')
-
-            });
-
-            let lastCell = $(row).find('td:eq(3)').prettyBoolean();
-
-            if (!user.is_superuser) lastCell.append(
-                spanRight.clone().append(
-                    spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
-
-                        user.del(function () {
-
-                            table.DataTable().ajax.reload();
+                            window.open(self.paths.views.user + data.user.username + '/', '_self');
 
                         });
 
-                    })
+                    },
+                    className: 'btn-xs'
+                }
+            ],
+            columns: [
+                {class: 'col-md-4', title: 'user', data: 'username'},
+                {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
+                {class: 'col-md-3', title: 'last login', data: 'last_login'},
+                {class: 'col-md-2', title: 'superuser', data: 'is_superuser'}
+            ],
+            rowCallback: function (row, data) {
+
+                let user = new User(data);
+
+                $(row).find('td:eq(0)').css('cursor', 'pointer').click(function () {
+
+                    window.open(self.paths.views.user + user.username + '/', '_self')
+
+                });
+
+                let lastCell = $(row).find('td:eq(3)').prettyBoolean();
+
+                if (!user.is_superuser) lastCell.append(
+                    spanRight.clone().append(
+                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+
+                            user.del(function () {
+
+                                table.DataTable().ajax.reload();
+
+                            });
+
+                        })
+                    )
                 )
-            )
 
-        }
+            }
+        })
+
     });
-
-    return container;
 
 };

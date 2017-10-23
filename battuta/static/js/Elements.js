@@ -4,17 +4,9 @@
 
 let divRow = $('<div>').attr('class', 'row');
 
-let divCol2 = $('<div>').attr('class', 'col-md-2');
-
 let divCol3 = $('<div>').attr('class', 'col-md-3');
 
 let divCol4 = $('<div>').attr('class', 'col-md-4');;
-
-let divCol6 = $('<div>').attr('class', 'col-md-6');
-
-let divCol8 = $('<div>').attr('class', 'col-md-8');
-
-let divCol9 = $('<div>').attr('class', 'col-md-9');
 
 let divCol12 = $('<div>').attr('class', 'col-md-12');
 
@@ -28,28 +20,12 @@ let baseTable = $('<table>').attr('class', 'table table-condensed table-hover ta
 
 let divFormGroup = $('<div>').attr('class', 'form-group');
 
-let divInputGroup = $('<div>').attr('class', 'input-group');
-
 let spanBtnGroup = $('<span>').attr('class', 'input-group-btn');
 
 
 // Input elements
 
-let selectField = $('<select>').attr('class', 'select form-control input-sm');
-
 let textInputField = $('<input>').attr({class: 'form-control input-sm', type: 'text'});
-
-let textAreaField = $('<textarea>').attr('class', 'textarea form-control input-sm');
-
-let passInputField = $('<input>').attr({class: 'form-control input-sm', type: 'password', autocomplete:'new-password'});
-
-
-// Dialogs
-
-let largeDialog = $('<div>').attr('class', 'large_dialog');
-
-let smallDialog = $('<div>').attr('class', 'small_dialog');
-
 
 // Tabs
 
@@ -69,14 +45,6 @@ let divTab = $('<div>').attr('class', 'tab-pane');
 // Other element templates
 
 let btnSmall = $('<button>').attr('class', 'btn btn-default btn-sm');
-
-let btnSmallClk = $('<button>').attr({type: 'button', class: 'btn btn-default btn-sm'}).click(function () {
-
-    $(this).toggleClass('checked_button')
-
-});
-
-let btnXsmall = $('<button>').attr('class', 'btn btn-default btn-xs');
 
 let spanFA = $('<span>').attr('class', 'fa fa-fw');
 

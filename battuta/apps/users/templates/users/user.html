@@ -7,7 +7,7 @@
 
             var user = new User({username: '{{ user_name }}'});
 
-            $('#container').html(user.view())
+            user.view('{{ user.username }}');
 
         });
     </script>

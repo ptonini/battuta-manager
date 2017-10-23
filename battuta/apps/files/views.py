@@ -18,7 +18,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import ProjectAuth
+from apps.projects.extras import Authorizer
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -191,7 +191,7 @@ class FilesView(View):
 
         prefs = get_preferences()
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'search':
 
@@ -199,7 +199,7 @@ class FilesView(View):
 
             if request.GET.get('root'):
 
-                data = self._search_files(self._file_sources[request.GET['root']], request, prefs, project_auth)
+                data = self._search_files(self._file_sources[request.GET['root']], request, prefs, authorizer)
 
             else:
 
@@ -209,7 +209,7 @@ class FilesView(View):
 
                     if source['prefix']:
 
-                        data = data + self._search_files(source, request, prefs, project_auth)
+                        data = data + self._search_files(source, request, prefs, authorizer)
 
         else:
 
@@ -243,7 +243,7 @@ class FilesView(View):
                         file_name.startswith('.') and not prefs['show_hidden_files'],
                         file_type != 'directory' and root['exts'] and ext not in root['exts'],
                         {'name': file_name, 'folder': folder} in json.loads(request.GET.get('exclude', '[]')),
-                        not root['authorized'] and not project_auth.can_view_file(full_path),
+                        not root['authorized'] and not authorizer.can_view_file(full_path),
                     }
 
                     if True not in exclude_conditions:
@@ -347,13 +347,13 @@ class FilesView(View):
 
     def post(self, request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
         full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
 
-        if root['authorized'] or project_auth.can_edit_file(full_path):
+        if root['authorized'] or authorizer.can_edit_file(full_path):
 
             new_path = os.path.join(root['path'], request.POST['folder'], request.POST['new_name'])
 

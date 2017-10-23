@@ -21,7 +21,7 @@ from apps.runner.extras.handlers import JobTableHandler
 from apps.users.models import Credential
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
-from apps.projects.extras import ProjectAuth
+from apps.projects.extras import Authorizer
 
 
 class PageView(View):
@@ -142,7 +142,7 @@ class JobView(View):
 
         prefs = get_preferences()
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         data = None
 
@@ -188,7 +188,7 @@ class JobView(View):
 
                 job_data['name'] = job_data['playbook']
 
-                auth = project_auth.can_run_playbooks(ansible_inventory, job_data['playbook_path'])
+                auth = authorizer.can_run_playbooks(ansible_inventory, job_data['playbook_path'])
 
                 if not request.user.has_perm('users.execute_jobs') and not auth:
 
@@ -199,7 +199,7 @@ class JobView(View):
 
                 auth = {
                     request.user.has_perm('users.execute_jobs'),
-                    project_auth.can_run_tasks(ansible_inventory, job_data['hosts'])
+                    authorizer.can_run_tasks(ansible_inventory, job_data['hosts'])
                 }
 
                 if True in auth:
@@ -247,7 +247,7 @@ class JobView(View):
 
                 auth = {
                     request.user.has_perm('users.execute_jobs'),
-                    project_auth.can_run_tasks(ansible_inventory, job_data['hosts'])
+                    authorizer.can_run_tasks(ansible_inventory, job_data['hosts'])
                 }
 
                 if True in auth:
@@ -406,7 +406,7 @@ class AdHocView(View):
     @staticmethod
     def get(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         inventory = AnsibleInventory()
 
@@ -431,9 +431,11 @@ class AdHocView(View):
 
         elif action == 'modules':
 
-            module_templates = os.listdir(os.path.join(settings.STATICFILES_DIRS[0], 'templates', 'ansible_modules'))
+            module_folder = os.path.join(settings.STATICFILES_DIRS[0], 'templates', 'ansible_modules')
 
-            data = {'status': 'ok', 'modules': [m.split('.')[0] for m in module_templates]}
+            modules = cache.get_or_set('modules', os.listdir(module_folder), settings.CACHE_TIMEOUT)
+
+            data = {'status': 'ok', 'modules': [m.split('.')[0] for m in modules]}
 
         else:
 
@@ -444,7 +446,7 @@ class AdHocView(View):
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         auth = {
             request.user.has_perm('users.edit_tasks'),
@@ -491,7 +493,7 @@ class PlaybookArgsView(View):
     @staticmethod
     def get(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['playbook'])
 
@@ -520,7 +522,7 @@ class PlaybookArgsView(View):
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuth(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
         ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 

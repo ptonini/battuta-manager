@@ -86,9 +86,9 @@ Group.prototype.memberGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtml('membersGrid.html', $container).then($element => {
+    self.loadHtml('entityGrid.html', $container).then($element => {
 
-        $element.find('#members_grid').DynaGrid({
+        $element.find('.entity_grid').DynaGrid({
             gridTitle: 'Members',
             headerTag: '<div>',
             showFilter: true,
@@ -194,8 +194,6 @@ Group.prototype.view = function () {
             self.memberGrid(self.addTab('members'));
 
             self.permissionsForm(self.addTab('permissions'));
-
-            $('ul.nav-tabs').attr('id','user_group_' + self.id + '_tabs').rememberTab();
 
         });
 

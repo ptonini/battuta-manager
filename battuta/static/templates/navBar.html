@@ -7,8 +7,8 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a id="host_selector_anchor">Hosts</a>
-                    <a id="group_selector_anchor">Groups</a>
+                    <a data-bind="paths.selectors.node.host">Hosts</a>
+                    <a data-bind="paths.selectors.node.group">Groups</a>
                 </li>
                 <li class="divider"></li>
                 <li>
@@ -20,27 +20,27 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a id="adhoc_selector_anchor">Ad-Hoc</a>
-                    <a id="playbook_selector_anchor">Playbooks</a>
-                    <a id="role_selector_anchor">Roles</a>
+                    <a data-bind="paths.selectors.adhoc">Ad-Hoc</a>
+                    <a data-bind="paths.selectors.playbook">Playbooks</a>
+                    <a data-bind="paths.selectors.role">Roles</a>
                 <li class="divider"></li>
                 <li>
-                    <a id="job_selector_anchor">Job history</a>
+                    <a data-bind="paths.selectors.job">Job history</a>
                 </li>
             </ul>
         </li>
         <li>
-            <a id="file_selector_anchor">Files</a>
+            <a data-bind="paths.selectors.file">Files</a>
         </li>
         <li>
-            <a id="project_selector_anchor">Projects</a>
+            <a data-bind="paths.selectors.project">Projects</a>
         </li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a id="user_selector_anchor">Users</a>
-                    <a id="user_group_selector_anchor">User groups</a>
+                    <a data-bind="paths.selectors.user">Users</a>
+                    <a data-bind="paths.selectors.group">User groups</a>
                 </li>
                 <li class="divider"></li>
                 <li>
