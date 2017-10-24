@@ -11,11 +11,6 @@ let divCol4 = $('<div>').attr('class', 'col-md-4');;
 let divCol12 = $('<div>').attr('class', 'col-md-12');
 
 
-// Bootstrap tables
-
-let baseTable = $('<table>').attr('class', 'table table-condensed table-hover table-striped');
-
-
 // Form groups
 
 let divFormGroup = $('<div>').attr('class', 'form-group');

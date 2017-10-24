@@ -75,7 +75,7 @@ Project.prototype.loadParam = function (param) {
 
 };
 
-Project.prototype.setProperty =  function (property, $input) {
+Project.prototype.setProperty =  function (property) {
 
     let self = this;
 
@@ -84,7 +84,7 @@ Project.prototype.setProperty =  function (property, $input) {
     self.selectionDialog({
         type: 'one',
         objectType: propData.type,
-        url: propData.url + 'exclude=' + $input.val(),
+        url: propData.url + 'exclude=' + self.get(property),
         ajaxDataKey: propData.key,
         itemValueKey: propData.item,
         action: function (selection, $dialog) {
@@ -93,7 +93,9 @@ Project.prototype.setProperty =  function (property, $input) {
 
             self.postData('set_property', false, function () {
 
-                $input.val(selection[propData.item]).data(selection).change()
+                self.set(property, selection[propData.item]);
+
+                $('[data-bind="' + property + '"]').data(selection)
 
             });
 
@@ -103,7 +105,7 @@ Project.prototype.setProperty =  function (property, $input) {
     });
 };
 
-Project.prototype.clearProperty = function (property, input) {
+Project.prototype.clearProperty = function (property) {
 
     let self = this;
 
@@ -111,7 +113,7 @@ Project.prototype.clearProperty = function (property, input) {
 
     self.postData('clear_property', false, function () {
 
-        input.val('').removeData().change()
+        self.set(property, ' ')
 
     });
 
@@ -123,7 +125,13 @@ Project.prototype.info = function ($container) {
 
     self.loadHtml('projectInfo.html', $container).then($element => {
 
-        self.bind($element)
+        self.bind($element);
+
+        $('#manager_button').click(function () {
+
+            self.setProperty('manager')
+
+        })
 
     })
 

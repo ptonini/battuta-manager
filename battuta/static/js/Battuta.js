@@ -223,13 +223,10 @@ Battuta.prototype = {
 
         };
 
-        if (value !== null) {
+        setValue(key.split('.'), value, self);
 
-            setValue(key.split('.'), value, self);
+        updateDOM(key, value);
 
-            updateDOM(key, value);
-
-        }
     },
 
     get: function(key) {
