@@ -491,13 +491,13 @@ class UserGroupView(View):
 
                             if not user.is_superuser:
 
-                                members.append([user.username, user.id])
+                                members.append({'username': user.username, 'id': user.id})
 
                     else:
 
                         for user in User.objects.filter(groups__name=request.GET['name']):
 
-                            members.append([user.username, user.id])
+                            members.append({'username': user.username, 'id': user.id})
 
                 data = {'status': 'ok', 'members': members}
 
@@ -559,14 +559,6 @@ class UserGroupView(View):
 
                     group.groupdata.save()
 
-                    if request.user.has_perm('edit_preferences'):
-
-                        for permission in json.loads(request.POST.get('permissions', '[]')):
-
-                            perm = Permission.objects.get(codename=permission[0])
-
-                            group.permissions.add(perm) if permission[1] else group.permissions.remove(perm)
-
                     data = {'status': 'ok', 'group': self._group_to_dict(group), 'msg': 'User group saved'}
 
                 else:
@@ -620,7 +612,7 @@ class UserGroupView(View):
 
                 for selected in json.loads(request.POST['selection']):
 
-                    group.user_set.add(get_object_or_404(User, pk=selected['id']))
+                    group.user_set.remove(get_object_or_404(User, pk=selected['id']))
 
                 data = {'status': 'ok'}
 
@@ -630,7 +622,7 @@ class UserGroupView(View):
 
         elif action == 'add_permissions':
 
-            if request.user.has_perm('edit_preferences'):
+            if request.user.has_perm('edit_preferences') and group.groupdata.editable:
 
                 for permission in json.loads(request.POST.get('selection', '[]')):
 
@@ -646,7 +638,7 @@ class UserGroupView(View):
 
         elif action == 'remove_permissions':
 
-            if request.user.has_perm('edit_preferences'):
+            if request.user.has_perm('edit_preferences') and group.groupdata.editable:
 
                 for permission in json.loads(request.POST.get('selection', '[]')):
 

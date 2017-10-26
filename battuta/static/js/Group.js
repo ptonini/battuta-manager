@@ -129,7 +129,7 @@ Group.prototype.permissionsGrid = function ($container) {
                 self.selectionDialog({
                     type: 'many',
                     objectType: 'permissions',
-                    url: self.paths.apis.group + 'permissions/?name=' + self.name + '&reverse=true&exclude=' + JSON.stringify(self.permissions),
+                    url: self.paths.apis.group + 'permissions/?name=' + self.name + '&reverse=true&exclude=' + JSON.stringify($gridContainer.DynaGrid('getData')),
                     ajaxDataKey: 'permissions',
                     itemValueKey: 'codename',
                     itemTitleKey: 'name',
@@ -166,7 +166,7 @@ Group.prototype.memberGrid = function ($container) {
             maxHeight: window.innerHeight - 299,
             showAddButton: true,
             ajaxDataKey: 'members',
-            itemValueKey: 'name',
+            itemValueKey: 'username',
             addButtonTitle: 'Add members',
             addButtonType: 'text',
             addButtonClass: 'btn btn-default btn-xs',
@@ -177,9 +177,7 @@ Group.prototype.memberGrid = function ($container) {
             ajaxUrl: self.apiPath + 'members/?name=' + self.name,
             formatItem: function ($gridContainer, $gridItem) {
 
-                let name = $gridItem.data('value');
-
-                $gridItem.html('').css('cursor', 'pointer').append(
+                $gridItem.css('cursor', 'pointer').append(
                     $('<span>').append(name).click(function () {
 
                         window.open(self.paths.views.user + name + '/', '_self')
@@ -209,7 +207,7 @@ Group.prototype.memberGrid = function ($container) {
                     objectType: 'user',
                     url: self.paths.apis.group + 'members/?reverse=true&name=' + self.name,
                     ajaxDataKey: 'members',
-                    itemValueKey: 'name',
+                    itemValueKey: 'username',
                     action: function (selection) {
 
                         self.selection = selection;
