@@ -38,50 +38,6 @@ Group.prototype.loadParam = function (param) {
 
 };
 
-Group.prototype.permissionsForm = function ($container) {
-
-    let self = this;
-
-    self.loadHtml('permissionsForm.html', $container).then($element => {
-
-        self.bind($element);
-
-        $element.submit(function (event) {
-
-            event.preventDefault();
-
-            self.permissions = [];
-
-            $element.find('button.permBtn').each(function () {
-
-                self.permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
-
-            });
-
-            self.save(false);
-
-        });
-
-        $element.find('.permissions_container').css('max-height', (window.innerHeight - 300).toString() + 'px');
-
-        $element.find('button.permBtn').each(function () {
-
-            $(this).click(function () {
-
-                $(this).toggleClass('checked_button')
-
-            });
-
-            if (self.permissions.indexOf($(this).data('permission')) > -1) $(this).addClass('checked_button')
-
-        });
-
-        self.editable || $element.find('input, textarea, button, select').attr('disabled','disabled');
-
-    });
-
-};
-
 Group.prototype.permissionsGrid = function ($container) {
 
     let self = this;
