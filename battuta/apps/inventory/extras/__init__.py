@@ -3,54 +3,12 @@ import json
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
 from ansible.inventory import Inventory, Host as AnsibleHost
+
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 from apps.inventory.models import Host, Group
 from apps.inventory.forms import HostForm, GroupForm
-
-
-def node_to_dict(node):
-
-        default_fields = {
-            'name': node.name,
-            'type': node.type,
-            'description': node.description,
-            'id': node.id,
-        }
-
-        if hasattr(node, 'editable'):
-
-            default_fields['editable'] = node.editable
-
-        node_dict = default_fields.copy()
-
-        if node.type == 'host':
-
-            facts = json.loads(node.facts)
-
-            host_fields = {
-                'public_address': facts.get('ec2_public_ipv4'),
-                'instance_type': facts.get('ec2_instance_type'),
-                'cores': facts.get('processor_count'),
-                'memory': facts.get('memtotal_mb'),
-                'address': facts.get('default_ipv4', {}).get('address'),
-                'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
-            }
-
-            node_dict.update(host_fields)
-
-        else:
-
-            group_fields = {
-                'members': node.members.all().count(),
-                'parents': node.group_set.all().count(),
-                'children': node.children.all().count(),
-                'variables': node.variable_set.all().count(),
-            }
-
-            node_dict.update(group_fields)
-
-        return node_dict
 
 
 def build_node(node_dict, node_type, user):
@@ -66,7 +24,13 @@ def build_node(node_dict, node_type, user):
 
     else:
 
-        node = classes[node_type]['node']()
+        try:
+
+            node = classes[node_type]['node'].objects.get(name=node_dict['name'])
+
+        except ObjectDoesNotExist:
+
+            node = classes[node_type]['node']()
 
     group_descendants, host_descendants = node.get_descendants()
 

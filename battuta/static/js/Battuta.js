@@ -145,7 +145,9 @@ function Battuta (param) {
     // Add capitalize method to String
     String.prototype.capitalize = function() {
 
-        return this.charAt(0).toUpperCase() + this.slice(1);
+        let string = this.charAt(0).toUpperCase() + this.slice(1);
+
+        return string.replace(/_/g, ' ');
 
     };
 
@@ -469,15 +471,7 @@ Battuta.prototype = {
 
             let $grid = $element.find('#selection_grid');
 
-            let cancelBtnFunction = function () {
-
-                $('input.filter_box').val('');
-
-                $(this).dialog('close');
-
-            };
-
-            if (options.type === 'many') options.buttons = {
+            let buttons = {
                 Add: function () {
 
                     options.action($grid.DynaGrid('getSelected'));
@@ -485,17 +479,21 @@ Battuta.prototype = {
                     $(this).dialog('close');
 
                 },
-                Cancel: cancelBtnFunction,
+                Cancel: function () {
+
+                    $('input.filter_box').val('');
+
+                    $(this).dialog('close');
+
+                }
             };
 
-            else if (options.type === 'one') options.buttons = {
-                Cancel: cancelBtnFunction
-            };
+            if (options.type === 'one') delete buttons.Add;
 
             $element.dialog({
                 minWidth: 700,
                 minHeight: 500,
-                buttons: options.buttons,
+                buttons: buttons,
             });
 
             $grid.DynaGrid({
@@ -512,6 +510,7 @@ Battuta.prototype = {
                 ajaxData: options.data,
                 ajaxDataKey: options.ajaxDataKey,
                 itemValueKey: options.itemValueKey,
+                itemTitleKey: options.itemTitleKey,
                 addButtonAction: function ($gridContainer) {
 
                     options.newEntity.edit(function () {
@@ -523,15 +522,11 @@ Battuta.prototype = {
                 },
                 formatItem: function($gridContainer, $gridItem) {
 
-                    if (options.type === 'one') {
+                    if (options.type === 'one') $gridItem.click(function () {
 
-                        $gridItem.click(function () {
+                        options.action && options.action($(this).data(), $element)
 
-                            options.action && options.action($(this).data(), $element)
-
-                        });
-
-                    }
+                    });
 
                 }
             });
@@ -546,7 +541,7 @@ Battuta.prototype = {
 
         $('ul.nav-tabs').append(
             $('<li>').append(
-                $('<a>').attr({href: '#' + title + '_tab', 'data-toggle': 'tab', class: 'text-capitalize'}).html(title)
+                $('<a>').attr({href: '#' + title + '_tab', 'data-toggle': 'tab'}).html(title.capitalize())
             )
         );
 

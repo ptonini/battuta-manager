@@ -19,7 +19,7 @@ from django.core.cache import cache
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import VariableForm
-from apps.inventory.extras import AnsibleInventory, node_to_dict, build_node
+from apps.inventory.extras import AnsibleInventory, build_node
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
@@ -251,7 +251,7 @@ class InventoryView(View):
 
                     node = build_node(node_dict, request.GET['type'], request.user)
 
-                    node_list.append(node_to_dict(node))
+                    node_list.append(node.to_dict())
 
             data = {'status': 'ok', 'nodes': node_list}
 
@@ -508,7 +508,7 @@ class NodeView(View):
 
         if action == 'get':
 
-            data = {'status': 'ok', 'node': node_to_dict(node)}
+            data = {'status': 'ok', 'node': node.to_dict()}
 
         elif action == 'facts':
 
@@ -530,8 +530,8 @@ class NodeView(View):
 
             data = {
                 'status': 'ok',
-                'group_descendants': [node_to_dict(group) for group in node.group_descendants],
-                'host_descendants': [node_to_dict(host) for host in node.host_descendants]
+                'group_descendants': [group.to_dict() for group in node.group_descendants],
+                'host_descendants': [host.to_dict() for host in node.host_descendants]
             }
 
         elif action == 'vars':
@@ -596,7 +596,7 @@ class NodeView(View):
 
             if 'related' not in request.GET or request.GET['related'] == 'true':
 
-                node_list = [node_to_dict(related_node) for related_node in related_set.order_by('name')]
+                node_list = [related_node.to_dict() for related_node in related_set.order_by('name')]
 
             else:
 
@@ -616,7 +616,7 @@ class NodeView(View):
 
                     candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.get_ancestors()])
 
-                node_list = [node_to_dict(candidate) for candidate in candidate_set]
+                node_list = [candidate.to_dict() for candidate in candidate_set]
 
             data = {'status': 'ok', 'nodes': node_list}
 

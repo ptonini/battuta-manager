@@ -53,7 +53,7 @@ class ProjectView(View):
             'id': p.id,
             'description': p.description,
             'manager': p.manager.username if p.manager else None,
-            'host_group': {'name': p.host_group.name, 'id': p.host_group.id, 'type': 'group'} if p.host_group else {'name': ''},
+            'host_group': p.host_group.name if p.host_group else None,
             'can_edit_variables': p.can_edit_variables.name if p.can_edit_variables else None,
             'can_run_tasks': p.can_run_tasks.name if p.can_run_tasks else None,
             'can_edit_tasks': p.can_edit_tasks.name if p.can_edit_tasks else None,
@@ -141,7 +141,7 @@ class ProjectView(View):
 
                 project.save()
 
-                data = {'status': 'ok'}
+                data = {'status': 'ok', 'property_id': project.__getattribute__(prop['name']).id}
 
             elif action == 'clear_property':
 

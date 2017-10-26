@@ -7,6 +7,7 @@ from django.forms import model_to_dict
 from django.http import HttpResponse, Http404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.conf import settings
 
@@ -428,7 +429,6 @@ class UserGroupView(View):
             'id': group.id,
             'name': group.name,
             'description': group.groupdata.description,
-            'permissions': [perm.codename for perm in group.permissions.all()],
             'member_count': len(User.objects.filter(groups__name=group.name)),
             'editable': group.groupdata.editable
         }
@@ -461,45 +461,69 @@ class UserGroupView(View):
 
             data = {'status': 'ok', 'groups': group_list}
 
-        elif action == 'get':
+        else:
 
             group = get_object_or_404(Group, name=request.GET['name'])
 
-            auth = {
-                request.user.has_perm('users.edit_user_groups'),
-                group in request.user.groups.all(),
-                project_auth.can_add_to_group(group)
-            }
+            if action == 'get':
 
-            data = {'status': 'ok', 'group': self._group_to_dict(group)} if True in auth else {'status': 'denied'}
+                group = get_object_or_404(Group, name=request.GET['name'])
 
-        elif action == 'members':
+                auth = {
+                    request.user.has_perm('users.edit_user_groups'),
+                    group in request.user.groups.all(),
+                    project_auth.can_add_to_group(group)
+                }
 
-            group = get_object_or_404(Group, name=request.GET['name'])
+                data = {'status': 'ok', 'group': self._group_to_dict(group)} if True in auth else {'status': 'denied'}
 
-            members = []
+            elif action == 'members':
 
-            if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
+                group = get_object_or_404(Group, name=request.GET['name'])
 
-                if 'reverse' in request.GET and request.GET['reverse'] == 'true':
+                members = []
 
-                    for user in User.objects.exclude(groups__name=request.GET['name']):
+                if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
 
-                        if not user.is_superuser:
+                    if 'reverse' in request.GET and request.GET['reverse'] == 'true':
+
+                        for user in User.objects.exclude(groups__name=request.GET['name']):
+
+                            if not user.is_superuser:
+
+                                members.append([user.username, user.id])
+
+                    else:
+
+                        for user in User.objects.filter(groups__name=request.GET['name']):
 
                             members.append([user.username, user.id])
 
+                data = {'status': 'ok', 'members': members}
+
+            elif action == 'permissions':
+
+                data = {'status': 'ok', 'permissions': list()}
+
+                if request.GET.get('reverse', False):
+
+                    content_type = ContentType.objects.get_for_model(GroupData)
+
+                    exclude_list = [p['codename'] for p in json.loads(request.GET.get('exclude', '[]'))]
+
+                    for p in Permission.objects.filter(content_type=content_type):
+
+                        if p.codename.split('_')[1] != 'groupdata' and p.codename not in exclude_list:
+
+                            data['permissions'].append({'codename': p.codename, 'name': p.name})
+
                 else:
 
-                    for user in User.objects.filter(groups__name=request.GET['name']):
+                    data['permissions'] = [{'name': p.name, 'codename': p.codename} for p in group.permissions.all()]
 
-                        members.append([user.username, user.id])
+            else:
 
-            data = {'status': 'ok', 'members': members}
-
-        else:
-
-            raise Http404('Invalid action')
+                raise Http404('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -585,6 +609,50 @@ class UserGroupView(View):
                 for selected in json.loads(request.POST['selection']):
 
                     group.user_set.remove(get_object_or_404(User, pk=selected['id']))
+
+                data = {'status': 'ok'}
+
+            else:
+
+                data = {'status': 'denied'}
+
+            if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
+
+                for selected in json.loads(request.POST['selection']):
+
+                    group.user_set.add(get_object_or_404(User, pk=selected['id']))
+
+                data = {'status': 'ok'}
+
+            else:
+
+                data = {'status': 'denied'}
+
+        elif action == 'add_permissions':
+
+            if request.user.has_perm('edit_preferences'):
+
+                for permission in json.loads(request.POST.get('selection', '[]')):
+
+                    perm = Permission.objects.get(codename=permission['codename'])
+
+                    group.permissions.add(perm)
+
+                data = {'status': 'ok'}
+
+            else:
+
+                data = {'status': 'denied'}
+
+        elif action == 'remove_permissions':
+
+            if request.user.has_perm('edit_preferences'):
+
+                for permission in json.loads(request.POST.get('selection', '[]')):
+
+                    perm = Permission.objects.get(codename=permission['codename'])
+
+                    group.permissions.remove(perm)
 
                 data = {'status': 'ok'}
 

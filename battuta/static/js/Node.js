@@ -282,15 +282,13 @@ Node.prototype.relationships = function (relation, $container) {
 
 };
 
-Node.prototype.descendants = function ($container) {
+Node.prototype.descendants = function (offset, $container) {
 
     let self = this;
 
     self.loadHtml('descendants.html', $container).then($element => {
 
         self.bind($element);
-
-        let offset = 299;
 
         let factor = 1;
 
@@ -306,11 +304,13 @@ Node.prototype.descendants = function ($container) {
 
                 if (data.host_descendants.length > 0 && data.group_descendants.length > 0) {
 
-                    offset = 359;
+                    $element.find('.col-md-12').attr('class', 'col-md-6');
 
                     factor = 2;
 
                 }
+
+                else $element.find('.col-md-6').attr('class', 'col-md-12');
 
                 for (let key in descendantGrids) {
 
@@ -327,8 +327,8 @@ Node.prototype.descendants = function ($container) {
                             showCount: true,
                             truncateItemText: true,
                             gridBodyBottomMargin: '20px',
-                            maxHeight: (window.innerHeight - offset) / factor,
-                            columns: sessionStorage.getItem('node_grid_columns'),
+                            maxHeight: (window.innerHeight - offset),
+                            columns: Math.ceil(sessionStorage.getItem('node_grid_columns') / factor),
                             formatItem: function (gridContainer, gridItem) {
 
                                 gridItem.click(function () {
@@ -705,7 +705,7 @@ Node.prototype.view = function () {
 
             }
 
-             if (self.type === 'group' && self.name !== 'all') self.descendants(self.addTab('descendants'));
+            if (self.type === 'group' && self.name !== 'all') self.descendants(299, self.addTab('descendants'));
 
             self.variables(self.addTab('variables'));
 

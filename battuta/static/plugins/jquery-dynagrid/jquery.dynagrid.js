@@ -85,7 +85,7 @@
 
                         $item
                             .html(itemData[opts.itemValueKey])
-                            .attr('title', itemData[opts.itemValueKey])
+                            .attr('title', itemData[opts.itemTitleKey ? opts.itemTitleKey : opts.itemValueKey])
                             .css('cursor', opts.itemHoverCursor)
                             .data(itemData)
                     }
@@ -433,6 +433,7 @@
         truncateItemText: false,
         ajaxDataKey: null,
         itemValueKey: 'name',
+        itemTitleKey: null,
         itemIdKey: 'id',
         sortOrder: 1,
         columns: 4,

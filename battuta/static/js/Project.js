@@ -75,7 +75,7 @@ Project.prototype.loadParam = function (param) {
 
 };
 
-Project.prototype.setProperty =  function (property) {
+Project.prototype.setProperty =  function (property, callback) {
 
     let self = this;
 
@@ -91,15 +91,19 @@ Project.prototype.setProperty =  function (property) {
 
             self.property = {name: property, value: selection.id};
 
-            self.postData('set_property', false, function () {
+            self.postData('set_property', false, function (data) {
 
                 self.set(property, selection[propData.item]);
 
-                $('[data-bind="' + property + '"]').data(selection)
+                $('[data-bind="'+ property +'"]').data('id', data.id);
+
+                callback && callback();
+
+
 
             });
 
-            $dialog.dialog('close')
+            $dialog.dialog('close');
 
         }
     });
@@ -113,7 +117,7 @@ Project.prototype.clearProperty = function (property) {
 
     self.postData('clear_property', false, function () {
 
-        self.set(property, ' ')
+        self.set(property, '')
 
     });
 
@@ -137,52 +141,27 @@ Project.prototype.info = function ($container) {
 
 };
 
-Project.prototype.hosts = function () {
+Project.prototype.hosts = function ($container) {
 
     let self = this;
 
-    let container = divRow.clone();
+    self.loadHtml('projectHostGroup.html', $container).then($element => {
 
-    let descendantsContainer = divCol12.clone();
+        self.bind($element);
 
-    let hostGroupInput = textInputField.clone()
-        .attr('title', 'Host group')
-        .prop('readonly', true)
-        .val(self.host_group.name)
-        .data(self.host_group)
-        .change(function () {
+        new Node({name: self.host_group, type: 'group'}).descendants(367, $element.find('#descendants_container'));
 
-            let hostGroup = new Node($(this).data());
+        $('#host_group_button').click(function () {
 
-            descendantsContainer.html(hostGroup.descendants())
+            self.setProperty('host_group', function () {
 
-        });
+                new Node({name: self.host_group, type: 'group'}).descendants(367, $element.find('#descendants_container'));
 
-    let setHostGroupBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+            });
 
-        self.setProperty('host_group', hostGroupInput);
+        })
 
-    });
-
-    let hostGroup = new Node(self.host_group);
-
-    self.host_group.id && descendantsContainer.html(hostGroup.descendants());
-
-    container.append(
-        divCol3.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Host group').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        hostGroupInput,
-                        spanBtnGroup.clone().append(setHostGroupBtn)
-                    )
-                )
-            )
-        ),
-        descendantsContainer
-    );
-
-    return container
+    })
 
 };
 
@@ -558,6 +537,8 @@ Project.prototype.view = function () {
 
             self.info($('#info_container'));
 
+            self.hosts(self.addTab('host_group'));
+
             $('ul.nav-tabs').attr('id','project_' + self.id + '_tabs').rememberTab();
 
         })
@@ -708,7 +689,7 @@ Project.prototype.selector = function () {
                 {class: 'col-md-2', title: 'name', data: 'name'},
                 {class: 'col-md-4', title: 'description', data: 'description'},
                 {class: 'col-md-3', title: 'manager', data: 'manager'},
-                {class: 'col-md-3', title: 'host group', data: 'host_group.name'}
+                {class: 'col-md-3', title: 'host group', data: 'host_group'}
             ],
             rowCallback: function (row, data) {
 

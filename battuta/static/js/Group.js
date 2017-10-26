@@ -54,7 +54,7 @@ Group.prototype.permissionsForm = function ($container) {
 
             $element.find('button.permBtn').each(function () {
 
-                permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
+                self.permissions.push([$(this).data('permission'), $(this).hasClass('checked_button')])
 
             });
 
@@ -79,6 +79,77 @@ Group.prototype.permissionsForm = function ($container) {
         self.editable || $element.find('input, textarea, button, select').attr('disabled','disabled');
 
     });
+
+};
+
+Group.prototype.permissionsGrid = function ($container) {
+
+    let self = this;
+
+    self.loadHtml('entityGrid.html', $container).then($element => {
+
+        $element.find('.entity_grid').DynaGrid({
+            gridTitle: 'Permissions',
+            headerTag: '<div>',
+            maxHeight: window.innerHeight - 299,
+            showAddButton: true,
+            itemValueKey: 'codename',
+            itemTitleKey: 'name',
+            addButtonTitle: 'Add permissions',
+            addButtonType: 'text',
+            addButtonClass: 'btn btn-default btn-xs',
+            checkered: true,
+            showCount: true,
+            gridBodyBottomMargin: '20px',
+            columns: sessionStorage.getItem('node_grid_columns'),
+            ajaxUrl: self.paths.apis.group + 'permissions/?name=' + self.name,
+            ajaxDataKey: 'permissions',
+            formatItem: function ($gridContainer, $gridItem) {
+
+                $gridItem.css('cursor', 'default').append(
+                    spanFA.clone().addClass('text-right fa-minus-circle')
+                        .css({float: 'right', margin: '.8rem 0', cursor: 'pointer'})
+                        .attr('title', 'Remove')
+                        .click(function () {
+
+                            self.selection = [$gridItem.data()];
+
+                            self.postData('remove_permissions', false, function () {
+
+                                $gridContainer.DynaGrid('load')
+
+                            });
+
+                        })
+                )
+
+            },
+            addButtonAction: function ($gridContainer) {
+
+                self.selectionDialog({
+                    type: 'many',
+                    objectType: 'permissions',
+                    url: self.paths.apis.group + 'permissions/?name=' + self.name + '&reverse=true&exclude=' + JSON.stringify(self.permissions),
+                    ajaxDataKey: 'permissions',
+                    itemValueKey: 'codename',
+                    itemTitleKey: 'name',
+                    action: function (selection) {
+
+                        self.selection = selection;
+
+                        self.postData('add_permissions', false, function () {
+
+                            $gridContainer.DynaGrid('load')
+
+                        });
+
+                    }
+                });
+
+            }
+        })
+
+    })
 
 };
 
@@ -108,14 +179,14 @@ Group.prototype.memberGrid = function ($container) {
 
                 let name = $gridItem.data('value');
 
-                $gridItem.html('').append(
+                $gridItem.html('').css('cursor', 'pointer').append(
                     $('<span>').append(name).click(function () {
 
                         window.open(self.paths.views.user + name + '/', '_self')
 
                     }),
                     spanFA.clone().addClass('text-right fa-minus-circle')
-                        .css({float: 'right', margin: '.8rem 0'})
+                        .css({float: 'right', margin: '.8rem 0', cursor: 'pointer'})
                         .attr('title', 'Remove')
                         .click(function () {
 
@@ -193,7 +264,9 @@ Group.prototype.view = function () {
 
             self.memberGrid(self.addTab('members'));
 
-            self.permissionsForm(self.addTab('permissions'));
+            self.permissionsGrid(self.addTab('permissions'));
+
+            $('ul.nav-tabs').attr('id', 'user_group_' + self.id + '_tabs').rememberTab();
 
         });
 

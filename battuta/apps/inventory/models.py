@@ -1,3 +1,5 @@
+import json
+
 from django.db import models
 from django.core.validators import RegexValidator
 
@@ -63,6 +65,49 @@ class Node(models.Model):
                 ancestors.add(Group.objects.get(name='all'))
 
         return ancestors
+
+    def to_dict(self):
+
+        default_fields = {
+            'name': self.name,
+            'type': self.type,
+            'description': self.description,
+            'id': self.id,
+        }
+
+        if hasattr(self, 'editable'):
+
+            default_fields['editable'] = self.editable
+
+        node_dict = default_fields.copy()
+
+        if self.type == 'host':
+
+            facts = json.loads(self.facts)
+
+            host_fields = {
+                'public_address': facts.get('ec2_public_ipv4'),
+                'instance_type': facts.get('ec2_instance_type'),
+                'cores': facts.get('processor_count'),
+                'memory': facts.get('memtotal_mb'),
+                'address': facts.get('default_ipv4', {}).get('address'),
+                'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
+            }
+
+            node_dict.update(host_fields)
+
+        else:
+
+            group_fields = {
+                'members': self.members.all().count(),
+                'parents': self.group_set.all().count(),
+                'children': self.children.all().count(),
+                'variables': self.variable_set.all().count(),
+            }
+
+            node_dict.update(group_fields)
+
+        return node_dict
 
     class Meta:
 
