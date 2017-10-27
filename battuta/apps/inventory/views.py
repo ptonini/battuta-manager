@@ -21,6 +21,7 @@ from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import VariableForm
 from apps.inventory.extras import AnsibleInventory, build_node
 
+from main.extras import stream_file
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
 
@@ -166,7 +167,11 @@ class InventoryView(View):
 
             if request.GET['format'] == 'json':
 
-                data = {'status': 'ok', 'inventory': self._inventory_to_dict(internal_vars=False)}
+                temp_file = tempfile.NamedTemporaryFile()
+
+                temp_file.write(json.dumps(self._inventory_to_dict()))
+
+                return stream_file(temp_file.name, 'inventory.json')
 
             elif request.GET['format'] == 'zip':
 
@@ -214,15 +219,11 @@ class InventoryView(View):
 
                 target = shutil.make_archive(os.path.join(tempfile.gettempdir(), 'inventory'), 'zip', temp_dir)
 
-                stream = StreamingHttpResponse((line for line in open(target, 'r')))
-
-                stream['Content-Length'] = os.path.getsize(target)
-
-                stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
-
-                os.remove(target)
+                stream = stream_file(target, target)
 
                 shutil.rmtree(temp_dir)
+
+                os.remove(target)
 
                 return stream
 

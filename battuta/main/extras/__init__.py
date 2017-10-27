@@ -1,5 +1,21 @@
-import json
+import ntpath
+import os
+
+
 from pytz import timezone
+
+from django.http import StreamingHttpResponse
+
+
+def stream_file(filename, dest_filename):
+
+    stream = StreamingHttpResponse((line for line in open(filename, 'r')))
+
+    stream['Content-Length'] = os.path.getsize(filename)
+
+    stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(dest_filename)
+
+    return stream
 
 
 class DataTableRequestHandler:

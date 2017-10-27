@@ -32,6 +32,33 @@ Inventory.prototype.manage = function () {
 
     let self = this;
 
+    let configDialog = (format) => {
+
+        self.loadHtml('configExportDialog.html').then($element => {
+
+            self.bind($element);
+
+            $element.dialog({
+                minWidth: 500,
+                buttons: {
+                    Export: function () {
+
+                        window.open(self.apiPath + 'export/?format=' + format, '_self');
+
+                    },
+                    Cancel: function () {
+
+                        $(this).dialog('close');
+
+                    }
+                }
+
+            })
+
+        });
+
+    }
+
     self.loadHtml('manageInventory.html', $('#content_container')).then($element => {
 
         self.bind($element);
@@ -95,39 +122,12 @@ Inventory.prototype.manage = function () {
 
         $('#export_button').click(function () {
 
-            switch ($('input[type="radio"][name="export_file_type"]:checked').val()) {
+            let format = $('input[type="radio"][name="export_file_type"]:checked').val();
 
-                case 'json':
+            if (format === 'zip' || format === 'json') window.open(self.apiPath + 'export/?format=' + format, '_self');
 
-                    self.format = 'json';
+            else if (format === 'pac' || format === 'filezilla') configDialog(format);
 
-                    self.getData('export', false, function (data) {
-
-                        let jsonString = 'data:text/json;charset=utf-8,' + encodeURI(JSON.stringify(data.inventory, null, 4));
-
-                        let link = document.createElement('a');
-
-                        link.setAttribute('href', jsonString);
-
-                        link.setAttribute('download', 'inventory.json');
-
-                        document.body.appendChild(link);
-
-                        link.click();
-
-                        link.remove();
-
-                    });
-
-                    break;
-
-                case 'zip':
-
-                    window.open(self.apiPath + 'export/?format=zip', '_self');
-
-                    break;
-
-            }
 
         });
 
