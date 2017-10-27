@@ -75,7 +75,7 @@ Project.prototype.loadParam = function (param) {
 
 };
 
-Project.prototype.setProperty =  function (property, callback) {
+Project.prototype.setProperty =  function (property) {
 
     let self = this;
 
@@ -91,15 +91,9 @@ Project.prototype.setProperty =  function (property, callback) {
 
             self.property = {name: property, value: selection.id};
 
-            self.postData('set_property', false, function (data) {
+            self.postData('set_property', false, function () {
 
                 self.set(property, selection[propData.item]);
-
-                $('[data-bind="'+ property +'"]').data('id', data.id);
-
-                callback && callback();
-
-
 
             });
 
@@ -107,20 +101,6 @@ Project.prototype.setProperty =  function (property, callback) {
 
         }
     });
-};
-
-Project.prototype.clearProperty = function (property) {
-
-    let self = this;
-
-    self.property = {name: property};
-
-    self.postData('clear_property', false, function () {
-
-        self.set(property, '')
-
-    });
-
 };
 
 Project.prototype.info = function ($container) {
@@ -165,341 +145,215 @@ Project.prototype.hosts = function ($container) {
 
 };
 
-Project.prototype.playbookGrid = function () {
+Project.prototype.playbookGrid = function ($container) {
 
     let self = this;
 
-    let container = $('<div>');
+    self.loadHtml('entityGrid.html', $container).then($element => {
 
-    container.DynaGrid({
-        gridTitle: 'Playbooks',
-        headerTag: '<h4>',
-        showAddButton: true,
-        ajaxDataKey: 'file_list',
-        itemValueKey: 'name',
-        addButtonTitle: 'Add playbooks',
-        checkered: true,
-        showCount: true,
-        addButtonType: 'text',
-        addButtonClass: 'btn btn-default btn-xs',
-        itemHoverCursor: 'auto',
-        gridBodyBottomMargin: '20px',
-        columns: sessionStorage.getItem('playbook_grid_columns'),
-        ajaxUrl: self.apiPath + 'playbooks/?id=' + self.id,
-        formatItem: function(gridContainer, gridItem) {
+        $element.find('.entity_grid').DynaGrid({
+            gridTitle: 'Playbooks',
+            headerTag: '<div>',
+            showAddButton: true,
+            ajaxDataKey: 'file_list',
+            itemValueKey: 'name',
+            addButtonTitle: 'Add playbooks',
+            maxHeight: window.innerHeight - 299,
+            checkered: true,
+            showCount: true,
+            addButtonType: 'text',
+            addButtonClass: 'btn btn-default btn-xs',
+            gridBodyBottomMargin: '20px',
+            columns: sessionStorage.getItem('playbook_grid_columns'),
+            ajaxUrl: self.apiPath + 'playbooks/?id=' + self.id,
+            formatItem: function ($gridContainer, $gridItem) {
 
-            let playbook = gridItem.data();
+                let playbook = $gridItem.data();
 
-            let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+                let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
 
-            gridItem.attr('title', itemTitle)
-                .html(itemTitle)
-                .removeClass('truncate-text')
-                .append(
-                    spanFA.clone().addClass('text-right fa-minus-circle')
-                        .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
-                        .attr('title', 'Remove')
-                        .click(function () {
+                $gridItem.attr('title', itemTitle)
+                    .html(itemTitle)
+                    .removeClass('truncate-text')
+                    .append(
+                        spanFA.clone().addClass('text-right fa-minus-circle')
+                            .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
+                            .attr('title', 'Remove')
+                            .click(function () {
 
-                            self.playbooks = [{name: playbook.name, folder: playbook.folder}];
+                                self.playbooks = [{name: playbook.name, folder: playbook.folder}];
 
-                            self.postData('remove_playbook', false, function () {
+                                self.postData('remove_playbook', false, function () {
 
-                                container.DynaGrid('load')
+                                    $gridContainer.DynaGrid('load')
 
-                            });
+                                });
 
-                        })
-                )
+                            })
+                    )
 
-        },
-        addButtonAction: function () {
+            },
+            addButtonAction: function ($gridContainer) {
 
-            let currentPlaybooks = [];
+                let currentPlaybooks = [];
 
-            $.each(container.DynaGrid('getData'), function (index, playbook) {
+                $.each($gridContainer.DynaGrid('getData'), function (index, playbook) {
 
-                currentPlaybooks.push({name: playbook.name, folder: playbook.folder})
+                    currentPlaybooks.push({name: playbook.name, folder: playbook.folder})
 
-            });
+                });
 
-            self.selectionDialog({
-                type: 'many',
-                objectType: 'playbooks',
-                url: self.paths.apis.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
-                itemValueKey: 'name',
-                action: function (selection) {
+                self.selectionDialog({
+                    type: 'many',
+                    objectType: 'playbooks',
+                    url: self.paths.apis.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
+                    itemValueKey: 'name',
+                    action: function (selection) {
 
-                    self.playbooks = [];
+                        self.playbooks = [];
 
-                    $.each(selection, function (index, playbook) {
+                        $.each(selection, function (index, playbook) {
 
-                        self.playbooks.push({name: playbook.name, folder: playbook.folder})
+                            self.playbooks.push({name: playbook.name, folder: playbook.folder})
 
-                    });
+                        });
 
-                    self.postData( 'add_playbooks', false, function () {
+                        self.postData('add_playbooks', false, function () {
 
-                        container.DynaGrid('load')
+                            $gridContainer.DynaGrid('load')
 
-                    });
+                        });
 
-                }
-            });
+                    }
+                });
 
-        }
-    });
+            }
+        });
 
-    return container;
+    })
 
 };
 
-Project.prototype.roleGrid = function () {
+Project.prototype.roleGrid = function ($container) {
 
     let self = this;
 
-    let container = $('<div>');
+    self.loadHtml('entityGrid.html', $container).then($element => {
 
-    container.DynaGrid({
-        gridTitle: 'Roles',
-        headerTag: '<h4>',
-        showAddButton: true,
-        ajaxDataKey: 'file_list',
-        itemValueKey: 'name',
-        addButtonTitle: 'Add roles',
-        checkered: true,
-        showCount: true,
-        addButtonType: 'text',
-        itemHoverCursor: 'auto',
-        addButtonClass: 'btn btn-default btn-xs',
-        gridBodyBottomMargin: '20px',
-        columns: sessionStorage.getItem('role_grid_columns'),
-        ajaxUrl: self.apiPath + 'roles/?id=' + self.id,
-        formatItem: function(gridContainer, gridItem) {
+        $element.find('.entity_grid').DynaGrid({
+            gridTitle: 'Roles',
+            headerTag: '<div>',
+            showAddButton: true,
+            ajaxDataKey: 'file_list',
+            itemValueKey: 'name',
+            maxHeight: window.innerHeight - 299,
+            addButtonTitle: 'Add roles',
+            checkered: true,
+            showCount: true,
+            addButtonType: 'text',
+            itemHoverCursor: 'auto',
+            addButtonClass: 'btn btn-default btn-xs',
+            gridBodyBottomMargin: '20px',
+            columns: sessionStorage.getItem('role_grid_columns'),
+            ajaxUrl: self.apiPath + 'roles/?id=' + self.id,
+            formatItem: function ($gridContainer, $gridItem) {
 
-            let role = gridItem.data();
+                let role = $gridItem.data();
 
-            gridItem
-                .attr('title', role.folder ? role.folder + '/' + role.name : role.name)
-                .removeClass('truncate-text')
-                .append(
-                    spanFA.clone().addClass('text-right fa-minus-circle')
-                        .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
-                        .attr('title', 'Remove')
-                        .click(function () {
+                $gridItem
+                    .attr('title', role.folder ? role.folder + '/' + role.name : role.name)
+                    .removeClass('truncate-text')
+                    .append(
+                        spanFA.clone().addClass('text-right fa-minus-circle')
+                            .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
+                            .attr('title', 'Remove')
+                            .click(function () {
 
-                            self.roles = [{name: role.name, folder: role.folder}];
+                                self.roles = [{name: role.name, folder: role.folder}];
 
-                            self.postData('remove_role', false, function () {
+                                self.postData('remove_role', false, function () {
 
-                                container.DynaGrid('load')
+                                    $gridContainer.DynaGrid('load')
 
-                            });
+                                });
 
 
-                        })
-                )
+                            })
+                    )
 
-        },
-        addButtonAction: function () {
+            },
+            addButtonAction: function ($gridContainer) {
 
-            let currentRoles = [];
+                let currentRoles = [];
 
-            $.each(container.DynaGrid('getData'), function (index, role) {
+                $.each($gridContainer.DynaGrid('getData'), function (index, role) {
 
-                currentRoles.push({name: role.name, folder: role.folder})
+                    currentRoles.push({name: role.name, folder: role.folder})
 
-            });
+                });
 
-            self.selectionDialog({
-                type: 'many',
-                objectType: 'roles',
-                url: self.paths.apis.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
-                ajaxDataKey: 'file_list',
-                itemValueKey: 'name',
-                action: function (selection) {
+                self.selectionDialog({
+                    type: 'many',
+                    objectType: 'roles',
+                    url: self.paths.apis.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
+                    ajaxDataKey: 'file_list',
+                    itemValueKey: 'name',
+                    action: function (selection) {
 
-                    self.roles = [];
+                        self.roles = [];
 
-                    $.each(selection, function (index, role) {
+                        $.each(selection, function (index, role) {
 
-                        self.roles.push({name: role.name, folder: role.folder})
+                            self.roles.push({name: role.name, folder: role.folder})
 
-                    });
+                        });
 
-                    self.postData('add_roles', false, function () {
+                        self.postData('add_roles', false, function () {
 
-                        container.DynaGrid('load')
+                            $gridContainer.DynaGrid('load')
 
-                    });
+                        });
 
-                }
-            });
+                    }
+                });
 
-        }
-    });
+            }
+        });
 
-    return container
-
+    })
 
 };
 
-Project.prototype.userGroups = function () {
+Project.prototype.userGroups = function ($container) {
 
     let self = this;
 
-    let container = divRow.clone();
+    self.loadHtml('projectGroups.html', $container).then($element => {
 
-    let canEditVariablesInput = textInputField.clone().prop('readonly', true).val(self.can_edit_variables);
+        self.bind($element);
 
-    let setCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+        $element.find('button.set_group').click(function () {
 
-        self.setProperty('can_edit_variables', canEditVariablesInput);
+            self.setProperty($(this).data('permission'))
 
-    });
+        });
 
-    let clearCanEditVariablesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+        $element.find('button.clear_group').click(function () {
 
-        self.clearProperty('can_edit_variables', canEditVariablesInput)
+            let property = $(this).data('permission');
 
-    });
+            self.property = {name: property};
 
-    let canRunTasksInput = textInputField.clone().prop('readonly', true).val(self.can_run_tasks);
+            self.postData('clear_property', false, function () {
 
-    let setCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
+                self.set(property, '')
 
-        self.setProperty('can_run_tasks', canRunTasksInput);
+            });
 
-    });
+        })
 
-    let clearCanRunTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
+    })
 
-        self.clearProperty('can_run_tasks', canRunTasksInput)
-
-    });
-
-    let canEditTasksInput = textInputField.clone().prop('readonly', true).val(self.can_edit_tasks);
-
-    let setCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty('can_edit_tasks', canEditTasksInput);
-
-    });
-
-    let clearCanEditTasksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
-
-        self.clearProperty('can_edit_tasks', canEditTasksInput);
-
-    });
-
-    let canRunPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.can_run_playbooks);
-
-    let setCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty('can_run_playbooks', canRunPlaybooksInput);
-
-    });
-
-    let clearCanRunPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
-
-        self.clearProperty('can_run_playbooks', canRunPlaybooksInput)
-
-    });
-
-    let canEditPlaybooksInput = textInputField.clone().prop('readonly', true).val(self.can_edit_playbooks);
-
-    let setCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty('can_edit_playbooks', canEditPlaybooksInput);
-
-    });
-
-    let clearCanEditPlaybooksBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
-
-        self.clearProperty('can_edit_playbooks', canEditPlaybooksInput)
-
-    });
-
-    let canEditRolesInput = textInputField.clone().prop('readonly', true).val(self.can_edit_roles);
-
-    let setCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-pencil')).click(function () {
-
-        self.setProperty('can_edit_roles', canEditRolesInput);
-
-    });
-
-    let clearCanEditRolesBtn = btnSmall.clone().html(spanFA.clone().addClass('fa-minus-circle')).click(function () {
-
-        self.clearProperty('can_edit_roles', canEditRolesInput)
-
-    });
-
-    container.append(
-        divCol12.clone().append($('<h4>').html('Inventory')),
-        divCol4.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Can edit variables').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        canEditVariablesInput,
-                        spanBtnGroup.clone().append(setCanEditVariablesBtn, clearCanEditVariablesBtn)
-                    )
-                )
-            )
-        ),
-        divCol12.clone().append($('<h4>').html('Runner')),
-        divCol4.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Can run tasks').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        canRunTasksInput,
-                        spanBtnGroup.clone().append(setCanRunTasksBtn, clearCanRunTasksBtn)
-                    )
-                )
-            )
-        ),
-        divCol4.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Can run playbooks').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        canRunPlaybooksInput,
-                        spanBtnGroup.clone().append(setCanRunPlaybooksBtn, clearCanRunPlaybooksBtn)
-                    )
-                )
-            )
-        ),
-        divCol4.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Can edit roles').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        canEditRolesInput,
-                        spanBtnGroup.clone().append(setCanEditRolesBtn, clearCanEditRolesBtn)
-                    )
-                )
-            )
-        ),
-        divCol4.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Can edit tasks').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        canEditTasksInput,
-                        spanBtnGroup.clone().append(setCanEditTasksBtn, clearCanEditTasksBtn)
-                    )
-                )
-            )
-        ),
-        divCol4.clone().append(
-            divFormGroup.clone().append(
-                $('<label>').html('Can edit playbooks').append(
-                    $('<div>').attr('class', 'input-group').append(
-                        canEditPlaybooksInput,
-                        spanBtnGroup.clone().append(setCanEditPlaybooksBtn, clearCanEditPlaybooksBtn)
-                    )
-                )
-            )
-        )
-    );
-
-    return container
 
 };
 
@@ -538,6 +392,12 @@ Project.prototype.view = function () {
             self.info($('#info_container'));
 
             self.hosts(self.addTab('host_group'));
+
+            self.playbookGrid(self.addTab('playbooks'));
+
+            self.roleGrid(self.addTab('roles'));
+
+            self.userGroups(self.addTab('user_groups'));
 
             $('ul.nav-tabs').attr('id','project_' + self.id + '_tabs').rememberTab();
 

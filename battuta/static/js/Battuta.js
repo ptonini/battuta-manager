@@ -92,6 +92,7 @@ function Battuta (param) {
 
     };
 
+
     $.fn.humanBytes = function (suffix) {
 
         if (!suffix) suffix = 'B';
@@ -293,7 +294,7 @@ Battuta.prototype = {
 
         let self = this,
             data = {},
-            excludeKeys = ['apiPath', 'pubSub', 'bindings', 'info', 'facts', 'title', 'pattern'];
+            excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern'];
 
         for (let p in obj) {
 
