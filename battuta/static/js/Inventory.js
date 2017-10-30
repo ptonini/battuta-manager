@@ -32,33 +32,6 @@ Inventory.prototype.manage = function () {
 
     let self = this;
 
-    let configDialog = (format) => {
-
-        self.loadHtml('configExportDialog.html').then($element => {
-
-            self.bind($element);
-
-            $element.dialog({
-                minWidth: 500,
-                buttons: {
-                    Export: function () {
-
-                        window.open(self.apiPath + 'export/?format=' + format, '_self');
-
-                    },
-                    Cancel: function () {
-
-                        $(this).dialog('close');
-
-                    }
-                }
-
-            })
-
-        });
-
-    }
-
     self.loadHtml('manageInventory.html', $('#content_container')).then($element => {
 
         self.bind($element);
@@ -124,10 +97,40 @@ Inventory.prototype.manage = function () {
 
             let format = $('input[type="radio"][name="export_file_type"]:checked').val();
 
-            if (format === 'zip' || format === 'json') window.open(self.apiPath + 'export/?format=' + format, '_self');
+            if (format === 'filezilla') {
 
-            else if (format === 'pac' || format === 'filezilla') configDialog(format);
+                self.loadHtml('filezillaExportDialog.html').then($element => {
 
+                    self.bind($element);
+
+                    $element
+                        .dialog({
+                            buttons: {
+                                Export: function () {
+
+                                    if (self.sftp_user) {
+
+                                        window.open(self.apiPath + 'export/?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
+
+                                        $(this).dialog('close')
+
+                                    }
+
+                                    else $.bootstrapGrowl('Enter default user', {type: 'warning'});
+                                },
+                                Cancel: function() {
+
+                                    $(this).dialog('close')
+
+                                }
+                            }
+                        })
+
+                })
+
+            }
+
+            else window.open(self.apiPath + 'export/?format=' + format, '_self');
 
         });
 

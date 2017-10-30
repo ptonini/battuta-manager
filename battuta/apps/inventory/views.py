@@ -4,26 +4,36 @@ import tempfile
 import collections
 import os
 import shutil
-import ntpath
 import ConfigParser
 import yaml
+import uuid
 
-
-from django.http import HttpResponse, Http404, StreamingHttpResponse
-from django.core.exceptions import PermissionDenied
+from ruamel import yaml
+from django.http import HttpResponse, Http404
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
 from django.core.cache import cache
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import VariableForm
 from apps.inventory.extras import AnsibleInventory, build_node
 
-from main.extras import stream_file
+from main.extras import download_file
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
+
+
+def prettify(elem):
+    """Return a pretty-printed XML string for the Element.
+    """
+    rough_string = tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
 
 
 class PageView(View):
@@ -165,13 +175,13 @@ class InventoryView(View):
 
         elif action == 'export':
 
-            if request.GET['format'] == 'json':
+            temp_file = tempfile.TemporaryFile()
 
-                temp_file = tempfile.NamedTemporaryFile()
+            if request.GET['format'] == 'json':
 
                 temp_file.write(json.dumps(self._inventory_to_dict()))
 
-                return stream_file(temp_file.name, 'inventory.json')
+                return download_file(temp_file, 'inventory.json')
 
             elif request.GET['format'] == 'zip':
 
@@ -217,15 +227,172 @@ class InventoryView(View):
 
                         self._create_node_var_file(host, os.path.join(temp_dir, 'host_vars'))
 
-                target = shutil.make_archive(os.path.join(tempfile.gettempdir(), 'inventory'), 'zip', temp_dir)
+                zip_file_name = shutil.make_archive(os.path.join(tempfile.gettempdir(), 'inventory'), 'zip', temp_dir)
 
-                stream = stream_file(target, target)
+                with open(zip_file_name, 'r') as f:
+
+                    stream = download_file(f, 'inventory.zip')
 
                 shutil.rmtree(temp_dir)
 
-                os.remove(target)
+                os.remove(zip_file_name)
 
                 return stream
+
+            elif request.GET['format'] in ['pac', 'filezilla']:
+
+                pac_groups = Group.objects.filter(variable__key='pac_group', variable__value='true')
+
+                mappings = dict()
+
+                config_dict = {
+                    '__PAC__EXPORTED__': {'children': dict()}
+                }
+
+                top = Element('FileZilla3')
+
+                servers = SubElement(top, 'Servers')
+
+                for group in pac_groups:
+
+                    group_descendants, host_descendants = group.get_descendants()
+
+                    descendants = [g for g in group_descendants if len(g.variable_set.filter(key='pac_group', value='true'))]
+
+                    ancestors = [g for g in group.get_ancestors() if len(g.variable_set.filter(key='pac_group', value='true'))]
+
+                    if request.GET['format'] == 'pac':
+
+                        group_uuid = str(uuid.uuid4())
+
+                        config_dict[group_uuid] = {
+                            '_is_group': 1,
+                            'children': dict(),
+                            'description': "Connection group '" + group.name + "'",
+                            'name': group.name,
+                            'parent': '__PAC__EXPORTED__',
+                        }
+
+                        mappings[group.name] = {'id': group_uuid}
+
+                    else:
+
+                        folder_element = Element('Folder', expanded="0")
+
+                        folder_element.text = group.name
+
+                        mappings[group.name] = {'element': folder_element}
+
+                    if len(ancestors):
+
+                        mappings[group.name]['parent'] = ancestors[-1].name
+
+                    if not len(descendants):
+
+                        for host in host_descendants:
+
+                            try:
+
+                                address = host.variable_set.get(key='ansible_host').value
+
+                            except ObjectDoesNotExist:
+
+                                address = host.name
+
+                            if request.GET['format'] == 'pac':
+
+                                host_uuid = str(uuid.uuid4())
+
+                                config_dict[group_uuid]['children'][host_uuid] = 1
+
+                                config_dict[host_uuid] = {
+                                    'method': 'SSH',
+                                    'KPX title regexp': "'.*" + host.name + ".*'",
+                                    '_is_group': 0,
+                                    'description': "Connection with '" + host.name + "'",
+                                    'ip': address,
+                                    'name': host.name,
+                                    'title': host.name,
+                                    'parent': group_uuid
+                                }
+
+                            else:
+
+                                host_element = SubElement(mappings[group.name]['element'], 'Server')
+
+                                host_element.text = host.name
+
+                                host_child_elements = {
+                                    'Host': address,
+                                    'Port': '22',
+                                    'Protocol': '1',
+                                    'Type': '0',
+                                    'User': request.GET.get('sftp_user'),
+                                    'Logontype': '1',
+                                    'TimezoneOffset': '0',
+                                    'PasvMode': 'MODE_DEFAULT',
+                                    'MaximumMultipleConnections': '0',
+                                    'EncodingType': 'Auto',
+                                    'BypassProxy': '0',
+                                    'Name': host.name,
+                                    'SyncBrowsing': '0',
+                                    'DirectoryComparison': '0',
+                                    'Comments': '',
+                                    'LocalDir': '',
+                                    'RemoteDir': ''
+                                }
+
+                                SubElement(host_element, 'Pass', encoding='base64')
+
+                                for key in host_child_elements:
+
+                                    element = SubElement(host_element, key)
+
+                                    element.text = host_child_elements[key]
+
+                for group_name in mappings:
+
+                    group_uuid = mappings[group_name].get('id')
+
+                    parent = mappings[group_name].get('parent')
+
+                    if parent:
+
+                        if request.GET['format'] == 'pac':
+
+                            parent_uuid = mappings[parent]['id']
+
+                            config_dict[group_uuid]['parent'] = parent_uuid
+
+                            config_dict[parent_uuid]['children'][group_uuid] = 1
+
+                        else:
+
+                            parent_element = mappings[parent]['element']
+
+                            parent_element.append(mappings[group_name]['element'])
+
+                    else:
+
+                        if request.GET['format'] == 'pac':
+
+                            config_dict['__PAC__EXPORTED__']['children'][group_uuid] = 1
+
+                        else:
+
+                            servers.append(mappings[group_name]['element'])
+
+                if request.GET['format'] == 'pac':
+
+                    yaml.dump(config_dict, temp_file, explicit_start=True, Dumper=yaml.RoundTripDumper, width=9999)
+
+                    return download_file(temp_file, 'pac_export.yml')
+
+                else:
+
+                    temp_file.write(prettify(top))
+
+                    return download_file(temp_file, 'sites.xml')
 
             else:
 

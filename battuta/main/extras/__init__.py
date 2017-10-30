@@ -4,18 +4,18 @@ import os
 
 from pytz import timezone
 
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse
 
 
-def stream_file(filename, dest_filename):
+def download_file(f, filename):
 
-    stream = StreamingHttpResponse((line for line in open(filename, 'r')))
+    f.seek(0)
 
-    stream['Content-Length'] = os.path.getsize(filename)
+    response = HttpResponse(f.read(), content_type="application/octet-stream")
 
-    stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(dest_filename)
+    response['Content-Disposition'] = 'inline; filename=' + filename
 
-    return stream
+    return response
 
 
 class DataTableRequestHandler:
