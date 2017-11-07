@@ -15,9 +15,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
 from django.core.cache import cache
-from xml.etree.ElementTree import Element, SubElement, tostring
-from xml.dom import minidom
-
+from xml.etree.ElementTree import Element, SubElement
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import VariableForm
@@ -26,14 +24,6 @@ from apps.inventory.extras import AnsibleInventory, build_node
 from main.extras import download_file
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
-
-
-def prettify(elem):
-    """Return a pretty-printed XML string for the Element.
-    """
-    rough_string = tostring(elem, 'utf-8')
-    reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="  ")
 
 
 class PageView(View):
@@ -390,7 +380,7 @@ class InventoryView(View):
 
                 else:
 
-                    temp_file.write(prettify(top))
+                    temp_file.write(top)
 
                     return download_file(temp_file, 'sites.xml')
 
