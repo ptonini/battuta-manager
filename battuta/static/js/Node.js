@@ -695,6 +695,8 @@ Node.prototype.view = function () {
 
             if (self.type === 'host') self.hostInfo($('#info_container'));
 
+            self.variables(self.addTab('variables'));
+
             if (self.type === 'host' || self.name !== 'all') self.relationships('parents', self.addTab('parents'));
 
             if (self.type === 'group' && self.name !== 'all') {
@@ -706,8 +708,6 @@ Node.prototype.view = function () {
             }
 
             if (self.type === 'group' && self.name !== 'all') self.descendants(299, self.addTab('descendants'));
-
-            self.variables(self.addTab('variables'));
 
             if (self.type === 'host' || self.name !== 'all') adhoc.view(true, self.addTab('adhoc'));
 
@@ -827,13 +827,14 @@ Node.prototype.selector = function () {
 
             if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = [
                 {class: 'col-md-2', title: 'Host', data: 'name'},
-                {class: 'col-md-2', title: 'Address', data: 'address'},
+                {class: 'col-md-1', title: 'Address', data: 'address'},
                 {class: 'col-md-2', title: 'Public address', data: 'public_address'},
-                {class: 'col-md-2', title: 'Type', data: 'instance_type'},
+                {class: 'col-md-2', title: 'Instance Id', data: 'instance_id'},
+                {class: 'col-md-1', title: 'Type', data: 'instance_type'},
                 {class: 'col-md-1', title: 'Cores', data: 'cores'},
                 {class: 'col-md-1', title: 'Memory', data: 'memory'},
                 {class: 'col-md-1', title: 'Disc', data: 'disc'},
-                {class: 'col-md-1', title: '', defaultContent: ''}
+                {class: 'col-md-1', title: '', defaultContent: ''},
             ];
 
             else columns = [
@@ -902,7 +903,7 @@ Node.prototype.selector = function () {
 
                 if (node.type === 'host') {
 
-                    let cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [5, 6] :  [3, 4];
+                    let cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [6, 7] :  [3, 4];
 
                     node.memory && $(row).find('td:eq(' + cols[0] + ')').humanBytes('MB');
 

@@ -92,6 +92,7 @@ class Node(models.Model):
                 'memory': facts.get('memtotal_mb'),
                 'address': facts.get('default_ipv4', {}).get('address'),
                 'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
+                'instance_id': facts.get('ec2_instance_id')
             }
 
             node_dict.update(host_fields)

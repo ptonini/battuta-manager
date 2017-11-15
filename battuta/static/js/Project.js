@@ -75,7 +75,7 @@ Project.prototype.loadParam = function (param) {
 
 };
 
-Project.prototype.setProperty =  function (property) {
+Project.prototype.setProperty =  function (property, callback) {
 
     let self = this;
 
@@ -95,11 +95,14 @@ Project.prototype.setProperty =  function (property) {
 
                 self.set(property, selection[propData.item]);
 
+                callback && callback()
+
             });
 
             $dialog.dialog('close');
 
         }
+
     });
 };
 
@@ -391,7 +394,7 @@ Project.prototype.view = function () {
 
             self.info($('#info_container'));
 
-            self.hosts(self.addTab('host_group'));
+            self.hosts(self.addTab('hosts'));
 
             self.playbookGrid(self.addTab('playbooks'));
 
@@ -534,7 +537,7 @@ Project.prototype.selector = function () {
                     className: 'btn-xs',
                     action: function () {
 
-                        let project = new Project({id: null});
+                        let project = new Project();
 
                         project.edit(function (data) {
 
