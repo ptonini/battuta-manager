@@ -54,6 +54,10 @@ Node.prototype.hostInfo = function ($container) {
 
             if (self.facts) {
 
+                $element.find('.hide_when_empty').removeClass('hidden');
+
+                $element.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
+
                 if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $('#guest_info_row').hide();
 
                 if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
@@ -100,44 +104,40 @@ Node.prototype.hostInfo = function ($container) {
                     },
                 };
 
-                for (let key in infoTables) {
+                for (let key in infoTables) $element.find('#show_' + key).click(function () {
 
-                    $element.find('#show_' + key).click(function () {
+                    self.loadHtml('tableDialog.html').then($element => {
 
-                        self.loadHtml('tableDialog.html').then($element => {
+                        $element.find('h4').html(key);
 
-                            $element.find('h4').html(key);
-
-                            $element.find('table').DataTable({
-                                data: infoTables[key].data,
-                                autoWidth: false,
-                                scrollY: '360px',
-                                scrollCollapse: true,
-                                filter: false,
-                                paging: false,
-                                info: false,
-                                columns: infoTables[key].columns,
-                                rowCallback: infoTables[key].rowCallback
-                            });
-
-                            $element.dialog({
-                                width: '700px',
-                                buttons: {
-                                    Close: function () {
-
-                                        $(this).dialog('close')
-
-                                    }
-                                }
-                            });
-
-                            $element.find('table').DataTable().columns.adjust().draw();
-
+                        $element.find('table').DataTable({
+                            data: infoTables[key].data,
+                            autoWidth: false,
+                            scrollY: '360px',
+                            scrollCollapse: true,
+                            filter: false,
+                            paging: false,
+                            info: false,
+                            columns: infoTables[key].columns,
+                            rowCallback: infoTables[key].rowCallback
                         });
+
+                        $element.dialog({
+                            width: '700px',
+                            buttons: {
+                                Close: function () {
+
+                                    $(this).dialog('close')
+
+                                }
+                            }
+                        });
+
+                        $element.find('table').DataTable().columns.adjust().draw();
 
                     });
 
-                }
+                });
 
                 $('#show_facts').css('margin-right', '5px').click(function () {
 
@@ -166,13 +166,7 @@ Node.prototype.hostInfo = function ($container) {
 
             }
 
-            else {
-
-                $element.find('.hide_when_empty').hide();
-
-                $element.find('#gather_facts').html('Gather facts').addClass('pull-right')
-
-            }
+            else  $element.find('#gather_facts').html('Gather facts').addClass('pull-right');
 
             $element.find('#gather_facts').toggleClass('pull-right', self.facts).click(function () {
 
@@ -181,7 +175,6 @@ Node.prototype.hostInfo = function ($container) {
                 job.getFacts();
 
             });
-
 
         });
 
