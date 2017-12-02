@@ -202,7 +202,6 @@ User.prototype.credentialsForm = function ($container) {
 
             });
 
-
             return self.credentialsSelector(null, false, $('#credentials_selector_label'))
 
         })

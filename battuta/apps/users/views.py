@@ -367,7 +367,7 @@ class UserView(View):
                 if form.is_valid():
 
                     # Set credential as default
-                    if cred_dict['is_default'] == 'true':
+                    if cred_dict['is_default']:
 
                         user.userdata.default_cred = cred
 
