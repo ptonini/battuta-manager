@@ -720,18 +720,34 @@ Battuta.prototype = {
 
     },
 
-    fetchJson: function (url) {
+    fetch: function (method, url, obj) {
+
+        let init = {
+            credentials: 'include',
+            method: method
+        };
+
+        if (method === 'GET' && obj) url = url + '?' + $.param(obj);
+
+        return fetch(url, init).then(response => {
+
+            return response
+
+        })
+
+    },
+
+    fetchJson: function (url, obj) {
 
         let self = this;
 
-        console.log(url);
-
-        return fetch(url)
+        return self.fetch('GET', url, obj)
             .then(response => {
 
-                return response
+                return response.json()
 
             })
+            .then(response)
 
     },
 
@@ -739,7 +755,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        return fetch(self.paths.templates + file)
+        return self.fetch('GET', self.paths.templates + file)
             .then(response => {
 
                 return response.text()

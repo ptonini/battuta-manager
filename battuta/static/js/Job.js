@@ -288,16 +288,29 @@ Job.prototype.runner = function () {
 
             $('#job_tabs').rememberTab();
 
-            return self.fetchJson('/files/api/search/?root=playbooks')
+            return self.fetchJson('/files/api/search/', {root: 'playbooks'})
 
         })
         .then(data => {
 
-            console.log(data)
+            $.each(data, (index, value) => {
+
+                $('#playbook_list').append(
+                    $('<option>').attr('value', value.folder ? value.folder + '/' + value.name : value.name)
+                )
+
+            });
+
+            return self.fetchHtml('playbookArgs.html', $('#playbook_args'))
+
+        })
+        .then($element => {
+
+            self.bind($element)
 
         })
 
-}
+};
 
 Job.prototype.selector = function () {
 

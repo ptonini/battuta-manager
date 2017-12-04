@@ -164,12 +164,10 @@ class FilesView(View):
 
                             file_list.append({'folder': head, 'name': tail})
 
-        return file_list
+        return sorted(file_list, key=lambda k: (k['folder'], k['name']))
 
     @staticmethod
     def _create_file(new_name, new_path, file_type):
-
-        print new_path, new_name
 
         if os.path.exists(new_path):
 

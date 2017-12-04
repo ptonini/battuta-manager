@@ -1,0 +1,58 @@
+<div class="large_dialog">
+    <div id="playbook_args_container" class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label>
+                    <span>Saved arguments</span>
+                    <select id="play_args_selector" class="select form-control input-sm"></select>
+                </label>
+            </div>
+        </div>
+        <form>
+            <div class="col-md-9">
+                <div class="form-group">
+                    <label>
+                        <span>Limit</span>
+                        <span id="pattern_field_label"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3 text-right">
+                <div class="form-group">
+                    <label></label>
+                    <button data-bind="check" class="btn btn-default btn-sm">Check</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>
+                        <span>Tags</span>
+                        <input data-bind="tags" class="form-control input-sm" type="text">
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>
+                        <span>Skip tags</span>
+                        <input data-bind="skip_tags" class="form-control input-sm" type="text">
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>
+                        <span>Extra vars</span>
+                        <input data-bind="extra_vars" class="form-control input-sm" type="text">
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form_group">
+                    <label id="credentials_selector_label"></label>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
