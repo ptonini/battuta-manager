@@ -20,17 +20,24 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
             <ul class="dropdown-menu">
                 <li>
+                    <a data-bind="paths.runner">Jobs</a>
                     <a data-bind="paths.selectors.adhoc">Ad-Hoc</a>
-                    <a data-bind="paths.selectors.playbook">Playbooks</a>
-                    <a data-bind="paths.selectors.role">Roles</a>
+
                 <li class="divider"></li>
                 <li>
                     <a data-bind="paths.selectors.job">Job history</a>
                 </li>
             </ul>
         </li>
-        <li>
-            <a data-bind="paths.selectors.file">Files</a>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Files</a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a data-bind="paths.selectors.file">Files</a>
+                    <a data-bind="paths.selectors.playbook">Playbooks</a>
+                    <a data-bind="paths.selectors.role">Roles</a>
+                </li>
+            </ul>
         </li>
         <li>
             <a data-bind="paths.selectors.project">Projects</a>

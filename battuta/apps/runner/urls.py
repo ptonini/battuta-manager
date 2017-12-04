@@ -5,6 +5,8 @@ from . import views
 
 urlpatterns = [
 
+    url(r'^jobs/$', login_required(views.PageView.as_view()), kwargs={'page': 'jobs'}),
+
     url(r'^adhoc/$', login_required(views.PageView.as_view()), kwargs={'page': 'adhoc'}),
 
     url(r'^roles/$', login_required(views.PageView.as_view()), kwargs={'page': 'roles'}),

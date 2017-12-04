@@ -110,7 +110,7 @@ Project.prototype.info = function ($container) {
 
     let self = this;
 
-    self.loadHtml('projectInfo.html', $container).then($element => {
+    self.fetchHtml('projectInfo.html', $container).then($element => {
 
         self.bind($element);
 
@@ -128,7 +128,7 @@ Project.prototype.hosts = function ($container) {
 
     let self = this;
 
-    self.loadHtml('projectHostGroup.html', $container).then($element => {
+    self.fetchHtml('projectHostGroup.html', $container).then($element => {
 
         self.bind($element);
 
@@ -152,7 +152,7 @@ Project.prototype.playbookGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtml('entityGrid.html', $container).then($element => {
+    self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
             gridTitle: 'Playbooks',
@@ -165,6 +165,7 @@ Project.prototype.playbookGrid = function ($container) {
             checkered: true,
             showCount: true,
             addButtonType: 'text',
+            itemHoverCursor: 'auto',
             addButtonClass: 'btn btn-default btn-xs',
             gridBodyBottomMargin: '20px',
             columns: sessionStorage.getItem('playbook_grid_columns'),
@@ -241,7 +242,7 @@ Project.prototype.roleGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtml('entityGrid.html', $container).then($element => {
+    self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
             gridTitle: 'Roles',
@@ -249,8 +250,8 @@ Project.prototype.roleGrid = function ($container) {
             showAddButton: true,
             ajaxDataKey: 'file_list',
             itemValueKey: 'name',
-            maxHeight: window.innerHeight - 299,
             addButtonTitle: 'Add roles',
+            maxHeight: window.innerHeight - 299,
             checkered: true,
             showCount: true,
             addButtonType: 'text',
@@ -331,7 +332,7 @@ Project.prototype.userGroups = function ($container) {
 
     let self = this;
 
-    self.loadHtml('projectGroups.html', $container).then($element => {
+    self.fetchHtml('projectGroups.html', $container).then($element => {
 
         self.bind($element);
 
@@ -364,7 +365,7 @@ Project.prototype.view = function () {
 
     let self = this;
 
-    self.loadHtml('entityView.html', $('#content_container')).then($element => {
+    self.fetchHtml('entityView.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -517,7 +518,7 @@ Project.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 

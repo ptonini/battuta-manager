@@ -33,6 +33,10 @@ class PageView(View):
 
             return render(request, 'runner/roles.html')
 
+        elif kwargs['page'] == 'jobs':
+
+            return render(request, 'runner/jobs.html')
+
         elif kwargs['page'] == 'playbooks':
 
             return render(request, 'runner/playbooks.html')

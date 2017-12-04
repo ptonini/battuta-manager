@@ -42,7 +42,7 @@ Group.prototype.permissionsGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtml('entityGrid.html', $container).then($element => {
+    self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
             gridTitle: 'Permissions',
@@ -113,7 +113,7 @@ Group.prototype.memberGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtml('entityGrid.html', $container).then($element => {
+    self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
             gridTitle: 'Members',
@@ -188,7 +188,7 @@ Group.prototype.view = function () {
 
     let self = this;
 
-    self.loadHtml('entityView.html', $('#content_container')).then($element => {
+    self.fetchHtml('entityView.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -232,7 +232,7 @@ Group.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 

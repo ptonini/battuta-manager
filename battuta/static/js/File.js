@@ -82,7 +82,7 @@ File.prototype.upload = function (callback) {
 
     let self = this;
 
-    self.loadHtml('uploadDialog.html').then($element => {
+    self.fetchHtml('uploadDialog.html').then($element => {
 
         self.bind($element);
 
@@ -172,7 +172,7 @@ File.prototype.editorDialog = function (callback) {
 
     let self = this;
 
-    self.loadHtml('fileEditorDialog.html').then($element => {
+    self.fetchHtml('fileEditorDialog.html').then($element => {
 
         self.bind($element);
 
@@ -314,7 +314,7 @@ File.prototype.dialog = function (action, callback) {
 
     let self = this;
 
-    self.loadHtml('fileDialog.html').then($element =>  {
+    self.fetchHtml('fileDialog.html').then($element =>  {
 
         self.bind($element);
 
@@ -361,7 +361,7 @@ File.prototype.roleDialog = function (callback) {
 
     let self = this;
 
-    self.loadHtml('roleDialog.html').then($element => {
+    self.fetchHtml('roleDialog.html').then($element => {
 
         self.bind($element);
 
@@ -407,7 +407,7 @@ File.prototype.selector = function (owner) {
 
     let self = this;
 
-    self.loadHtml('fileSelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('fileSelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 

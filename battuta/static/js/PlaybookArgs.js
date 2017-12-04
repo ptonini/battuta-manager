@@ -46,7 +46,7 @@ PlaybookArgs.prototype.dialog = function (sameWindow) {
 
     file.read(function (data) {
 
-        self.loadHtml('playbookArgsDialog.html').then($element => {
+        self.fetchHtml('playbookArgsDialog.html').then($element => {
 
             self.bind($element);
 

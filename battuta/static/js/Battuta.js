@@ -92,7 +92,6 @@ function Battuta (param) {
 
     };
 
-
     $.fn.humanBytes = function (suffix) {
 
         if (!suffix) suffix = 'B';
@@ -193,6 +192,7 @@ Battuta.prototype = {
                 group: '/inventory/group'
             }
         },
+        runner: '/runner/jobs/',
         inventory: '/inventory/',
         templates: '/static/templates/',
         modules: '/static/templates/ansible_modules/'
@@ -468,7 +468,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtml('selectionDialog.html').then($element => {
+        self.fetchHtml('selectionDialog.html').then($element => {
 
             let $grid = $element.find('#selection_grid');
 
@@ -556,7 +556,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtml('patternField.html', $container).then($element => {
+        self.fetchHtml('patternField.html', $container).then($element => {
 
             self.bind($element);
 
@@ -566,7 +566,7 @@ Battuta.prototype = {
 
             $element.find('.pattern_editor').prop('disabled', locked).click(function () {
 
-                self.loadHtml('patternDialog.html').then($element => {
+                self.fetchHtml('patternDialog.html').then($element => {
 
                     self.bind($element);
 
@@ -692,7 +692,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtml('deleteDialog.html').then($element => {
+        self.fetchHtml('deleteDialog.html').then($element => {
 
                 $element.dialog({
                     width: '320',
@@ -720,7 +720,22 @@ Battuta.prototype = {
 
     },
 
-    loadHtml: function (file, $container) {
+    fetchJson: function (url) {
+
+        let self = this;
+
+        console.log(url);
+
+        return fetch(url)
+            .then(response => {
+
+                return response
+
+            })
+
+    },
+
+    fetchHtml: function (file, $container) {
 
         let self = this;
 
@@ -754,7 +769,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtml('entityDialog.html').then($element => {
+        self.fetchHtml('entityDialog.html').then($element => {
 
             self.bind($element);
 
@@ -828,7 +843,7 @@ Battuta.prototype = {
 
         let $container = $('#navbar_container');
 
-        if (authenticated === 'True') self.loadHtml('navBar.html', $container).then($element => {
+        if (authenticated === 'True') self.fetchHtml('navBar.html', $container).then($element => {
 
             self.bind($element);
 
@@ -866,7 +881,7 @@ Battuta.prototype = {
 
         });
 
-        else return self.loadHtml('loginMenu.html', $container).then($element => {
+        else return self.fetchHtml('loginMenu.html', $container).then($element => {
 
             user.bind($element);
 
@@ -886,7 +901,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.loadHtml('search.html', $('#content_container')).then($element => {
+        self.fetchHtml('search.html', $('#content_container')).then($element => {
 
             self.bind($element);
 

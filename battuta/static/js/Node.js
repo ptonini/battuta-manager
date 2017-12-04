@@ -44,7 +44,7 @@ Node.prototype.hostInfo = function ($container) {
 
     let self = this;
 
-    self.loadHtml('hostInfo.html', $container).then($element => {
+    self.fetchHtml('hostInfo.html', $container).then($element => {
 
         self.bind($element);
 
@@ -106,7 +106,7 @@ Node.prototype.hostInfo = function ($container) {
 
                 for (let key in infoTables) $element.find('#show_' + key).click(function () {
 
-                    self.loadHtml('tableDialog.html').then($element => {
+                    self.fetchHtml('tableDialog.html').then($element => {
 
                         $element.find('h4').html(key);
 
@@ -141,7 +141,7 @@ Node.prototype.hostInfo = function ($container) {
 
                 $('#show_facts').css('margin-right', '5px').click(function () {
 
-                    self.loadHtml('factsDialog.html').then($element => {
+                    self.fetchHtml('factsDialog.html').then($element => {
 
                         self.bind($element);
 
@@ -186,7 +186,7 @@ Node.prototype.relationships = function (relation, $container) {
 
     let self = this;
 
-    self.loadHtml('entityGrid.html', $container).then($element => {
+    self.fetchHtml('entityGrid.html', $container).then($element => {
 
         self.bind($element);
 
@@ -279,7 +279,7 @@ Node.prototype.descendants = function (offset, $container) {
 
     let self = this;
 
-    self.loadHtml('descendants.html', $container).then($element => {
+    self.fetchHtml('descendants.html', $container).then($element => {
 
         self.bind($element);
 
@@ -359,7 +359,7 @@ Node.prototype.variables = function ($container) {
 
     let self = this;
 
-    self.loadHtml('variableTable.html', $container).then($element => {
+    self.fetchHtml('variableTable.html', $container).then($element => {
 
         self.bind($element);
 
@@ -561,7 +561,7 @@ Node.prototype.editVariable = function (variable, callback) {
 
     let self = this;
 
-    self.loadHtml('editVariableDialog.html').then($element => {
+    self.fetchHtml('editVariableDialog.html').then($element => {
 
         self.bind($element);
 
@@ -608,7 +608,7 @@ Node.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    self.loadHtml('copyVariablesDialog.html').then($element => {
+    self.fetchHtml('copyVariablesDialog.html').then($element => {
 
         $element
             .dialog({
@@ -656,7 +656,7 @@ Node.prototype.view = function () {
 
     let self = this;
 
-    self.loadHtml('entityView.html', $('#content_container')).then($element => {
+    self.fetchHtml('entityView.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -716,7 +716,7 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtml('nodeSelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('nodeSelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 

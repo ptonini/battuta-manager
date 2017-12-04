@@ -32,7 +32,7 @@ Inventory.prototype.manage = function () {
 
     let self = this;
 
-    self.loadHtml('manageInventory.html', $('#content_container')).then($element => {
+    self.fetchHtml('manageInventory.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -61,7 +61,7 @@ Inventory.prototype.manage = function () {
 
                 self.requestResponse(data.response, function() {
 
-                    self.loadHtml('importResult.html').then($element => {
+                    self.fetchHtml('importResult.html').then($element => {
 
                         $element.find('#host_count').html(data.response.added_hosts);
 
@@ -99,7 +99,7 @@ Inventory.prototype.manage = function () {
 
             if (format === 'filezilla') {
 
-                self.loadHtml('filezillaExportDialog.html').then($element => {
+                self.fetchHtml('filezillaExportDialog.html').then($element => {
 
                     self.bind($element);
 

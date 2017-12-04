@@ -54,7 +54,7 @@ User.prototype.edit = function (callback) {
 
     let self = this;
 
-    self.loadHtml('userDialog.html').then($element => {
+    self.fetchHtml('userDialog.html').then($element => {
 
         self.bind($element);
 
@@ -124,7 +124,7 @@ User.prototype.forms = function (current_user, $container) {
 
     let self = this;
 
-    self.loadHtml('userForm.html', $container).then($element => {
+    self.fetchHtml('userForm.html', $container).then($element => {
 
         $('[data-bind="timezone"]').timezones();
 
@@ -167,7 +167,7 @@ User.prototype.credentialsForm = function ($container) {
 
     let self = this;
 
-    self.loadHtml('credentialsForm.html', $container)
+    self.fetchHtml('credentialsForm.html', $container)
         .then($element => {
 
             self.bind($element);
@@ -236,7 +236,7 @@ User.prototype.credentialsSelector = function (startValue, runner, $container) {
         username: ''
     };
 
-    return self.loadHtml('credsSelector.html', $container).then($element => {
+    return self.fetchHtml('credsSelector.html', $container).then($element => {
 
         self.runner = runner;
 
@@ -288,7 +288,7 @@ User.prototype.groupGrid = function ($container) {
 
     let self = this;
 
-    self.loadHtml('entityGrid.html', $container).then($element => {
+    self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
             gridTitle: 'Groups',
@@ -364,7 +364,7 @@ User.prototype.view = function (current_user) {
 
     let self = this;
 
-    self.loadHtml('entityView.html', $('#content_container')).then($element => {
+    self.fetchHtml('entityView.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -404,7 +404,7 @@ User.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 

@@ -134,7 +134,7 @@ Job.prototype.run = function (sameWindow) {
 
     let self = this;
 
-    self.loadHtml('passwordDialog.html').then($element => {
+    self.fetchHtml('passwordDialog.html').then($element => {
 
         self.bind($element);
 
@@ -222,7 +222,7 @@ Job.prototype.statistics = function (modal) {
 
     let self = this;
 
-    return self.loadHtml('jobStatistics.html').then($element => {
+    return self.fetchHtml('jobStatistics.html').then($element => {
 
         let tableOptions = {
             paging: false,
@@ -277,11 +277,33 @@ Job.prototype.statistics = function (modal) {
 
 };
 
+Job.prototype.runner = function () {
+
+    let self = this;
+
+    self.fetchHtml('jobRunner.html', $('#content_container'))
+        .then($element => {
+
+            self.bind($element);
+
+            $('#job_tabs').rememberTab();
+
+            return self.fetchJson('/files/api/search/?root=playbooks')
+
+        })
+        .then(data => {
+
+            console.log(data)
+
+        })
+
+}
+
 Job.prototype.selector = function () {
 
     let self = this;
 
-    self.loadHtml('entitySelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
 
         self.bind($element);
 
@@ -330,7 +352,7 @@ Job.prototype.view = function () {
             gather_facts: 'jobView_adhoc.html'
         };
 
-        self.loadHtml('jobNavBar.html', $('#navbar_container')).then($element => {
+        self.fetchHtml('jobNavBar.html', $('#navbar_container')).then($element => {
 
             self.bind($element);
 
@@ -449,7 +471,7 @@ Job.prototype.view = function () {
 
         });
 
-        self.loadHtml(templates[self.type]).then($element => {
+        self.fetchHtml(templates[self.type]).then($element => {
 
             let $jobContainer = $element.find('#job_container');
 
@@ -483,7 +505,7 @@ Job.prototype.view = function () {
 
                     }
 
-                    self.loadHtml('taskTable.html').then($element => {
+                    self.fetchHtml('taskTable.html').then($element => {
 
                         $.each(play.tasks, function (index, task) {
 
