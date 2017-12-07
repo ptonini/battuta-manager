@@ -288,27 +288,49 @@ Job.prototype.runner = function () {
 
             $('#job_tabs').rememberTab();
 
-            return self.fetchJson('/files/api/search/', {root: 'playbooks'})
+            self.fetchJson('/files/api/search/', {root: 'playbooks'}).then(data => {
 
-        })
-        .then(data => {
+                $.each(data, (index, value) => {
 
-            $.each(data, (index, value) => {
+                    $('#playbook_selector').append(
+                        $('<option>')
+                            .data('playbook', value)
+                            .attr('value', value.folder ? value.folder + '/' + value.name : value.name)
+                    );
 
-                $('#playbook_list').append(
-                    $('<option>').attr('value', value.folder ? value.folder + '/' + value.name : value.name)
-                )
+                });
 
-            });
+                $('#playbook').change(function(){
 
-            return self.fetchHtml('playbookArgs.html', $('#playbook_args'))
+                    // console.log($('#playbook_list').find('option[value="' + $(this).val() + '"]'));
+                    console.log($(this).val());
 
-        })
-        .then($element => {
+                    // let file = new File({
+                    //     name: $(this).data('name'),
+                    //     folder: $(this).data('folder'),
+                    //     root: 'playbooks'
+                    // });
+                    //
+                    // file.read(data => {
+                    //
+                    //     console.log(data)
+                    //
+                    // })
 
-            self.bind($element)
+                });
 
-        })
+            })
+
+            self.fetchHtml('playbookArgs.html', $('#playbook_args')).then($element => {
+
+                self.bind($element)
+
+            })
+
+
+        });
+
+
 
 };
 

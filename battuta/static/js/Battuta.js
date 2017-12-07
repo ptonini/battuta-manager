@@ -747,7 +747,6 @@ Battuta.prototype = {
                 return response.json()
 
             })
-            .then(response)
 
     },
 
