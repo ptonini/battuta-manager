@@ -162,7 +162,7 @@ class FilesView(View):
 
                         if file_dict not in json.loads(request.GET.get('exclude', '[]')):
 
-                            file_list.append({'folder': head, 'name': tail})
+                            file_list.append({'folder': head, 'name': tail, 'root': source['name']})
 
         return sorted(file_list, key=lambda k: (k['folder'], k['name']))
 

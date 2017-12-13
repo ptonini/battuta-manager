@@ -292,34 +292,33 @@ Job.prototype.runner = function () {
 
                 $.each(data, (index, value) => {
 
-                    $('#playbook_selector').append(
+                    $('#playbook_list').append(
                         $('<option>')
-                            .data('playbook', value)
+                            .data(value)
                             .attr('value', value.folder ? value.folder + '/' + value.name : value.name)
                     );
 
                 });
 
-                $('#playbook').change(function(){
+                $('#playbook').bind('input', function () {
 
-                    // console.log($('#playbook_list').find('option[value="' + $(this).val() + '"]'));
-                    console.log($(this).val());
+                    let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
 
-                    // let file = new File({
-                    //     name: $(this).data('name'),
-                    //     folder: $(this).data('folder'),
-                    //     root: 'playbooks'
-                    // });
-                    //
-                    // file.read(data => {
-                    //
-                    //     console.log(data)
-                    //
-                    // })
+                    if (file_data) {
+
+                        let file = new File(file_data);
+
+                        file.read(data => {
+
+                            console.log(data)
+
+                        })
+
+                    }
 
                 });
 
-            })
+            });
 
             self.fetchHtml('playbookArgs.html', $('#playbook_args')).then($element => {
 
