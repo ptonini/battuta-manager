@@ -170,9 +170,9 @@ Battuta.prototype = {
         },
         selectors: {
             file: '/files/',
+            playbook: '/files/playbooks/',
+            role: '/files/roles/',
             adhoc: '/runner/adhoc/',
-            playbook: '/runner/playbooks/',
-            role: '/runner/roles/',
             job: '/runner/history/',
             user: '/users/users/',
             group: '/users/groups/',
@@ -290,7 +290,7 @@ Battuta.prototype = {
 
     },
 
-    jsonRequest: function (type, obj, url, blockUI, callback, failCallback) {
+    jsonRequest: function (type, obj, url, blocking, callback, failCallback) {
 
         let self = this,
             data = {},
@@ -316,7 +316,7 @@ Battuta.prototype = {
             cache: false,
             beforeSend: function (xhr, settings) {
 
-                blockUI && $.blockUI({
+                blocking && $.blockUI({
                     message: null,
                     css: {
                         border: 'none',
@@ -336,7 +336,7 @@ Battuta.prototype = {
             },
             complete: function () {
 
-                blockUI && $.unblockUI();
+                blocking && $.unblockUI();
 
             }
         });
@@ -377,19 +377,19 @@ Battuta.prototype = {
 
     },
 
-    getData: function (action, blockUI, callback, failCallback) {
+    getData: function (action, blocking, callback, failCallback) {
 
         let self = this;
 
-        self.jsonRequest('GET', self, self.apiPath + action + '/', blockUI, callback, failCallback);
+        self.jsonRequest('GET', self, self.apiPath + action + '/', blocking, callback, failCallback);
 
     },
 
-    postData: function (action, blockUI, callback, failCallback) {
+    postData: function (action, blocking, callback, failCallback) {
 
         let self = this;
 
-        self.jsonRequest('POST', self, self.apiPath + action + '/', blockUI, callback, failCallback);
+        self.jsonRequest('POST', self, self.apiPath + action + '/', blocking, callback, failCallback);
 
     },
 
@@ -815,11 +815,11 @@ Battuta.prototype = {
 
     },
 
-    refresh: function (blockUI, callback) {
+    refresh: function (blocking, callback) {
 
         let self = this;
 
-        self.getData('get', blockUI, function (data){
+        self.getData('get', blocking, function (data){
 
             data[self.key] && self.loadParam(data[self.key]);
 
@@ -829,11 +829,11 @@ Battuta.prototype = {
 
     },
 
-    list: function (blockUI, callback) {
+    list: function (blocking, callback) {
 
         let self = this;
 
-        self.getData('list', blockUI, callback)
+        self.getData('list', blocking, callback)
 
     },
 
@@ -841,7 +841,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.postData('save', true,function (data){
+        self.postData('save', true, function (data){
 
             data[self.key] && self.loadParam(data[self.key]);
 

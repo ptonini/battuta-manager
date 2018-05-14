@@ -29,17 +29,9 @@ class PageView(View):
     @staticmethod
     def get(request, **kwargs):
 
-        if kwargs['page'] == 'roles':
-
-            return render(request, 'runner/roles.html')
-
-        elif kwargs['page'] == 'jobs':
+        if kwargs['page'] == 'jobs':
 
             return render(request, 'runner/jobs.html')
-
-        elif kwargs['page'] == 'playbooks':
-
-            return render(request, 'runner/playbooks.html')
 
         elif kwargs['page'] == 'adhoc':
 
@@ -492,7 +484,7 @@ class AdHocView(View):
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class PlaybookArgsView(View):
+class PlaybookView(View):
 
     @staticmethod
     def get(request, action):
@@ -503,7 +495,11 @@ class PlaybookArgsView(View):
 
         if request.user.has_perm('users.execute_jobs') or project_auth.can_run_playbooks(AnsibleInventory(), playbook_path):
 
-            if action == 'list':
+            if action == 'get':
+
+                data = {}
+
+            elif action == 'list':
 
                 args_list = list()
 

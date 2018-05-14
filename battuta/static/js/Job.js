@@ -284,8 +284,6 @@ Job.prototype.runner = function () {
     self.fetchHtml('jobRunner.html', $('#content_container'))
         .then($element => {
 
-            self.bind($element);
-
             $('#job_tabs').rememberTab();
 
             self.fetchJson('/files/api/search/', {root: 'playbooks'}).then(data => {
@@ -300,19 +298,28 @@ Job.prototype.runner = function () {
 
                 });
 
-                $('#playbook').bind('input', function () {
+                $('#playbook').on('input', function () {
 
                     let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
 
                     if (file_data) {
 
-                        let file = new File(file_data);
+                        let playbook = new Playbook(file_data);
 
-                        file.read(data => {
+                        $('#edit_playbook').off().click(function () {
 
-                            console.log(data)
+                            playbook.edit()
+
+                        });
+
+                        $('#clear_playbook').off().click(function () {
+
+                            $('#playbook').val('');
+
+                            playbook = null
 
                         })
+
 
                     }
 
@@ -320,16 +327,7 @@ Job.prototype.runner = function () {
 
             });
 
-            self.fetchHtml('playbookArgs.html', $('#playbook_args')).then($element => {
-
-                self.bind($element)
-
-            })
-
-
         });
-
-
 
 };
 
@@ -406,7 +404,7 @@ Job.prototype.view = function () {
 
             let $rerunBtn = $('#rerun_button').click(function () {
 
-                let playArgs = new PlaybookArgs( {
+                let playArgs = new Playbook( {
                     playbook: self.name,
                     folder: self.folder,
                     subset: self.subset,

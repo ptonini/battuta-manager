@@ -7,7 +7,6 @@ import magic
 import ntpath
 import tempfile
 import datetime
-import yaml
 import sys
 from pytz import timezone, utc
 
@@ -16,6 +15,8 @@ from django.views.generic import View
 from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
 from django.core.cache import cache
+
+from apps.files.extras import validate_yaml
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
@@ -27,33 +28,22 @@ sys.setdefaultencoding('utf8')
 class PageView(View):
 
     @staticmethod
-    def get(request):
+    def get(request, **kwargs):
 
-        return render(request, 'files/files.html', {'user': request.user})
+        if kwargs['page'] == 'files':
+
+            return render(request, 'files/files.html', {'user': request.user})
+
+        elif kwargs['page'] == 'roles':
+
+            return render(request, 'files/roles.html')
+
+        elif kwargs['page'] == 'playbooks':
+
+            return render(request, 'files/playbooks.html')
 
 
 class FilesView(View):
-
-    @staticmethod
-    def _validate_yaml(full_path):
-
-        if os.path.isfile(full_path):
-
-            with open(full_path, 'r') as yaml_file:
-
-                try:
-
-                    yaml.load(yaml_file.read())
-
-                    return None
-
-                except yaml.YAMLError as e:
-
-                    return type(e).__name__ + ': ' + e.__str__()
-
-        else:
-
-            return None
 
     _file_sources = {
         'files': {
@@ -71,7 +61,7 @@ class FilesView(View):
             'prefix': None,
             'exclude': list(),
             'exts': ['.yml', '.yaml'],
-            'validator': _validate_yaml.__func__,
+            'validator': validate_yaml,
             'permission': 'users.edit_playbooks'
         },
         'roles': {
@@ -162,7 +152,12 @@ class FilesView(View):
 
                         if file_dict not in json.loads(request.GET.get('exclude', '[]')):
 
-                            file_list.append({'folder': head, 'name': tail, 'root': source['name']})
+                            file_list.append({
+                                'folder': head,
+                                'name': tail,
+                                'root': source['name'],
+                                'type': magic.from_file(full_path, mime='true') if os.path.isfile(full_path) else 'directory'
+                            })
 
         return sorted(file_list, key=lambda k: (k['folder'], k['name']))
 

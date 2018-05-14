@@ -1,4 +1,4 @@
-function File(param) {
+function FileObj(param) {
 
     let self = this;
 
@@ -10,19 +10,19 @@ function File(param) {
 
 }
 
-File.prototype = Object.create(Battuta.prototype);
+FileObj.prototype = Object.create(Battuta.prototype);
 
-File.prototype.constructor = File;
+FileObj.prototype.constructor = FileObj;
 
-File.prototype.apiPath = Battuta.prototype.paths.apis.file;
+FileObj.prototype.apiPath = Battuta.prototype.paths.apis.file;
 
-File.prototype.editable = [
+FileObj.prototype.editable = [
     'inode/x-empty',
     'application/xml',
     'application/json'
 ];
 
-File.prototype.loadParam = function (param) {
+FileObj.prototype.loadParam = function (param) {
 
     let self = this;
 
@@ -50,7 +50,7 @@ File.prototype.loadParam = function (param) {
 
 };
 
-File.prototype.edit = function (callback) {
+FileObj.prototype.edit = function (callback) {
 
     let self = this;
 
@@ -70,7 +70,7 @@ File.prototype.edit = function (callback) {
 
 };
 
-File.prototype.read = function (callback) {
+FileObj.prototype.read = function (callback) {
 
     let self = this;
 
@@ -78,7 +78,7 @@ File.prototype.read = function (callback) {
 
 };
 
-File.prototype.upload = function (callback) {
+FileObj.prototype.upload = function (callback) {
 
     let self = this;
 
@@ -154,7 +154,7 @@ File.prototype.upload = function (callback) {
 
 };
 
-File.prototype.exists = function (callback) {
+FileObj.prototype.exists = function (callback) {
 
     let self = this;
 
@@ -168,7 +168,7 @@ File.prototype.exists = function (callback) {
 
 };
 
-File.prototype.editorDialog = function (callback) {
+FileObj.prototype.editorDialog = function (callback) {
 
     let self = this;
 
@@ -310,7 +310,7 @@ File.prototype.editorDialog = function (callback) {
 
 };
 
-File.prototype.dialog = function (action, callback) {
+FileObj.prototype.dialog = function (action, callback) {
 
     let self = this;
 
@@ -357,7 +357,7 @@ File.prototype.dialog = function (action, callback) {
 
 };
 
-File.prototype.roleDialog = function (callback) {
+FileObj.prototype.roleDialog = function (callback) {
 
     let self = this;
 
@@ -403,7 +403,7 @@ File.prototype.roleDialog = function (callback) {
 
 };
 
-File.prototype.selector = function (owner) {
+FileObj.prototype.selector = function (owner) {
 
     let self = this;
 
@@ -454,7 +454,7 @@ File.prototype.selector = function (owner) {
 
                     else cell.off().click(function () {
 
-                        let playArgs = new PlaybookArgs({playbook: file.name, folder: file.folder});
+                        let playArgs = new Playbook({playbook: file.name, folder: file.folder});
 
                         playArgs.dialog()
 
@@ -470,7 +470,7 @@ File.prototype.selector = function (owner) {
                             url: '/static/templates/playbook_template.yml',
                             success: function (data) {
 
-                                let file = new File({root: 'playbooks', folder: self.folder, text: data});
+                                let file = new FileObj({root: 'playbooks', folder: self.folder, text: data});
 
                                 file.editorDialog(function () {
 
@@ -491,7 +491,7 @@ File.prototype.selector = function (owner) {
                     className: 'btn-xs',
                     action: function () {
 
-                        let role = new File({name: '', root: 'roles', folder: '', type: 'directory'});
+                        let role = new FileObj({name: '', root: 'roles', folder: '', type: 'directory'});
 
                         role.roleDialog(function (data, role) {
 
@@ -511,7 +511,7 @@ File.prototype.selector = function (owner) {
                 className: 'btn-xs',
                 action: function () {
 
-                    let file = new File({root: self.root, folder: self.folder, owner: owner});
+                    let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
 
                     file.dialog('create', function () {
 
@@ -526,7 +526,7 @@ File.prototype.selector = function (owner) {
                 className: 'btn-xs',
                 action: function () {
 
-                    let file = new File({root: self.root, folder: self.folder, owner: owner});
+                    let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
 
                     file.upload(function () {
 
@@ -611,7 +611,7 @@ File.prototype.selector = function (owner) {
                 buttons: buttons,
                 rowCallback: function (row, data) {
 
-                    let file = new File(data);
+                    let file = new FileObj(data);
 
                     if (file.type === 'directory') {
 
@@ -732,7 +732,7 @@ File.prototype.selector = function (owner) {
 
                             let fieldValue = $pathInputField.val();
 
-                            let folder = new File({name: fieldValue, type: 'directory', root: self.root, user: owner});
+                            let folder = new FileObj({name: fieldValue, type: 'directory', root: self.root, user: owner});
 
                             if (fieldValue.charAt(fieldValue.length - 1) === '/') {
 
@@ -755,7 +755,7 @@ File.prototype.selector = function (owner) {
 
         if (self.folder) {
 
-            let folderObj = new File({name: self.folder, type: 'directory', root: self.root, owner: owner});
+            let folderObj = new FileObj({name: self.folder, type: 'directory', root: self.root, owner: owner});
 
             folderObj.exists(function (data) {
 

@@ -29,7 +29,8 @@
     "font-awesome": "font-awsome#^4.7.0",
     "actor-googlefont": "*",
     "kanit-googlefont": "*",
-    "requirejs": "^2.3.5"
+    "requirejs": "^2.3.5",
+    "blockUI": "*"
   },
   "resolutions": {
     "jquery": "^3.2.1"
