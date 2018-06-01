@@ -14,7 +14,7 @@ Group.prototype = Object.create(Battuta.prototype);
 
 Group.prototype.constructor = Group;
 
-Group.prototype.apiPath = Battuta.prototype.paths.apis.group;
+Group.prototype.apiPath = Battuta.prototype.paths.api.group;
 
 Group.prototype.key = 'group';
 
@@ -58,7 +58,7 @@ Group.prototype.permissionsGrid = function ($container) {
             showCount: true,
             gridBodyBottomMargin: '20px',
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.paths.apis.group + 'permissions/?name=' + self.name,
+            ajaxUrl: self.paths.api.group + 'permissions/?name=' + self.name,
             ajaxDataKey: 'permissions',
             formatItem: function ($gridContainer, $gridItem) {
 
@@ -83,9 +83,10 @@ Group.prototype.permissionsGrid = function ($container) {
             addButtonAction: function ($gridContainer) {
 
                 self.selectionDialog({
+                    title: 'Select permissions',
                     type: 'many',
                     objectType: 'permissions',
-                    url: self.paths.apis.group + 'permissions/?name=' + self.name + '&reverse=true&exclude=' + JSON.stringify($gridContainer.DynaGrid('getData')),
+                    url: self.paths.api.group + 'permissions/?name=' + self.name + '&reverse=true&exclude=' + JSON.stringify($gridContainer.DynaGrid('getData')),
                     ajaxDataKey: 'permissions',
                     itemValueKey: 'codename',
                     itemTitleKey: 'name',
@@ -159,9 +160,10 @@ Group.prototype.memberGrid = function ($container) {
             addButtonAction: function ($gridContainer) {
 
                 self.selectionDialog({
+                    title: 'Select users',
                     type: 'many',
                     objectType: 'user',
-                    url: self.paths.apis.group + 'members/?reverse=true&name=' + self.name,
+                    url: self.paths.api.group + 'members/?reverse=true&name=' + self.name,
                     ajaxDataKey: 'members',
                     itemValueKey: 'username',
                     action: function (selection) {

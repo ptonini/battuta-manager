@@ -1,23 +1,19 @@
 <div class="row">
     <div class="col-md-12">
         <div class="form-group">
-            <label>
-                <span>Command</span>
-                <input class="form-control input-sm" type="text" data-bind="arguments._raw_params">
-            </label>
+            <label for="command_field">Command</label>
+            <input id="command_field" class="form-control input-sm" type="text" data-bind="arguments._raw_params">
         </div>
     </div>
     <div class="col-md-10">
         <div class="form-group">
-            <label>
-                <span>Extra parameters</span>
-                <input class="form-control input-sm" type="text" data-bind="arguments.extra_params">
-            </label>
+            <label for="param_field">Extra parameters</label>
+            <input id="param_field" class="form-control input-sm" type="text" data-bind="arguments.extra_params">
         </div>
     </div>
     <div class="col-md-2 text-right">
         <div class="form_group">
-            <label></label>
+            <label>&nbsp;</label>
             <button class="btn btn-default btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
         </div>
     </div>

@@ -14,13 +14,55 @@ FileObj.prototype = Object.create(Battuta.prototype);
 
 FileObj.prototype.constructor = FileObj;
 
-FileObj.prototype.apiPath = Battuta.prototype.paths.apis.file;
+FileObj.prototype.apiPath = Battuta.prototype.paths.api.file;
 
 FileObj.prototype.editable = [
     'inode/x-empty',
     'application/xml',
     'application/json'
 ];
+
+FileObj.prototype.validator = {
+    playbooks: function (text) {
+
+        try {
+
+            jsyaml.load(text);
+
+            return true
+
+        }
+
+        catch (error) {
+
+            let alert = divLargeAlert.clone().append(
+                $('<h5>').html('Invalid yaml:'),
+                $('<div>').css('white-space', 'pre-line').html(error.message)
+            );
+
+            $.bootstrapGrowl(alert, {type: 'danger', delay: 0});
+
+            return false
+        }
+
+    },
+    roles: function () {
+
+        return true
+
+    },
+    files: function () {
+
+        return true
+
+    },
+    users: function () {
+
+        return true
+
+    }
+
+};
 
 FileObj.prototype.loadParam = function (param) {
 
@@ -40,10 +82,6 @@ FileObj.prototype.loadParam = function (param) {
 
     self.set('folder', param.folder);
 
-    self.set('is_valid', param.is_valid);
-
-    self.set('error', param.error);
-
     self.set('owner', param.owner);
 
     self.set('text', param.text);
@@ -54,17 +92,13 @@ FileObj.prototype.edit = function (callback) {
 
     let self = this;
 
-    if (self.type.split('/')[0] === 'text' || self.editable.indexOf(self.type) > -1) {
-
-        self.read(function (data) {
+    if (self.type.split('/')[0] === 'text' || self.editable.indexOf(self.type) > -1) self.read(function (data) {
 
             self.text = data.text;
 
             self.editorDialog(callback);
 
-        });
-
-    }
+    });
 
     else self.dialog('rename', callback);
 
@@ -283,9 +317,11 @@ FileObj.prototype.editorDialog = function (callback) {
 
                             self.text = textEditor.getValue();
 
-                            self.save(data => {
+                            self.validator[self.root](self.text) && self.save(data => {
 
                                 $(this).dialog('close');
+
+                                delete self.text;
 
                                 callback && callback(data);
 
@@ -323,6 +359,8 @@ FileObj.prototype.dialog = function (action, callback) {
         self.set('is_folder', false);
 
         action === 'copy' && self.set('new_name', 'copy_' + self.name);
+
+        (action === 'copy' || action === 'rename') && $element.find('#is_folder_container').remove();
 
         $element
             .dialog({
@@ -438,29 +476,6 @@ FileObj.prototype.selector = function (owner) {
 
         let roots = {
             playbooks: {
-                formatter: function (row, file) {
-
-                    let cell = $(row).find('td:eq(0)');
-
-                    cell.css('cursor', 'pointer');
-
-                    if (file.error) cell.css('color', 'red').off().click(function () {
-
-                        let message = preLargeAlert.clone().html(file.error);
-
-                        $.bootstrapGrowl(message, Object.assign(failedAlertOptions, {width: 'auto', delay: 0}));
-
-                    });
-
-                    else cell.off().click(function () {
-
-                        let playArgs = new Playbook({playbook: file.name, folder: file.folder});
-
-                        playArgs.dialog()
-
-                    })
-
-                },
                 button: {
                     text: 'New playbook',
                     className: 'btn-xs',
@@ -480,12 +495,11 @@ FileObj.prototype.selector = function (owner) {
 
                             }
                         });
+
                     }
                 }
-
             },
             roles: {
-
                 button: {
                     text: 'Add role',
                     className: 'btn-xs',
@@ -625,8 +639,6 @@ FileObj.prototype.selector = function (owner) {
                             });
 
                     }
-
-                    else roots[self.root] && roots[self.root].formatter && roots[self.root].formatter(row, file);
 
                     $(row).find('td:eq(2)').humanBytes();
 

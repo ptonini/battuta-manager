@@ -36,7 +36,7 @@ Node.prototype.loadParam = function (param) {
 
     self.set('disc', param.disc);
 
-    self.set('apiPath', self.paths.apis.inventory + self.type + '/');
+    self.set('apiPath', self.paths.api.inventory + self.type + '/');
 
 };
 
@@ -75,6 +75,7 @@ Node.prototype.hostInfo = function ($container) {
                             });
 
                             return interfacesArray
+
                         })(),
                         columns:  [
                             {class: 'col-md-2', title: 'interface', data: 'device'},
@@ -98,7 +99,7 @@ Node.prototype.hostInfo = function ($container) {
                         ],
                         rowCallback: function(row) {
 
-                            $(row).find('td:eq(2)').humanBytes()
+                            $(row).find('td:eq(2)').humanBytes('GB')
 
                         }
                     },
@@ -249,12 +250,12 @@ Node.prototype.relationships = function (relation, $container) {
             addButtonAction: function ($gridContainer) {
 
                 self.selectionDialog({
+                    title: 'Select ' + relation,
                     type: 'many',
                     objectType: self.type,
                     url: self.apiPath + relation + '/?related=false&id=' + self.id,
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
-                    newEntity: new Node({name: null, description: null, type: self.relationType[relation]}),
                     action: function (selection) {
 
                         self.selection = selection;
@@ -626,9 +627,10 @@ Node.prototype.copyVariables = function (callback) {
                 $element.dialog('close');
 
                 self.selectionDialog({
+                    title: 'Select node',
                     type: 'one',
                     objectType: $(this).data('type'),
-                    url: self.paths.apis.inventory + 'list/?type=' + $(this).data('type'),
+                    url: self.paths.api.inventory + 'list/?type=' + $(this).data('type'),
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
                     action: function (selection, $dialog) {
@@ -661,8 +663,6 @@ Node.prototype.view = function () {
         self.bind($element);
 
         self.refresh(false, function () {
-
-            let adhoc = new AdHoc({hosts: self.name});
 
             $('#edit_button').toggle(self.editable).click(function() {
 
@@ -700,9 +700,7 @@ Node.prototype.view = function () {
 
             }
 
-            if (self.type === 'group' && self.name !== 'all') self.descendants(299, self.addTab('descendants'));
-
-            if (self.type === 'host' || self.name !== 'all') adhoc.view(true, self.addTab('adhoc'));
+            //if (self.type === 'group' && self.name !== 'all') self.descendants(299, self.addTab('descendants'));
 
             $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 

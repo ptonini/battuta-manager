@@ -1,34 +1,27 @@
 <div class="row">
     <div class="col-md-12">
-        <h3>Jobs</h3>
+        <h3>Runner</h3>
         <ul id="job_tabs" class="nav nav-tabs">
             <li class="active">
-                <a data-toggle="tab" href="#playbook_tab">Playbook</a>
+                <a data-toggle="tab" href="#playbook_tab">Playbooks</a>
             </li>
             <li>
-                <a data-toggle="tab" href="#task_tab">Task</a>
-            </li>
-            <li>
-                <a data-toggle="tab" href="#command_tab">Command</a>
+                <a data-toggle="tab" href="#task_tab">Tasks</a>
             </li>
         </ul>
         <br>
         <div class="tab-content">
             <div class="tab-pane active" id="playbook_tab">
-                <form>
+                <form id="playbook_form">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="playbook">Select playbook</label>
+                                <label for="playbook_list">Select playbook</label>
                                 <div class="input-group">
-                                    <input id="playbook" class="form-control input-sm" type="text" list="playbook_list">
-                                    <datalist id="playbook_list"></datalist>
+                                    <select id="playbook_list" class="select form-control input-sm"></select>
                                     <span class="input-group-btn">
                                         <button id="edit_playbook" type="button" class="btn btn-default btn-sm">
                                             <span class="fa fa-fw fa-pencil" title="Edit"></span>
-                                        </button>
-                                        <button id="clear_playbook" type="button" class="btn btn-default btn-sm">
-                                            <span class="fa fa-fw fa-eraser" title="Clear"></span>
                                         </button>
                                     </span>
                                 </div>
@@ -36,15 +29,17 @@
                         </div>
                     </div>
                 </form>
+                <br>
                 <div class="row">
                     <div class="col-md-6">
                         <div id="playbook_args"></div>
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" id="task_tab"></div>
-            <div class="tab-pane" id="command_tab"></div>
+            <div class="tab-pane" id="task_tab">
+                <table id="adhoc_table" class="table table-condensed table-hover table-striped"></table>
             </div>
+        </div>
     </div>
 </div>
 

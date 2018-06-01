@@ -16,8 +16,6 @@ from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.conf import settings
 from django.core.cache import cache
 
-from apps.files.extras import validate_yaml
-
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
 
@@ -42,17 +40,20 @@ class PageView(View):
 
             return render(request, 'files/playbooks.html')
 
+        elif kwargs['page'] == 'user':
+
+            return render(request, 'files/user.html')
+
 
 class FilesView(View):
 
-    _file_sources = {
+    file_sources = {
         'files': {
             'name': 'files',
             'path': settings.FILES_PATH,
             'prefix': '{{ files_path }}',
             'exclude': list(),
             'exts': None,
-            'validator': None,
             'permission': 'users.edit_files'
         },
         'playbooks': {
@@ -61,7 +62,6 @@ class FilesView(View):
             'prefix': None,
             'exclude': list(),
             'exts': ['.yml', '.yaml'],
-            'validator': validate_yaml,
             'permission': 'users.edit_playbooks'
         },
         'roles': {
@@ -70,32 +70,29 @@ class FilesView(View):
             'prefix': '{{ roles_path }}',
             'exclude': ['tasks', 'handlers', 'vars', 'defaults', 'meta'],
             'exts': None,
-            'validator': None,
             'permission': 'users.edit_roles'
 
-    },
+        },
         'users': {
             'name': 'users',
             'path': settings.USERDATA_PATH,
             'prefix': '{{ userdata_path }}',
             'exclude': list(),
-            'types': list(),
             'exts': None,
-            'validator': None,
             'permission': 'users.edit_files'
         }
     }
 
-    _archive_types = [
+    archive_types = [
         'application/zip',
         'application/gzip',
         'application/x-tar',
         'application/x-gtar'
     ]
 
-    def _set_root(self, root, owner, user):
+    def set_root(self, root, owner, user):
 
-        root_dict = self._file_sources[root]
+        root_dict = self.file_sources[root]
 
         if root == 'users':
 
@@ -113,11 +110,11 @@ class FilesView(View):
 
         return root_dict
 
-    def _search_files(self, source, request, prefs, project_auth):
+    def search_files(self, source, request, prefs, project_auth):
 
         file_list = list()
 
-        root_path = self._set_root(source['name'], '', request.user)
+        root_path = self.set_root(source['name'], '', request.user)
 
         for root, dirs, files in os.walk(source['path']):
 
@@ -125,11 +122,11 @@ class FilesView(View):
 
                 full_path = os.path.join(root, file_name)
 
-                is_not_archive = magic.from_file(full_path, mime='true') not in self._archive_types
+                is_not_archive = magic.from_file(full_path, mime='true') not in self.archive_types
 
                 relative_path = full_path.replace(source['path'] + '/', '')
 
-                exclude_conditions = {
+                conditions_to_exclude = {
                     request.GET.get('term', '') not in relative_path,
                     request.GET.get('term') and root.split('/')[-1] in source['exclude'],
                     any(s.startswith('.') for s in relative_path.split('/')) and not prefs['show_hidden_files'],
@@ -138,7 +135,7 @@ class FilesView(View):
                     not root_path['authorized'] and not project_auth.can_view_file(full_path),
                 }
 
-                if True not in exclude_conditions:
+                if True not in conditions_to_exclude:
 
                     if request.GET.get('term'):
 
@@ -159,24 +156,24 @@ class FilesView(View):
                                 'type': magic.from_file(full_path, mime='true') if os.path.isfile(full_path) else 'directory'
                             })
 
-        return sorted(file_list, key=lambda k: (k['folder'], k['name']))
+        if request.GET.get('term'):
+
+            return sorted(file_list, key=lambda k: (k.get('value')))
+
+        else:
+
+            return sorted(file_list, key=lambda k: (k.get('folder'), k.get('name')))
 
     @staticmethod
-    def _create_file(new_name, new_path, file_type):
+    def create_file(path, is_directory):
 
-        if os.path.exists(new_path):
+        if os.path.exists(path):
 
             return 'exists'
 
         else:
 
-            if file_type == 'directory':
-
-                os.makedirs(new_path)
-
-            else:
-
-                open(new_path, 'a').close()
+            os.makedirs(path) if is_directory else open(path, 'a').close()
 
             return 'ok'
 
@@ -192,21 +189,19 @@ class FilesView(View):
 
             if request.GET.get('root'):
 
-                data = self._search_files(self._file_sources[request.GET['root']], request, prefs, authorizer)
+                data = self.search_files(self.file_sources[request.GET['root']], request, prefs, authorizer)
 
             else:
 
-                for key in self._file_sources:
+                for key in self.file_sources:
 
-                    source = self._file_sources[key]
+                    source = self.file_sources[key]
 
-                    if source['prefix']:
-
-                        data = data + self._search_files(source, request, prefs, authorizer)
+                    data = data + self.search_files(source, request, prefs, authorizer) if source['prefix'] else data
 
         else:
 
-            root = self._set_root(request.GET['root'], request.GET.get('owner'), request.user)
+            root = self.set_root(request.GET['root'], request.GET.get('owner'), request.user)
 
             if not root['path']:
 
@@ -230,8 +225,6 @@ class FilesView(View):
 
                     file_type = magic.from_file(full_path, mime='true') if os.path.isfile(full_path) else 'directory'
 
-                    error = root['validator'](full_path) if root['validator'] else None
-
                     exclude_conditions = {
                         file_name.startswith('.') and not prefs['show_hidden_files'],
                         file_type != 'directory' and root['exts'] and ext not in root['exts'],
@@ -254,7 +247,6 @@ class FilesView(View):
                             'modified': utc_timestamp.astimezone(tz).strftime(prefs['date_format']),
                             'root': request.GET.get('root'),
                             'folder': folder,
-                            'error': error
                         })
 
                 data = {'status': 'ok', 'file_list': file_list}
@@ -342,7 +334,7 @@ class FilesView(View):
 
         authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
-        root = self._set_root(request.POST['root'], request.POST.get('owner'), request.user)
+        root = self.set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
         full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
 
@@ -406,7 +398,7 @@ class FilesView(View):
 
                 elif action == 'create':
 
-                    result = self._create_file(request.POST['new_name'], new_path, request.POST['type'])
+                    result = self.create_file(new_path, request.POST['type'] == 'directory')
 
                     if result == 'ok':
 
@@ -418,7 +410,7 @@ class FilesView(View):
 
                 elif action == 'create_role':
 
-                    result = self._create_file(request.POST['new_name'], new_path, 'directory')
+                    result = self.create_file(new_path, True)
 
                     if result == 'ok':
 
@@ -426,13 +418,13 @@ class FilesView(View):
 
                             folder_path = os.path.join(new_path, folder['folder'])
 
-                            self._create_file(folder['folder'], folder_path, 'directory')
+                            self.create_file(folder_path, True)
 
                             if folder.get('main'):
 
                                 main_path = os.path.join(folder_path, 'main.yml')
 
-                                self._create_file('main.yml', main_path, '')
+                                self.create_file(main_path, False)
 
                         data = {'status': 'ok', 'msg': request.POST['name'] + ' created', 'name': request.POST['name']}
 

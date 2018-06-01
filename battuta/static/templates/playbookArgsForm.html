@@ -1,0 +1,63 @@
+<form id="play_args_form">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="play_args_selector">Saved arguments</label>
+                <select id="play_args_selector" class="select form-control input-sm"></select>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="form-group">
+                <label for="limit">Limit</label>
+                <div id="pattern_field_group" class="input-group">
+                    <input id="limit" data-bind="args.subset" class="form-control input-sm pattern_field" type="text">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default btn-sm" title="Build pattern" type="button">
+                            <span class="fa fa-fw fa-pencil"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 text-right">
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button data-bind="args.check" class="btn btn-default btn-sm">Check</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="tags">Tags</label>
+                <input id="tags" data-bind="args.tags" class="form-control input-sm" type="text">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="skip_tags">Skip tags</label>
+                <input id="skip_tags" data-bind="args.skip_tags" class="form-control input-sm" type="text">
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="extra_vars">Extra vars</label>
+                <input id="extra_vars" data-bind="args.extra_vars" class="form-control input-sm" type="text">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="credentials_selector">Credentials</label>
+                <select id="credentials_selector" class="select form-control input-sm" data-bind="cred"></select>
+            </div>
+        </div>
+        <div class="col-md-6 text-right">
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button id="run_playbook" class="btn btn-default btn-sm" type="button">Run</button>
+                <button id="save_play_args" class="play_args_btn btn btn-default btn-sm" type="button">Save</button>
+                <button id="del_play_args" class="play_args_btn btn btn-default btn-sm" type="button">Delete</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+

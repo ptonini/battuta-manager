@@ -14,7 +14,7 @@ Inventory.prototype = Object.create(Battuta.prototype);
 
 Inventory.prototype.constructor = Inventory;
 
-Inventory.prototype.apiPath = Battuta.prototype.paths.apis.inventory;
+Inventory.prototype.apiPath = Battuta.prototype.paths.api.inventory;
 
 Inventory.prototype.loadParam = function (param) {
 
@@ -35,6 +35,8 @@ Inventory.prototype.manage = function () {
     self.fetchHtml('manageInventory.html', $('#content_container')).then($element => {
 
         self.bind($element);
+
+        $element.find('#manage_inventory_tabs').rememberTab();
 
         $('#upload_field')
             .fileinput({

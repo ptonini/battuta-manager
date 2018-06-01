@@ -217,6 +217,32 @@
                     'grid-template-columns': 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)'
                 });
 
+            let $searchBox = $('<div>')
+                .attr('class', 'col-md-6 form-inline center-align')
+                .append(
+                    $('<span>').css('float', 'right').append(
+                        $('<label>').css({'font-weight': 'normal'}).append(
+                            'Search:',
+                            $('<input>')
+                                .attr({class: 'form-control input-sm', type: 'search'})
+                                .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
+                                .keyup(function () {
+
+                                    var pattern = $(this).val();
+
+                                    $gridBody.children('div.dynagrid-item').each(function () {
+
+                                        $(this).html().indexOf(pattern) >= 0 ? $(this).removeClass('hidden') : $(this).addClass('hidden');
+
+                                    });
+
+                                    _formatGrid($gridBody, opts)
+
+                                })
+                        )
+                    )
+                );
+
             $gridContainer
                 .empty()
                 .addClass('dynagrid-container')
@@ -232,7 +258,7 @@
             opts.topAlignHeader && $gridHeader.addClass('top-align');
 
             opts.showTitle && $gridHeader.append(
-                $('<strong>').css('text-transform', 'capitalize').append(opts.gridTitle.replace(/_/g, ' ')),
+                $('<span>').addClass('dynagridTitle').append(opts.gridTitle.replace(/_/g, ' ')),
             );
 
             if (opts.showAddButton) {
@@ -240,6 +266,7 @@
                 if (opts.addButtonType === 'icon') {
 
                     var addButton = $('<a>')
+                        .css('margin-right', '1rem')
                         .attr({class: 'btn btn-default btn-xs ' + opts.addButtonClass, title: opts.addButtonTitle})
                         .html($('<span>').attr('class', 'fa fa-plus fa-fw'))
 
@@ -247,7 +274,10 @@
 
                 else if (opts.addButtonType === 'text') {
 
-                    addButton = $('<button>').attr('class', opts.addButtonClass).html(opts.addButtonTitle)
+                    addButton = $('<button>')
+                        .css('margin-right', '1rem')
+                        .attr('class', opts.addButtonClass)
+                        .html(opts.addButtonTitle)
 
                 }
 
@@ -281,6 +311,7 @@
 
                     }),
                 $('<a>')
+                    .css('margin-right', '1rem')
                     .attr({class: 'btn btn-default btn-xs', title: 'Invert selection'})
                     .html($('<span>').attr('class', 'fa fa-adjust fa-fw'))
                     .click(function (event) {
@@ -296,38 +327,24 @@
             );
 
             opts.showCount && $gridHeader.append(
-                $('<span>').attr({id: opts.gridTitle + '_count', class: 'badge'}),
+                $('<span>')
+                    .css('margin-right', '1rem')
+                    .attr({id: opts.gridTitle + '_count', class: 'badge'}),
             );
 
-            opts.showFilter && $gridHeader.parent().after(
-                $('<div>').attr('class', 'col-md-6 form-inline').append(
-                    $('<span>').css('float', 'right').append(
-                        $('<label>').css({'margin-bottom': '5px', 'font-weight': 'normal'}).append(
-                            'Search:',
-                            $('<input>')
-                                .attr({class: 'form-control input-sm', type: 'search'})
-                                .css({padding: '5px 10px', height: '25px', 'margin-left': '6px'})
-                                .keyup(function () {
+            if (opts.showFilter) {
 
-                                    var pattern = $(this).val();
+                $gridHeader.parent().after($searchBox);
 
-                                    $gridBody.children('div.dynagrid-item').each(function () {
+                if (opts.headerTag === '<div>') {
 
-                                        var value = $(this).html();
+                    $searchBox.find('label').css('margin-bottom', '5px');
 
-                                        if (value.indexOf(pattern) >= 0) $(this).removeClass('hidden');
+                    $searchBox.removeClass('center-align');
 
-                                        else $(this).addClass('hidden');
+                }
 
-                                    });
-
-                                    _formatGrid($gridBody, opts)
-
-                                })
-                        )
-                    )
-                )
-            );
+            }
 
             if (opts.maxHeight) $gridBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
 
@@ -365,19 +382,13 @@
 
                     return selection;
 
-                    break;
-
                 case 'getData':
 
                     return opts.dataArray;
 
-                    break;
-
                 case 'getCount':
 
                     return $gridBody.find('.dynagrid-item').length;
-
-                    break;
 
                 case 'option':
 

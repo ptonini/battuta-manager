@@ -16,7 +16,7 @@ AdHoc.prototype.constructor = AdHoc;
 
 AdHoc.prototype.key = 'task';
 
-AdHoc.prototype.apiPath = Battuta.prototype.paths.apis.adhoc;
+AdHoc.prototype.apiPath = Battuta.prototype.paths.api.adhoc;
 
 AdHoc.prototype.type = 'adhoc';
 
@@ -52,15 +52,19 @@ AdHoc.prototype.argumentsToString = function () {
 
 };
 
-AdHoc.prototype.dialog = function (locked, callback) {
+AdHoc.prototype.dialog = function (callback) {
 
     let self = this;
+
+    let user = new User({username: sessionStorage.getItem('user_name')});
 
     self.fetchHtml('adhocDialog.html').then($element => {
 
         let $selector = $element.find('#module_selector');
 
         let $argumentsContainer = $element.find('#module_arguments_container');
+
+        self.patternField($element.find('#pattern_field_group'), 'hosts');
 
         $element.dialog({
             autoOpen: false,
@@ -69,9 +73,9 @@ AdHoc.prototype.dialog = function (locked, callback) {
             buttons: {
                 Run: function () {
 
-                    self.hosts = self.pattern;
-
                     let job = new Job(self);
+
+                    job.set('cred', $element.find('#task_credentials_selector option[value="'+ self.cred + '"]').data());
 
                     job.run()
 
@@ -94,10 +98,6 @@ AdHoc.prototype.dialog = function (locked, callback) {
             }
         });
 
-        self.patternField(locked, self.hosts, $('#pattern_field_label'));
-
-        self.runnerCredsSelector($('#credentials_selector_label'));
-
         $selector.change(function () {
 
             self.module = $(this).val();
@@ -114,11 +114,11 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
                 $('a.label_link').attr('href', self.paths.selectors.file);
 
-                if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+                if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 
-                else if (self.module === 'script') $element.find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.apis.file + 'search/?type=file'});
+                else if (self.module === 'script') $element.find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 
-                else if (self.module === 'unarchive') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.apis.file + 'search/?type=archive'});
+                else if (self.module === 'unarchive') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=archive'});
 
                 Object.keys(self.arguments).forEach(function (key) {
 
@@ -138,7 +138,9 @@ AdHoc.prototype.dialog = function (locked, callback) {
 
                         }
 
-                    })
+                    });
+
+                user.credentialsSelector(null, true, $element.find('#task_credentials_selector'));
 
             })
 
@@ -163,114 +165,3 @@ AdHoc.prototype.dialog = function (locked, callback) {
     });
 
 };
-
-AdHoc.prototype.view = function (locked, $container) {
-
-    let self = this;
-
-    self.fetchHtml('adhocView.html', $container).then($element => {
-
-        self.bind($element);
-
-        self.hosts && $('#view_header').remove();
-
-        self.patternField(locked, self.hosts, $element.find('#command_pattern_field_label'));
-
-        self.runnerCredsSelector($element.find('#command_credentials_selector_label'));
-
-        $element.find('#adhoc_command_form').submit(function (event) {
-
-            event.preventDefault();
-
-            self.name ='[adhoc task] shell';
-
-            self.module = 'shell';
-
-            self.hosts = self.pattern;
-
-            let job = new Job(self);
-
-            job.run()
-
-        });
-
-        $element.find('#adhoc_table').DataTable({
-            scrollY: (window.innerHeight - (locked ? 468 : 400)).toString() + 'px',
-            scrollCollapse: true,
-            autoWidth: false,
-            pageLength: 50,
-            ajax: {
-                url: self.apiPath + 'list/?pattern=' + self.hosts,
-                dataSrc: 'task_list'
-            },
-            columns: [
-                {class: 'col-md-2', title: 'hosts', data: 'hosts'},
-                {class: 'col-md-2', title: 'module', data: 'module'},
-                {class: 'col-md-6', title: 'arguments', data: 'arguments'},
-                {class: 'col-md-2', title: 'sudo', data: 'become'}
-            ],
-            paging: false,
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: 'Create task',
-                    className: 'btn-xs',
-                    action: function () {
-
-                        let adhoc = new AdHoc({hosts: self.hosts});
-
-                        adhoc.dialog(locked, function () {
-
-                            $('#adhoc_table').DataTable().ajax.reload()
-
-                        });
-
-                    }
-                }
-            ],
-            rowCallback: function (row, data) {
-
-                let adhoc = new AdHoc(data);
-
-                $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
-
-                $(row).find('td:eq(3)').prettyBoolean().append(
-                    spanRight.clone().append(
-                        spanFA.clone().addClass('fa-play-circle-o btn-incell').attr('title', 'Load').click(function () {
-
-                            adhoc.dialog(locked, function () {
-
-                                $('#adhoc_table').DataTable().ajax.reload()
-
-                            });
-
-                        }),
-                        spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
-
-                            adhoc.id = '';
-
-                            adhoc.save(function () {
-
-                                $('#adhoc_table').DataTable().ajax.reload()
-
-                            })
-
-                        }),
-                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
-
-                            adhoc.del(function () {
-
-                                $('#adhoc_table').DataTable().ajax.reload()
-
-                            });
-                        })
-                    )
-                )
-            }
-
-        });
-
-    })
-
-};
-

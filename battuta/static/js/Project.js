@@ -18,23 +18,23 @@ Project.prototype.key = 'project';
 
 Project.prototype.type = 'project';
 
-Project.prototype.apiPath = Battuta.prototype.paths.apis.project;
+Project.prototype.apiPath = Battuta.prototype.paths.api.project;
 
 Project.prototype.properties = {
     manager: {
-        url: Battuta.prototype.paths.apis.user + 'list/?',
+        url: Battuta.prototype.paths.api.user + 'list/?',
         type: 'user',
         key: 'users',
         item: 'username'
     },
     host_group: {
-        url: Battuta.prototype.paths.apis.inventory + 'list/?type=group&',
+        url: Battuta.prototype.paths.api.inventory + 'list/?type=group&',
         type: 'group',
         key: 'nodes',
         item: 'name'
     },
     others: {
-        url: Battuta.prototype.paths.apis.group + 'list/?editable=true&',
+        url: Battuta.prototype.paths.api.group + 'list/?editable=true&',
         type: 'user group',
         key: 'groups',
         item: 'name'
@@ -82,6 +82,7 @@ Project.prototype.setProperty =  function (property, callback) {
     let propData = property in self.properties ? self.properties[property] : self.properties.others ;
 
     self.selectionDialog({
+        title: 'Select ' + propData.type,
         type: 'one',
         objectType: propData.type,
         url: propData.url + 'exclude=' + self.get(property),
@@ -208,9 +209,10 @@ Project.prototype.playbookGrid = function ($container) {
                 });
 
                 self.selectionDialog({
+                    title: 'Select playbooks',
                     type: 'many',
                     objectType: 'playbooks',
-                    url: self.paths.apis.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
+                    url: self.paths.api.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
                     itemValueKey: 'name',
                     action: function (selection) {
 
@@ -297,9 +299,10 @@ Project.prototype.roleGrid = function ($container) {
                 });
 
                 self.selectionDialog({
+                    title: 'Select roles',
                     type: 'many',
                     objectType: 'roles',
-                    url: self.paths.apis.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
+                    url: self.paths.api.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
                     ajaxDataKey: 'file_list',
                     itemValueKey: 'name',
                     action: function (selection) {

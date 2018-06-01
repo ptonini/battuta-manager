@@ -1,4 +1,4 @@
-.dynagrid-header > span.badge {background-color: #cacaca; margin: 0 1rem}
+.dynagrid-header > span.badge {background-color: #cacaca; margin: 0 0}
 
 .dynagrid-header > a {border-style: hidden}
 
@@ -26,6 +26,10 @@ div.dynagrid div.dynagrid-item:hover{
 div.dynagrid div.dynagrid-item.toggle-on {background: #D3D3D3}
 
 div.dynagrid div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
+
+span.dynagridTitle {margin-right: 1em}
+
+.center-align {display:flex; justify-content:flex-end; align-items:center;}
 
 .truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
 

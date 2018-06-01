@@ -1,32 +1,32 @@
 <div class="row">
     <div class="col-md-12">
         <div class="form-group">
-            <label>
+            <label for="source_field">
                 <span>Source</span>
-                <a target="_blank" class="label_link">upload files</a>
-                <input class="form-control input-sm ui-autocomplete-input" type="text" data-bind="arguments.src" autocomplete="off">
+                <small>
+                    <a target="_blank" class="label_link">
+                        <i class="fa fa-fw fa-upload" title="Upload file"></i>
+                    </a>
+                </small>
             </label>
+            <input id="source_field" class="form-control input-sm ui-autocomplete-input" type="text" data-bind="arguments.src" autocomplete="off">
         </div>
     </div>
     <div class="col-md-12">
         <div class="form-group">
-            <label>
-                <span>Destination</span>
-                <input class="form-control input-sm" type="text" data-bind="arguments.dest">
-            </label>
+            <label for="dest_field">Destination</label>
+            <input id="dest_field" class="form-control input-sm" type="text" data-bind="arguments.dest">
         </div>
     </div>
     <div class="col-md-10">
         <div class="form-group">
-            <label>
-                <span>Extra parameters</span>
-                <input class="form-control input-sm" type="text" data-bind="arguments.extra_params">
-            </label>
+            <label for="param_field">Extra parameters</label>
+            <input id="param_field" class="form-control input-sm" type="text" data-bind="arguments.extra_params">
         </div>
     </div>
     <div class="col-md-2 text-right">
         <div class="form_group">
-            <label></label>
+            <label>&nbsp;</label>
             <button class="btn btn-default btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
         </div>
     </div>

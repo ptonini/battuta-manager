@@ -156,11 +156,11 @@ function Battuta (param) {
 Battuta.prototype = {
 
     paths: {
-        apis:{
+        api:{
             file: '/files/api/',
             inventory: '/inventory/api/',
             adhoc: '/runner/api/adhoc/',
-            playbook_args: '/runner/api/playbook_args/',
+            playbook: '/runner/api/playbook/',
             job: '/runner/api/job/',
             login: '/users/api/',
             user: '/users/api/user/',
@@ -172,6 +172,7 @@ Battuta.prototype = {
             file: '/files/',
             playbook: '/files/playbooks/',
             role: '/files/roles/',
+            userFiles: '/files/user/',
             adhoc: '/runner/adhoc/',
             job: '/runner/history/',
             user: '/users/users/',
@@ -192,7 +193,7 @@ Battuta.prototype = {
                 group: '/inventory/group'
             }
         },
-        runner: '/runner/jobs/',
+        runner: '/runner/',
         inventory: '/inventory/',
         templates: '/static/templates/',
         modules: '/static/templates/ansible_modules/'
@@ -290,11 +291,11 @@ Battuta.prototype = {
 
     },
 
-    jsonRequest: function (type, obj, url, blocking, callback, failCallback) {
+    serialize: function (obj) {
 
-        let self = this,
-            data = {},
-            excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern'];
+        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern'];
+
+        let data = {};
 
         for (let p in obj) {
 
@@ -308,11 +309,19 @@ Battuta.prototype = {
 
         }
 
+        return data
+
+    },
+
+    jsonRequest: function (type, obj, url, blocking, callback, failCallback) {
+
+        let self = this;
+
         $.ajax({
             url: url,
             type: type,
             dataType: 'json',
-            data: data,
+            data: self.serialize(obj),
             cache: false,
             beforeSend: function (xhr, settings) {
 
@@ -464,6 +473,18 @@ Battuta.prototype = {
 
     },
 
+    unbind: function ($container) {
+
+        let self = this;
+
+        Object.keys(self.bindings).forEach(function (key) {
+
+            if (self.bindings[key] === $container) delete self.bindings[key];
+
+        });
+
+    },
+
     selectionDialog: function (options) {
 
         let self = this;
@@ -491,6 +512,10 @@ Battuta.prototype = {
 
             if (options.type === 'one') delete buttons.Add;
 
+            $element.find('#selection_title').html(options.title);
+
+            $element.find('#selection_title').remove();
+
             $element.dialog({
                 minWidth: 700,
                 minHeight: 500,
@@ -498,9 +523,9 @@ Battuta.prototype = {
             });
 
             $grid.DynaGrid({
-                gridTitle: 'selection',
+                gridTitle: options.title,
+                showTitle: true,
                 showFilter: true,
-                showAddButton: (options.newEntity),
                 addButtonTitle: 'Add ' + options.entityType,
                 maxHeight: 400,
                 itemToggle: (options.type === 'many'),
@@ -512,15 +537,6 @@ Battuta.prototype = {
                 ajaxDataKey: options.ajaxDataKey,
                 itemValueKey: options.itemValueKey,
                 itemTitleKey: options.itemTitleKey,
-                addButtonAction: function ($gridContainer) {
-
-                    options.newEntity.edit(function () {
-
-                        $gridContainer.DynaGrid('load')
-
-                    });
-
-                },
                 formatItem: function($gridContainer, $gridItem) {
 
                     if (options.type === 'one') $gridItem.click(function () {
@@ -552,110 +568,91 @@ Battuta.prototype = {
 
     },
 
-    patternField: function (locked, pattern, $container) {
+    patternField: function ($container) {
 
         let self = this;
 
-        self.fetchHtml('patternField.html', $container).then($element => {
+        let $input = $container.find('input');
 
-            self.bind($element);
+        let binding = $input.attr('data-bind');
 
-            self.set('pattern', pattern);
+        let locked = $input.prop('disabled');
 
-            $element.find('.pattern_field').prop('disabled', locked);
+        $container.find('button').prop('disabled', locked).click(function () {
 
-            $element.find('.pattern_editor').prop('disabled', locked).click(function () {
+            self.fetchHtml('patternDialog.html').then($element => {
 
-                self.fetchHtml('patternDialog.html').then($element => {
+                let prevPattern = self.get(binding);
 
-                    self.bind($element);
+                $element.find('#pattern_preview').attr('data-bind', binding);
 
-                    $element
-                        .dialog({
-                            width: 520,
-                            buttons: {
-                                Ok: function () {
+                self.bind($element);
 
-                                    $(this).dialog('close');
+                $element
+                    .dialog({
+                        width: 520,
+                        buttons: {
+                            Ok: function () {
 
-                                },
-                                Reset: function () {
+                                $(this).dialog('close');
 
-                                    self.set('pattern', '');
+                            },
+                            Reset: function () {
 
-                                },
-                                Cancel: function () {
+                                self.set(binding, '');
 
-                                    self.set('pattern', pattern);
+                            },
+                            Cancel: function () {
 
-                                    $(this).dialog('close');
+                                self.set(binding, prevPattern);
+
+                                $(this).dialog('close');
+
+                            }
+                        }
+                    })
+                    .find('button').click(function () {
+
+                    let type = $(this).data('type');
+
+                    let action = $(this).data('action');
+
+                    let sep = {select: ':', and: ':&', exclude: ':!'};
+
+                    if (action !== 'select' && self.get(binding) === '') {
+
+                        $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+
+                    }
+
+                    else {
+
+                        self.selectionDialog({
+                            title: 'Select ' + type + 's:',
+                            type: 'many',
+                            entityType: type,
+                            url: self.paths.api.inventory + 'list/?type=' + type,
+                            ajaxDataKey: 'nodes',
+                            itemValueKey: 'name',
+                            newEntity: new Node({name: null, description: null, type: type}),
+                            action: function (selection) {
+
+                                for (let i = 0; i < selection.length; i++) {
+
+                                    if (self.get(binding) !== '') self.set(binding, self.get(binding) + sep[action]);
+
+                                    self.set(binding, self.get(binding) + selection[i].name)
 
                                 }
-                            }
-                        })
-                        .find('button').click(function () {
 
-                            let type = $(this).data('type');
-
-                            let action = $(this).data('action');
-
-                            let sep = {select: ':', and: ':&', exclude: ':!'};
-
-                            if (action !== 'select' && self.pattern === '') {
-
-                                $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
-
-                            }
-
-                            else {
-
-                                self.selectionDialog({
-                                    type: 'many',
-                                    entityType: type,
-                                    url: self.paths.apis.inventory + 'list/?type=' + type,
-                                    ajaxDataKey: 'nodes',
-                                    itemValueKey: 'name',
-                                    newEntity: new Node({name: null, description: null, type: type}),
-                                    action: function (selection) {
-
-                                        for (let i = 0; i < selection.length; i++) {
-
-                                            if (self.pattern !== '') self.set('pattern', self.pattern + sep[action]);
-
-                                            self.set('pattern', self.pattern + selection[i].name)
-
-                                        }
-
-                                    }
-
-                                });
                             }
 
                         });
+                    }
 
                 });
 
             });
-
-        });
-
-    },
-
-    runnerCredsSelector: function ($container) {
-
-        let self = this;
-
-        let user = new User({username: sessionStorage.getItem('user_name')});
-
-        user.credentialsSelector(null, true, $container).then($element => {
-
-            $element
-                .change(function () {
-
-                    self.cred = $('option:selected', $element).data();
-
-                })
-                .change()
 
         });
 
@@ -722,12 +719,26 @@ Battuta.prototype = {
 
     fetch: function (method, url, obj) {
 
+        let self = this;
+
         let init = {
             credentials: 'include',
             method: method
         };
 
-        if (method === 'GET' && obj) url = url + '?' + $.param(obj);
+        obj ? obj = self.serialize(obj) : obj = {};
+
+        if (method === 'GET') url = url + '?' + $.param(obj);
+
+        else if (method === 'POST') {
+
+            init.headers = new Headers({
+                'Content-Type': 'application/json',
+                'X-CSRFToken': self.getCookie('csrftoken')
+            });
+
+            init.body = JSON.stringify(obj);
+        }
 
         return fetch(url, init).then(response => {
 
@@ -737,16 +748,15 @@ Battuta.prototype = {
 
     },
 
-    fetchJson: function (url, obj) {
+    fetchJson: function (method, url, obj) {
 
         let self = this;
 
-        return self.fetch('GET', url, obj)
-            .then(response => {
+        return self.fetch(method, url, obj).then(response => {
 
-                return response.json()
+            return response.json()
 
-            })
+        })
 
     },
 
@@ -754,21 +764,20 @@ Battuta.prototype = {
 
         let self = this;
 
-        return self.fetch('GET', self.paths.templates + file)
-            .then(response => {
+        return self.fetch('GET', self.paths.templates + file).then(response => {
 
-                return response.text()
+            return response.text()
 
-            })
-            .then(text => {
+        })
+        .then(text => {
 
-                let $element = $(text);
+            let $element = $(text);
 
-                $container ? $container.html($element) : $('<div>').append($element);
+            $container ? $container.html($element) : $('<div>').append($element);
 
-                return $element
+            return $element
 
-            })
+        })
 
     },
 
@@ -874,6 +883,8 @@ Battuta.prototype = {
 
             $('#user_file_anchor').attr('href', self.paths.views.user + self.username + '/files/');
 
+            $('#user_icon').attr('title', self.username);
+
             $('#preferences_button').click(function () {
 
                 prefs.dialog()
@@ -888,7 +899,7 @@ Battuta.prototype = {
 
             });
 
-            $('#logout_button').click(function () {
+            $('#logout_anchor').click(function () {
 
                 user.logout()
 
@@ -936,7 +947,7 @@ Battuta.prototype = {
                     headerBottomMargin: '0',
                     gridBodyBottomMargin: '20px',
                     columns: sessionStorage.getItem('node_grid_columns'),
-                    ajaxUrl: self.paths.apis.inventory + 'list/?filter=' + pattern + '&type=' + type,
+                    ajaxUrl: self.paths.api.inventory + 'list/?filter=' + pattern + '&type=' + type,
                     formatItem: function ($gridContainer, $gridItem) {
 
                         $gridItem.click(function () {

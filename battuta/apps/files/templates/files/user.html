@@ -3,11 +3,13 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - {{ owner }} files';
-
             let file = new FileObj({root: 'users'});
 
-            file.selector('{{ owner }}')
+            let owner = sessionStorage.getItem('user_name');
+
+            document.title = 'Battuta - ' + owner + ' files';
+
+            file.selector(owner)
 
         });
     </script>

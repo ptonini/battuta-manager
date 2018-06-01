@@ -33,7 +33,9 @@ a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
 span.badge {background-color: #cacaca}
 
-a.label_link {float: right; font-size: x-small}
+a.label_link2 {float: right; font-size: x-small}
+
+.label-link {font-size: x-small}
 
 .input[type="checkbox"] {margin: 10px 0 0 5px}
 

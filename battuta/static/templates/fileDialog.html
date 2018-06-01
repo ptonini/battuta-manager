@@ -1,14 +1,19 @@
 <div class="large_dialog">
     <div class="row">
         <div class="col-md-12">
-            <label class="text-capitalize">
-                <span data-bind="action"></span>
-                <input data-bind="new_name" class="form-control input-sm" type="text" value="">
-            </label>
+            <h4>
+                <label for="file_name" class="text-capitalize" data-bind="action"></label>
+            </h4>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-12">
             <div class="form-group">
-                <button data-bind="is_folder" type="button" class="btn btn-default btn-sm btn-block">folder</button>
+                <input id="file_name" data-bind="new_name" class="form-control input-sm" type="text" value="">
+            </div>
+
+        </div>
+        <div id="is_folder_container" class="col-md-4">
+            <div class="form-group">
+                <button id="is_folder" data-bind="is_folder" type="button" class="btn btn-default btn-sm btn-block">folder</button>
             </div>
         </div>
     </div>

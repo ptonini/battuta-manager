@@ -16,7 +16,7 @@ User.prototype.constructor = User;
 
 User.prototype.key = 'user';
 
-User.prototype.apiPath = Battuta.prototype.paths.apis.user;
+User.prototype.apiPath = Battuta.prototype.paths.api.user;
 
 User.prototype.type = 'user';
 
@@ -91,7 +91,7 @@ User.prototype.login = function () {
 
     let self = this;
 
-    self.jsonRequest('POST', self, self.paths.apis.login + 'login/', false, function () {
+    self.jsonRequest('POST', self, self.paths.api.login + 'login/', false, function () {
 
         window.open('/', '_self');
 
@@ -103,7 +103,7 @@ User.prototype.logout = function () {
 
     let self = this;
 
-    self.jsonRequest('POST', self, self.paths.apis.login + 'logout/', false, function () {
+    self.jsonRequest('POST', self, self.paths.api.login + 'logout/', false, function () {
 
         window.open('/', '_self');
 
@@ -167,57 +167,55 @@ User.prototype.credentialsForm = function ($container) {
 
     let self = this;
 
-    self.fetchHtml('credentialsForm.html', $container)
-        .then($element => {
+    self.fetchHtml('credentialsForm.html', $container).then($element => {
 
-            self.bind($element);
+        self.bind($element);
 
-            $element.submit(function (event) {
+        $element.submit(function (event) {
 
-                event.preventDefault();
+            event.preventDefault();
 
-                switch ($(document.activeElement).html()) {
+            switch ($(document.activeElement).html()) {
 
-                    case 'Save':
+                case 'Save':
 
-                        self.postData('save_cred', true, function (data) {
+                    self.postData('save_cred', true, function (data) {
 
-                            $('#credentials_selector').trigger('build', data.cred.id);
+                        $('#credentials_selector').trigger('build', data.cred.id);
 
-                        });
+                    });
 
-                        break;
+                    break;
 
-                    case 'Delete':
+                case 'Delete':
 
-                        self.deleteDialog('delete_cred', function (data) {
+                    self.deleteDialog('delete_cred', function (data) {
 
-                            $('#credentials_selector').trigger('build', data.cred.id);
+                        $('#credentials_selector').trigger('build', data.cred.id);
 
-                        });
+                    });
 
-                        break;
+                    break;
 
-                }
+            }
 
-            });
+        });
 
-            return self.credentialsSelector(null, false, $('#credentials_selector_label'))
+        return self.credentialsSelector(null, false, $('#credentials_selector_label'))
 
-        })
-        .then($element => {
+    }).then($element => {
 
-            $element.change(function () {
+        $element.change(function () {
 
-                self.set('cred', $('option:selected', $(this)).data());
+            self.set('cred', $('option:selected', $(this)).data());
 
-            });
+        });
 
-        })
+    })
 
 };
 
-User.prototype.credentialsSelector = function (startValue, runner, $container) {
+User.prototype.credentialsSelector = function (startValue, runner, $selector) {
 
     let self = this;
 
@@ -236,51 +234,46 @@ User.prototype.credentialsSelector = function (startValue, runner, $container) {
         username: ''
     };
 
-    return self.fetchHtml('credsSelector.html', $container).then($element => {
+    self.runner = runner;
 
-        self.runner = runner;
+    $selector
+        .on('build', function (event, startValue) {
 
-        $element
-            .on('build', function (event, startValue) {
+            self.getData('creds', false, function (data) {
 
-                self.getData('creds', false, function (data) {
+                $selector.empty();
 
-                    $element.find('select').empty();
+                $.each(data.creds, function (index, cred) {
 
-                    $.each(data.creds, function (index, cred) {
+                    let display = cred.title;
 
-                        let display = cred.title;
+                    if (cred.is_default && !startValue) {
 
-                        if (cred.is_default && !startValue) {
+                        display += ' (default)';
 
-                            display += ' (default)';
+                        startValue = cred.id;
 
-                            startValue = cred.id;
+                    }
 
-                        }
-
-                        $element.find('select').append($('<option>').val(cred.id).data(cred).append(display));
-
-                    });
-
-                    if (self.runner) $element.find('select').append($('<option>').val('').html('ask').data('id', 0));
-
-                    else $element.find('select').append($('<option>').val('new').data(emptyCred).append('new'));
-
-                    $element.find('select').val(startValue).change();
+                    $selector.append($('<option>').val(cred.id).data(cred).append(display));
 
                 });
 
-            })
-            .trigger('build', startValue);
+                if (self.runner) $selector.append($('<option>').val('').html('ask').data('id', 0));
 
-        if (self.runner) $element.find('span').html('Credentials');
+                else $selector.append($('<option>').val('new').data(emptyCred).append('new'));
 
-        else $element.find('span').html('Saved credentials');
+                $selector.val(startValue).change();
 
-        return $element
+            });
 
-    })
+        })
+        .on('change', function () {
+
+            self.set('cred', $('option:selected', $(this)).data());
+
+        })
+        .trigger('build', startValue);
 
 };
 
@@ -335,6 +328,7 @@ User.prototype.groupGrid = function ($container) {
             addButtonAction: function ($gridContainer) {
 
                 self.selectionDialog({
+                    title: 'Select groups',
                     type: 'many',
                     objectType: 'group',
                     url: self.apiPath + 'groups/?reverse=true&username=' + self.username,

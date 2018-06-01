@@ -16,7 +16,7 @@ Preferences.prototype.constructor = Preferences;
 
 Preferences.prototype.key = 'prefs';
 
-Preferences.prototype.apiPath = Battuta.prototype.paths.apis.preferences;
+Preferences.prototype.apiPath = Battuta.prototype.paths.api.preferences;
 
 Preferences.prototype.loadParam = function (param) {
 

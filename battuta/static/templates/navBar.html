@@ -20,12 +20,8 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Runner</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a data-bind="paths.runner">Jobs</a>
-                    <a data-bind="paths.selectors.adhoc">Ad-Hoc</a>
-
-                <li class="divider"></li>
-                <li>
-                    <a data-bind="paths.selectors.job">Job history</a>
+                    <a data-bind="paths.runner">Runner</a>
+                    <a data-bind="paths.selectors.job">History</a>
                 </li>
             </ul>
         </li>
@@ -36,6 +32,7 @@
                     <a data-bind="paths.selectors.file">Files</a>
                     <a data-bind="paths.selectors.playbook">Playbooks</a>
                     <a data-bind="paths.selectors.role">Roles</a>
+                    <a data-bind="paths.selectors.userFiles">User</a>
                 </li>
             </ul>
         </li>
@@ -47,22 +44,12 @@
             <ul class="dropdown-menu">
                 <li>
                     <a data-bind="paths.selectors.user">Users</a>
-                    <a data-bind="paths.selectors.group">User groups</a>
-                </li>
-                <li class="divider"></li>
-                <li>
-                    <a id="user_view_anchor"><span data-bind="username"></span> profile</a>
-                    <a id="user_file_anchor"><span data-bind="username"></span> files</a>
+                    <a data-bind="paths.selectors.group">Groups</a>
                 </li>
             </ul>
         </li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-        <li>
-            <button id="preferences_button" class="btn btn-link navbar-btn" style="border-radius: 5px;" title="Preferences">
-                <span class="fa fa-fw fa-cog"></span>
-            </button>
-        </li>
         <li>
             <form id="menu_search_form" class="navbar-form">
                 <div class="input-group">
@@ -76,12 +63,22 @@
             </form>
         </li>
         <li>
-            <form class="navbar-form">
-                <button id="logout_button" class="btn btn-link" title="Logout">
-                    <span class="fa fa-fw fa-sign-out"></span>
-                </button>
-            </form>
+            <button id="preferences_button" class="btn btn-link navbar-btn" style="border-radius: 5px;" title="Preferences">
+                <span class="fa fa-fw fa-cog"></span>
+            </button>
         </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                <span id="user_icon" class="fa fa-fw fa-user"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a id="user_view_anchor">Profile</a>
+                    <a id="logout_anchor" href="#">Logout</a>
+                </li>
+            </ul>
+        </li>
+
     </ul>
 </div>
 

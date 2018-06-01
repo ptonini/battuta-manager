@@ -16,7 +16,7 @@ Job.prototype.constructor = Job;
 
 Job.prototype.key = 'job';
 
-Job.prototype.apiPath = Battuta.prototype.paths.apis.job;
+Job.prototype.apiPath = Battuta.prototype.paths.api.job;
 
 Job.prototype.states = {
     starting: {color: 'blue'},
@@ -76,13 +76,11 @@ Job.prototype.loadParam = function (param) {
 
     self.set('folder', param.folder);
 
-    self.set('playbook', param.playbook);
-
     self.set('type', param.type);
 
     self.set('id', param.id);
 
-    self.set('become', !!param.become);
+    self.set('become', param.become);
 
     self.set('module', param.module);
 
@@ -274,60 +272,6 @@ Job.prototype.statistics = function (modal) {
         return $element
 
     });
-
-};
-
-Job.prototype.runner = function () {
-
-    let self = this;
-
-    self.fetchHtml('jobRunner.html', $('#content_container'))
-        .then($element => {
-
-            $('#job_tabs').rememberTab();
-
-            self.fetchJson('/files/api/search/', {root: 'playbooks'}).then(data => {
-
-                $.each(data, (index, value) => {
-
-                    $('#playbook_list').append(
-                        $('<option>')
-                            .data(value)
-                            .attr('value', value.folder ? value.folder + '/' + value.name : value.name)
-                    );
-
-                });
-
-                $('#playbook').on('input', function () {
-
-                    let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
-
-                    if (file_data) {
-
-                        let playbook = new Playbook(file_data);
-
-                        $('#edit_playbook').off().click(function () {
-
-                            playbook.edit()
-
-                        });
-
-                        $('#clear_playbook').off().click(function () {
-
-                            $('#playbook').val('');
-
-                            playbook = null
-
-                        })
-
-
-                    }
-
-                });
-
-            });
-
-        });
 
 };
 

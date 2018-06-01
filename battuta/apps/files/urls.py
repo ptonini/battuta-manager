@@ -11,6 +11,8 @@ urlpatterns = [
 
     url(r'^roles/$', login_required(views.PageView.as_view()), kwargs={'page': 'roles'}),
 
+    url(r'^user/$', login_required(views.PageView.as_view()), kwargs={'page': 'user'}),
+
     url(r'^api/([a-z_]+)/$', login_required(views.FilesView.as_view()))
 
 ]

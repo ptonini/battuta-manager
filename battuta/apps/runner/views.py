@@ -31,11 +31,7 @@ class PageView(View):
 
         if kwargs['page'] == 'jobs':
 
-            return render(request, 'runner/jobs.html')
-
-        elif kwargs['page'] == 'adhoc':
-
-            return render(request, 'runner/adhoc.html')
+            return render(request, 'runner/runner.html')
 
         elif kwargs['page'] == 'history':
 
@@ -180,9 +176,7 @@ class JobView(View):
             # Execute playbook
             if job_data['type'] == 'playbook':
 
-                job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['folder'], job_data['playbook'])
-
-                job_data['name'] = job_data['playbook']
+                job_data['playbook_path'] = os.path.join(settings.PLAYBOOK_PATH, job_data['folder'], job_data['name'])
 
                 auth = authorizer.can_run_playbooks(ansible_inventory, job_data['playbook_path'])
 
@@ -491,19 +485,15 @@ class PlaybookView(View):
 
         project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
-        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['playbook'])
+        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['name'])
 
         if request.user.has_perm('users.execute_jobs') or project_auth.can_run_playbooks(AnsibleInventory(), playbook_path):
 
-            if action == 'get':
-
-                data = {}
-
-            elif action == 'list':
+            if action == 'getArgs':
 
                 args_list = list()
 
-                for args in PlaybookArgs.objects.filter(playbook=request.GET['playbook'], folder=request.GET['folder']).values():
+                for args in PlaybookArgs.objects.filter(name=request.GET['name'], folder=request.GET['folder']).values():
 
                     args_list.append(args)
 
@@ -526,7 +516,7 @@ class PlaybookView(View):
 
         ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 
-        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.POST.get('folder', ''), request.POST.get('playbook'))
+        playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.POST.get('folder', ''), request.POST.get('name'))
 
         auth = {
             request.user.has_perm('users.edit_playbooks'),
@@ -535,13 +525,19 @@ class PlaybookView(View):
 
         if True in auth:
 
+            args_dict = json.loads(request.POST.get('args'))
+
+            args_dict['name'] = request.POST.get('name')
+
+            args_dict['folder'] = request.POST.get('folder')
+
             # Save playbook arguments
-            if action == 'save':
+            if action == 'saveArgs':
 
                 # Create new playbook arguments object if no id is supplied
-                args = get_object_or_404(PlaybookArgs, pk=request.POST['id']) if 'id' in request.POST else PlaybookArgs()
+                args = get_object_or_404(PlaybookArgs, pk=args_dict['id']) if 'id' in args_dict else PlaybookArgs()
 
-                form = PlaybookArgsForm(request.POST or None, instance=args)
+                form = PlaybookArgsForm(args_dict or None, instance=args)
 
                 # Validate form data and save object
                 if form.is_valid():
@@ -555,11 +551,11 @@ class PlaybookView(View):
                     data = {'status': 'failed', 'msg': str(form.errors)}
 
             # Delete playbook arguments
-            elif action == 'delete':
+            elif action == 'delArgs':
 
                 try:
 
-                    args = PlaybookArgs(pk=request.POST['id'])
+                    args = PlaybookArgs(pk=args_dict['id'])
 
                     args.delete()
 

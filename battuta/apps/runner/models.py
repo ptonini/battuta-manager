@@ -16,7 +16,7 @@ class AdHocTask(models.Model):
 
 class PlaybookArgs(models.Model):
 
-    playbook = models.CharField(max_length=64)
+    name = models.CharField(max_length=64)
 
     folder = models.CharField(max_length=256, default='', blank=True)
 
@@ -30,7 +30,7 @@ class PlaybookArgs(models.Model):
 
     class Meta:
 
-        unique_together = ('playbook', 'tags', 'subset', 'skip_tags', 'extra_vars')
+        unique_together = ('name', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
 class Job(models.Model):

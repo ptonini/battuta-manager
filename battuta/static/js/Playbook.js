@@ -6,7 +6,7 @@ function Playbook (param) {
 
     self.bindings = {};
 
-    self.loadParam(param ? param : {})
+    self.loadParam(param ? param : {});
 
 }
 
@@ -14,159 +14,303 @@ Playbook.prototype = Object.create(FileObj.prototype);
 
 Playbook.prototype.constructor = Playbook;
 
-Playbook.prototype.loadForm = function ($element, sameWindow) {
+Playbook.prototype.form = function ($container) {
 
     let self = this;
 
-    self.bind($element);
+    let user = new User({username: sessionStorage.getItem('user_name')});
 
-    let text = data.text;
-
-    let trueValues = ['true', 'yes', '1'];
-
-    let $selector = $element.find('#play_args_selector');
-
-    let buildArgumentsSelector = selectedValue => {
-
-        $selector.empty();
-
-        self.getData('list', false, function (data) {
-
-            $.each(data.args, function (index, args) {
-
-                let optionLabel = [];
-
-                args.subset && optionLabel.push('--limit ' + args.subset);
-
-                args.tags && optionLabel.push('--tags ' + args.tags);
-
-                args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
-
-                args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
-
-                $selector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
-
-            });
-
-            $selector.append($('<option>').html('new').val('new').data(self));
-
-            selectedValue ? $selector.val(selectedValue) : $selector.val('new');
-
-            $selector.change();
-
-        });
-
+    let emptyArgs = {
+        check: false,
+        tags: '',
+        skip_tags: '',
+        extra_vars: '',
+        subset: '',
     };
 
-    $.each(jsyaml.load(text), function (index, play) {
+    self.fetchHtml('playbookArgsForm.html', $container).then($element => {
 
-        if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) self.set('become', true);
+        self.bind($element);
 
-    });
+        self.patternField($element.find('#pattern_field_group'), 'args.subset');
 
-    $element.find('.sudo_alert').toggleClass('hidden', !self.become);
+        user.credentialsSelector(null, true, $element.find('#credentials_selector'));
 
-    $selector.change(function () {
+        $element.find('#play_args_selector')
+            .on('build', function () {
 
-        let arguments = $('option:selected', this);
+                let $argsSelector = $(this);
 
-        $element.find('input').val('');
+                //console.log(JSON.parse(sessionStorage.getItem('currentArgs')));
 
-        self.loadParam(arguments.data());
+                self.fetchJson('GET', self.paths.api.playbook + 'getArgs/', self).then(data => {
 
-        self.set('pattern', self.subset);
+                    $argsSelector.empty();
 
-        self.set('check', false);
+                    $.each(data.args, function (index, args) {
 
-        $element.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
+                        let optionLabel = [];
 
-    });
+                        args.subset && optionLabel.push('--limit ' + args.subset);
 
-    $element.dialog({
-        width: 480,
-        buttons: {
-            Run: function () {
+                        args.tags && optionLabel.push('--tags ' + args.tags);
 
-                self.subset = self.pattern;
+                        args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
 
-                let job = new Job(self);
+                        args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
 
-                job.run(sameWindow)
-
-            },
-            Save: function () {
-
-                if (!(!self.pattern && !self.tags && !self.skip_tags && !self.extra_vars)) {
-
-                    self.subset = self.pattern;
-
-                    self.save(function (data) {
-
-                        self.loadParam({playbook: file.name, folder: file.folder});
-
-                        buildArgumentsSelector(data.id);
+                        $argsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
 
                     });
 
-                }
+                    $argsSelector.append($('<option>').html('new').val('new').data(emptyArgs));
 
-                else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
+                    $argsSelector.change();
 
-            },
-            Delete: function () {
+                })
 
-                self.del(function () {
+            })
+            .on('change', function () {
 
-                    self.loadParam({playbook: file.name, folder: file.folder});
+                let $selectedOption = $('option:selected', $(this));
 
-                    buildArgumentsSelector();
+                self.set('args', $selectedOption.data());
+
+                sessionStorage.setItem('currentArgs', JSON.stringify(self.get('args')));
+
+                $element.find('#del_play_args').prop('disabled', $selectedOption.val() === 'new');
+
+            })
+            .trigger('build');
+
+        $element.find('#run_playbook').click(function () {
+
+            self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
+
+                if (self.validator.playbooks(data.text)) return jsyaml.load(data.text)
+
+            }).then(data => {
+
+                let job = new Job(self);
+
+                $.each(data, function (index, play) {
+
+                    let trueValues = ['true', 'yes', '1'];
+
+                    (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) && job.set('become', true);
 
                 });
 
-            },
-            Cancel: function () {
+                job.set('type', 'playbook');
 
-                $(this).dialog('close');
+                job.set('subset', self.args.subset);
 
-            }
-        }
-    });
+                job.set('tags', self.args.tags);
 
-    self.patternField(false, self.subset, $('#pattern_field_label'));
+                job.set('skip_tags', self.args.skip_tags);
 
-    self.runnerCredsSelector($('#credentials_selector_label'));
+                job.set('extra_vars', self.args.extra_vars);
 
-    $element.find('input').keypress(function (event) {
+                job.set('cred', $element.find('#credentials_selector option[value="'+ self.cred + '"]').data());
 
-        if (event.keyCode === 13) {
+                job.run();
 
-            event.preventDefault();
+            });
 
-            $element.next().find('button:contains("Run")').click()
+        });
 
-        }
+        $element.find('#save_play_args').click(function () {
 
-    });
+            if (!(!self.args.subset && !self.args.tags && !self.args.skip_tags && !self.args.extra_vars)) self.postArgs('saveArgs');
 
-    buildArgumentsSelector()
+            else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
 
-};
+        });
 
-Playbook.prototype.dialog = function (sameWindow) {
+        $element.find('#del_play_args').click(function () {
 
-    let self = this;
+            self.fetchHtml('deleteDialog.html').then($element => {
 
-    let file = new File({name: self.playbook, folder: self.folder, root: 'playbooks'});
+                $element.dialog({
+                    width: '320',
+                    buttons: {
+                        Delete: function () {
 
-    file.read(function (data) {
+                            self.postArgs('delArgs');
 
-        self.fetchHtml('playbookArgsDialog.html').then($element => {
+                            $(this).dialog('close');
 
+                        },
+                        Cancel: function () {
 
+                            $(this).dialog('close')
+
+                        }
+                    }
+                });
+
+            })
+
+        });
+
+        $element.find('input').keypress(function (event) {
+
+            event.keyCode === 13 && $element.find('#run_playbook').click()
 
         });
 
     });
 
 };
+
+Playbook.prototype.postArgs = function (action) {
+
+    let self = this;
+
+    self.jsonRequest('POST', self, self.paths.api.playbook + action + '/', true, data => {
+
+        $('#play_args_selector').trigger('build', data);
+
+    })
+
+};
+
+// Playbook.prototype.loadForm = function ($element, sameWindow) {
+//
+//     let self = this;
+//
+//     self.bind($element);
+//
+//     let text = data.text;
+//
+//     let trueValues = ['true', 'yes', '1'];
+//
+//     let $selector = $element.find('#play_args_selector');
+//
+//     let buildArgumentsSelector = selectedValue => {
+//
+//         $selector.empty();
+//
+//         self.getData('list', false, function (data) {
+//
+//             $.each(data.args, function (index, args) {
+//
+//                 let optionLabel = [];
+//
+//                 args.subset && optionLabel.push('--limit ' + args.subset);
+//
+//                 args.tags && optionLabel.push('--tags ' + args.tags);
+//
+//                 args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
+//
+//                 args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
+//
+//                 $selector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
+//
+//             });
+//
+//             $selector.append($('<option>').html('new').val('new').data(self));
+//
+//             selectedValue ? $selector.val(selectedValue) : $selector.val('new');
+//
+//             $selector.change();
+//
+//         });
+//
+//     };
+//
+//     $.each(jsyaml.load(text), function (index, play) {
+//
+//         if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) self.set('become', true);
+//
+//     });
+//
+//     $element.find('.sudo_alert').toggleClass('hidden', !self.become);
+//
+//     $selector.change(function () {
+//
+//         let arguments = $('option:selected', this);
+//
+//         $element.find('input').val('');
+//
+//         self.loadParam(arguments.data());
+//
+//         self.set('pattern', self.subset);
+//
+//         self.set('check', false);
+//
+//         $element.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
+//
+//     });
+//
+//     $element.dialog({
+//         width: 480,
+//         buttons: {
+//             Run: function () {
+//
+//                 self.subset = self.pattern;
+//
+//                 let job = new Job(self);
+//
+//                 job.run(sameWindow)
+//
+//             },
+//             Save: function () {
+//
+//                 if (!(!self.pattern && !self.tags && !self.skip_tags && !self.extra_vars)) {
+//
+//                     self.subset = self.pattern;
+//
+//                     self.save(function (data) {
+//
+//                         self.loadParam({playbook: file.name, folder: file.folder});
+//
+//                         buildArgumentsSelector(data.id);
+//
+//                     });
+//
+//                 }
+//
+//                 else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
+//
+//             },
+//             Delete: function () {
+//
+//                 self.del(function () {
+//
+//                     self.loadParam({playbook: file.name, folder: file.folder});
+//
+//                     buildArgumentsSelector();
+//
+//                 });
+//
+//             },
+//             Cancel: function () {
+//
+//                 $(this).dialog('close');
+//
+//             }
+//         }
+//     });
+//
+//     self.patternField(false, self.subset, $('#pattern_field_label'));
+//
+//     self.runnerCredsSelector($('#credentials_selector_label'));
+//
+//     $element.find('input').keypress(function (event) {
+//
+//         if (event.keyCode === 13) {
+//
+//             event.preventDefault();
+//
+//             $element.next().find('button:contains("Run")').click()
+//
+//         }
+//
+//     });
+//
+//     buildArgumentsSelector()
+//
+// };
+
 
