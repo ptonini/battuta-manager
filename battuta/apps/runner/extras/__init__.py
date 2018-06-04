@@ -39,6 +39,8 @@ AnsibleOptions = namedtuple('Options', ['connection',
 
 def run_job(job):
 
+    print(pp.pformat(job.data))
+
     db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'],
                               settings.DATABASES['default']['USER'],
                               settings.DATABASES['default']['PASSWORD'],
@@ -97,7 +99,7 @@ def run_job(job):
 
     passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
 
-    if 'playbook' in job.data:
+    if job.data['type'] == 'playbook':
 
         try:
 
@@ -122,7 +124,7 @@ def run_job(job):
 
             status = 'finished'
 
-    elif 'adhoc_task' in job.data:
+    elif job.data['type'] == 'adhoc' or job.data['type'] == 'gather_facts':
 
         play = Play().load(job.data['adhoc_task'], variable_manager=job.data['var_manager'], loader=job.data['loader'])
 

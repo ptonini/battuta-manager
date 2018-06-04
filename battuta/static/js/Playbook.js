@@ -8,27 +8,21 @@ function Playbook (param) {
 
     self.loadParam(param ? param : {});
 
+    self.set('root', 'playbooks');
+
 }
 
 Playbook.prototype = Object.create(FileObj.prototype);
 
 Playbook.prototype.constructor = Playbook;
 
-Playbook.prototype.form = function ($container) {
+Playbook.prototype.form = function ($container, args) {
 
     let self = this;
 
     let user = new User({username: sessionStorage.getItem('user_name')});
 
-    let emptyArgs = {
-        check: false,
-        tags: '',
-        skip_tags: '',
-        extra_vars: '',
-        subset: '',
-    };
-
-    self.fetchHtml('playbookArgsForm.html', $container).then($element => {
+    return self.fetchHtml('playbookArgsForm.html', $container).then($element => {
 
         self.bind($element);
 
@@ -63,9 +57,15 @@ Playbook.prototype.form = function ($container) {
 
                     });
 
-                    $argsSelector.append($('<option>').html('new').val('new').data(emptyArgs));
+                    $argsSelector.append($('<option>').html('new').val('new').data({
+                        check: false,
+                        tags: '',
+                        skip_tags: '',
+                        extra_vars: '',
+                        subset: '',
+                    }));
 
-                    $argsSelector.change();
+                    args ? self.set('args', args) : $argsSelector.change();
 
                 })
 
@@ -87,7 +87,20 @@ Playbook.prototype.form = function ($container) {
 
             self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
 
-                if (self.validator.playbooks(data.text)) return jsyaml.load(data.text)
+                if (data.status === 'ok' ) {
+
+                    if (self.validator.playbooks(data.text)) return jsyaml.load(data.text);
+
+                }
+
+                else {
+
+                    $.bootstrapGrowl(data.msg, failedAlertOptions);
+
+                    return Promise.reject();
+
+                }
+
 
             }).then(data => {
 
@@ -95,7 +108,7 @@ Playbook.prototype.form = function ($container) {
 
                 $.each(data, function (index, play) {
 
-                    let trueValues = ['true', 'yes', '1'];
+                    let trueValues = ['true','True','TRUE','yes','Yes','YES','y','Y','on','On','ON'];
 
                     (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) && job.set('become', true);
 
@@ -163,6 +176,42 @@ Playbook.prototype.form = function ($container) {
 
 };
 
+Playbook.prototype.dialog = function (args) {
+
+    let self = this;
+
+    self.fetchHtml('playbookDialog.html').then($element => {
+
+        $element.find('h4').html(self.name);
+
+        self.form($element.find('#form-container'), args).then(() => {
+
+            $element.find('#buttons_container').hide();
+
+            $element.find('#play_args_selector_container').remove();
+
+            $element.dialog({
+                width: 480,
+                buttons: {
+                    Run: function () {
+
+                        $element.find('#run_playbook').click();
+
+                    },
+                    Close: function () {
+
+                        $(this).dialog('close');
+
+                    }
+                }
+            })
+
+        })
+
+    })
+
+};
+
 Playbook.prototype.postArgs = function (action) {
 
     let self = this;
@@ -174,143 +223,3 @@ Playbook.prototype.postArgs = function (action) {
     })
 
 };
-
-// Playbook.prototype.loadForm = function ($element, sameWindow) {
-//
-//     let self = this;
-//
-//     self.bind($element);
-//
-//     let text = data.text;
-//
-//     let trueValues = ['true', 'yes', '1'];
-//
-//     let $selector = $element.find('#play_args_selector');
-//
-//     let buildArgumentsSelector = selectedValue => {
-//
-//         $selector.empty();
-//
-//         self.getData('list', false, function (data) {
-//
-//             $.each(data.args, function (index, args) {
-//
-//                 let optionLabel = [];
-//
-//                 args.subset && optionLabel.push('--limit ' + args.subset);
-//
-//                 args.tags && optionLabel.push('--tags ' + args.tags);
-//
-//                 args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
-//
-//                 args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
-//
-//                 $selector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
-//
-//             });
-//
-//             $selector.append($('<option>').html('new').val('new').data(self));
-//
-//             selectedValue ? $selector.val(selectedValue) : $selector.val('new');
-//
-//             $selector.change();
-//
-//         });
-//
-//     };
-//
-//     $.each(jsyaml.load(text), function (index, play) {
-//
-//         if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) self.set('become', true);
-//
-//     });
-//
-//     $element.find('.sudo_alert').toggleClass('hidden', !self.become);
-//
-//     $selector.change(function () {
-//
-//         let arguments = $('option:selected', this);
-//
-//         $element.find('input').val('');
-//
-//         self.loadParam(arguments.data());
-//
-//         self.set('pattern', self.subset);
-//
-//         self.set('check', false);
-//
-//         $element.next().find('button:contains("Delete")').toggleClass('hidden', (arguments.val() === 'new'));
-//
-//     });
-//
-//     $element.dialog({
-//         width: 480,
-//         buttons: {
-//             Run: function () {
-//
-//                 self.subset = self.pattern;
-//
-//                 let job = new Job(self);
-//
-//                 job.run(sameWindow)
-//
-//             },
-//             Save: function () {
-//
-//                 if (!(!self.pattern && !self.tags && !self.skip_tags && !self.extra_vars)) {
-//
-//                     self.subset = self.pattern;
-//
-//                     self.save(function (data) {
-//
-//                         self.loadParam({playbook: file.name, folder: file.folder});
-//
-//                         buildArgumentsSelector(data.id);
-//
-//                     });
-//
-//                 }
-//
-//                 else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
-//
-//             },
-//             Delete: function () {
-//
-//                 self.del(function () {
-//
-//                     self.loadParam({playbook: file.name, folder: file.folder});
-//
-//                     buildArgumentsSelector();
-//
-//                 });
-//
-//             },
-//             Cancel: function () {
-//
-//                 $(this).dialog('close');
-//
-//             }
-//         }
-//     });
-//
-//     self.patternField(false, self.subset, $('#pattern_field_label'));
-//
-//     self.runnerCredsSelector($('#credentials_selector_label'));
-//
-//     $element.find('input').keypress(function (event) {
-//
-//         if (event.keyCode === 13) {
-//
-//             event.preventDefault();
-//
-//             $element.next().find('button:contains("Run")').click()
-//
-//         }
-//
-//     });
-//
-//     buildArgumentsSelector()
-//
-// };
-
-

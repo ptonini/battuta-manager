@@ -440,7 +440,7 @@ class AdHocView(View):
 
         auth = {
             request.user.has_perm('users.edit_tasks'),
-            project_auth.can_edit_tasks(AnsibleInventory(), request.POST['hosts'])
+            project_auth.can_edit_tasks(AnsibleInventory(), request.POST.get('hosts', ''))
         }
 
         if True in auth:

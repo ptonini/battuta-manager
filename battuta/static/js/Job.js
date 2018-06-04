@@ -336,38 +336,42 @@ Job.prototype.view = function () {
 
             $('header.navbar').addClass('navbar-fixed-top');
 
-            let $jobGog = $('#job_cog');
+            let $jobGog = $element.find('#job_cog');
 
-            let $cancelBtn = $('#cancel_button').click(function () {
+            let $cancelBtn = $element.find('#cancel_button').click(function () {
 
                 self.postData('kill', false);
 
             });
 
-            let $scrollBtn = $('#scroll_button');
+            let $scrollBtn = $element.find('#scroll_button');
 
-            let $rerunBtn = $('#rerun_button').click(function () {
+            let $rerunBtn = $element.find('#rerun_button').click(function () {
 
-                let playArgs = new Playbook( {
-                    playbook: self.name,
+                let playbook = new Playbook({
+                    name: self.name,
                     folder: self.folder,
+                });
+
+                let args = {
                     subset: self.subset,
                     tags: self.tags,
                     skip_tags: self.skip_tags,
-                    extra_vars: self.extra_vars
-                });
+                    extra_vars: self.extra_vars,
+                    check: false,
+                };
 
-                playArgs.dialog(true);
+                playbook.dialog(args);
 
             });
 
-            let $statsBtn = $('#stats_button').click(function () {
+            let $statsBtn = $element.find('#stats_button').click(function () {
 
                 self.statistics(true)
 
             });
 
-            let $printBtn = $('#print_button').click(function () {
+            let $printBtn = $element.find('#print_button').click(function () {
 
                 self.statistics().then($element => {
 
@@ -411,7 +415,7 @@ Job.prototype.view = function () {
 
                     if (!self.is_running) {
 
-                        $jobGog.hide();
+                        $jobCog.hide();
 
                         $cancelBtn.hide();
 
@@ -565,6 +569,7 @@ Job.prototype.view = function () {
 
                                         }
                                     });
+
                                 }
 
                                 if (self.is_running) {
@@ -579,7 +584,7 @@ Job.prototype.view = function () {
 
                                 }
 
-                                $resultContainer.append(taskContainers[task.id])
+                                playContainers[play.id].after(taskContainers[task.id])
 
                             }
 

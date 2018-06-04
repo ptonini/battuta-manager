@@ -253,7 +253,9 @@ class FilesView(View):
 
             elif action == 'read':
 
-                full_path = os.path.join(root['path'], request.GET['folder'], request.GET['name'])
+                full_path = os.path.join(root['path'], request.GET.get('folder'), request.GET['name'])
+
+                print(full_path)
 
                 if os.path.exists(full_path):
 

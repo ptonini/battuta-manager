@@ -5,7 +5,7 @@ from apps.users.models import Credential
 
 class AdHocTask(models.Model):
 
-    hosts = models.CharField(max_length=64)
+    hosts = models.CharField(max_length=64, blank=True)
 
     module = models.CharField(max_length=32)
 

@@ -80,7 +80,7 @@ FileObj.prototype.loadParam = function (param) {
 
     self.set('root', param.root);
 
-    self.set('folder', param.folder);
+    self.set('folder', param.folder ? param.folder : '');
 
     self.set('owner', param.owner);
 
