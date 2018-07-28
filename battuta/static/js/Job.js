@@ -44,13 +44,13 @@ Job.prototype.loadParam = function (param) {
 
     self.set('hosts', param.hosts);
 
-    self.set('subset', param.subset);
+    self.set('subset', param.subset || '');
 
     self.set('stats', param.stats);
 
     self.set('name', param.name);
 
-    self.set('tags', param.tags);
+    self.set('tags', param.tags || '');
 
     self.set('cred', param.cred);
 
@@ -66,13 +66,13 @@ Job.prototype.loadParam = function (param) {
 
     self.set('username', param.username);
 
-    self.set('skip_tags', param.skip_tags);
+    self.set('skip_tags', param.skip_tags || '');
 
     self.set('user', param.user);
 
-    self.set('extra_vars', param.extra_vars);
+    self.set('extra_vars', param.extra_vars || '');
 
-    self.set('plays', param.plays ? param.plays : []);
+    self.set('plays', param.plays || []);
 
     self.set('folder', param.folder);
 
@@ -84,7 +84,7 @@ Job.prototype.loadParam = function (param) {
 
     self.set('module', param.module);
 
-    self.set('arguments', param.arguments ? param.arguments : '');
+    self.set('arguments', param.arguments || '');
 
 };
 
@@ -336,7 +336,7 @@ Job.prototype.view = function () {
 
             $('header.navbar').addClass('navbar-fixed-top');
 
-            let $jobGog = $element.find('#job_cog');
+            let $jobCog = $element.find('#job_cog');
 
             let $cancelBtn = $element.find('#cancel_button').click(function () {
 
@@ -437,7 +437,7 @@ Job.prototype.view = function () {
 
             else {
 
-                $jobGog.hide();
+                $jobCog.hide();
 
                 $cancelBtn.hide();
 

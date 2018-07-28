@@ -39,7 +39,7 @@ AnsibleOptions = namedtuple('Options', ['connection',
 
 def run_job(job):
 
-    print(pp.pformat(job.data))
+    #print(pp.pformat(job.data))
 
     db_conn = MySQLdb.connect(settings.DATABASES['default']['HOST'],
                               settings.DATABASES['default']['USER'],

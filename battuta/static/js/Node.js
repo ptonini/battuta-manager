@@ -24,7 +24,7 @@ Node.prototype.loadParam = function (param) {
 
     self.set('name', param.name);
 
-    self.set('description', param.description);
+    self.set('description', param.description || '');
 
     self.set('id', param.id);
 
@@ -57,6 +57,8 @@ Node.prototype.hostInfo = function ($container) {
                 $element.find('.hide_when_empty').removeClass('hidden');
 
                 $element.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
+
+                if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
 
                 if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $('#guest_info_row').hide();
 
@@ -678,7 +680,7 @@ Node.prototype.view = function () {
 
                 self.del(function () {
 
-                    window.open(self.paths.inventory + self.type + 's/' , '_self')
+                    window.open(self.paths.inventory + self.type, '_self')
 
                 })
 

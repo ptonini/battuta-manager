@@ -149,7 +149,7 @@ class Group(Node):
 
 class Variable(models.Model):
 
-    key = models.CharField(max_length=32, blank=False, validators=[
+    key = models.CharField(max_length=128, blank=False, validators=[
         RegexValidator(regex='\-', message='Key names cannot contain "-"', inverse_match=True)
     ])
 
