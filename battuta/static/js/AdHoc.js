@@ -112,7 +112,7 @@ AdHoc.prototype.dialog = function (callback) {
 
                 self.bind($element);
 
-                $('a.label_link').attr('href', self.paths.selectors.file);
+                $('a.label_link').attr('href', self.paths.selector.file);
 
                 if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 

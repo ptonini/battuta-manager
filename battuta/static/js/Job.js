@@ -584,7 +584,7 @@ Job.prototype.view = function () {
 
                                 }
 
-                                playContainers[play.id].after(taskContainers[task.id])
+                                playContainers[play.id].append(taskContainers[task.id])
 
                             }
 

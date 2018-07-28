@@ -7,10 +7,9 @@ urlpatterns = [
 
     url(r'^manage/$', login_required(views.PageView.as_view()), kwargs={'page': 'manage'}),
 
-    url(r'^(?P<node_type_plural>hosts|groups)/$', login_required(views.PageView.as_view()), kwargs={'page': 'nodes'}),
+    url(r'^(?P<type>host|group)/$', login_required(views.PageView.as_view()), kwargs={'page': 'selector'}),
 
-    url(r'^(?P<node_type>host|group)/(?P<node_name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'node'}),
-
+    url(r'^(?P<type>host|group)/(?P<name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
 
     url(r'^api/([a-z_]+)/$', views.InventoryView.as_view()),
 

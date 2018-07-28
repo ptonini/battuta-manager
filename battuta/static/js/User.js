@@ -374,7 +374,7 @@ User.prototype.view = function (current_user) {
 
                 self.del(function () {
 
-                    window.open(self.paths.selectors.user , '_self')
+                    window.open(self.paths.selector.user , '_self')
 
                 })
 

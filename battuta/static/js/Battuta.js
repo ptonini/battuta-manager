@@ -168,19 +168,19 @@ Battuta.prototype = {
             project: '/projects/api/',
             preferences:'/preferences/'
         },
-        selectors: {
+        selector: {
             file: '/files/',
             playbook: '/files/playbooks/',
             role: '/files/roles/',
             userFiles: '/files/user/',
             adhoc: '/runner/adhoc/',
-            job: '/runner/history/',
+            job: '/runner/job/',
             user: '/users/users/',
             group: '/users/groups/',
             project: '/projects/',
             node: {
-                host: '/inventory/hosts/',
-                group: '/inventory/groups/'
+                host: '/inventory/host/',
+                group: '/inventory/group/'
             }
         },
         views: {

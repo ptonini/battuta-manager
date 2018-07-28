@@ -29,17 +29,17 @@ class PageView(View):
     @staticmethod
     def get(request, **kwargs):
 
-        if kwargs['page'] == 'jobs':
+        if kwargs['page'] == 'runner':
 
             return render(request, 'runner/runner.html')
 
-        elif kwargs['page'] == 'history':
+        elif kwargs['page'] == 'selector':
 
-            return render(request, "runner/history.html")
+            return render(request, "runner/job_selector.html")
 
-        elif kwargs['page'] == 'job':
+        elif kwargs['page'] == 'view':
 
-            return render(request, "runner/job.html", {'job_id': kwargs['job_id']})
+            return render(request, "runner/job_view.html", {'job_id': kwargs['job_id']})
 
 
 class JobView(View):

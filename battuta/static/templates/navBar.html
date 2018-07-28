@@ -7,8 +7,8 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a data-bind="paths.selectors.node.host">Hosts</a>
-                    <a data-bind="paths.selectors.node.group">Groups</a>
+                    <a data-bind="paths.selector.node.host">Hosts</a>
+                    <a data-bind="paths.selector.node.group">Groups</a>
                 </li>
                 <li class="divider"></li>
                 <li>
@@ -21,7 +21,7 @@
             <ul class="dropdown-menu">
                 <li>
                     <a data-bind="paths.runner">Runner</a>
-                    <a data-bind="paths.selectors.job">History</a>
+                    <a data-bind="paths.selector.job">Job history</a>
                 </li>
             </ul>
         </li>
@@ -29,22 +29,22 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Files</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a data-bind="paths.selectors.file">Files</a>
-                    <a data-bind="paths.selectors.playbook">Playbooks</a>
-                    <a data-bind="paths.selectors.role">Roles</a>
-                    <a data-bind="paths.selectors.userFiles">User</a>
+                    <a data-bind="paths.selector.file">Files</a>
+                    <a data-bind="paths.selector.playbook">Playbooks</a>
+                    <a data-bind="paths.selector.role">Roles</a>
+                    <a data-bind="paths.selector.userFiles">User</a>
                 </li>
             </ul>
         </li>
         <li>
-            <a data-bind="paths.selectors.project">Projects</a>
+            <a data-bind="paths.selector.project">Projects</a>
         </li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Users</a>
             <ul class="dropdown-menu">
                 <li>
-                    <a data-bind="paths.selectors.user">Users</a>
-                    <a data-bind="paths.selectors.group">Groups</a>
+                    <a data-bind="paths.selector.user">Users</a>
+                    <a data-bind="paths.selector.group">Groups</a>
                 </li>
             </ul>
         </li>

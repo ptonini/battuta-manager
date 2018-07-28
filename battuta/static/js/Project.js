@@ -388,7 +388,7 @@ Project.prototype.view = function () {
 
                 self.del(function () {
 
-                    window.open(self.paths.selectors.project, '_self');
+                    window.open(self.paths.selector.project, '_self');
 
                 })
 

@@ -5,11 +5,11 @@ from . import views
 
 urlpatterns = [
 
-    url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'jobs'}),
+    url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
 
-    url(r'^history/$', login_required(views.PageView.as_view()), kwargs={'page': 'history'}),
+    url(r'^job/$', login_required(views.PageView.as_view()), kwargs={'page': 'selector'}),
 
-    url(r'^job/(?P<job_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'job'}),
+    url(r'^job/(?P<job_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
 
     url(r'^api/job/([a-z_]+)/$', login_required(views.JobView.as_view())),
 

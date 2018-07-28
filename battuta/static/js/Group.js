@@ -210,7 +210,7 @@ Group.prototype.view = function () {
 
                 self.del(function () {
 
-                    window.open(self.paths.selectors.group , '_self')
+                    window.open(self.paths.selector.group , '_self')
 
                 })
 

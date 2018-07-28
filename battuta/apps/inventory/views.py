@@ -35,19 +35,19 @@ class PageView(View):
 
             return render(request, 'inventory/manage.html')
 
-        elif kwargs['page'] == 'nodes':
+        elif kwargs['page'] == 'selector':
 
-            context = {'node_type': kwargs['node_type_plural'][:-1]}
+            context = {'node_type': kwargs['type']}
 
-            return render(request, 'inventory/nodes.html', context)
+            return render(request, 'inventory/node_selector.html', context)
 
-        elif kwargs['page'] == 'node':
+        elif kwargs['page'] == 'view':
 
             classes = {'host': Host, 'group': Group}
 
-            context = {'node': (get_object_or_404(classes[kwargs['node_type']], name=kwargs['node_name']))}
+            context = {'node': (get_object_or_404(classes[kwargs['type']], name=kwargs['name']))}
 
-            return render(request, 'inventory/node.html', context)
+            return render(request, 'inventory/node_view.html', context)
 
         else:
 
@@ -628,9 +628,9 @@ class InventoryView(View):
 class NodeView(View):
 
     @staticmethod
-    def _get_relationships(node, action):
+    def _get_relationships(node, relation):
 
-        if action == 'parents':
+        if relation == 'parents':
 
             related_set = node.group_set
 
@@ -638,7 +638,7 @@ class NodeView(View):
 
             related_type = 'group'
 
-        elif action == 'children':
+        elif relation == 'children':
 
             related_set = node.children
 
@@ -646,7 +646,7 @@ class NodeView(View):
 
             related_type = 'group'
 
-        elif action == 'members':
+        elif relation == 'members':
 
             related_set = node.members
 
@@ -656,7 +656,7 @@ class NodeView(View):
 
         else:
 
-            raise Http404('Invalid relation: ' + action)
+            raise ValueError('Invalid relation')
 
         return related_set, related_class, related_type
 
@@ -664,7 +664,32 @@ class NodeView(View):
 
         node = build_node(request.GET.dict(), node_type, request.user)
 
-        if action == 'get':
+        if action == '':
+
+            classes = {'host': Host, 'group': Group}
+
+            node_list = list()
+
+            filter_pattern = request.GET.get('filter')
+
+            exclude_pattern = request.GET.get('exclude')
+
+            for node_dict in classes[request.GET['type']].objects.all().values():
+
+                match_conditions = {
+                    not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
+                    not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
+                }
+
+                if False not in match_conditions:
+
+                    node = build_node(node_dict, request.GET['type'], request.user)
+
+                    node_list.append(node.to_dict())
+
+            data = {'status': 'ok', 'nodes': node_list}
+
+        elif action == 'get':
 
             data = {'status': 'ok', 'node': node.to_dict()}
 
