@@ -3,9 +3,9 @@
 *.pyc
 *.iml
 
-ans_data/ansible.log
-ans_data/files/
-ans_data/roles/
-ans_data/playbooks
-ans_data/userdata/
-battuta/static/components/
+extras/ans_data/ansible.log
+extras/ans_data/files/
+extras/ans_data/roles/
+extras/ans_data/playbooks
+extras/ans_data/userdata/
+static/components

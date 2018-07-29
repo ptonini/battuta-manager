@@ -1,0 +1,34 @@
+{
+  "name": "timezones",
+  "description": "A jQuery plugin to turn a select box into a timezone selector",
+  "version": "0.1.0",
+  "homepage": "https://github.com/firstandthird/timezones",
+  "license": "MIT",
+  "copyright": "First+Third",
+  "main": "dist/timezones.js",
+  "dependencies": {
+    "jquery": "1.*",
+    "moment": "~2.8.3",
+    "moment-timezone": "~0.2.4"
+  },
+  "devDependencies": {
+    "assert": "*"
+  },
+  "ignore": [
+    "test",
+    "example",
+    "lib",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "_release": "0.1.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.0",
+    "commit": "f1fa01016c4c456eb0142f45afe948b4f422256f"
+  },
+  "_source": "https://github.com/jgallen23/timezones.git",
+  "_target": "^0.1.0",
+  "_originalSource": "timezones",
+  "_direct": true
+}

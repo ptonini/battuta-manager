@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{% csrf_token %}
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-ui/themes/base/jquery-ui.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap-fileinput/css/fileinput.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-jsonview/dist/jquery.jsonview.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/font-awesome/css/font-awesome.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-bootstrap-growl/jquery.bootstrap-growl.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
+    <script type="text/javascript" src="{% static 'components/jquery/dist/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap-fileinput/js/fileinput.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/buttons.html5.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons-bs/js/buttons.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/jquery-jsonview/dist/jquery.jsonview.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/js-yaml/dist/js-yaml.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/timezones/dist/timezones.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ace.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/blockUI/jquery.blockUI.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/jquery-bootstrap-growl/jquery.bootstrap-growl.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Elements.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Battuta.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/AdHoc.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/FileObj.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Group.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Inventory.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Runner.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Job.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Node.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Playbook.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Preferences.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/User.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/Project.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            let battuta = new Battuta({username: '{{ user.username }}'});
+
+            battuta.navBar('{% if user.is_authenticated %}True{% endif %}')
+
+        })
+    </script>
+    {% block scripts %}{% endblock %}
+    <meta charset="utf-8">
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Battuta</title>
+</head>
+<body>
+    <header class="navbar navbar-default">
+        <div id="navbar_container" class="container"></div>
+    </header>
+    <section class="container">
+        <div class="row">
+            <div class="col-md-12 main" id="container"></div>
+            <div class="col-md-12 main" id="content_container"></div>
+        </div>
+    </section>
+</body>
+</html>

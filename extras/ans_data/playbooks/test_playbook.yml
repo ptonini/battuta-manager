@@ -1,0 +1,16 @@
+---
+- name: Template playbook
+  gather_facts: no
+  hosts: all
+  become: no
+
+  tasks:
+
+    - name: test 01
+      debug:
+        msg: "task 01"
+
+    - name: test 02
+      debug:
+        msg: "task 02"
+
