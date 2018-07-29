@@ -2,7 +2,7 @@
 .vagrant
 *.pyc
 *.iml
-
+settings/prod.py
 extras/ans_data/ansible.log
 extras/ans_data/files/
 extras/ans_data/roles/
