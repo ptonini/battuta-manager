@@ -81,12 +81,6 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 LOGIN_URL = '/'
 
-DATA_PATH = '/opt/ans_data'
-FILES_PATH = os.path.join(DATA_PATH, 'files')
-ROLES_PATH = os.path.join(DATA_PATH, 'roles')
-PLAYBOOK_PATH = os.path.join(DATA_PATH, 'playbooks')
-USERDATA_PATH = os.path.join(DATA_PATH, 'userdata')
-
 CACHE_TIMEOUT = 30
 
 DEFAULT_PREFERENCES = [

@@ -20,3 +20,10 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
+DATA_PATH = '/opt/ans_data'
+
+FILES_PATH = os.path.join(DATA_PATH, 'files')
+ROLES_PATH = os.path.join(DATA_PATH, 'roles')
+PLAYBOOK_PATH = os.path.join(DATA_PATH, 'playbooks')
+USERDATA_PATH = os.path.join(DATA_PATH, 'userdata')
