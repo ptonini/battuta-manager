@@ -104,7 +104,7 @@ function Runner() {
                             })
 
                         }),
-                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
 
                             adhoc.del(function () {
 

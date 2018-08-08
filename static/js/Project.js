@@ -467,7 +467,7 @@ Project.prototype.selector = function () {
 
                 $(row).find('td:eq(3)').append(
                     spanRight.clone().append(
-                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
 
                             project.del(function () {
 

@@ -645,7 +645,7 @@ FileObj.prototype.selector = function (owner) {
                     $(row).find('td:eq(3)').html('').removeAttr('title').append(
                         $('<span>').html(file.modified).attr('title', file.modified),
                         spanRight.clone().append(
-                            spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
+                            spanFA.clone().addClass('fa-pencil-alt btn-incell').attr('title', 'Edit').click(function () {
 
                                 file.edit(function () {
 
@@ -672,7 +672,7 @@ FileObj.prototype.selector = function (owner) {
 
                                 }),
                             spanFA.clone()
-                                .addClass('fa-trash-o btn-incell')
+                                .addClass('fa-trash-alt btn-incell')
                                 .attr('title', 'Delete')
                                 .click(function () {
 

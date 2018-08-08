@@ -412,7 +412,7 @@ Node.prototype.variables = function ($container) {
                 if (!variable.source) {
 
                     $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
-                        spanFA.clone().addClass('fa-pencil btn-incell').attr('title', 'Edit').click(function () {
+                        spanFA.clone().addClass('fa-pencil-alt btn-incell').attr('title', 'Edit').click(function () {
 
                             self.editVariable(variable, function () {
 
@@ -421,7 +421,7 @@ Node.prototype.variables = function ($container) {
                             })
 
                         }),
-                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
 
                             self.variable = variable;
 
@@ -882,7 +882,7 @@ Node.prototype.selector = function () {
 
                 if (node.editable) $(row).find('td:last').html(
                     spanRight.clone().append(
-                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
 
                             node.del(function () {
 

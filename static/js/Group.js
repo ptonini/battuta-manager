@@ -283,7 +283,7 @@ Group.prototype.selector = function () {
 
                 if (group.editable) $(row).find('td:eq(-1)').append(
                     spanRight.clone().append(
-                        spanFA.clone().addClass('fa-trash-o btn-incell').attr('title', 'Delete').click(function () {
+                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
 
                             group.del(function () {
 
