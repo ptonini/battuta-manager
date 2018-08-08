@@ -17348,3 +17348,12 @@ Traceback (most recent call last):
   File "/usr/local/lib/python2.7/dist-packages/ansible/inventory/dir.py", line 84, in get_file_parser
     raise AnsibleError('\n'.join(myerr))
 AnsibleError: Attempted to execute "/etc/ansible/get_inventory.sh" as inventory script: problem running /etc/ansible/get_inventory.sh --list ([Errno 2] No such file or directory)
+2018-08-08 20:56:42,760 django.request Not Found: /favicon.ico
+2018-08-08 20:59:44,724 django.request Not Found: /favicon.ico
+2018-08-08 21:05:26,569 django.request Not Found: /favicon.ico
+2018-08-08 21:05:34,212 django.request Not Found: /favicon.ico
+2018-08-08 21:06:20,187 django.request Not Found: /favicon.ico
+2018-08-08 21:15:52,772 django.request Not Found: /favicon.ico
+2018-08-08 21:17:52,191 django.request Not Found: /favicon.ico
+2018-08-08 21:19:33,897 django.request Not Found: /favicon.ico
+2018-08-08 21:23:17,964 django.request Not Found: /favicon.ico

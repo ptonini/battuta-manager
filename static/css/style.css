@@ -142,8 +142,9 @@ div.dataTables_length select.input-sm, div.dataTables_filter input.input-sm {hei
 
 div.dataTables_length, div.dataTables_filter {height: 25px}
 
-table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after,
-table.dataTable thead .sorting_desc:after {font-family: "Font Awesome 5 Solid"}
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:after {font-family: "Font Awesome 5 Solid", sans-serif}
 
 table.dataTable thead th.sorting:after {content: "\f0dc"; color: transparent}
 

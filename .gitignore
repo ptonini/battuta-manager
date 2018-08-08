@@ -3,9 +3,5 @@
 *.pyc
 *.iml
 settings/prod.py
-extras/ans_data/ansible.log
-extras/ans_data/files/
-extras/ans_data/roles/
-extras/ans_data/playbooks
-extras/ans_data/userdata/
+extras/ans_data
 static/components
