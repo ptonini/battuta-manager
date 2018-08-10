@@ -13,6 +13,6 @@ urlpatterns = [
 
     url(r'^user/$', login_required(views.PageView.as_view()), kwargs={'page': 'user'}),
 
-    url(r'^api/([a-z_]+)/$', login_required(views.FilesView.as_view()))
+    url(r'^api/([a-z_]+)/$', login_required(views.FileView.as_view()))
 
 ]

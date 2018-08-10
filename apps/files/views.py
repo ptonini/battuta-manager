@@ -45,7 +45,7 @@ class PageView(View):
             return render(request, 'files/user.html')
 
 
-class FilesView(View):
+class FileView(View):
 
     file_sources = {
         'files': {
@@ -339,6 +339,8 @@ class FilesView(View):
         root = self.set_root(request.POST['root'], request.POST.get('owner'), request.user)
 
         full_path = os.path.join(root['path'], request.POST['folder'], request.POST['name'])
+
+        data = dict()
 
         if root['authorized'] or authorizer.can_edit_file(full_path):
 

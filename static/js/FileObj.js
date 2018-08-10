@@ -35,12 +35,12 @@ FileObj.prototype.validator = {
 
         catch (error) {
 
-            let alert = divLargeAlert.clone().append(
+            let $alert = divLargeAlert.clone().append(
                 $('<h5>').html('Invalid yaml:'),
                 $('<div>').css('white-space', 'pre-line').html(error.message)
             );
 
-            $.bootstrapGrowl(alert, {type: 'danger', delay: 0});
+            $.bootstrapGrowl($alert, {type: 'danger', delay: 0});
 
             return false
         }
@@ -369,7 +369,7 @@ FileObj.prototype.dialog = function (action, callback) {
 
                         if (self.is_folder) self.type = 'directory';
 
-                        if (self.new_name && self.new_name !== self.name) self.save((data) => {
+                        if (self.new_name && self.new_name !== self.name) self.postData(action, true, (data) => {
 
                             $(this).dialog('close');
 
