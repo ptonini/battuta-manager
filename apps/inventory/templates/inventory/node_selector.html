@@ -1,12 +1,11 @@
 {% extends 'main/main.html' %}
-{% load staticfiles %}
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function () {
 
             document.title = 'Battuta - ' + '{{ node_type }}'.capitalize() + 's';
 
-             var node = new Node({type: '{{ node_type }}'});
+             let node = new Node({type: '{{ node_type }}'});
 
             $('#container').html(node.selector());
 

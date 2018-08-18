@@ -1,14 +1,13 @@
 {% extends 'main/main.html' %}
-{% load staticfiles %}
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - Projects';
+            document.title = 'Battuta - Users';
 
-            var project = new Project();
+            let user = new User();
 
-            $('#container').append(project.selector())
+            user.selector();
 
         });
     </script>

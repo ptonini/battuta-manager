@@ -16,17 +16,13 @@ class PageView(View):
     @staticmethod
     def get(request, *args, **kwargs):
 
-        if kwargs['page'] == 'projects':
+        if kwargs['page'] == 'selector':
 
-            return render(request, 'projects/project_table.html')
+            return render(request, 'projects/project_selector.html')
 
-        elif kwargs['page'] == 'new_project':
+        elif kwargs['page'] == 'view':
 
-            return render(request, 'projects/project.html')
-
-        elif kwargs['page'] == 'project':
-
-            return render(request, 'projects/project.html', {'project_id': args[0]})
+            return render(request, 'projects/project_view.html', {'project_id': args[0]})
         else:
 
             raise Http404('Invalid page')

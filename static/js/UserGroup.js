@@ -1,4 +1,4 @@
-function Group(param) {
+function UserGroup(param) {
 
     let self = this;
 
@@ -10,17 +10,17 @@ function Group(param) {
 
 }
 
-Group.prototype = Object.create(Battuta.prototype);
+UserGroup.prototype = Object.create(Battuta.prototype);
 
-Group.prototype.constructor = Group;
+UserGroup.prototype.constructor = UserGroup;
 
-Group.prototype.apiPath = Battuta.prototype.paths.api.group;
+UserGroup.prototype.apiPath = Battuta.prototype.paths.api.group;
 
-Group.prototype.key = 'group';
+UserGroup.prototype.key = 'group';
 
-Group.prototype.type = 'user group';
+UserGroup.prototype.type = 'user group';
 
-Group.prototype.loadParam = function (param) {
+UserGroup.prototype.loadParam = function (param) {
 
     let self = this;
 
@@ -38,7 +38,7 @@ Group.prototype.loadParam = function (param) {
 
 };
 
-Group.prototype.permissionsGrid = function ($container) {
+UserGroup.prototype.permissionsGrid = function ($container) {
 
     let self = this;
 
@@ -110,7 +110,7 @@ Group.prototype.permissionsGrid = function ($container) {
 
 };
 
-Group.prototype.memberGrid = function ($container) {
+UserGroup.prototype.memberGrid = function ($container) {
 
     let self = this;
 
@@ -186,7 +186,7 @@ Group.prototype.memberGrid = function ($container) {
 
 };
 
-Group.prototype.view = function () {
+UserGroup.prototype.view = function () {
 
     let self = this;
 
@@ -230,7 +230,7 @@ Group.prototype.view = function () {
 
 };
 
-Group.prototype.selector = function () {
+UserGroup.prototype.selector = function () {
 
     let self = this;
 
@@ -254,7 +254,7 @@ Group.prototype.selector = function () {
                     className: 'btn-xs',
                     action: function () {
 
-                        let group = new Group();
+                        let group = new UserGroup();
 
                         group.edit(function (data) {
 
@@ -273,7 +273,7 @@ Group.prototype.selector = function () {
             ],
             rowCallback: function (row, data) {
 
-                let group = new Group(data);
+                let group = new UserGroup(data);
 
                 $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 

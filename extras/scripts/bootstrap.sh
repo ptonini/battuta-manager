@@ -14,6 +14,5 @@ npm install -g bower
 bower install --allow-root
 mysql -u root -pbattuta --execute='CREATE DATABASE battuta;'
 mysql -u root -pbattuta --execute='GRANT ALL PRIVILEGES ON battuta.* TO "battuta"@"%"  IDENTIFIED BY "battuta";'
-ln -s /opt/battuta/extras/etc/ /etc/ansible
 cd /opt/battuta
 ./manage.py migrate

@@ -442,7 +442,7 @@ Project.prototype.selector = function () {
 
                         project.edit(function (data) {
 
-                            window.open(self.paths.views.project  + data.project.id + '/', '_self');
+                            window.open(data.project.id + '/', '_self');
 
                         });
 
@@ -457,11 +457,13 @@ Project.prototype.selector = function () {
             ],
             rowCallback: function (row, data) {
 
+                let table = $(this);
+
                 let project = new Project(data);
 
                 $(row).find('td:eq(0)').css('cursor', 'pointer').click(function() {
 
-                    window.open(self.paths.views.project + project.id + '/', '_self')
+                    window.open(project.id + '/', '_self')
 
                 });
 

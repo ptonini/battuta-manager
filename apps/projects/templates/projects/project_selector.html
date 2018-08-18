@@ -1,12 +1,13 @@
 {% extends 'main/main.html' %}
-{% load staticfiles %}
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function () {
 
-            var project = new Project({id: '{{ project_id }}'});
+            document.title = 'Battuta - Projects';
 
-            $('#container').html(project.view())
+            let project = new Project();
+
+            $('#container').append(project.selector())
 
         });
     </script>

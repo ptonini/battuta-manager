@@ -204,13 +204,13 @@ Node.prototype.relationships = function (relation, $container) {
         };
 
         $element.find('.entity_grid').attr('id', relation + '_grid').DynaGrid({
-            gridTitle: relation,
+            //gridTitle: relation,
             headerTag: '<div>',
             ajaxDataKey: 'nodes',
             showAddButton: true,
             showFilter: true,
             itemValueKey: 'name',
-            showTitle: false,
+            //showTitle: false,
             showCount: true,
             addButtonType: 'text',
             addButtonClass: 'btn btn-default btn-xs',
@@ -229,7 +229,7 @@ Node.prototype.relationships = function (relation, $container) {
                 $gridItem.html('').append(
                     $('<span>').append(name).click(function () {
 
-                        window.open(self.paths.inventory + self.relationType[relation] + '/' + name, '_self')
+                        window.open(self.paths.inventory + self.relationType[relation] + '/' + name + '/', '_self')
 
                     }),
                     spanFA.clone().addClass('text-right fa-minus-circle')
@@ -318,7 +318,6 @@ Node.prototype.descendants = function (offset, $container) {
                             dataSource: 'array',
                             headerTag: '<div>',
                             showFilter: true,
-                            showTitle: true,
                             checkered: true,
                             showCount: true,
                             truncateItemText: true,

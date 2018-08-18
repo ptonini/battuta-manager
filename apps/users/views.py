@@ -24,31 +24,21 @@ class PageView(View):
     @staticmethod
     def get(request, *args, **kwargs):
 
-        if kwargs['page'] == 'users':
+        if kwargs['page'] == 'user_selector':
 
-            return render(request, 'users/user_table.html')
+            return render(request, 'users/user_selector.html')
 
-        elif kwargs['page'] == 'user':
+        elif kwargs['page'] == 'user_view':
 
-            return render(request, 'users/user.html', {'user_name': args[0]})
+            return render(request, 'users/user_view.html', {'user_name': args[0]})
 
-        elif kwargs['page'] == 'user_files':
+        elif kwargs['page'] == 'group_selector':
 
-            if User.objects.filter(username=args[0]).exists():
+            return render(request, 'users/group_selector.html')
 
-                return render(request, 'users/files.html', {'owner': args[0]})
+        elif kwargs['page'] == 'group_view':
 
-            else:
-
-                raise Http404('Invalid user')
-
-        elif kwargs['page'] == 'groups':
-
-            return render(request, 'users/group_table.html')
-
-        elif kwargs['page'] == 'group':
-
-            return render(request, 'users/group.html', {'group_name': args[0]})
+            return render(request, 'users/group_view.html', {'group_name': args[0]})
 
 
 class LoginView(View):

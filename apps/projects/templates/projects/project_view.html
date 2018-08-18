@@ -3,11 +3,9 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - {{ user_name }}';
+            let project = new Project({id: '{{ project_id }}'});
 
-            var user = new User({username: '{{ user_name }}'});
-
-            user.view('{{ user.username }}');
+            $('#container').html(project.view())
 
         });
     </script>

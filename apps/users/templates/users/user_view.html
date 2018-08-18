@@ -3,11 +3,11 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - Users';
+            document.title = 'Battuta - {{ user_name }}';
 
-            var user = new User();
+            let user = new User({username: '{{ user_name }}'});
 
-            user.selector();
+            user.view('{{ user.username }}');
 
         });
     </script>

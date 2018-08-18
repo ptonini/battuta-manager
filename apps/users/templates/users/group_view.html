@@ -5,7 +5,7 @@
 
             document.title = 'Battuta - {{ group_name }}';
 
-            var group = new Group({name: '{{ group_name }}'});
+            let group = new UserGroup({name: '{{ group_name }}'});
 
             $('#container').html(group.view());
 

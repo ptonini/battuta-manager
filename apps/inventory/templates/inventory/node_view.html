@@ -1,12 +1,11 @@
 {% extends 'main/main.html' %}
-{% load staticfiles %}
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function () {
 
             document.title = 'Battuta - {{ node.name }}';
 
-            var node = new Node({id: '{{ node.id }}', type: '{{ node.type }}'});
+            let node = new Node({id: '{{ node.id }}', type: '{{ node.type }}'});
 
             $('#container').html(node.view())
 

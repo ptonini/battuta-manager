@@ -1,9 +1,11 @@
 from django.conf.urls import include, url
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
 
 from . import views
 
-urlpatterns = [
+urlpatterns = {
 
     url(r'^$', views.PageView.as_view(), kwargs={'page': 'main'}),
 
@@ -20,4 +22,6 @@ urlpatterns = [
     url(r'^preferences/', include('apps.preferences.urls', namespace='preferences')),
 
     url(r'^projects/', include('apps.projects.urls', namespace='projects')),
-]
+
+    url(r'^favicon.ico$', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
+}

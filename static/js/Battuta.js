@@ -175,8 +175,8 @@ Battuta.prototype = {
             userFiles: '/files/user/',
             adhoc: '/runner/adhoc/',
             job: '/runner/job/',
-            user: '/users/users/',
-            group: '/users/groups/',
+            user: '/users/user/',
+            group: '/users/group/',
             project: '/projects/',
             node: {
                 host: '/inventory/host/',
@@ -187,7 +187,6 @@ Battuta.prototype = {
             job: '/runner/job/',
             user: '/users/user/',
             group: '/users/group/',
-            project: '/projects/project/',
             node: {
                 host: '/inventory/host/',
                 group: '/inventory/group'
@@ -524,7 +523,6 @@ Battuta.prototype = {
 
             $grid.DynaGrid({
                 gridTitle: options.title,
-                showTitle: true,
                 showFilter: true,
                 addButtonTitle: 'Add ' + options.entityType,
                 maxHeight: 400,
@@ -937,7 +935,6 @@ Battuta.prototype = {
 
                 $('#' + type + '_result_grid').DynaGrid({
                     gridTitle: type + 's',
-                    showTitle: true,
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
                     showCount: true,
