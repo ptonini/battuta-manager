@@ -45,7 +45,6 @@ UserGroup.prototype.permissionsGrid = function ($container) {
     self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
-            gridTitle: 'Permissions',
             headerTag: '<div>',
             maxHeight: window.innerHeight - 299,
             showAddButton: true,
@@ -117,7 +116,6 @@ UserGroup.prototype.memberGrid = function ($container) {
     self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
-            gridTitle: 'Members',
             headerTag: '<div>',
             showFilter: true,
             maxHeight: window.innerHeight - 299,

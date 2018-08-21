@@ -187,6 +187,8 @@ class JobView(View):
             # Execute task
             elif job_data['type'] == 'adhoc':
 
+                job_data['hosts'] = job_data['hosts'] or 'all'
+
                 auth = {
                     request.user.has_perm('users.execute_jobs'),
                     authorizer.can_run_tasks(ansible_inventory, job_data['hosts'])

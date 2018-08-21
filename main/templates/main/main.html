@@ -42,15 +42,17 @@
     <script type="text/javascript" src="{% static 'js/Preferences.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/User.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/Project.js' %}"></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
+    {% block navbar %}
+        <script type="text/javascript">
+            $(document).ready(function () {
 
-            let battuta = new Battuta({username: '{{ user.username }}'});
+                let battuta = new Battuta({username: '{{ user.username }}'});
 
-            battuta.navBar('{% if user.is_authenticated %}True{% endif %}')
+                battuta.navBar('{% if user.is_authenticated %}True{% endif %}')
 
-        })
-    </script>
+            })
+        </script>
+    {% endblock %}
     {% block scripts %}{% endblock %}
     <meta charset="utf-8">
     <meta http-equiv='cache-control' content='no-cache'>

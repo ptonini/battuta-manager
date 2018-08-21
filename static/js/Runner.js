@@ -65,7 +65,7 @@ function Runner() {
                     className: 'btn-xs',
                     action: function () {
 
-                        let adhoc = new AdHoc({hosts: self.hosts});
+                        let adhoc = new AdHoc();
 
                         adhoc.dialog(function () {
 
@@ -84,7 +84,7 @@ function Runner() {
 
                 $(row).find('td:eq(3)').prettyBoolean().append(
                     spanRight.clone().append(
-                        spanFA.clone().addClass('fa-play-circle-o btn-incell').attr('title', 'Load').click(function () {
+                        spanFA.clone().addClass('fa-pencil-alt btn-incell').attr('title', 'Load').click(function () {
 
                             adhoc.dialog(function () {
 

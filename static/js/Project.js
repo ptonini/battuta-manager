@@ -156,7 +156,6 @@ Project.prototype.playbookGrid = function ($container) {
     self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
-            gridTitle: 'Playbooks',
             headerTag: '<div>',
             showAddButton: true,
             ajaxDataKey: 'file_list',
@@ -247,7 +246,6 @@ Project.prototype.roleGrid = function ($container) {
     self.fetchHtml('entityGrid.html', $container).then($element => {
 
         $element.find('.entity_grid').DynaGrid({
-            gridTitle: 'Roles',
             headerTag: '<div>',
             showAddButton: true,
             ajaxDataKey: 'file_list',
