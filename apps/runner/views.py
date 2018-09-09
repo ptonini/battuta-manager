@@ -18,7 +18,7 @@ from apps.runner.forms import AdHocTaskForm, JobForm, PlaybookArgsForm
 from apps.runner.extras import run_job
 from apps.runner.extras.handlers import JobTableHandler
 
-from apps.users.models import Credential
+from apps.iam.models import Credential
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
 from apps.projects.extras import Authorizer
@@ -187,7 +187,7 @@ class JobView(View):
             # Execute task
             elif job_data['type'] == 'adhoc':
 
-                job_data['hosts'] = job_data['hosts'] or 'all'
+                # job_data['hosts'] = job_data['hosts'] or 'all'
 
                 auth = {
                     request.user.has_perm('users.execute_jobs'),

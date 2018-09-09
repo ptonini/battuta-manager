@@ -1,7 +1,3 @@
-import ntpath
-import os
-
-
 from pytz import timezone
 
 from django.http import HttpResponse

@@ -97,7 +97,7 @@ button.menu-btn {border-radius: .5rem}
 
 /* JQuery UI options *****************/
 
-.ui-dialog-titlebar-close, .no_title .ui-dialog-titlebar  {display: none}
+.ui-dialog-titlebar-close, .ui-dialog-titlebar  {display: none}
 
 .ui-button-text {padding: 1px 1px; font-size: 12px; line-height: 1.5; border-radius: 3px}
 

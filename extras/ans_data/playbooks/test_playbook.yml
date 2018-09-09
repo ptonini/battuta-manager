@@ -1,7 +1,7 @@
 ---
 - name: Template playbook
   gather_facts: no
-  hosts: all
+  hosts: all 
   become: no
 
   tasks:

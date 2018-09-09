@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from apps.users.models import Credential
+from apps.iam.models import Credential
 
 
 class AdHocTask(models.Model):

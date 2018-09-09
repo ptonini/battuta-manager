@@ -7,7 +7,7 @@ from django.conf import settings
 from apps.preferences.models import Item
 from apps.preferences.extras import get_default_value
 
-from apps.users.extras import create_userdata
+from apps.iam.extras import create_userdata
 
 
 class PreferencesView(View):

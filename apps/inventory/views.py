@@ -43,7 +43,7 @@ class PageView(View):
 
         elif kwargs['page'] == 'view':
 
-            classes = {'host': Host, 'group': Group}
+            classes = {'hosts': Host, 'groups': Group}
 
             context = {'node': (get_object_or_404(classes[kwargs['type']], name=kwargs['name']))}
 
@@ -390,7 +390,7 @@ class InventoryView(View):
 
         elif action == 'list':
 
-            classes = {'host': Host, 'group': Group}
+            classes = {'hosts': Host, 'groups': Group}
 
             node_list = list()
 
@@ -666,7 +666,7 @@ class NodeView(View):
 
         if action == '':
 
-            classes = {'host': Host, 'group': Group}
+            classes = {'hosts': Host, 'groups': Group}
 
             node_list = list()
 
@@ -695,7 +695,7 @@ class NodeView(View):
 
         elif action == 'facts':
 
-            if node.type == 'host':
+            if node.type == 'hosts':
 
                 facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
 
@@ -710,6 +710,8 @@ class NodeView(View):
                 data = {'status': 'failed', 'msg': 'Groups do not have facts'}
 
         elif action == 'descendants':
+
+            print(node.group_descendants)
 
             data = {
                 'status': 'ok',
@@ -837,7 +839,7 @@ class NodeView(View):
 
         elif action == 'delete':
 
-            if node.editable and (node.type == 'host' or node.name != 'all'):
+            if node.editable and (node.type == 'hosts' or node.name != 'all'):
 
                 node.delete()
 

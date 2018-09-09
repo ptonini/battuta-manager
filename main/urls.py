@@ -15,7 +15,7 @@ urlpatterns = {
 
     url(r'^runner/', include('apps.runner.urls', namespace='runner')),
 
-    url(r'^users/', include('apps.users.urls', namespace='users')),
+    url(r'^iam/', include('apps.iam.urls', namespace='iam')),
 
     url(r'^files/', include('apps.files.urls', namespace='files')),
 

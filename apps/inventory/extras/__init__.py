@@ -14,8 +14,8 @@ from apps.inventory.forms import HostForm, GroupForm
 def build_node(node_dict, node_type, user):
 
     classes = {
-        'host': {'node': Host, 'form': HostForm},
-        'group': {'node': Group, 'form': GroupForm}
+        'hosts': {'node': Host, 'form': HostForm},
+        'groups': {'node': Group, 'form': GroupForm}
     }
 
     if node_dict.get('id', False):
