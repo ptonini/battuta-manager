@@ -228,7 +228,7 @@ Battuta.prototype = {
 
                 failCallback && failCallback(data);
 
-                data.msg && $.bootstrapGrowl(submitErrorAlert.clone().append(data.msg), failedAlertOptions);
+                data.msg && $.bootstrapGrowl(data.msg, failedAlertOptions);
 
                 break;
 
@@ -389,13 +389,15 @@ Battuta.prototype = {
                 maxHeight: 400,
                 itemToggle: (options.type === 'many'),
                 truncateItemText: true,
-                checkered: true,
+                shadowed: true,
                 columns: sessionStorage.getItem('selection_modal_columns'),
                 ajaxUrl: options.url,
                 ajaxData: options.data,
                 ajaxDataKey: options.ajaxDataKey,
                 itemValueKey: options.itemValueKey,
                 itemTitleKey: options.itemTitleKey,
+                dataSource: options.dataSource || 'ajax',
+                dataArray: options.dataArray || [],
                 formatItem: function($gridContainer, $gridItem) {
 
                     if (options.type === 'one') $gridItem.click(function () {
@@ -548,31 +550,32 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('deleteDialog.html').then($element => {
+        self.fetchHtml('deleteAlert.html').then($element => {
 
-                $element.dialog({
-                    width: '320',
-                    buttons: {
-                        Delete: function () {
+            let $alert = $.bootstrapGrowl($element, {
+                type: 'warning',
+                delay: 0,
+                allowDismiss: false,
+                closeButton:  $element.find('#cancel_button')
+            });
 
-                            self.postData(action, true, function (data) {
+            $element.find('#continue_button').click(function () {
 
-                                callback && callback(data)
+                $alert.fadeOut(function () {
 
-                            });
+                    $alert.remove();
 
-                            $(this).dialog('close');
+                    self.postData(action, true, function (data) {
 
-                        },
-                        Cancel: function () {
+                        callback && callback(data);
 
-                            $(this).dialog('close')
+                    });
 
-                        }
-                    }
-                });
+                })
 
-            })
+            });
+
+        })
 
     },
 
@@ -800,7 +803,7 @@ Battuta.prototype = {
                     itemValueKey: 'name',
                     showCount: true,
                     hideIfEmpty: true,
-                    checkered: true,
+                    shadowed: true,
                     headerTag: '<h5>',
                     headerBottomMargin: '0',
                     gridBodyBottomMargin: '20px',

@@ -9,23 +9,24 @@
                 <a data-toggle="tab" href="#grid_tab"><span class="fa fa-fw fa-th"></span></a>
             </li>
         </ul>
-        <div class="tab-content">
+        <div class="tab-content paper-card">
             <div class="tab-pane in active" id="table_tab">
-                <br>
                 <table id="node_table" class="table table-condensed table-hover table-striped"></table>
             </div>
             <div class="tab-pane" id="grid_tab">
-                <br>
                 <div id="node_grid"></div>
-                <br>
-                <div>
-                    <button id="delete_mode" class="btn btn-default btn-xs">Delete mode</button>
-                    <span style="float: right;">
-                        <button id="delete_button" class="btn btn-default btn-xs" title="Delete" style="display: none;">
-                            <span class="fa fa-fw fa-trash-alt"></span>
-                        </button>
-                    </span>
-                </div>
+            </div>
+            <br>
+            <div class="tab-footer">
+                <button id="download_button" class="btn btn-default btn-xs btn-icon" type="button">
+                    <span class="fa fa-download" title="Download"></span>
+                </button>
+                <button id="facts_button" class="btn btn-default btn-xs btn-icon" type="button">
+                    <span class="fa fa-clipboard-list" title="Gather facts"></span>
+                </button>
+                <button id="delete_button" class="btn btn-default btn-xs btn-icon" type="button">
+                    <span class="fa fa-trash" title="Delete nodes"></span>
+                </button>
             </div>
         </div>
     </div>

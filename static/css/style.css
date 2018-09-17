@@ -9,9 +9,16 @@
 }
 
 
-body {font-size: small}
+body {
+    font-size: small;
+    background-color: whitesmoke;
+}
 
-header {font-size: 14px; border-radius: 0 !important; margin-bottom: 10px !important;}
+header {
+    font-size: 14px; border-radius: 0 !important;
+    margin-bottom: 10px !important;
+    border-color: transparent !important;
+}
 
 footer {height: 25px}
 
@@ -19,19 +26,43 @@ label {font-weight: 400; width: 100%}
 
 h5 {font-size: 11pt; color: #525252}
 
-th, h4 {color: #525252}
+h3, h4, span.fa, .navbar, ul li a {
+    text-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 1px rgba(0,0,0,0.22);
+    color: dimgrey !important;
+}
+
+th {color: #525252}
 
 textarea {resize: vertical}
 
 a, label, .fa {color: #777}
 
+.nav-tabs li.active a {
+    background-color: whitesmoke;
+}
+
+.nav-tabs li.active a:hover, .nav-tabs li.active a:focus {
+     background-color: whitesmoke;
+ }
+
+.paper-card {
+    background-color: white;
+    box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);
+    border-radius: 5px;
+    padding: 15px 10px 10px 10px;
+}
+
+.tab-content {margin-top: 10px}
+
 .btn:focus, .btn:active {outline: none !important;}
 
 .btn:focus {background-color: transparent}
 
+.btn-icon {padding: 1px 5px; border: transparent; margin-right: 5px;}
+
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
-span.badge {background-color: #cacaca}
+span.badge {background-color: #cacaca; padding: 5px 7px 3px 7px}
 
 a.label_link2 {float: right; font-size: x-small}
 
@@ -52,8 +83,6 @@ a.label_link2 {float: right; font-size: x-small}
 .runner_error_box {margin-top: 20px; color: red; font-size: 12px}
 
 .reference_link_container, .sudo_alert {margin: auto; text-align: right; font-size: x-small}
-
-.navbar-brand * {margin-right: 1rem;}
 
 #view_header .entity_grid, .descendants_grid {margin-bottom: 2rem}
 
@@ -93,7 +122,15 @@ li.path_link, #root_path, #edit_path {cursor: pointer}
 
 header.navbar .dropdown-menu {font-size: small}
 
+header.navbar {
+    box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.14), 0px 1px 14px 0px rgba(0, 0, 0, 0.12), 0px 3px 5px -1px rgba(0, 0, 0, 0.2);
+    background-color: ghostwhite;
+}
+
 button.menu-btn {border-radius: .5rem}
+
+a.navbar-brand * {margin-right: 1rem;}
+
 
 /* JQuery UI options *****************/
 

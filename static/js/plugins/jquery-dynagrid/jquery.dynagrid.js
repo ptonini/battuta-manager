@@ -42,7 +42,7 @@
 
             if (Object.prototype.toString.call(opts.dataArray) !== '[object Array]') throw '- invalid data format';
 
-            var itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
+            let itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
 
             if (itemFormat === '[object Object]') opts.dataArray.sort(_sortDataArray(opts.itemValueKey, opts));
 
@@ -50,11 +50,11 @@
 
             if (opts.dataArray.length === 0) {
 
-                if (opts.hideIfEmpty) $gridContainer.hide();
+                opts.hideIfEmpty && $gridContainer.hide();
 
-                if (opts.hideBodyIfEmpty) $gridBody.closest('div.row').hide();
+                opts.hideBodyIfEmpty && $gridBody.closest('div.row').hide();
 
-                if (opts.showCount) $('#' + opts.gridTitle + '_count').addClass('hidden')
+                opts.showCount && $('#' + opts.gridTitle + '_count').addClass('hidden')
             }
 
             else {
@@ -67,7 +67,9 @@
 
                 $.each(opts.dataArray, function (index, itemData) {
 
-                    var $item = $('<div>').addClass('dynagrid-item');
+                    let $item = $('<div>').addClass('dynagrid-item');
+
+                    opts.shadowed && $item.addClass('shadowed');
 
                     if (Object.prototype.toString.call(itemData) === '[object Array]') {
 
@@ -224,7 +226,7 @@
                 });
 
             let $searchBox = $('<div>')
-                .attr('class', 'col-md-6 form-inline center-align')
+                .attr('class', 'col-md-6 form-inline center-align dynagrid-search')
                 .append(
                     $('<span>').css('float', 'right').append(
                         $('<label>').css({'font-weight': 'normal'}).append(
@@ -444,6 +446,7 @@
         maxHeight: null,
         showFilter: false,
         checkered: false,
+        shadowed: false,
         itemToggle: false,
         itemHoverCursor: 'pointer',
         truncateItemText: false,

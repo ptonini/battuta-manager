@@ -21,7 +21,7 @@ $.extend($.fn.dataTable.defaults, {
 $.extend($.bootstrapGrowl.default_options, {
     align: 'center',
     delay: 1000,
-    allow_dismiss: true,
+    allowDismiss: true,
     width: 'auto',
     offset: {
         from: 'bottom',

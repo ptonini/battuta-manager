@@ -163,7 +163,7 @@ Node.prototype.hostInfo = function ($container) {
 
             }
 
-            else  $element.find('#gather_facts').html('Gather facts').addClass('pull-right');
+            else  $element.find('#gather_facts').addClass('pull-right').attr('title', 'Gather facts');
 
             $element.find('#gather_facts').toggleClass('pull-right', self.facts).click(function () {
 
@@ -204,11 +204,11 @@ Node.prototype.relationships = function (relation, $container) {
             showFilter: true,
             itemValueKey: 'name',
             showCount: true,
-            addButtonType: 'text',
+            addButtonType: 'icon',
             addButtonClass: 'btn btn-default btn-xs',
             addButtonTitle: 'Add ' + relation,
-            checkered: true,
-            maxHeight: window.innerHeight - 299,
+            shadowed: true,
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
             ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
@@ -310,7 +310,7 @@ Node.prototype.descendants = function (offset, $container) {
                             dataSource: 'array',
                             headerTag: '<div>',
                             showFilter: true,
-                            checkered: true,
+                            shadowed: true,
                             showCount: true,
                             truncateItemText: true,
                             gridBodyBottomMargin: '20px',
@@ -358,7 +358,7 @@ Node.prototype.variables = function ($container) {
         self.bind($element);
 
         $('#variable_table').DataTable({
-            scrollY: (window.innerHeight - 307).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
             order: [[ 2, 'asc' ], [ 0, 'asc' ]],
@@ -366,8 +366,8 @@ Node.prototype.variables = function ($container) {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: 'Add variable',
-                    className: 'btn-xs',
+                    text: '<span class="fa fa-fw fa-plus" title="Add variable"></span>',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         self.editVariable({id: null}, function () {
@@ -380,7 +380,7 @@ Node.prototype.variables = function ($container) {
                 },
                 {
                     text: '<span class="fa fa-clone" title="Copy from node"></span>',
-                    className: 'btn-xs',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         self.copyVariables(function () {
@@ -715,63 +715,7 @@ Node.prototype.selector = function () {
 
         let $grid = $element.find('#node_grid');
 
-        let $deleteModeBtn = $('#delete_mode').click(function () {
-
-            $(this).toggleClass('checked_button');
-
-            $('#delete_button').toggle();
-
-            if ($(this).hasClass('checked_button')) {
-
-                $grid.DynaGrid(Object.assign({dataArray: self.nodes}, deleteOptions));
-
-            }
-
-            else $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions))
-
-        });
-
-        let baseOptions = {
-            loadCallback: function ($gridContainer) {
-
-                $gridContainer.DynaGrid('getCount') === 0 ? $deleteModeBtn.hide() : $deleteModeBtn.show()
-
-            },
-            headerTag: '<div>',
-            dataSource: 'array',
-            itemValueKey: 'name',
-            checkered: true,
-            showFilter: true,
-            truncateItemText: true,
-            headerBottomPadding: 20,
-            topAlignHeader: true,
-            maxHeight: window.innerHeight - 299,
-            columns: sessionStorage.getItem('node_grid_columns')
-        };
-
-        let openOptions = Object.assign({
-            showAddButton: true,
-            addButtonType: 'text',
-            addButtonClass: 'btn btn-default btn-xs',
-            addButtonTitle: 'Add ' + self.type,
-            formatItem: function ($gridContainer, $gridItem) {
-
-                $gridItem.click(function () {
-
-                    window.open(self.paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
-
-                });
-
-            },
-            addButtonAction: function () {
-
-                addNode()
-
-            }
-
-        }, baseOptions);
-
-        let deleteOptions = Object.assign({itemToggle: true}, baseOptions);
+        let columns;
 
         let loadData = () => {
 
@@ -779,7 +723,7 @@ Node.prototype.selector = function () {
 
                 self.nodes = data.nodes;
 
-                $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions));
+                $grid.DynaGrid('load', self.nodes);
 
                 $table.DataTable().clear();
 
@@ -802,8 +746,6 @@ Node.prototype.selector = function () {
             });
 
         };
-
-        let columns;
 
         if (self.type === 'hosts') {
 
@@ -840,20 +782,22 @@ Node.prototype.selector = function () {
         ];
 
         $table.DataTable({
+            pageResize: true,
+            stateSave: false,
             paging: false,
-            scrollY: (window.innerHeight - 340).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('node_table_offset')).toString() + 'px',
             scrollCollapse: true,
             columns: columns,
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: 'Add '+ self.type,
+                    text: '<span class="fa fa-plus fa-fw" title="Add '+ self.type + '"></span>',
                     action: function () {
 
                         addNode()
 
                     },
-                    className: 'btn-xs'
+                    className: 'btn-xs btn-icon'
                 }
             ],
             order: [[0, "asc"]],
@@ -895,46 +839,111 @@ Node.prototype.selector = function () {
             }
         });
 
-        new $.fn.dataTable.Buttons($table.DataTable(), {
-            buttons: [{
-                extend: 'csv',
-                text: '<span class="fa fa-download" title="Download"></span>',
-                className: 'btn-xs btn-incell'
-            }]
+        $grid.DynaGrid({headerTag: '<div>',
+            dataSource: 'array',
+            itemValueKey: 'name',
+            shadowed: true,
+            showFilter: true,
+            truncateItemText: true,
+            headerBottomPadding: 20,
+            topAlignHeader: true,
+            maxHeight: window.innerHeight - sessionStorage.getItem('node_grid_offset'),
+            columns: sessionStorage.getItem('node_grid_columns'),
+            showAddButton: true,
+            addButtonType: 'icon',
+            addButtonClass: 'btn btn-default btn-xs',
+            addButtonTitle: 'Add ' + self.type,
+            formatItem: function ($gridContainer, $gridItem) {
+
+                $gridItem.click(function () {
+
+                    window.open(self.paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
+
+                });
+
+            },
+            addButtonAction: function () {
+
+                addNode()
+
+            },
         });
 
-        new $.fn.dataTable.Buttons($table.DataTable(), {
-            buttons: [{
-                text: 'Gather facts',
-                className: 'btn-xs btn-incell',
-                action: function () {
+        new $.fn.dataTable.Buttons($table.DataTable(), {buttons: [{extend: 'csv'}]});
 
-                    let job = new Job({hosts: 'all'});
+        $('#download_button').click(function () {
 
-                    job.getFacts()
+            $table.DataTable().buttons(1, null).trigger()
 
-                }
-            }]
         });
 
-        $($table.DataTable().table().container()).append(
-            $($table.DataTable().buttons( 1, null ).container()).css('margin-top', '1rem'),
-            $($table.DataTable().buttons( 2, null ).container()).css('margin-top', '1rem')
-        );
+        $('#facts_button').click(function () {
 
-        $grid.DynaGrid(Object.assign({dataArray: self.nodes}, openOptions));
+            new Job({hosts: 'all'}).getFacts(function () {
+
+                loadData();
+
+            })
+
+        });
 
         $('#delete_button').click(function () {
 
-            let inventory = new Inventory({type: self.type});
+            self.fetchHtml('selectionDialog.html').then($element => {
 
-            inventory.selection = $grid.DynaGrid('getSelected', 'id');
+                let $grid = $element.find('#selection_grid');
 
-            inventory.del(function () {
+                $element.find('#selection_title').remove();
 
-                loadData()
+                $element.dialog({
+                    minWidth: 700,
+                    minHeight: 500,
+                    buttons:{
+                        Delete: function () {
 
-            });
+                            let inventory = new Inventory({type: self.type});
+
+                            inventory.selection = $grid.DynaGrid('getSelected', 'id');
+
+                            inventory.del(function () {
+
+                                loadData();
+
+                                $element.dialog('close');
+
+                            });
+
+                        },
+                        Cancel: function () {
+
+                            $(this).dialog('close');
+
+                        }
+                    },
+                });
+
+                $grid.DynaGrid({
+                    gridTitle: 'Delete nodes',
+                    showFilter: true,
+                    maxHeight: 400,
+                    itemToggle: 'many',
+                    truncateItemText: true,
+                    shadowed: true,
+                    columns: sessionStorage.getItem('selection_modal_columns'),
+                    ajaxUrl: self.paths.api.inventory + 'list/?type=' + self.type,
+                    ajaxDataKey: 'nodes',
+                    itemValueKey: 'name',
+                });
+
+            })
+
+        });
+
+        $element.find('input[type="search"]').keyup(function(){
+
+            $grid.find('input').val($(this).val()).trigger('keyup');
+
+            $table.DataTable().search($(this).val()).draw();
 
         });
 

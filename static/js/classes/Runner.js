@@ -43,7 +43,7 @@ function Runner() {
         });
 
         $element.find('#adhoc_table').DataTable({
-            scrollY: (window.innerHeight - 400).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
             pageLength: 50,
@@ -61,8 +61,8 @@ function Runner() {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: 'Create task',
-                    className: 'btn-xs',
+                    text: '<span class="fa fa-plus fa-fw" title="Create task"></span>',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         let adhoc = new AdHoc();

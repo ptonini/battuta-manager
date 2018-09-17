@@ -40,14 +40,13 @@ UserGroup.prototype.permissionsGrid = function ($container) {
 
         $element.find('.entity_grid').DynaGrid({
             headerTag: '<div>',
-            maxHeight: window.innerHeight - 299,
-            showAddButton: true,
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),showAddButton: true,
             itemValueKey: 'codename',
             itemTitleKey: 'name',
             addButtonTitle: 'Add permissions',
-            addButtonType: 'text',
+            addButtonType: 'icon',
             addButtonClass: 'btn btn-default btn-xs',
-            checkered: true,
+            shadowed: true,
             showCount: true,
             gridBodyBottomMargin: '20px',
             columns: sessionStorage.getItem('node_grid_columns'),
@@ -112,14 +111,13 @@ UserGroup.prototype.memberGrid = function ($container) {
         $element.find('.entity_grid').DynaGrid({
             headerTag: '<div>',
             showFilter: true,
-            maxHeight: window.innerHeight - 299,
-            showAddButton: true,
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),showAddButton: true,
             ajaxDataKey: 'members',
             itemValueKey: 'username',
             addButtonTitle: 'Add members',
-            addButtonType: 'text',
+            addButtonType: 'icon',
             addButtonClass: 'btn btn-default btn-xs',
-            checkered: true,
+            shadowed: true,
             showCount: true,
             gridBodyBottomMargin: '20px',
             columns: sessionStorage.getItem('node_grid_columns'),
@@ -233,7 +231,7 @@ UserGroup.prototype.selector = function () {
         self.set('title', 'User groups');
 
         $('#entity_table').DataTable({
-            scrollY: (window.innerHeight - 267).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
             scrollCollapse: true,
             ajax: {
                 url: self.apiPath + 'list/',
@@ -242,8 +240,8 @@ UserGroup.prototype.selector = function () {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: 'Add user group',
-                    className: 'btn-xs',
+                    text: '<span class="fa fa-plus fa-fw" title="Add user group"></span>',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         let group = new UserGroup();

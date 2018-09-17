@@ -155,10 +155,9 @@ Project.prototype.playbookGrid = function ($container) {
             ajaxDataKey: 'file_list',
             itemValueKey: 'name',
             addButtonTitle: 'Add playbooks',
-            maxHeight: window.innerHeight - 299,
-            checkered: true,
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),shadowed: true,
             showCount: true,
-            addButtonType: 'text',
+            addButtonType: 'icon',
             itemHoverCursor: 'auto',
             addButtonClass: 'btn btn-default btn-xs',
             gridBodyBottomMargin: '20px',
@@ -245,10 +244,9 @@ Project.prototype.roleGrid = function ($container) {
             ajaxDataKey: 'file_list',
             itemValueKey: 'name',
             addButtonTitle: 'Add roles',
-            maxHeight: window.innerHeight - 299,
-            checkered: true,
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),shadowed: true,
             showCount: true,
-            addButtonType: 'text',
+            addButtonType: 'icon',
             itemHoverCursor: 'auto',
             addButtonClass: 'btn btn-default btn-xs',
             gridBodyBottomMargin: '20px',
@@ -417,7 +415,7 @@ Project.prototype.selector = function () {
         self.set('title', 'Projects');
 
         $('#entity_table').DataTable({
-            scrollY: (window.innerHeight - 271).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
             scrollCollapse: true,
             ajax: {
                 url: self.apiPath + 'list/',
@@ -426,8 +424,8 @@ Project.prototype.selector = function () {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: 'Add project',
-                    className: 'btn-xs',
+                    text: '<span class="fa fa-plus fa-fw" title="Add project"></span>',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         let project = new Project();

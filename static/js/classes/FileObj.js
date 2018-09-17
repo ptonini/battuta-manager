@@ -471,8 +471,8 @@ FileObj.prototype.selector = function (owner) {
         let roots = {
             playbooks: {
                 button: {
-                    text: 'New playbook',
-                    className: 'btn-xs',
+                    text: '<span class="fa fa-plus fa-fw" title="New playbook"></span>',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         $.ajax({
@@ -495,8 +495,8 @@ FileObj.prototype.selector = function (owner) {
             },
             roles: {
                 button: {
-                    text: 'Add role',
-                    className: 'btn-xs',
+                    text: '<span class="fa fa-plus fa-fw" title="Add role"></span>',
+                    className: 'btn-xs btn-icon',
                     action: function () {
 
                         let role = new FileObj({name: '', root: 'roles', folder: '', type: 'directory'});
@@ -516,7 +516,7 @@ FileObj.prototype.selector = function (owner) {
         let buttons = [
             {
                 text: '<span class="fa fa-asterisk" title="Create"></span>',
-                className: 'btn-xs',
+                className: 'btn-xs btn-icon',
                 action: function () {
 
                     let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
@@ -531,7 +531,7 @@ FileObj.prototype.selector = function (owner) {
             },
             {
                 text: '<span class="fa fa-upload" title="Upload"></span>',
-                className: 'btn-xs',
+                className: 'btn-xs btn-icon',
                 action: function () {
 
                     let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
@@ -596,7 +596,7 @@ FileObj.prototype.selector = function (owner) {
         let buildTable = () => {
 
             $table.DataTable({
-                scrollY: (window.innerHeight - 305).toString() + 'px',
+                scrollY: (window.innerHeight - 316).toString() + 'px',
                 scrollCollapse: true,
                 ajax: {
                     url: self.apiPath + 'list/',

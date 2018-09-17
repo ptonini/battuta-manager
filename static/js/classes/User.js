@@ -283,11 +283,12 @@ User.prototype.groupGrid = function ($container) {
             ajaxDataKey: 'groups',
             itemValueKey: 'name',
             addButtonTitle: 'Add to group',
-            addButtonType: 'text',
+            addButtonType: 'icon',
             addButtonClass: 'btn btn-default btn-xs',
-            checkered: true,
+            shadowed: true,
             showCount: true,
             gridBodyBottomMargin: '20px',
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             columns: sessionStorage.getItem('user_grid_columns'),
             ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
             formatItem: function ($gridContainer, $gridItem) {
@@ -397,7 +398,7 @@ User.prototype.selector = function () {
         self.set('title', 'Users');
 
         $('#entity_table').DataTable({
-            scrollY: (window.innerHeight - 271).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
             scrollCollapse: true,
             ajax: {
                 url: self.apiPath + 'list/',
@@ -407,7 +408,7 @@ User.prototype.selector = function () {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: 'Add user',
+                    text: '<span class="fa fa-plus fa-fw" title="Add user"></span>',
                     action: function () {
 
                         let user = new User();
@@ -419,7 +420,7 @@ User.prototype.selector = function () {
                         });
 
                     },
-                    className: 'btn-xs'
+                    className: 'btn-xs btn-icon'
                 }
             ],
             columns: [

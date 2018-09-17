@@ -94,31 +94,38 @@ Job.prototype.getFacts = function (callback) {
 
     let self = this;
 
-    let user = new User({username: sessionStorage.getItem('user_name')});
-
-    user.defaultCred(function (data) {
+    return new User({username: sessionStorage.getItem('user_name')}).defaultCred(function (data) {
 
         self.loadParam({type: 'gather_facts', hosts: self.hosts, cred: data.cred});
 
-        self.run()
+        self.run().then(() => {
 
-    });
+            setTimeout(function () {
 
-    let intervalId = setInterval(function() {
+                let intervalId = setInterval(function() {
 
-        self.refresh(false, function (data) {
+                    self.refresh(false, function (data) {
 
-            if (!data.job.is_running) {
+                        if (!data.job.is_running) {
 
-                callback && callback();
+                            clearInterval(intervalId);
 
-                clearInterval(intervalId)
+                            callback && callback()
 
-            }
+                        }
+
+                    })
+
+                }, 1000)
+
+            },1000)
+
+
 
         })
 
-    }, 1000)
+    });
+
 
 };
 
@@ -126,7 +133,7 @@ Job.prototype.run = function (sameWindow) {
 
     let self = this;
 
-    self.fetchHtml('passwordDialog.html').then($element => {
+    return self.fetchHtml('passwordDialog.html').then($element => {
 
         self.bind($element);
 
@@ -154,15 +161,13 @@ Job.prototype.run = function (sameWindow) {
 
                 else {
 
-                    let windowTitle;
-
-                    if (sessionStorage.getItem('single_job_window') === 'true') windowTitle = 'battuta_result_window';
-
-                    else windowTitle = self.id;
+                    let windowTitle = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
 
                     self.popupCenter(jobUrl, windowTitle, 1000);
 
                 }
+
+                return Promise.resolve();
 
             });
 
@@ -291,7 +296,7 @@ Job.prototype.selector = function () {
             pageLength: 10,
             serverSide: true,
             processing: true,
-            scrollY: (window.innerHeight - 267).toString() + 'px',
+            scrollY: (window.innerHeight - sessionStorage.getItem('job_table_offset')).toString() + 'px',
             scrollCollapse: true,
             order: [[0, "desc"]],
             rowCallback: function (row, data) {
