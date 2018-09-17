@@ -63,7 +63,7 @@ class AnsibleInventory:
 
     def get_variable(self, key, node):
 
-        if node.type == 'host':
+        if node.type == 'hosts':
 
             host = self.inventory.get_host(node.name)
 

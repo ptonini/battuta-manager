@@ -37,11 +37,7 @@ textarea {resize: vertical}
 
 a, label, .fa {color: #777}
 
-.nav-tabs li.active a {
-    background-color: whitesmoke;
-}
-
-.nav-tabs li.active a:hover, .nav-tabs li.active a:focus {
+.nav-tabs li.active a, .nav-tabs li.active a:hover, .nav-tabs li.active a:focus {
      background-color: whitesmoke;
  }
 
@@ -58,7 +54,7 @@ a, label, .fa {color: #777}
 
 .btn:focus {background-color: transparent}
 
-.btn-icon {padding: 1px 5px; border: transparent; margin-right: 5px;}
+.btn-icon {padding: 1px 5px; border: transparent; margin-right: 5px; background-color: transparent}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
