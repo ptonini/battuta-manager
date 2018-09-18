@@ -248,8 +248,8 @@ DEFAULT_PREFERENCES = [
                 'description': '',
             },
             {
-                'name': 'playbook_form_offset',
-                'value': 268,
+                'name': 'job_result_offset',
+                'value': 160,
                 'data_type': 'number',
                 'description': '',
             },

@@ -321,19 +321,13 @@ Job.prototype.view = function () {
 
         $(document).find('title').text(self.name);
 
-        let templates = {
-            playbook: 'jobView_playbook.html',
-            adhoc: 'jobView_adhoc.html',
-            gather_facts: 'jobView_adhoc.html'
-        };
-
         self.fetchHtml('jobNavBar.html', $('#navbar_container')).then($element => {
 
             self.bind($element);
 
             $element.find('[data-bind="status"]').css('color', self.stateColor());
 
-            $('header.navbar').addClass('navbar-fixed-top');
+            //$('header.navbar').addClass('navbar-fixed-top');
 
             let $jobCog = $element.find('#job_cog');
 
@@ -450,13 +444,15 @@ Job.prototype.view = function () {
 
         });
 
-        self.fetchHtml(templates[self.type]).then($element => {
+        self.fetchHtml('jobView.html').then($element => {
 
-            let $jobContainer = $element.find('#job_container');
+            let $jobContainer = $element.find('.job-container');
 
-            let $resultContainer = $element.find('#result_container');
+            let $resultContainer = $element.find('.result-container');
 
-            let $playContainerTemplate = $element.find('.play_container_template');
+            let $playContainerTemplate = $element.find('.play-container');
+
+            let $taskTableTemplate = $element.find('.task-table-container');
 
             let playContainers = {};
 
@@ -484,21 +480,22 @@ Job.prototype.view = function () {
 
                     }
 
-                    self.fetchHtml('taskTable.html').then($element => {
-
-                        $.each(play.tasks, function (index, task) {
+                    $.each(play.tasks, function (index, task) {
 
                             if (!taskContainers.hasOwnProperty(task.id)) {
 
-                                taskContainers[task.id] = $element.clone();
+                                taskContainers[task.id] = $taskTableTemplate.clone();
 
                                 taskContainers[task.id].find('strong').html(task.name);
+
+                                playContainers[play.id].append(taskContainers[task.id]);
 
                                 if (task.module !== 'include' || task.host_count > 0) {
 
                                     taskContainers[task.id].find('table').DataTable({
                                         paginate: false,
                                         searching: false,
+                                        responsive: true,
                                         info: false,
                                         ajax: {
                                             url: self.apiPath + 'get_task/?id=' + self.id + '&task_id=' + task.id,
@@ -583,13 +580,10 @@ Job.prototype.view = function () {
 
                                 }
 
-                                playContainers[play.id].append(taskContainers[task.id])
-
                             }
 
                         });
 
-                    })
 
                 })
 
@@ -606,6 +600,8 @@ Job.prototype.view = function () {
                 }, false);
 
             };
+
+            $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
 
             self.bind($jobContainer);
 
@@ -625,7 +621,7 @@ Job.prototype.view = function () {
 
                         buildResults();
 
-                        self.auto_scroll && $('html, body').animate({scrollTop: ($('#footer_anchor').offset().top)}, 500);
+                        if (self.auto_scroll) $resultContainer.scrollTop($resultContainer[0].scrollHeight);
 
                         if (!self.is_running) {
 
@@ -633,9 +629,9 @@ Job.prototype.view = function () {
 
                             self.auto_scroll && setTimeout(function () {
 
-                                $('html, body').animate({scrollTop: ($('body').offset().top)}, 1000);
+                                $resultContainer.scrollTop($resultContainer[0].scrollHeight);
 
-                            }, 2000)
+                            }, 1000)
 
                         }
 
