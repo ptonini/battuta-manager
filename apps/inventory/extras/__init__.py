@@ -14,8 +14,8 @@ from apps.inventory.forms import HostForm, GroupForm
 def build_node(node_dict, node_type, user):
 
     classes = {
-        'hosts': {'node': Host, 'form': HostForm},
-        'groups': {'node': Group, 'form': GroupForm}
+        'host': {'node': Host, 'form': HostForm},
+        'group': {'node': Group, 'form': GroupForm}
     }
 
     if node_dict.get('id', False):
@@ -63,7 +63,7 @@ class AnsibleInventory:
 
     def get_variable(self, key, node):
 
-        if node.type == 'hosts':
+        if node.type == 'host':
 
             host = self.inventory.get_host(node.name)
 

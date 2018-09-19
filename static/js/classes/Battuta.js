@@ -25,8 +25,8 @@ Battuta.prototype = {
             project: '/projects/api/',
             preferences:'/preferences/',
             node: {
-                host: '/inventory/api/hosts',
-                group: '/inventory/api/groups'
+                host: '/inventory/api/host',
+                group: '/inventory/api/group'
             }
         },
         selector: {
@@ -40,8 +40,8 @@ Battuta.prototype = {
             group: '/iam/group/',
             project: '/projects/',
             node: {
-                host: '/inventory/hosts/',
-                group: '/inventory/groups/'
+                host: '/inventory/host/',
+                group: '/inventory/group/'
             }
         },
         views: {
@@ -49,8 +49,8 @@ Battuta.prototype = {
             user: '/iam/user/',
             group: '/iam/group/',
             node: {
-                host: '/inventory/hosts/',
-                group: '/inventory/groups'
+                host: '/inventory/host/',
+                group: '/inventory/group'
             }
         },
         runner: '/runner/',
@@ -228,7 +228,19 @@ Battuta.prototype = {
 
                 failCallback && failCallback(data);
 
-                data.msg && $.bootstrapGrowl(data.msg, failedAlertOptions);
+                console.log(data);
+
+                let $message = $('<div>').attr('class', 'alert-box');
+
+                if (data.error) for (let key in data.error) {
+
+                    if (data.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + data.error[key][0].message))
+
+                }
+
+                else if (data.msg) $message.html(data.msg);
+
+                $message.html() && $.bootstrapGrowl($message, failedAlertOptions);
 
                 break;
 
@@ -390,6 +402,7 @@ Battuta.prototype = {
                 itemToggle: (options.type === 'many'),
                 truncateItemText: true,
                 shadowed: true,
+                gridBodyClasses: 'inset-container scrollbar',
                 columns: sessionStorage.getItem('selection_modal_columns'),
                 ajaxUrl: options.url,
                 ajaxData: options.data,

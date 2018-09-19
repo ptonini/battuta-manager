@@ -43,7 +43,7 @@ class PageView(View):
 
         elif kwargs['page'] == 'view':
 
-            classes = {'hosts': Host, 'groups': Group}
+            classes = {'host': Host, 'group': Group}
 
             context = {'node': (get_object_or_404(classes[kwargs['type']], name=kwargs['name']))}
 
@@ -390,7 +390,7 @@ class InventoryView(View):
 
         elif action == 'list':
 
-            classes = {'hosts': Host, 'groups': Group}
+            classes = {'host': Host, 'group': Group}
 
             node_list = list()
 
@@ -666,7 +666,7 @@ class NodeView(View):
 
         if action == '':
 
-            classes = {'hosts': Host, 'groups': Group}
+            classes = {'host': Host, 'group': Group}
 
             node_list = list()
 
@@ -695,7 +695,7 @@ class NodeView(View):
 
         elif action == 'facts':
 
-            if node.type == 'hosts':
+            if node.type == 'host':
 
                 facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
 
@@ -710,8 +710,6 @@ class NodeView(View):
                 data = {'status': 'failed', 'msg': 'Groups do not have facts'}
 
         elif action == 'descendants':
-
-            print(node.group_descendants)
 
             data = {
                 'status': 'ok',
@@ -821,6 +819,8 @@ class NodeView(View):
 
             if node.editable and node.type != 'group' or node.name != 'all':
 
+                print node.form_class
+
                 form = node.form_class(request.POST or None, instance=node)
 
                 if form.is_valid():
@@ -831,7 +831,9 @@ class NodeView(View):
 
                 else:
 
-                    data = {'status': 'failed', 'msg': str(form.errors)}
+                    error_dict = json.loads(form.errors.as_json())
+
+                    data = {'status': 'failed', 'error': error_dict}
 
             else:
 
@@ -839,7 +841,7 @@ class NodeView(View):
 
         elif action == 'delete':
 
-            if node.editable and (node.type == 'hosts' or node.name != 'all'):
+            if node.editable and (node.type == 'host' or node.name != 'all'):
 
                 node.delete()
 
@@ -869,7 +871,9 @@ class NodeView(View):
 
                 else:
 
-                    data = {'status': 'failed', 'msg': str(form.errors)}
+                    error_dict = json.loads(form.errors.as_json())
+
+                    data = {'status': 'failed', 'error': error_dict}
 
             else:
 

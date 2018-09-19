@@ -8,7 +8,7 @@ class Node(models.Model):
 
     def get_descendants(self):
 
-        if self.type == 'groups' and self.id:
+        if self.type == 'group' and self.id:
 
             group_descendants = set()
 
@@ -81,7 +81,7 @@ class Node(models.Model):
 
         node_dict = default_fields.copy()
 
-        if self.type == 'hosts':
+        if self.type == 'host':
 
             facts = json.loads(self.facts)
 
@@ -123,7 +123,7 @@ class Host(Node):
 
     facts = models.TextField(max_length=65353, default='{}')
 
-    type = 'hosts'
+    type = 'host'
 
     def __str__(self):
 
@@ -140,7 +140,7 @@ class Group(Node):
 
     members = models.ManyToManyField('Host', blank=True)
 
-    type = 'groups'
+    type = 'group'
 
     def __str__(self):
 

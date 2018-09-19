@@ -18,11 +18,11 @@ Project.prototype.properties = {
     manager: {
         url: Battuta.prototype.paths.api.user + 'list/?',
         type: 'user',
-        key: 'users',
+        key: 'user',
         item: 'username'
     },
     host_group: {
-        url: Battuta.prototype.paths.api.inventory + 'list/?type=groups&',
+        url: Battuta.prototype.paths.api.inventory + 'list/?type=group&',
         type: 'group',
         key: 'nodes',
         item: 'name'
@@ -127,13 +127,13 @@ Project.prototype.hosts = function ($container) {
 
         self.bind($element);
 
-        new Node({name: self.host_group, type: 'groups'}).descendants(367, $element.find('#descendants_container'));
+        new Node({name: self.host_group, type: 'group'}).descendants(367, $element.find('#descendants_container'));
 
         $('#host_group_button').click(function () {
 
             self.setProperty('host_group', function () {
 
-                new Node({name: self.host_group, type: 'groups'}).descendants(367, $element.find('#descendants_container'));
+                new Node({name: self.host_group, type: 'group'}).descendants(367, $element.find('#descendants_container'));
 
             });
 

@@ -1,3 +1,11 @@
+:root {
+    --main-bkg-color: whitesmoke;
+    --title-font-color: dimgrey;
+    --header-font-color: #525252;
+    --link-font-color: #777;
+    --scrollbar-thumb-color: #cbcbcb;
+}
+
 @font-face {
     font-family: Kanit;
     src: url(/static/components/kanit-googlefont/Kanit-Regular.ttf)
@@ -10,36 +18,30 @@
 
 body {
     font-size: small;
-    background-color: whitesmoke;
-}
-
-header {
-    font-size: 14px; border-radius: 0 !important;
-    margin-bottom: 10px !important;
-    border-color: transparent !important;
+    background-color: var(--main-bkg-color);
 }
 
 footer {height: 25px}
 
 label {font-weight: 400; width: 100%}
 
-h5 {font-size: 11pt; color: #525252}
+h5 {font-size: 11pt; color: var(--header-font-color)}
 
 h3, h4, span.fa, .navbar, ul li a {
     text-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 1px rgba(0,0,0,0.22);
-    color: dimgrey !important;
+    color: var(--title-font-color) !important;
 }
 
-th {color: #525252}
+th {color: var(--header-font-color)}
 
 textarea {resize: vertical}
 
-a, label, .fa {color: #777}
+a, label, .fa {color: var(--link-font-color)}
 
-table {width: 100%}
-
-.nav-tabs li.active a, .nav-tabs li.active a:hover, .nav-tabs li.active a:focus {
-     background-color: whitesmoke;
+.nav-tabs li.active a,
+.nav-tabs li.active a:hover,
+.nav-tabs li.active a:focus {
+     background-color: var(--main-bkg-color);
 }
 
 .paper-card {
@@ -58,12 +60,6 @@ table {width: 100%}
 .btn-icon {padding: 1px 5px; border: transparent; margin-right: 5px; background-color: transparent}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
-
-span.badge {
-    background-color: #cacaca;
-    border-radius: 7px;
-    padding: 0 8px !important;
-}
 
 a.label_link2 {float: right; font-size: x-small}
 
@@ -94,13 +90,62 @@ pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
 
 #playbook_args_container {margin-top: 1rem}
 
-#preferences_container, #entity_grid_container, #facts_container, .permissions_container {overflow-y: auto; overflow-x: hidden}
+#entity_grid_container, #facts_container, .permissions_container {overflow-y: auto; overflow-x: hidden}
 
 .preference_item_row {margin-bottom: .1rem}
 
+.transparent {color: transparent !important;
+}
+
+/* Header options ********************/
+
+header {
+    font-size: 14px; border-radius: 0 !important;
+    margin-bottom: 10px !important;
+    border-color: transparent !important;
+}
+
+header.navbar {
+    box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.14), 0px 1px 14px 0px rgba(0, 0, 0, 0.12), 0px 3px 5px -1px rgba(0, 0, 0, 0.2);
+    background-color: white;
+}
+
+header.navbar ul.dropdown-menu {font-size: small}
+
+.nav-tabs li.active a,
+.nav-tabs li.active a:hover,
+.nav-tabs li.active a:focus {
+    background-color: var(--main-bkg-color);
+}
+
+
+/* Inset container *******************/
+
+.inset-container {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 10px;
+    box-shadow: inset 1px 1px 3px 0 rgba(0,0,0,0.3);
+    border-radius: 2px;
+}
+
+
+/* Scrollbar ***************/
+
+.scrollbar::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: var(--scrollbar-thumb-color);
+}
 
 
 /* Adhoc dialog **********************/
+
 #module_arguments_container {height: 30rem; overflow-x: hidden; margin-top: 1rem;}
 
 
@@ -118,38 +163,16 @@ li.path_link, #root_path, #edit_path {cursor: pointer}
 
 #path_input {border: none; padding: 0}
 
-
-/* Navbar options ********************/
-
-header.navbar .dropdown-menu {font-size: small}
-
-header.navbar {
-    box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.14), 0px 1px 14px 0px rgba(0, 0, 0, 0.12), 0px 3px 5px -1px rgba(0, 0, 0, 0.2);
-    background-color: white;
-}
-
 button.menu-btn {border-radius: .5rem}
 
 a.navbar-brand * {margin-right: 1rem;}
+
 
 /* Job view options ****************/
 
 span.job-navbar span, span.job-navbar small {margin-right: 15px}
 
-.result-container {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    margin-top: 10px;
-    padding: 10px;
-    box-shadow: inset 1px 1px 3px 0px rgba(0,0,0,0.3);
-    border-radius: 2px;
-}
-
-#result-container::-webkit-scrollbar-track {
-    background-color: green;
-}
-
-.task-table-container {margin: 10px 0}
+.result-container, .task-table-container {margin: 10px 0}
 
 
 /* JQuery UI options *****************/
@@ -199,47 +222,64 @@ div.dataTables_length select.input-sm, div.dataTables_filter input.input-sm {hei
 
 div.dataTables_length, div.dataTables_filter {height: 25px}
 
-/*table.dataTable thead .sorting:after,*/
-/*table.dataTable thead .sorting_asc:after,*/
-/*table.dataTable thead .sorting_desc:after {font-family: "Font Awesome 5 Solid", sans-serif}*/
-
-/*table.dataTable thead th.sorting:after {content: "\f0dc"; color: transparent}*/
-
-/*table.dataTable thead th.sorting_asc:after {content: "\f0de"}*/
-
-/*table.dataTable thead th.sorting_desc:after {content: "\f0dd"}*/
-
 tr.child_row {background-color: transparent !important}
 
 .btn-incell {margin: 0 .25rem; cursor: pointer}
 
+.dataTables_scrollBody::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+}
+
+.dataTables_scrollBody::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: var(--scrollbar-thumb-color);
+}
+
 /* Checked button class options */
+
 .checked_button, .checked_button:focus, .checked_button:hover {background-color: #cdcdcd}
 
+
 /* Truncate text larger than container */
+
 .truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
 
+
 /* Make all cell within row of equal height */
+
 .row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}
 
+
 /* Elements using Kanit font */
+
 h3, h4, h5, label, th, small, ul.nav a, ul.pagination a, .chkbox_label, .reference_link_container,
 .navbar, .report_field_left, .dataTables_info, #runner_status, .task-table-header {font-family: "Kanit", sans-serif}
 
+
 /* Elements using Actor font */
+
 a.btn, button.btn, span.ui-button-text {font-family: "Actor", sans-serif;}
 
+
 /* Elements using Helvetica font */
+
 input, select, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+
 /* Settings for small dialogs */
 .small_dialog {padding: 20px !important;}
+
 
 /* Settings for large dialogs */
 .large_dialog {overflow-x: hidden !important;}
 
+
 /**/
 pre.large-alert {font-weight: lighter; background-color: transparent; border-color: transparent}
-div.large-alert {font-weight: lighter; text-align: left; margin: 10px}
+
+
+div.alert-box {text-align: left; margin: 10px; min-width: 240px}

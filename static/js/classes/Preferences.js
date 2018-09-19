@@ -69,7 +69,7 @@ Preferences.prototype.dialog = function () {
 
         let $itemTemplate = $element.find('#item_template > .row');
 
-        let $container = $element.find('#preferences_container').css('max-height', window.innerHeight * 0.5 + 'px');
+        let $prefsContainer = $element.find('.preferences-container').css('max-height', window.innerHeight * 0.5 + 'px');
 
         let fieldType = {
             str: {
@@ -95,7 +95,7 @@ Preferences.prototype.dialog = function () {
 
                 defaultValues = [];
 
-                $container.empty();
+                $prefsContainer.empty();
 
                 $.each(self.default, function (index, item_group) {
 
@@ -103,7 +103,7 @@ Preferences.prototype.dialog = function () {
 
                     $header.find('h4').attr('title', item_group.description).html(item_group.name);
 
-                    $container.append($header);
+                    $prefsContainer.append($header);
 
                     $.each(item_group.items, function (index, item) {
 
@@ -120,7 +120,7 @@ Preferences.prototype.dialog = function () {
 
                         $itemContainer.find('label.error_label').attr('id', item.name + '_error');
 
-                        $container.append($itemContainer);
+                        $prefsContainer.append($itemContainer);
 
                         defaultValues.push([item.name, item.value]);
 
@@ -130,7 +130,7 @@ Preferences.prototype.dialog = function () {
 
                 Object.keys(self.stored).forEach(function (key) {
 
-                    $container.find('#item_' + key).val(self.stored[key].toString());
+                    $prefsContainer.find('#item_' + key).val(self.stored[key].toString());
 
                 });
 
@@ -156,7 +156,7 @@ Preferences.prototype.dialog = function () {
 
             };
 
-            $container.find('input,select').each(function () {
+            $prefsContainer.find('input,select').each(function () {
 
                 let result = validatePreference($(this).data('data_type'), $(this).val());
 

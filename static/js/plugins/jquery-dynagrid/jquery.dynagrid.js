@@ -218,11 +218,12 @@
             let $gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header', id: opts.gridId});
 
             let $gridBody = $('<div>')
-                .attr({class: 'dynagrid', id: opts.gridId + '_grid_body'})
+                .attr({class: 'dynagrid ' + opts.gridBodyClasses, id: opts.gridId + '_grid_body'})
                 .css({
                     'margin-bottom': opts.gridBodyBottomMargin,
                     'margin-top': opts.gridBodyTopMargin,
-                    'grid-template-columns': 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)'
+                    'grid-template-columns': 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)',
+                    'overflow-y': 'auto'
                 });
 
             let $searchBox = $('<div>')
@@ -354,7 +355,9 @@
 
             }
 
-            if (opts.maxHeight) $gridBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
+            //if (opts.maxHeight) $gridBody.wrap('<div style="overflow-y: auto; max-height: ' + opts.maxHeight + 'px;">');
+
+            if (opts.maxHeight) $gridBody.css('max-height', opts.maxHeight + 'px');
 
             if (opts.buildNow) _load($gridContainer, $gridBody, opts);
 
@@ -452,6 +455,7 @@
         truncateItemText: false,
         ajaxDataKey: null,
         itemValueKey: 'name',
+        gridBodyClasses: null,
         itemTitleKey: null,
         itemIdKey: 'id',
         sortOrder: 1,

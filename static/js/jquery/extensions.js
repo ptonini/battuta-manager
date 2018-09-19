@@ -17,6 +17,10 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
+$.extend($.fn.DynaGrid.defaults, {
+    gridBodyClasses: 'scrollbar'
+});
+
 // bootstrapGrowl
 $.extend($.bootstrapGrowl.default_options, {
     align: 'center',

@@ -327,8 +327,6 @@ Job.prototype.view = function () {
 
             $element.find('[data-bind="status"]').css('color', self.stateColor());
 
-            //$('header.navbar').addClass('navbar-fixed-top');
-
             let $jobCog = $element.find('#job_cog');
 
             let $cancelBtn = $element.find('#cancel_button').click(function () {
@@ -368,13 +366,15 @@ Job.prototype.view = function () {
 
                 self.statistics().then($element => {
 
-                    let $container = $('#job_container');
+                    let $resultContainer = $('.result-container');
 
-                    let topMargin = $container.css('margin-top');
+                    let $playbookOnly = $('.playbook-only');
 
                     let pageTitle = $(document).find('title').text();
 
-                    $container.css('margin-top', 0);
+                    $resultContainer.css('height', 'auto');
+
+                    $playbookOnly.addClass('hidden-print');
 
                     // Adjust windows for printing
                     document.title = pageTitle.replace('.yml', '');
@@ -384,9 +384,13 @@ Job.prototype.view = function () {
 
                     $element.remove();
 
-                    document.title = pageTitle;
+                    $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
 
-                    $container.css('margin-top', topMargin);
+                    $playbookOnly.removeClass('hidden-print');
+
+                    // Adjust windows for printing
+
+                    document.title = pageTitle;
 
                 });
 
@@ -459,6 +463,8 @@ Job.prototype.view = function () {
             let taskContainers = {};
 
             let buildResults = () => {
+
+                self.type === 'adhoc' && $('.playbook-only').css('color', 'transparent');
 
                 $.each(self.plays, (index, play) => {
 
@@ -610,6 +616,8 @@ Job.prototype.view = function () {
             );
 
             $('#content_container').append($jobContainer);
+
+            self.type === 'adhoc' && $element.find('.playbook-only').css('color', 'transparent');
 
             buildResults();
 

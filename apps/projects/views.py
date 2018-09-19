@@ -121,7 +121,9 @@ class ProjectView(View):
 
                 else:
 
-                    data = {'status': 'failed', 'msg': str(project_form.errors)}
+                    error_dict = json.loads(project_form.errors.as_json());
+
+                    data = {'status': 'failed', 'error': error_dict}
 
             elif action == 'delete':
 

@@ -10,7 +10,7 @@ Node.prototype.constructor = Node;
 
 Node.prototype.key = 'node';
 
-Node.prototype.relationType = {parents: 'groups', children: 'groups', members: 'hosts'};
+Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
 
 Node.prototype.loadParam = function (param) {
 
@@ -336,8 +336,6 @@ Node.prototype.descendants = function (offset, $container) {
         };
 
         $element.on('load', function () {
-
-            console.log('load');
 
             load()
 
@@ -679,13 +677,13 @@ Node.prototype.view = function () {
 
             self.description || $('[data-bind="description"]').html(noDescriptionMsg);
 
-            if (self.type === 'hosts') self.hostInfo($('#info_container'));
+            if (self.type === 'host') self.hostInfo($('#info_container'));
 
             self.variables(self.addTab('variables'));
 
-            if (self.type === 'hosts' || self.name !== 'all') self.relationships('parents', self.addTab('parents'));
+            if (self.type === 'host' || self.name !== 'all') self.relationships('parents', self.addTab('parents'));
 
-            if (self.type === 'groups' && self.name !== 'all') {
+            if (self.type === 'group' && self.name !== 'all') {
 
                 self.relationships('children', self.addTab('children'));
 
@@ -747,7 +745,7 @@ Node.prototype.selector = function () {
 
         };
 
-        if (self.type === 'hosts') {
+        if (self.type === 'host') {
 
             if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = [
                 {class: 'col-md-2', title: 'Host', data: 'name'},
@@ -771,7 +769,7 @@ Node.prototype.selector = function () {
             ];
         }
 
-        else if (self.type === 'groups') columns = [
+        else if (self.type === 'group') columns = [
             {class: 'col-md-2', title: 'Group', data: 'name'},
             {class: 'col-md-4', title: 'Description', data: 'description'},
             {class: 'col-md-1', title: 'Members', data: 'members'},
@@ -926,6 +924,7 @@ Node.prototype.selector = function () {
                     gridTitle: 'Delete nodes',
                     showFilter: true,
                     maxHeight: 400,
+                    gridBodyClasses: 'inset-container scrollbar',
                     itemToggle: 'many',
                     truncateItemText: true,
                     shadowed: true,

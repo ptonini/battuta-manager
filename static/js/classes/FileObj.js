@@ -29,7 +29,7 @@ FileObj.prototype.validator = {
 
         catch (error) {
 
-            let $alert = divLargeAlert.clone().append(
+            let $alert = $('<div>').attr('class', 'large-alert').append(
                 $('<h5>').html('Invalid yaml:'),
                 $('<div>').css('white-space', 'pre-line').html(error.message)
             );
