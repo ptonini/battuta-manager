@@ -121,7 +121,7 @@ class ProjectView(View):
 
                 else:
 
-                    error_dict = json.loads(project_form.errors.as_json());
+                    error_dict = json.loads(project_form.errors.as_json())
 
                     data = {'status': 'failed', 'error': error_dict}
 

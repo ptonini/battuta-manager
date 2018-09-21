@@ -576,7 +576,9 @@ Node.prototype.editVariable = function (variable, callback) {
 
                         variable.id && $(this).dialog('close');
 
-                        $(this).find('input, textarea').val('');
+                        self.set('variable.key', '');
+
+                        self.set('variable.value', '');
 
                         $(this).find('[data-bind="key"]').focus();
 
@@ -584,6 +586,10 @@ Node.prototype.editVariable = function (variable, callback) {
 
                 },
                 Close: function () {
+
+                    self.set('variable.key', '');
+
+                    self.set('variable.value', '');
 
                     $(this).dialog('close');
 

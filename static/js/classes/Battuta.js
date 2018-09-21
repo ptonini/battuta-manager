@@ -59,37 +59,41 @@ Battuta.prototype = {
         modules: '/static/templates/ansible_modules/'
     },
 
+    _setValue: function (keyArray, value, obj) {
+
+        let self = this;
+
+        if (keyArray.length === 1) obj[keyArray[0]] = value;
+
+        else {
+
+            if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
+
+            obj = obj[keyArray.shift()];
+
+            self._setValue(keyArray, value, obj)
+
+        }
+
+    },
+
+    _updateDOM: function (key, value) {
+
+        let self = this;
+
+        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
+
+        else for (let k in value) self._updateDOM(key + '.' + k, value[k])
+
+    },
+
     set: function (key, value) {
 
         let self = this;
 
-        let setValue = (keyArray, value, obj) => {
+        self._setValue(key.split('.'), value, self);
 
-            if (keyArray.length === 1) obj[keyArray[0]] = value;
-
-            else {
-
-                if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
-
-                obj = obj[keyArray.shift()];
-
-                setValue(keyArray, value, obj)
-
-            }
-
-        };
-
-        let updateDOM = (key, value) => {
-
-            if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
-
-            else for (let k in value) updateDOM(key + '.' + k, value[k])
-
-        };
-
-        setValue(key.split('.'), value, self);
-
-        updateDOM(key, value);
+        self._updateDOM(key, value);
 
     },
 

@@ -1,14 +1,12 @@
-.dynagrid-header > a {border-style: hidden}
-
 .dynagrid-header.top-align {vertical-align: text-top; margin-top: 0}
 
-div.dynagrid {display: grid; margin-bottom: 0}
+div.dynagrid-body {display: grid; margin-bottom: 0; overflow-y: auto}
 
 div.dynagrid-item.checkered {background-color: #F8F8F8}
 
 div.dynagrid-item.shadowed {box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);}
 
-div.dynagrid div.dynagrid-item {
+div.dynagrid-item {
     padding: 0 .5rem;
     margin: .25rem;
     color: #777;
@@ -17,13 +15,19 @@ div.dynagrid div.dynagrid-item {
     text-align: left;
     border: thin solid #F8F8F8;
 }
-div.dynagrid div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}
+div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}
 
-div.dynagrid div.dynagrid-item.toggle-on, div.dynagrid div.dynagrid-item:active  {background: #D3D3D3; box-shadow: 0 0 0px;}
+div.dynagrid-item.toggle-on, div.dynagrid-item:active  {background: #D3D3D3; box-shadow: 0 0 0;}
 
-div.dynagrid div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
+div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 
 span.dynagridTitle {margin-right: 1em}
+
+span.dynagrid-counter {line-height: normal}
+
+a.dynagrid-btn {border-style: hidden}
+
+a.dynagrid-btn, button.dynagrid-btn, span.dynagrid-counter {margin-right: 1rem}
 
 .center-align {display:flex; justify-content:flex-end; align-items:center;}
 
