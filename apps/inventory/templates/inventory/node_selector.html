@@ -3,11 +3,11 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - ' + '{{ node_type }}'.capitalize();
-
-             let node = new Node({type: '{{ node_type }}'});
+            let node = new Node({type: '{{ node_type }}'});
 
             $('#container').html(node.selector());
+
+            document.title = 'Battuta - ' + node.get('typePlural').capitalize();
 
         });
     </script>

@@ -4,9 +4,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            let job = new Job({id: '{{ job_id }}'});
-
-            job.view();
+            new Job({id: '{{ job_id }}'}).view();
 
         });
     </script>

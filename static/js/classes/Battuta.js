@@ -59,6 +59,17 @@ Battuta.prototype = {
         modules: '/static/templates/ansible_modules/'
     },
 
+    loadParam: function (param) {
+
+        let self = this;
+
+        self.set('username', param.username);
+
+    },
+
+
+    // Properties methods *************
+
     _setValue: function (keyArray, value, obj) {
 
         let self = this;
@@ -115,15 +126,10 @@ Battuta.prototype = {
 
     },
 
-    loadParam: function (param) {
 
-        let self = this;
+    // Data request processors ********
 
-        self.set('username', param.username);
-
-    },
-
-    getCookie: function (name) {
+    _getCookie: function (name) {
 
         let cookieValue = null;
 
@@ -149,7 +155,7 @@ Battuta.prototype = {
 
     },
 
-    csrfSafeMethod: function (method) {
+    _csrfSafeMethod: function (method) {
 
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 
@@ -174,45 +180,6 @@ Battuta.prototype = {
         }
 
         return data
-
-    },
-
-    jsonRequest: function (type, obj, url, blocking, callback, failCallback) {
-
-        let self = this;
-
-        $.ajax({
-            url: url,
-            type: type,
-            dataType: 'json',
-            data: self.serialize(obj),
-            cache: false,
-            beforeSend: function (xhr, settings) {
-
-                blocking && $.blockUI({
-                    message: null,
-                    css: {
-                        border: 'none',
-                        backgroundColor: 'transparent'
-
-                    },
-                    overlayCSS: {backgroundColor: 'transparent'}
-                });
-
-                !self.csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self.getCookie('csrftoken'));
-
-            },
-            success: function (data) {
-
-                self.requestResponse(data, callback, failCallback)
-
-            },
-            complete: function () {
-
-                blocking && $.unblockUI();
-
-            }
-        });
 
     },
 
@@ -262,11 +229,53 @@ Battuta.prototype = {
 
     },
 
+
+    // Data request methods (ajax) ****
+
+    ajaxRequest: function (type, obj, url, blocking, callback, failCallback) {
+
+        let self = this;
+
+        $.ajax({
+            url: url,
+            type: type,
+            dataType: 'json',
+            data: self.serialize(obj),
+            cache: false,
+            beforeSend: function (xhr, settings) {
+
+                blocking && $.blockUI({
+                    message: null,
+                    css: {
+                        border: 'none',
+                        backgroundColor: 'transparent'
+
+                    },
+                    overlayCSS: {backgroundColor: 'transparent'}
+                });
+
+                !self._csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self._getCookie('csrftoken'));
+
+            },
+            success: function (data) {
+
+                self.requestResponse(data, callback, failCallback)
+
+            },
+            complete: function () {
+
+                blocking && $.unblockUI();
+
+            }
+        });
+
+    },
+
     getData: function (action, blocking, callback, failCallback) {
 
         let self = this;
 
-        self.jsonRequest('GET', self, self.apiPath + action + '/', blocking, callback, failCallback);
+        self.ajaxRequest('GET', self, self.apiPath + action + '/', blocking, callback, failCallback);
 
     },
 
@@ -274,11 +283,119 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.jsonRequest('POST', self, self.apiPath + action + '/', blocking, callback, failCallback);
+        self.ajaxRequest('POST', self, self.apiPath + action + '/', blocking, callback, failCallback);
 
     },
 
-    bind: function ($container) {
+
+    // Data request methods (fetch) ***
+
+    fetch: function (method, url, obj) {
+
+        let self = this;
+
+        let init = {
+            credentials: 'include',
+            method: method
+        };
+
+        obj ? obj = self.serialize(obj) : obj = {};
+
+        if (method === 'GET') url = url + '?' + $.param(obj);
+
+        else if (method === 'POST') {
+
+            init.headers = new Headers({
+                'Content-Type': 'application/json',
+                'X-CSRFToken': self._getCookie('csrftoken')
+            });
+
+            init.body = JSON.stringify(obj);
+        }
+
+        return fetch(url, init).then(response => {
+
+            return response
+
+        })
+
+    },
+
+    fetchJson: function (method, url, obj) {
+
+        let self = this;
+
+        return self.fetch(method, url, obj).then(response => {
+
+            return response.json()
+
+        })
+
+    },
+
+    fetchHtml: function (file, $container) {
+
+        let self = this;
+
+        return self.fetch('GET', self.paths.templates + file).then(response => {
+
+            return response.text()
+
+        })
+        .then(text => {
+
+            let $element = $(text);
+
+            $container ? $container.html($element) : $('<div>').append($element);
+
+            return $element
+
+        })
+
+    },
+
+
+    // Data request helpers ***********
+
+    refresh: function (blocking, callback) {
+
+        let self = this;
+
+        self.getData('get', blocking, function (data){
+
+            data[self.key] && self.loadParam(data[self.key]);
+
+            callback && callback(data)
+
+        })
+
+    },
+
+    list: function (blocking, callback) {
+
+        let self = this;
+
+        self.getData('list', blocking, callback)
+
+    },
+
+    save: function (callback) {
+
+        let self = this;
+
+        self.postData('save', true, function (data){
+
+            data[self.key] && self.loadParam(data[self.key]);
+
+            callback && callback(data)
+
+        })
+    },
+
+
+    // Data binding ****************
+
+    bindElement: function ($container) {
 
         let self = this;
 
@@ -349,15 +466,54 @@ Battuta.prototype = {
 
     },
 
-    unbind: function ($container) {
+
+    // UI Elements ********************
+
+    tableBtn: function (iconClasses, title, action) {
+
+        return $('<button>').attr({class: 'btn btn-default btn-xs btn-icon pull-right', title: title}).append(
+            $('<span>').attr('class', 'icon-span ' + iconClasses).click(action)
+        )
+
+    },
+
+    edit: function (callback) {
 
         let self = this;
 
-        Object.keys(self.bindings).forEach(function (key) {
+        self.fetchHtml('entityDialog.html').then($element => {
 
-            if (self.bindings[key] === $container) delete self.bindings[key];
+            self.bindElement($element);
+
+            self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
+
+            $element.find('button.confirm-button').click(function () {
+
+                self.save(data => {
+
+                    $element.dialog('close');
+
+                    callback && callback(data);
+                })
+            });
+
+            $element.find('button.cancel-button').click(function () {
+
+                $element.dialog('close');
+
+            });
+
+            $element.dialog();
 
         });
+
+    },
+
+    del: function (callback) {
+
+        let self = this;
+
+        self.deleteAlert('delete', callback)
 
     },
 
@@ -369,43 +525,36 @@ Battuta.prototype = {
 
             let $grid = $element.find('#selection_grid');
 
-            let buttons = {
-                Add: function () {
-
-                    options.action($grid.DynaGrid('getSelected'));
-
-                    $(this).dialog('close');
-
-                },
-                Cancel: function () {
-
-                    $('input.filter_box').val('');
-
-                    $(this).dialog('close');
-
-                }
-            };
-
-            if (options.type === 'one') delete buttons.Add;
-
             $element.find('#selection_title').html(options.title);
 
             $element.find('#selection_title').remove();
 
-            $element.dialog({
-                minWidth: 700,
-                minHeight: 500,
-                buttons: buttons,
+            $element.find('button.cancel-button').click(function () {
+
+                $element.find('input.filter_box').val('');
+
+                $element.dialog('close');
+
             });
+
+            $element.find('button.confirm-button').click(function () {
+
+                options.action($grid.DynaGrid('getSelected'), $element);
+
+            });
+
+            options.type === 'one' && $element.find('button.confirm-button').hide();
+
+            $element.dialog({minWidth: 700, minHeight: 500});
 
             $grid.DynaGrid({
                 gridTitle: options.title,
                 showFilter: true,
                 addButtonTitle: 'Add ' + options.entityType,
+                minHeight: 400,
                 maxHeight: 400,
                 itemToggle: (options.type === 'many'),
                 truncateItemText: true,
-                shadowed: true,
                 gridBodyClasses: 'inset-container scrollbar',
                 columns: sessionStorage.getItem('selection_modal_columns'),
                 ajaxUrl: options.url,
@@ -462,9 +611,9 @@ Battuta.prototype = {
 
                 let prevPattern = self.get(binding);
 
-                $element.find('#pattern_preview').attr('data-bind', binding);
+                $element.find('#pattern_preview').attr('data-bindElement', binding);
 
-                self.bind($element);
+                self.bindElement($element);
 
                 $element
                     .dialog({
@@ -513,7 +662,7 @@ Battuta.prototype = {
                             ajaxDataKey: 'nodes',
                             itemValueKey: 'name',
                             newEntity: new Node({name: null, description: null, type: type}),
-                            action: function (selection) {
+                            action: function (selection, $dialog) {
 
                                 for (let i = 0; i < selection.length; i++) {
 
@@ -522,6 +671,8 @@ Battuta.prototype = {
                                     self.set(binding, self.get(binding) + selection[i].name)
 
                                 }
+
+                                $dialog.dialog('close');
 
                             }
 
@@ -563,7 +714,7 @@ Battuta.prototype = {
 
     },
 
-    deleteDialog: function (action, callback) {
+    deleteAlert: function (action, callback) {
 
         let self = this;
 
@@ -573,10 +724,10 @@ Battuta.prototype = {
                 type: 'warning',
                 delay: 0,
                 allowDismiss: false,
-                closeButton:  $element.find('#cancel_button')
+                closeButton:  $element.find('.cancel-button')
             });
 
-            $element.find('#continue_button').click(function () {
+            $element.find('.continue-button').click(function () {
 
                 $alert.fadeOut(function () {
 
@@ -596,148 +747,6 @@ Battuta.prototype = {
 
     },
 
-    fetch: function (method, url, obj) {
-
-        let self = this;
-
-        let init = {
-            credentials: 'include',
-            method: method
-        };
-
-        obj ? obj = self.serialize(obj) : obj = {};
-
-        if (method === 'GET') url = url + '?' + $.param(obj);
-
-        else if (method === 'POST') {
-
-            init.headers = new Headers({
-                'Content-Type': 'application/json',
-                'X-CSRFToken': self.getCookie('csrftoken')
-            });
-
-            init.body = JSON.stringify(obj);
-        }
-
-        return fetch(url, init).then(response => {
-
-            return response
-
-        })
-
-    },
-
-    fetchJson: function (method, url, obj) {
-
-        let self = this;
-
-        return self.fetch(method, url, obj).then(response => {
-
-            return response.json()
-
-        })
-
-    },
-
-    fetchHtml: function (file, $container) {
-
-        let self = this;
-
-        return self.fetch('GET', self.paths.templates + file).then(response => {
-
-            return response.text()
-
-        })
-        .then(text => {
-
-            let $element = $(text);
-
-            $container ? $container.html($element) : $('<div>').append($element);
-
-            return $element
-
-        })
-
-    },
-
-    del: function (callback) {
-
-        let self = this;
-
-        self.deleteDialog('delete', callback)
-
-    },
-
-    edit: function (callback) {
-
-        let self = this;
-
-        self.fetchHtml('entityDialog.html').then($element => {
-
-            self.bind($element);
-
-            self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
-
-            $element.dialog({
-                buttons: {
-                    Save: function() {
-
-                        self.save(data => {
-
-                            $(this).dialog('close');
-
-                            callback && callback(data);
-
-                        })
-
-                    },
-                    Cancel: function() {
-
-                        $(this).dialog('close');
-
-                    }
-                }
-            })
-
-        });
-
-    },
-
-    refresh: function (blocking, callback) {
-
-        let self = this;
-
-        self.getData('get', blocking, function (data){
-
-            data[self.key] && self.loadParam(data[self.key]);
-
-            callback && callback(data)
-
-        })
-
-    },
-
-    list: function (blocking, callback) {
-
-        let self = this;
-
-        self.getData('list', blocking, callback)
-
-    },
-
-    save: function (callback) {
-
-        let self = this;
-
-        self.postData('save', true, function (data){
-
-            data[self.key] && self.loadParam(data[self.key]);
-
-            callback && callback(data)
-
-        })
-    },
-
     navBar: function (authenticated) {
 
         let self = this;
@@ -748,7 +757,7 @@ Battuta.prototype = {
 
         if (authenticated === 'True') self.fetchHtml('navBar.html', $container).then($element => {
 
-            self.bind($element);
+            self.bindElement($element);
 
             self.set('pattern', '');
 
@@ -788,7 +797,7 @@ Battuta.prototype = {
 
         else return self.fetchHtml('loginMenu.html', $container).then($element => {
 
-            user.bind($element);
+            user.bindElement($element);
 
             $('#login_form').submit(function (event) {
 
@@ -802,25 +811,29 @@ Battuta.prototype = {
 
     },
 
+
+    // Views **************************
+
     search: function (pattern) {
 
         let self = this;
 
         self.fetchHtml('search.html', $('#content_container')).then($element => {
 
-            self.bind($element);
+            self.bindElement($element);
+
+            $element.find('.search-result-container').css('max-height', window.innerHeight - sessionStorage.getItem('search_box_offset'));
 
             self.set('pattern', pattern);
 
             $.each(['group', 'host'], function (index, type) {
 
                 $('#' + type + '_result_grid').DynaGrid({
-                    gridTitle: type + 's',
+                    gridTitle: type.capitalize() + 's',
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
                     showCount: true,
                     hideIfEmpty: true,
-                    shadowed: true,
                     headerTag: '<h5>',
                     headerBottomMargin: '0',
                     gridBodyBottomMargin: '20px',
@@ -841,6 +854,91 @@ Battuta.prototype = {
 
         })
 
+    },
+
+    selector: function () {
+
+        let self = this;
+
+        self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
+
+            self.bindElement($element);
+
+            let tableOptions = {
+                scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
+                scrollCollapse: true,
+                ajax: {
+                    url: self.apiPath + 'list/',
+                    dataSrc: self.selectorOptions.dataSrc
+                },
+                paging: false,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        text: '<span class="fa fa-plus fa-fw" title="Add "' + self.type + '></span>',
+                        action: function () {
+
+                            new self.constructor().edit(self.selectorOptions.addButtonCallback);
+
+                        },
+                        className: 'btn-xs btn-icon'
+                    }
+                ],
+            };
+
+            Object.keys(self.selectorOptions.tableOptions).forEach(function (key) {
+
+                if (self.selectorOptions.tableOptions[key] === null)  delete tableOptions[key];
+
+                else tableOptions[key] = self.selectorOptions.tableOptions[key]
+
+            });
+
+            $element.find('#entity_table').DataTable(tableOptions)
+
+        });
+
+    },
+
+    view: function () {
+
+        let self = this;
+
+        self.fetchHtml('entityView.html', $('#content_container')).then($element => {
+
+            self.bindElement($element);
+
+            self.refresh(false, function () {
+
+                $('#edit_button').toggleClass('hidden', !self.editable || !self.viewOptions).click(function () {
+
+                    self.edit(self.viewOptions.editCallback);
+
+                });
+
+                $('#delete_button').toggleClass('hidden', !self.editable || !self.viewOptions.deleteCallback).click(function () {
+
+                    self.del(self.viewOptions.deleteCallback)
+
+                });
+
+                self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
+
+                self.viewOptions.info && self.viewOptions.info(self, $element.find("#info_tab"));
+
+                Object.keys(self.viewOptions.tabs).forEach(function (key) {
+
+                    self.viewOptions.tabs[key].validator(self) && self.viewOptions.tabs[key].generator(self, self.addTab(key))
+
+                });
+
+                self.viewOptions.onFinish && self.viewOptions.onFinish(self);
+
+                $('ul.nav-tabs').attr('id', self.viewOptions.tabId + '_' + self.id + '_tabs').rememberTab();
+
+            });
+
+        });
     }
 
 };

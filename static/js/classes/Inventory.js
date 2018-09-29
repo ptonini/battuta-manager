@@ -28,7 +28,7 @@ Inventory.prototype.manage = function () {
 
     self.fetchHtml('manageInventory.html', $('#content_container')).then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         $element.find('#manage_inventory_tabs').rememberTab();
 
@@ -39,7 +39,7 @@ Inventory.prototype.manage = function () {
 
                     return {
                         format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                        csrfmiddlewaretoken: self.getCookie('csrftoken')
+                        csrfmiddlewaretoken: self._getCookie('csrftoken')
                     }
 
                 },
@@ -97,7 +97,7 @@ Inventory.prototype.manage = function () {
 
                 self.fetchHtml('filezillaExportDialog.html').then($element => {
 
-                    self.bind($element);
+                    self.bindElement($element);
 
                     $element
                         .dialog({

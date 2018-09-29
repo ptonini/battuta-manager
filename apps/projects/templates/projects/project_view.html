@@ -3,9 +3,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            let project = new Project({id: '{{ project_id }}'});
-
-            $('#container').html(project.view())
+            new Project({id: '{{ project_id }}'}).view()
 
         });
     </script>

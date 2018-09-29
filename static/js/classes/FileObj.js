@@ -112,7 +112,7 @@ FileObj.prototype.upload = function (callback) {
 
     self.fetchHtml('uploadDialog.html').then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         self.set('title', 'Select file');
 
@@ -154,7 +154,7 @@ FileObj.prototype.upload = function (callback) {
 
                         self.new_name = loadedFile.name;
 
-                        self.csrfmiddlewaretoken = self.getCookie('csrftoken');
+                        self.csrfmiddlewaretoken = self._getCookie('csrftoken');
 
                         return self
 
@@ -202,7 +202,7 @@ FileObj.prototype.editorDialog = function (callback) {
 
     self.fetchHtml('fileEditorDialog.html').then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         let $selector = $element.find('#mode_selector');
 
@@ -346,7 +346,7 @@ FileObj.prototype.dialog = function (action, callback) {
 
     self.fetchHtml('fileDialog.html').then($element =>  {
 
-        self.bind($element);
+        self.bindElement($element);
 
         self.set('action', action);
 
@@ -395,7 +395,7 @@ FileObj.prototype.roleDialog = function (callback) {
 
     self.fetchHtml('roleDialog.html').then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         $element
             .dialog({
@@ -441,7 +441,7 @@ FileObj.prototype.selector = function (owner) {
 
     self.fetchHtml('fileSelector.html', $('#content_container')).then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         self.set('title', owner ? owner + ' files' : self.root.capitalize());
 
@@ -608,10 +608,10 @@ FileObj.prototype.selector = function (owner) {
                     }
                 },
                 columns: [
-                    {class: 'col-md-6', title: 'name', data: 'name'},
+                    {class: 'col-md-5', title: 'name', data: 'name'},
                     {class: 'col-md-2', title: 'type', data: 'type'},
                     {class: 'col-md-1', title: 'size', data: 'size'},
-                    {class: 'col-md-3', title: 'modified', data: 'modified'}
+                    {class: 'col-md-4', title: 'modified', data: 'modified'}
                 ],
                 order: [[0, 'asc']],
                 paging: false,
@@ -638,46 +638,38 @@ FileObj.prototype.selector = function (owner) {
 
                     $(row).find('td:eq(3)').html('').removeAttr('title').append(
                         $('<span>').html(file.modified).attr('title', file.modified),
-                        spanRight.clone().append(
-                            spanFA.clone().addClass('fa-pencil-alt btn-incell').attr('title', 'Edit').click(function () {
+                        self.tableBtn('fa fa-trash', 'Delete', function () {
 
-                                file.edit(function () {
+                            file.del(function () {
 
-                                    $table.DataTable().ajax.reload()
+                                $table.DataTable().ajax.reload()
 
-                                });
+                            })
 
-                            }),
-                            spanFA.clone().addClass('fa-clone btn-incell').attr('title', 'Copy').click(function () {
+                        }),
+                        self.tableBtn('fa fa-download ', 'Download ' + file.name, function () {
 
-                                file.dialog('copy', function () {
+                            window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
 
-                                    $table.DataTable().ajax.reload()
+                        }),
+                        self.tableBtn('fa fa-clone', 'Copy', function () {
 
-                                });
+                            file.dialog('copy', function () {
 
-                            }),
-                            spanFA.clone()
-                                .addClass('fa-download btn-incell')
-                                .attr('title', 'Download ' + file.name)
-                                .click(function () {
+                                $table.DataTable().ajax.reload()
 
-                                    window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
+                            });
 
-                                }),
-                            spanFA.clone()
-                                .addClass('fa-trash-alt btn-incell')
-                                .attr('title', 'Delete')
-                                .click(function () {
+                        }),
+                        self.tableBtn('fa fa-pencil-alt', 'Edit', function () {
 
-                                    file.del(function () {
+                            file.edit(function () {
 
-                                        $table.DataTable().ajax.reload()
+                                $table.DataTable().ajax.reload()
 
-                                    })
+                            });
 
-                                })
-                        )
+                        })
                     );
                 },
                 drawCallback: function () {

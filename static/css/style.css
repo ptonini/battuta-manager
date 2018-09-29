@@ -6,6 +6,8 @@
     --scrollbar-thumb-color: #cbcbcb;
 }
 
+/* Fonts *****************************/
+
 @font-face {
     font-family: Kanit;
     src: url(/static/components/kanit-googlefont/Kanit-Regular.ttf)
@@ -21,43 +23,24 @@ body {
     background-color: var(--main-bkg-color);
 }
 
-footer {height: 25px}
-
 label {font-weight: 400; width: 100%}
 
 h5 {font-size: 11pt; color: var(--header-font-color)}
 
-h3, h4, span.fa, .navbar, ul li a {
+h3, h4, h5, .navbar, ul li a {
     text-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 1px rgba(0,0,0,0.22);
-    color: var(--title-font-color) !important;
+    color: var(--title-font-color);
 }
+
+a, label {color: var(--link-font-color)}
 
 th {color: var(--header-font-color)}
-
-textarea {resize: vertical}
-
-a, label, .fa {color: var(--link-font-color)}
-
-.nav-tabs li.active a,
-.nav-tabs li.active a:hover,
-.nav-tabs li.active a:focus {
-     background-color: var(--main-bkg-color);
-}
-
-.paper-card {
-    background-color: white;
-    box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);
-    border-radius: 5px;
-    padding: 15px 10px 10px 10px;
-}
-
-.tab-content {margin-top: 10px}
 
 .btn:focus, .btn:active {outline: none !important;}
 
 .btn:focus {background-color: transparent}
 
-.btn-icon {padding: 1px 5px; border: transparent; margin-right: 5px; background-color: transparent}
+textarea {resize: vertical}
 
 a:focus, a:hover, button:focus {outline: none; text-decoration: none}
 
@@ -94,8 +77,36 @@ pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
 
 .preference_item_row {margin-bottom: .1rem}
 
-.transparent {color: transparent !important;
+.transparent {color: transparent !important;}
+
+
+/* Tabs options **********************/
+
+.nav-tabs li.active a,
+.nav-tabs li.active a:hover,
+.nav-tabs li.active a:focus {
+    background-color: var(--main-bkg-color);
 }
+
+.tab-content {margin-top: 10px}
+
+
+/* Icon button options ***************/
+
+button.btn-icon {
+    padding: 1px 5px;
+    border: transparent;
+    background-color: transparent;
+}
+
+button.btn-icon:focus:hover {background-color: #e6e6e6}
+
+span.large-icon {font-size: large}
+
+span.alert-icon {color: #8a6d3b !important}
+
+span.fa, span.fas, span.far {color: var(--title-font-color)}
+
 
 /* Header options ********************/
 
@@ -106,7 +117,7 @@ header {
 }
 
 header.navbar {
-    box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.14), 0px 1px 14px 0px rgba(0, 0, 0, 0.12), 0px 3px 5px -1px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.14), 0 1px 14px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.2);
     background-color: white;
 }
 
@@ -118,11 +129,24 @@ header.navbar ul.dropdown-menu {font-size: small}
     background-color: var(--main-bkg-color);
 }
 
+/* DynaGrid **************************/
+
+input.grid-search {padding: 5px 10px; height: 25px}
+
+
+/* Card container ********************/
+
+div.paper-card {
+    background-color: white;
+    box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);
+    border-radius: 5px;
+    padding: 15px 10px 10px 10px;
+}
+
 
 /* Inset container *******************/
 
-.inset-container {
-    overflow-y: scroll;
+div.inset-container {
     overflow-x: hidden;
     padding: 10px;
     box-shadow: inset 1px 1px 3px 0 rgba(0,0,0,0.3);
@@ -132,12 +156,14 @@ header.navbar ul.dropdown-menu {font-size: small}
 
 /* Scrollbar ***************/
 
-.scrollbar::-webkit-scrollbar {
+div.scrollbar {overflow-y: scroll;}
+
+div.scrollbar::-webkit-scrollbar {
     width: 8px;
     background-color: transparent;
 }
 
-.scrollbar::-webkit-scrollbar-thumb {
+div.scrollbar::-webkit-scrollbar-thumb {
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
     background-color: var(--scrollbar-thumb-color);
@@ -282,4 +308,4 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 pre.large-alert {font-weight: lighter; background-color: transparent; border-color: transparent}
 
 
-div.alert-box {text-align: left; margin: 10px; min-width: 240px}
+div.alert-box {text-align: left; min-width: 240px}

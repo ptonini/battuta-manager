@@ -5,9 +5,7 @@
 
             document.title = 'Battuta - {{ node.name }}';
 
-            let node = new Node({id: '{{ node.id }}', type: '{{ node.type }}'});
-
-            $('#container').html(node.view())
+            new Node({id: '{{ node.id }}', type: '{{ node.type }}'}).view();
 
         });
     </script>

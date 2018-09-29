@@ -5,9 +5,7 @@
 
             document.title = 'Battuta - {{ user_name }}';
 
-            let user = new User({username: '{{ user_name }}'});
-
-            user.view('{{ user.username }}');
+            new User({username: '{{ user_name }}'}).view();
 
         });
     </script>

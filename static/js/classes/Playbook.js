@@ -20,7 +20,7 @@ Playbook.prototype.form = function ($container, args) {
 
     return self.fetchHtml('playbookArgsForm.html', $container).then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         self.patternField($element.find('#pattern_field_group'), 'args.subset');
 
@@ -136,7 +136,7 @@ Playbook.prototype.form = function ($container, args) {
 
         $element.find('#del_play_args').click(function () {
 
-            self.fetchHtml('deleteDialog.html').then($element => {
+            self.fetchHtml('deleteAlert.html').then($element => {
 
                 $element.dialog({
                     width: '320',
@@ -210,7 +210,7 @@ Playbook.prototype.postArgs = function (action) {
 
     let self = this;
 
-    self.jsonRequest('POST', self, self.paths.api.playbook + action + '/', true, data => {
+    self.ajaxRequest('POST', self, self.paths.api.playbook + action + '/', true, data => {
 
         $('#play_args_selector').trigger('build', data);
 

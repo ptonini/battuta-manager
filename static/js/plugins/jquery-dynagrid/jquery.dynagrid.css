@@ -1,5 +1,7 @@
 .dynagrid-header.top-align {vertical-align: text-top; margin-top: 0}
 
+/*div.dynagrid-container {overflow-y: hidden}*/
+
 div.dynagrid-body {display: grid; margin-bottom: 0; overflow-y: auto}
 
 div.dynagrid-item.checkered {background-color: #F8F8F8}
@@ -21,7 +23,9 @@ div.dynagrid-item.toggle-on, div.dynagrid-item:active  {background: #D3D3D3; box
 
 div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 
-span.dynagridTitle {margin-right: 1em}
+input.dynagrid-search {margin-left: 6px}
+
+span.dynagrid-title {margin-right: 1em}
 
 span.dynagrid-counter {line-height: normal}
 

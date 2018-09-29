@@ -5,9 +5,7 @@
 
             document.title = 'Battuta - {{ group_name }}';
 
-            let group = new UserGroup({name: '{{ group_name }}'});
-
-            $('#container').html(group.view());
+            new UserGroup({name: '{{ group_name }}'}).view();
 
         });
     </script>

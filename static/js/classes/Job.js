@@ -12,6 +12,37 @@ Job.prototype.key = 'job';
 
 Job.prototype.apiPath = Battuta.prototype.paths.api.job;
 
+Job.prototype.selectorOptions = {
+    title: 'Job history',
+    dataSrc: null,
+    tableOptions: {
+        ajax: {url: Job.prototype.apiPath + 'list/'},
+        columns:[
+            {class: 'col-md-2', title: 'run data'},
+            {class: 'col-md-2', title: 'user'},
+            {class: 'col-md-2', title: 'name'},
+            {class: 'col-md-2', title: 'hosts/subset'},
+            {class: 'col-md-2', title: 'status'}
+        ],
+        rowCallback:  function (row, data) {
+
+            $(row).css({color: Job.prototype.states[data[4]].color, cursor: 'pointer'}).click(function () {
+
+                self.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
+
+            })
+        },
+        scrollY: (window.innerHeight - sessionStorage.getItem('job_table_offset')).toString() + 'px',
+        order: [[0, "desc"]],
+        pageLength: 10,
+        serverSide: true,
+        processing: true,
+        paging: true,
+        dom: null,
+        buttons: null
+    },
+};
+
 Job.prototype.states = {
     starting: {color: 'blue'},
     running: {color: 'blue'},
@@ -135,7 +166,7 @@ Job.prototype.run = function (sameWindow) {
 
     return self.fetchHtml('passwordDialog.html').then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         self.cred.username && self.set('remote_user', self.cred.username);
 
@@ -274,45 +305,6 @@ Job.prototype.statistics = function (modal) {
 
 };
 
-Job.prototype.selector = function () {
-
-    let self = this;
-
-    self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
-
-        self.bind($element);
-
-        self.set('title', 'Job history');
-
-        $('#entity_table').DataTable({
-            ajax: {url: self.apiPath + 'list/'},
-            columns: [
-                {class: 'col-md-2', title: 'run data'},
-                {class: 'col-md-2', title: 'user'},
-                {class: 'col-md-2', title: 'name'},
-                {class: 'col-md-2', title: 'hosts/subset'},
-                {class: 'col-md-2', title: 'status'}
-            ],
-            pageLength: 10,
-            serverSide: true,
-            processing: true,
-            scrollY: (window.innerHeight - sessionStorage.getItem('job_table_offset')).toString() + 'px',
-            scrollCollapse: true,
-            order: [[0, "desc"]],
-            rowCallback: function (row, data) {
-
-                $(row).css({color: self.states[data[4]].color, cursor: 'pointer'}).click(function () {
-
-                    self.popupCenter(self.paths.views.job + data[5] + '/', data[5], 1000);
-
-                })
-            }
-        });
-
-    })
-
-};
-
 Job.prototype.view = function () {
 
     let self = this;
@@ -323,9 +315,9 @@ Job.prototype.view = function () {
 
         self.fetchHtml('jobNavBar.html', $('#navbar_container')).then($element => {
 
-            self.bind($element);
+            self.bindElement($element);
 
-            $element.find('[data-bind="status"]').css('color', self.stateColor());
+            $element.find('[data-bindElement="status"]').css('color', self.stateColor());
 
             let $jobCog = $element.find('#job_cog');
 
@@ -408,7 +400,7 @@ Job.prototype.view = function () {
 
                 let intervalId = setInterval(function () {
 
-                    $element.find('[data-bind="status"]').css('color', self.stateColor());
+                    $element.find('[data-bindElement="status"]').css('color', self.stateColor());
 
                     if (!self.is_running) {
 
@@ -486,7 +478,7 @@ Job.prototype.view = function () {
 
                     }
 
-                    $.each(play.tasks, function (index, task) {
+                    $.each(play.tasks, (index, task) => {
 
                             if (!taskContainers.hasOwnProperty(task.id)) {
 
@@ -518,38 +510,38 @@ Job.prototype.view = function () {
 
                                             $(row).css('color', self.taskStates[result.status].color);
 
-                                            if (!task.is_running || !self.is_running) {
+                                            //if (!task.is_running || !self.is_running) {
 
-                                                $(row).css('cursor', 'pointer').off().click(function () {
+                                            $(row).css('cursor', 'pointer').off().click(function () {
 
-                                                    if (rowApi.child.isShown()) {
+                                                if (rowApi.child.isShown()) {
 
-                                                        $(row).css('font-weight', 'normal');
+                                                    $(row).css('font-weight', 'normal');
 
-                                                        rowApi.child.hide()
+                                                    rowApi.child.hide()
 
-                                                    }
+                                                }
 
-                                                    else {
+                                                else {
 
-                                                        self.result = result;
+                                                    self.result = result;
 
-                                                        self.getData('get_result', true, function (data) {
+                                                    self.getData('get_result', true, function (data) {
 
-                                                            let jsonContainer = $('<div>')
-                                                                .attr('class', 'well')
-                                                                .JSONView(data.result.response, {collapsed: true});
+                                                        let jsonContainer = $('<div>')
+                                                            .attr('class', 'well')
+                                                            .JSONView(data.result.response, {collapsed: true});
 
-                                                            rowApi.child(jsonContainer).show();
+                                                        rowApi.child(jsonContainer).show();
 
-                                                            $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                                        $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
 
-                                                        });
+                                                    });
 
-                                                    }
+                                                }
 
-                                                })
-                                            }
+                                            })
+                                            //}
 
 
                                         },
@@ -609,7 +601,7 @@ Job.prototype.view = function () {
 
             $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
 
-            self.bind($jobContainer);
+            self.bindElement($jobContainer);
 
             self.message && $resultContainer.append(
                 $('<pre>').attr('class', 'text-danger').html(self.message)

@@ -18,7 +18,9 @@ $.extend($.fn.dataTable.defaults, {
 });
 
 $.extend($.fn.DynaGrid.defaults, {
-    gridBodyClasses: 'scrollbar'
+    gridBodyClasses: 'scrollbar',
+    gridItemClasses: 'shadowed',
+    searchBoxClasses: 'grid-search',
 });
 
 // bootstrapGrowl

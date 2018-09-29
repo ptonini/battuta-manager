@@ -608,9 +608,9 @@ class InventoryView(View):
 
         elif action == 'delete':
 
-            for node_id in json.loads(request.POST['selection']):
+            for node_dict in json.loads(request.POST['selection']):
 
-                node = build_node({'id': node_id}, request.POST['type'], request.user)
+                node = build_node({'id': node_dict['id']}, request.POST['type'], request.user)
 
                 if node.editable and (node.type == 'host' or node.name != 'all'):
 

@@ -12,6 +12,393 @@ Node.prototype.key = 'node';
 
 Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
 
+Node.prototype.viewOptions = {
+    editCallback: function (data) {
+
+        window.open(Battuta.prototype.paths.inventory + data.type + '/' + data.name + '/', '_self')
+
+    },
+    deleteCallback: function() {
+
+        window.open(Battuta.prototype.paths.inventory + self.type, '_self')
+
+    },
+    info: function (self, $container) {
+
+        self.type === 'host' && self.fetchHtml('hostInfo.html').then($element => {
+
+            self.bindElement($element);
+
+            self.getData('facts', false, function (data) {
+
+                self.set('facts', data.facts);
+
+                if (self.facts) {
+
+                    $element.find('.hide_when_empty').removeClass('hidden');
+
+                    $element.find('[data-bindElement="facts.memtotal_mb"]').humanBytes('MB');
+
+                    if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
+
+                    if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $('#guest_info_row').hide();
+
+                    if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
+
+                    let infoTables = {
+                        networking: {
+                            data: (function () {
+
+                                let interfacesArray = [];
+
+                                $.each(self.facts.interfaces, function (index, value) {
+
+                                    interfacesArray.push(self.facts[value])
+
+                                });
+
+                                return interfacesArray
+
+                            })(),
+                            columns:  [
+                                {class: 'col-md-2', title: 'interface', data: 'device'},
+                                {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
+                                {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
+                                {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
+                                {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
+                                {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
+                            ],
+                            rowCallback: function(row, data) {}
+
+                        },
+                        storage: {
+                            data: self.facts.mounts,
+                            columns: [
+                                {class: 'col-md-2', title: 'device', data: 'device'},
+                                {class: 'col-md-3', title: 'mount point', data: 'mount'},
+                                {class: 'col-md-2', title: 'size', data: 'size_total'},
+                                {class: 'col-md-2', title: 'type', data: 'fstype'},
+                                {class: 'col-md-3', title: 'options', data: 'options'}
+                            ],
+                            rowCallback: function(row) {
+
+                                $(row).find('td:eq(2)').humanBytes('GB')
+
+                            }
+                        },
+                    };
+
+                    for (let key in infoTables) $element.find('#show_' + key).click(function () {
+
+                        self.fetchHtml('tableDialog.html').then($element => {
+
+                            $element.find('h4').html(key);
+
+                            $element.find('table').DataTable({
+                                data: infoTables[key].data,
+                                autoWidth: false,
+                                scrollY: '360px',
+                                scrollCollapse: true,
+                                filter: false,
+                                paging: false,
+                                info: false,
+                                columns: infoTables[key].columns,
+                                rowCallback: infoTables[key].rowCallback
+                            });
+
+                            $element.dialog({
+                                width: '700px',
+                                buttons: {
+                                    Close: function () {
+
+                                        $(this).dialog('close')
+
+                                    }
+                                }
+                            });
+
+                            $element.find('table').DataTable().columns.adjust().draw();
+
+                        });
+
+                    });
+
+                    $('#show_facts').css('margin-right', '5px').click(function () {
+
+                        self.fetchHtml('factsDialog.html').then($element => {
+
+                            self.bindElement($element);
+
+                            $element.find('#facts_container')
+                                .css('max-height', (window.innerHeight * .6).toString() + 'px')
+                                .JSONView(self.facts, {'collapsed': true});
+
+                            $element.dialog({
+                                width: 900,
+                                buttons: {
+                                    Close: function () {
+
+                                        $(this).dialog('close')
+
+                                    }
+                                }
+                            })
+
+                        });
+
+                    });
+
+                }
+
+                else  $element.find('#gather_facts').addClass('pull-right').attr('title', 'Gather facts');
+
+                $element.find('#gather_facts').toggleClass('pull-right', self.facts).click(function () {
+
+                    let job = new Job({hosts: self.name});
+
+                    job.getFacts();
+
+                });
+
+            });
+
+            $container.append($element)
+
+        });
+
+    },
+    tabs: {
+        variables: {
+            validator: function () {return true},
+            generator: function (self, $container) {
+
+                self.fetchHtml('variableTable.html', $container).then($element => {
+
+                    self.bindElement($element);
+
+                    $('#variable_table').DataTable({
+                        scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
+                        scrollCollapse: true,
+                        autoWidth: false,
+                        order: [[ 2, 'asc' ], [ 0, 'asc' ]],
+                        paging: false,
+                        dom: 'Bfrtip',
+                        buttons: [
+                            {
+                                text: '<span class="fa fa-fw fa-plus" title="Add variable"></span>',
+                                className: 'btn-xs btn-icon',
+                                action: function () {
+
+                                    self.editVariable({id: null}, function () {
+
+                                        $('#variable_table').DataTable().ajax.reload()
+
+                                    });
+
+                                }
+                            },
+                            {
+                                text: '<span class="fa fa-clone" title="Copy from node"></span>',
+                                className: 'btn-xs btn-icon',
+                                action: function () {
+
+                                    self.copyVariables(function () {
+
+                                        $('#variable_table').DataTable().ajax.reload()
+
+                                    });
+
+                                }
+                            }
+                        ],
+                        ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
+                        columns: [
+                            {class: 'col-md-3', title: 'key', data: 'key'},
+                            {class: 'col-md-7', title: 'value', data: 'value'},
+                            {class: 'col-md-2', title: 'source', data: 'source'}
+                        ],
+                        rowCallback: function(row, variable) {
+
+                            if (!variable.source) $(row).find('td:eq(2)').empty().append(
+                                self.tableBtn('fa fa-trash', 'Delete', function () {
+
+                                    self.variable = variable;
+
+                                    self.deleteAlert('delete_var', function () {
+
+                                        $('#variable_table').DataTable().ajax.reload()
+
+                                    });
+
+                                }),
+                                self.tableBtn('fa fa-pencil-alt', 'Edit', function () {
+
+                                    self.editVariable(variable, function () {
+
+                                        $('#variable_table').DataTable().ajax.reload()
+
+                                    })
+
+                                })
+                            );
+
+
+                            else $(row).find('td:eq(2)')
+                                .css('cursor', 'pointer')
+                                .html(variable.source.italics())
+                                .attr('title', 'Open ' + variable.source)
+                                .click(function () {
+
+                                    window.open(self.paths.inventory + 'groups/' + variable.source + '/', '_self')
+
+                                });
+                        },
+                        drawCallback: function() {
+
+                            let table = this;
+
+                            let variableKeys = table.api().columns(0).data()[0];
+
+                            let duplicates = {};
+
+                            table.api().rows().every(function () {
+
+                                this.child.isShown() && this.child.hide();
+
+                                let rowKey = this.data().key;
+
+                                let isMain = this.data().primary;
+
+                                let rowData = [this.data(), this.node()];
+
+                                let keyIndexes = [];
+
+                                let i = -1;
+
+                                while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
+
+                                if (keyIndexes.length > 1)  {
+
+                                    if (duplicates.hasOwnProperty(rowKey)) {
+
+                                        if (isMain) duplicates[rowKey].hasMainValue = true;
+
+                                        duplicates[rowKey].values.push(rowData);
+
+                                    }
+
+                                    else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
+
+                                }
+                            });
+
+                            Object.keys(duplicates).forEach(function (key) {
+
+                                if (duplicates[key].hasMainValue) {
+
+                                    let mainValue = null;
+
+                                    let rowArray = [];
+
+                                    $.each(duplicates[key]['values'], function (index, value) {
+
+                                        if (value[0]['primary']) mainValue = value;
+
+                                        else {
+
+                                            let $newRow = $(value[1]).clone().css('color', '#777');
+
+                                            $newRow.find('td:eq(2)').click(function() {
+
+                                                window.open(self.paths.inventory.html + 'groups/' + value[0].source, '_self')
+
+                                            });
+
+                                            rowArray.push($newRow);
+
+                                            $(value[1]).remove()
+
+                                        }
+
+                                    });
+
+                                    if (mainValue) {
+
+                                        let rowApi = table.DataTable().row(mainValue[1]);
+
+                                        $(mainValue[1]).find('td:eq(0)').html('').append(
+                                            $('<span>').html(mainValue[0].key),
+                                            spanFA.clone().addClass('fa-chevron-down btn-incell').off().click(function () {
+
+                                                if (rowApi.child.isShown()) {
+
+                                                    $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
+
+                                                    $(mainValue[1]).css('font-weight', 'normal');
+
+                                                    rowApi.child.hide()
+
+                                                }
+
+                                                else {
+
+                                                    $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
+
+                                                    $(mainValue[1]).css('font-weight', 'bold');
+
+                                                    rowApi.child(rowArray).show();
+
+                                                }
+
+                                            })
+                                        );
+
+                                    }
+                                }
+
+                            });
+
+                        }
+                    });
+
+                });
+
+            }
+        },
+        parents: {
+            validator: function (self) {return (self.type === 'host' || self.name !== 'all')},
+            generator: function (self, $container) {
+
+                self.relationships('parents', $container)
+
+            }
+        },
+        children: {
+            validator: function (self) {return (self.type === 'group' && self.name !== 'all')},
+            generator: function (self, $container) {
+
+                self.relationships('children', $container)
+
+            }
+        },
+        members: {
+            validator: function (self) {return (self.type === 'group' && self.name !== 'all')},
+            generator: function (self, $container) {
+
+                self.relationships('members', $container)
+
+            }
+        },
+    },
+    onFinish: function (self) {
+
+        self.set('viewOptions.subTitle', self.type);
+
+        self.set('viewOptions.tabId', self.type);
+
+    }
+};
+
 Node.prototype.loadParam = function (param) {
 
     let self = this;
@@ -24,6 +411,8 @@ Node.prototype.loadParam = function (param) {
 
     self.set('type', param.type);
 
+    self.set('typePlural', param.type + 's');
+
     self.set('editable', param.editable);
 
     self.set('memory', param.memory);
@@ -34,158 +423,13 @@ Node.prototype.loadParam = function (param) {
 
 };
 
-Node.prototype.hostInfo = function ($container) {
-
-    let self = this;
-
-    self.fetchHtml('hostInfo.html', $container).then($element => {
-
-        self.bind($element);
-
-        self.getData('facts', false, function (data) {
-
-            self.set('facts', data.facts);
-
-            if (self.facts) {
-
-                $element.find('.hide_when_empty').removeClass('hidden');
-
-                $element.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
-
-                if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
-
-                if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $('#guest_info_row').hide();
-
-                if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
-
-                let infoTables = {
-                    networking: {
-                        data: (function () {
-
-                            let interfacesArray = [];
-
-                            $.each(self.facts.interfaces, function (index, value) {
-
-                                interfacesArray.push(self.facts[value])
-
-                            });
-
-                            return interfacesArray
-
-                        })(),
-                        columns:  [
-                            {class: 'col-md-2', title: 'interface', data: 'device'},
-                            {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
-                            {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
-                            {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
-                            {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
-                            {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
-                        ],
-                        rowCallback: function(row, data) {}
-
-                    },
-                    storage: {
-                        data: self.facts.mounts,
-                        columns: [
-                            {class: 'col-md-2', title: 'device', data: 'device'},
-                            {class: 'col-md-3', title: 'mount point', data: 'mount'},
-                            {class: 'col-md-2', title: 'size', data: 'size_total'},
-                            {class: 'col-md-2', title: 'type', data: 'fstype'},
-                            {class: 'col-md-3', title: 'options', data: 'options'}
-                        ],
-                        rowCallback: function(row) {
-
-                            $(row).find('td:eq(2)').humanBytes('GB')
-
-                        }
-                    },
-                };
-
-                for (let key in infoTables) $element.find('#show_' + key).click(function () {
-
-                    self.fetchHtml('tableDialog.html').then($element => {
-
-                        $element.find('h4').html(key);
-
-                        $element.find('table').DataTable({
-                            data: infoTables[key].data,
-                            autoWidth: false,
-                            scrollY: '360px',
-                            scrollCollapse: true,
-                            filter: false,
-                            paging: false,
-                            info: false,
-                            columns: infoTables[key].columns,
-                            rowCallback: infoTables[key].rowCallback
-                        });
-
-                        $element.dialog({
-                            width: '700px',
-                            buttons: {
-                                Close: function () {
-
-                                    $(this).dialog('close')
-
-                                }
-                            }
-                        });
-
-                        $element.find('table').DataTable().columns.adjust().draw();
-
-                    });
-
-                });
-
-                $('#show_facts').css('margin-right', '5px').click(function () {
-
-                    self.fetchHtml('factsDialog.html').then($element => {
-
-                        self.bind($element);
-
-                        $element.find('#facts_container')
-                            .css('max-height', (window.innerHeight * .6).toString() + 'px')
-                            .JSONView(self.facts, {'collapsed': true});
-
-                        $element.dialog({
-                            width: 900,
-                            buttons: {
-                                Close: function () {
-
-                                    $(this).dialog('close')
-
-                                }
-                            }
-                        })
-
-                    });
-
-                });
-
-            }
-
-            else  $element.find('#gather_facts').addClass('pull-right').attr('title', 'Gather facts');
-
-            $element.find('#gather_facts').toggleClass('pull-right', self.facts).click(function () {
-
-                let job = new Job({hosts: self.name});
-
-                job.getFacts();
-
-            });
-
-        });
-
-    });
-
-};
-
 Node.prototype.relationships = function (relation, $container) {
 
     let self = this;
 
     self.fetchHtml('entityGrid.html', $container).then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         let reloadData = $gridContainer => {
 
@@ -207,7 +451,6 @@ Node.prototype.relationships = function (relation, $container) {
             addButtonType: 'icon',
             addButtonClass: 'btn btn-default btn-xs',
             addButtonTitle: 'Add ' + relation,
-            shadowed: true,
             maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
@@ -250,13 +493,15 @@ Node.prototype.relationships = function (relation, $container) {
                     url: self.apiPath + relation + '/?related=false&id=' + self.id,
                     ajaxDataKey: 'nodes',
                     itemValueKey: 'name',
-                    action: function (selection) {
+                    action: function (selection, $dialog) {
 
                         self.selection = selection;
 
                         self.postData('add_' + relation, true, function () {
 
-                            reloadData($gridContainer)
+                            reloadData($gridContainer);
+
+                            $dialog.dialog('close')
 
                         });
 
@@ -276,19 +521,19 @@ Node.prototype.descendants = function (offset, $container) {
 
     self.fetchHtml('descendants.html', $container).then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         let factor = 1;
 
-        let descendantGrids = {};
+        let grids = {};
 
         let load = () => {
 
             self.getData('descendants', false, function (data) {
 
-                descendantGrids.host = data.host_descendants;
+                grids.host = data.host_descendants;
 
-                descendantGrids.group = data.group_descendants;
+                grids.group = data.group_descendants;
 
                 if (data.host_descendants.length > 0 && data.group_descendants.length > 0) {
 
@@ -300,18 +545,18 @@ Node.prototype.descendants = function (offset, $container) {
 
                 else $element.find('.col-md-6').attr('class', 'col-md-12');
 
-                for (let key in descendantGrids) {
+                for (let key in grids) {
 
-                    if (descendantGrids[key].length > 0){
+                    if (grids.hasOwnProperty(key) && grids[key].length > 0){
 
-                        $('#' + key + '_descendants_grid').DynaGrid({
+                        $('#' + key + '-descendants-grid').DynaGrid({
                             gridTitle: key.capitalize() + 's',
-                            dataArray: descendantGrids[key],
                             dataSource: 'array',
-                            headerTag: '<div>',
+                            dataArray: grids[key],
+                            headerTag: '<h5>',
                             showFilter: true,
-                            shadowed: true,
                             showCount: true,
+                            gridBodyClasses: 'inset-container scrollbar',
                             truncateItemText: true,
                             gridBodyBottomMargin: '20px',
                             maxHeight: (window.innerHeight - offset),
@@ -347,215 +592,13 @@ Node.prototype.descendants = function (offset, $container) {
 
 };
 
-Node.prototype.variables = function ($container) {
-
-    let self = this;
-
-    self.fetchHtml('variableTable.html', $container).then($element => {
-
-        self.bind($element);
-
-        $('#variable_table').DataTable({
-            scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
-            scrollCollapse: true,
-            autoWidth: false,
-            order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-            paging: false,
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: '<span class="fa fa-fw fa-plus" title="Add variable"></span>',
-                    className: 'btn-xs btn-icon',
-                    action: function () {
-
-                        self.editVariable({id: null}, function () {
-
-                            $('#variable_table').DataTable().ajax.reload()
-
-                        });
-
-                    }
-                },
-                {
-                    text: '<span class="fa fa-clone" title="Copy from node"></span>',
-                    className: 'btn-xs btn-icon',
-                    action: function () {
-
-                        self.copyVariables(function () {
-
-                            $('#variable_table').DataTable().ajax.reload()
-
-                        });
-
-                    }
-                }
-            ],
-            ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
-            columns: [
-                {class: 'col-md-3', title: 'key', data: 'key'},
-                {class: 'col-md-7', title: 'value', data: 'value'},
-                {class: 'col-md-2', title: 'source', data: 'source'}
-            ],
-            rowCallback: function(row, variable) {
-
-                if (!variable.source) {
-
-                    $(row).find('td:eq(2)').attr('class', 'text-right').html('').append(
-                        spanFA.clone().addClass('fa-pencil-alt btn-incell').attr('title', 'Edit').click(function () {
-
-                            self.editVariable(variable, function () {
-
-                                $('#variable_table').DataTable().ajax.reload()
-
-                            })
-
-                        }),
-                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
-
-                            self.variable = variable;
-
-                            self.deleteDialog('delete_var', function () {
-
-                                $('#variable_table').DataTable().ajax.reload()
-
-                            });
-
-                        })
-                    )
-                }
-
-                else {
-                    $(row).find('td:eq(2)')
-                        .css('cursor', 'pointer')
-                        .html(variable.source.italics())
-                        .attr('title', 'Open ' + variable.source)
-                        .click(function () {
-
-                            window.open(self.paths.inventory + 'groups/' + variable.source + '/', '_self')
-
-                        });
-                }
-
-            },
-            drawCallback: function() {
-
-                let table = this;
-
-                let variableKeys = table.api().columns(0).data()[0];
-
-                let duplicates = {};
-
-                table.api().rows().every(function () {
-
-                    this.child.isShown() && this.child.hide();
-
-                    let rowKey = this.data().key;
-
-                    let isMain = this.data().primary;
-
-                    let rowData = [this.data(), this.node()];
-
-                    let keyIndexes = [];
-
-                    let i = -1;
-
-                    while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
-
-                    if (keyIndexes.length > 1)  {
-
-                        if (duplicates.hasOwnProperty(rowKey)) {
-
-                            if (isMain) duplicates[rowKey].hasMainValue = true;
-
-                            duplicates[rowKey].values.push(rowData);
-
-                        }
-
-                        else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
-
-                    }
-                });
-
-                Object.keys(duplicates).forEach(function (key) {
-
-                    if (duplicates[key].hasMainValue) {
-
-                        let mainValue = null;
-
-                        let rowArray = [];
-
-                        $.each(duplicates[key]['values'], function (index, value) {
-
-                            if (value[0]['primary']) mainValue = value;
-
-                            else {
-
-                                let $newRow = $(value[1]).clone().css('color', '#777');
-
-                                $newRow.find('td:eq(2)').click(function() {
-
-                                    window.open(self.paths.inventory.html + 'groups/' + value[0].source, '_self')
-
-                                });
-
-                                rowArray.push($newRow);
-
-                                $(value[1]).remove()
-
-                            }
-
-                        });
-
-                        if (mainValue) {
-
-                            let rowApi = table.DataTable().row(mainValue[1]);
-
-                            $(mainValue[1]).find('td:eq(0)').html('').append(
-                                $('<span>').html(mainValue[0].key),
-                                spanFA.clone().addClass('fa-chevron-down btn-incell').off().click(function () {
-
-                                    if (rowApi.child.isShown()) {
-
-                                        $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
-
-                                        $(mainValue[1]).css('font-weight', 'normal');
-
-                                        rowApi.child.hide()
-
-                                    }
-
-                                    else {
-
-                                        $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
-
-                                        $(mainValue[1]).css('font-weight', 'bold');
-
-                                        rowApi.child(rowArray).show();
-
-                                    }
-
-                                })
-                            );
-
-                        }
-                    }
-
-                });
-
-            }
-        });
-
-    });
-
-};
-
 Node.prototype.editVariable = function (variable, callback) {
 
     let self = this;
 
     self.fetchHtml('editVariableDialog.html').then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         variable.id && self.set('variable.id', variable.id);
 
@@ -565,38 +608,35 @@ Node.prototype.editVariable = function (variable, callback) {
 
         self.set('variable.value', variable.value);
 
-        $element.dialog({
-            closeOnEscape: false,
-            buttons: {
-                Save: function () {
+        $element.find('.save-button').click(function() {
 
-                    self.postData('save_var', true, () => {
+            self.postData('save_var', true, () => {
 
-                        callback && callback();
+                callback && callback();
 
-                        variable.id && $(this).dialog('close');
+                variable.id && $element.dialog('close');
 
-                        self.set('variable.key', '');
+                self.set('variable.key', '');
 
-                        self.set('variable.value', '');
+                self.set('variable.value', '');
 
-                        $(this).find('[data-bind="key"]').focus();
+                $element.find('[data-bindElement="key"]').focus();
 
-                    });
+            });
 
-                },
-                Close: function () {
+        });
 
-                    self.set('variable.key', '');
+        $element.find('.cancel-button').click(function() {
 
-                    self.set('variable.value', '');
+            self.set('variable.key', '');
 
-                    $(this).dialog('close');
+            self.set('variable.value', '');
 
-                }
-            }
-        })
+            $element.dialog('close');
 
+        });
+
+        $element.dialog({closeOnEscape: false})
 
     })
 
@@ -608,98 +648,41 @@ Node.prototype.copyVariables = function (callback) {
 
     self.fetchHtml('copyVariablesDialog.html').then($element => {
 
-        $element
-            .dialog({
-                width: 280,
-                buttons: {
-                    Cancel: function () {
+        $element.find('button.cancel-button').click(function () {
 
-                        $(this).dialog('close')
-
-                    }
-                }
-            })
-            .find('button').click(function () {
-
-                $element.dialog('close');
-
-                self.selectionDialog({
-                    title: 'Select node',
-                    type: 'one',
-                    objectType: $(this).data('type'),
-                    url: self.paths.api.inventory + 'list/?type=' + $(this).data('type'),
-                    ajaxDataKey: 'nodes',
-                    itemValueKey: 'name',
-                    action: function (selection, $dialog) {
-
-                        self.source = selection;
-
-                        self.postData('copy_vars', false, function (data) {
-
-                            $dialog.dialog('close');
-
-                            callback && callback(data)
-
-                        })
-
-                    }
-                });
-
-            });
-
-    });
-
-};
-
-Node.prototype.view = function () {
-
-    let self = this;
-
-    self.fetchHtml('entityView.html', $('#content_container')).then($element => {
-
-        self.bind($element);
-
-        self.refresh(false, function () {
-
-            $('#edit_button').toggle(self.editable).click(function() {
-
-                self.edit(function (data) {
-
-                    window.open(self.paths.inventory + data.type + '/' + data.name + '/', '_self')
-
-                });
-
-            });
-
-            $('#delete_button').toggle(self.editable).click(function() {
-
-                self.del(function () {
-
-                    window.open(self.paths.inventory + self.type, '_self')
-
-                })
-
-            });
-
-            self.description || $('[data-bind="description"]').html(noDescriptionMsg);
-
-            if (self.type === 'host') self.hostInfo($('#info_container'));
-
-            self.variables(self.addTab('variables'));
-
-            if (self.type === 'host' || self.name !== 'all') self.relationships('parents', self.addTab('parents'));
-
-            if (self.type === 'group' && self.name !== 'all') {
-
-                self.relationships('children', self.addTab('children'));
-
-                self.relationships('members', self.addTab('members'));
-
-            }
-
-            $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
+            $element.dialog('close');
 
         });
+
+        $element.find('button.node-button').click(function () {
+
+            $element.dialog('close');
+
+            self.selectionDialog({
+                title: 'Select node',
+                type: 'one',
+                objectType: $(this).data('type'),
+                url: self.paths.api.inventory + 'list/?type=' + $(this).data('type'),
+                ajaxDataKey: 'nodes',
+                itemValueKey: 'name',
+                action: function (selection, $dialog) {
+
+                    self.source = selection;
+
+                    self.postData('copy_vars', false, function (data) {
+
+                        $dialog.dialog('close');
+
+                        callback && callback(data)
+
+                    })
+
+                }
+            });
+
+        });
+
+        $element.dialog({width: 280});
 
     });
 
@@ -711,7 +694,7 @@ Node.prototype.selector = function () {
 
     self.fetchHtml('nodeSelector.html', $('#content_container')).then($element => {
 
-        self.bind($element);
+        self.bindElement($element);
 
         let inventory = new Inventory({type: self.type});
 
@@ -817,18 +800,16 @@ Node.prototype.selector = function () {
 
                     });
 
-                if (node.editable) $(row).find('td:last').html(
-                    spanRight.clone().append(
-                        spanFA.clone().addClass('fa-trash-alt btn-incell').attr('title', 'Delete').click(function () {
+                if (node.editable) $(row).find('td:last').empty().append(
+                    self.tableBtn('fa fa-trash', 'Delete', function () {
 
-                            node.del(function () {
+                        node.del(function () {
 
-                                loadData();
+                            loadData();
 
-                            });
+                        });
 
-                        })
-                    )
+                    })
                 );
 
                 if (node.type === 'host') {
@@ -843,10 +824,10 @@ Node.prototype.selector = function () {
             }
         });
 
-        $grid.DynaGrid({headerTag: '<div>',
+        $grid.DynaGrid({
+            headerTag: '<div>',
             dataSource: 'array',
             itemValueKey: 'name',
-            shadowed: true,
             showFilter: true,
             truncateItemText: true,
             headerBottomPadding: 20,
@@ -855,7 +836,7 @@ Node.prototype.selector = function () {
             columns: sessionStorage.getItem('node_grid_columns'),
             showAddButton: true,
             addButtonType: 'icon',
-            addButtonClass: 'btn btn-default btn-xs',
+            addButtonClass: 'btn-icon',
             addButtonTitle: 'Add ' + self.type,
             formatItem: function ($gridContainer, $gridItem) {
 
@@ -893,60 +874,39 @@ Node.prototype.selector = function () {
 
         $('#delete_button').click(function () {
 
-            self.fetchHtml('selectionDialog.html').then($element => {
+            self.selectionDialog({
+                title: 'Delete nodes',
+                type: 'many',
+                objectType: self.type,
+                url: self.paths.api.inventory + 'list/?type=' + self.type,
+                ajaxDataKey: 'nodes',
+                itemValueKey: 'name',
+                action: function (selection, $dialog) {
 
-                let $grid = $element.find('#selection_grid');
+                    let inventory = new Inventory({type: self.type});
 
-                $element.find('#selection_title').remove();
+                    inventory.selection = selection;
 
-                $element.dialog({
-                    minWidth: 700,
-                    minHeight: 500,
-                    buttons:{
-                        Delete: function () {
+                    inventory.del(function () {
 
-                            let inventory = new Inventory({type: self.type});
+                        loadData();
 
-                            inventory.selection = $grid.DynaGrid('getSelected', 'id');
+                        $dialog.dialog('close');
 
-                            inventory.del(function () {
+                    });
 
-                                loadData();
-
-                                $element.dialog('close');
-
-                            });
-
-                        },
-                        Cancel: function () {
-
-                            $(this).dialog('close');
-
-                        }
-                    },
-                });
-
-                $grid.DynaGrid({
-                    gridTitle: 'Delete nodes',
-                    showFilter: true,
-                    maxHeight: 400,
-                    gridBodyClasses: 'inset-container scrollbar',
-                    itemToggle: 'many',
-                    truncateItemText: true,
-                    shadowed: true,
-                    columns: sessionStorage.getItem('selection_modal_columns'),
-                    ajaxUrl: self.paths.api.inventory + 'list/?type=' + self.type,
-                    ajaxDataKey: 'nodes',
-                    itemValueKey: 'name',
-                });
-
-            })
+                }
+            });
 
         });
 
-        $element.find('input[type="search"]').keyup(function(){
+        $element.find('.dataTables_filter input[type="search"]').keyup(function(){
 
             $grid.find('input').val($(this).val()).trigger('keyup');
+
+        });
+
+        $grid.find('input[type="search"]').keyup(function(){
 
             $table.DataTable().search($(this).val()).draw();
 

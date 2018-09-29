@@ -104,19 +104,19 @@ AdHoc.prototype.dialog = function (callback) {
 
             self.fetchHtml('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
 
-                self.bind($element);
+                self.bindElement($element);
 
                 $('a.label_link').attr('href', self.paths.selector.file);
 
-                if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
+                if (self.module === 'copy') $element.find('[data-bindElement="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 
-                else if (self.module === 'script') $element.find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
+                else if (self.module === 'script') $element.find('[data-bindElement="arguments._raw_params"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 
-                else if (self.module === 'unarchive') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=archive'});
+                else if (self.module === 'unarchive') $element.find('[data-bindElement="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=archive'});
 
                 Object.keys(self.arguments).forEach(function (key) {
 
-                    if ($element.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
+                    if ($element.find('[data-bindElement="arguments.' + key + '"]').length === 0) delete self.arguments[key]
 
                 });
 

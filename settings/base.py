@@ -277,6 +277,12 @@ DEFAULT_PREFERENCES = [
                 'data_type': 'number',
                 'description': '',
             },
+            {
+                'name': 'search_box_offset',
+                'value': 147,
+                'data_type': 'number',
+                'description': '',
+            },
         ]
     }
 ]

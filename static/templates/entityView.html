@@ -1,10 +1,14 @@
 <div class="row">
     <div class="col-md-12">
         <h3>
-            <small data-bind="type"></small>&nbsp;<span data-bind="name"></span>
+            <small data-bind="viewOptions.subTitle"></small>&nbsp;<span data-bind="name"></span>
             <small style="margin-left: 1rem;">
-                <span id="edit_button" class="fa fa-fw fa-pencil-alt btn-incell" title="Edit"></span>
-                <span id="delete_button" class="fa fa-fw fa-trash-alt btn-incell" title="Delete"></span>
+                <button id="edit_button" class="btn btn-default btn-xs btn-icon hidden" title="Edit">
+                    <span class="fa fa-fw fa-pencil-alt medium-icon"></span>
+                </button>
+                <button id="delete_button" class="btn btn-default btn-xs btn-icon hidden" title="Delete">
+                    <span class="fa fa-fw fa-trash-alt medium-icon" title="Delete"></span>
+                </button>
             </small>
         </h3>
         <ul class="nav nav-tabs">
