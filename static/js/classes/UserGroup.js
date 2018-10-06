@@ -12,10 +12,12 @@ UserGroup.prototype.apiPath = Battuta.prototype.paths.api.group;
 
 UserGroup.prototype.key = 'group';
 
-UserGroup.prototype.selectorOptions = {
-    title: 'User groups',
+UserGroup.prototype.crud = {
+    titlePlural: 'User groups',
+    type: 'user group',
     dataSrc: 'groups',
-    tableOptions: {
+    tabsId: 'user_group',
+    table: {
         columns: [
             {class: 'col-md-3', title: 'name', data: 'name'},
             {class: 'col-md-7', title: 'description', data: 'description'},
@@ -47,100 +49,80 @@ UserGroup.prototype.selectorOptions = {
 
         }
     },
-    addButtonCallback: function (data) {
-
-        window.open(data.group.name + '/', '_self');
-
-    }
-};
-
-UserGroup.prototype.viewOptions = {
-    subTitle: 'user group',
-    tabId: 'user_group',
-    editCallback: function (data) {
-
-        window.open(Battuta.prototype.paths.views.group + data.group.name + '/', '_self')
-
-    },
-    deleteCallback: function () {
-
-        window.open(Battuta.prototype.paths.selector.group, '_self')
-
-    },
     tabs: {
         members: {
             validator: function () {return true},
             generator: function (self, $container) {
 
-            self.fetchHtml('entityGrid.html', $container).then($element => {
+                self.fetchHtml('entityGrid.html', $container).then($element => {
 
-                $element.find('.entity_grid').DynaGrid({
-                    headerTag: '<div>',
-                    showFilter: true,
-                    maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
-                    showAddButton: true,
-                    ajaxDataKey: 'members',
-                    itemValueKey: 'username',
-                    addButtonTitle: 'Add members',
-                    addButtonType: 'icon',
-                    addButtonClass: 'btn btn-default btn-xs',
-                    showCount: true,
-                    gridBodyBottomMargin: '20px',
-                    columns: sessionStorage.getItem('node_grid_columns'),
-                    ajaxUrl: self.apiPath + 'members/?name=' + self.name,
-                    formatItem: function ($gridContainer, $gridItem) {
+                    $element.find('.entity_grid').DynaGrid({
+                        headerTag: '<div>',
+                        showFilter: true,
+                        maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+                        showAddButton: true,
+                        ajaxDataKey: 'members',
+                        itemValueKey: 'username',
+                        addButtonTitle: 'Add members',
+                        addButtonType: 'icon',
+                        addButtonClass: 'btn btn-default btn-xs',
+                        showCount: true,
+                        gridBodyBottomMargin: '20px',
+                        columns: sessionStorage.getItem('node_grid_columns'),
+                        ajaxUrl: self.apiPath + 'members/?name=' + self.name,
+                        formatItem: function ($gridContainer, $gridItem) {
 
-                        $gridItem.css('cursor', 'pointer').append(
-                            $('<span>').append(name).click(function () {
+                            $gridItem.css('cursor', 'pointer').append(
+                                $('<span>').append(name).click(function () {
 
-                                window.open(self.paths.views.user + name + '/', '_self')
+                                    window.open(self.paths.views.user + name + '/', '_self')
 
-                            }),
-                            spanFA.clone().addClass('text-right fa-minus-circle')
-                                .css({float: 'right', margin: '.8rem 0', cursor: 'pointer'})
-                                .attr('title', 'Remove')
-                                .click(function () {
+                                }),
+                                spanFA.clone().addClass('text-right fa-minus-circle')
+                                    .css({float: 'right', margin: '.8rem 0', cursor: 'pointer'})
+                                    .attr('title', 'Remove')
+                                    .click(function () {
 
-                                    self.selection = [$gridItem.data()];
+                                        self.selection = [$gridItem.data()];
 
-                                    self.postData('remove_members', false, function () {
+                                        self.postData('remove_members', false, function () {
+
+                                            $gridContainer.DynaGrid('load')
+
+                                        });
+
+                                    })
+                            )
+
+                        },
+                        addButtonAction: function ($gridContainer) {
+
+                            self.selectionDialog({
+                                title: 'Select users',
+                                type: 'many',
+                                objectType: 'user',
+                                url: self.paths.api.group + 'members/?reverse=true&name=' + self.name,
+                                ajaxDataKey: 'members',
+                                itemValueKey: 'username',
+                                action: function (selection) {
+
+                                    self.selection = selection;
+
+                                    self.postData('add_members', false, function () {
 
                                         $gridContainer.DynaGrid('load')
 
                                     });
 
-                                })
-                        )
+                                }
+                            });
 
-                    },
-                    addButtonAction: function ($gridContainer) {
+                        }
+                    })
 
-                        self.selectionDialog({
-                            title: 'Select users',
-                            type: 'many',
-                            objectType: 'user',
-                            url: self.paths.api.group + 'members/?reverse=true&name=' + self.name,
-                            ajaxDataKey: 'members',
-                            itemValueKey: 'username',
-                            action: function (selection) {
+                });
 
-                                self.selection = selection;
-
-                                self.postData('add_members', false, function () {
-
-                                    $gridContainer.DynaGrid('load')
-
-                                });
-
-                            }
-                        });
-
-                    }
-                })
-
-            });
-
-        }
+            }
         },
         permissions: {
             validator: function () {return true},
@@ -211,6 +193,23 @@ UserGroup.prototype.viewOptions = {
 
             }
         }
+    },
+    callbacks: {
+        add: function (data) {
+
+            window.open(data.group.name + '/', '_self');
+
+        },
+        edit: function (data) {
+
+            window.open(Battuta.prototype.paths.views.group + data.group.name + '/', '_self')
+
+        },
+        delete: function () {
+
+            window.open(Battuta.prototype.paths.selector.group, '_self')
+
+        },
     }
 };
 

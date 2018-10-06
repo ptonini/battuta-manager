@@ -12,10 +12,10 @@ Job.prototype.key = 'job';
 
 Job.prototype.apiPath = Battuta.prototype.paths.api.job;
 
-Job.prototype.selectorOptions = {
-    title: 'Job history',
+Job.prototype.crud = {
+    titlePlural: 'Jobs',
     dataSrc: null,
-    tableOptions: {
+    table: {
         ajax: {url: Job.prototype.apiPath + 'list/'},
         columns:[
             {class: 'col-md-2', title: 'run data'},

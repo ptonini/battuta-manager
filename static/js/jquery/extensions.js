@@ -17,10 +17,12 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
+
+// DynaGrid
 $.extend($.fn.DynaGrid.defaults, {
     gridBodyClasses: 'scrollbar',
     gridItemClasses: 'shadowed',
-    searchBoxClasses: 'grid-search',
+    searchBoxClasses: '',
 });
 
 // bootstrapGrowl

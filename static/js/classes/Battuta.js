@@ -8,6 +8,8 @@ function Battuta (param) {
 
     self.loadParam(param ? param : {});
 
+    //self.loadTemplates();
+
 }
 
 Battuta.prototype = {
@@ -67,6 +69,22 @@ Battuta.prototype = {
 
     },
 
+    loadTemplates: function () {
+
+        let self = this;
+
+        if (self.crud && self.crud.templates) {
+
+            Object.keys(self.crud.templates).forEach(async function (key) {
+
+                self.crud.templates[key] = await self.fetchHtml(self.crud.templates[key]);
+
+            });
+
+            console.log(self.crud.templates)
+        }
+
+    },
 
     // Properties methods *************
 
@@ -198,8 +216,6 @@ Battuta.prototype = {
             case 'failed':
 
                 failCallback && failCallback(data);
-
-                console.log(data);
 
                 let $message = $('<div>').attr('class', 'alert-box');
 
@@ -471,41 +487,9 @@ Battuta.prototype = {
 
     tableBtn: function (iconClasses, title, action) {
 
-        return $('<button>').attr({class: 'btn btn-default btn-xs btn-icon pull-right', title: title}).append(
-            $('<span>').attr('class', 'icon-span ' + iconClasses).click(action)
-        )
-
-    },
-
-    edit: function (callback) {
-
-        let self = this;
-
-        self.fetchHtml('entityDialog.html').then($element => {
-
-            self.bindElement($element);
-
-            self.set('header', self.name ? 'Edit ' + self.type : 'Add ' + self.type);
-
-            $element.find('button.confirm-button').click(function () {
-
-                self.save(data => {
-
-                    $element.dialog('close');
-
-                    callback && callback(data);
-                })
-            });
-
-            $element.find('button.cancel-button').click(function () {
-
-                $element.dialog('close');
-
-            });
-
-            $element.dialog();
-
-        });
+        return $('<button>').attr({class: 'btn btn-default btn-xs btn-icon pull-right', title: title})
+            .click(action)
+            .append($('<span>').attr('class', 'icon-span ' + iconClasses))
 
     },
 
@@ -869,16 +853,16 @@ Battuta.prototype = {
                 scrollCollapse: true,
                 ajax: {
                     url: self.apiPath + 'list/',
-                    dataSrc: self.selectorOptions.dataSrc
+                    dataSrc: self.crud.dataSrc
                 },
                 paging: false,
                 dom: 'Bfrtip',
                 buttons: [
                     {
-                        text: '<span class="fa fa-plus fa-fw" title="Add "' + self.type + '></span>',
+                        text: '<span class="fa fa-plus fa-fw" title="Add "' + self.crud.type + '></span>',
                         action: function () {
 
-                            new self.constructor().edit(self.selectorOptions.addButtonCallback);
+                            new self.constructor().edit(self.crud.callbacks.add);
 
                         },
                         className: 'btn-xs btn-icon'
@@ -886,15 +870,17 @@ Battuta.prototype = {
                 ],
             };
 
-            Object.keys(self.selectorOptions.tableOptions).forEach(function (key) {
+            Object.keys(self.crud.table).forEach(function (key) {
 
-                if (self.selectorOptions.tableOptions[key] === null)  delete tableOptions[key];
+                if (self.crud.table[key] === null) delete tableOptions[key];
 
-                else tableOptions[key] = self.selectorOptions.tableOptions[key]
+                else tableOptions[key] = self.crud.table[key]
 
             });
 
-            $element.find('#entity_table').DataTable(tableOptions)
+            $element.find('#entity_table').DataTable(tableOptions);
+
+            self.crud.onFinish && self.crud.onFinish(self);
 
         });
 
@@ -910,35 +896,68 @@ Battuta.prototype = {
 
             self.refresh(false, function () {
 
-                $('#edit_button').toggleClass('hidden', !self.editable || !self.viewOptions).click(function () {
+                $('#edit_button').toggleClass('hidden', !self.editable || !self.crud.callbacks.edit).click(function () {
 
-                    self.edit(self.viewOptions.editCallback);
+                    self.edit(self.crud.callbacks.edit);
 
                 });
 
-                $('#delete_button').toggleClass('hidden', !self.editable || !self.viewOptions.deleteCallback).click(function () {
+                $('#delete_button').toggleClass('hidden', !self.editable || !self.crud.callbacks.delete).click(function () {
 
-                    self.del(self.viewOptions.deleteCallback)
+                    self.del(self.crud.callbacks.delete)
 
                 });
 
                 self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
 
-                self.viewOptions.info && self.viewOptions.info(self, $element.find("#info_tab"));
+                self.crud.info && self.crud.info(self, $element.find("#info_tab"));
 
-                Object.keys(self.viewOptions.tabs).forEach(function (key) {
+                Object.keys(self.crud.tabs).forEach(function (key) {
 
-                    self.viewOptions.tabs[key].validator(self) && self.viewOptions.tabs[key].generator(self, self.addTab(key))
+                    self.crud.tabs[key].validator(self) && self.crud.tabs[key].generator(self, self.addTab(key))
 
                 });
 
-                self.viewOptions.onFinish && self.viewOptions.onFinish(self);
+                self.crud.onFinish && self.crud.onFinish(self);
 
-                $('ul.nav-tabs').attr('id', self.viewOptions.tabId + '_' + self.id + '_tabs').rememberTab();
+                $('ul.nav-tabs').attr('id', self.crud.tabsId + '_' + self.id + '_tabs').rememberTab();
 
             });
 
         });
-    }
+    },
+
+    edit: function (callback) {
+
+        let self = this;
+
+        self.fetchHtml('entityDialog.html').then($element => {
+
+            self.bindElement($element);
+
+            self.set('header', self.name ? 'Edit ' + self.crud.type : 'Add ' + self.crud.type);
+
+            $element.find('button.confirm-button').click(function () {
+
+                self.save(data => {
+
+                    $element.dialog('close');
+
+                    callback && callback(data);
+                })
+
+            });
+
+            $element.find('button.cancel-button').click(function () {
+
+                $element.dialog('close');
+
+            });
+
+            $element.dialog();
+
+        });
+
+    },
 
 };

@@ -12,16 +12,26 @@ Node.prototype.key = 'node';
 
 Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
 
-Node.prototype.viewOptions = {
-    editCallback: function (data) {
-
-        window.open(Battuta.prototype.paths.inventory + data.type + '/' + data.name + '/', '_self')
-
+Node.prototype.crud = {
+    templates: {
+        nodeSelector: 'nodeSelector.html',
+        nodeView: 'entityView.html',
+        nodeGrid: 'entityGrid.html',
+        hostInfo: 'hostInfo.html',
+        variableTable: 'variableTable.html',
+        descendants: 'descendants.html'
     },
-    deleteCallback: function() {
+    callbacks: {
+        edit: function (data) {
 
-        window.open(Battuta.prototype.paths.inventory + self.type, '_self')
+            window.open(Battuta.prototype.paths.inventory + data.type + '/' + data.name + '/', '_self')
 
+        },
+        delete: function() {
+
+            window.open(Battuta.prototype.paths.inventory + self.type, '_self')
+
+        },
     },
     info: function (self, $container) {
 
@@ -392,11 +402,13 @@ Node.prototype.viewOptions = {
     },
     onFinish: function (self) {
 
-        self.set('viewOptions.subTitle', self.type);
+        self.set('crud.type', self.type);
 
-        self.set('viewOptions.tabId', self.type);
+        self.set('crud.tabsId', self.type);
 
-    }
+        self.set('crud.titlePlural', self.type.capitalize() + 's')
+
+    },
 };
 
 Node.prototype.loadParam = function (param) {
@@ -410,8 +422,6 @@ Node.prototype.loadParam = function (param) {
     self.set('id', param.id);
 
     self.set('type', param.type);
-
-    self.set('typePlural', param.type + 's');
 
     self.set('editable', param.editable);
 
@@ -906,11 +916,15 @@ Node.prototype.selector = function () {
 
         });
 
-        $grid.find('input[type="search"]').keyup(function(){
+        $grid.find('input.dynagrid-search').keyup(function(){
 
             $table.DataTable().search($(this).val()).draw();
 
         });
+
+        self.crud.onFinish && self.crud.onFinish(self);
+
+        document.title = 'Battuta - ' + self.get('crud.titlePlural').capitalize();
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 

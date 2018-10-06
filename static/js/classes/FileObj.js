@@ -354,34 +354,39 @@ FileObj.prototype.dialog = function (action, callback) {
 
         action === 'copy' && self.set('new_name', 'copy_' + self.name);
 
-        (action === 'copy' || action === 'rename') && $element.find('#is_folder_container').remove();
+        if (action === 'copy' || action === 'rename') {
+
+            $element.find('.input-group').attr('class', 'form-group');
+
+            $element.find('.input-group-btn').hide();
+
+        }
+
+        $element.find('.confirm-button').click(function() {
+
+            if (self.is_folder) self.type = 'directory';
+
+            if (self.new_name && self.new_name !== self.name) self.postData(action, true, (data) => {
+
+                $element.dialog('close');
+
+                callback && callback(data);
+
+            });
+
+        });
+
+        $element.find('.cancel-button').click(function() {
+
+            $element.dialog('close')
+
+        });
 
         $element
-            .dialog({
-                buttons: {
-                    Save: function () {
-
-                        if (self.is_folder) self.type = 'directory';
-
-                        if (self.new_name && self.new_name !== self.name) self.postData(action, true, (data) => {
-
-                            $(this).dialog('close');
-
-                            callback && callback(data);
-
-                        });
-
-                    },
-                    Cancel: function() {
-
-                        $(this).dialog('close')
-
-                    }
-                }
-            })
+            .dialog()
             .keypress(function (event) {
 
-                if (event.keyCode === 13) $(this).parent().find('.ui-button-text:contains("Save")').parent('button').click()
+                event.keyCode === 13 && $element.find('.confirm-button').click()
 
             });
 

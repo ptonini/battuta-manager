@@ -10,15 +10,12 @@ Project.prototype.constructor = Project;
 
 Project.prototype.key = 'project';
 
-Project.prototype.selectorOptions = {
-    title: 'Projects',
+Project.prototype.crud = {
+    titlePlural: 'Projects',
+    type: 'project',
     dataSrc: 'projects',
-    addButtonCallback: function (data) {
-
-        window.open(data.project.id + '/', '_self');
-
-    },
-    tableOptions: {
+    tabsId: 'project',
+    table:  {
         columns: [
             {class: 'col-md-2', title: 'name', data: 'name'},
             {class: 'col-md-4', title: 'description', data: 'description'},
@@ -50,17 +47,6 @@ Project.prototype.selectorOptions = {
             )
 
         },
-    }
-};
-
-Project.prototype.viewOptions = {
-    subTitle: Project.prototype.key,
-    tabId: Project.prototype.key,
-    editCallback: function () { location.reload(); },
-    deleteCallback: function () {
-
-        window.open(Battuta.prototype.paths.selector.project, '_self');
-
     },
     info: function (self, $container) {
 
@@ -301,6 +287,23 @@ Project.prototype.viewOptions = {
             }
         },
     },
+    callbacks: {
+        add: function (data) {
+
+            window.open(data.project.id + '/', '_self');
+
+        },
+        edit: function () {
+
+            location.reload()
+
+        },
+        delete: function () {
+
+            window.open(Battuta.prototype.paths.selector.project, '_self');
+
+        }
+    }
 
 };
 

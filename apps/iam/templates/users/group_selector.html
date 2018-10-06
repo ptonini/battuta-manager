@@ -5,9 +5,7 @@
 
             document.title = 'Battuta - User groups';
 
-            let group = new UserGroup();
-
-            $('#container').html(group.selector());
+           new UserGroup().selector($('#container'));
 
         });
     </script>

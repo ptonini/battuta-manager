@@ -3,11 +3,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            let node = new Node({type: '{{ node_type }}'});
-
-            $('#container').html(node.selector());
-
-            document.title = 'Battuta - ' + node.get('typePlural').capitalize();
+            new Node({type: '{{ node_type }}'}).selector();
 
         });
     </script>

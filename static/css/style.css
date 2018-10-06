@@ -1,21 +1,13 @@
 :root {
     --main-bkg-color: whitesmoke;
     --title-font-color: dimgrey;
+    --container-bkg-color: white;
     --header-font-color: #525252;
     --link-font-color: #777;
     --scrollbar-thumb-color: #cbcbcb;
-}
-
-/* Fonts *****************************/
-
-@font-face {
-    font-family: Kanit;
-    src: url(/static/components/kanit-googlefont/Kanit-Regular.ttf)
-}
-
-@font-face {
-    font-family: Actor;
-    src: url(/static/components/actor-googlefont/Actor-Regular.ttf)
+    --btn-icon-hover-color: #e6e6e6;
+    --btn-icon-alert-color: #8a6d3b;
+    --checked-btn-color: #cdcdcd
 }
 
 body {
@@ -80,6 +72,19 @@ pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
 .transparent {color: transparent !important;}
 
 
+/* Fonts *****************************/
+
+@font-face {
+    font-family: Kanit;
+    src: url(/static/components/kanit-googlefont/Kanit-Regular.ttf)
+}
+
+@font-face {
+    font-family: Actor;
+    src: url(/static/components/actor-googlefont/Actor-Regular.ttf)
+}
+
+
 /* Tabs options **********************/
 
 .nav-tabs li.active a,
@@ -99,11 +104,11 @@ button.btn-icon {
     background-color: transparent;
 }
 
-button.btn-icon:focus:hover {background-color: #e6e6e6}
+button.btn-icon:hover {background-color: var(--btn-icon-hover-color)}
 
 span.large-icon {font-size: large}
 
-span.alert-icon {color: #8a6d3b !important}
+span.alert-icon {color: var(--btn-icon-alert-color)  !important}
 
 span.fa, span.fas, span.far {color: var(--title-font-color)}
 
@@ -118,7 +123,7 @@ header {
 
 header.navbar {
     box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.14), 0 1px 14px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.2);
-    background-color: white;
+    background-color: var(--container-bkg-color);
 }
 
 header.navbar ul.dropdown-menu {font-size: small}
@@ -137,7 +142,7 @@ input.grid-search {padding: 5px 10px; height: 25px}
 /* Card container ********************/
 
 div.paper-card {
-    background-color: white;
+    background-color: var(--container-bkg-color);
     box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);
     border-radius: 5px;
     padding: 15px 10px 10px 10px;
@@ -265,7 +270,7 @@ tr.child_row {background-color: transparent !important}
 
 /* Checked button class options */
 
-.checked_button, .checked_button:focus, .checked_button:hover {background-color: #cdcdcd}
+.checked_button, .checked_button:focus, .checked_button:hover {background-color: var(--checked-btn-color)}
 
 
 /* Truncate text larger than container */
@@ -308,4 +313,14 @@ input, select, div.dynamic-item, div.report_field_right, div.form_group input, .
 pre.large-alert {font-weight: lighter; background-color: transparent; border-color: transparent}
 
 
-div.alert-box {text-align: left; min-width: 240px}
+/* Alert box *************************/
+
+div.alert-box {
+    text-align: left;
+    min-width: 240px;
+}
+
+div.bootstrap-growl {
+    box-shadow: 0 0 20px #888888;
+}
+
