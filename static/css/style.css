@@ -1,151 +1,191 @@
 :root {
+
     --main-bkg-color: whitesmoke;
-    --title-font-color: dimgrey;
+    --main-font-color: dimgrey;
+    --main-text-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 1px rgba(0,0,0,0.11);
+
     --container-bkg-color: white;
-    --header-font-color: #525252;
-    --link-font-color: #777;
     --scrollbar-thumb-color: #cbcbcb;
+
     --btn-icon-hover-color: #e6e6e6;
-    --btn-icon-alert-color: #8a6d3b;
-    --checked-btn-color: #cdcdcd
+
+    --btn-checked-color: #cdcdcd;
+    --input-border-color: #ced4da;
 }
 
 body {
     font-size: small;
     background-color: var(--main-bkg-color);
+    color: var(--main-font-color);
 }
 
-label {font-weight: 400; width: 100%}
+/*.jsonview li {margin: 3px 0}*/
 
-h5 {font-size: 11pt; color: var(--header-font-color)}
-
-h3, h4, h5, .navbar, ul li a {
-    text-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 1px rgba(0,0,0,0.22);
-    color: var(--title-font-color);
-}
-
-a, label {color: var(--link-font-color)}
-
-th {color: var(--header-font-color)}
-
-.btn:focus, .btn:active {outline: none !important;}
-
-.btn:focus {background-color: transparent}
-
-textarea {resize: vertical}
-
-a:focus, a:hover, button:focus {outline: none; text-decoration: none}
-
-a.label_link2 {float: right; font-size: x-small}
-
-.label-link {font-size: x-small}
-
-.input[type="checkbox"] {margin: 10px 0 0 5px}
-
-.chkbox_label {padding: 5px 20px 5px 5px; vertical-align: middle}
-
-.report_field_left {padding: 0 0 0 15px}
-
-.report_field_right {padding: 0 15px 0 5px}
-
-.jsonview li {margin: 3px 0 3px 0}
-
-.well {word-break: break-all; margin-bottom: 0}
-
-.runner_error_box {margin-top: 20px; color: red; font-size: 12px}
-
-.reference_link_container, .sudo_alert {margin: auto; text-align: right; font-size: x-small}
-
-#view_header .entity_grid, .descendants_grid {margin-bottom: 2rem}
-
-#adhoc_table_container,
-#stats_table_container, #facts_buttons_container, #info_container {margin-top: 2rem}
-
-pre.text-danger {margin-top: 2rem; white-space: pre-wrap;}
-
-#playbook_args_container {margin-top: 1rem}
-
-#entity_grid_container, #facts_container, .permissions_container {overflow-y: auto; overflow-x: hidden}
-
-.preference_item_row {margin-bottom: .1rem}
-
-.transparent {color: transparent !important;}
+/*.well {word-break: break-all; margin-bottom: 0}*/
 
 
 /* Fonts *****************************/
 
 @font-face {
-    font-family: Kanit;
-    src: url(/static/components/kanit-googlefont/Kanit-Regular.ttf)
+    font-family: Headers;
+    src: url(/static/components/Kanit/Z-Go6G5tXcraVGwU.ttf)
 }
 
 @font-face {
-    font-family: Actor;
-    src: url(/static/components/actor-googlefont/Actor-Regular.ttf)
+    font-family: Elements;
+    src: url(/static/components/Assistant/cZGJYnIjSi6H75xkzaGW8.ttf)
+}
+
+h3, h4, h5, h6, label, th, a, li,
+div.navbar,
+div.dataTables_info,
+div.task-table-header,
+div.item-label,
+#runner_status {
+    font-family: "Headers", sans-serif !important;
+    text-shadow: var(--main-text-shadow);
+}
+
+input, textarea, select, option, td,
+button.btn,
+div.dynagrid-item,
+div.form-group input,
+a.pattern-grid,
+div.item-value,
+.ui-widget input {
+    font-family: "Elements", sans-serif !important;
 }
 
 
-/* Tabs options **********************/
+/* FontAwesome icons ******************/
 
-.nav-tabs li.active a,
-.nav-tabs li.active a:hover,
-.nav-tabs li.active a:focus {
+button .fas, button .far, button .fal, button .fab {
+    color: var(--main-font-color);
+    text-shadow: var(--main-text-shadow);
+}
+
+
+/* Pattern editor *********************/
+
+a.pattern-tab.nav-link.active {
+    background-color: var(--container-bkg-color) !important;
+    border-bottom-color:  var(--container-bkg-color) !important;
+}
+
+a.pattern-grid {
+    font-size: .875rem
+}
+
+
+/* Tabs  *****************************/
+
+ul.nav-tabs a.nav-link.active {
     background-color: var(--main-bkg-color);
+    border-bottom-color: var(--main-bkg-color);
 }
 
-.tab-content {margin-top: 10px}
+
+/* Inputs ****************************/
+
+label {
+    margin-bottom: 0;
+}
+
+input, textarea, select {
+    font-size: small;
+}
+
+select.form-control:focus,
+textarea.form-control:focus,
+input.form-control:focus {
+    box-shadow: none;
+    border: 1px solid var(--input-border-color);
+}
+
+input.form-control[readonly] {
+    background-color: transparent;
+    cursor: inherit;
+}
+
+textarea {
+    resize: vertical
+}
+
+input.form-check-input {
+    margin-top: 3px
+}
+
+div.form-check {
+    margin-bottom: 5px
+}
 
 
-/* Icon button options ***************/
+/* Anchors ***************************/
 
-button.btn-icon {
+a, a:focus, a:hover {
+    outline: none;
+    text-decoration: none;
+    color: var(--main-font-color) !important
+}
+
+
+/* Buttons ***************************/
+
+.btn-light,
+.btn-light:disabled {
+    border: 1px solid var(--input-border-color);
+    background-color: transparent
+}
+
+.btn-light:focus {box-shadow: none}
+
+
+/* Icon buttons **********************/
+
+.btn-icon {
     padding: 1px 5px;
     border: transparent;
     background-color: transparent;
 }
 
-button.btn-icon:hover {background-color: var(--btn-icon-hover-color)}
-
-span.large-icon {font-size: large}
-
-span.alert-icon {color: var(--btn-icon-alert-color)  !important}
-
-span.fa, span.fas, span.far {color: var(--title-font-color)}
-
-
-/* Header options ********************/
-
-header {
-    font-size: 14px; border-radius: 0 !important;
-    margin-bottom: 10px !important;
-    border-color: transparent !important;
+.btn-icon:focus {
+    box-shadow: none
 }
 
-header.navbar {
+.btn-icon:hover {
+    background-color: var(--btn-icon-hover-color)
+}
+
+.btn-icon:disabled {
+    border: none !important;
+    background-color: transparent !important;
+}
+
+
+/* Navbar options ********************/
+
+nav.navbar {
+    border-radius: 0 !important;
+    margin-bottom: 15px !important;
+    border-color: transparent !important;
     box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.14), 0 1px 14px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.2);
     background-color: var(--container-bkg-color);
 }
 
-header.navbar ul.dropdown-menu {font-size: small}
-
-.nav-tabs li.active a,
-.nav-tabs li.active a:hover,
-.nav-tabs li.active a:focus {
-    background-color: var(--main-bkg-color);
+nav.navbar a.navbar-brand {
+    font-size: 1.25rem
 }
 
-/* DynaGrid **************************/
+nav.navbar a.nav-link {
+    font-size: .875rem !important;
+}
 
-input.grid-search {padding: 5px 10px; height: 25px}
+nav.navbar a.dropdown-item {
+    font-size: small
+}
 
-
-/* Card container ********************/
-
-div.paper-card {
-    background-color: var(--container-bkg-color);
-    box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);
-    border-radius: 5px;
-    padding: 15px 10px 10px 10px;
+nav.navbar a.dropdown-item:active {
+    background-color: var(--btn-checked-color);
 }
 
 
@@ -161,7 +201,9 @@ div.inset-container {
 
 /* Scrollbar ***************/
 
-div.scrollbar {overflow-y: scroll;}
+div.scrollbar {
+    overflow-y: scroll;
+}
 
 div.scrollbar::-webkit-scrollbar {
     width: 8px;
@@ -175,152 +217,188 @@ div.scrollbar::-webkit-scrollbar-thumb {
 }
 
 
+/* Alert box *************************/
+
+div.alert-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 9999999999999;
+}
+
+div.alert {
+    box-shadow: 0 0 20px #888888;
+}
+
+div.alert div.button-container span {
+    cursor: pointer
+}
+
+
 /* Adhoc dialog **********************/
 
-#module_arguments_container {height: 30rem; overflow-x: hidden; margin-top: 1rem;}
+.module-arguments-container {height: 280px; overflow-x: hidden;}
 
 
 /* File manager path container *******/
 
-#path_links.breadcrumb {margin-bottom: 0; line-height: 2rem}
+ol.breadcrumb {
+    padding: 8px !important;
+}
 
-li.path_link, #root_path, #edit_path {cursor: pointer}
+li.breadcrumb-item {cursor: pointer}
+
+button#edit_path {
+    position:absolute;
+    right:1rem;
+    top:35%;
+    transform:translateY(-50%);
+    margin-right: 8px;
+}
 
 #root_path {font-weight: bold; font-style: italic;}
 
-#edit_path::before {content: none}
-
-#edit_path {padding: 0 .5rem; border-radius: .5rem; float: right}
-
 #path_input {border: none; padding: 0}
-
-button.menu-btn {border-radius: .5rem}
-
-a.navbar-brand * {margin-right: 1rem;}
 
 
 /* Job view options ****************/
 
-span.job-navbar span, span.job-navbar small {margin-right: 15px}
+span.job-navbar span,
+span.job-navbar small {
+    margin-right: 15px
+}
 
-.result-container, .task-table-container {margin: 10px 0}
+.result-container,
+.task-table-container {
+    margin: 10px 0
+}
 
 
 /* JQuery UI options *****************/
 
-.ui-dialog-titlebar-close, .ui-dialog-titlebar  {display: none}
+.ui-dialog {
+    box-shadow: 0 0 20px #888888;
+    border-radius: 5px
+}
 
-.ui-button-text {padding: 1px 1px; font-size: 12px; line-height: 1.5; border-radius: 3px}
+.ui-dialog-titlebar-close,
+.ui-dialog-titlebar  {
+    display: none
+}
 
-.ui-widget button {font-size: 12px}
+.ui-dialog-content {
+    padding: 15px !important;
+    overflow-x: hidden !important;
+    border: none
+}
 
-.ui-dialog {box-shadow: 0 0 20px #888888; border-radius: 5px; position: fixed}
+.ui-widget-overlay {
+    background: white;
+    opacity: 0
+}
 
-.ui-widget-overlay {background: white; opacity: 0}
+.ui-widget input.form-control-sm,
+.ui-widget select.form-control-sm,
+.ui-widget textarea.form-control-sm,
+.ui-widget button.btn-sm {
+    font-size: 0.875rem !important
+}
 
-ul.ui-autocomplete {z-index: 999; max-height: 300px; overflow-y: auto; overflow-x: hidden}
+.ui-widget button.btn {
+    font-size: 1rem
+}
 
-.ui-widget-content {border: none}
+.ui-autocomplete {
+    z-index: 999;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden
+}
 
 
 /* DataTables options ****************/
 
-.table.dataTable {table-layout: fixed; border-bottom: 2px solid lightgrey}
-
-.table.dataTable tbody > tr > td {
-    vertical-align: middle;
-    border-top: none !important;
-    text-overflow: ellipsis;
-    overflow: hidden;
+table.dataTable {
+    border-collapse: collapse !important;
 }
 
-.dataTables_filter {
+table.dataTable thead th,
+table.dataTable tbody td  {
+    border: none !important;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    line-height: 23px;
+
+}
+
+table.dataTable tbody td {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+table.dataTable tr.child_row,
+table.dataTable tr.child_row:hover {
+    background-color: transparent !important;
+}
+
+table.dataTable tr.child_row div.well {
+    background-color: var(--main-bkg-color) !important;
+}
+
+div.dataTables_length select {
+    font-size: 90%;
+}
+
+div.dataTables_filter {
     float: right;
     text-align: right;
 }
 
-.pagination > li > a, .pagination > li > span {padding: 2px 6px}
-
-.pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover,
-.pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
-    background-color: lightgrey;
-    border-color: lightgrey;
+div.dataTables_filter input {
+    margin-left: 8px !important;
 }
 
-.pagination > li > a, div.dataTables_length, div.dataTables_filter, div.dataTables_info {color: #777}
+div.dataTables_scrollBody {
+    border-bottom: 2px solid lightgrey;
+    border-top: 2px solid lightgrey
+}
 
-div.dataTables_length select.input-sm, div.dataTables_filter input.input-sm {height: 25px}
-
-div.dataTables_length, div.dataTables_filter {height: 25px}
-
-tr.child_row {background-color: transparent !important}
-
-.btn-incell {margin: 0 .25rem; cursor: pointer}
-
-.dataTables_scrollBody::-webkit-scrollbar {
+div.dataTables_scrollBody::-webkit-scrollbar {
     width: 8px;
     background-color: transparent;
 }
 
-.dataTables_scrollBody::-webkit-scrollbar-thumb {
+div.dataTables_scrollBody::-webkit-scrollbar-thumb {
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
     background-color: var(--scrollbar-thumb-color);
 }
 
-/* Checked button class options */
+div.dataTables_paginate  {
+    float: right !important
+}
 
-.checked_button, .checked_button:focus, .checked_button:hover {background-color: var(--checked-btn-color)}
+div.dataTables_paginate a.page-link {
+    padding: 6px 12px;
+}
 
+div.dataTables_paginate li.page-item.active a.page-link {
+     background-color: var(--btn-checked-color);
+     border: 1px solid #dee2e6;
+}
 
-/* Truncate text larger than container */
-
-.truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
-
-
-/* Make all cell within row of equal height */
-
-.row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}
-
-
-/* Elements using Kanit font */
-
-h3, h4, h5, label, th, small, ul.nav a, ul.pagination a, .chkbox_label, .reference_link_container,
-.navbar, .report_field_left, .dataTables_info, #runner_status, .task-table-header {font-family: "Kanit", sans-serif}
-
-
-/* Elements using Actor font */
-
-a.btn, button.btn, span.ui-button-text {font-family: "Actor", sans-serif;}
-
-
-/* Elements using Helvetica font */
-
-input, select, div.dynamic-item, div.report_field_right, div.form_group input, .ui-widget input {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+div.dataTables_paginate a.page-link:focus,
+div.dataTables_paginate a.page-link:hover {
+    border: 1px solid #dee2e6;
+    box-shadow: none;
 }
 
 
-/* Settings for small dialogs */
-.small_dialog {padding: 20px !important;}
+/* Checked button ********************/
 
-
-/* Settings for large dialogs */
-.large_dialog {overflow-x: hidden !important;}
-
-
-/**/
-pre.large-alert {font-weight: lighter; background-color: transparent; border-color: transparent}
-
-
-/* Alert box *************************/
-
-div.alert-box {
-    text-align: left;
-    min-width: 240px;
+.checked_button,
+.checked_button:focus,
+.checked_button:hover {
+    background-color: var(--btn-checked-color)
 }
-
-div.bootstrap-growl {
-    box-shadow: 0 0 20px #888888;
-}
-

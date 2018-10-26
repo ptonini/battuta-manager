@@ -52,45 +52,43 @@ AdHoc.prototype.dialog = function (callback) {
 
     let user = new User({username: sessionStorage.getItem('user_name')});
 
-    self.fetchHtml('adhocDialog.html').then($element => {
+    self.fetchHtml('form_AdHocTask.html').then($element => {
 
         let $selector = $element.find('#module_selector');
 
-        let $argumentsContainer = $element.find('#module_arguments_container');
+        let $argumentsContainer = $element.find('div.module-arguments-container');
 
         self.patternField($element.find('#pattern_field_group'), 'hosts');
 
-        $element.dialog({
-            autoOpen: false,
-            width: 600,
-            closeOnEscape: false,
-            buttons: {
-                Run: function () {
+        $element.find('#run_task').click(function () {
 
-                    let job = new Job(self);
+            let job = new Job(self);
 
-                    job.set('cred', $element.find('#task_credentials_selector option[value="'+ self.cred + '"]').data());
+            job.set('cred', $element.find('#task_credentials_selector option[value="'+ self.cred + '"]').data());
 
-                    job.run()
+            job.run()
 
-                },
-                Save: function () {
-
-                    self.hosts = self.pattern;
-
-                    self.save(function () {
-
-                        callback && callback();
-
-                    });
-
-                },
-                Close: function () {
-
-                    $(this).dialog('close');
-                }
-            }
         });
+
+        $element.find('#save_task').click(function () {
+
+            self.hosts = self.pattern;
+
+            self.save(function () {
+
+                callback && callback();
+
+            });
+
+        });
+
+        $element.find('#close_task').click(function () {
+
+            $element.dialog('close');
+
+        });
+
+        $element.dialog({autoOpen: false, width: 600, closeOnEscape: false});
 
         $selector.change(function () {
 
@@ -108,15 +106,15 @@ AdHoc.prototype.dialog = function (callback) {
 
                 $('a.label_link').attr('href', self.paths.selector.file);
 
-                if (self.module === 'copy') $element.find('[data-bindElement="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
+                if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 
-                else if (self.module === 'script') $element.find('[data-bindElement="arguments._raw_params"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
+                else if (self.module === 'script') $element.find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
 
-                else if (self.module === 'unarchive') $element.find('[data-bindElement="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=archive'});
+                else if (self.module === 'unarchive') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=archive'});
 
                 Object.keys(self.arguments).forEach(function (key) {
 
-                    if ($element.find('[data-bindElement="arguments.' + key + '"]').length === 0) delete self.arguments[key]
+                    if ($element.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
 
                 });
 

@@ -17,10 +17,12 @@ Project.prototype.crud = {
     tabsId: 'project',
     table:  {
         columns: [
-            {class: 'col-md-2', title: 'name', data: 'name'},
-            {class: 'col-md-4', title: 'description', data: 'description'},
-            {class: 'col-md-3', title: 'manager', data: 'manager'},
-            {class: 'col-md-3', title: 'host group', data: 'host_group'}
+            {title: 'name', data: 'name', width: '20%'},
+            {title: 'description', data: 'description', width: '40%'},
+            {title: 'manager', data: 'manager', width: '15%'},
+            {title: 'host group', data: 'host_group', width: '15%'},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+
         ],
         rowCallback: function (row, data) {
 
@@ -34,8 +36,8 @@ Project.prototype.crud = {
 
             });
 
-            $(row).find('td:eq(3)').append(
-                Battuta.prototype.tableBtn('fa fa-trash', 'Delete', function () {
+            $(row).find('td:eq(4)').html('').append(
+                Battuta.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
                     project.del(function () {
 
@@ -50,7 +52,7 @@ Project.prototype.crud = {
     },
     info: function (self, $container) {
 
-        self.fetchHtml('projectInfo.html', $container).then($element => {
+        self.fetchHtml('form_Project.html', $container).then($element => {
 
             self.bindElement($element);
 
@@ -88,7 +90,7 @@ Project.prototype.crud = {
             validator: function () {return true},
             generator: function (self, $container) {
 
-                self.fetchHtml('projectHostGroup.html', $container).then($element => {
+                self.fetchHtml('form_ProjectHostGroup.html', $container).then($element => {
 
                     self.bindElement($element);
 
@@ -112,88 +114,87 @@ Project.prototype.crud = {
             validator: function () {return true},
             generator: function (self, $container) {
 
-                self.fetchHtml('entityGrid.html', $container).then($element => {
+                $container.append($('<div>').DynaGrid({
+                    headerTag: '<div>',
+                    showAddButton: true,
+                    ajaxDataKey: 'file_list',
+                    itemValueKey: 'name',
+                    addButtonTitle: 'Add playbooks',
+                    maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+                    showCount: true,
+                    addButtonType: 'icon',
+                    itemHoverCursor: 'auto',
+                    addButtonClass: 'btn btn-icon btn-sm',
+                    gridBodyTopMargin: 10,
+                    gridBodyBottomMargin: 10,
+                    columns: sessionStorage.getItem('playbook_grid_columns'),
+                    ajaxUrl: self.apiPath + 'playbooks/?id=' + self.id,
+                    formatItem: function ($gridContainer, $gridItem) {
 
-                    $element.find('.entity_grid').DynaGrid({
-                        headerTag: '<div>',
-                        showAddButton: true,
-                        ajaxDataKey: 'file_list',
-                        itemValueKey: 'name',
-                        addButtonTitle: 'Add playbooks',
-                        maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
-                        showCount: true,
-                        addButtonType: 'icon',
-                        itemHoverCursor: 'auto',
-                        addButtonClass: 'btn btn-default btn-xs',
-                        gridBodyBottomMargin: '20px',
-                        columns: sessionStorage.getItem('playbook_grid_columns'),
-                        ajaxUrl: self.apiPath + 'playbooks/?id=' + self.id,
-                        formatItem: function ($gridContainer, $gridItem) {
+                        let playbook = $gridItem.data();
 
-                            let playbook = $gridItem.data();
+                        let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
 
-                            let itemTitle = playbook.folder ? playbook.folder + '/' + playbook.name : playbook.name;
+                        $gridItem.attr('title', itemTitle)
+                            .html(itemTitle)
+                            .removeClass('text-truncate')
+                            .append(
+                                spanFA.clone().addClass('fa-minus-circle')
+                                    .css({'font-size': '15px', cursor: 'pointer', 'margin-left': 'auto', order: 2})
+                                    .attr('title', 'Remove')
+                                    .click(function () {
 
-                            $gridItem.attr('title', itemTitle)
-                                .html(itemTitle)
-                                .removeClass('truncate-text')
-                                .append(
-                                    spanFA.clone().addClass('text-right fa-minus-circle')
-                                        .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
-                                        .attr('title', 'Remove')
-                                        .click(function () {
+                                        self.playbooks = [{name: playbook.name, folder: playbook.folder}];
 
-                                            self.playbooks = [{name: playbook.name, folder: playbook.folder}];
+                                        self.postData('remove_playbook', false, function () {
 
-                                            self.postData('remove_playbook', false, function () {
+                                            $gridContainer.DynaGrid('load')
 
-                                                $gridContainer.DynaGrid('load')
+                                        });
 
-                                            });
+                                    })
+                            )
 
-                                        })
-                                )
+                    },
+                    addButtonAction: function ($gridContainer) {
 
-                        },
-                        addButtonAction: function ($gridContainer) {
+                        let currentPlaybooks = [];
 
-                            let currentPlaybooks = [];
+                        $.each($gridContainer.DynaGrid('getData'), function (index, playbook) {
 
-                            $.each($gridContainer.DynaGrid('getData'), function (index, playbook) {
+                            currentPlaybooks.push({name: playbook.name, folder: playbook.folder})
 
-                                currentPlaybooks.push({name: playbook.name, folder: playbook.folder})
+                        });
 
-                            });
+                        self.gridDialog({
+                            title: 'Select playbooks',
+                            type: 'many',
+                            objectType: 'playbooks',
+                            url: self.paths.api.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
+                            itemValueKey: 'name',
+                            action: function (selection, $dialog) {
 
-                            self.selectionDialog({
-                                title: 'Select playbooks',
-                                type: 'many',
-                                objectType: 'playbooks',
-                                url: self.paths.api.file + 'search/?&root=playbooks&exclude=' + JSON.stringify(currentPlaybooks),
-                                itemValueKey: 'name',
-                                action: function (selection) {
+                                self.playbooks = [];
 
-                                    self.playbooks = [];
+                                $.each(selection, function (index, playbook) {
 
-                                    $.each(selection, function (index, playbook) {
+                                    self.playbooks.push({name: playbook.name, folder: playbook.folder})
 
-                                        self.playbooks.push({name: playbook.name, folder: playbook.folder})
+                                });
 
-                                    });
+                                self.postData('add_playbooks', false, function () {
 
-                                    self.postData('add_playbooks', false, function () {
+                                    $dialog.dialog('close');
 
-                                        $gridContainer.DynaGrid('load')
+                                    $gridContainer.DynaGrid('load')
 
-                                    });
+                                });
 
-                                }
-                            });
+                            }
+                        });
 
-                        }
-                    });
-
-                })
+                    }
+                }));
 
             }
         },
@@ -201,88 +202,89 @@ Project.prototype.crud = {
             validator: function () {return true},
             generator: function (self, $container) {
 
-                self.fetchHtml('entityGrid.html', $container).then($element => {
+                $container.append($('<div>').DynaGrid({
+                    headerTag: '<div>',
+                    showAddButton: true,
+                    ajaxDataKey: 'file_list',
+                    itemValueKey: 'name',
+                    addButtonTitle: 'Add roles',
+                    maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+                    showCount: true,
+                    addButtonType: 'icon',
+                    itemHoverCursor: 'auto',
+                    addButtonClass: 'btn btn-icon btn-sm',
+                    gridBodyTopMargin: 10,
+                    gridBodyBottomMargin: 10,
+                    columns: sessionStorage.getItem('role_grid_columns'),
+                    ajaxUrl: self.apiPath + 'roles/?id=' + self.id,
+                    formatItem: function ($gridContainer, $gridItem) {
 
-                    $element.find('.entity_grid').DynaGrid({
-                        headerTag: '<div>',
-                        showAddButton: true,
-                        ajaxDataKey: 'file_list',
-                        itemValueKey: 'name',
-                        addButtonTitle: 'Add roles',
-                        maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
-                        showCount: true,
-                        addButtonType: 'icon',
-                        itemHoverCursor: 'auto',
-                        addButtonClass: 'btn btn-default btn-xs',
-                        gridBodyBottomMargin: '20px',
-                        columns: sessionStorage.getItem('role_grid_columns'),
-                        ajaxUrl: self.apiPath + 'roles/?id=' + self.id,
-                        formatItem: function ($gridContainer, $gridItem) {
+                        let role = $gridItem.data();
 
-                            let role = $gridItem.data();
+                        $gridItem
+                            .attr('title', role.folder ? role.folder + '/' + role.name : role.name)
+                            .removeClass('text-truncate')
+                            .append(
+                                spanFA.clone().addClass('fa-minus-circle')
+                                    .css({'font-size': '15px', cursor: 'pointer', 'margin-left': 'auto', order: 2})
+                                    .attr('title', 'Remove')
+                                    .click(function () {
 
-                            $gridItem
-                                .attr('title', role.folder ? role.folder + '/' + role.name : role.name)
-                                .removeClass('truncate-text')
-                                .append(
-                                    spanFA.clone().addClass('text-right fa-minus-circle')
-                                        .css({float: 'right', margin: '7px 0', 'font-size': '15px', cursor: 'pointer'})
-                                        .attr('title', 'Remove')
-                                        .click(function () {
+                                        self.roles = [{name: role.name, folder: role.folder}];
 
-                                            self.roles = [{name: role.name, folder: role.folder}];
+                                        self.postData('remove_role', false, function () {
 
-                                            self.postData('remove_role', false, function () {
+                                            $gridContainer.DynaGrid('load')
 
-                                                $gridContainer.DynaGrid('load')
-
-                                            });
+                                        });
 
 
-                                        })
-                                )
+                                    })
+                            )
 
-                        },
-                        addButtonAction: function ($gridContainer) {
+                    },
+                    addButtonAction: function ($gridContainer) {
 
-                            let currentRoles = [];
+                        let currentRoles = [];
 
-                            $.each($gridContainer.DynaGrid('getData'), function (index, role) {
+                        $.each($gridContainer.DynaGrid('getData'), function (index, role) {
 
-                                currentRoles.push({name: role.name, folder: role.folder})
+                            currentRoles.push({name: role.name, folder: role.folder})
 
-                            });
+                        });
 
-                            self.selectionDialog({
-                                title: 'Select roles',
-                                type: 'many',
-                                objectType: 'roles',
-                                url: self.paths.api.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
-                                ajaxDataKey: 'file_list',
-                                itemValueKey: 'name',
-                                action: function (selection) {
+                        self.gridDialog({
+                            title: 'Select roles',
+                            type: 'many',
+                            objectType: 'roles',
+                            url: self.paths.api.file + 'list/?root=roles&folder=&exclude=' + JSON.stringify(currentRoles),
+                            ajaxDataKey: 'file_list',
+                            itemValueKey: 'name',
+                            action: function (selection, $dialog) {
 
-                                    self.roles = [];
+                                self.roles = [];
 
-                                    $.each(selection, function (index, role) {
+                                $.each(selection, function (index, role) {
 
-                                        self.roles.push({name: role.name, folder: role.folder})
+                                    self.roles.push({name: role.name, folder: role.folder})
 
-                                    });
+                                });
 
-                                    self.postData('add_roles', false, function () {
+                                self.postData('add_roles', false, function () {
 
-                                        $gridContainer.DynaGrid('load')
+                                    $dialog.dialog('close');
 
-                                    });
+                                    $gridContainer.DynaGrid('load')
 
-                                }
-                            });
+                                });
 
-                        }
-                    });
+                            }
+                        });
 
-                })
+                    }
+                }));
+
+                $('<div>');
 
             }
         },
@@ -370,7 +372,7 @@ Project.prototype.setProperty =  function (property, callback) {
 
     let propData = property in self.properties ? self.properties[property] : self.properties.others ;
 
-    self.selectionDialog({
+    self.gridDialog({
         title: 'Select ' + propData.type,
         type: 'one',
         objectType: propData.type,

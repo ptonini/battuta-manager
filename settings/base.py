@@ -249,7 +249,7 @@ DEFAULT_PREFERENCES = [
             },
             {
                 'name': 'job_result_offset',
-                'value': 160,
+                'value': 180,
                 'data_type': 'number',
                 'description': '',
             },

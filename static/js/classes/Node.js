@@ -13,23 +13,17 @@ Node.prototype.key = 'node';
 Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
 
 Node.prototype.crud = {
-    templates: {
-        nodeSelector: 'nodeSelector.html',
-        nodeView: 'entityView.html',
-        nodeGrid: 'entityGrid.html',
-        hostInfo: 'hostInfo.html',
-        variableTable: 'variableTable.html',
-        descendants: 'descendants.html'
-    },
     callbacks: {
         edit: function (data) {
 
-            window.open(Battuta.prototype.paths.inventory + data.type + '/' + data.name + '/', '_self')
+            window.open(Battuta.prototype.paths.views.node[data.type] + data.name + '/', '_self')
 
         },
-        delete: function() {
+        delete: function(data) {
 
-            window.open(Battuta.prototype.paths.inventory + self.type, '_self')
+            console.log(data);
+
+            window.open(Battuta.prototype.paths.selector.node[data.type], '_self')
 
         },
     },
@@ -39,21 +33,25 @@ Node.prototype.crud = {
 
             self.bindElement($element);
 
+            $element.find('.hide_when_empty').hide();
+
             self.getData('facts', false, function (data) {
 
                 self.set('facts', data.facts);
 
                 if (self.facts) {
 
-                    $element.find('.hide_when_empty').removeClass('hidden');
+                    $element.find('button.hide_when_empty').show();
 
-                    $element.find('[data-bindElement="facts.memtotal_mb"]').humanBytes('MB');
+                    $element.find('div.main-info-column').show();
+
+                    $element.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
 
                     if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
 
-                    if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $('#guest_info_row').hide();
+                    if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $element.find('div.host-info-column').show();
 
-                    if (self.facts.virtualization_role === 'guest') $('#host_info_row').hide();
+                    if (self.facts.virtualization_role === 'guest') $element.find('div.guest-info-column').show();
 
                     let infoTables = {
                         networking: {
@@ -71,12 +69,12 @@ Node.prototype.crud = {
 
                             })(),
                             columns:  [
-                                {class: 'col-md-2', title: 'interface', data: 'device'},
-                                {class: 'col-md-2', title: 'type', data: 'type', defaultContent: ''},
-                                {class: 'col-md-2', title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
-                                {class: 'col-md-2', title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
-                                {class: 'col-md-3', title: 'mac', data: 'macaddress', defaultContent: ''},
-                                {class: 'col-md-1', title: 'mtu', data: 'mtu', defaultContent: ''}
+                                {title: 'interface', data: 'device'},
+                                {title: 'type', data: 'type', defaultContent: ''},
+                                {title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
+                                {title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
+                                {title: 'mac', data: 'macaddress', defaultContent: ''},
+                                {title: 'mtu', data: 'mtu', defaultContent: ''}
                             ],
                             rowCallback: function(row, data) {}
 
@@ -84,11 +82,11 @@ Node.prototype.crud = {
                         storage: {
                             data: self.facts.mounts,
                             columns: [
-                                {class: 'col-md-2', title: 'device', data: 'device'},
-                                {class: 'col-md-3', title: 'mount point', data: 'mount'},
-                                {class: 'col-md-2', title: 'size', data: 'size_total'},
-                                {class: 'col-md-2', title: 'type', data: 'fstype'},
-                                {class: 'col-md-3', title: 'options', data: 'options'}
+                                {title: 'device', data: 'device'},
+                                {title: 'mount', data: 'mount'},
+                                {title: 'size', data: 'size_total'},
+                                {title: 'type', data: 'fstype'},
+                                {title: 'options', data: 'options'}
                             ],
                             rowCallback: function(row) {
 
@@ -100,69 +98,55 @@ Node.prototype.crud = {
 
                     for (let key in infoTables) $element.find('#show_' + key).click(function () {
 
-                        self.fetchHtml('tableDialog.html').then($element => {
+                        let $dialog = Battuta.prototype.notificationDialog();
 
-                            $element.find('h4').html(key);
+                        let $table = Battuta.prototype.tableTemplate();
 
-                            $element.find('table').DataTable({
-                                data: infoTables[key].data,
-                                autoWidth: false,
-                                scrollY: '360px',
-                                scrollCollapse: true,
-                                filter: false,
-                                paging: false,
-                                info: false,
-                                columns: infoTables[key].columns,
-                                rowCallback: infoTables[key].rowCallback
-                            });
+                        $dialog.find('.dialog-header').html(key).addClass('text-capitalize');
 
-                            $element.dialog({
-                                width: '700px',
-                                buttons: {
-                                    Close: function () {
+                        $dialog.find('.dialog-content').append($table);
 
-                                        $(this).dialog('close')
-
-                                    }
-                                }
-                            });
-
-                            $element.find('table').DataTable().columns.adjust().draw();
-
+                        $table.DataTable({
+                            data: infoTables[key].data,
+                            autoWidth: false,
+                            scrollY: '360px',
+                            scrollCollapse: true,
+                            filter: false,
+                            paging: false,
+                            info: false,
+                            dom: "<'row'<'col-12'tr>>",
+                            columns: infoTables[key].columns,
+                            rowCallback: infoTables[key].rowCallback
                         });
+
+                        $dialog.dialog({width: '700px'});
+
+                        $table.DataTable().columns.adjust().draw();
 
                     });
 
-                    $('#show_facts').css('margin-right', '5px').click(function () {
+                    $('#show_facts').click(function () {
 
-                        self.fetchHtml('factsDialog.html').then($element => {
+                        let $dialog = Battuta.prototype.notificationDialog();
 
-                            self.bindElement($element);
+                        $dialog.find('.dialog-header').html(self.name + ' facts');
 
-                            $element.find('#facts_container')
+                        $dialog.find('.dialog-content').append(
+                            $('<div>')
+                                .attr('class', 'well inset-container scrollbar')
                                 .css('max-height', (window.innerHeight * .6).toString() + 'px')
-                                .JSONView(self.facts, {'collapsed': true});
+                                .JSONView(self.facts, {'collapsed': true})
+                        );
 
-                            $element.dialog({
-                                width: 900,
-                                buttons: {
-                                    Close: function () {
-
-                                        $(this).dialog('close')
-
-                                    }
-                                }
-                            })
-
-                        });
+                        $dialog.dialog({width: 900})
 
                     });
 
                 }
 
-                else  $element.find('#gather_facts').addClass('pull-right').attr('title', 'Gather facts');
+                else  $element.find('#gather_facts').attr('title', 'Gather facts');
 
-                $element.find('#gather_facts').toggleClass('pull-right', self.facts).click(function () {
+                $element.find('#gather_facts').click(function () {
 
                     let job = new Job({hosts: self.name});
 
@@ -182,196 +166,205 @@ Node.prototype.crud = {
             validator: function () {return true},
             generator: function (self, $container) {
 
-                self.fetchHtml('variableTable.html', $container).then($element => {
+                let $table = Battuta.prototype.tableTemplate();
 
-                    self.bindElement($element);
+                $table.addClass('class', 'variable-table');
 
-                    $('#variable_table').DataTable({
-                        scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
-                        scrollCollapse: true,
-                        autoWidth: false,
-                        order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-                        paging: false,
-                        dom: 'Bfrtip',
-                        buttons: [
-                            {
-                                text: '<span class="fa fa-fw fa-plus" title="Add variable"></span>',
-                                className: 'btn-xs btn-icon',
-                                action: function () {
+                $container.append($table);
 
-                                    self.editVariable({id: null}, function () {
+                $table.DataTable({
+                    scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
+                    scrollCollapse: true,
+                    autoWidth: false,
+                    order: [[ 2, 'asc' ], [ 0, 'asc' ]],
+                    paging: false,
+                    dom: 'Bfrtip',
+                    buttons: [
+                        {
+                            text: '<span class="fas fa-fw fa-plus" title="Add variable"></span>',
+                            className: 'btn-sm btn-icon',
+                            action: function () {
 
-                                        $('#variable_table').DataTable().ajax.reload()
+                                self.editVariable({id: null}, function () {
 
-                                    });
-
-                                }
-                            },
-                            {
-                                text: '<span class="fa fa-clone" title="Copy from node"></span>',
-                                className: 'btn-xs btn-icon',
-                                action: function () {
-
-                                    self.copyVariables(function () {
-
-                                        $('#variable_table').DataTable().ajax.reload()
-
-                                    });
-
-                                }
-                            }
-                        ],
-                        ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
-                        columns: [
-                            {class: 'col-md-3', title: 'key', data: 'key'},
-                            {class: 'col-md-7', title: 'value', data: 'value'},
-                            {class: 'col-md-2', title: 'source', data: 'source'}
-                        ],
-                        rowCallback: function(row, variable) {
-
-                            if (!variable.source) $(row).find('td:eq(2)').empty().append(
-                                self.tableBtn('fa fa-trash', 'Delete', function () {
-
-                                    self.variable = variable;
-
-                                    self.deleteAlert('delete_var', function () {
-
-                                        $('#variable_table').DataTable().ajax.reload()
-
-                                    });
-
-                                }),
-                                self.tableBtn('fa fa-pencil-alt', 'Edit', function () {
-
-                                    self.editVariable(variable, function () {
-
-                                        $('#variable_table').DataTable().ajax.reload()
-
-                                    })
-
-                                })
-                            );
-
-
-                            else $(row).find('td:eq(2)')
-                                .css('cursor', 'pointer')
-                                .html(variable.source.italics())
-                                .attr('title', 'Open ' + variable.source)
-                                .click(function () {
-
-                                    window.open(self.paths.inventory + 'groups/' + variable.source + '/', '_self')
+                                    $table.DataTable().ajax.reload()
 
                                 });
+
+                            }
                         },
-                        drawCallback: function() {
+                        {
+                            text: '<span class="fas fa-fw fa-clone" title="Copy from node"></span>',
+                            className: 'btn-sm btn-icon',
+                            action: function () {
 
-                            let table = this;
+                                self.copyVariables(function () {
 
-                            let variableKeys = table.api().columns(0).data()[0];
+                                    $table.DataTable().ajax.reload()
 
-                            let duplicates = {};
+                                });
 
-                            table.api().rows().every(function () {
-
-                                this.child.isShown() && this.child.hide();
-
-                                let rowKey = this.data().key;
-
-                                let isMain = this.data().primary;
-
-                                let rowData = [this.data(), this.node()];
-
-                                let keyIndexes = [];
-
-                                let i = -1;
-
-                                while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
-
-                                if (keyIndexes.length > 1)  {
-
-                                    if (duplicates.hasOwnProperty(rowKey)) {
-
-                                        if (isMain) duplicates[rowKey].hasMainValue = true;
-
-                                        duplicates[rowKey].values.push(rowData);
-
-                                    }
-
-                                    else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
-
-                                }
-                            });
-
-                            Object.keys(duplicates).forEach(function (key) {
-
-                                if (duplicates[key].hasMainValue) {
-
-                                    let mainValue = null;
-
-                                    let rowArray = [];
-
-                                    $.each(duplicates[key]['values'], function (index, value) {
-
-                                        if (value[0]['primary']) mainValue = value;
-
-                                        else {
-
-                                            let $newRow = $(value[1]).clone().css('color', '#777');
-
-                                            $newRow.find('td:eq(2)').click(function() {
-
-                                                window.open(self.paths.inventory.html + 'groups/' + value[0].source, '_self')
-
-                                            });
-
-                                            rowArray.push($newRow);
-
-                                            $(value[1]).remove()
-
-                                        }
-
-                                    });
-
-                                    if (mainValue) {
-
-                                        let rowApi = table.DataTable().row(mainValue[1]);
-
-                                        $(mainValue[1]).find('td:eq(0)').html('').append(
-                                            $('<span>').html(mainValue[0].key),
-                                            spanFA.clone().addClass('fa-chevron-down btn-incell').off().click(function () {
-
-                                                if (rowApi.child.isShown()) {
-
-                                                    $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
-
-                                                    $(mainValue[1]).css('font-weight', 'normal');
-
-                                                    rowApi.child.hide()
-
-                                                }
-
-                                                else {
-
-                                                    $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
-
-                                                    $(mainValue[1]).css('font-weight', 'bold');
-
-                                                    rowApi.child(rowArray).show();
-
-                                                }
-
-                                            })
-                                        );
-
-                                    }
-                                }
-
-                            });
-
+                            }
                         }
-                    });
+                    ],
+                    ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
+                    columns: [
+                        {title: 'key', data: 'key'},
+                        {title: 'value', data: 'value'},
+                        {title: 'source', data: 'source'},
+                        {title: '', defaultContent: '', class: 'float-right', orderable: false}
+                    ],
+                    rowCallback: function(row, variable) {
 
+                        if (!variable.source) $(row).find('td:eq(3)').empty().append(
+                            self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+
+                                self.editVariable(variable, function () {
+
+                                    $table.DataTable().ajax.reload()
+
+                                })
+
+                            }),
+                            self.tableBtn('fas fa-trash', 'Delete', function () {
+
+                                self.variable = variable;
+
+                                self.deleteAlert('delete_var', function () {
+
+                                    $table.DataTable().ajax.reload()
+
+                                });
+
+                            })
+                        );
+
+                        else $(row).find('td:eq(2)')
+                            .css('cursor', 'pointer')
+                            .html(variable.source.italics())
+                            .attr('title', 'Open ' + variable.source)
+                            .click(function () {
+
+                                window.open(self.paths.views.node.group + variable.source + '/', '_self')
+
+                            });
+                    },
+                    drawCallback: function() {
+
+                        let table = this;
+
+                        let variableKeys = table.api().columns(0).data()[0];
+
+                        let duplicates = {};
+
+                        let $btnGroup = $container.find('.dt-buttons');
+
+                        $container.find('.dataTables_wrapper').prepend($btnGroup.children());
+
+                        $btnGroup.remove();
+
+                        table.api().rows().every(function () {
+
+                            this.child.isShown() && this.child.hide();
+
+                            let rowKey = this.data().key;
+
+                            let isMain = this.data().primary;
+
+                            let rowData = [this.data(), this.node()];
+
+                            let keyIndexes = [];
+
+                            let i = -1;
+
+                            while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
+
+                            if (keyIndexes.length > 1)  {
+
+                                if (duplicates.hasOwnProperty(rowKey)) {
+
+                                    if (isMain) duplicates[rowKey].hasMainValue = true;
+
+                                    duplicates[rowKey].values.push(rowData);
+
+                                }
+
+                                else duplicates[rowKey] = {hasMainValue: isMain, values: [rowData]}
+
+                            }
+                        });
+
+                        Object.keys(duplicates).forEach(function (key) {
+
+                            if (duplicates[key].hasMainValue) {
+
+                                let mainValue = null;
+
+                                let rowArray = [];
+
+                                $.each(duplicates[key]['values'], function (index, value) {
+
+                                    if (value[0]['primary']) mainValue = value;
+
+                                    else {
+
+                                        let $newRow = $(value[1]).clone().css('color', '#777');
+
+                                        $newRow.find('td:eq(2)').click(function() {
+
+                                            window.open(self.paths.views.node.group + value[0].source, '_self')
+
+                                        });
+
+                                        rowArray.push($newRow);
+
+                                        $(value[1]).remove()
+
+                                    }
+
+                                });
+
+                                if (mainValue) {
+
+                                    let rowApi = table.DataTable().row(mainValue[1]);
+
+                                    $(mainValue[1]).find('td:eq(0)').html('').append(
+                                        $('<span>').html(mainValue[0].key),
+                                        spanFA.clone().addClass('fa-chevron-down float-right pt-1').off().click(function () {
+
+                                            if (rowApi.child.isShown()) {
+
+                                                $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
+
+                                                $(mainValue[1]).removeClass('font-weight-bold');
+
+                                                rowApi.child.hide()
+
+                                            }
+
+                                            else {
+
+                                                $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
+
+                                                $(mainValue[1]).addClass('font-weight-bold');
+
+                                                rowApi.child(rowArray).show();
+
+                                            }
+
+                                        })
+                                    );
+
+                                }
+
+                            }
+
+                        });
+
+                    }
                 });
+
+
 
             }
         },
@@ -437,37 +430,37 @@ Node.prototype.relationships = function (relation, $container) {
 
     let self = this;
 
-    self.fetchHtml('entityGrid.html', $container).then($element => {
+    let $grid = $('<div>').attr('id', relation + '_grid');
 
-        self.bindElement($element);
+    let reloadData = $gridContainer => {
 
-        let reloadData = $gridContainer => {
+        $gridContainer.DynaGrid('load');
 
-            $gridContainer.DynaGrid('load');
+        $('table.variable-table').DataTable().ajax.reload();
 
-            $('#variable_table').DataTable().ajax.reload();
+        $('#descendants_container').trigger('load');
 
-            $('#descendants_container').trigger('load');
+    };
 
-        };
+    $container.append($grid);
 
-        $element.find('.entity_grid').attr('id', relation + '_grid').DynaGrid({
+    $grid.DynaGrid({
             headerTag: '<div>',
             ajaxDataKey: 'nodes',
             showAddButton: true,
             showFilter: true,
             itemValueKey: 'name',
             showCount: true,
+            gridBodyTopMargin: 10,
+            gridBodyBottomMargin: 10,
             addButtonType: 'icon',
-            addButtonClass: 'btn btn-default btn-xs',
+            addButtonClass: 'btn-icon',
             addButtonTitle: 'Add ' + relation,
             maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
             ajaxUrl: self.apiPath + relation + '/?id=' + self.id,
             formatItem: function ($gridContainer, $gridItem) {
-
-                let id = $gridItem.data('id');
 
                 let name = $gridItem.data('name');
 
@@ -477,8 +470,8 @@ Node.prototype.relationships = function (relation, $container) {
                         window.open(self.paths.inventory + self.relationType[relation] + '/' + name + '/', '_self')
 
                     }),
-                    spanFA.clone().addClass('text-right fa-minus-circle')
-                        .css({float: 'right', margin: '.8rem 0'})
+                    spanFA.clone().addClass('fa-minus-circle')
+                        .css({'font-size': '15px', cursor: 'pointer', 'margin-left': 'auto', order: 2})
                         .attr('title', 'Remove')
                         .click(function () {
 
@@ -496,7 +489,7 @@ Node.prototype.relationships = function (relation, $container) {
             },
             addButtonAction: function ($gridContainer) {
 
-                self.selectionDialog({
+                self.gridDialog({
                     title: 'Select ' + relation,
                     type: 'many',
                     objectType: self.type,
@@ -519,7 +512,7 @@ Node.prototype.relationships = function (relation, $container) {
                 });
 
             }
-        });
+        //});
 
     });
 
@@ -529,74 +522,46 @@ Node.prototype.descendants = function (offset, $container) {
 
     let self = this;
 
-    self.fetchHtml('descendants.html', $container).then($element => {
-
-        self.bindElement($element);
-
-        let factor = 1;
+    self.getData('descendants', false, function (data) {
 
         let grids = {};
 
-        let load = () => {
+        let $gridContainer = $('<div>').attr('class', 'row');
 
-            self.getData('descendants', false, function (data) {
+        $container.html($gridContainer);
 
-                grids.host = data.host_descendants;
+        if (data.host_descendants.length > 0) grids.host = data.host_descendants;
 
-                grids.group = data.group_descendants;
+        if (data.group_descendants.length > 0) grids.group = data.group_descendants;
 
-                if (data.host_descendants.length > 0 && data.group_descendants.length > 0) {
+        Object.keys(grids).forEach(function(key) {
 
-                    $element.find('.col-md-12').attr('class', 'col-md-6');
+            let $grid =  $('<div>').attr('class', 'col').DynaGrid({
+                gridTitle: key.capitalize() + 's',
+                dataSource: 'array',
+                dataArray: grids[key],
+                headerTag: '<h6>',
+                showFilter: true,
+                showCount: true,
+                gridBodyClasses: 'inset-container scrollbar',
+                gridBodyBottomMargin: 10,
+                gridBodyTopMargin: 10,
+                maxHeight: window.innerHeight - offset,
+                columns: Math.ceil(sessionStorage.getItem('node_grid_columns') / Object.keys(grids).length),
+                formatItem: function (gridContainer, gridItem) {
 
-                    factor = 2;
+                    gridItem.click(function () {
+
+                        window.open(self.paths.views.node[key] + $(this).data('name') + '/', '_self')
+
+                    });
 
                 }
+            });
 
-                else $element.find('.col-md-6').attr('class', 'col-md-12');
-
-                for (let key in grids) {
-
-                    if (grids.hasOwnProperty(key) && grids[key].length > 0){
-
-                        $('#' + key + '-descendants-grid').DynaGrid({
-                            gridTitle: key.capitalize() + 's',
-                            dataSource: 'array',
-                            dataArray: grids[key],
-                            headerTag: '<h5>',
-                            showFilter: true,
-                            showCount: true,
-                            gridBodyClasses: 'inset-container scrollbar',
-                            truncateItemText: true,
-                            gridBodyBottomMargin: '20px',
-                            maxHeight: (window.innerHeight - offset),
-                            columns: Math.ceil(sessionStorage.getItem('node_grid_columns') / factor),
-                            formatItem: function (gridContainer, gridItem) {
-
-                                gridItem.click(function () {
-
-                                    window.open(self.paths.inventory + gridContainer.data('type') + '/' + $(this).data('name') + '/', '_self')
-
-                                });
-
-                            }
-                        });
-
-                    }
-
-                    else $('#' + key + '_descendants_grid').addClass('hidden')
-                }
-            })
-
-        };
-
-        $element.on('load', function () {
-
-            load()
+            $gridContainer.append($grid)
 
         });
-
-        load();
 
     })
 
@@ -606,49 +571,58 @@ Node.prototype.editVariable = function (variable, callback) {
 
     let self = this;
 
-    self.fetchHtml('editVariableDialog.html').then($element => {
+    let $dialog = self.confirmationDialog();
 
-        self.bindElement($element);
+    $dialog.find('.dialog-header').html( variable.id ? 'Edit variable' : 'Add variable');
 
-        variable.id && self.set('variable.id', variable.id);
+    $dialog.find('div.dialog-content').append(
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'key-input').html('Key'),
+            $('<input>').attr({id: 'key-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'variable.key'})
+        ),
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'value-input').html('Value'),
+            $('<textarea>').attr({id: 'value-input', class: 'textarea form-control form-control-sm', 'data-bind': 'variable.value'})
+        )
+    );
 
-        self.set('header', variable.id ? 'Edit variable' : 'Add variable');
+    $dialog.find('button.cancel-button').click(function () {
 
-        self.set('variable.key', variable.key);
+        self.set('variable.key', '');
 
-        self.set('variable.value', variable.value);
+        self.set('variable.value', '');
 
-        $element.find('.save-button').click(function() {
+        $dialog.dialog('close');
 
-            self.postData('save_var', true, () => {
+    });
 
-                callback && callback();
+    $dialog.find('button.confirm-button').click(function () {
 
-                variable.id && $element.dialog('close');
+        self.postData('save_var', true, () => {
 
-                self.set('variable.key', '');
+            callback && callback();
 
-                self.set('variable.value', '');
-
-                $element.find('[data-bindElement="key"]').focus();
-
-            });
-
-        });
-
-        $element.find('.cancel-button').click(function() {
+            variable.id && $dialog.dialog('close');
 
             self.set('variable.key', '');
 
             self.set('variable.value', '');
 
-            $element.dialog('close');
+            $dialog.find('[data-bind="key"]').focus();
 
         });
 
-        $element.dialog({closeOnEscape: false})
+    });
 
-    })
+    self.bindElement($dialog);
+
+    variable.id && self.set('variable.id', variable.id);
+
+    self.set('variable.key', variable.key);
+
+    self.set('variable.value', variable.value);
+
+    $dialog.dialog({closeOnEscape: false})
 
 };
 
@@ -656,45 +630,50 @@ Node.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    self.fetchHtml('copyVariablesDialog.html').then($element => {
+    let $dialog = self.notificationDialog();
 
-        $element.find('button.cancel-button').click(function () {
+    $dialog.find('.dialog-header').addClass('text-center mb-3').html('Select source type');
 
-            $element.dialog('close');
+    $dialog.find('div.dialog-content').append(
+        $('<div>').attr('class', 'row').append(
+            $('<div>').attr('class', 'col text-right').append(
+                $('<button>').attr('class', 'btn btn-light btn-sm node-button').data('type', 'host').html('Hosts')
+            ),
+            $('<div>').attr('class', 'col').append(
+                $('<button>').attr('class', 'btn btn-light btn-sm node-button').data('type', 'group').html('Groups')
+            )
+        )
+    );
 
+    $dialog.find('button.node-button').click(function () {
+
+        $dialog.dialog('close');
+
+        self.gridDialog({
+            title: 'Select node',
+            type: 'one',
+            objectType: $(this).data('type'),
+            url: self.paths.api.inventory + 'list/?type=' + $(this).data('type'),
+            ajaxDataKey: 'nodes',
+            itemValueKey: 'name',
+            action: function (selection, $dialog) {
+
+                self.source = selection;
+
+                self.postData('copy_vars', false, function (data) {
+
+                    $dialog.dialog('close');
+
+                    callback && callback(data)
+
+                })
+
+            }
         });
-
-        $element.find('button.node-button').click(function () {
-
-            $element.dialog('close');
-
-            self.selectionDialog({
-                title: 'Select node',
-                type: 'one',
-                objectType: $(this).data('type'),
-                url: self.paths.api.inventory + 'list/?type=' + $(this).data('type'),
-                ajaxDataKey: 'nodes',
-                itemValueKey: 'name',
-                action: function (selection, $dialog) {
-
-                    self.source = selection;
-
-                    self.postData('copy_vars', false, function (data) {
-
-                        $dialog.dialog('close');
-
-                        callback && callback(data)
-
-                    })
-
-                }
-            });
-
-        });
-
-        $element.dialog({width: 280});
 
     });
+
+    $dialog.dialog({width: 280});
 
 };
 
@@ -702,7 +681,7 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    self.fetchHtml('nodeSelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('selector_Node.html', $('section.container')).then($element => {
 
         self.bindElement($element);
 
@@ -734,9 +713,7 @@ Node.prototype.selector = function () {
 
         let addNode = () => {
 
-            let node = new Node({name: null, description: null, type: self.type});
-
-            node.edit(function () {
+            new Node({name: null, description: null, type: self.type}).edit(function () {
 
                 loadData()
 
@@ -747,36 +724,37 @@ Node.prototype.selector = function () {
         if (self.type === 'host') {
 
             if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = [
-                {class: 'col-md-2', title: 'Host', data: 'name'},
-                {class: 'col-md-1', title: 'Address', data: 'address'},
-                {class: 'col-md-2', title: 'Public address', data: 'public_address'},
-                {class: 'col-md-2', title: 'Instance Id', data: 'instance_id'},
-                {class: 'col-md-1', title: 'Type', data: 'instance_type'},
-                {class: 'col-md-1', title: 'Cores', data: 'cores'},
-                {class: 'col-md-1', title: 'Memory', data: 'memory'},
-                {class: 'col-md-1', title: 'Disc', data: 'disc'},
-                {class: 'col-md-1', title: '', defaultContent: ''},
+                {title: 'Host', data: 'name'},
+                {title: 'Address', data: 'address'},
+                {title: 'Public address', data: 'public_address'},
+                {title: 'Instance Id', data: 'instance_id'},
+                {title: 'Type', data: 'instance_type'},
+                {title: 'Cores', data: 'cores'},
+                {title: 'Memory', data: 'memory'},
+                {title: 'Disc', data: 'disc'},
+                {title: '', defaultContent: '', class: 'float-right', orderable: false},
             ];
 
             else columns = [
-                {class: 'col-md-2', title: 'Host', data: 'name'},
-                {class: 'col-md-6', title: 'Address', data: 'address'},
-                {class: 'col-md-1', title: 'Cores', data: 'cores'},
-                {class: 'col-md-1', title: 'Memory', data: 'memory'},
-                {class: 'col-md-1', title: 'Disc', data: 'disc'},
-                {class: 'col-md-1', title: '', defaultContent: ''}
+                {title: 'Host', data: 'name'},
+                {title: 'Address', data: 'address'},
+                {title: 'Cores', data: 'cores'},
+                {title: 'Memory', data: 'memory'},
+                {title: 'Disc', data: 'disc'},
+                {title: '', defaultContent: '', class: 'float-right', orderable: false}
             ];
         }
 
         else if (self.type === 'group') columns = [
-            {class: 'col-md-2', title: 'Group', data: 'name'},
-            {class: 'col-md-4', title: 'Description', data: 'description'},
-            {class: 'col-md-1', title: 'Members', data: 'members'},
-            {class: 'col-md-1', title: 'Parents', data: 'parents'},
-            {class: 'col-md-1', title: 'Children', data: 'children'},
-            {class: 'col-md-1', title: 'Variables', data: 'variables'},
-            {class: 'col-md-1', title: '', defaultContent: ''}
+            {title: 'Group', data: 'name'},
+            {title: 'Description', data: 'description'},
+            {title: 'Members', data: 'members'},
+            {title: 'Parents', data: 'parents'},
+            {title: 'Children', data: 'children'},
+            {title: 'Variables', data: 'variables'},
+            {title: '', defaultContent: '', class: 'float-right',  orderable: false}
         ];
+
 
         $table.DataTable({
             pageResize: true,
@@ -788,13 +766,13 @@ Node.prototype.selector = function () {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: '<span class="fa fa-plus fa-fw" title="Add '+ self.type + '"></span>',
+                    text: '<span class="fas fa-plus fa-fw" title="Add '+ self.type + '"></span>',
                     action: function () {
 
                         addNode()
 
                     },
-                    className: 'btn-xs btn-icon'
+                    className: 'btn-sm btn-icon'
                 }
             ],
             order: [[0, "asc"]],
@@ -811,7 +789,7 @@ Node.prototype.selector = function () {
                     });
 
                 if (node.editable) $(row).find('td:last').empty().append(
-                    self.tableBtn('fa fa-trash', 'Delete', function () {
+                    self.tableBtn('fas fa-trash', 'Delete', function () {
 
                         node.del(function () {
 
@@ -840,8 +818,7 @@ Node.prototype.selector = function () {
             itemValueKey: 'name',
             showFilter: true,
             truncateItemText: true,
-            headerBottomPadding: 20,
-            topAlignHeader: true,
+            gridBodyTopMargin: 10,
             maxHeight: window.innerHeight - sessionStorage.getItem('node_grid_offset'),
             columns: sessionStorage.getItem('node_grid_columns'),
             showAddButton: true,
@@ -874,17 +851,13 @@ Node.prototype.selector = function () {
 
         $('#facts_button').click(function () {
 
-            new Job({hosts: 'all'}).getFacts(function () {
-
-                loadData();
-
-            })
+            new Job({hosts: 'all'}).getFacts()
 
         });
 
         $('#delete_button').click(function () {
 
-            self.selectionDialog({
+            self.gridDialog({
                 title: 'Delete nodes',
                 type: 'many',
                 objectType: self.type,
@@ -929,6 +902,7 @@ Node.prototype.selector = function () {
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
         loadData()
+
 
     });
 

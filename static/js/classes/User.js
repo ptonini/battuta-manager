@@ -19,10 +19,11 @@ User.prototype.crud = {
     tabsId: 'user',
     table: {
         columns: [
-            {class: 'col-md-4', title: 'user', data: 'username'},
-            {class: 'col-md-3', title: 'date joined', data: 'date_joined'},
-            {class: 'col-md-3', title: 'last login', data: 'last_login'},
-            {class: 'col-md-2', title: 'superuser', data: 'is_superuser'}
+            {title: 'user', data: 'username', width: '50%'},
+            {title: 'date joined', data: 'date_joined', width: '15%'},
+            {title: 'last login', data: 'last_login', width: '15%'},
+            {title: 'superuser', data: 'is_superuser', width: '10%'},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
         ],
         rowCallback: function (row, data) {
 
@@ -36,10 +37,10 @@ User.prototype.crud = {
 
             });
 
-            let lastCell = $(row).find('td:eq(3)').prettyBoolean();
+            $(row).find('td:eq(3)').prettyBoolean();
 
-            if (!user.is_superuser) lastCell.append(
-                Battuta.prototype.tableBtn('fa fa-trash', 'Delete', function () {
+            if (!user.is_superuser) $(row).find('td:eq(4)').append(
+                Battuta.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
                     user.del(function () {
 
@@ -56,38 +57,25 @@ User.prototype.crud = {
 
         $container.empty();
 
-        self.fetchHtml('userForm.html', $container).then($element => {
+        $container.prev().remove();
 
-            $('[data-bind="timezone"]').timezones();
+        self.fetchHtml('form_User.html', $container).then($element => {
+
+            $element.find('[data-bind="timezone"]').timezones();
 
             self.bindElement($element);
 
             self.set('current_user', sessionStorage.getItem('user_name'));
 
-            $('#user_form').submit(function (event) {
+            $element.find('button.password-button').click(function () {
 
-                event.preventDefault();
-
-                self.save();
+                self.changePassword();
 
             });
 
-            $('#password_form').submit(function (event) {
+            $element.find('button.save-button').click(function () {
 
-                event.preventDefault();
-
-
-                if (self.current_password) {
-
-                    if (self.new_password && self.new_password === self.retype_pass) self.postData('chgpass');
-
-                    else $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
-
-                }
-
-                else $.bootstrapGrowl('Enter current user password', failedAlertOptions);
-
-                $(this).find('input').val('');
+                self.save();
 
             });
 
@@ -99,37 +87,27 @@ User.prototype.crud = {
             validator: function () {return true},
             generator: function (self, $container) {
 
-                self.fetchHtml('credentialsForm.html', $container).then($element => {
+                self.fetchHtml('form_Credentials.html', $container).then($element => {
 
                     self.bindElement($element);
 
-                    $element.submit(function (event) {
+                    $element.find('button.save-button').click(function () {
 
-                        event.preventDefault();
+                        self.postData('save_cred', true, function (data) {
 
-                        switch ($(document.activeElement).html()) {
+                            $('#credentials_selector').trigger('build', data.cred.id);
 
-                            case 'Save':
+                        });
 
-                                self.postData('save_cred', true, function (data) {
+                    });
 
-                                    $('#credentials_selector').trigger('build', data.cred.id);
+                    $element.find('button.delete-button').click(function () {
 
-                                });
+                        self.deleteAlert('delete_cred', function (data) {
 
-                                break;
+                            $('#credentials_selector').trigger('build', data.cred.id);
 
-                            case 'Delete':
-
-                                self.deleteAlert('delete_cred', function (data) {
-
-                                    $('#credentials_selector').trigger('build', data.cred.id);
-
-                                });
-
-                                break;
-
-                        }
+                        });
 
                     });
 
@@ -150,87 +128,92 @@ User.prototype.crud = {
             validator: function (self) {return !self.is_superuser},
             generator: function (self, $container) {
 
-                self.fetchHtml('entityGrid.html', $container).then($element => {
+                $container.append($('<div>').DynaGrid({
+                    headerTag: '<div>',
+                    showFilter: true,
+                    showAddButton: true,
+                    ajaxDataKey: 'groups',
+                    itemValueKey: 'name',
+                    addButtonTitle: 'Add to group',
+                    addButtonType: 'icon',
+                    addButtonClass: 'btn btn-icon btn-sm',
+                    showCount: true,
+                    gridBodyTopMargin: 10,
+                    gridBodyBottomMargin: 10,
+                    maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+                    columns: sessionStorage.getItem('user_grid_columns'),
+                    ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
+                    formatItem: function ($gridContainer, $gridItem) {
 
-                    $element.find('.entity_grid').DynaGrid({
-                        headerTag: '<div>',
-                        showFilter: true,
-                        showAddButton: true,
-                        ajaxDataKey: 'groups',
-                        itemValueKey: 'name',
-                        addButtonTitle: 'Add to group',
-                        addButtonType: 'icon',
-                        addButtonClass: 'btn btn-default btn-xs',
-                        showCount: true,
-                        gridBodyBottomMargin: '20px',
-                        maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
-                        columns: sessionStorage.getItem('user_grid_columns'),
-                        ajaxUrl: self.apiPath + 'groups/?username=' + self.username,
-                        formatItem: function ($gridContainer, $gridItem) {
+                        let name = $gridItem.data('value');
 
-                            let name = $gridItem.data('value');
+                        $gridItem.removeClass('text-truncate').html('').append(
+                            $('<span>').append(name).click(function () {
 
-                            $gridItem.removeClass('truncate-text').html('').append(
-                                $('<span>').append(name).click(function () {
+                                window.open(self.paths.views.group + name, '_self')
 
-                                    window.open(self.paths.views.group + name, '_self')
+                            }),
+                            spanFA.clone().addClass('fa-minus-circle')
+                                .css({'font-size': '15px', cursor: 'pointer', 'margin-left': 'auto', order: 2})
+                                .attr('title', 'Remove')
+                                .click(function () {
 
-                                }),
-                                spanFA.clone().addClass('text-right fa-minus-circle')
-                                    .css({float: 'right', margin: '7px 0', 'font-size': '15px'})
-                                    .attr('title', 'Remove')
-                                    .click(function () {
+                                    self.selection = [$gridItem.data()];
 
-                                        self.selection = [$gridItem.data()];
-
-                                        self.postData('remove_groups', false, function () {
-
-                                            $gridContainer.DynaGrid('load')
-
-                                        });
-
-                                    })
-                            )
-
-                        },
-                        addButtonAction: function ($gridContainer) {
-
-                            self.selectionDialog({
-                                title: 'Select groups',
-                                type: 'many',
-                                objectType: 'group',
-                                url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
-                                ajaxDataKey: 'groups',
-                                itemValueKey: 'name',
-                                action: function (selection) {
-
-                                    self.selection = selection;
-
-                                    self.postData('add_groups', false, function () {
+                                    self.postData('remove_groups', false, function () {
 
                                         $gridContainer.DynaGrid('load')
 
                                     });
 
-                                }
-                            });
+                                })
+                        )
 
-                        }
-                    });
+                    },
+                    addButtonAction: function ($gridContainer) {
 
-                });
+                        self.gridDialog({
+                            title: 'Select groups',
+                            type: 'many',
+                            objectType: 'group',
+                            url: self.apiPath + 'groups/?reverse=true&username=' + self.username,
+                            ajaxDataKey: 'groups',
+                            itemValueKey: 'name',
+                            action: function (selection, $dialog) {
+
+                                self.selection = selection;
+
+                                self.postData('add_groups', false, function () {
+
+                                    $gridContainer.DynaGrid('load');
+
+                                    $dialog.dialog('close')
+
+                                });
+
+                            }
+                        });
+
+                    }
+
+                }));
 
             }
 
         }
     },
     callbacks: {
-        addCallback: function (data) {
+        add: function (data) {
 
             window.open(data.user.username + '/', '_self');
 
         },
-        deleteCallback: function () {
+        edit: function (data) {
+
+            window.open(data.user.username + '/', '_self');
+
+        },
+        delete: function () {
 
             window.open(User.prototype.paths.selector.user , '_self')
 
@@ -277,40 +260,111 @@ User.prototype.loadParam = function (param) {
 
 };
 
+User.prototype.changePassword = function (callback) {
+
+    let self = this;
+
+    let $dialog = self.confirmationDialog();
+
+    $dialog.find('.dialog-header').html('Change password');
+
+    $dialog.find('div.dialog-content').append(
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'current-pass-input').append(
+                'Current password (',
+                $('<span>').attr('data-bind', 'current_user'),
+                ')'
+            ),
+            $('<input>').attr({id: 'current-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'current_password', autocomplete: 'new-password'})
+        ),
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'new-pass-input').html('New password'),
+            $('<input>').attr({id: 'new-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'new_password', autocomplete: 'new-password'})
+        ),
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
+            $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
+        ),
+    );
+
+    $dialog.find('button.cancel-button').click(function () {
+
+        $dialog.dialog('close');
+
+    });
+
+    $dialog.find('button.confirm-button').click(function () {
+
+        if (self.current_password) {
+
+            if (self.new_password && self.new_password === self.retype_pass) self.postData('chgpass', true, function() {
+
+                $dialog.dialog('close').find('input').val('')
+
+            });
+
+            else self.statusAlert('danger', 'Passwords do not match');
+
+        }
+
+        else self.statusAlert('danger', 'Enter current user password');
+
+    });
+
+    self.bindElement($dialog);
+
+    $dialog.dialog()
+
+};
+
 User.prototype.edit = function (callback) {
 
     let self = this;
 
-    self.fetchHtml('userDialog.html').then($element => {
+    let $dialog = self.confirmationDialog();
 
-        self.bindElement($element);
+    $dialog.find('.dialog-header').html('Add user');
 
-        $element.dialog({
-            buttons: {
-                Save: function() {
+    $dialog.find('div.dialog-content').append(
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'username-input').html('Username'),
+            $('<input>').attr({id: 'username-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'username'})
+        ),
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'password-input').html('Password'),
+            $('<input>').attr({id: 'password-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'password', autocomplete: 'new-password'})
+        ),
+        $('<div>').attr('class', 'form-group').append(
+            $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
+            $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
+        ),
+    );
 
-                    self.timezone = sessionStorage.getItem('default_timezone');
+    $dialog.find('button.cancel-button').click(function () {
 
-                    if (self.password !== self.retype_pass) $.bootstrapGrowl('Passwords do not match', failedAlertOptions);
-
-                    self.save(data => {
-
-                        $(this).dialog('close');
-
-                        callback && callback(data);
-
-                    });
-
-                },
-                Cancel: function() {
-
-                    $(this).dialog('close');
-
-                }
-            }
-        })
+        $dialog.dialog('close');
 
     });
+
+    $dialog.find('button.confirm-button').click(function () {
+
+        self.timezone = sessionStorage.getItem('default_timezone');
+
+        if (self.password !== self.retype_pass) self.statusAlert('danger', 'Passwords do not match');
+
+        else self.save(data => {
+
+            $dialog.dialog('close');
+
+            callback && callback(data);
+
+        });
+
+    });
+
+    self.bindElement($dialog);
+
+    $dialog.dialog()
 
 };
 

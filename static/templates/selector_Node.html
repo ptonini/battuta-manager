@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-md-12">
+        <h4 data-bind="crud.titlePlural" class="text-capitalize"></h4>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#table_tab">
+                    <span class="fas fa-fw fa-list"></span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a  class="nav-link" data-toggle="tab" href="#grid_tab">
+                    <span class="fas fa-fw fa-th"></span>
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content card shadow p-3 mt-2">
+            <div class="tab-pane mb-2 in active" id="table_tab">
+                <table id="node_table" class="table table-condensed table-hover table-striped"></table>
+            </div>
+            <div class="tab-pane mb-2" id="grid_tab">
+                <div id="node_grid"></div>
+            </div>
+            <div class="tab-footer">
+                <button id="download_button" class="btn btn-light btn-sm btn-icon" type="button">
+                    <span class="fas fa-fw fa-download" title="Export to CSV"></span>
+                </button>
+                <button id="facts_button" class="btn btn-light btn-sm btn-icon" type="button">
+                    <span class="fas fa-fw fa-clipboard-list" title="Gather facts"></span>
+                </button>
+                <button id="delete_button" class="btn btn-light btn-sm btn-icon" type="button">
+                    <span class="fas fa-fw fa-trash" title="Delete nodes"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,9 +8,9 @@
 
         function _formatGrid($gridBody, opts) {
 
-            if (opts.showCount) $('#' + opts.gridId + '_count').html($gridBody.find('.dynagrid-item:not(".hidden")').length);
+            if (opts.showCount) $('#' + opts.gridId + '_count').html($gridBody.find('.dynagrid-item:not(:hidden)').length);
 
-            opts.checkered && $gridBody.find('.dynagrid-item:not(".hidden")').each(function (index) {
+            opts.checkered && $gridBody.find('.dynagrid-item:not(:hidden)').each(function (index) {
 
                 let indexIsEven = (index % 2 === 0);
 
@@ -52,7 +52,7 @@
 
                 opts.hideBodyIfEmpty && $gridBody.closest('div.row').hide();
 
-                opts.showCount && $('#' + opts.gridTitle + '_count').addClass('hidden')
+                opts.showCount && $('#' + opts.gridTitle + '_count').hide()
             }
 
             else {
@@ -61,18 +61,24 @@
 
                 $gridBody.closest('div.row').show();
 
-                if (opts.showCount) $('#' + opts.gridTitle + '_count').removeClass('hidden');
+                if (opts.showCount) $('#' + opts.gridTitle + '_count').show();
 
                 $.each(opts.dataArray, function (index, itemData) {
 
-                    let $item = $('<div>').addClass('dynagrid-item ' + opts.gridItemClasses);
+                    let $item = $('<div>').attr('class', 'dynagrid-item ' + opts.gridItemClasses);
+
+                    let $itemChild = $('<span>');
+
+                    opts.truncateItemText && $itemChild.attr('class', 'text-truncate');
 
                     if (Object.prototype.toString.call(itemData) === '[object Array]') {
 
                         $item
-                            .html(itemData[0])
                             .attr('title', itemData[0])
-                            .data({value: itemData[0], id: itemData[1]});
+                            .data({value: itemData[0], id: itemData[1]})
+                            .html(
+                                $itemChild.html(itemData[0])
+                            )
 
                     }
 
@@ -83,6 +89,9 @@
                             .attr('title', itemData[opts.itemTitleKey ? opts.itemTitleKey : opts.itemValueKey])
                             .css('cursor', opts.itemHoverCursor)
                             .data(itemData)
+                            .html(
+                                $itemChild.html(itemData[opts.itemValueKey])
+                            )
                     }
 
                     else throw '- invalid item data type';
@@ -92,8 +101,6 @@
                         _toggleItemSelection($gridBody, $item)
 
                     });
-
-                    opts.truncateItemText && $item.addClass('truncate-text');
 
                     opts.formatItem($gridContainer, $item);
 
@@ -160,9 +167,9 @@
 
             let $toggleAll = $('#' + opts.gridId + '_toggle_all');
 
-            let visibleItemCount = gridBody.children('.dynagrid-item:not(".hidden")').length;
+            let visibleItemCount = gridBody.children('.dynagrid-item:not(:hidden)').length;
 
-            let hiddenItemCount = gridBody.children('.toggle-on:not(".hidden")').length;
+            let hiddenItemCount = gridBody.children('.toggle-on:not(:hidden)').length;
 
             if (gridBody.children('.dynagrid-item').length !== 0) {
 
@@ -215,48 +222,54 @@
 
             let $gridBody = $('<div>')
                 .attr({class: 'dynagrid-body', id: opts.gridId + '_grid_body'})
-                .css({
-                    'margin-bottom': opts.gridBodyBottomMargin,
-                    'margin-top': opts.gridBodyTopMargin,
-                    'grid-template-columns': 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)',
+                .css('grid-template-columns', 'repeat(' + opts.columns + ', ' + 100 / opts.columns+ '%)');
 
-                });
-
-            let $gridOuterBody = $('<div>').attr('class', 'dynagrid-outer-body ' + opts.gridBodyClasses).append($gridBody);
+            let $gridOuterBody = $('<div>')
+                .attr('class', 'dynagrid-outer-body ' + opts.gridBodyClasses)
+                .css({'margin-bottom': opts.gridBodyBottomMargin, 'margin-top': opts.gridBodyTopMargin,})
+                .append($gridBody);
 
             let $searchBox = $('<div>')
-                .attr('class', 'col-md-6 form-inline center-align dynagrid-search text-right')
+                .attr('class', 'col')
                 .append(
-                    $('<label>').css({'font-weight': 'normal'}).append(
-                        'Search:',
-                        $('<input>')
-                            .attr({class: 'form-control input-sm dynagrid-search ' + opts.searchBoxClasses, type: 'search'})
-                            .keyup(function () {
+                    $('<div>').attr('class', 'form-inline float-right').append(
+                        $('<label>').append(
+                            $('<span>').attr('class', 'dynagrid-search-label').html('Search:'),
+                            $('<input>')
+                                .attr({class: 'form-control form-control-sm dynagrid-search ' + opts.searchBoxClasses, id: opts.gridId + '_search'})
+                                .keyup(function () {
 
-                                let pattern = $(this).val();
+                                    let pattern = $(this).val();
 
-                                $gridBody.children('div.dynagrid-item').each(function () {
+                                    $gridBody.children('div.dynagrid-item').each(function () {
 
-                                    $(this).html().indexOf(pattern) >= 0 ? $(this).removeClass('hidden') : $(this).addClass('hidden');
+                                        let data = $(this).data();
 
-                                });
+                                        let value;
 
-                                _formatGrid($gridBody, opts)
+                                        if (Object.prototype.toString.call(data) === '[object Array]') value = data[0];
 
-                            })
+                                        else if (Object.prototype.toString.call(data) === '[object Object]') value = data[opts.itemValueKey];
+
+                                        value.indexOf(pattern) >= 0 ? $(this).show() : $(this).hide();
+
+                                    });
+
+                                    _formatGrid($gridBody, opts)
+
+                                })
+                        ),
                     )
                 );
 
             $gridContainer.empty().addClass('dynagrid-container').append(
-                $('<div>').attr('class', 'row row-eq-height').css('min-height', '4rem').append(
-                    $('<div>').attr('class', 'col-md-6').append($gridHeader)
+                $('<div>').attr('class', 'row').append(
+                    $('<div>').attr('class', 'col').append($gridHeader)
                 ),
                 $('<div>').attr('class', 'row').append(
-                    $('<div>').attr('class', 'col-md-12').append($gridOuterBody)
+                    $('<div>').attr('class', 'col-12').append($gridOuterBody)
                 )
             );
-
-            opts.topAlignHeader && $gridHeader.addClass('top-align');
 
             opts.gridTitle && $gridHeader.append(
                 $('<span>').addClass('dynagrid-title').append(opts.gridTitle),
@@ -265,9 +278,9 @@
             if (opts.showAddButton) {
 
                 let buttons = {
-                    icon: $('<a>')
-                        .attr({class: 'btn btn-default btn-xs dynagrid-btn ' + opts.addButtonClass, title: opts.addButtonTitle})
-                        .html($('<span>').attr('class', 'fa fa-plus fa-fw')),
+                    icon: $('<button>')
+                        .attr({class: 'btn btn-sm dynagrid-btn ' + opts.addButtonClass, title: opts.addButtonTitle})
+                        .html($('<span>').attr('class', 'fas fa-plus fa-fw')),
                     text: $('<button>')
                         .attr('class', 'dynagrid-btn ' + opts.addButtonClass)
                         .html(opts.addButtonTitle),
@@ -284,7 +297,7 @@
                 $('<button>')
                     .attr({
                         id: opts.gridId + '_toggle_all',
-                        class: 'btn btn-default btn-xs btn-icon',
+                        class: 'btn btn-sm btn-icon',
                         title: 'Select all'
                     })
                     .data('add_class', true)
@@ -304,8 +317,8 @@
                     }),
                 $('<button>')
                     .css('margin-right', '1rem')
-                    .attr({class: 'btn btn-default btn-xs btn-icon', title: 'Invert selection'})
-                    .html($('<span>').attr('class', 'fa fa-adjust fa-fw'))
+                    .attr({class: 'btn btn-sm btn-icon', title: 'Invert selection'})
+                    .html($('<span>').attr('class', 'fas fa-adjust fa-fw'))
                     .click(function (event) {
 
                         event.preventDefault();
@@ -319,28 +332,16 @@
             );
 
             opts.showCount && $gridHeader.append(
-                $('<span>').attr({id: opts.gridId + '_count', class: 'badge dynagrid-counter'})
+                $('<span>').attr({id: opts.gridId + '_count', class: 'badge badge-pill badge-secondary dynagrid-counter'})
             );
 
-            if (opts.showFilter) {
+            opts.showFilter && $gridHeader.parent().after($searchBox);
 
-                $gridHeader.parent().after($searchBox);
+            opts.minHeight && $gridOuterBody.css('min-height', opts.minHeight + 'px');
 
-                if (opts.headerTag === '<div>') {
+            opts.maxHeight && $gridOuterBody.css('max-height', opts.maxHeight + 'px');
 
-                    $searchBox.find('label').css('margin-bottom', '5px');
-
-                    $searchBox.removeClass('center-align');
-
-                }
-
-            }
-
-            if (opts.minHeight) $gridOuterBody.css('min-height', opts.minHeight + 'px');
-
-            if (opts.maxHeight) $gridOuterBody.css('max-height', opts.maxHeight + 'px');
-
-            if (opts.buildNow) _load($gridContainer, $gridBody, opts);
+            opts.buildNow && _load($gridContainer, $gridBody, opts);
 
         }
 
@@ -366,7 +367,7 @@
 
                     let selection = [];
 
-                    $gridBody.children('.toggle-on:not(".hidden")').each(function () {
+                    $gridBody.children('.toggle-on:not(:hidden)').each(function () {
 
                         selection.push(key ? $(this).data(key) : $(this).data());
 
@@ -414,14 +415,13 @@
         loadCallback: function(gridContainer) {},
         formatItem: function(gridContainer, gridItem) {},
         addButtonAction: function(gridContainer, addButton) {},
-        headerTag: '<h4>',
+        headerTag: '<h5>',
         gridTitle: null,
         showCount: false,
         showSelectAll: false,
         showAddButton: false,
         addButtonClass: null,
         addButtonTitle: null,
-        topAlignHeader: false,
         addButtonType: 'icon',
         gridBodyTopMargin: 0,
         gridBodyBottomMargin: 0,

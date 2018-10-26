@@ -1,0 +1,31 @@
+<div class="row">
+    <div class="col">
+        <div class="d-flex align-items-center">
+            <h4>
+                <small data-bind="crud.type"></small>
+                <span class="mr-3" data-bind="name"></span>
+            </h4>
+            <div class="mb-2">
+                <button id="edit_button" class="btn btn-sm btn-icon" title="Edit">
+                    <span class="fas fa-fw fa-pencil-alt"></span>
+                </button>
+                <button id="delete_button" class="btn btn-sm btn-icon" title="Delete">
+                    <span class="fas fa-fw fa-trash"></span>
+                </button>
+            </div>
+        </div>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#info_tab">Info</a>
+            </li>
+        </ul>
+        <div class="tab-content card shadow p-3 mt-2">
+            <div class="tab-pane active" id="info_tab">
+                <h4 data-bind="description"></h4>
+                <div id="info_container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

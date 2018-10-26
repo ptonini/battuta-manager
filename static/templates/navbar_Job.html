@@ -1,0 +1,34 @@
+<div class="container">
+    <a class="navbar-brand mr-auto job-navbar">
+        <span class="mr-3" data-bind="name"></span>
+        <small data-bind="status"></small>
+        <span id="job_cog" class="fas fa-cog fa-spin fa-fw fa-xs"></span>
+    </a>
+    <ul class="navbar-nav navbar-right">
+        <li class="nav-item mr-1">
+            <button id="cancel_button" class="nav-link btn btn-icon" title="Cancel">
+                <span class="fas fa-fw fa-times text-danger"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button id="rerun_button" class="nav-link btn btn-icon" title="Execute job again">
+                <span class="fas fa-fw fa-redo-alt"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button id="stats_button" class="nav-link btn btn-icon" title="Statistics">
+                <span class="fas fa-fw fa-list"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button id="print_button" class="nav-link btn btn-icon" title="Print">
+                <span class="fas fa-fw fa-print"></span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button id="scroll_button" data-bind="auto_scroll" class="nav-link btn btn-icon" title="Auto scroll">
+                <span class="fas fa-fw fa-angle-double-down"></span>
+            </button>
+        </li>
+    </ul>
+</div>

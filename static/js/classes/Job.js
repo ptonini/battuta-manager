@@ -18,17 +18,17 @@ Job.prototype.crud = {
     table: {
         ajax: {url: Job.prototype.apiPath + 'list/'},
         columns:[
-            {class: 'col-md-2', title: 'run data'},
-            {class: 'col-md-2', title: 'user'},
-            {class: 'col-md-2', title: 'name'},
-            {class: 'col-md-2', title: 'hosts/subset'},
-            {class: 'col-md-2', title: 'status'}
+            {title: 'run data'},
+            {title: 'user'},
+            {title: 'name'},
+            {title: 'hosts/subset'},
+            {title: 'status'}
         ],
         rowCallback:  function (row, data) {
 
-            $(row).css({color: Job.prototype.states[data[4]].color, cursor: 'pointer'}).click(function () {
+            $(row).addClass(Job.prototype.states[data[4]]).css('cursor', 'pointer').click(function () {
 
-                self.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
+                Battuta.prototype.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
 
             })
         },
@@ -38,27 +38,27 @@ Job.prototype.crud = {
         serverSide: true,
         processing: true,
         paging: true,
-        dom: null,
-        buttons: null
-    },
+        dom: "<'row'<'col-12'l><'col-12'tr>><'row'<'col-4' i><'col-8 text-right'p>>"
+    }
+
 };
 
 Job.prototype.states = {
-    starting: {color: 'blue'},
-    running: {color: 'blue'},
-    finished: {color: 'green'},
-    'finished with errors': {color: 'orange'},
-    failed: {color: 'red'},
-    canceled: {color: 'gray'}
+    starting: 'text-primary',
+    running: 'text-primary',
+    finished: 'text-success',
+    'finished with errors': 'text-warning',
+    failed: 'text-danger',
+    canceled: 'text-secondary'
 
 };
 
 Job.prototype.taskStates = {
-    unreachable: {color: 'gray'},
-    changed: {color: 'orange'},
-    ok: {color: 'green'},
-    error: {color: 'red'},
-    failed: {color: 'red'}
+    unreachable: 'text-secondary',
+    changed: 'text-warning',
+    ok: 'text-success',
+    error: 'text-danger',
+    failed: 'text-danger'
 };
 
 Job.prototype.loadParam = function (param) {
@@ -117,46 +117,21 @@ Job.prototype.stateColor = function () {
 
     let self = this;
 
-    return self.status ? self.states[self.status].color : 'black'
+    return self.status ? self.states[self.status] : 'text-dark'
 
 };
 
-Job.prototype.getFacts = function (callback) {
+Job.prototype.getFacts = function () {
 
     let self = this;
 
-    return new User({username: sessionStorage.getItem('user_name')}).defaultCred(function (data) {
+    new User({username: sessionStorage.getItem('user_name')}).defaultCred(function (data) {
 
         self.loadParam({type: 'gather_facts', hosts: self.hosts, cred: data.cred});
 
-        self.run().then(() => {
-
-            setTimeout(function () {
-
-                let intervalId = setInterval(function() {
-
-                    self.refresh(false, function (data) {
-
-                        if (!data.job.is_running) {
-
-                            clearInterval(intervalId);
-
-                            callback && callback()
-
-                        }
-
-                    })
-
-                }, 1000)
-
-            },1000)
-
-
-
-        })
+        self.run()
 
     });
-
 
 };
 
@@ -164,85 +139,89 @@ Job.prototype.run = function (sameWindow) {
 
     let self = this;
 
-    return self.fetchHtml('passwordDialog.html').then($element => {
+    let askUser =  self.cred.id === 0;
 
-        self.bindElement($element);
+    let askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
 
-        self.cred.username && self.set('remote_user', self.cred.username);
+    let askSudoUser = false;
 
-        let askUser =  self.cred.id === 0;
+    let askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
 
-        let askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
+    let post = () => {
 
-        let askSudoUser = false;
+        self.cred = self.cred.id;
 
-        let askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
+        self.postData('run', true, function (data) {
 
-        let post = () => {
+            self.loadParam(data.job);
 
-            self.cred = self.cred.id;
+            let jobUrl = self.paths.views.job + self.id + '/';
 
-            self.postData('run', true, function (data) {
+            if (sameWindow) window.open(jobUrl, '_self');
 
-                self.loadParam(data.job);
+            else {
 
-                let jobUrl = self.paths.views.job + self.id + '/';
+                let windowTitle = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
 
-                if (sameWindow) window.open(jobUrl, '_self');
+                self.popupCenter(jobUrl, windowTitle, 1000);
 
-                else {
+            }
 
-                    let windowTitle = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
+            return Promise.resolve();
 
-                    self.popupCenter(jobUrl, windowTitle, 1000);
+        });
 
-                }
+    };
 
-                return Promise.resolve();
+    if (askUser || askUserPass || askSudoUser || askSudoPass) {
+
+        self.fetchHtml('form_JobPasswords.html').then($element => {
+
+            self.bindElement($element);
+
+            let $dialog = self.confirmationDialog();
+
+            $dialog.find('.dialog-header').remove();
+
+            $dialog.find('div.dialog-content').append($element);
+
+            self.cred.username && self.set('remote_user', self.cred.username);
+
+            askUser || $element.find('#username_form_group').hide();
+
+            askUserPass || $element.find('#password_form_group').hide();
+
+            askSudoUser || $element.find('#sudo_user_form_group').hide();
+
+            askSudoPass || $element.find('#sudo_pass_form_group').hide();
+
+            $dialog.find('button.confirm-button').click(function () {
+
+                $dialog.dialog('close');
+
+                post(sameWindow)
 
             });
 
-        };
+            $dialog.find('button.cancel-button').click(function () {
 
-        if (askUser || askUserPass || askSudoUser || askSudoPass) {
+                $dialog.dialog('close');
 
-            $element.find('#username_form_group').toggleClass('hidden', (!askUser));
+            });
 
-            $element.find('#password_form_group').toggleClass('hidden', (!askUserPass));
-
-            $element.find('#sudo_user_form_group').toggleClass('hidden', (!askSudoUser));
-
-            $element.find('#sudo_pass_form_group').toggleClass('hidden', (!askSudoPass));
-
-            $element
-                .dialog({
-                    width: '360',
-                    buttons: {
-                        Run: function () {
-
-                            $(this).dialog('close');
-
-                            post(sameWindow)
-
-                        },
-                        Cancel: function () {
-
-                            $(this).dialog('close');
-
-                        }
-                    }
-                })
+            $dialog
+                .dialog({width: '360'})
                 .keypress(function (event) {
 
-                    if (event.keyCode === 13) $('.ui-button-text:contains("Run")').parent('button').click()
+                    if (event.keyCode === 13) $dialog.find('button.confirm-button').click()
 
                 });
 
-        }
+        });
 
-        else post(sameWindow)
+    }
 
-       });
+    else post(sameWindow);
 
 };
 
@@ -250,58 +229,54 @@ Job.prototype.statistics = function (modal) {
 
     let self = this;
 
-    return self.fetchHtml('jobStatistics.html').then($element => {
+    let $table = self.tableTemplate();
 
-        let tableOptions = {
-            paging: false,
-            filter: false,
-            autoWidth: false,
-            data: self.stats,
-            columns: [
-                {class: 'col-md-3', title: 'host'},
-                {class: 'col-md-1', title: 'ok'},
-                {class: 'col-md-1', title: 'changed'},
-                {class: 'col-md-1', title: 'dark'},
-                {class: 'col-md-1', title: 'failures'},
-                {class: 'col-md-1', title: 'skip'}
-            ]
-        };
+    let tableOptions = {
+        paging: false,
+        filter: false,
+        dom: "<'row'<'col-12'tr>>",
+        autoWidth: false,
+        data: self.stats,
+        columns: [
+            {title: 'host'},
+            {title: 'ok'},
+            {title: 'changed'},
+            {title: 'dark'},
+            {title: 'failures'},
+            {title: 'skip'}
+        ]
+    };
 
-        if (modal) {
+    if (modal) {
 
-            tableOptions.scrollY = '360px';
+        let $dialog = self.notificationDialog();
 
-            tableOptions.scrollCollapse = true;
+        $dialog.find('.dialog-header').html('Statistics');
 
-            $element.find('table').DataTable(tableOptions);
+        $dialog.find('.dialog-content').append($table);
 
-            $('<div>').addClass('large_dialog').append($element)
-                .dialog({
-                    width: '700px',
-                    buttons: {
-                        Close: function () {
+        tableOptions.scrollY = '360px';
 
-                            $(this).dialog('close')
+        tableOptions.scrollCollapse = true;
 
-                        }
-                    }
-                });
+        $table.DataTable(tableOptions);
 
-        }
+        $dialog.dialog({width: '700px'});
 
-        else {
+    }
 
-            $element.find('table').DataTable(tableOptions);
+    else {
 
-            $('#stats_table_container').append($element);
+        $table.DataTable(tableOptions);
 
-        }
+        $('.statistics-container').append(
+            $('<h5>').html('Statistics'),
+            $table
+        );
 
-        $element.find('table').DataTable().columns.adjust().draw();
+    }
 
-        return $element
-
-    });
+    $table.DataTable().columns.adjust().draw();
 
 };
 
@@ -311,13 +286,15 @@ Job.prototype.view = function () {
 
     self.refresh(false, function () {
 
+        new Preferences().load();
+
         $(document).find('title').text(self.name);
 
-        self.fetchHtml('jobNavBar.html', $('#navbar_container')).then($element => {
+        self.fetchHtml('navbar_Job.html', $('nav.navbar')).then($element => {
 
             self.bindElement($element);
 
-            $element.find('[data-bindElement="status"]').css('color', self.stateColor());
+            $element.find('[data-bind="status"]').addClass(self.stateColor());
 
             let $jobCog = $element.find('#job_cog');
 
@@ -356,35 +333,39 @@ Job.prototype.view = function () {
 
             let $printBtn = $element.find('#print_button').click(function () {
 
-                self.statistics().then($element => {
+                self.statistics();
 
-                    let $resultContainer = $('.result-container');
+                let $resultContainer = $('.result-container');
 
-                    let $playbookOnly = $('.playbook-only');
+                let $taskContainers = $('.task-table-container');
 
-                    let pageTitle = $(document).find('title').text();
+                let $playbookOnly = $('.playbook-only');
 
-                    $resultContainer.css('height', 'auto');
+                let pageTitle = $(document).find('title').text();
 
-                    $playbookOnly.addClass('hidden-print');
+                $resultContainer.css('height', 'auto');
 
-                    // Adjust windows for printing
-                    document.title = pageTitle.replace('.yml', '');
+                $taskContainers.removeClass('shadow');
 
-                    // Open print window
-                    window.print();
+                $playbookOnly.addClass('hidden-print');
 
-                    $element.remove();
+                // Adjust windows for printing
+                document.title = pageTitle.replace('.yml', '');
 
-                    $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
+                // Open print window
+                window.print();
 
-                    $playbookOnly.removeClass('hidden-print');
+                $('.statistics-container').empty();
 
-                    // Adjust windows for printing
+                $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
 
-                    document.title = pageTitle;
+                $taskContainers.addClass('shadow');
 
-                });
+                $playbookOnly.removeClass('hidden-print');
+
+                // Adjust windows for printing
+
+                document.title = pageTitle;
 
             });
 
@@ -400,7 +381,7 @@ Job.prototype.view = function () {
 
                 let intervalId = setInterval(function () {
 
-                    $element.find('[data-bindElement="status"]').css('color', self.stateColor());
+                    $element.find('[data-bind="status"]').addClass(self.stateColor());
 
                     if (!self.is_running) {
 
@@ -440,7 +421,7 @@ Job.prototype.view = function () {
 
         });
 
-        self.fetchHtml('jobView.html').then($element => {
+        self.fetchHtml('view_Job.html').then($element => {
 
             let $jobContainer = $element.find('.job-container');
 
@@ -456,7 +437,7 @@ Job.prototype.view = function () {
 
             let buildResults = () => {
 
-                self.type === 'adhoc' && $('.playbook-only').css('color', 'transparent');
+                self.type === 'adhoc' && $('.playbook-only').remove();
 
                 $.each(self.plays, (index, play) => {
 
@@ -473,7 +454,7 @@ Job.prototype.view = function () {
                         $resultContainer.append(playContainers[play.id]);
 
                         if (play.message) $resultContainer.append(
-                            $('<pre>').attr('class', 'text-danger').html(play.message)
+                            $('<pre>').attr('class', 'text-danger my-4 font-weight-bold').html(play.message)
                         );
 
                     }
@@ -493,30 +474,28 @@ Job.prototype.view = function () {
                                     taskContainers[task.id].find('table').DataTable({
                                         paginate: false,
                                         searching: false,
-                                        responsive: true,
+                                        dom: "<'row'<'col-12'tr>>",
                                         info: false,
                                         ajax: {
                                             url: self.apiPath + 'get_task/?id=' + self.id + '&task_id=' + task.id,
                                             dataSrc: 'results'
                                         },
                                         columns: [
-                                            {class: 'col-md-3', title: 'host', data: 'host'},
-                                            {class: 'col-md-2', title: 'status', data: 'status'},
-                                            {class: 'col-md-7', title: 'message', data: 'message'}
+                                            {title: 'host', data: 'host'},
+                                            {title: 'status', data: 'status'},
+                                            {title: 'message', data: 'message'}
                                         ],
                                         rowCallback: function (row, result) {
 
                                             let rowApi = this.DataTable().row(row);
 
-                                            $(row).css('color', self.taskStates[result.status].color);
-
-                                            //if (!task.is_running || !self.is_running) {
+                                            $(row).addClass(self.taskStates[result.status]);
 
                                             $(row).css('cursor', 'pointer').off().click(function () {
 
                                                 if (rowApi.child.isShown()) {
 
-                                                    $(row).css('font-weight', 'normal');
+                                                    $(row).removeClass(' font-weight-bold');
 
                                                     rowApi.child.hide()
 
@@ -529,20 +508,18 @@ Job.prototype.view = function () {
                                                     self.getData('get_result', true, function (data) {
 
                                                         let jsonContainer = $('<div>')
-                                                            .attr('class', 'well')
+                                                            .attr('class', 'well inset-container')
                                                             .JSONView(data.result.response, {collapsed: true});
 
                                                         rowApi.child(jsonContainer).show();
 
-                                                        $(row).css('font-weight', 'bold').next().attr('class', 'child_row')
+                                                        $(row).addClass('font-weight-bold').next().attr('class', 'child_row ')
 
                                                     });
 
                                                 }
 
                                             })
-                                            //}
-
 
                                         },
                                         drawCallback: function () {
@@ -604,12 +581,10 @@ Job.prototype.view = function () {
             self.bindElement($jobContainer);
 
             self.message && $resultContainer.append(
-                $('<pre>').attr('class', 'text-danger').html(self.message)
+                $('<pre>').attr('class', 'text-danger font-weight-bold').html(self.message)
             );
 
-            $('#content_container').append($jobContainer);
-
-            self.type === 'adhoc' && $element.find('.playbook-only').css('color', 'transparent');
+            $('section.container').append($jobContainer);
 
             buildResults();
 

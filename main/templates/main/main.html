@@ -6,21 +6,23 @@
     <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-ui/themes/base/jquery-ui.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap/dist/css/bootstrap.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap-fileinput/css/fileinput.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-jsonview/dist/jquery.jsonview.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'components/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap-fileinput/themes/fa/theme.min.js' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'js/plugins/jquery-dynagrid/jquery.dynagrid.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'js/plugins/jquery-bootstrap-growl/jquery.bootstrap-growl.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
     <script type="text/javascript" src="{% static 'components/jquery/dist/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/bootstrap-fileinput/js/fileinput.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/buttons.html5.js' %}"></script>
-    <script type="text/javascript" src="{% static 'components/datatables.net-buttons-bs/js/buttons.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/jquery-jsonview/dist/jquery.jsonview.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/jquery-ui/jquery-ui.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/js-yaml/dist/js-yaml.min.js' %}"></script>
@@ -67,13 +69,7 @@
     <title>Battuta</title>
 </head>
 <body>
-    <header class="navbar navbar-default">
-        <div id="navbar_container" class="container"></div>
-    </header>
-    <section class="container">
-        <div class="row">
-            <div class="col-md-12 main" id="content_container"></div>
-        </div>
-    </section>
+    <nav class="navbar navbar-expand"></nav>
+    <section class="container p-0"></section>
 </body>
 </html>

@@ -2,25 +2,25 @@ function Runner() {
 
     let self = this;
 
-    return self.fetchHtml('jobRunner.html', $('#content_container')).then($element => {
+    return self.fetchHtml('view_Runner.html', $('section.container')).then($element => {
 
         $element.find('#job_tabs').rememberTab();
 
         return Promise.all([self.fetchJson('GET', self.paths.api.file + 'search/', {root: 'playbooks'}), $element])
 
-    }).then(([data, $container]) => {
+    }).then(([data, $element]) => {
 
         $.each(data, (index, value) => {
 
             let filename = value.folder ? value.folder + '/' + value.name : value.name;
 
-            $container.find('#playbook_list').append(
+            $element.find('#playbook_list').append(
                 $('<option>').data(value).attr('value', filename).html(filename)
             );
 
         });
 
-        $container.find('#playbook_list')
+        $element.find('#playbook_list')
             .change(function () {
 
                 let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
@@ -42,7 +42,7 @@ function Runner() {
             })
             .change();
 
-        $container.find('#adhoc_table').DataTable({
+        $element.find('#adhoc_table').DataTable({
             scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
             scrollCollapse: true,
             autoWidth: false,
@@ -52,17 +52,18 @@ function Runner() {
                 dataSrc: 'task_list'
             },
             columns: [
-                {class: 'col-md-2', title: 'hosts', data: 'hosts'},
-                {class: 'col-md-2', title: 'module', data: 'module'},
-                {class: 'col-md-5', title: 'arguments', data: 'arguments'},
-                {class: 'col-md-3', title: 'sudo', data: 'become'}
+                {title: 'hosts', data: 'hosts', width: '20%'},
+                {title: 'module', data: 'module', width: '15%'},
+                {title: 'arguments', data: 'arguments', width: '45%'},
+                {title: 'sudo', data: 'become', width: '10%'},
+                {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
             ],
             paging: false,
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: '<span class="fa fa-plus fa-fw" title="Create task"></span>',
-                    className: 'btn-xs btn-icon',
+                    text: '<span class="fas fa-plus fa-fw" title="Create task"></span>',
+                    className: 'btn-sm btn-icon',
                     action: function () {
 
                         new AdHoc().dialog(function () {
@@ -80,16 +81,24 @@ function Runner() {
 
                 $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
 
-                $(row).find('td:eq(3)').prettyBoolean().append(
-                    self.tableBtn('fa fa-trash', 'Delete', function () {
+                $(row).find('td:eq(3)').prettyBoolean();
 
-                        adhoc.del(function () {
+                $(row).find('td:eq(4)').empty().append(
+                    // self.tableBtn('fas fa-cogs', 'Run', function () {
+                    //
+                    //     new Job(adhoc).run();
+                    //
+                    // }),
+                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+
+                        adhoc.dialog(function () {
 
                             $('#adhoc_table').DataTable().ajax.reload()
 
                         });
+
                     }),
-                    self.tableBtn('fa fa-clone', 'Copy', function () {
+                    self.tableBtn('fas fa-clone', 'Copy', function () {
 
                         adhoc.id = '';
 
@@ -100,16 +109,14 @@ function Runner() {
                         })
 
                     }),
-                    self.tableBtn('fa fa-pencil-alt', 'Edit', function () {
+                    self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                        adhoc.dialog(function () {
+                        adhoc.del(function () {
 
                             $('#adhoc_table').DataTable().ajax.reload()
 
                         });
-
-                    }),
-                    //self.tableBtn('fa fa-cogs', 'Run', function () {})
+                    })
                 )
             }
 

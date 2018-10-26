@@ -18,7 +18,7 @@ Playbook.prototype.form = function ($container, args) {
 
     let user = new User({username: sessionStorage.getItem('user_name')});
 
-    return self.fetchHtml('playbookArgsForm.html', $container).then($element => {
+    return self.fetchHtml('form_PlaybookArguments.html', $container).then($element => {
 
         self.bindElement($element);
 
@@ -72,12 +72,12 @@ Playbook.prototype.form = function ($container, args) {
 
                 sessionStorage.setItem('currentArgs', JSON.stringify(self.get('args')));
 
-                $element.find('#del_play_args').prop('disabled', $selectedOption.val() === 'new');
+                $element.find('button.delete-button').prop('disabled', $selectedOption.val() === 'new');
 
             })
             .trigger('build');
 
-        $element.find('#run_playbook').click(function () {
+        $element.find('button.run-button').click(function () {
 
             self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
 
@@ -89,7 +89,7 @@ Playbook.prototype.form = function ($container, args) {
 
                 else {
 
-                    $.bootstrapGrowl(data.msg, failedAlertOptions);
+                    self.statusAlert('danger', data.msg);
 
                     return Promise.reject();
 
@@ -110,13 +110,13 @@ Playbook.prototype.form = function ($container, args) {
 
                 job.set('type', 'playbook');
 
-                job.set('subset', self.args.subset);
+                job.set('subset', self.args.subset || '');
 
-                job.set('tags', self.args.tags);
+                job.set('tags', self.args.tags || '');
 
-                job.set('skip_tags', self.args.skip_tags);
+                job.set('skip_tags', self.args.skip_tags || '');
 
-                job.set('extra_vars', self.args.extra_vars);
+                job.set('extra_vars', self.args.extra_vars || '');
 
                 job.set('cred', $element.find('#credentials_selector option[value="'+ self.cred + '"]').data());
 
@@ -126,43 +126,29 @@ Playbook.prototype.form = function ($container, args) {
 
         });
 
-        $element.find('#save_play_args').click(function () {
+        $element.find('button.save-button').click(function () {
 
             if (!(!self.args.subset && !self.args.tags && !self.args.skip_tags && !self.args.extra_vars)) self.postArgs('saveArgs');
 
-            else $.bootstrapGrowl('Cannot save empty form', {type: 'warning'});
+            else self.statusAlert('warning', 'Cannot save empty form');
 
         });
 
-        $element.find('#del_play_args').click(function () {
+        $element.find('button.delete-button').click(function () {
 
-            self.fetchHtml('deleteAlert.html').then($element => {
+            self.deleteAlert(function () {
 
-                $element.dialog({
-                    width: '320',
-                    buttons: {
-                        Delete: function () {
-
-                            self.postArgs('delArgs');
-
-                            $(this).dialog('close');
-
-                        },
-                        Cancel: function () {
-
-                            $(this).dialog('close')
-
-                        }
-                    }
-                });
+                self.postArgs('delArgs')
 
             })
 
         });
 
+        $element.find('button.close-button').hide();
+
         $element.find('input').keypress(function (event) {
 
-            event.keyCode === 13 && $element.find('#run_playbook').click()
+            event.keyCode === 13 && $element.find('button.run-button').click()
 
         });
 
@@ -174,33 +160,27 @@ Playbook.prototype.dialog = function (args) {
 
     let self = this;
 
-    self.fetchHtml('playbookDialog.html').then($element => {
+    let $dialog = self.dialogTemplate();
 
-        $element.find('h4').html(self.name);
+    $dialog.find('.dialog-header').html(self.name);
 
-        self.form($element.find('#form-container'), args).then(() => {
+    $dialog.find('div.dialog-footer').remove();
 
-            $element.find('#buttons_container').hide();
+    self.form($dialog.find('div.dialog-content'), args).then(() => {
 
-            $element.find('#play_args_selector_container').remove();
+        $dialog.find('#play_args_selector_container').remove();
 
-            $element.dialog({
-                width: 480,
-                buttons: {
-                    Run: function () {
+        $dialog.find('button.save-button').remove();
 
-                        $element.find('#run_playbook').click();
+        $dialog.find('button.delete-button').remove();
 
-                    },
-                    Close: function () {
+        $dialog.find('button.close-button').show().click(function () {
 
-                        $(this).dialog('close');
+            $dialog.dialog('close');
 
-                    }
-                }
-            })
+        });
 
-        })
+        $dialog.dialog({width: 480})
 
     })
 

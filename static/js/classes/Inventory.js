@@ -26,7 +26,7 @@ Inventory.prototype.manage = function () {
 
     let self = this;
 
-    self.fetchHtml('manageInventory.html', $('#content_container')).then($element => {
+    self.fetchHtml('view_InventoryManager.html', $('section.container')).then($element => {
 
         self.bindElement($element);
 
@@ -57,17 +57,14 @@ Inventory.prototype.manage = function () {
 
                 self.requestResponse(data.response, function() {
 
-                    self.fetchHtml('importResult.html').then($element => {
+                    let $result = $('<div>').append(
+                        $('<div>').attr('class','mb-2 font-weight-bold').html('Import successful'),
+                        $('<div>').attr('class','mb-1').html('Hosts added: ' + data.response.added_hosts),
+                        $('<div>').attr('class','mb-1').html('Groups added: ' + data.response.added_groups),
+                        $('<div>').attr('class','mb-1').html('Variables added: ' + data.response.added_vars)
+                    );
 
-                        $element.find('#host_count').html(data.response.added_hosts);
-
-                        $element.find('#group_count').html(data.response.added_groups);
-
-                        $element.find('#var_count').html(data.response.added_vars);
-
-                        $.bootstrapGrowl($element, {type: 'success', delay: 0});
-
-                    });
+                    self.statusAlert('success', $result);
 
                 });
 
@@ -79,9 +76,7 @@ Inventory.prototype.manage = function () {
                     .off('click')
                     .click(function () {
 
-                        $('#upload_field').fileinput('upload');
-
-                        $('#upload_field_title').html('Uploading file');
+                        $element.find('#upload_field').fileinput('upload');
 
                         $element.find('div.file-caption-main').hide()
 
@@ -95,34 +90,38 @@ Inventory.prototype.manage = function () {
 
             if (format === 'filezilla') {
 
-                self.fetchHtml('filezillaExportDialog.html').then($element => {
+                let $dialog = self.confirmationDialog();
 
-                    self.bindElement($element);
+                $dialog.find('.dialog-header').remove();
 
-                    $element
-                        .dialog({
-                            buttons: {
-                                Export: function () {
+                $dialog.find('div.dialog-content').append(
+                    $('<label>').attr('for', 'input-sftp-user').html('SFTP default user'),
+                    $('<input>').attr({id: 'input-sftp-user', 'data-bind': 'sftp_user', class: 'form-control form-control-sm', type: 'text', })
+                );
 
-                                    if (self.sftp_user) {
+                $dialog.find('button.cancel-button').click(function () {
 
-                                        window.open(self.apiPath + 'export/?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
+                    $dialog.dialog('close');
 
-                                        $(this).dialog('close')
+                });
 
-                                    }
+                $dialog.find('button.confirm-button').click(function () {
 
-                                    else $.bootstrapGrowl('Enter default user', {type: 'warning'});
-                                },
-                                Cancel: function() {
+                    if (self.sftp_user) {
 
-                                    $(this).dialog('close')
+                        window.open(self.apiPath + 'export/?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
 
-                                }
-                            }
-                        })
+                        $dialog.dialog('close')
 
-                })
+                    }
+
+                    else self.statusAlert('warning', 'Enter default user');
+
+                });
+
+                self.bindElement($dialog);
+
+                $dialog.dialog()
 
             }
 

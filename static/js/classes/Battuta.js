@@ -52,7 +52,7 @@ Battuta.prototype = {
             group: '/iam/group/',
             node: {
                 host: '/inventory/host/',
-                group: '/inventory/group'
+                group: '/inventory/group/'
             }
         },
         runner: '/runner/',
@@ -85,6 +85,7 @@ Battuta.prototype = {
         }
 
     },
+
 
     // Properties methods *************
 
@@ -209,7 +210,7 @@ Battuta.prototype = {
 
                 callback && callback(data);
 
-                data.msg && $.bootstrapGrowl(data.msg, {type: 'success'});
+                data.msg && Battuta.prototype.statusAlert('success', data.msg);
 
                 break;
 
@@ -217,7 +218,7 @@ Battuta.prototype = {
 
                 failCallback && failCallback(data);
 
-                let $message = $('<div>').attr('class', 'alert-box');
+                let $message = $('<div>');
 
                 if (data.error) for (let key in data.error) {
 
@@ -227,19 +228,21 @@ Battuta.prototype = {
 
                 else if (data.msg) $message.html(data.msg);
 
-                $message.html() && $.bootstrapGrowl($message, failedAlertOptions);
+                Battuta.prototype.statusAlert('danger', $message);
+
 
                 break;
 
             case 'denied':
 
-                $.bootstrapGrowl('Permission denied', failedAlertOptions);
+                Battuta.prototype.statusAlert('danger', data.msg);
 
                 break;
 
             default:
 
-                $.bootstrapGrowl('Unknown response', failedAlertOptions)
+                Battuta.prototype.statusAlert('danger', 'Unknown response');
+
 
         }
 
@@ -408,6 +411,14 @@ Battuta.prototype = {
         })
     },
 
+    del: function (callback) {
+
+        let self = this;
+
+        self.deleteAlert('delete', callback)
+
+    },
+
 
     // Data binding ****************
 
@@ -483,83 +494,249 @@ Battuta.prototype = {
     },
 
 
+    // Templates **********************
+
+    tableTemplate: function () {
+
+        return $('<table>').attr('class', 'table table-condensed table-hover table-striped')
+
+    },
+
+    dialogTemplate: function () {
+
+        return $('<div>').append(
+            $('<h5>').attr('class', 'dialog-header'),
+            $('<div>').attr('class', 'dialog-content'),
+            $('<div>').attr('class', 'dialog-footer text-right mt-3')
+        )
+
+    },
+
+    notificationDialog: function () {
+
+        let $dialog = Battuta.prototype.dialogTemplate();
+
+        $dialog.find('div.dialog-footer').append(
+            $('<button>').attr({class: 'close-button btn btn-icon', title: 'Close', type: 'button'})
+                .append($('<span>').attr('class', 'fas fa-fw fa-times'))
+                .click(function () {
+
+                    $dialog.dialog('close')
+
+                }),
+        );
+
+        return $dialog
+
+    },
+
+    confirmationDialog: function () {
+
+        let $dialog = Battuta.prototype.dialogTemplate();
+
+        $dialog.find('div.dialog-footer').append(
+            $('<button>').attr({class: 'cancel-button btn btn-icon', title: 'Cancel', type: 'button'})
+                .append($('<span>').attr('class', 'fas fa-fw fa-times')),
+            $('<button>').attr({class: 'confirm-button btn btn-icon', title: 'Confirm', type: 'button'})
+                .append($('<span>').attr('class', 'fas fa-fw fa-check'))
+        );
+
+        return $dialog
+
+    },
+
+    entityDialog: function () {
+
+        let $dialog = Battuta.prototype.confirmationDialog();
+
+        $dialog.find('.dialog-header').attr('data-bind', 'header');
+
+        $dialog.find('div.dialog-content').append(
+            $('<div>').attr('class', 'form-group').append(
+                $('<label>').attr('for', 'name-input').html('Name'),
+                $('<input>').attr({id: 'name-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'name'})
+            ),
+            $('<div>').attr('class', 'form-group').append(
+                $('<label>').attr('for', 'description-input').html('Description'),
+                $('<textarea>').attr({id: 'description-input', class: 'textarea form-control form-control-sm', 'data-bind': 'description'})
+            )
+        );
+
+        return $dialog
+    },
+
+    alertTemplate: function () {
+
+        return $('<div>').attr('class', 'alert-container container').append(
+            $('<div>').attr('class', ' alert').append(
+                $('<div>').attr('class', 'row').append(
+                    $('<div>').attr('class', 'col-9 item-label message-container').css('font-size', 'larger'),
+                    $('<div>').attr('class', 'col-3 text-right button-container py-1').append()
+                )
+            )
+        );
+    },
+
+    notificationAlert: function () {
+
+        let $alert = Battuta.prototype.alertTemplate();
+
+        $alert.find('div.button-container').append(
+            $('<span>').attr({class: 'fas fa-fw fa-times', title: 'Close'})
+        );
+
+        return $alert
+
+    },
+
+    confirmationAlert: function () {
+
+        let $alert = Battuta.prototype.alertTemplate();
+
+        $alert.find('div.button-container').append(
+            $('<span>').attr({class: 'fas fa-fw fa-times cancel-button mr-2', title: 'Cancel'}),
+            $('<span>').attr({class: 'fas fa-fw fa-check confirm-button', title: 'Confirm'})
+        );
+
+        return $alert
+
+    },
+
+    tableBtn: function (styles, title, action) {
+
+        return $('<button>').attr({class: 'btn btn-sm btn-icon', title: title})
+            .click(action)
+            .append($('<span>').attr('class', styles))
+
+    },
+
+
     // UI Elements ********************
 
-    tableBtn: function (iconClasses, title, action) {
+    _deployAlert: function ($alert) {
 
-        return $('<button>').attr({class: 'btn btn-default btn-xs btn-icon pull-right', title: title})
-            .click(action)
-            .append($('<span>').attr('class', 'icon-span ' + iconClasses))
+        $('div.alert').fadeOut(function() {
+
+            $(this).remove()
+
+        });
+
+        $('section.container').append($alert.hide());
+
+        $alert.find('span.fa-times').click(function () {
+
+            $alert.fadeOut(function () {
+
+                $alert.remove()
+
+            })
+
+        });
+
+        $alert.fadeIn();
+
+        setTimeout(function () {
+
+            $alert.find('span.fa-times').click()
+
+        }, 1000000)
 
     },
 
-    del: function (callback) {
+    warningAlert: function (message, confirmationCallback) {
 
-        let self = this;
+        let $alert = Battuta.prototype.confirmationAlert();
 
-        self.deleteAlert('delete', callback)
+        $alert.find('div.alert').addClass('alert-warning');
+
+        $alert.find('div.message-container').append(message);
+
+        $alert.find('span.confirm-button').click(function () {
+
+            $alert.fadeOut(function () {
+
+                $alert.remove();
+
+                confirmationCallback && confirmationCallback();
+
+            })
+
+        });
+
+        Battuta.prototype._deployAlert($alert)
 
     },
 
-    selectionDialog: function (options) {
+    statusAlert: function (status, message) {
+
+        let $alert = Battuta.prototype.notificationAlert();
+
+        $alert.find('div.alert').addClass('alert-' + status);
+
+        $alert.find('div.message-container').append(message);
+
+        Battuta.prototype._deployAlert($alert)
+
+    },
+
+    gridDialog: function (options) {
 
         let self = this;
 
-        self.fetchHtml('selectionDialog.html').then($element => {
+        let $dialog = self.confirmationDialog();
 
-            let $grid = $element.find('#selection_grid');
+        let $grid = $('<div>');
 
-            $element.find('#selection_title').html(options.title);
+        $dialog.find('.dialog-header').remove();
 
-            $element.find('#selection_title').remove();
+        $dialog.find('div.dialog-content').append($grid);
 
-            $element.find('button.cancel-button').click(function () {
+        $dialog.find('button.cancel-button').click(function () {
 
-                $element.find('input.filter_box').val('');
+            $dialog.find('input.filter_box').val('');
 
-                $element.dialog('close');
+            $dialog.dialog('close');
 
-            });
+        });
 
-            $element.find('button.confirm-button').click(function () {
+        $dialog.find('button.confirm-button').click(function () {
 
-                options.action($grid.DynaGrid('getSelected'), $element);
+            options.action($grid.DynaGrid('getSelected'), $dialog);
 
-            });
+        });
 
-            options.type === 'one' && $element.find('button.confirm-button').hide();
+        options.type === 'one' && $dialog.find('button.confirm-button').remove();
 
-            $element.dialog({minWidth: 700, minHeight: 500});
+        $grid.DynaGrid({
+            gridTitle: options.title,
+            showFilter: true,
+            addButtonTitle: 'Add ' + options.entityType,
+            minHeight: 400,
+            maxHeight: 400,
+            gridBodyTopMargin: 10,
+            itemToggle: (options.type === 'many'),
+            truncateItemText: true,
+            gridBodyClasses: 'inset-container scrollbar',
+            columns: sessionStorage.getItem('selection_modal_columns'),
+            ajaxUrl: options.url,
+            ajaxData: options.data,
+            ajaxDataKey: options.ajaxDataKey,
+            itemValueKey: options.itemValueKey,
+            itemTitleKey: options.itemTitleKey,
+            dataSource: options.dataSource || 'ajax',
+            dataArray: options.dataArray || [],
+            formatItem: function($gridContainer, $gridItem) {
 
-            $grid.DynaGrid({
-                gridTitle: options.title,
-                showFilter: true,
-                addButtonTitle: 'Add ' + options.entityType,
-                minHeight: 400,
-                maxHeight: 400,
-                itemToggle: (options.type === 'many'),
-                truncateItemText: true,
-                gridBodyClasses: 'inset-container scrollbar',
-                columns: sessionStorage.getItem('selection_modal_columns'),
-                ajaxUrl: options.url,
-                ajaxData: options.data,
-                ajaxDataKey: options.ajaxDataKey,
-                itemValueKey: options.itemValueKey,
-                itemTitleKey: options.itemTitleKey,
-                dataSource: options.dataSource || 'ajax',
-                dataArray: options.dataArray || [],
-                formatItem: function($gridContainer, $gridItem) {
+                if (options.type === 'one') $gridItem.click(function () {
 
-                    if (options.type === 'one') $gridItem.click(function () {
+                    options.action && options.action($(this).data(), $dialog)
 
-                        options.action && options.action($(this).data(), $element)
+                });
 
-                    });
+            }
+        });
 
-                }
-            });
-
-        })
+        $dialog.dialog({width: 700})
 
     },
 
@@ -568,8 +745,8 @@ Battuta.prototype = {
         let $tabContentContainer = $('<div>').attr({id: title + '_tab', class: 'tab-pane'});
 
         $('ul.nav-tabs').append(
-            $('<li>').append(
-                $('<a>').attr({href: '#' + title + '_tab', 'data-toggle': 'tab'}).html(title.capitalize())
+            $('<li>').attr('class', 'nav-item').append(
+                $('<a>').attr({class: 'nav-link', href: '#' + title + '_tab', 'data-toggle': 'tab'}).html(title.capitalize())
             )
         );
 
@@ -591,79 +768,99 @@ Battuta.prototype = {
 
         $container.find('button').prop('disabled', locked).click(function () {
 
-            self.fetchHtml('patternDialog.html').then($element => {
+             let oldPattern = self.get(binding);
 
-                let prevPattern = self.get(binding);
+            self.fetchHtml('form_PatternBuilder.html').then($element => {
 
-                $element.find('#pattern_preview').attr('data-bindElement', binding);
+                let updatePattern = function (action, nodeName) {
 
-                self.bindElement($element);
+                    const sep = {select: ':', and: ':&', exclude: ':!'};
 
-                $element
-                    .dialog({
-                        width: 520,
-                        buttons: {
-                            Ok: function () {
+                    let currentPattern = self.get(binding);
 
-                                $(this).dialog('close');
+                    if (action !== 'select' && currentPattern === '') {
 
-                            },
-                            Reset: function () {
-
-                                self.set(binding, '');
-
-                            },
-                            Cancel: function () {
-
-                                self.set(binding, prevPattern);
-
-                                $(this).dialog('close');
-
-                            }
-                        }
-                    })
-                    .find('button').click(function () {
-
-                    let type = $(this).data('type');
-
-                    let action = $(this).data('action');
-
-                    let sep = {select: ':', and: ':&', exclude: ':!'};
-
-                    if (action !== 'select' && self.get(binding) === '') {
-
-                        $.bootstrapGrowl('Please select hosts/groups first', {type: 'warning'});
+                        self.statusAlert('warning', 'Select host or group first');
 
                     }
 
                     else {
 
-                        self.selectionDialog({
-                            title: 'Select ' + type + 's:',
-                            type: 'many',
-                            entityType: type,
-                            url: self.paths.api.inventory + 'list/?type=' + type,
-                            ajaxDataKey: 'nodes',
-                            itemValueKey: 'name',
-                            newEntity: new Node({name: null, description: null, type: type}),
-                            action: function (selection, $dialog) {
+                        if (currentPattern) self.set(binding, currentPattern + sep[action] + nodeName);
 
-                                for (let i = 0; i < selection.length; i++) {
+                        else self.set(binding, nodeName)
 
-                                    if (self.get(binding) !== '') self.set(binding, self.get(binding) + sep[action]);
-
-                                    self.set(binding, self.get(binding) + selection[i].name)
-
-                                }
-
-                                $dialog.dialog('close');
-
-                            }
-
-                        });
                     }
 
+                };
+
+                let $dialog = self.notificationDialog();
+
+                $element.find('#pattern_preview').attr('data-bind', binding);
+
+                $element.find('button.clear-button').click(function () {
+
+                    self.set(binding, '')
+
                 });
+
+                $element.find('button.reload-button').click(function () {
+
+                    self.set(binding, oldPattern)
+
+                });
+
+                self.bindElement($element);
+
+                ['host', 'group'].forEach(function (type) {
+
+                    $element.find('div.' + type + '-grid').DynaGrid({
+                        showFilter: true,
+                        minHeight: 300,
+                        maxHeight: 300,
+                        gridBodyTopMargin: 10,
+                        itemToggle: false,
+                        truncateItemText: true,
+                        gridBodyClasses: 'inset-container scrollbar',
+                        columns: sessionStorage.getItem('selection_modal_columns'),
+                        ajaxUrl: self.paths.api.inventory + 'list/?type=' + type,
+                        ajaxDataKey: 'nodes',
+                        itemValueKey: 'name',
+                        formatItem: function($gridContainer, $item) {
+
+                            let nodeName = $item.data()['name'];
+
+                            $item.html('').removeAttr('title').removeClass('text-truncate').addClass('dropdown').append(
+                                $('<a>').attr({'data-toggle': 'dropdown', href: '#', class: 'pattern-grid'}).html(nodeName),
+                                $('<div>').attr('class', 'dropdown-menu').append(
+                                    $('<a>').attr({class: 'pattern-grid dropdown-item', href:'#'}).html('Select').click(function () {
+
+                                        updatePattern('select', nodeName)
+
+                                    }),
+                                    $('<a>').attr({class: 'pattern-grid dropdown-item', href:'#'}).html('And').click(function () {
+
+                                        updatePattern('and', nodeName)
+
+                                    }),
+                                    $('<a>').attr({class: 'pattern-grid dropdown-item', href:'#'}).html('Not').click(function () {
+
+                                        updatePattern('exclude', nodeName)
+
+                                    }),
+                                )
+                            )
+
+                        }
+                    });
+
+                });
+
+                $dialog.find('.dialog-header').remove();
+
+                $dialog.find('div.dialog-content').append($element);
+
+                $dialog.dialog({width: 700})
 
             });
 
@@ -702,28 +899,13 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('deleteAlert.html').then($element => {
+        self.warningAlert('This action cannot be reversed. Continue?', function () {
 
-            let $alert = $.bootstrapGrowl($element, {
-                type: 'warning',
-                delay: 0,
-                allowDismiss: false,
-                closeButton:  $element.find('.cancel-button')
-            });
+            if ({}.toString.call(action) === '[object Function]') action();
 
-            $element.find('.continue-button').click(function () {
+            else self.postData(action, true, function (data) {
 
-                $alert.fadeOut(function () {
-
-                    $alert.remove();
-
-                    self.postData(action, true, function (data) {
-
-                        callback && callback(data);
-
-                    });
-
-                })
+                callback && callback(data);
 
             });
 
@@ -737,9 +919,9 @@ Battuta.prototype = {
 
         let user = new User({username: self.username});
 
-        let $container = $('#navbar_container');
+        let $navBar = $('nav.navbar');
 
-        if (authenticated === 'True') self.fetchHtml('navBar.html', $container).then($element => {
+        if (authenticated === 'True') self.fetchHtml('navbar_Main.html', $navBar).then($element => {
 
             self.bindElement($element);
 
@@ -779,7 +961,7 @@ Battuta.prototype = {
 
         });
 
-        else return self.fetchHtml('loginMenu.html', $container).then($element => {
+        else return self.fetchHtml('navbar_Login.html', $navBar).then($element => {
 
             user.bindElement($element);
 
@@ -802,7 +984,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('search.html', $('#content_container')).then($element => {
+        self.fetchHtml('search.html', $('section.container')).then($element => {
 
             self.bindElement($element);
 
@@ -844,45 +1026,50 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('entitySelector.html', $('#content_container')).then($element => {
+        let $table = self.tableTemplate();
 
-            self.bindElement($element);
+        let tableOptions = {
+            scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
+            scrollCollapse: true,
+            ajax: {
+                url: self.apiPath + 'list/',
+                dataSrc: self.crud.dataSrc
+            },
+            paging: false,
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    text: '<span class="fas fa-plus fa-fw" title="Add ' + self.crud.type + '"></span>',
+                    action: function () {
 
-            let tableOptions = {
-                scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
-                scrollCollapse: true,
-                ajax: {
-                    url: self.apiPath + 'list/',
-                    dataSrc: self.crud.dataSrc
-                },
-                paging: false,
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        text: '<span class="fa fa-plus fa-fw" title="Add "' + self.crud.type + '></span>',
-                        action: function () {
+                        new self.constructor().edit(self.crud.callbacks.add);
 
-                            new self.constructor().edit(self.crud.callbacks.add);
+                    },
+                    className: 'btn-sm btn-icon'
+                }
+            ],
+        };
 
-                        },
-                        className: 'btn-xs btn-icon'
-                    }
-                ],
-            };
+        $('section.container').append(
+            $('<h4>').html(self.crud.titlePlural),
+            $('<div>').attr('class', 'card shadow p-3').append(
+                $table
+            )
+        );
 
-            Object.keys(self.crud.table).forEach(function (key) {
+        Object.keys(self.crud.table).forEach(function (key) {
 
-                if (self.crud.table[key] === null) delete tableOptions[key];
+            if (self.crud.table[key] === null) delete tableOptions[key];
 
-                else tableOptions[key] = self.crud.table[key]
-
-            });
-
-            $element.find('#entity_table').DataTable(tableOptions);
-
-            self.crud.onFinish && self.crud.onFinish(self);
+            else tableOptions[key] = self.crud.table[key]
 
         });
+
+        $table.DataTable(tableOptions);
+
+        self.crud.onFinish && self.crud.onFinish(self);
+
+
 
     },
 
@@ -890,7 +1077,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('entityView.html', $('#content_container')).then($element => {
+        self.fetchHtml('view_Entity.html', $('section.container')).then($element => {
 
             self.bindElement($element);
 
@@ -910,7 +1097,7 @@ Battuta.prototype = {
 
                 self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
 
-                self.crud.info && self.crud.info(self, $element.find("#info_tab"));
+                self.crud.info && self.crud.info(self, $element.find("#info_container"));
 
                 Object.keys(self.crud.tabs).forEach(function (key) {
 
@@ -931,32 +1118,30 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('entityDialog.html').then($element => {
+        let $dialog = self.entityDialog();
 
-            self.bindElement($element);
+        self.bindElement($dialog);
 
-            self.set('header', self.name ? 'Edit ' + self.crud.type : 'Add ' + self.crud.type);
+        self.set('header', self.name ? 'Edit ' + self.crud.type : 'Add ' + self.crud.type);
 
-            $element.find('button.confirm-button').click(function () {
+        $dialog.find('button.confirm-button').click(function () {
 
-                self.save(data => {
+            self.save(data => {
 
-                    $element.dialog('close');
+                $dialog.dialog('close');
 
-                    callback && callback(data);
-                })
-
-            });
-
-            $element.find('button.cancel-button').click(function () {
-
-                $element.dialog('close');
-
-            });
-
-            $element.dialog();
+                callback && callback(data);
+            })
 
         });
+
+        $dialog.find('button.cancel-button').click(function () {
+
+            $dialog.dialog('close');
+
+        });
+
+        $dialog.dialog();
 
     },
 

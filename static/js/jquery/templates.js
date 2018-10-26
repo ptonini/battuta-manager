@@ -1,5 +1,3 @@
 // jQuery element templates /////////////
 
-let spanFA = $('<span>').attr('class', 'fa fa-fw');
-
-let failedAlertOptions = {type: 'danger', delay: 6000};
+let spanFA = $('<span>').attr('class', 'fas fa-fw');

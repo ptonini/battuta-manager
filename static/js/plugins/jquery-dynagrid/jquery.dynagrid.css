@@ -4,16 +4,16 @@ div.dynagrid-body {display: grid; margin-bottom: 0; overflow-y: auto}
 
 div.dynagrid-item.checkered {background-color: #F8F8F8}
 
-div.dynagrid-item.shadowed {box-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 2px rgba(0,0,0,0.22);}
-
 div.dynagrid-item {
-    padding: 0 .5rem;
-    margin: .25rem;
+    padding: 10px;
+    margin: 3px;
     color: #777;
-    border-radius: .5rem;
-    line-height: 3rem;
+    border-radius: 3px;
+    line-height: 14px;
     text-align: left;
     border: thin solid #F8F8F8;
+    display: flex;
+    align-items: center;
 }
 div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}
 
@@ -21,18 +21,18 @@ div.dynagrid-item.toggle-on, div.dynagrid-item:active  {background: #D3D3D3; box
 
 div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 
-input.dynagrid-search {margin-left: 6px}
+.dynagrid-item-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 span.dynagrid-title {margin-right: 1em}
-
-span.dynagrid-counter {line-height: normal}
 
 a.dynagrid-btn {border-style: hidden}
 
 a.dynagrid-btn, button.dynagrid-btn, span.dynagrid-counter {margin-right: 1rem}
 
-.center-align {display:flex; justify-content:flex-end; align-items:center;}
+input.dynagrid-search {margin-left: 8px}
 
-.truncate-text {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}
-
-.row-eq-height {display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex}
+.text-truncate {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}

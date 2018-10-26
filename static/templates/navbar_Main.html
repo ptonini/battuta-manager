@@ -1,0 +1,71 @@
+<div class="container">
+    <a class="navbar-brand" href="/">Battuta</a>
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item dropdown">
+            <a id="inventory-menu" class="nav-link" href="#" data-toggle="dropdown">Inventory</a>
+            <div class="dropdown-menu" aria-labelledby="inventory-menu">
+                <a class="dropdown-item" data-bind="paths.selector.node.host">Hosts</a>
+                <a class="dropdown-item" data-bind="paths.selector.node.group">Groups</a>
+                <a class="dropdown-item" id="manage_inventory_anchor">Manage inventory</a>
+            </div>
+        </li>
+        <li class="nav-item dropdown">
+            <a id="runner-menu" href="#" class="nav-link" data-toggle="dropdown">Runner</a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" data-bind="paths.runner">Runner</a>
+                <a class="dropdown-item" data-bind="paths.selector.job">Job history</a>
+            </div>
+        </li>
+        <li class="nav-item dropdown">
+            <a id="files-menu" href="#" class="nav-link" data-toggle="dropdown">Files</a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" data-bind="paths.selector.file">Files</a>
+                <a class="dropdown-item" data-bind="paths.selector.playbook">Playbooks</a>
+                <a class="dropdown-item" data-bind="paths.selector.role">Roles</a>
+                <a class="dropdown-item" data-bind="paths.selector.userFiles">User</a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bind="paths.selector.project">Projects</a>
+        </li>
+        <li class="nav-item dropdown">
+            <a id="iam-menu" href="#" class="nav-link" data-toggle="dropdown">IAM</a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" data-bind="paths.selector.user">Users</a>
+                <a class="dropdown-item" data-bind="paths.selector.group">Groups</a>
+            </div>
+        </li>
+    </ul>
+    <ul class="navbar-nav navbar-right mr-3">
+        <li class="nav-item">
+            <form id="menu_search_form" class="navbar-form">
+                <div class="input-group">
+                    <input class="form-control form-control-sm" type="text" data-bind="pattern" title="Search">
+                    <div class="input-group-append">
+                        <button class="btn btn-light btn-sm">
+                            <span class="fas fa-fw fa-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </li>
+    </ul>
+    <ul class="navbar-nav navbar-right">
+        <li class="nav-item">
+            <a href="#" class="nav-link" id="preferences_button" style="border-radius: 5px;" title="Preferences">
+                <span class="fas fa-fw fa-cog"></span>
+            </a>
+        </li>
+        <li class="nav-item dropdown">
+            <a href="#" class="nav-link" data-toggle="dropdown">
+                <span id="user_icon" class="fas fa-fw fa-user"></span>
+            </a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" id="user_view_anchor">Profile</a>
+                <a class="dropdown-item" id="logout_anchor" href="#">Logout</a>
+            </div>
+        </li>
+    </ul>
+</div>
+
+

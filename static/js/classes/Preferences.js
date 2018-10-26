@@ -59,9 +59,9 @@ Preferences.prototype.dialog = function () {
 
     let self = this;
 
-    self.fetchHtml('preferencesDialog.html').then($element => {
+    self.fetchHtml('templates_Preferences.html').then($element => {
 
-        let $prefsDialog = $element.find('#preferences_dialog');
+        let $dialog = self.confirmationDialog();
 
         let $restoreDialog = $element.find('#restore_dialog');
 
@@ -73,15 +73,15 @@ Preferences.prototype.dialog = function () {
 
         let fieldType = {
             str: {
-                class: 'col-md-5',
+                class: 'col-5',
                 template: $element.find('#input_templates > input')
             },
             bool: {
-                class: 'col-md-2',
+                class: 'col-2',
                 template: $element.find('#input_templates > select')
             },
             number: {
-                class: 'col-md-2',
+                class: 'col-2',
                 template: $element.find('#input_templates > input')
             }
 
@@ -101,7 +101,7 @@ Preferences.prototype.dialog = function () {
 
                     let $header = $headerTemplate.clone();
 
-                    $header.find('h4').attr('title', item_group.description).html(item_group.name);
+                    $header.find('h5').attr('title', item_group.description).html(item_group.name);
 
                     $prefsContainer.append($header);
 
@@ -109,7 +109,7 @@ Preferences.prototype.dialog = function () {
 
                         let $itemContainer = $itemTemplate.clone();
 
-                        $itemContainer.find('label.item_label').html(item.name + ':').attr('for', 'item_' + item.name);
+                        $itemContainer.find('.item-label').html(item.name + ':');
 
                         $itemContainer.find('div.input_container').addClass(fieldType[item.data_type].class).append(
                             fieldType[item.data_type].template.clone()
@@ -118,13 +118,15 @@ Preferences.prototype.dialog = function () {
                                 .val(item.value.toString())
                         );
 
-                        $itemContainer.find('label.error_label').attr('id', item.name + '_error');
+                        $itemContainer.find('.error_label').attr('id', item.name + '_error');
 
                         $prefsContainer.append($itemContainer);
 
                         defaultValues.push([item.name, item.value]);
 
                     });
+
+                    $prefsContainer.children().last().removeClass('mb-1').addClass('mb-3')
 
                 });
 

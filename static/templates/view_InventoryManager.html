@@ -1,0 +1,84 @@
+<div class="row">
+    <div class="col-12">
+        <h4>Manage inventory</h4>
+        <ul id="manage_inventory_tabs" class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#import_tab">Import</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-toggle="tab" href="#export_tab">Export</a>
+            </li>
+        </ul>
+        <div class="tab-content card shadow p-3 mt-2">
+            <div class="tab-pane active" id="import_tab">
+                <div class="row">
+                    <div class="col-12 form-group">
+                        <h5>Import from:</h5>
+                    </div>
+                    <div class="col-12 form-group">
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="import_file_type" value="csv" checked>CSV
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="import_file_type" value="json">JSON
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="import_file_type" value="zip" disabled>Ansible inventory
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4 form-group" style="height: 45px">
+                        <input id="upload_field" class="input-file" type="file">
+                    </div>
+                    <div class="col-12">
+                        <button id="import_button" class="btn btn-icon btn-sm" title="Import" disabled>
+                            <span class="fas fa-fw fa-upload"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="export_tab">
+                <div class="row">
+                    <div class="col-12 form-group">
+                        <h5>Export to:</h5>
+                    </div>
+                    <div class="col-12 form-group">
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="export_file_type" value="json" checked>JSON
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="export_file_type" value="zip">
+                                <span>Ansible inventory</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="export_file_type" value="pac">
+                                <span>PAC config</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="export_file_type" value="filezilla">
+                                <span>FileZilla config</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button id="export_button" class="btn btn-icon btn-sm" title="Export">
+                            <span class="fas fa-fw fa-download"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

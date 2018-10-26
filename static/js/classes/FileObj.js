@@ -29,12 +29,12 @@ FileObj.prototype.validator = {
 
         catch (error) {
 
-            let $alert = $('<div>').attr('class', 'large-alert').append(
-                $('<h5>').html('Invalid yaml:'),
+            let $alert = $('<div>').append(
+                $('<spam>').html('Invalid yaml:'),
                 $('<div>').css('white-space', 'pre-line').html(error.message)
             );
 
-            $.bootstrapGrowl($alert, {type: 'danger', delay: 0});
+            Battuta.prototype.statusAlert('danger', $alert);
 
             return false
         }
@@ -110,75 +110,75 @@ FileObj.prototype.upload = function (callback) {
 
     let self = this;
 
-    self.fetchHtml('uploadDialog.html').then($element => {
+    let $dialog = self.confirmationDialog();
 
-        self.bindElement($element);
+    $dialog.find('.dialog-header').html('Upload file');
 
-        self.set('title', 'Select file');
+    $dialog.find('div.dialog-content').append(
+        $('<label>').attr({for: 'upload-input', class: 'sr-only'}).html('Filename'),
+        $('<input>').attr({id: 'upload-input', class:'input-file', type: 'file'})
+    );
 
-        $element
-            .dialog({
-                buttons: {
-                    Upload: function () {
+    $dialog.find('button.confirm-button').click(function () {
 
-                        $('#upload_field').fileinput('upload');
+        $('#upload-input').fileinput('upload');
 
-                        self.set('title', 'Uploading file');
-
-                        $(this).find('div.file-caption-main').hide()
-
-                    },
-                    Cancel: function () {
-
-                        $(this).dialog('close')
-
-                    }
-                }
-            })
-            .keypress(function (event) {
-
-                if (event.keyCode === 13) $('#upload_field').fileinput('upload')
-
-            });
-
-        $element.find('#upload_field')
-            .fileinput({
-                uploadUrl: self.apiPath + 'upload/',
-                uploadExtraData: function () {
-
-                    let loadedFile = $('#upload_field').fileinput('getFileStack')[0];
-
-                    if (loadedFile) {
-
-                        self.name = loadedFile.name;
-
-                        self.new_name = loadedFile.name;
-
-                        self.csrfmiddlewaretoken = self._getCookie('csrftoken');
-
-                        return self
-
-                    }
-
-                },
-                uploadAsync: true,
-                progressClass: 'progress-bar progress-bar-success active'
-            })
-            .on('fileuploaded', function (event, data) {
-
-                $element.dialog('close');
-
-                self.requestResponse(data.response, callback, function () {
-
-                    $element.find('div.file-caption-main').show();
-
-                    self.set('title', 'Select file');
-
-                })
-
-            });
+        $dialog.find('div.file-caption-main').hide()
 
     });
+
+    $dialog.find('button.cancel-button').click(function () {
+
+        $dialog.dialog('close');
+
+        $('#upload-input').fileinput('cancel');
+
+    });
+
+    self.bindElement($dialog);
+
+    $dialog.dialog().keypress(function (event) {
+
+        if (event.keyCode === 13) $('#upload-input').fileinput('upload')
+
+    });
+
+    $dialog.find('#upload-input')
+        .fileinput({
+            uploadUrl: self.apiPath + 'upload/',
+            uploadExtraData: function () {
+
+                let loadedFile = $('#upload-input').fileinput('getFileStack')[0];
+
+                if (loadedFile) {
+
+                    self.name = loadedFile.name;
+
+                    self.new_name = loadedFile.name;
+
+                    self.csrfmiddlewaretoken = self._getCookie('csrftoken');
+
+                    return self
+
+                }
+
+            },
+            uploadAsync: true,
+            progressClass: 'progress-bar progress-bar-success active'
+        })
+        .on('fileuploaded', function (event, data) {
+
+            $dialog.dialog('close');
+
+            self.requestResponse(data.response, callback, function () {
+
+                $dialog.find('div.file-caption-main').show();
+
+                $dialog.find('.dialog-header').html('Select file');
+
+            })
+
+        });
 
 };
 
@@ -188,7 +188,7 @@ FileObj.prototype.exists = function (callback) {
 
     self.getData('exists', false, function (data) {
 
-        data.exists || $.bootstrapGrowl('Folder does not exist', failedAlertOptions);
+        data.exists || self.statusAlert('warning', 'Folder does not exist');
 
         callback && callback(data)
 
@@ -200,11 +200,13 @@ FileObj.prototype.editorDialog = function (callback) {
 
     let self = this;
 
-    self.fetchHtml('fileEditorDialog.html').then($element => {
+    self.fetchHtml('form_FileEditor.html').then($element => {
 
         self.bindElement($element);
 
-        let $selector = $element.find('#mode_selector');
+        let $selector = $element.find('#mode-selector');
+
+        let $dialog = self.confirmationDialog();
 
         let aceMode = 'text';
 
@@ -274,7 +276,7 @@ FileObj.prototype.editorDialog = function (callback) {
 
         });
 
-        $element.find('#mode_selector')
+        $selector
             .val(aceMode)
             .change(function () {
 
@@ -301,38 +303,39 @@ FileObj.prototype.editorDialog = function (callback) {
 
         $element.find('#editor_container').css('height', window.innerHeight * 0.7);
 
-        $element.dialog({
-                width: 900,
-                closeOnEscape: false,
-                buttons: {
-                    Save: function () {
+        $dialog.find('.dialog-header').remove();
 
-                        if (self.new_name) {
+        $dialog.find('div.dialog-content').append($element);
 
-                            self.text = textEditor.getValue();
+        $dialog.find('button.confirm-button').click(function () {
 
-                            self.validator[self.root](self.text) && self.save(data => {
+            if (self.new_name) {
 
-                                $(this).dialog('close');
+                self.text = textEditor.getValue();
 
-                                delete self.text;
+                self.validator[self.root](self.text) && self.save(data => {
 
-                                callback && callback(data);
+                    $dialog.dialog('close');
 
-                            });
+                    delete self.text;
 
-                        }
+                    callback && callback(data);
 
-                        else $.bootstrapGrowl('Please enter a filename', {type: 'warning'});
+                });
 
-                    },
-                    Cancel: function () {
+            }
 
-                        $(this).dialog('close');
+            else self.statusAlert('warning', 'Please enter a filename');
 
-                    }
-                }
-            });
+        });
+
+        $dialog.find('button.cancel-button').click(function () {
+
+            $dialog.dialog('close')
+
+        });
+
+        $dialog.dialog({width: 900, closeOnEscape: false});
 
         textEditor.focus();
 
@@ -344,53 +347,67 @@ FileObj.prototype.dialog = function (action, callback) {
 
     let self = this;
 
-    self.fetchHtml('fileDialog.html').then($element =>  {
+    let $dialog = self.confirmationDialog();
 
-        self.bindElement($element);
+    $dialog.find('.dialog-header').attr('class', 'text-capitalize').html(action);
 
-        self.set('action', action);
+    $dialog.find('div.dialog-content').append(
+        $('<label>').attr({for: 'filename-input', class: 'sr-only'}).html('File name'),
+        $('<div>').attr('class', 'input-group').append(
+            $('<input>').attr({id: 'filename-input', 'data-bind': 'new_name', class: 'form-control form-control-sm', type: 'text'}),
+            $('<div>').attr('class', 'input-group-append').append(
+                $('<button>').attr({class: 'is-folder-button btn btn-light btn-sm', 'data-bind': 'is_folder', type: 'button', title: 'Folder'}).append(
+                    $('<span>').attr('class', 'fas fa-folder')
+                )
+            )
+        )
+    );
 
-        self.set('is_folder', false);
+    self.bindElement($dialog);
 
-        action === 'copy' && self.set('new_name', 'copy_' + self.name);
+    self.set('action', action);
 
-        if (action === 'copy' || action === 'rename') {
+    self.set('is_folder', false);
 
-            $element.find('.input-group').attr('class', 'form-group');
+    action === 'copy' && self.set('new_name', 'copy_' + self.name);
 
-            $element.find('.input-group-btn').hide();
+    if (action === 'copy' || action === 'rename') {
 
-        }
+        $dialog.find('div.input-group').removeClass('input-group');
 
-        $element.find('.confirm-button').click(function() {
+        $dialog.find('div.input-group-append').hide();
 
-            if (self.is_folder) self.type = 'directory';
+    }
 
-            if (self.new_name && self.new_name !== self.name) self.postData(action, true, (data) => {
+    $dialog.find('button.confirm-button').click(function() {
 
-                $element.dialog('close');
+        if (self.is_folder) self.type = 'directory';
 
-                callback && callback(data);
+        if (self.new_name && self.new_name !== self.name) self.postData(action, true, (data) => {
 
-            });
+            $dialog.dialog('close');
+
+            callback && callback(data);
 
         });
-
-        $element.find('.cancel-button').click(function() {
-
-            $element.dialog('close')
-
-        });
-
-        $element
-            .dialog()
-            .keypress(function (event) {
-
-                event.keyCode === 13 && $element.find('.confirm-button').click()
-
-            });
 
     });
+
+    $dialog.find('button.cancel-button').click(function() {
+
+        $dialog.dialog('close')
+
+    });
+
+    $dialog
+        .dialog()
+        .keypress(function (event) {
+
+            event.keyCode === 13 && $dialog.find('.confirm-button').click()
+
+        });
+
+
 
 };
 
@@ -398,43 +415,49 @@ FileObj.prototype.roleDialog = function (callback) {
 
     let self = this;
 
-    self.fetchHtml('roleDialog.html').then($element => {
+    let $dialog = self.confirmationDialog();
+
+    self.fetchHtml('form_Role.html').then($element => {
 
         self.bindElement($element);
 
-        $element
-            .dialog({
-                buttons: {
-                    Save: function() {
+        $element.find('button').click(function () {
 
-                        self.role_folders = [];
+            $(this).toggleClass('checked_button')
 
-                        $(this).find('button.checked_button').each(function() {
+        });
 
-                            self.role_folders.push($(this).data())
+        $dialog.find('.dialog-header').html('Create role');
 
-                        });
+        $dialog.find('div.dialog-content').append($element);
 
-                        self.postData('create_role', false, (data) => {
+        $dialog.find('button.confirm-button').click(function () {
 
-                            callback && callback(data, self);
+            self.role_folders = [];
 
-                            $(this).dialog('close');
+            $dialog.find('button.btn-block.checked_button').each(function() {
 
-                        });
-
-                    },
-                    Cancel: function() {
-
-                        $(this).dialog('close')
-                    }
-                }
-            })
-            .find('button').click(function () {
-
-                $(this).toggleClass('checked_button')
+                self.role_folders.push($(this).data())
 
             });
+
+            self.postData('create_role', false, (data) => {
+
+                callback && callback(data, self);
+
+                $dialog.dialog('close');
+
+            });
+
+        });
+
+        $dialog.find('button.cancel-button').click(function () {
+
+            $dialog.dialog('close')
+
+        });
+
+        $dialog.dialog()
 
     })
 
@@ -444,13 +467,15 @@ FileObj.prototype.selector = function (owner) {
 
     let self = this;
 
-    self.fetchHtml('fileSelector.html', $('#content_container')).then($element => {
+    self.fetchHtml('selector_File.html', $('section.container')).then($element => {
 
         self.bindElement($element);
 
         self.set('title', owner ? owner + ' files' : self.root.capitalize());
 
         self.folder = window.location.hash.slice(1);
+
+        let $breadcrumbContainer = $('ol.breadcrumb');
 
         let $table = $('#file_table');
 
@@ -470,14 +495,15 @@ FileObj.prototype.selector = function (owner) {
             }),
             $('<td>'),
             $('<td>'),
+            $('<td>'),
             $('<td>')
         );
 
         let roots = {
             playbooks: {
                 button: {
-                    text: '<span class="fa fa-plus fa-fw" title="New playbook"></span>',
-                    className: 'btn-xs btn-icon',
+                    text: '<span class="fas fa-plus fa-fw" title="New playbook"></span>',
+                    className: 'btn-sm btn-icon',
                     action: function () {
 
                         $.ajax({
@@ -500,8 +526,8 @@ FileObj.prototype.selector = function (owner) {
             },
             roles: {
                 button: {
-                    text: '<span class="fa fa-plus fa-fw" title="Add role"></span>',
-                    className: 'btn-xs btn-icon',
+                    text: '<span class="fas fa-plus fa-fw" title="Add role"></span>',
+                    className: 'btn-sm btn-icon',
                     action: function () {
 
                         let role = new FileObj({name: '', root: 'roles', folder: '', type: 'directory'});
@@ -520,8 +546,8 @@ FileObj.prototype.selector = function (owner) {
 
         let buttons = [
             {
-                text: '<span class="fa fa-asterisk" title="Create"></span>',
-                className: 'btn-xs btn-icon',
+                text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
+                className: 'btn-sm btn-icon',
                 action: function () {
 
                     let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
@@ -535,8 +561,8 @@ FileObj.prototype.selector = function (owner) {
                 }
             },
             {
-                text: '<span class="fa fa-upload" title="Upload"></span>',
-                className: 'btn-xs btn-icon',
+                text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
+                className: 'btn-sm btn-icon',
                 action: function () {
 
                     let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
@@ -555,14 +581,14 @@ FileObj.prototype.selector = function (owner) {
 
             $('.path_link').remove();
 
-            $('#edit_path_icon').removeClass('checked_button');
+            $('#edit_path').removeClass('checked_button');
 
             self.folder && $.each(self.folder.split('/'), function (index, value) {
 
                 $('#path_links').append(
 
                     $('<li>')
-                        .attr({id: 'path_link_' + index, class: 'path_link'})
+                        .attr({id: 'path_link_' + index, class: 'breadcrumb-item path_link'})
                         .html(value)
                         .click(function () {
 
@@ -613,14 +639,15 @@ FileObj.prototype.selector = function (owner) {
                     }
                 },
                 columns: [
-                    {class: 'col-md-5', title: 'name', data: 'name'},
-                    {class: 'col-md-2', title: 'type', data: 'type'},
-                    {class: 'col-md-1', title: 'size', data: 'size'},
-                    {class: 'col-md-4', title: 'modified', data: 'modified'}
+                    {title: 'name', data: 'name', width: '60%'},
+                    {title: 'type', data: 'type', width: '10%'},
+                    {title: 'size', data: 'size', width: '10%'},
+                    {title: 'modified', data: 'modified', width: '10%'},
+                    {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
                 ],
                 order: [[0, 'asc']],
                 paging: false,
-                dom: 'Bfrtip',
+                dom: 'Bfti',
                 buttons: buttons,
                 rowCallback: function (row, data) {
 
@@ -641,9 +668,8 @@ FileObj.prototype.selector = function (owner) {
 
                     $(row).find('td:eq(2)').humanBytes();
 
-                    $(row).find('td:eq(3)').html('').removeAttr('title').append(
-                        $('<span>').html(file.modified).attr('title', file.modified),
-                        self.tableBtn('fa fa-trash', 'Delete', function () {
+                    $(row).find('td:eq(4)').html('').removeAttr('title').append(
+                        self.tableBtn('fas fa-trash', 'Delete', function () {
 
                             file.del(function () {
 
@@ -652,12 +678,12 @@ FileObj.prototype.selector = function (owner) {
                             })
 
                         }),
-                        self.tableBtn('fa fa-download ', 'Download ' + file.name, function () {
+                        self.tableBtn('fas fa-download ', 'Download ' + file.name, function () {
 
                             window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
 
                         }),
-                        self.tableBtn('fa fa-clone', 'Copy', function () {
+                        self.tableBtn('fas fa-clone', 'Copy', function () {
 
                             file.dialog('copy', function () {
 
@@ -666,7 +692,7 @@ FileObj.prototype.selector = function (owner) {
                             });
 
                         }),
-                        self.tableBtn('fa fa-pencil-alt', 'Edit', function () {
+                        self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
 
                             file.edit(function () {
 
@@ -722,7 +748,7 @@ FileObj.prototype.selector = function (owner) {
 
                 $(this).addClass('checked_button');
 
-                $('#path_links').append($('<li>').attr('class', 'path_link').append($pathInputField));
+                $('#path_links').append($('<li>').attr('class', 'breadcrumb-item path_link').append($pathInputField));
 
                 $pathInputField
                     .off()

@@ -845,7 +845,7 @@ class NodeView(View):
 
                 node.delete()
 
-                data = {'status': 'ok', 'msg': node.type.title() + ' deleted'}
+                data = {'status': 'ok', 'msg': node.type.title() + ' deleted', 'type': node.type}
 
             else:
 
