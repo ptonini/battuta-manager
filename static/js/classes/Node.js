@@ -537,12 +537,13 @@ Node.prototype.descendants = function (offset, $container) {
         Object.keys(grids).forEach(function(key) {
 
             let $grid =  $('<div>').attr('class', 'col').DynaGrid({
-                gridTitle: key.capitalize() + 's',
+                gridTitle: key + 's',
                 dataSource: 'array',
                 dataArray: grids[key],
                 headerTag: '<h6>',
                 showFilter: true,
                 showCount: true,
+                gridHeaderClasses: 'text-capitalize',
                 gridBodyClasses: 'inset-container scrollbar',
                 gridBodyBottomMargin: 10,
                 gridBodyTopMargin: 10,

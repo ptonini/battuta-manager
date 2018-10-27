@@ -46,32 +46,6 @@ $.extend($.fn.DynaGrid.defaults, {
     gridItemClasses: 'shadow-sm',
 });
 
-
-// bootstrapGrowl
-
-$.extend($.bootstrapGrowl.default_options, {
-    align: 'center',
-    delay: 0,
-    allowDismiss: false,
-    width: 'auto',
-    offset: {
-        from: 'bottom',
-        amount: function (alert) {
-
-            let tempAlert = alert.clone().css('visibility', 'hidden');
-
-            $('body').append(tempAlert);
-
-            let offset = (window.innerHeight - tempAlert.height()) / 2;
-
-            tempAlert.remove();
-
-            return offset
-
-        }
-    }
-});
-
 // Modal dialog options
 
 $.extend($.ui.dialog.prototype.options, {
@@ -142,7 +116,7 @@ $.fn.rememberTab = function () {
 
 $.fn.prettyBoolean = function () {
 
-    this.removeAttr('data-toggle').removeAttr('title').removeClass('text-truncate');
+    this.removeAttr('data-toggle').removeAttr('title').removeClass('text-truncate').addClass('text-center');
 
     if (this.html() === 'true') this.html($('<span>').attr('class', 'fas fa-check'));
 

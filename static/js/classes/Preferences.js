@@ -61,90 +61,42 @@ Preferences.prototype.dialog = function () {
 
     self.fetchHtml('templates_Preferences.html').then($element => {
 
-        let $dialog = self.confirmationDialog();
+        let $dialog = self.confirmationDialog().dialog({autoOpen: false, width: 800});
 
-        let $restoreDialog = $element.find('#restore_dialog');
+        $dialog.find('.dialog-header').append(
+            'Preferences',
+            $('<button>').attr({class: 'restore-button btn btn-sm btn-icon float-right', title:'Restore defaults'}).append(
+                $('<span>').attr('class', 'fas fa-fw fa-undo-alt')
+            )
+        );
 
-        let $headerTemplate = $element.find('#header_template > .row');
+        $dialog.find('button.restore-button').click(function () {
 
-        let $itemTemplate = $element.find('#item_template > .row');
+            self.warningAlert('Restore all preferences to default values?', function () {
 
-        let $prefsContainer = $element.find('.preferences-container').css('max-height', window.innerHeight * 0.5 + 'px');
+                $.each(self.default, function (i) {
 
-        let fieldType = {
-            str: {
-                class: 'col-5',
-                template: $element.find('#input_templates > input')
-            },
-            bool: {
-                class: 'col-2',
-                template: $element.find('#input_templates > select')
-            },
-            number: {
-                class: 'col-2',
-                template: $element.find('#input_templates > input')
-            }
+                    $.each(self.default[i].items, function (j, item) {
 
-        };
+                        $('#item_' + item.name).val(item.value.toString());
 
-        let defaultValues;
-
-        let buildContainer = callback => {
-
-            self.refresh(false, function () {
-
-                defaultValues = [];
-
-                $prefsContainer.empty();
-
-                $.each(self.default, function (index, item_group) {
-
-                    let $header = $headerTemplate.clone();
-
-                    $header.find('h5').attr('title', item_group.description).html(item_group.name);
-
-                    $prefsContainer.append($header);
-
-                    $.each(item_group.items, function (index, item) {
-
-                        let $itemContainer = $itemTemplate.clone();
-
-                        $itemContainer.find('.item-label').html(item.name + ':');
-
-                        $itemContainer.find('div.input_container').addClass(fieldType[item.data_type].class).append(
-                            fieldType[item.data_type].template.clone()
-                                .attr({id: 'item_' + item.name})
-                                .data({name: item.name, data_type: item.data_type})
-                                .val(item.value.toString())
-                        );
-
-                        $itemContainer.find('.error_label').attr('id', item.name + '_error');
-
-                        $prefsContainer.append($itemContainer);
-
-                        defaultValues.push([item.name, item.value]);
-
-                    });
-
-                    $prefsContainer.children().last().removeClass('mb-1').addClass('mb-3')
+                    })
 
                 });
 
-                Object.keys(self.stored).forEach(function (key) {
+                self.statusAlert('success', 'Preferences restored')
 
-                    $prefsContainer.find('#item_' + key).val(self.stored[key].toString());
+            })
 
-                });
+        });
 
-                callback && callback();
+        $dialog.find('button.cancel-button').click(function () {
 
-                $prefsDialog.dialog('open')
+            $dialog.dialog('close');
 
-            });
+        });
 
-        };
-
-        let savePreferences = callback => {
+        $dialog.find('button.confirm-button').click(function () {
 
             let prefs = {};
 
@@ -158,7 +110,7 @@ Preferences.prototype.dialog = function () {
 
             };
 
-            $prefsContainer.find('input,select').each(function () {
+            $dialogContent.find('input,select').each(function () {
 
                 let result = validatePreference($(this).data('data_type'), $(this).val());
 
@@ -178,111 +130,90 @@ Preferences.prototype.dialog = function () {
 
                 self.prefs = prefs;
 
-                console.log(prefs);
-
                 self.save(function () {
 
-                    self.refresh(false);
+                    setTimeout(function () {
 
-                    callback && callback()
+                        location.reload()
+
+                    }, 1000)
 
                 });
 
             }
+
+        });
+
+        let $dialogContent = $dialog.find('div.dialog-content')
+            .attr('class', 'inset-container scrollbar')
+            .css('max-height', window.innerHeight * 0.5 + 'px');
+
+        let $itemTemplate = $element.find('div.item-template').removeClass('item-template');
+
+        let fieldType = {
+            str: {
+                class: 'col-5',
+                template: $element.find('input.input-template').clone().removeClass('input-template')
+            },
+            bool: {
+                class: 'col-2',
+                template: $element.find('select.input-template').clone().removeClass('input-template')
+            },
+            number: {
+                class: 'col-2',
+                template: $element.find('input.input-template').clone().removeClass('input-template')
+            }
+
         };
 
-        buildContainer();
+        let defaultValues;
 
-        $element.find('button').click(function () {
+        self.refresh(false, function () {
 
-            $restoreDialog.dialog('open')
+            defaultValues = [];
 
-        });
+            $dialogContent.empty();
 
-        $prefsDialog.dialog({
-            autoOpen: false,
-            width: 800,
-            buttons: {
-                Reload: function () {
+            $.each(self.default, function (index, item_group) {
 
-                    buildContainer(function () {
+                let $header = $element.find('div.header-template').clone();
 
-                        $.bootstrapGrowl('Preferences reloaded', {type: 'success'})
+                $header.find('h6').attr('title', item_group.description).html(item_group.name);
 
-                    })
-                },
-                Save: function () {
+                $dialogContent.append($header);
 
-                    savePreferences(function () {
+                $.each(item_group.items, function (index, item) {
 
-                        $.bootstrapGrowl('Preferences saved', {
-                            type: 'success',
-                            closeCallback: function () {
+                    let $itemContainer = $itemTemplate.clone();
 
-                                window.location.reload(true)
+                    $itemContainer.find('.item-label').html(item.name + ':');
 
-                            }
-                        });
-                    })
+                    $itemContainer.find('div.input_container').addClass(fieldType[item.data_type].class).append(
+                        fieldType[item.data_type].template.clone()
+                            .attr({id: 'item_' + item.name})
+                            .data({name: item.name, data_type: item.data_type})
+                            .val(item.value.toString())
+                    );
 
-                },
-                Cancel: function () {
+                    $itemContainer.find('.error_label').attr('id', item.name + '_error');
 
-                    $(this).dialog('close')
+                    $dialogContent.append($itemContainer);
 
-                }
-            },
-            close: function () {
+                    defaultValues.push([item.name, item.value]);
 
-                $(this).remove();
+                });
 
-                $restoreDialog.remove()
+                $dialogContent.children().last().removeClass('mb-1').addClass('mb-4')
 
-            }
-        });
+            });
 
-        $restoreDialog.dialog({
-            autoOpen: false,
-            buttons: {
-                Ok: function () {
+            Object.keys(self.stored).forEach(function (key) {
 
-                    $(this).dialog('close');
+                $dialogContent.find('#item_' + key).val(self.stored[key].toString());
 
-                    $.each(self.default, function (i) {
+            });
 
-                        $.each(self.default[i].items, function (j, item) {
-
-                            $('#item_' + item.name).val(item.value);
-
-                        })
-
-                    });
-
-                    savePreferences(function () {
-
-                        setTimeout(function () {
-
-                            $.bootstrapGrowl('Preferences restored', {
-                                type: 'success',
-                                closeCallback: function () {
-
-                                    window.location.reload(true)
-
-                                }
-                            })
-
-                        }, 500);
-
-                    })
-
-                },
-                Cancel: function () {
-
-                    $(this).dialog('close')
-
-                }
-            }
-            // });
+            $dialog.dialog('open')
 
         });
 

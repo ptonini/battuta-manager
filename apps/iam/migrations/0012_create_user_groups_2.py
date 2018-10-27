@@ -27,7 +27,7 @@ def add_user_groups(apps, schema_editor):
 
     group_class = apps.get_model('auth', 'Group')
 
-    groupdata_class = apps.get_model('users', 'GroupData')
+    groupdata_class = apps.get_model('iam', 'GroupData')
 
     permission_class = apps.get_model('auth', 'Permission')
 

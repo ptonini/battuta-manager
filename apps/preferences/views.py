@@ -62,7 +62,7 @@ class PreferencesView(View):
 
                         item.save()
 
-                data = {'status': 'ok'}
+                data = {'status': 'ok', 'msg': 'Preferences saved - reloading page'}
 
             else:
 

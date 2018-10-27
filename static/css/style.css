@@ -1,5 +1,4 @@
 :root {
-
     --main-bkg-color: whitesmoke;
     --main-font-color: dimgrey;
     --main-text-shadow: 0 0 1px rgba(0,0,0,0.11), 0 1px 1px rgba(0,0,0,0.11);
@@ -18,11 +17,6 @@ body {
     background-color: var(--main-bkg-color);
     color: var(--main-font-color);
 }
-
-/*.jsonview li {margin: 3px 0}*/
-
-/*.well {word-break: break-all; margin-bottom: 0}*/
-
 
 /* Fonts *****************************/
 
@@ -68,8 +62,8 @@ button .fas, button .far, button .fal, button .fab {
 /* Pattern editor *********************/
 
 a.pattern-tab.nav-link.active {
-    background-color: var(--container-bkg-color) !important;
-    border-bottom-color:  var(--container-bkg-color) !important;
+    background-color: var(--container-bkg-color);
+    border-bottom-color:  var(--container-bkg-color);
 }
 
 a.pattern-grid {
@@ -142,32 +136,32 @@ a, a:focus, a:hover {
 
 /* Icon buttons **********************/
 
-.btn-icon {
+button.btn-icon {
     padding: 1px 5px;
     border: transparent;
     background-color: transparent;
 }
 
-.btn-icon:focus {
+button.btn-icon:focus {
     box-shadow: none
 }
 
-.btn-icon:hover {
+button.btn-icon:hover {
     background-color: var(--btn-icon-hover-color)
 }
 
-.btn-icon:disabled {
-    border: none !important;
-    background-color: transparent !important;
+button.btn-icon:disabled {
+    border: none;
+    background-color: transparent;
 }
 
 
 /* Navbar options ********************/
 
 nav.navbar {
-    border-radius: 0 !important;
-    margin-bottom: 15px !important;
-    border-color: transparent !important;
+    border-radius: 0;
+    margin-bottom: 15px;
+    border-color: transparent;
     box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.14), 0 1px 14px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.2);
     background-color: var(--container-bkg-color);
 }
@@ -177,7 +171,7 @@ nav.navbar a.navbar-brand {
 }
 
 nav.navbar a.nav-link {
-    font-size: .875rem !important;
+    font-size: .875rem;
 }
 
 nav.navbar a.dropdown-item {
@@ -243,10 +237,12 @@ div.alert div.button-container span {
 /* File manager path container *******/
 
 ol.breadcrumb {
-    padding: 8px !important;
+    padding: 8px;
 }
 
-li.breadcrumb-item {cursor: pointer}
+li.breadcrumb-item {
+    cursor: pointer
+}
 
 button#edit_path {
     position:absolute;
@@ -261,20 +257,7 @@ button#edit_path {
 #path_input {border: none; padding: 0}
 
 
-/* Job view options ****************/
-
-span.job-navbar span,
-span.job-navbar small {
-    margin-right: 15px
-}
-
-.result-container,
-.task-table-container {
-    margin: 10px 0
-}
-
-
-/* JQuery UI options *****************/
+/* JQuery dialog *************************/
 
 .ui-dialog {
     box-shadow: 0 0 20px #888888;
@@ -292,20 +275,30 @@ span.job-navbar small {
     border: none
 }
 
+
+/* JQuery widgets *************************/
+
 .ui-widget-overlay {
     background: white;
     opacity: 0
+}
+
+.ui-widget-content {
+    color: var(--main-font-color)
+}
+
+.ui-widget input.form-control,
+.ui-widget select.form-control,
+.ui-widget textarea.form-control,
+.ui-widget button.btn {
+    font-size: 1rem
 }
 
 .ui-widget input.form-control-sm,
 .ui-widget select.form-control-sm,
 .ui-widget textarea.form-control-sm,
 .ui-widget button.btn-sm {
-    font-size: 0.875rem !important
-}
-
-.ui-widget button.btn {
-    font-size: 1rem
+    font-size: 0.875rem
 }
 
 .ui-autocomplete {
@@ -324,7 +317,7 @@ table.dataTable {
 
 table.dataTable thead th,
 table.dataTable tbody td  {
-    border: none !important;
+    border: none;
     padding-top: 6px;
     padding-bottom: 6px;
     line-height: 23px;
@@ -339,11 +332,11 @@ table.dataTable tbody td {
 
 table.dataTable tr.child_row,
 table.dataTable tr.child_row:hover {
-    background-color: transparent !important;
+    background-color: transparent;
 }
 
 table.dataTable tr.child_row div.well {
-    background-color: var(--main-bkg-color) !important;
+    background-color: var(--main-bkg-color);
 }
 
 div.dataTables_length select {
@@ -355,8 +348,8 @@ div.dataTables_filter {
     text-align: right;
 }
 
-div.dataTables_filter input {
-    margin-left: 8px !important;
+div.dataTables_wrapper div.dataTables_filter input {
+    margin-left: 8px;
 }
 
 div.dataTables_scrollBody {
@@ -376,7 +369,7 @@ div.dataTables_scrollBody::-webkit-scrollbar-thumb {
 }
 
 div.dataTables_paginate  {
-    float: right !important
+    float: right
 }
 
 div.dataTables_paginate a.page-link {

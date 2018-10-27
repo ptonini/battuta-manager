@@ -447,7 +447,17 @@ class AdHocView(View):
 
         if True in auth:
 
-            adhoc = get_object_or_404(AdHocTask, pk=request.POST['id']) if request.POST.get('id') else AdHocTask()
+            if request.POST.get('id'):
+
+                adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
+
+                new_task = False
+
+            else:
+
+                adhoc = AdHocTask()
+
+                new_task = True
 
             form = AdHocTaskForm(request.POST or None, instance=adhoc)
 
@@ -457,7 +467,7 @@ class AdHocView(View):
 
                     saved_task = form.save(commit=True)
 
-                    data = {'status': 'ok', 'id': saved_task.id, 'msg': 'Task saved'}
+                    data = {'status': 'ok', 'id': saved_task.id, 'msg': 'Task created' if new_task else 'Task saved'}
 
                 else:
 

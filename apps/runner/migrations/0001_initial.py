@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                 ('subset', models.CharField(blank=True, max_length=1024, null=True)),
                 ('check', models.BooleanField()),
                 ('stats', models.TextField(blank=True, max_length=4096, null=True)),
-                ('cred', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='apps.iam.Credential')),
+                ('cred', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='iam.Credential')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),

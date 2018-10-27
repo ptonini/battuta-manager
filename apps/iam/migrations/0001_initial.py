@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
                 ('timezone', models.CharField(max_length=64)),
-                ('default_cred', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='apps.iam.Credential')),
+                ('default_cred', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='iam.Credential')),
             ],
         ),
         migrations.AddField(

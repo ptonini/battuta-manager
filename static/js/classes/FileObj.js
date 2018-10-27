@@ -114,7 +114,7 @@ FileObj.prototype.upload = function (callback) {
 
     $dialog.find('.dialog-header').html('Upload file');
 
-    $dialog.find('div.dialog-content').append(
+    $dialog.find('div.dialog-content').addClass('pt-2').append(
         $('<label>').attr({for: 'upload-input', class: 'sr-only'}).html('Filename'),
         $('<input>').attr({id: 'upload-input', class:'input-file', type: 'file'})
     );
@@ -351,7 +351,7 @@ FileObj.prototype.dialog = function (action, callback) {
 
     $dialog.find('.dialog-header').attr('class', 'text-capitalize').html(action);
 
-    $dialog.find('div.dialog-content').append(
+    $dialog.find('div.dialog-content').addClass('pt-2').append(
         $('<label>').attr({for: 'filename-input', class: 'sr-only'}).html('File name'),
         $('<div>').attr('class', 'input-group').append(
             $('<input>').attr({id: 'filename-input', 'data-bind': 'new_name', class: 'form-control form-control-sm', type: 'text'}),
@@ -471,17 +471,15 @@ FileObj.prototype.selector = function (owner) {
 
         self.bindElement($element);
 
-        self.set('title', owner ? owner + ' files' : self.root.capitalize());
+        self.set('title', owner ? owner + ' files' : self.root);
 
         self.folder = window.location.hash.slice(1);
-
-        let $breadcrumbContainer = $('ol.breadcrumb');
 
         let $table = $('#file_table');
 
         let $breadCrumb = $('#path_links');
 
-        let $pathInputField = $('<input>').attr('id', 'path_input');
+        let $pathInputField = $('<input>').attr({id: 'path_input', class: 'rounded px-1'});
 
         let $previousFolderRow = $('<tr>').attr('role', 'row').append(
             $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
@@ -608,6 +606,7 @@ FileObj.prototype.selector = function (owner) {
 
                         })
                 )
+
             });
 
         };

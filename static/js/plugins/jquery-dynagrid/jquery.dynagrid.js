@@ -218,7 +218,7 @@
 
             $gridContainer.data('dynagridOptions', opts);
 
-            let $gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header center-block', id: opts.gridId});
+            let $gridHeader = $(opts.headerTag).attr({class: 'dynagrid-header center-block ' + opts.gridHeaderClasses, id: opts.gridId});
 
             let $gridBody = $('<div>')
                 .attr({class: 'dynagrid-body', id: opts.gridId + '_grid_body'})
@@ -435,6 +435,7 @@
         itemToggle: false,
         itemHoverCursor: 'pointer',
         truncateItemText: false,
+        gridHeaderClasses: null,
         gridBodyClasses: null,
         gridItemClasses: null,
         searchBoxClasses: null,
