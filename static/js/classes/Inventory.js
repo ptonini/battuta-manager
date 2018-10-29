@@ -34,13 +34,12 @@ Inventory.prototype.manage = function () {
 
         $('#upload_field')
             .fileinput({
-                uploadUrl: self.apiPath + 'import/',
+                ajaxSettings: {method: 'PUT', beforeSend: self.ajaxBeforeSend},
+                mergeAjaxCallbacks: 'before',
+                uploadUrl: self.apiPath,
                 uploadExtraData: function () {
 
-                    return {
-                        format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                        csrfmiddlewaretoken: self._getCookie('csrftoken')
-                    }
+                    return {format: $('input[type="radio"][name="import_file_type"]:checked').val()}
 
                 },
                 uploadAsync: true
@@ -109,7 +108,7 @@ Inventory.prototype.manage = function () {
 
                     if (self.sftp_user) {
 
-                        window.open(self.apiPath + 'export/?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
+                        window.open(self.apiPath + '?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
 
                         $dialog.dialog('close')
 
@@ -125,7 +124,7 @@ Inventory.prototype.manage = function () {
 
             }
 
-            else window.open(self.apiPath + 'export/?format=' + format, '_self');
+            else window.open(self.apiPath + '?format=' + format, '_self');
 
         });
 

@@ -202,6 +202,25 @@ Battuta.prototype = {
 
     },
 
+    ajaxBeforeSend: function (xhr, settings) {
+
+        settings.blocking && $.blockUI({
+            message: null,
+            css: {
+                border: 'none',
+                backgroundColor: 'transparent'
+            },
+            overlayCSS: {backgroundColor: 'transparent'}
+        });
+
+        if (!Battuta.prototype._csrfSafeMethod(settings.type) && !settings.crossDomain) {
+
+            xhr.setRequestHeader("X-CSRFToken", Battuta.prototype._getCookie('csrftoken'));
+
+        }
+
+    },
+
     requestResponse: function (data, callback, failCallback) {
 
         switch (data.status) {
@@ -261,21 +280,8 @@ Battuta.prototype = {
             dataType: 'json',
             data: self.serialize(obj),
             cache: false,
-            beforeSend: function (xhr, settings) {
-
-                blocking && $.blockUI({
-                    message: null,
-                    css: {
-                        border: 'none',
-                        backgroundColor: 'transparent'
-
-                    },
-                    overlayCSS: {backgroundColor: 'transparent'}
-                });
-
-                !self._csrfSafeMethod(settings.type) && !this.crossDomain && xhr.setRequestHeader("X-CSRFToken", self._getCookie('csrftoken'));
-
-            },
+            beforeSend: self.ajaxBeforeSend,
+            blocking: blocking,
             success: function (data) {
 
                 self.requestResponse(data, callback, failCallback)

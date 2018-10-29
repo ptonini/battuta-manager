@@ -46,6 +46,7 @@ $.extend($.fn.DynaGrid.defaults, {
     gridItemClasses: 'shadow-sm',
 });
 
+
 // Modal dialog options
 
 $.extend($.ui.dialog.prototype.options, {

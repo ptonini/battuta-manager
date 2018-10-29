@@ -11,7 +11,7 @@ urlpatterns = [
 
     url(r'^(?P<type>host|group)/(?P<name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
 
-    url(r'^api/([a-z_]+)/$', views.InventoryView.as_view()),
+    url(r'^api/$', views.InventoryView.as_view()),
 
     url(r'^api/(host|group)/([a-z_]+)/$', login_required(views.NodeView.as_view())),
 
