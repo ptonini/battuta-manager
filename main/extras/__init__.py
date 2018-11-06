@@ -1,11 +1,13 @@
 import json
-import jsonurl
 
 from urllib import parse
 from pytz import timezone
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
 from django.utils.deprecation import MiddlewareMixin
+
+from . import  jsonurl
+
 
 
 
