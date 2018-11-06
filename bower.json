@@ -37,5 +37,8 @@
     "Assistant": "https://google-fonts.azurewebsites.net/googleFonts/Assistant?family=Assistant",
     "Kanit": "https://google-fonts.azurewebsites.net/googleFonts/Kanit?family=Kanit",
     "popper.js": "^1.14.4"
+  },
+  "resolutions": {
+    "jquery": "^3.3.1"
   }
 }

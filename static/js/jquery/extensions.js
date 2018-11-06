@@ -42,6 +42,7 @@ $.extend(true, $.fn.dataTable.Buttons.defaults, {
 // DynaGrid
 
 $.extend($.fn.DynaGrid.defaults, {
+    ajaxDataKey: 'data',
     gridBodyClasses: 'scrollbar',
     gridItemClasses: 'shadow-sm',
 });

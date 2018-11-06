@@ -399,7 +399,7 @@ Node.prototype.crud = {
 
         self.set('crud.tabsId', self.type);
 
-        self.set('crud.titlePlural', self.type.capitalize() + 's')
+        self.set('crud.titlePlural', self.type + 's')
 
     },
 };
@@ -417,10 +417,6 @@ Node.prototype.loadParam = function (param) {
     self.set('type', param.type);
 
     self.set('editable', param.editable);
-
-    self.set('memory', param.memory);
-
-    self.set('disc', param.disc);
 
     self.set('apiPath', self.paths.api.inventory + self.type + '/');
 
@@ -686,8 +682,6 @@ Node.prototype.selector = function () {
 
         self.bindElement($element);
 
-        let inventory = new Inventory({type: self.type});
-
         let $table = $element.find('#node_table');
 
         let $grid = $element.find('#node_grid');
@@ -696,15 +690,13 @@ Node.prototype.selector = function () {
 
         let loadData = () => {
 
-            inventory.list(true, function (data) {
+            self.fetchJson('GET', self.apiPath, null, true).then(response => {
 
-                self.nodes = data.nodes;
-
-                $grid.DynaGrid('load', self.nodes);
+                $grid.DynaGrid('load', response.data);
 
                 $table.DataTable().clear();
 
-                $table.DataTable().rows.add(self.nodes);
+                $table.DataTable().rows.add(response.data);
 
                 $table.DataTable().columns.adjust().draw();
 
@@ -714,7 +706,7 @@ Node.prototype.selector = function () {
 
         let addNode = () => {
 
-            new Node({name: null, description: null, type: self.type}).edit(function () {
+            new Node({id: null, type: self.type}).edit(function () {
 
                 loadData()
 
@@ -785,7 +777,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(self.paths.inventory + node.type + '/' + node.name + '/', '_self')
+                        window.open(node.id + '/', '_self')
 
                     });
 
@@ -816,9 +808,7 @@ Node.prototype.selector = function () {
         $grid.DynaGrid({
             headerTag: '<div>',
             dataSource: 'array',
-            itemValueKey: 'name',
             showFilter: true,
-            truncateItemText: true,
             gridBodyTopMargin: 10,
             maxHeight: window.innerHeight - sessionStorage.getItem('node_grid_offset'),
             columns: sessionStorage.getItem('node_grid_columns'),
@@ -826,13 +816,17 @@ Node.prototype.selector = function () {
             addButtonType: 'icon',
             addButtonClass: 'btn-icon',
             addButtonTitle: 'Add ' + self.type,
-            formatItem: function ($gridContainer, $gridItem) {
+            buildNow: false,
+            formatItem: function ($gridContainer, $gridItem, data) {
 
-                $gridItem.click(function () {
+                $gridItem
+                    .html(data.name)
+                    .css('cursor', 'pointer')
+                    .click(function () {
 
-                    window.open(self.paths.inventory + self.type + '/' + $(this).data('name') + '/', '_self')
+                        window.open(data.id + '/', '_self')
 
-                });
+                    });
 
             },
             addButtonAction: function () {
@@ -862,22 +856,29 @@ Node.prototype.selector = function () {
                 title: 'Delete nodes',
                 type: 'many',
                 objectType: self.type,
-                url: self.paths.api.inventory + 'list/?type=' + self.type,
-                ajaxDataKey: 'nodes',
+                url: self.apiPath,
                 itemValueKey: 'name',
                 action: function (selection, $dialog) {
 
-                    let inventory = new Inventory({type: self.type});
+                    self.deleteAlert(function () {
 
-                    inventory.selection = selection;
+                        self.fetchJson('DELETE', self.apiPath, {data: selection}, true).then(() => {
 
-                    inventory.del(function () {
+                            $dialog
+                                .dialog({
+                                    close: function () {
 
-                        loadData();
+                                        $(this).remove();
 
-                        $dialog.dialog('close');
+                                        loadData()
 
-                    });
+                                    }
+                                })
+                                .dialog('close');
+
+                        })
+
+                    })
 
                 }
             });
@@ -898,12 +899,11 @@ Node.prototype.selector = function () {
 
         self.crud.onFinish && self.crud.onFinish(self);
 
-        document.title = 'Battuta - ' + self.get('crud.titlePlural').capitalize();
+        document.title = 'Battuta - ' + self.get('crud.titlePlural');
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
         loadData()
-
 
     });
 

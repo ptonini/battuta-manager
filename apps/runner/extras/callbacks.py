@@ -220,7 +220,7 @@ class BattutaCallback(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
 
-        print pp.pprint(result._result)
+        #print pp.pprint(result._result)
 
         self._job.data['has_exceptions'] = True
 

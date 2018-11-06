@@ -5,7 +5,7 @@ import ast
 from pytz import timezone
 from multiprocessing import Process
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.core.exceptions import PermissionDenied
@@ -40,6 +40,10 @@ class PageView(View):
         elif kwargs['page'] == 'view':
 
             return render(request, "runner/job_view.html", {'job_id': kwargs['job_id']})
+
+        else:
+
+            raise Http404
 
 
 class JobView(View):
@@ -125,7 +129,7 @@ class JobView(View):
 
         else:
 
-            raise Http404('Invalid action')
+            return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -265,7 +269,7 @@ class JobView(View):
 
             else:
 
-                raise Http404('Invalid form data')
+                return HttpResponseNotFound('Invalid form data')
 
             if data is None:
 
@@ -388,7 +392,7 @@ class JobView(View):
 
         else:
 
-            raise Http404('Invalid action')
+            return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -431,7 +435,7 @@ class AdHocView(View):
 
         else:
 
-            raise Http404('Invalid action')
+            return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -481,7 +485,7 @@ class AdHocView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
 
         else:
 
@@ -513,7 +517,7 @@ class PlaybookView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
 
         else:
 
@@ -580,7 +584,7 @@ class PlaybookView(View):
             # Raise exception
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
 
         else:
 

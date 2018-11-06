@@ -4,7 +4,7 @@ from pytz import timezone
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -40,6 +40,8 @@ class PageView(View):
 
             return render(request, 'users/group_view.html', {'group_name': args[0]})
 
+        raise Http404()
+
 
 class LoginView(View):
 
@@ -74,7 +76,7 @@ class LoginView(View):
 
         else:
 
-            raise Http404('Invalid action')
+            return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -194,7 +196,7 @@ class UserView(View):
 
                 else:
 
-                    raise Http404('Invalid action')
+                    return HttpResponseNotFound('Invalid action')
 
             else:
 
@@ -399,7 +401,7 @@ class UserView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
 
         else:
 
@@ -513,7 +515,7 @@ class UserGroupView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -644,6 +646,6 @@ class UserGroupView(View):
 
         else:
 
-            raise Http404('Invalid action')
+            return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')

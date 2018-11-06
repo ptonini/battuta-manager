@@ -34,17 +34,19 @@
 
             $gridBody.empty();
 
-            opts.dataArray = opts.ajaxDataKey ? opts.dataArray[opts.ajaxDataKey] : opts.dataArray;
-
             $gridContainer.data('dynagridOptions', opts);
 
-            if (Object.prototype.toString.call(opts.dataArray) !== '[object Array]') throw '- invalid data format';
+            if (Object.prototype.toString.call(opts.dataArray) !== '[object Array]') {
 
-            let itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
+                throw '- invalid data format';
 
-            if (itemFormat === '[object Object]') opts.dataArray.sort(_sortDataArray(opts.itemValueKey, opts));
+            }
 
-            else if (itemFormat === '[object Array]') opts.dataArray.sort(_sortDataArray(0, opts));
+            // let itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
+
+            // if (itemFormat === '[object Object]') opts.dataArray.sort(_sortDataArray(opts.itemValueKey, opts));
+            //
+            // else if (itemFormat === '[object Array]') opts.dataArray.sort(_sortDataArray(0, opts));
 
             if (opts.dataArray.length === 0) {
 
@@ -63,46 +65,17 @@
 
                 if (opts.showCount) $('#' + opts.gridTitle + '_count').show();
 
-                $.each(opts.dataArray, function (index, itemData) {
+                $.each(opts.dataArray, function (index, data) {
 
                     let $item = $('<div>').attr('class', 'dynagrid-item ' + opts.gridItemClasses);
 
-                    let $itemChild = $('<span>');
+                    opts.formatItem($gridContainer, $item, data);
 
-                    opts.truncateItemText && $itemChild.attr('class', 'text-truncate');
-
-                    if (Object.prototype.toString.call(itemData) === '[object Array]') {
-
-                        $item
-                            .attr('title', itemData[0])
-                            .data({value: itemData[0], id: itemData[1]})
-                            .html(
-                                $itemChild.html(itemData[0])
-                            )
-
-                    }
-
-                    else if (Object.prototype.toString.call(itemData) === '[object Object]') {
-
-                        $item
-                            .html(itemData[opts.itemValueKey])
-                            .attr('title', itemData[opts.itemTitleKey ? opts.itemTitleKey : opts.itemValueKey])
-                            .css('cursor', opts.itemHoverCursor)
-                            .data(itemData)
-                            .html(
-                                $itemChild.html(itemData[opts.itemValueKey])
-                            )
-                    }
-
-                    else throw '- invalid item data type';
-
-                    if (opts.itemToggle) $item.off('click').click(function () {
+                    opts.itemToggle && $item.off('click').click(function () {
 
                         _toggleItemSelection($gridBody, $item)
 
                     });
-
-                    opts.formatItem($gridContainer, $item);
 
                     $gridBody.append($item);
 
@@ -125,7 +98,7 @@
                 data: opts.ajaxData,
                 success: function (data) {
 
-                    opts.dataArray = data;
+                    opts.dataArray = data[opts.ajaxDataKey];
 
                     _loadFromArray(gridContainer, gridBody, opts)
 
@@ -193,18 +166,18 @@
 
         }
 
-        function _sortDataArray(field, opts){
-
-            return function(a, b) {
-
-                if (a[field] > b[field]) return opts.sortOrder;
-
-                else if (a[field] < b[field]) return opts.sortOrder * -1;
-
-                return 0
-
-            }
-        }
+        // function _sortDataArray(field, opts){
+        //
+        //     return function(a, b) {
+        //
+        //         if (a[field] > b[field]) return opts.sortOrder;
+        //
+        //         else if (a[field] < b[field]) return opts.sortOrder * -1;
+        //
+        //         return 0
+        //
+        //     }
+        // }
 
         let $gridContainer = this;
 
@@ -433,17 +406,17 @@
         showFilter: false,
         checkered: false,
         itemToggle: false,
-        itemHoverCursor: 'pointer',
-        truncateItemText: false,
+        // itemHoverCursor: 'pointer',
+        // truncateItemText: false,
         gridHeaderClasses: null,
         gridBodyClasses: null,
         gridItemClasses: null,
         searchBoxClasses: null,
         ajaxDataKey: null,
-        itemValueKey: 'name',
-        itemTitleKey: null,
-        itemIdKey: 'id',
-        sortOrder: 1,
+        // itemValueKey: 'name',
+        // itemTitleKey: null,
+        // itemIdKey: 'id',
+        // sortOrder: 1,
         columns: 4,
         dataSource: 'ajax',
         dataArray: [],

@@ -1,18 +1,20 @@
-from django.conf.urls import url
+from django.urls import path, re_path
 from django.contrib.auth.decorators import login_required
 
 from . import views
 
 urlpatterns = [
 
-    url(r'^manage/$', login_required(views.PageView.as_view()), kwargs={'page': 'manage'}),
+    re_path(r'^(?P<page>manage|ansible)/$', login_required(views.PageView.as_view()), kwargs={'node_type': None, 'node_id': None}),
 
-    url(r'^(?P<type>host|group)/$', login_required(views.PageView.as_view()), kwargs={'page': 'selector'}),
+    re_path(r'^(?P<node_type>host|group)/$', login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'selector'}),
 
-    url(r'^(?P<type>host|group)/(?P<name>[a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
+    re_path(r'^(?P<node_type>host|group)/(?P<node_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
 
-    url(r'^api/$', views.InventoryView.as_view()),
+    path('api/', views.InventoryView.as_view()),
 
-    url(r'^api/(host|group)/([a-z_]+)/$', login_required(views.NodeView.as_view())),
+    re_path(r'^api/(?P<node_type>host|group)/$', login_required(views.NodeView.as_view()), kwargs={'node_id': None}),
+
+    re_path(r'^api/(?P<node_type>host|group)/<int:node_id>/$', login_required(views.NodeView.as_view()))
 
 ]

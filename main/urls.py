@@ -1,27 +1,28 @@
-from django.conf.urls import include, url
+from django.urls import include, path
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views.generic.base import RedirectView
 
 from . import views
 
-urlpatterns = {
+urlpatterns = [
 
-    url(r'^$', views.PageView.as_view(), kwargs={'page': 'main'}),
+    path('', views.PageView.as_view(), kwargs={'page': 'main'}),
 
-    url(r'^search/(?P<pattern>[a-zA-Z0-9-.]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'search'}),
+    path('search/<str:pattern>/', login_required(views.PageView.as_view()), kwargs={'page': 'search'}),
 
-    url(r'^inventory/', include('apps.inventory.urls', namespace='inventory')),
+    path('inventory/', include('apps.inventory.urls')),
 
-    url(r'^runner/', include('apps.runner.urls', namespace='runner')),
+    path('runner/', include('apps.runner.urls')),
 
-    url(r'^iam/', include('apps.iam.urls', namespace='iam')),
+    path('iam/', include('apps.iam.urls')),
 
-    url(r'^files/', include('apps.files.urls', namespace='files')),
+    path('files/', include('apps.files.urls')),
 
-    url(r'^preferences/', include('apps.preferences.urls', namespace='preferences')),
+    path('preferences/', include('apps.preferences.urls')),
 
-    url(r'^projects/', include('apps.projects.urls', namespace='projects')),
+    path('projects/', include('apps.projects.urls')),
 
-    url(r'^favicon.ico$', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
-}
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
+
+]

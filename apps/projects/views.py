@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.contrib.auth.models import User, Group as UserGroup
@@ -25,7 +25,7 @@ class PageView(View):
             return render(request, 'projects/project_view.html', {'project_id': args[0]})
         else:
 
-            raise Http404('Invalid page')
+            raise Http404()
 
 
 class ProjectView(View):
@@ -93,7 +93,7 @@ class ProjectView(View):
 
                 else:
 
-                    raise Http404('Invalid action')
+                    return HttpResponseNotFound('Invalid action')
 
             else:
 
@@ -179,7 +179,7 @@ class ProjectView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
         else:
 
             data = {'status': 'denied'}

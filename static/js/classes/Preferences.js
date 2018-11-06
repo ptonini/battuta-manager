@@ -27,7 +27,9 @@ Preferences.prototype.load = function () {
 
     let self = this;
 
-    self.refresh(false, function () {
+    return self.fetchJson('GET', self.apiPath).then(response => {
+
+        self.loadParam(response.data);
 
         sessionStorage.setItem('user_name', self.user.name);
 
@@ -51,7 +53,11 @@ Preferences.prototype.load = function () {
 
         });
 
-    })
+
+    });
+
+
+
 
 };
 

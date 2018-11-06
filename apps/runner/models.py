@@ -35,9 +35,9 @@ class PlaybookArgs(models.Model):
 
 class Job(models.Model):
 
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    cred = models.ForeignKey(Credential, blank=True, null=True)
+    cred = models.ForeignKey(Credential, blank=True, null=True, on_delete=models.CASCADE)
 
     is_running = models.BooleanField(default=False)
 
@@ -72,7 +72,7 @@ class Job(models.Model):
 
 class Play(models.Model):
 
-    job = models.ForeignKey(Job)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=128)
 
@@ -87,7 +87,7 @@ class Play(models.Model):
 
 class Task(models.Model):
 
-    play = models.ForeignKey(Play)
+    play = models.ForeignKey(Play, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=128)
 
@@ -100,7 +100,7 @@ class Task(models.Model):
 
 class Result(models.Model):
 
-    task = models.ForeignKey(Task)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
     host = models.CharField(max_length=64)
 

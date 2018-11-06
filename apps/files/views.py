@@ -12,15 +12,15 @@ from pytz import timezone, utc
 
 from django.shortcuts import render
 from django.views.generic import View
-from django.http import HttpResponse, StreamingHttpResponse, Http404
+from django.http import HttpResponse, Http404, StreamingHttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
 
-reload(sys)
-sys.setdefaultencoding('utf8')
+# reload(sys)
+#sys.setdefaultencoding('utf8')
 
 
 class PageView(View):
@@ -43,6 +43,10 @@ class PageView(View):
         elif kwargs['page'] == 'user':
 
             return render(request, 'files/user.html')
+
+        else:
+
+            raise Http404()
 
 
 class FileView(View):
@@ -205,7 +209,7 @@ class FileView(View):
 
             if not root['path']:
 
-                raise Http404('Invalid root')
+                return HttpResponseNotFound('Invalid root')
 
             if action == 'list':
 
@@ -294,7 +298,7 @@ class FileView(View):
 
                 else:
 
-                    raise Http404('Invalid object type')
+                    return HttpResponseNotFound('Invalid object type')
 
                 data = {'status': 'ok', 'exists': check_method(os.path.join(root['path'], request.GET['name']))}
 
@@ -328,7 +332,7 @@ class FileView(View):
 
             else:
 
-                raise Http404('Invalid action')
+                return HttpResponseNotFound('Invalid action')
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -480,7 +484,7 @@ class FileView(View):
 
                 else:
 
-                    raise Http404('Invalid action')
+                    return HttpResponseNotFound('Invalid action')
 
             else:
 

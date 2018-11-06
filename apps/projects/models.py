@@ -10,25 +10,25 @@ class Project(models.Model):
 
     description = models.TextField(max_length=256, blank=True)
 
-    manager = models.ForeignKey(User, null=True, blank=True)
+    manager = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
-    host_group = models.ForeignKey(HostGroup, null=True, blank=True)
+    host_group = models.ForeignKey(HostGroup, null=True, blank=True, on_delete=models.CASCADE)
 
     playbooks = models.TextField(max_length=65536, default='[]')
 
     roles = models.TextField(max_length=65536, default='[]')
 
-    can_edit_variables = models.ForeignKey(UserGroup, related_name='can_edit_variables', null=True, blank=True)
+    can_edit_variables = models.ForeignKey(UserGroup, related_name='can_edit_variables', null=True, blank=True, on_delete=models.CASCADE)
 
-    can_run_tasks = models.ForeignKey(UserGroup, related_name='can_run_tasks', null=True, blank=True)
+    can_run_tasks = models.ForeignKey(UserGroup, related_name='can_run_tasks', null=True, blank=True, on_delete=models.CASCADE)
 
-    can_edit_tasks = models.ForeignKey(UserGroup, related_name='can_edit_tasks', null=True, blank=True)
+    can_edit_tasks = models.ForeignKey(UserGroup, related_name='can_edit_tasks', null=True, blank=True, on_delete=models.CASCADE)
 
-    can_run_playbooks = models.ForeignKey(UserGroup, related_name='can_run_playbooks', null=True, blank=True)
+    can_run_playbooks = models.ForeignKey(UserGroup, related_name='can_run_playbooks', null=True, blank=True, on_delete=models.CASCADE)
 
-    can_edit_playbooks = models.ForeignKey(UserGroup, related_name='can_edit_playbooks', null=True, blank=True)
+    can_edit_playbooks = models.ForeignKey(UserGroup, related_name='can_edit_playbooks', null=True, blank=True, on_delete=models.CASCADE)
 
-    can_edit_roles = models.ForeignKey(UserGroup, related_name='can_edit_roles', null=True, blank=True)
+    can_edit_roles = models.ForeignKey(UserGroup, related_name='can_edit_roles', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
 

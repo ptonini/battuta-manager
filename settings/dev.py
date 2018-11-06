@@ -1,4 +1,4 @@
-from base import *
+from settings.base import *
 
 WSGI_APPLICATION = 'settings.wsgi.application'
 

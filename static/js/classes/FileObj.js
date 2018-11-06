@@ -170,7 +170,7 @@ FileObj.prototype.upload = function (callback) {
 
             $dialog.dialog('close');
 
-            self.requestResponse(data.response, callback, function () {
+            self.ajaxSuccess(data.response, callback, function () {
 
                 $dialog.find('div.file-caption-main').show();
 

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User, Group
 
 class Credential(models.Model):
 
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     title = models.CharField(max_length=32)
 
@@ -35,11 +35,11 @@ class Credential(models.Model):
 
 class UserData(models.Model):
 
-    user = models.OneToOneField(User, primary_key=True)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
 
     timezone = models.CharField(max_length=64)
 
-    default_cred = models.ForeignKey(Credential, blank=True, null=True)
+    default_cred = models.ForeignKey(Credential, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
 
@@ -48,7 +48,7 @@ class UserData(models.Model):
 
 class GroupData(models.Model):
 
-    group = models.OneToOneField(Group, primary_key=True)
+    group = models.OneToOneField(Group, primary_key=True, on_delete=models.CASCADE)
 
     description = models.CharField(max_length=256, default='')
 

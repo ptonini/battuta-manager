@@ -34,7 +34,7 @@ Inventory.prototype.manage = function () {
 
         $('#upload_field')
             .fileinput({
-                ajaxSettings: {method: 'PUT', beforeSend: self.ajaxBeforeSend},
+                ajaxSettings: {method: 'PUT', beforeSend: self.ajaxBeforeSend, error: self.ajaxError},
                 mergeAjaxCallbacks: 'before',
                 uploadUrl: self.apiPath,
                 uploadExtraData: function () {
@@ -54,7 +54,7 @@ Inventory.prototype.manage = function () {
 
                 $element.find('div.file-caption-main').show();
 
-                self.requestResponse(data.response, function() {
+                self.ajaxSuccess(data.response, function() {
 
                     let $result = $('<div>').append(
                         $('<div>').attr('class','mb-2 font-weight-bold').html('Import successful'),

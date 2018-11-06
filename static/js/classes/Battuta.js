@@ -221,49 +221,52 @@ Battuta.prototype = {
 
     },
 
-    requestResponse: function (data, callback, failCallback) {
+    ajaxError: function (xhr, status, error) {
 
-        switch (data.status) {
+        console.log(xhr, status, error);
 
-            case 'ok':
+        let message;
 
-                callback && callback(data);
+        if (xhr.status === 403) message = 'Permission denied';
 
-                data.msg && Battuta.prototype.statusAlert('success', data.msg);
+        else if (xhr.responseText) message = xhr.responseText;
 
-                break;
+        else message = error;
 
-            case 'failed':
+        Battuta.prototype.statusAlert('danger', message + ' (' + xhr.status + ')')
 
-                failCallback && failCallback(data);
+    },
 
-                let $message = $('<div>');
+    ajaxSuccess: function (response, callback, failCallback) {
 
-                if (data.error) for (let key in data.error) {
+        if (response.hasOwnProperty('data')) {
 
-                    if (data.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + data.error[key][0].message))
+            callback && callback(response);
 
-                }
+            response.msg && Battuta.prototype.statusAlert('success', response.msg);
 
-                else if (data.msg) $message.html(data.msg);
+        }
 
-                Battuta.prototype.statusAlert('danger', $message);
+        else  if (response.hasOwnProperty('errors')) {
 
+            failCallback && failCallback(response);
 
-                break;
+            let $message = $('<div>');
 
-            case 'denied':
+            if (response.error) for (let key in response.error) {
 
-                Battuta.prototype.statusAlert('danger', data.msg);
+                if (response.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + response.error[key][0].message))
 
-                break;
+            }
 
-            default:
+            else if (response.msg) $message.html(response.msg);
 
-                Battuta.prototype.statusAlert('danger', 'Unknown response');
+            Battuta.prototype.statusAlert('danger', $message);
 
 
         }
+
+        else Battuta.prototype.statusAlert('danger', 'Unknown response');
 
     },
 
@@ -280,13 +283,14 @@ Battuta.prototype = {
             dataType: 'json',
             data: self.serialize(obj),
             cache: false,
-            beforeSend: self.ajaxBeforeSend,
             blocking: blocking,
+            beforeSend: self.ajaxBeforeSend,
             success: function (data) {
 
-                self.requestResponse(data, callback, failCallback)
+                self.ajaxSuccess(data, callback, failCallback)
 
             },
+            error: self.ajaxError,
             complete: function () {
 
                 blocking && $.unblockUI();
@@ -315,44 +319,90 @@ Battuta.prototype = {
 
     // Data request methods (fetch) ***
 
-    fetch: function (method, url, obj) {
+    fetchJson: function (method, url, obj, blocking) {
 
-        let self = this;
+        let init = {};
 
-        let init = {
-            credentials: 'include',
-            method: method
-        };
+        init.credentials = 'include';
 
-        obj ? obj = self.serialize(obj) : obj = {};
+        init.method = method;
 
-        if (method === 'GET') url = url + '?' + $.param(obj);
+        init.headers = new Headers({
+            'Content-Type': 'application/vnd.api+json',
+            'X-CSRFToken': Battuta.prototype._getCookie('csrftoken')
+        });
 
-        else if (method === 'POST') {
 
-            init.headers = new Headers({
-                'Content-Type': 'application/json',
-                'X-CSRFToken': self._getCookie('csrftoken')
-            });
 
-            init.body = JSON.stringify(obj);
+        if (obj) {
+
+            console.log(obj, $.param(obj));
+
+            if (method === 'GET' || method === 'DELETE') url = url + '?' + $.param(obj);
+
+            else init.body = JSON.stringify(obj);
+
         }
+
+        blocking && $.blockUI({
+            message: null,
+            css: {
+                border: 'none',
+                backgroundColor: 'transparent'
+            },
+            overlayCSS: {backgroundColor: 'transparent'}
+        });
 
         return fetch(url, init).then(response => {
 
-            return response
+            blocking && $.unblockUI();
 
-        })
+            if (response.ok) return response.json();
 
-    },
+            else {
 
-    fetchJson: function (method, url, obj) {
+                Battuta.prototype.statusAlert('danger', response.statusText);
 
-        let self = this;
+                throw response.statusText
 
-        return self.fetch(method, url, obj).then(response => {
+            }
 
-            return response.json()
+        }).then(response => {
+
+            if (response.hasOwnProperty('data')) {
+
+                return response
+
+            }
+
+            else if (response.hasOwnProperty('errors')) {
+
+                console.log(response.errors);
+
+                let $message = $('<div>');
+
+                if (response.errors) for (let key in response.errors) {
+
+                    if (response.errors.hasOwnProperty(key)) $message.append($('<div>').html(key + ': ' + response.errors[key][0].message))
+
+                }
+
+                else if (response.msg) $message.html(response.msg);
+
+                Battuta.prototype.statusAlert('danger', $message);
+
+                throw response.statusText
+
+            }
+
+            else {
+
+                Battuta.prototype.statusAlert('danger', 'Unknown response');
+
+                throw 'Unknown response'
+            }
+
+
 
         })
 
@@ -360,20 +410,18 @@ Battuta.prototype = {
 
     fetchHtml: function (file, $container) {
 
-        let self = this;
-
-        return self.fetch('GET', self.paths.templates + file).then(response => {
+        return fetch(Battuta.prototype.paths.templates + file, {credentials: 'include'}).then(response => {
 
             return response.text()
 
         })
         .then(text => {
 
-            let $element = $(text);
+            let $elements = $(text);
 
-            $container ? $container.html($element) : $('<div>').append($element);
+            $container ? $container.html($elements) : $('<div>').append($elements);
 
-            return $element
+            return $elements
 
         })
 
@@ -382,17 +430,25 @@ Battuta.prototype = {
 
     // Data request helpers ***********
 
-    refresh: function (blocking, callback) {
+    refresh: function (blocking) {
 
         let self = this;
 
-        self.getData('get', blocking, function (data){
+        return self.fetchJson('GET', self.apiPath, {data: self.serialize(self)}, blocking).then(response => {
 
-            data[self.key] && self.loadParam(data[self.key]);
+            self.loadParam(response.data);
 
-            callback && callback(data)
+            return response
 
-        })
+        });
+
+        // self.getData('get', blocking, function (data){
+        //
+        //     data[self.key] && self.loadParam(data[self.key]);
+        //
+        //     callback && callback(data)
+        //
+        // })
 
     },
 
@@ -404,17 +460,26 @@ Battuta.prototype = {
 
     },
 
-    save: function (callback) {
+    save: function () {
 
         let self = this;
 
-        self.postData('save', true, function (data){
+        return self.fetchJson(self.id ? 'PUT' : 'POST', self.apiPath, {data: self.serialize(self)}, true).then(response => {
 
-            data[self.key] && self.loadParam(data[self.key]);
+            response.data[self.key] && self.loadParam(response.data[self.key]);
 
-            callback && callback(data)
+            return response
 
-        })
+        });
+
+        // self.ajaxRequest(self.id ? 'PUT' : 'POST', self, self.apiPath, true, function (data) {
+        //
+        //     data[self.key] && self.loadParam(data[self.key]);
+        //
+        //     callback && callback(data)
+        //
+        // });
+
     },
 
     del: function (callback) {
@@ -691,11 +756,7 @@ Battuta.prototype = {
 
         let $dialog = self.confirmationDialog();
 
-        let $grid = $('<div>');
-
         $dialog.find('.dialog-header').remove();
-
-        $dialog.find('div.dialog-content').append($grid);
 
         $dialog.find('button.cancel-button').click(function () {
 
@@ -707,13 +768,13 @@ Battuta.prototype = {
 
         $dialog.find('button.confirm-button').click(function () {
 
-            options.action($grid.DynaGrid('getSelected'), $dialog);
+            options.action($dialog.find('div.dialog-content').DynaGrid('getSelected'), $dialog);
 
         });
 
         options.type === 'one' && $dialog.find('button.confirm-button').remove();
 
-        $grid.DynaGrid({
+        $dialog.find('div.dialog-content').DynaGrid({
             gridTitle: options.title,
             showFilter: true,
             addButtonTitle: 'Add ' + options.entityType,
@@ -726,12 +787,14 @@ Battuta.prototype = {
             columns: sessionStorage.getItem('selection_modal_columns'),
             ajaxUrl: options.url,
             ajaxData: options.data,
-            ajaxDataKey: options.ajaxDataKey,
-            itemValueKey: options.itemValueKey,
-            itemTitleKey: options.itemTitleKey,
             dataSource: options.dataSource || 'ajax',
             dataArray: options.dataArray || [],
-            formatItem: function($gridContainer, $gridItem) {
+            formatItem: function($gridContainer, $gridItem, data) {
+
+                $gridItem
+                    .html(data.name)
+                    .css('cursor', 'pointer')
+                    .data({id: data.id, type: data.type});
 
                 if (options.type === 'one') $gridItem.click(function () {
 
@@ -901,19 +964,13 @@ Battuta.prototype = {
 
     },
 
-    deleteAlert: function (action, callback) {
+    deleteAlert: function (action) {
 
         let self = this;
 
         self.warningAlert('This action cannot be reversed. Continue?', function () {
 
-            if ({}.toString.call(action) === '[object Function]') action();
-
-            else self.postData(action, true, function (data) {
-
-                callback && callback(data);
-
-            });
+            action && action()
 
         })
 
@@ -1132,11 +1189,11 @@ Battuta.prototype = {
 
         $dialog.find('button.confirm-button').click(function () {
 
-            self.save(data => {
+            self.save().then(response => {
 
                 $dialog.dialog('close');
 
-                callback && callback(data);
+                callback && callback(response);
             })
 
         });

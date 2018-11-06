@@ -155,9 +155,9 @@ class Variable(models.Model):
 
     value = models.CharField(max_length=1024)
 
-    host = models.ForeignKey('Host', blank=True, null=True)
+    host = models.ForeignKey('Host', blank=True, null=True, on_delete=models.CASCADE)
 
-    group = models.ForeignKey('Group', blank=True, null=True)
+    group = models.ForeignKey('Group', blank=True, null=True, on_delete=models.CASCADE)
 
     class Meta:
 
