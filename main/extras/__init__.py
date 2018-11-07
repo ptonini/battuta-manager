@@ -1,29 +1,7 @@
 import json
 
-from urllib import parse
 from pytz import timezone
 from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.utils.deprecation import MiddlewareMixin
-
-from . import  jsonurl
-
-
-
-
-def download_file(f, filename):
-
-    f.seek(0)
-
-    response = HttpResponse(f.read(), content_type="application/octet-stream")
-
-    response['Content-Disposition'] = 'inline; filename=' + filename
-
-    return response
-
-def api_response(response):
-
-    return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')
 
 
 
@@ -100,80 +78,20 @@ class DataTableRequestHandler:
         }
 
 
-class RESTfulParsingMiddleware(MiddlewareMixin):
-
-    @staticmethod
-    def process_request(request):
-
-        if request.method in ['PUT'] and request.content_type != "application/json":
-
-            method = request.method
-
-            if hasattr(request, '_post'):
-
-                del request._post
-
-                del request._files
-
-            try:
-
-                request.method = "POST"
-
-                request._load_post_and_files()
-
-                request.method = method
-
-            except AttributeError as e:
-
-                request.META['REQUEST_METHOD'] = 'POST'
-
-                request._load_post_and_files()
-
-                request.META['REQUEST_METHOD'] = method
-
-            if method == 'PUT':
-
-                request.PUT = request.POST
-
-            else:
-
-                request.DELETE = request.GET
 
 
-class JSONParsingMiddleware(MiddlewareMixin):
 
-    @staticmethod
-    def process_request(request):
+def download_file(f, filename):
 
-        if request.content_type == 'application/vnd.api+json':
+    f.seek(0)
 
-            if request.method in ['PUT', 'POST']:
+    response = HttpResponse(f.read(), content_type="application/octet-stream")
 
-                try:
+    response['Content-Disposition'] = 'inline; filename=' + filename
 
-                    request.JSON = json.loads(request.body.decode('utf8'))
-
-                except ValueError as ve:
-
-                    return HttpResponseBadRequest('Unable to parse JSON data. Error : {0}'.format(ve))
-
-            elif request.method in ['DELETE']:
-
-                try:
-
-                    #print(request.args.to_dict())
-
-                    #print(dict(request.GET.iterlists()))
-
-                    print(jsonurl.parse_query(request.META['QUERY_STRING']))
-
-                    print(dict(parse.parse_qsl(request.META['QUERY_STRING'])))
+    return response
 
 
-                    print('stop')
+def api_response(response):
 
-                    #request.JSON = json.loads(request.body.decode('utf8'))
-
-                except ValueError as ve:
-
-                    return HttpResponseBadRequest('Unable to parse JSON data. Error : {0}'.format(ve))
+    return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')

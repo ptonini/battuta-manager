@@ -42,8 +42,8 @@ Battuta.prototype = {
             group: '/iam/group/',
             project: '/projects/',
             node: {
-                host: '/inventory/host/',
-                group: '/inventory/group/'
+                host: '/inventory/host',
+                group: '/inventory/group'
             }
         },
         views: {
@@ -51,8 +51,8 @@ Battuta.prototype = {
             user: '/iam/user/',
             group: '/iam/group/',
             node: {
-                host: '/inventory/host/',
-                group: '/inventory/group/'
+                host: '/inventory/host',
+                group: '/inventory/group'
             }
         },
         runner: '/runner/',
@@ -332,13 +332,15 @@ Battuta.prototype = {
             'X-CSRFToken': Battuta.prototype._getCookie('csrftoken')
         });
 
-
-
         if (obj) {
 
-            console.log(obj, $.param(obj));
+            if (method === 'GET' || method === 'DELETE') {
 
-            if (method === 'GET' || method === 'DELETE') url = url + '?' + $.param(obj);
+                for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
+
+                url = url + '?' + $.param(obj);
+
+            }
 
             else init.body = JSON.stringify(obj);
 
@@ -792,7 +794,7 @@ Battuta.prototype = {
             formatItem: function($gridContainer, $gridItem, data) {
 
                 $gridItem
-                    .html(data.name)
+                    .html(data.attributes[options.itemValueKey])
                     .css('cursor', 'pointer')
                     .data({id: data.id, type: data.type});
 
@@ -994,7 +996,7 @@ Battuta.prototype = {
 
             prefs.load();
 
-            $('#manage_inventory_anchor').attr('href', self.paths.inventory + 'manage/');
+            $('#manage_inventory_anchor').attr('href', self.paths.inventory + 'manage');
 
             $('#user_view_anchor').attr('href', self.paths.views.user + self.username + '/');
 

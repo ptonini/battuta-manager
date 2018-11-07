@@ -521,19 +521,20 @@ class NodeView(View):
 
         return related_set, related_class, related_type
 
-    def get(self, request, node_type, node_id):
+    @staticmethod
+    def get(request, node_type, node_id):
 
         if node_id is None:
 
             # Return Node list if no id is provided
 
-            node_list = list()
+            data = list()
 
-            filter_pattern = request.GET.get('filter')
+            filter_pattern = request.JSON.get('filter')
 
-            exclude_pattern = request.GET.get('exclude')
+            exclude_pattern = request.JSON.get('exclude')
 
-            for node_dict in node_classes[node_type]['node'].objects.all().values():
+            for node_dict in node_classes[node_type]['node'].objects.order_by('name').all().values():
 
                 match_conditions = {
                     not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
@@ -544,17 +545,17 @@ class NodeView(View):
 
                     node = load_node(node_dict['id'], node_type, request.user)
 
-                    node_list.append(node.to_dict())
+                    data.append(node.serialize(request))
 
-            response = {'data': node_list}
+            response = {'data': data}
 
         else:
 
             # Return node instance
 
-            node = load_node(node_id, node_type, request.user)
+            #node = load_node(node_id, node_type, request.user)
 
-            response = {'data': node.to_dict()}
+            response = {'data': load_node(node_id, node_type, request.user).serialize()}
 
         # elif action == 'facts':
         #
@@ -688,7 +689,7 @@ class NodeView(View):
 
                 node = form.save(commit=True)
 
-                response = {'data': node.to_dict()}
+                response = {'data': node.serialize()}
 
             else:
 
@@ -822,7 +823,7 @@ class NodeView(View):
 
         if node_id is None:
 
-            for node_dict in json.loads(request.DELETE['data']):
+            for node_dict in request.JSON.get('data'):
 
                 node = load_node(node_dict['id'], node_type, request.user)
 

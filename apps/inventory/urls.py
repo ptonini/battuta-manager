@@ -5,11 +5,11 @@ from . import views
 
 urlpatterns = [
 
-    re_path(r'^(?P<page>manage|ansible)/$', login_required(views.PageView.as_view()), kwargs={'node_type': None, 'node_id': None}),
+    re_path(r'^(?P<page>manage|ansible)$', login_required(views.PageView.as_view()), kwargs={'node_type': None, 'node_id': None}),
 
-    re_path(r'^(?P<node_type>host|group)/$', login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'selector'}),
+    re_path(r'^(?P<node_type>host|group)$', login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'selector'}),
 
-    re_path(r'^(?P<node_type>host|group)/(?P<node_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
+    re_path(r'^(?P<node_type>host|group)/(?P<node_id>[0-9]+)$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
 
     path('api/', views.InventoryView.as_view()),
 

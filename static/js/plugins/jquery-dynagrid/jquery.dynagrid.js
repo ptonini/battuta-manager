@@ -42,12 +42,6 @@
 
             }
 
-            // let itemFormat = Object.prototype.toString.call(opts.dataArray[0]);
-
-            // if (itemFormat === '[object Object]') opts.dataArray.sort(_sortDataArray(opts.itemValueKey, opts));
-            //
-            // else if (itemFormat === '[object Array]') opts.dataArray.sort(_sortDataArray(0, opts));
-
             if (opts.dataArray.length === 0) {
 
                 opts.hideIfEmpty && $gridContainer.hide();
@@ -95,6 +89,7 @@
                 url: opts.ajaxUrl,
                 type: opts.ajaxType,
                 dataType: 'JSON',
+                contentType: opts.ajaxContentType + '; charset=utf-8',
                 data: opts.ajaxData,
                 success: function (data) {
 
@@ -423,6 +418,7 @@
         ajaxData: null,
         ajaxUrl: null,
         ajaxType: 'GET',
+        ajaxContentType: 'application/json',
         buildNow: true
     };
 

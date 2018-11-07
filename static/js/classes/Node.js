@@ -717,37 +717,36 @@ Node.prototype.selector = function () {
         if (self.type === 'host') {
 
             if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = [
-                {title: 'Host', data: 'name'},
-                {title: 'Address', data: 'address'},
-                {title: 'Public address', data: 'public_address'},
-                {title: 'Instance Id', data: 'instance_id'},
-                {title: 'Type', data: 'instance_type'},
-                {title: 'Cores', data: 'cores'},
-                {title: 'Memory', data: 'memory'},
-                {title: 'Disc', data: 'disc'},
+                {title: 'Host', data: 'attributes.name'},
+                {title: 'Address', data: 'attributes.address'},
+                {title: 'Public address', data: 'attributes.public_address'},
+                {title: 'Instance Id', data: 'attributes.instance_id'},
+                {title: 'Type', data: 'attributes.instance_type'},
+                {title: 'Cores', data: 'attributes.cores'},
+                {title: 'Memory', data: 'attributes.memory'},
+                {title: 'Disc', data: 'attributes.disc'},
                 {title: '', defaultContent: '', class: 'float-right', orderable: false},
             ];
 
             else columns = [
-                {title: 'Host', data: 'name'},
-                {title: 'Address', data: 'address'},
-                {title: 'Cores', data: 'cores'},
-                {title: 'Memory', data: 'memory'},
-                {title: 'Disc', data: 'disc'},
+                {title: 'Host', data: 'attributes.name'},
+                {title: 'Address', data: 'attributes.address'},
+                {title: 'Cores', data: 'attributes.cores'},
+                {title: 'Memory', data: 'attributes.memory'},
+                {title: 'Disc', data: 'attributes.disc'},
                 {title: '', defaultContent: '', class: 'float-right', orderable: false}
             ];
         }
 
         else if (self.type === 'group') columns = [
-            {title: 'Group', data: 'name'},
-            {title: 'Description', data: 'description'},
-            {title: 'Members', data: 'members'},
-            {title: 'Parents', data: 'parents'},
-            {title: 'Children', data: 'children'},
-            {title: 'Variables', data: 'variables'},
+            {title: 'Group', data: 'attributes.name'},
+            {title: 'Description', data: 'attributes.description'},
+            {title: 'Members', data: 'attributes.members'},
+            {title: 'Parents', data: 'attributes.parents'},
+            {title: 'Children', data: 'attributes.children'},
+            {title: 'Variables', data: 'attributes.variables'},
             {title: '', defaultContent: '', class: 'float-right',  orderable: false}
         ];
-
 
         $table.DataTable({
             pageResize: true,
@@ -771,20 +770,18 @@ Node.prototype.selector = function () {
             order: [[0, "asc"]],
             rowCallback: function(row, data) {
 
-                let node = new Node(data);
-
                 $(row).find('td:eq(0)')
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(node.id + '/', '_self')
+                        window.open(data.links.self, '_self')
 
                     });
 
-                if (node.editable) $(row).find('td:last').empty().append(
+                if (data.attributes.editable) $(row).find('td:last').empty().append(
                     self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                        node.del(function () {
+                        new Node({id: data.id, type: data.type}).del(function () {
 
                             loadData();
 
@@ -793,13 +790,13 @@ Node.prototype.selector = function () {
                     })
                 );
 
-                if (node.type === 'host') {
+                if (data.type === 'host') {
 
                     let cols = sessionStorage.getItem('use_ec2_facts') === 'true' ? [6, 7] :  [3, 4];
 
-                    node.memory && $(row).find('td:eq(' + cols[0] + ')').humanBytes('MB');
+                    data.memory && $(row).find('td:eq(' + cols[0] + ')').humanBytes('MB');
 
-                    node.disc && $(row).find('td:eq(' + cols[1] + ')').humanBytes();
+                    data.disc && $(row).find('td:eq(' + cols[1] + ')').humanBytes();
 
                 }
             }
@@ -820,11 +817,11 @@ Node.prototype.selector = function () {
             formatItem: function ($gridContainer, $gridItem, data) {
 
                 $gridItem
-                    .html(data.name)
+                    .html(data.attributes.name)
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(data.id + '/', '_self')
+                        window.open(data.links.self, '_self')
 
                     });
 

@@ -6,6 +6,14 @@ from django.core.validators import RegexValidator
 
 class Node(models.Model):
 
+    name = models.CharField(max_length=64, blank=False, unique=True)
+
+    description = models.TextField(max_length=256, blank=True)
+
+    type = None
+
+    group_set = None
+
     def get_descendants(self):
 
         if self.type == 'group' and self.id:
@@ -66,49 +74,30 @@ class Node(models.Model):
 
         return ancestors
 
-    def to_dict(self):
+    def serialize(self, request):
 
-        default_fields = {
-            'name': self.name,
+        data = {
             'type': self.type,
-            'description': self.description,
             'id': self.id,
+            'links': {
+                'self': ''.join([request._current_scheme_host, '/inventory/', self.type, '/', str(self.id)])
+            },
+            'attributes': self.attributes()
         }
+
+        data['attributes']['name'] = self.name
+
+        data['attributes']['description'] = self.description
 
         if hasattr(self, 'editable'):
 
-            default_fields['editable'] = self.editable
+            data['attributes']['editable'] = self.editable
 
-        node_dict = default_fields.copy()
+        return data
 
-        if self.type == 'host':
+    def attributes(self):
 
-            facts = json.loads(self.facts)
-
-            host_fields = {
-                'public_address': facts.get('ec2_public_ipv4'),
-                'instance_type': facts.get('ec2_instance_type'),
-                'cores': facts.get('processor_count'),
-                'memory': facts.get('memtotal_mb'),
-                'address': facts.get('default_ipv4', {}).get('address'),
-                'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
-                'instance_id': facts.get('ec2_instance_id')
-            }
-
-            node_dict.update(host_fields)
-
-        else:
-
-            group_fields = {
-                'members': self.members.all().count(),
-                'parents': self.group_set.all().count(),
-                'children': self.children.all().count(),
-                'variables': self.variable_set.all().count(),
-            }
-
-            node_dict.update(group_fields)
-
-        return node_dict
+        return {}
 
     class Meta:
 
@@ -116,10 +105,6 @@ class Node(models.Model):
 
 
 class Host(Node):
-
-    name = models.CharField(max_length=64, blank=False, unique=True)
-
-    description = models.TextField(max_length=256, blank=True)
 
     facts = models.TextField(max_length=65353, default='{}')
 
@@ -129,12 +114,22 @@ class Host(Node):
 
         return self.name
 
+    def attributes(self):
+
+        facts = json.loads(self.facts)
+
+        return {
+            'public_address': facts.get('ec2_public_ipv4'),
+            'instance_type': facts.get('ec2_instance_type'),
+            'cores': facts.get('processor_count'),
+            'memory': facts.get('memtotal_mb'),
+            'address': facts.get('default_ipv4', {}).get('address'),
+            'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
+            'instance_id': facts.get('ec2_instance_id'),
+        }
+
 
 class Group(Node):
-
-    name = models.CharField(max_length=64, blank=False, unique=True)
-
-    description = models.TextField(max_length=256, blank=True)
 
     children = models.ManyToManyField('self', blank=True, symmetrical=False)
 
@@ -146,6 +141,14 @@ class Group(Node):
 
         return self.name
 
+    def attributes(self):
+
+        return {
+            'members': self.members.all().count(),
+            'parents': self.group_set.all().count(),
+            'children': self.children.all().count(),
+            'variables': self.variable_set.all().count(),
+        }
 
 class Variable(models.Model):
 
