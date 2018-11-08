@@ -15,6 +15,10 @@ class Node(models.Model):
 
     group_set = None
 
+    def __str__(self):
+
+        return self.name
+
     def get_descendants(self):
 
         if self.type == 'group' and self.id:
@@ -82,7 +86,9 @@ class Node(models.Model):
             'id': self.id,
             'attributes': self.attributes(),
             'links': {
-                'self': ''.join([request._current_scheme_host, '/inventory/', self.type, '/', str(self.id)])
+                'self': '/'.join([request._current_scheme_host + request.path, str(self.id)]),
+                'facts': '/'.join([request._current_scheme_host + request.path, str(self.id), 'facts']),
+                'view': '/'.join([request._current_scheme_host, 'inventory', self.type, str(self.id)])
             }
         }
 
@@ -115,10 +121,6 @@ class Host(Node):
 
     type = 'host'
 
-    def __str__(self):
-
-        return self.name
-
     def attributes(self):
 
         facts = json.loads(self.facts)
@@ -133,6 +135,16 @@ class Host(Node):
             'instance_id': facts.get('ec2_instance_id'),
         }
 
+    def serialize(self, request):
+
+        data = super(Host, self).serialize(request)
+
+        data['links']['facts'] = {}
+
+        data['links']['parents'] = {}
+
+        return data
+
 
 class Group(Node):
 
@@ -142,10 +154,6 @@ class Group(Node):
 
     type = 'group'
 
-    def __str__(self):
-
-        return self.name
-
     def attributes(self):
 
         return {
@@ -154,6 +162,18 @@ class Group(Node):
             'children': self.children.all().count(),
             'variables': self.variable_set.all().count(),
         }
+
+    def serialize(self, request):
+
+        data = super(Group, self).serialize(request)
+
+        data['links']['children'] = {}
+
+        data['links']['members'] = {}
+
+        data['links']['parents'] = {}
+
+        return data
 
 
 class Variable(models.Model):

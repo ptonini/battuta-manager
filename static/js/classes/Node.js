@@ -778,18 +778,22 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(data.links.self, '_self')
+                        window.open(data.links.view, '_self')
 
                     });
 
                 if (data.attributes.editable) $(row).find('td:last').empty().append(
                     self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                        new Node({id: data.id, type: data.type}).del(function () {
+                        self.deleteAlert(function () {
 
-                            loadData();
+                            self.fetchJson('DELETE', data.links.self).then(() => {
 
-                        });
+                                loadData()
+
+                            })
+
+                        })
 
                     })
                 );
@@ -825,7 +829,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(data.links.self, '_self')
+                        window.open(data.links.view, '_self')
 
                     });
 

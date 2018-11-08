@@ -44,14 +44,6 @@ def load_node(node_id, node_type, user):
     return node
 
 
-def create_node(node_type):
-
-    node = node_classes[node_type]['node']()
-
-    setattr(node, 'form_class', node_classes[node_type]['form'])
-
-    return node
-
 def inventory_to_dict(internal_vars=True):
 
     data = {

@@ -11,14 +11,16 @@ urlpatterns = [
 
     re_path(r'^(?P<node_type>host|group)/(?P<node_id>[0-9]+)$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
 
-    path('api/', views.InventoryView.as_view()),
+    path('api', views.InventoryView.as_view()),
 
-    path('api/host', login_required(views.HostView.as_view()), kwargs={'host_id': None}),
+    path('api/host', login_required(views.HostView.as_view()), kwargs={'node_id': None}),
 
-    path('api/host/<int:host_id>', login_required(views.HostView.as_view())),
+    path('api/host/<int:node_id>', login_required(views.HostView.as_view())),
 
-    path('api/group', login_required(views.GroupView.as_view()), kwargs={'group_id': None}),
+    # path('api/host/<int:node_id>/facts', login_required(views.HostView.as_view())),
 
-    path('api/group/<int:group_id>', login_required(views.GroupView.as_view())),
+    path('api/group', login_required(views.GroupView.as_view()), kwargs={'node_id': None}),
+
+    path('api/group/<int:node_id>', login_required(views.GroupView.as_view())),
 
 ]

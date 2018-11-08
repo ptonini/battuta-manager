@@ -128,6 +128,8 @@ Battuta.prototype = {
 
     serialize: function () {
 
+        let self = this;
+
         let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern', 'type', 'id'];
 
         let data = {
@@ -140,7 +142,9 @@ Battuta.prototype = {
 
             if (self.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1 && p != null) {
 
-                data.attributes[p] = JSON.stringify(self[p]);
+                if (typeof self[p] === 'object') data.attributes[p] = JSON.stringify(self[p]);
+
+                else data.attributes[p] = self[p]
 
             }
 
@@ -354,25 +358,18 @@ Battuta.prototype = {
 
         }).then(response => {
 
-            if (response.hasOwnProperty('data')) {
-
-                return response
-
-            }
+            if (response.hasOwnProperty('data')) return response
 
             else if (response.hasOwnProperty('errors')) {
 
-                console.log(response.errors);
-
                 let $message = $('<div>');
 
-                if (response.errors) for (let key in response.errors) {
+                for (let i in response.errors) {
 
-                    if (response.errors.hasOwnProperty(key)) $message.append($('<div>').html(key + ': ' + response.errors[key][0].message))
-
+                    $message.append(
+                        $('<div>').html(response.errors[i].source.parameter + ': ' + response.errors[i].title)
+                    )
                 }
-
-                else if (response.msg) $message.html(response.msg);
 
                 Battuta.prototype.statusAlert('danger', $message);
 
@@ -426,14 +423,6 @@ Battuta.prototype = {
             return response
 
         });
-
-        // self.getData('get', blocking, function (data){
-        //
-        //     data[self.key] && self.loadParam(data[self.key]);
-        //
-        //     callback && callback(data)
-        //
-        // })
 
     },
 
