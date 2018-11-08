@@ -8,8 +8,6 @@ function Battuta (param) {
 
     self.loadParam(param ? param : {});
 
-    //self.loadTemplates();
-
 }
 
 Battuta.prototype = {
@@ -66,23 +64,6 @@ Battuta.prototype = {
         let self = this;
 
         self.set('username', param.username);
-
-    },
-
-    loadTemplates: function () {
-
-        let self = this;
-
-        if (self.crud && self.crud.templates) {
-
-            Object.keys(self.crud.templates).forEach(async function (key) {
-
-                self.crud.templates[key] = await self.fetchHtml(self.crud.templates[key]);
-
-            });
-
-            console.log(self.crud.templates)
-        }
 
     },
 
@@ -145,6 +126,30 @@ Battuta.prototype = {
 
     },
 
+    serialize: function () {
+
+        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern', 'type', 'id'];
+
+        let data = {
+            id: self.id,
+            type: self.type,
+            attributes: {}
+        };
+
+        for (let p in self) {
+
+            if (self.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1 && p != null) {
+
+                data.attributes[p] = JSON.stringify(self[p]);
+
+            }
+
+        }
+
+        return data
+
+    },
+
 
     // Data request processors ********
 
@@ -177,28 +182,6 @@ Battuta.prototype = {
     _csrfSafeMethod: function (method) {
 
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-
-    },
-
-    serialize: function (obj) {
-
-        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern'];
-
-        let data = {};
-
-        for (let p in obj) {
-
-            if (obj.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1 && p !== null) {
-
-                if (typeof obj[p] === 'object') data[p] = JSON.stringify(obj[p]);
-
-                else data[p] = obj[p]
-
-            }
-
-        }
-
-        return data
 
     },
 
@@ -466,7 +449,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        return self.fetchJson(self.id ? 'PUT' : 'POST', self.apiPath, {data: self.serialize(self)}, true).then(response => {
+        return self.fetchJson(self.id ? 'PATCH' : 'POST', self.apiPath, {data: self.serialize()}, true).then(response => {
 
             response.data[self.key] && self.loadParam(response.data[self.key]);
 
@@ -1107,7 +1090,7 @@ Battuta.prototype = {
                     text: '<span class="fas fa-plus fa-fw" title="Add ' + self.crud.type + '"></span>',
                     action: function () {
 
-                        new self.constructor().edit(self.crud.callbacks.add);
+                        new self.constructor().editor(self.crud.callbacks.add);
 
                     },
                     className: 'btn-sm btn-icon'
@@ -1150,7 +1133,7 @@ Battuta.prototype = {
 
                 $('#edit_button').toggleClass('hidden', !self.editable || !self.crud.callbacks.edit).click(function () {
 
-                    self.edit(self.crud.callbacks.edit);
+                    self.editor(self.crud.callbacks.edit);
 
                 });
 
@@ -1179,7 +1162,7 @@ Battuta.prototype = {
         });
     },
 
-    edit: function (callback) {
+    editor: function (callback) {
 
         let self = this;
 
@@ -1187,7 +1170,7 @@ Battuta.prototype = {
 
         self.bindElement($dialog);
 
-        self.set('header', self.name ? 'Edit ' + self.crud.type : 'Add ' + self.crud.type);
+        self.set('header', self.id ? 'Edit ' + self.crud.type : 'Add ' + self.crud.type);
 
         $dialog.find('button.confirm-button').click(function () {
 

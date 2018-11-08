@@ -18,7 +18,7 @@ from django.core.cache import cache
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 
 from apps.inventory.models import Host, Group, Variable
-from apps.inventory.forms import VariableForm
+from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, load_node, create_node, node_classes, inventory_to_dict
 
 from main.extras import download_file, api_response
@@ -82,13 +82,13 @@ class InventoryView(View):
 
     def get(self, request):
 
-        temp_file = tempfile.TemporaryFile()
-
         if request.GET['format'] == 'json':
 
-            temp_file.write(json.dumps(inventory_to_dict()).encode('utf-8'))
+            json_file = tempfile.TemporaryFile(mode='w+')
 
-            return download_file(temp_file, 'inventory.json')
+            json_file.write(json.dumps(inventory_to_dict()))
+
+            return download_file(json_file, 'inventory.json')
 
         elif request.GET['format'] == 'zip':
 
@@ -136,9 +136,9 @@ class InventoryView(View):
 
             zip_file_name = shutil.make_archive(os.path.join(tempfile.gettempdir(), 'inventory'), 'zip', temp_dir)
 
-            with open(zip_file_name, 'r') as f:
+            with open(zip_file_name, 'r+b') as zip_file:
 
-                stream = download_file(f, 'inventory.zip')
+                stream = download_file(zip_file, 'inventory.zip')
 
             shutil.rmtree(temp_dir)
 
@@ -293,15 +293,19 @@ class InventoryView(View):
 
             if request.GET['format'] == 'pac':
 
-                yaml.dump(config_dict, temp_file, explicit_start=True, Dumper=yaml.RoundTripDumper, width=9999)
+                yaml_file = tempfile.TemporaryFile(mode='w+')
 
-                return download_file(temp_file, 'pac_export.yml')
+                yaml.dump(config_dict, yaml_file, explicit_start=True, Dumper=yaml.RoundTripDumper, width=9999)
+
+                return download_file(yaml_file, 'pac_export.yml')
 
             else:
 
-                tree.write(temp_file)
+                xml_file = tempfile.TemporaryFile()
 
-                return download_file(temp_file, 'sites.xml')
+                tree.write(xml_file)
+
+                return download_file(xml_file, 'sites.xml')
 
         else:
 
@@ -489,6 +493,30 @@ class InventoryView(View):
 class NodeView(View):
 
     @staticmethod
+    def _get_node_list(request, model_class):
+
+        data = list()
+
+        filter_pattern = request.JSON.get('filter')
+
+        exclude_pattern = request.JSON.get('exclude')
+
+        for node_dict in model_class.objects.order_by('name').all().values():
+
+            match_conditions = {
+                not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
+                not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
+            }
+
+            if False not in match_conditions:
+
+                node = get_object_or_404(model_class, pk=node_dict['id'])
+
+                data.append(node.serialize(request))
+
+        return data
+
+    @staticmethod
     def _get_relationships(node, relation):
 
         if relation == 'parents':
@@ -522,40 +550,42 @@ class NodeView(View):
         return related_set, related_class, related_type
 
     @staticmethod
-    def get(request, node_type, node_id):
+    def get(request, node_id):
 
-        if node_id is None:
+        pass
 
-            # Return Node list if no id is provided
-
-            data = list()
-
-            filter_pattern = request.JSON.get('filter')
-
-            exclude_pattern = request.JSON.get('exclude')
-
-            for node_dict in node_classes[node_type]['node'].objects.order_by('name').all().values():
-
-                match_conditions = {
-                    not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
-                    not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
-                }
-
-                if False not in match_conditions:
-
-                    node = load_node(node_dict['id'], node_type, request.user)
-
-                    data.append(node.serialize(request))
-
-            response = {'data': data}
-
-        else:
-
-            # Return node instance
-
-            #node = load_node(node_id, node_type, request.user)
-
-            response = {'data': load_node(node_id, node_type, request.user).serialize()}
+        # if node_id is None:
+        #
+        #     # Return Node list if no id is provided
+        #
+        #     data = list()
+        #
+        #     filter_pattern = request.JSON.get('filter')
+        #
+        #     exclude_pattern = request.JSON.get('exclude')
+        #
+        #     for node_dict in node_classes[node_type]['node'].objects.order_by('name').all().values():
+        #
+        #         match_conditions = {
+        #             not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
+        #             not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
+        #         }
+        #
+        #         if False not in match_conditions:
+        #
+        #             node = load_node(node_dict['id'], node_type, request.user)
+        #
+        #             data.append(node.serialize(request))
+        #
+        #     response = {'data': data}
+        #
+        # else:
+        #
+        #     # Return node instance
+        #
+        #     #node = load_node(node_id, node_type, request.user)
+        #
+        #     response = {'data': load_node(node_id, node_type, request.user).serialize()}
 
         # elif action == 'facts':
         #
@@ -671,15 +701,14 @@ class NodeView(View):
         #
         #     return HttpResponseNotFound('Invalid action')
 
-        return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')
+        #return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')
 
-    def post(self, request, node_type, node_id):
+    @staticmethod
+    def post(request, node_type, node_id):
 
         if request.user.has_perm('users.edit_' + node_type + 's'):
 
             node = create_node(node_type)
-
-            print(request.body)
 
             #project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
@@ -819,7 +848,8 @@ class NodeView(View):
 
         # return HttpResponse(json.dumps(data), status=201, content_type='application/json')
 
-    def delete(self, request, node_type, node_id):
+    @staticmethod
+    def delete(request, node_type, node_id):
 
         if node_id is None:
 
@@ -839,3 +869,59 @@ class NodeView(View):
         #         data = {'status': 'ok', 'msg': node.type.title() + ' deleted', 'type': node.type}
 
         return api_response({'data': {}})
+
+
+class HostView(NodeView):
+
+    def get(self, request, host_id):
+
+        if host_id:
+
+            host = get_object_or_404(Host, pk=host_id)
+
+            return api_response({'data': host.serialize(request)})
+
+        else:
+
+            return api_response(self._get_node_list(request, Host))
+
+
+    def post(self, request, host_id):
+
+        if request.user.has_perm('users.edit_hosts'):
+
+            new_host = Host()
+
+            form = HostForm(request.JSON.get('data', {}).get('attributes') or None, instance=new_host)
+
+            if form.is_valid():
+
+                node = form.save(commit=True)
+
+                response = {'data': node.serialize()}
+
+            else:
+
+                print(form.errors)
+
+                print(form.errors.as_json())
+
+                print(form.errors.get_json_data())
+
+                response = {'errors': json.loads(form.errors.as_json())}
+
+            return api_response({'data': response})
+
+        else:
+
+            return HttpResponseForbidden()
+
+
+
+
+class GroupView(NodeView):
+
+    def get(self, request, group_id):
+
+        return api_response({'data': get_object_or_404(Host, pk=group_id) if group_id else self._get_node_list(request, Group)})
+

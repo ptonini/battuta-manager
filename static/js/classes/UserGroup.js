@@ -199,7 +199,7 @@ UserGroup.prototype.crud = {
             window.open(data.group.name + '/', '_self');
 
         },
-        edit: function (data) {
+        editor: function (data) {
 
             window.open(Battuta.prototype.paths.views.group + data.group.name + '/', '_self')
 

@@ -295,7 +295,7 @@ Project.prototype.crud = {
             window.open(data.project.id + '/', '_self');
 
         },
-        edit: function () {
+        editor: function () {
 
             location.reload()
 

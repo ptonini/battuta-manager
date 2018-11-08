@@ -4,6 +4,7 @@ from django.db import models
 from django.core.validators import RegexValidator
 
 
+
 class Node(models.Model):
 
     name = models.CharField(max_length=64, blank=False, unique=True)
@@ -79,19 +80,23 @@ class Node(models.Model):
         data = {
             'type': self.type,
             'id': self.id,
+            'attributes': self.attributes(),
             'links': {
                 'self': ''.join([request._current_scheme_host, '/inventory/', self.type, '/', str(self.id)])
-            },
-            'attributes': self.attributes()
+            }
         }
 
         data['attributes']['name'] = self.name
 
         data['attributes']['description'] = self.description
 
-        if hasattr(self, 'editable'):
+        if self.type == 'group' and self.name == 'all':
 
-            data['attributes']['editable'] = self.editable
+            data['attributes']['editable'] = False
+
+        else:
+
+            data['attributes']['editable'] = request.user.has_perm('users.edit_' + self.type + 's')
 
         return data
 
@@ -149,6 +154,7 @@ class Group(Node):
             'children': self.children.all().count(),
             'variables': self.variable_set.all().count(),
         }
+
 
 class Variable(models.Model):
 

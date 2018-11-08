@@ -13,8 +13,12 @@ urlpatterns = [
 
     path('api/', views.InventoryView.as_view()),
 
-    re_path(r'^api/(?P<node_type>host|group)/$', login_required(views.NodeView.as_view()), kwargs={'node_id': None}),
+    path('api/host', login_required(views.HostView.as_view()), kwargs={'host_id': None}),
 
-    re_path(r'^api/(?P<node_type>host|group)/<int:node_id>/$', login_required(views.NodeView.as_view()))
+    path('api/host/<int:host_id>', login_required(views.HostView.as_view())),
+
+    path('api/group', login_required(views.GroupView.as_view()), kwargs={'group_id': None}),
+
+    path('api/group/<int:group_id>', login_required(views.GroupView.as_view())),
 
 ]

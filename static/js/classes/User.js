@@ -208,7 +208,7 @@ User.prototype.crud = {
             window.open(data.user.username + '/', '_self');
 
         },
-        edit: function (data) {
+        editor: function (data) {
 
             window.open(data.user.username + '/', '_self');
 

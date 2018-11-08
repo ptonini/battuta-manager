@@ -14,7 +14,7 @@ Node.prototype.relationType = {parents: 'group', children: 'group', members: 'ho
 
 Node.prototype.crud = {
     callbacks: {
-        edit: function (data) {
+        editor: function (data) {
 
             window.open(Battuta.prototype.paths.views.node[data.type] + data.name + '/', '_self')
 
@@ -408,17 +408,21 @@ Node.prototype.loadParam = function (param) {
 
     let self = this;
 
-    self.set('name', param.name);
-
-    self.set('description', param.description || '');
-
     self.set('id', param.id);
 
     self.set('type', param.type);
 
-    self.set('editable', param.editable);
+    self.set('apiPath', self.paths.api.node[self.type]);
 
-    self.set('apiPath', self.paths.api.inventory + self.type + '/');
+    if (param.hasOwnProperty('attributes')) {
+
+        self.set('name', param.attributes.name);
+
+        self.set('description', param.attributes.description || '');
+
+        self.set('editable', param.attributes.editable);
+
+    }
 
 };
 
@@ -706,7 +710,7 @@ Node.prototype.selector = function () {
 
         let addNode = () => {
 
-            new Node({id: null, type: self.type}).edit(function () {
+            new Node({id: null, type: self.type}).editor(function () {
 
                 loadData()
 

@@ -78,9 +78,6 @@ class DataTableRequestHandler:
         }
 
 
-
-
-
 def download_file(f, filename):
 
     f.seek(0)
