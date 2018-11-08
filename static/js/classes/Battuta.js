@@ -15,7 +15,7 @@ Battuta.prototype = {
     paths: {
         api:{
             file: '/files/api/',
-            inventory: '/inventory/api/',
+            inventory: '/inventory/api',
             adhoc: '/runner/api/adhoc/',
             playbook: '/runner/api/playbook/',
             job: '/runner/api/job/',
@@ -358,20 +358,25 @@ Battuta.prototype = {
 
         }).then(response => {
 
-            if (response.hasOwnProperty('data')) return response
+            if (response.hasOwnProperty('data')) return response;
 
             else if (response.hasOwnProperty('errors')) {
 
-                let $message = $('<div>');
+                let $messageContainer = $('<div>');
 
-                for (let i in response.errors) {
+                for (let i in response.errors) if (response.errors.hasOwnProperty(i)) {
 
-                    $message.append(
-                        $('<div>').html(response.errors[i].source.parameter + ': ' + response.errors[i].title)
+                    let message = response.errors[i].title;
+
+                    if (response.errors[i].hasOwnProperty('source')) message = response.errors[i].source.parameter + ': ' + message;
+
+                    $messageContainer.append(
+                        $('<div>').html(message)
                     )
+
                 }
 
-                Battuta.prototype.statusAlert('danger', $message);
+                Battuta.prototype.statusAlert('danger', $messageContainer);
 
                 throw response.statusText
 
@@ -383,8 +388,6 @@ Battuta.prototype = {
 
                 throw 'Unknown response'
             }
-
-
 
         })
 
@@ -992,7 +995,11 @@ Battuta.prototype = {
 
             $('#logout_anchor').click(function () {
 
-                user.logout()
+                self.fetchJson('POST', '/logout', {}, false).then(response => {
+
+                    window.open('/', '_self');
+
+                });
 
             })
 
@@ -1000,13 +1007,20 @@ Battuta.prototype = {
 
         else return self.fetchHtml('navbar_Login.html', $navBar).then($element => {
 
-            user.bindElement($element);
+            $element.find('a.login-button').click(function () {
 
-            $('#login_form').submit(function (event) {
+                let requestData = {
+                    data: {
+                        username: $element.find('input[type=text]').val(),
+                        password: $element.find('input[type=password]').val()
+                    }
+                };
 
-                event.preventDefault();
+                self.fetchJson('POST', '/login', requestData, false).then(() => {
 
-                user.login()
+                    window.open('/', '_self');
+
+                });
 
             })
 

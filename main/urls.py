@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views.generic.base import RedirectView
@@ -8,6 +8,8 @@ from . import views
 urlpatterns = [
 
     path('', views.PageView.as_view(), kwargs={'page': 'main'}),
+
+    re_path(r'^(?P<action>login|logout)$', views.LoginView.as_view()),
 
     path('search/<str:pattern>/', login_required(views.PageView.as_view()), kwargs={'page': 'search'}),
 

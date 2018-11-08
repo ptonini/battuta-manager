@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.views.generic import View
-from django.http import Http404
+from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.contrib.auth import authenticate, login, logout
 
+from main.extras import api_response
 
 class PageView(View):
 
@@ -18,4 +20,42 @@ class PageView(View):
 
         else:
 
-            raise Http404('Invalid page')
+            return HttpResponseNotFound()
+
+
+class LoginView(View):
+
+    @staticmethod
+    def post(request, action):
+
+        if action == 'login':
+
+            user = authenticate(username=request.JSON.get('data', {}).get('username'), password=request.JSON.get('data', {}).get('password'))
+
+            if user:
+
+                if user.is_active:
+
+                    login(request, user)
+
+                    response = {'data': {}}
+
+                else:
+
+                    response = {'errors': [{'title': 'Account disabled'}]}
+
+            else:
+
+                response = {'errors': [{'title': 'Invalid login'}]}
+
+        elif action == 'logout':
+
+            logout(request)
+
+            response = {'data': {}}
+
+        else:
+
+            return HttpResponseBadRequest()
+
+        return api_response(response)

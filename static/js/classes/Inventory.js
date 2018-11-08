@@ -56,14 +56,12 @@ Inventory.prototype.manage = function () {
 
                 self.ajaxSuccess(data.response, function() {
 
-                    let $result = $('<div>').append(
+                    self.statusAlert('success', $('<div>').append(
                         $('<div>').attr('class','mb-2 font-weight-bold').html('Import successful'),
-                        $('<div>').attr('class','mb-1').html('Hosts added: ' + data.response.added_hosts),
-                        $('<div>').attr('class','mb-1').html('Groups added: ' + data.response.added_groups),
-                        $('<div>').attr('class','mb-1').html('Variables added: ' + data.response.added_vars)
-                    );
-
-                    self.statusAlert('success', $result);
+                        $('<div>').attr('class','mb-1').html('Hosts added: ' + data.response.data.added_hosts),
+                        $('<div>').attr('class','mb-1').html('Groups added: ' + data.response.data.added_groups),
+                        $('<div>').attr('class','mb-1').html('Variables added: ' + data.response.data.added_vars)
+                    ));
 
                 });
 

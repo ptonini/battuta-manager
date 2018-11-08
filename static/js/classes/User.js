@@ -368,31 +368,6 @@ User.prototype.edit = function (callback) {
 
 };
 
-User.prototype.login = function () {
-
-    let self = this;
-
-    self.ajaxRequest('POST', self, self.paths.api.login + 'login/', false, function () {
-
-        window.open('/', '_self');
-
-    });
-
-};
-
-User.prototype.logout = function () {
-
-    let self = this;
-
-    self.ajaxRequest('POST', self, self.paths.api.login + 'logout/', false, function () {
-
-        window.open('/', '_self');
-
-    });
-
-
-};
-
 User.prototype.defaultCred = function (callback) {
 
     let self = this;

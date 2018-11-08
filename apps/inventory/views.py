@@ -332,7 +332,7 @@ class InventoryView(View):
 
                     csv_data = csv.reader(temp)
 
-                    header = next(csv_data)
+                    header = next(csv_data.decode('utf8'))
 
                     try:
 
@@ -478,6 +478,8 @@ class InventoryView(View):
                             else:
 
                                 group.delete()
+
+                        print('aqui')
 
                 else:
 
@@ -871,11 +873,11 @@ class HostView(NodeView):
 
 class GroupView(NodeView):
 
-    type = 'host'
+    type = 'group'
 
-    model_class = Host
+    model_class = Group
 
-    form_class = HostForm
+    form_class = GroupForm
 
 
 

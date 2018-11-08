@@ -43,44 +43,6 @@ class PageView(View):
         raise Http404()
 
 
-class LoginView(View):
-
-    @staticmethod
-    def post(request, action):
-
-        if action == 'login':
-
-            user = authenticate(username=(request.POST['username']), password=(request.POST['password']))
-
-            if user:
-
-                if user.is_active:
-
-                    login(request, user)
-
-                    data = {'status': 'ok'}
-
-                else:
-
-                    data = {'status': 'failed', 'msg': 'Account disabled'}
-
-            else:
-
-                data = {'status': 'failed', 'msg': 'Invalid login'}
-
-        elif action == 'logout':
-
-            logout(request)
-
-            data = {'status': 'ok'}
-
-        else:
-
-            return HttpResponseNotFound('Invalid action')
-
-        return HttpResponse(json.dumps(data), content_type='application/json')
-
-
 class UserView(View):
 
     @staticmethod

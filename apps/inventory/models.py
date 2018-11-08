@@ -84,10 +84,11 @@ class Node(models.Model):
         data = {
             'type': self.type,
             'id': self.id,
-            'attributes': self.attributes(),
+            'attributes': {},
             'links': {
                 'self': '/'.join([request._current_scheme_host + request.path, str(self.id)]),
-                'facts': '/'.join([request._current_scheme_host + request.path, str(self.id), 'facts']),
+                'parents': '/'.join([request._current_scheme_host + request.path, str(self.id), 'parents']),
+                'vars': '/'.join([request._current_scheme_host + request.path, str(self.id), 'vars']),
                 'view': '/'.join([request._current_scheme_host, 'inventory', self.type, str(self.id)])
             }
         }
@@ -106,10 +107,6 @@ class Node(models.Model):
 
         return data
 
-    def attributes(self):
-
-        return {}
-
     class Meta:
 
         abstract = True
@@ -121,27 +118,28 @@ class Host(Node):
 
     type = 'host'
 
-    def attributes(self):
-
-        facts = json.loads(self.facts)
-
-        return {
-            'public_address': facts.get('ec2_public_ipv4'),
-            'instance_type': facts.get('ec2_instance_type'),
-            'cores': facts.get('processor_count'),
-            'memory': facts.get('memtotal_mb'),
-            'address': facts.get('default_ipv4', {}).get('address'),
-            'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
-            'instance_id': facts.get('ec2_instance_id'),
-        }
-
     def serialize(self, request):
 
         data = super(Host, self).serialize(request)
 
-        data['links']['facts'] = {}
+        facts = json.loads(self.facts)
 
-        data['links']['parents'] = {}
+        data['links']['facts'] = data['links']['self'] + '/facts'
+
+        data['attributes']['public_address'] = facts.get('ec2_public_ipv4')
+
+        data['attributes']['instance_type'] = facts.get('ec2_instance_type')
+
+        data['attributes']['cores'] = facts.get('processor_count')
+
+        data['attributes']['memory'] = facts.get('memtotal_mb')
+
+        data['attributes']['address'] = facts.get('default_ipv4', {}).get('address')
+
+        data['attributes']['disc'] = sum([m['size_total'] for m in facts.get('mounts', [])])
+
+        data['attributes']['instance_id'] = facts.get('ec2_instance_id')
+
 
         return data
 
@@ -154,24 +152,21 @@ class Group(Node):
 
     type = 'group'
 
-    def attributes(self):
-
-        return {
-            'members': self.members.all().count(),
-            'parents': self.group_set.all().count(),
-            'children': self.children.all().count(),
-            'variables': self.variable_set.all().count(),
-        }
-
     def serialize(self, request):
 
         data = super(Group, self).serialize(request)
 
-        data['links']['children'] = {}
+        data['links']['children'] =  data['links']['self'] + '/children'
 
-        data['links']['members'] = {}
+        data['links']['members'] =  data['links']['self'] + '/members'
 
-        data['links']['parents'] = {}
+        data['attributes']['members'] = self.members.all().count()
+
+        data['attributes']['parents'] = self.group_set.all().count()
+
+        data['attributes']['children'] =  self.children.all().count()
+
+        data['attributes']['variables'] =  self.variable_set.all().count()
 
         return data
 
