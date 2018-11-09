@@ -34,7 +34,7 @@ Inventory.prototype.manage = function () {
 
         $('#upload_field')
             .fileinput({
-                ajaxSettings: {method: 'PUT', beforeSend: self.ajaxBeforeSend, error: self.ajaxError},
+                ajaxSettings: {method: 'PATCH', beforeSend: self.ajaxBeforeSend, error: self.ajaxError},
                 mergeAjaxCallbacks: 'before',
                 uploadUrl: self.apiPath,
                 uploadExtraData: function () {

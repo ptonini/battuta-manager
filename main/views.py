@@ -30,7 +30,8 @@ class LoginView(View):
 
         if action == 'login':
 
-            user = authenticate(username=request.JSON.get('data', {}).get('username'), password=request.JSON.get('data', {}).get('password'))
+            user = authenticate(username=request.JSON.get('data', {}).get('username'),
+                                password=request.JSON.get('data', {}).get('password'))
 
             if user:
 

@@ -13,146 +13,137 @@ Node.prototype.key = 'node';
 Node.prototype.relationType = {parents: 'group', children: 'group', members: 'host'};
 
 Node.prototype.crud = {
-    callbacks: {
-        editor: function (data) {
 
-            window.open(Battuta.prototype.paths.views.node[data.type] + data.name + '/', '_self')
-
-        },
-        delete: function(data) {
-
-            console.log(data);
-
-            window.open(Battuta.prototype.paths.selector.node[data.type], '_self')
-
-        },
-    },
     info: function (self, $container) {
 
-        self.type === 'host' && self.fetchHtml('hostInfo.html').then($element => {
+        let $element;
+
+        self.type === 'host' && self.fetchHtml('hostInfo.html').then($template => {
+
+            $element = $template;
 
             self.bindElement($element);
 
             $element.find('.hide_when_empty').hide();
 
-            self.getData('facts', false, function (data) {
+            return self.fetchJson('GET', self.apiPath + '/' + self.id + '/facts')
 
-                self.set('facts', data.facts);
+        }).then(response => {
 
-                if (self.facts) {
+            self.set('facts', response.data.facts);
 
-                    $element.find('button.hide_when_empty').show();
+            if (self.facts) {
 
-                    $element.find('div.main-info-column').show();
+                $element.find('button.hide_when_empty').show();
 
-                    $element.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
+                $element.find('div.main-info-column').show();
 
-                    if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
+                $element.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
 
-                    if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $element.find('div.host-info-column').show();
+                if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
 
-                    if (self.facts.virtualization_role === 'guest') $element.find('div.guest-info-column').show();
+                if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $element.find('div.host-info-column').show();
 
-                    let infoTables = {
-                        networking: {
-                            data: (function () {
+                if (self.facts.virtualization_role === 'guest') $element.find('div.guest-info-column').show();
 
-                                let interfacesArray = [];
+                let infoTables = {
+                    networking: {
+                        data: (function () {
 
-                                $.each(self.facts.interfaces, function (index, value) {
+                            let interfacesArray = [];
 
-                                    interfacesArray.push(self.facts[value])
+                            $.each(self.facts.interfaces, function (index, value) {
 
-                                });
+                                interfacesArray.push(self.facts[value])
 
-                                return interfacesArray
+                            });
 
-                            })(),
-                            columns:  [
-                                {title: 'interface', data: 'device'},
-                                {title: 'type', data: 'type', defaultContent: ''},
-                                {title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
-                                {title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
-                                {title: 'mac', data: 'macaddress', defaultContent: ''},
-                                {title: 'mtu', data: 'mtu', defaultContent: ''}
-                            ],
-                            rowCallback: function(row, data) {}
+                            return interfacesArray
 
-                        },
-                        storage: {
-                            data: self.facts.mounts,
-                            columns: [
-                                {title: 'device', data: 'device'},
-                                {title: 'mount', data: 'mount'},
-                                {title: 'size', data: 'size_total'},
-                                {title: 'type', data: 'fstype'},
-                                {title: 'options', data: 'options'}
-                            ],
-                            rowCallback: function(row) {
+                        })(),
+                        columns:  [
+                            {title: 'interface', data: 'device'},
+                            {title: 'type', data: 'type', defaultContent: ''},
+                            {title: 'ipv4 address', data: 'ipv4.address', defaultContent: ''},
+                            {title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
+                            {title: 'mac', data: 'macaddress', defaultContent: ''},
+                            {title: 'mtu', data: 'mtu', defaultContent: ''}
+                        ],
+                        rowCallback: function(row, data) {}
 
-                                $(row).find('td:eq(2)').humanBytes('GB')
+                    },
+                    storage: {
+                        data: self.facts.mounts,
+                        columns: [
+                            {title: 'device', data: 'device'},
+                            {title: 'mount', data: 'mount'},
+                            {title: 'size', data: 'size_total'},
+                            {title: 'type', data: 'fstype'},
+                            {title: 'options', data: 'options'}
+                        ],
+                        rowCallback: function(row) {
 
-                            }
-                        },
-                    };
+                            $(row).find('td:eq(2)').humanBytes('GB')
 
-                    for (let key in infoTables) $element.find('#show_' + key).click(function () {
+                        }
+                    },
+                };
 
-                        let $dialog = Battuta.prototype.notificationDialog();
+                for (let key in infoTables) $element.find('#show_' + key).click(function () {
 
-                        let $table = Battuta.prototype.tableTemplate();
+                    let $dialog = Battuta.prototype.notificationDialog();
 
-                        $dialog.find('.dialog-header').html(key).addClass('text-capitalize');
+                    let $table = Battuta.prototype.tableTemplate();
 
-                        $dialog.find('.dialog-content').append($table);
+                    $dialog.find('.dialog-header').html(key).addClass('text-capitalize');
 
-                        $table.DataTable({
-                            data: infoTables[key].data,
-                            autoWidth: false,
-                            scrollY: '360px',
-                            scrollCollapse: true,
-                            filter: false,
-                            paging: false,
-                            info: false,
-                            dom: "<'row'<'col-12'tr>>",
-                            columns: infoTables[key].columns,
-                            rowCallback: infoTables[key].rowCallback
-                        });
+                    $dialog.find('.dialog-content').append($table);
 
-                        $dialog.dialog({width: '700px'});
-
-                        $table.DataTable().columns.adjust().draw();
-
+                    $table.DataTable({
+                        data: infoTables[key].data,
+                        autoWidth: false,
+                        scrollY: '360px',
+                        scrollCollapse: true,
+                        filter: false,
+                        paging: false,
+                        info: false,
+                        dom: "<'row'<'col-12'tr>>",
+                        columns: infoTables[key].columns,
+                        rowCallback: infoTables[key].rowCallback
                     });
 
-                    $('#show_facts').click(function () {
+                    $dialog.dialog({width: '700px'});
 
-                        let $dialog = Battuta.prototype.notificationDialog();
-
-                        $dialog.find('.dialog-header').html(self.name + ' facts');
-
-                        $dialog.find('.dialog-content').append(
-                            $('<div>')
-                                .attr('class', 'well inset-container scrollbar')
-                                .css('max-height', (window.innerHeight * .6).toString() + 'px')
-                                .JSONView(self.facts, {'collapsed': true})
-                        );
-
-                        $dialog.dialog({width: 900})
-
-                    });
-
-                }
-
-                else  $element.find('#gather_facts').attr('title', 'Gather facts');
-
-                $element.find('#gather_facts').click(function () {
-
-                    let job = new Job({hosts: self.name});
-
-                    job.getFacts();
+                    $table.DataTable().columns.adjust().draw();
 
                 });
+
+                $('#show_facts').click(function () {
+
+                    let $dialog = Battuta.prototype.notificationDialog();
+
+                    $dialog.find('.dialog-header').html(self.name + ' facts');
+
+                    $dialog.find('.dialog-content').append(
+                        $('<div>')
+                            .attr('class', 'well inset-container scrollbar')
+                            .css('max-height', (window.innerHeight * .6).toString() + 'px')
+                            .JSONView(self.facts, {'collapsed': true})
+                    );
+
+                    $dialog.dialog({width: 900})
+
+                });
+
+            }
+
+            else  $element.find('#gather_facts').attr('title', 'Gather facts');
+
+            $element.find('#gather_facts').click(function () {
+
+                let job = new Job({hosts: self.name});
+
+                job.getFacts();
 
             });
 
@@ -423,6 +414,8 @@ Node.prototype.loadParam = function (param) {
         self.set('editable', param.attributes.editable);
 
     }
+
+    if (param.hasOwnProperty('links')) self.set('links', param.links)
 
 };
 
@@ -774,6 +767,8 @@ Node.prototype.selector = function () {
             order: [[0, "asc"]],
             rowCallback: function(row, data) {
 
+                let node = new Node(data);
+
                 $(row).find('td:eq(0)')
                     .css('cursor', 'pointer')
                     .click(function () {
@@ -785,15 +780,11 @@ Node.prototype.selector = function () {
                 if (data.attributes.editable) $(row).find('td:last').empty().append(
                     self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                        self.deleteAlert(function () {
+                        node.delete(false, function () {
 
-                            self.fetchJson('DELETE', data.links.self).then(() => {
+                            loadData()
 
-                                loadData()
-
-                            })
-
-                        })
+                        });
 
                     })
                 );

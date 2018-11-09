@@ -5,12 +5,12 @@ from django.utils.deprecation import MiddlewareMixin
 
 
 
-class RESTfulParsingMiddleware(MiddlewareMixin):
+class FileDataParsingMiddleware(MiddlewareMixin):
 
     @staticmethod
     def process_request(request):
 
-        if request.method in ['PUT'] and request.content_type != 'application/vnd.api+json':
+        if request.method in ['PATCH', 'PUT'] and request.content_type != 'application/vnd.api+json':
 
             method = request.method
 
@@ -36,7 +36,11 @@ class RESTfulParsingMiddleware(MiddlewareMixin):
 
                 request.META['REQUEST_METHOD'] = method
 
-            if method == 'PUT':
+            if method == 'PATCH':
+
+                request.PATCH = request.POST
+
+            elif method == 'PUT':
 
                 request.PUT = request.POST
 
@@ -50,7 +54,7 @@ class JSONParsingMiddleware(MiddlewareMixin):
 
             try:
 
-                if request.method in ['PUT', 'POST']:
+                if request.method in ['PATCH', 'PUT', 'POST']:
 
                     request.JSON = json.loads(request.body.decode('utf8'))
 

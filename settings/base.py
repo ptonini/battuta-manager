@@ -35,7 +35,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'main.extras.middleware.RESTfulParsingMiddleware',
+    'main.extras.middleware.FileDataParsingMiddleware',
     'main.extras.middleware.JSONParsingMiddleware'
 )
 

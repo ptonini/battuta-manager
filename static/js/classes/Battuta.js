@@ -130,7 +130,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern', 'type', 'id'];
+        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern', 'type', 'id', 'links'];
 
         let data = {
             id: self.id,
@@ -358,7 +358,7 @@ Battuta.prototype = {
 
         }).then(response => {
 
-            if (response.hasOwnProperty('data')) return response;
+            if (response.hasOwnProperty('data') || response.hasOwnProperty('meta')) return response;
 
             else if (response.hasOwnProperty('errors')) {
 
@@ -413,13 +413,72 @@ Battuta.prototype = {
     },
 
 
-    // Data request helpers ***********
+    // Resource CRUD helpers ***********
+
+    create: function (blocking) {
+
+        let self = this;
+
+        return self.fetchJson('POST', self.apiPath, {data: self.serialize()}, blocking).then(response => {
+
+            self.loadParam(response.data);
+
+            return response
+
+        });
+
+    },
+
+    read: function (blocking) {
+
+        let self = this;
+
+        return self.fetchJson('GET', self.apiPath + '/' + self.id, blocking).then(response => {
+
+            self.loadParam(response.data);
+
+            return response
+
+        });
+
+    },
+
+    update: function (blocking) {
+
+        let self = this;
+
+        return self.fetchJson('PATCH', self.apiPath + '/' + self.id, {data: self.serialize()}, blocking).then(response => {
+
+            response.data[self.key] && self.loadParam(response.data[self.key]);
+
+            return response
+
+        });
+
+    },
+
+    delete: function (blocking, callback) {
+
+        let self = this;
+
+        self.deleteAlert(function() {
+
+            self.fetchJson('DELETE', self.apiPath + '/' + self.id, blocking).then(response => {
+
+                callback && callback(response)
+
+            });
+
+        })
+
+    },
+
 
     refresh: function (blocking) {
 
         let self = this;
 
-        return self.fetchJson('GET', self.apiPath, {data: self.serialize(self)}, blocking).then(response => {
+        return self.fetchJson('GET', self.apiPath, {data: self.serialize()}, blocking).then(response => {
 
             self.loadParam(response.data);
 
@@ -434,28 +493,6 @@ Battuta.prototype = {
         let self = this;
 
         self.getData('list', blocking, callback)
-
-    },
-
-    save: function () {
-
-        let self = this;
-
-        return self.fetchJson(self.id ? 'PATCH' : 'POST', self.apiPath, {data: self.serialize()}, true).then(response => {
-
-            response.data[self.key] && self.loadParam(response.data[self.key]);
-
-            return response
-
-        });
-
-        // self.ajaxRequest(self.id ? 'PUT' : 'POST', self, self.apiPath, true, function (data) {
-        //
-        //     data[self.key] && self.loadParam(data[self.key]);
-        //
-        //     callback && callback(data)
-        //
-        // });
 
     },
 
@@ -792,7 +829,7 @@ Battuta.prototype = {
 
         $('ul.nav-tabs').append(
             $('<li>').attr('class', 'nav-item').append(
-                $('<a>').attr({class: 'nav-link', href: '#' + title + '_tab', 'data-toggle': 'tab'}).html(title.capitalize())
+                $('<a>').attr({class: 'nav-link text-capitalize', href: '#' + title + '_tab', 'data-toggle': 'tab'}).html(title)
             )
         );
 
@@ -957,8 +994,6 @@ Battuta.prototype = {
 
         let self = this;
 
-        let user = new User({username: self.username});
-
         let $navBar = $('nav.navbar');
 
         if (authenticated === 'True') self.fetchHtml('navbar_Main.html', $navBar).then($element => {
@@ -995,7 +1030,7 @@ Battuta.prototype = {
 
             $('#logout_anchor').click(function () {
 
-                self.fetchJson('POST', '/logout', {}, false).then(response => {
+                self.fetchJson('POST', '/logout', {}, false).then(() => {
 
                     window.open('/', '_self');
 
@@ -1128,44 +1163,57 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.fetchHtml('view_Entity.html', $('section.container')).then($element => {
+        let $element;
+
+        self.fetchHtml('view_Entity.html', $('section.container')).then($template => {
+
+            $element = $template;
 
             self.bindElement($element);
 
-            self.refresh(false, function () {
+            return self.read(false)
 
-                $('#edit_button').toggleClass('hidden', !self.editable || !self.crud.callbacks.edit).click(function () {
+        }).then(() => {
 
-                    self.editor(self.crud.callbacks.edit);
+            $('#edit_button').toggleClass('hidden', !self.editable).click(function () {
 
-                });
+                self.editor(function () {
 
-                $('#delete_button').toggleClass('hidden', !self.editable || !self.crud.callbacks.delete).click(function () {
-
-                    self.del(self.crud.callbacks.delete)
+                    self.read(false)
 
                 });
-
-                self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
-
-                self.crud.info && self.crud.info(self, $element.find("#info_container"));
-
-                Object.keys(self.crud.tabs).forEach(function (key) {
-
-                    self.crud.tabs[key].validator(self) && self.crud.tabs[key].generator(self, self.addTab(key))
-
-                });
-
-                self.crud.onFinish && self.crud.onFinish(self);
-
-                $('ul.nav-tabs').attr('id', self.crud.tabsId + '_' + self.id + '_tabs').rememberTab();
 
             });
 
-        });
-    },
+            $('#delete_button').toggleClass('hidden', !self.editable).click(function () {
 
-    editor: function (callback) {
+                self.delete(false, function (response) {
+
+                    window.open(response.meta.selector, '_self')
+
+                })
+
+            });
+
+            self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
+
+            self.crud.info && self.crud.info(self, $element.find("#info_container"));
+
+            Object.keys(self.crud.tabs).forEach(function (key) {
+
+                //self.crud.tabs[key].validator(self) && self.crud.tabs[key].generator(self, self.addTab(key))
+
+            });
+
+            self.crud.onFinish && self.crud.onFinish(self);
+
+            $('ul.nav-tabs').attr('id', self.crud.tabsId + '_' + self.id + '_tabs').rememberTab();
+
+        });
+
+     },
+
+    editor: function (action) {
 
         let self = this;
 
@@ -1177,12 +1225,17 @@ Battuta.prototype = {
 
         $dialog.find('button.confirm-button').click(function () {
 
-            self.save().then(response => {
+            let conclusion = response => {
 
                 $dialog.dialog('close');
 
-                callback && callback(response);
-            })
+                action && action(response);
+
+            };
+
+            if (self.id) self.update().then(conclusion);
+
+            else self.create().then(conclusion);
 
         });
 

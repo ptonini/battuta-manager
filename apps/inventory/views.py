@@ -312,25 +312,25 @@ class InventoryView(View):
             return HttpResponseBadRequest()
 
     @staticmethod
-    def put(request):
+    def patch(request):
 
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
             # Create temp file and load import data
-            with tempfile.TemporaryFile() as temp:
+            with tempfile.TemporaryFile() as source_file:
 
                 for chunk in request.FILES['file_data']:
 
-                    temp.write(chunk)
+                    source_file.write(chunk)
 
-                temp.seek(0, 0)
+                source_file.seek(0, 0)
 
                 data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
 
                 # Import from CSV
-                if request.PUT['format'] == 'csv':
+                if request.PATCH['format'] == 'csv':
 
-                    csv_data = csv.reader(temp)
+                    csv_data = csv.reader(source_file)
 
                     header = next(csv_data.decode('utf8'))
 
@@ -348,9 +348,7 @@ class InventoryView(View):
 
                             host, created = Host.objects.get_or_create(name=row[host_index])
 
-                            if created:
-
-                                data['added_hosts'] += 1
+                            data['added_hosts'] += 1 if created else 0
 
                             for index, cell in enumerate(row):
 
@@ -360,9 +358,7 @@ class InventoryView(View):
 
                                         group, created = Group.objects.get_or_create(name=cell)
 
-                                        if created:
-
-                                            data['added_groups'] += 1
+                                        data['added_groups'] += 1 if created else 0
 
                                         host.group_set.add(group)
 
@@ -372,21 +368,19 @@ class InventoryView(View):
 
                                         var, created = Variable.objects.get_or_create(key=header[index], host=host)
 
-                                        if created:
-
-                                            data['added_vars'] += 1
+                                        data['added_vars'] += 1 if created else 0
 
                                         var.value = cell
 
                                         var.save()
 
                 # Import from JSON
-                elif request.PUT['format'] == 'json':
+                elif request.PATCH['format'] == 'json':
 
                     # Load JSON data
                     try:
 
-                        json_data = json.loads(temp.read().decode("utf-8"))
+                        json_data = json.loads(source_file.read().decode("utf-8"))
 
                     except ValueError:
 
@@ -411,11 +405,9 @@ class InventoryView(View):
 
                                 else:
 
-                                    var, created = Variable.objects.get_or_create(key=key, host=host)
+                                    var, created = Variable.objects.get_or_create(key=key, host=host, value=value)
 
                                     data['added_vars'] += 1 if created else 0
-
-                                    var.value = value
 
                                     var.save()
 
@@ -429,45 +421,42 @@ class InventoryView(View):
                             group, created = Group.objects.get_or_create(name=group_name)
 
                             # Iterate over group children
-                            if 'children' in json_data[group_name]:
 
-                                for child_name in json_data[group_name]['children']:
+                            for child_name in json_data[group_name].get('children', []):
 
-                                    child, created = Group.objects.get_or_create(name=child_name)
+                                child, created = Group.objects.get_or_create(name=child_name)
 
-                                    data['added_groups'] += 1 if created else 0
+                                data['added_groups'] += 1 if created else 0
 
-                                    group.children.add(child)
+                                group.children.add(child)
 
                             # Iterate over group hosts
-                            if 'hosts' in json_data[group_name]:
 
-                                for host_name in json_data[group_name]['hosts']:
+                            for host_name in json_data[group_name].get('hosts', []):
 
-                                    host, created = Host.objects.get_or_create(name=host_name)
+                                host, created = Host.objects.get_or_create(name=host_name)
 
-                                    data['added_hosts'] += 1 if created else 0
+                                data['added_hosts'] += 1 if created else 0
 
-                                    group.members.add(host)
+                                group.members.add(host)
 
                             # Iterate over group vars
-                            if 'vars' in json_data[group_name]:
 
-                                for key in json_data[group_name]['vars']:
+                            for key in json_data[group_name].get('vars', {}):
 
-                                    if key == '_description':
+                                if key == '_description':
 
-                                        group.description = json_data[group_name]['vars'][key]
+                                    group.description = json_data[group_name]['vars'][key]
 
-                                    else:
+                                else:
 
-                                        var, created = Variable.objects.get_or_create(key=key, group=group)
+                                    var, created = Variable.objects.get_or_create(key=key, group=group)
 
-                                        data['added_vars'] += 1 if created else 0
+                                    data['added_vars'] += 1 if created else 0
 
-                                        var.value = json_data[group_name]['vars'][key]
+                                    var.value = json_data[group_name]['vars'][key]
 
-                                        var.save()
+                                    var.save()
 
                             if group.name != 'ungrouped':
 
@@ -478,8 +467,6 @@ class InventoryView(View):
                             else:
 
                                 group.delete()
-
-                        print('aqui')
 
                 else:
 
@@ -534,6 +521,47 @@ class NodeView(View):
         return related_set, related_class, related_type
 
 
+    def _save_node(self, request, node):
+
+        form = self.form_class(request.JSON.get('data', {}).get('attributes') or None, instance=node)
+
+        if form.is_valid():
+
+            node = form.save(commit=True)
+
+            response = {'data': node.serialize(request)}
+
+        else:
+
+            errors = []
+
+            for k, v in form.errors.get_json_data().items():
+
+                for e in v:
+
+                    errors.append({
+                        'code': e['code'],
+                        'title': e['message'],
+                        'status': '400',
+                        'source': {'parameter': k}
+                    })
+
+            response = {'errors': errors}
+
+        return response
+
+
+    def post(self, request, node_id):
+
+        if request.user.has_perm('users.edit_' + self.type + 's'):
+
+            return api_response(self._save_node(request, self.model_class()))
+
+        else:
+
+            return HttpResponseForbidden()
+
+
     def get(self, request, node_id):
 
         if node_id:
@@ -568,39 +596,11 @@ class NodeView(View):
         return api_response(response)
 
 
-    def post(self, request, node_id):
+    def patch(self, request, node_id):
 
         if request.user.has_perm('users.edit_' + self.type + 's'):
 
-            node = self.model_class()
-
-            form = self.form_class(request.JSON.get('data', {}).get('attributes') or None, instance=node)
-
-            if form.is_valid():
-
-                node = form.save(commit=True)
-
-                response = {'data': node.serialize(request)}
-
-            else:
-
-                errors = []
-
-                for k, v in form.errors.get_json_data().items():
-
-                    for e in v:
-
-                        errors.append({
-                            'code': e['code'],
-                            'title': e['message'],
-                            'status': '400',
-                            'source': {'parameter': k}
-                        })
-
-
-                response = {'errors': errors}
-
-            return api_response(response)
+            return api_response(self._save_node(request, get_object_or_404(self.model_class, pk=node_id)))
 
         else:
 
@@ -617,29 +617,18 @@ class NodeView(View):
 
             else:
 
-                for d in request.JSON.get('data'):
+                self.model_class.objects.filter(pk__in=[n['id'] for n in request.JSON.get('data')]).delete()
 
-                    get_object_or_404(self.model_class, pk=d['id']).delete()
-
-            return api_response({'data': {}})
+            return api_response({'meta': {'selector': '/'.join([request._current_scheme_host, 'inventory', self.type])}})
 
         else:
 
             return HttpResponseForbidden()
 
+
     #project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
-    # elif action == 'delete':
-    #
-    #     if node.editable and (node.type == 'host' or node.name != 'all'):
-    #
-    #         node.delete()
-    #
-    #         data = {'status': 'ok', 'msg': node.type.title() + ' deleted', 'type': node.type}
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
+
     #
     # elif action == 'save_var':
     #
@@ -744,22 +733,6 @@ class NodeView(View):
     # return HttpResponse(json.dumps(data), status=201, content_type='application/json')
 
 
-
-    # elif action == 'facts':
-        #
-        #     if node.type == 'host':
-        #
-        #         facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
-        #
-        #         data = {
-        #             'status': 'ok',
-        #             'name': node.name,
-        #             'facts': facts if facts else None
-        #         }
-        #
-        #     else:
-        #
-        #         data = {'status': 'failed', 'msg': 'Groups do not have facts'}
         #
         # elif action == 'descendants':
         #
@@ -878,6 +851,20 @@ class GroupView(NodeView):
     model_class = Group
 
     form_class = GroupForm
+
+
+class FactsView(View):
+
+    @staticmethod
+    def get(request, node_id):
+
+        node = get_object_or_404(Host, pk=node_id)
+
+        facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
+
+        data = {'id': node.id, 'type': node.type, 'attributes': {'facts': facts if facts else None}}
+
+        return api_response({'data': data})
 
 
 
