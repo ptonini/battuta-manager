@@ -198,11 +198,11 @@ Node.prototype.crud = {
                             }
                         }
                     ],
-                    ajax: {url: self.apiPath + 'vars/?id='+ self.id, dataSrc: 'var_list'},
+                    ajax: {url: self.apiPath + '/' + self.id + '/vars'  , dataSrc: 'data'},
                     columns: [
-                        {title: 'key', data: 'key'},
-                        {title: 'value', data: 'value'},
-                        {title: 'source', data: 'source'},
+                        {title: 'key', data: 'attributes.key'},
+                        {title: 'value', data: 'attributes.value'},
+                        {title: 'source', defaultContent: ''},
                         {title: '', defaultContent: '', class: 'float-right', orderable: false}
                     ],
                     rowCallback: function(row, variable) {
@@ -233,7 +233,7 @@ Node.prototype.crud = {
                         else $(row).find('td:eq(2)')
                             .css('cursor', 'pointer')
                             .html(variable.source.italics())
-                            .attr('title', 'Open ' + variable.source)
+                            .attr('title', 'Open ' + variable.meta.source.name)
                             .click(function () {
 
                                 window.open(self.paths.views.node.group + variable.source + '/', '_self')
@@ -258,9 +258,9 @@ Node.prototype.crud = {
 
                             this.child.isShown() && this.child.hide();
 
-                            let rowKey = this.data().key;
+                            let rowKey = this.data().attributes.key;
 
-                            let isMain = this.data().primary;
+                            let isMain = this.data().meta.primary;
 
                             let rowData = [this.data(), this.node()];
 
@@ -295,7 +295,7 @@ Node.prototype.crud = {
 
                                 $.each(duplicates[key]['values'], function (index, value) {
 
-                                    if (value[0]['primary']) mainValue = value;
+                                    if (value[0]['meta']['primary']) mainValue = value;
 
                                     else {
 
@@ -303,7 +303,7 @@ Node.prototype.crud = {
 
                                         $newRow.find('td:eq(2)').click(function() {
 
-                                            window.open(self.paths.views.node.group + value[0].source, '_self')
+                                            window.open(self.paths.views.node.group + value[0].meta.source_id, '_self')
 
                                         });
 
@@ -355,34 +355,32 @@ Node.prototype.crud = {
                     }
                 });
 
-
-
             }
         },
-        parents: {
-            validator: function (self) {return (self.type === 'host' || self.name !== 'all')},
-            generator: function (self, $container) {
-
-                self.relationships('parents', $container)
-
-            }
-        },
-        children: {
-            validator: function (self) {return (self.type === 'group' && self.name !== 'all')},
-            generator: function (self, $container) {
-
-                self.relationships('children', $container)
-
-            }
-        },
-        members: {
-            validator: function (self) {return (self.type === 'group' && self.name !== 'all')},
-            generator: function (self, $container) {
-
-                self.relationships('members', $container)
-
-            }
-        },
+        // parents: {
+        //     validator: function (self) {return (self.type === 'host' || self.name !== 'all')},
+        //     generator: function (self, $container) {
+        //
+        //         self.relationships('parents', $container)
+        //
+        //     }
+        // },
+        // children: {
+        //     validator: function (self) {return (self.type === 'group' && self.name !== 'all')},
+        //     generator: function (self, $container) {
+        //
+        //         self.relationships('children', $container)
+        //
+        //     }
+        // },
+        // members: {
+        //     validator: function (self) {return (self.type === 'group' && self.name !== 'all')},
+        //     generator: function (self, $container) {
+        //
+        //         self.relationships('members', $container)
+        //
+        //     }
+        // },
     },
     onFinish: function (self) {
 

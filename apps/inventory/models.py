@@ -19,36 +19,6 @@ class Node(models.Model):
 
         return self.name
 
-    def get_descendants(self):
-
-        if self.type == 'group' and self.id:
-
-            group_descendants = set()
-
-            children = self.children.all()
-
-            while len(children) > 0:
-
-                step_list = set()
-
-                for child in children:
-
-                    group_descendants.add(child)
-
-                    for grandchild in child.children.all():
-
-                        step_list.add(grandchild)
-
-                children = step_list
-
-            members = {host for host in self.members.all()}
-
-            return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
-
-        else:
-
-            return set(), set()
-
     def get_ancestors(self):
 
         ancestors = set()
@@ -152,6 +122,30 @@ class Group(Node):
 
     type = 'group'
 
+    def get_descendants(self):
+
+        group_descendants = set()
+
+        children = self.children.all()
+
+        while len(children) > 0:
+
+            step_list = set()
+
+            for child in children:
+
+                group_descendants.add(child)
+
+                for grandchild in child.children.all():
+
+                    step_list.add(grandchild)
+
+            children = step_list
+
+        members = {host for host in self.members.all()}
+
+        return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
+
     def serialize(self, request):
 
         data = super(Group, self).serialize(request)
@@ -182,6 +176,18 @@ class Variable(models.Model):
     host = models.ForeignKey('Host', blank=True, null=True, on_delete=models.CASCADE)
 
     group = models.ForeignKey('Group', blank=True, null=True, on_delete=models.CASCADE)
+
+    def serialize(self):
+
+        return {
+            'id': self.id,
+            'type': 'vars',
+            'attributes': {
+                'key': self.key,
+                'value': self.value,
+            }
+        }
+
 
     class Meta:
 

@@ -520,7 +520,6 @@ class NodeView(View):
 
         return related_set, related_class, related_type
 
-
     def _save_node(self, request, node):
 
         form = self.form_class(request.JSON.get('data', {}).get('attributes') or None, instance=node)
@@ -550,7 +549,6 @@ class NodeView(View):
 
         return response
 
-
     def post(self, request, node_id):
 
         if request.user.has_perm('users.edit_' + self.type + 's'):
@@ -560,7 +558,6 @@ class NodeView(View):
         else:
 
             return HttpResponseForbidden()
-
 
     def get(self, request, node_id):
 
@@ -595,7 +592,6 @@ class NodeView(View):
 
         return api_response(response)
 
-
     def patch(self, request, node_id):
 
         if request.user.has_perm('users.edit_' + self.type + 's'):
@@ -605,7 +601,6 @@ class NodeView(View):
         else:
 
             return HttpResponseForbidden()
-
 
     def delete(self, request, node_id):
 
@@ -624,7 +619,6 @@ class NodeView(View):
         else:
 
             return HttpResponseForbidden()
-
 
     #project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
 
@@ -865,6 +859,85 @@ class FactsView(View):
         data = {'id': node.id, 'type': node.type, 'attributes': {'facts': facts if facts else None}}
 
         return api_response({'data': data})
+
+
+class VarsView(View):
+
+    @staticmethod
+    def post(request, node_id, var_id, node_type):
+
+        node = get_object_or_404(Host if node_type == 'host' else Group, pk=node_id)
+
+        pass
+
+    @staticmethod
+    def get(request, node_id, var_id, node_type):
+
+        node = get_object_or_404(Host if node_type == 'host' else Group, pk=node_id)
+
+        variables = dict()
+
+        inventory = AnsibleInventory()
+
+        for var in node.variable_set.all():
+
+            variables[var.key] = [var.serialize()]
+
+            variables[var.key][0]['meta'] = {'primary': True}
+
+        for ancestor in node.get_ancestors():
+
+            for var in ancestor.variable_set.all():
+
+                var_dict = var.serialize()
+
+                var_dict['meta'] = {
+                    'primary': False,
+                    'source_name': var.group.name,
+                    'source_id': var.group.id
+                }
+
+                if var.key in variables:
+
+                    variables[var.key].append(var_dict)
+
+                else:
+
+                    variables[var.key] = [var_dict]
+
+        data = list()
+
+        for key in variables:
+
+            if len([value for value in variables[key] if value['meta']['primary']]) == 0:
+
+                if len(variables[key]) == 1:
+
+                    variables[key][0]['meta']['primary'] = True
+
+                else:
+
+                    actual_value = inventory.get_variable(key, node)
+
+                    for value in variables[key]:
+
+                        if value['attributes']['value'] == actual_value:
+
+                            value['meta']['primary'] = True
+
+                            break
+
+            data += variables[key]
+
+        return api_response({'data': data})
+
+    def patch(self, request, node_id, var_id, node_type):
+
+        pass
+
+    def delete(self, request, node_id, var_id, node_type):
+
+        pass
 
 
 

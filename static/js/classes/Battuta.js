@@ -1201,7 +1201,7 @@ Battuta.prototype = {
 
             Object.keys(self.crud.tabs).forEach(function (key) {
 
-                //self.crud.tabs[key].validator(self) && self.crud.tabs[key].generator(self, self.addTab(key))
+                self.crud.tabs[key].validator(self) && self.crud.tabs[key].generator(self, self.addTab(key))
 
             });
 

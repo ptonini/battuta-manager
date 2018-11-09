@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 import json
 import os
 import shutil
@@ -18,9 +16,6 @@ from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
-
-# reload(sys)
-#sys.setdefaultencoding('utf8')
 
 
 class PageView(View):
