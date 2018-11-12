@@ -87,8 +87,3 @@ def download_file(f, filename):
     response['Content-Disposition'] = 'inline; filename=' + filename
 
     return response
-
-
-def api_response(response):
-
-    return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')

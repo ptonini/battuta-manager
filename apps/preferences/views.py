@@ -9,14 +9,11 @@ from apps.preferences.extras import get_default_value
 
 from apps.iam.extras import create_userdata
 
-from main.extras import api_response
+from main.extras.views import ApiView
 
+class PreferencesView(ApiView):
 
-class PreferencesView(View):
-
-    @staticmethod
-    def get(request):
-
+    def get(self, request):
 
         create_userdata(request.user)
 
@@ -32,10 +29,9 @@ class PreferencesView(View):
             'tz': request.user.userdata.timezone
         }
 
-        return api_response({'data': pref_dict})
+        return self._api_response({'data': pref_dict})
 
-    @staticmethod
-    def post(request, action):
+    def post(self, request, action):
 
         if request.user.has_perm('users.edit_preferences'):
 
@@ -67,4 +63,4 @@ class PreferencesView(View):
 
             data = {'status': 'denied'}
 
-        return HttpResponse(json.dumps(data), content_type='application/json')
+        return self._api_response({'data': data})

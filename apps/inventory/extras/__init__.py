@@ -4,44 +4,10 @@ from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
 from ansible.inventory import Inventory, Host as AnsibleHost
 
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from apps.inventory.models import Host, Group
-from apps.inventory.forms import HostForm, GroupForm
 
-
-
-node_classes = {
-    'host': {'node': Host, 'form': HostForm},
-    'group': {'node': Group, 'form': GroupForm}
-}
-
-node_relations = {
-    'parents': {},
-    'children': {},
-    'members': {},
-}
-
-
-def load_node(node_id, node_type, user):
-
-    node = get_object_or_404(node_classes[node_type]['node'], pk=node_id)
-
-    group_descendants, host_descendants = node.get_descendants()
-
-    setattr(node, 'editable', user.has_perm('users.edit_' + node_type + 's'))
-
-    setattr(node, 'form_class', node_classes[node_type]['form'])
-
-    setattr(node, 'group_descendants', group_descendants)
-
-    setattr(node, 'host_descendants', host_descendants)
-
-    node.editable = False if node.type == 'group' and node.name == 'all' else node.editable
-
-    return node
 
 
 def inventory_to_dict(internal_vars=True):

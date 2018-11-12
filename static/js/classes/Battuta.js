@@ -15,7 +15,7 @@ Battuta.prototype = {
     paths: {
         api:{
             file: '/files/api/',
-            inventory: '/inventory/api',
+            inventory: '/api/inventory',
             adhoc: '/runner/api/adhoc/',
             playbook: '/runner/api/playbook/',
             job: '/runner/api/job/',
@@ -25,8 +25,8 @@ Battuta.prototype = {
             project: '/projects/api/',
             preferences:'/preferences/',
             node: {
-                host: '/inventory/api/host',
-                group: '/inventory/api/group'
+                hosts: '/api/inventory/hosts',
+                groups: '/api/inventory/groups'
             }
         },
         selector: {
@@ -40,19 +40,19 @@ Battuta.prototype = {
             group: '/iam/group/',
             project: '/projects/',
             node: {
-                host: '/inventory/host',
-                group: '/inventory/group'
+                hosts: '/inventory/hosts',
+                groups: '/inventory/groups'
             }
         },
-        views: {
-            job: '/runner/job/',
-            user: '/iam/user/',
-            group: '/iam/group/',
-            node: {
-                host: '/inventory/host',
-                group: '/inventory/group'
-            }
-        },
+        // views: {
+        //     job: '/runner/job/',
+        //     user: '/iam/user/',
+        //     group: '/iam/group/',
+        //     node: {
+        //         hosts: '/inventory/hosts',
+        //         groups: '/inventory/groups'
+        //     }
+        // },
         runner: '/runner/',
         inventory: '/inventory/',
         templates: '/static/templates/',
@@ -189,6 +189,14 @@ Battuta.prototype = {
 
     },
 
+    objToUrlParam: function (obj) {
+
+        for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
+
+        return '?' + $.param(obj);
+
+    },
+
     ajaxBeforeSend: function (xhr, settings) {
 
         settings.blocking && $.blockUI({
@@ -308,6 +316,8 @@ Battuta.prototype = {
 
     fetchJson: function (method, url, obj, blocking) {
 
+        let self = this;
+
         let init = {};
 
         init.credentials = 'include';
@@ -316,18 +326,14 @@ Battuta.prototype = {
 
         init.headers = new Headers({
             'Content-Type': 'application/vnd.api+json',
-            'X-CSRFToken': Battuta.prototype._getCookie('csrftoken')
+            'Accept': 'application/vnd.api+json',
         });
+
+        self._csrfSafeMethod(method) || init.headers.set('X-CSRFToken', self._getCookie('csrftoken'));
 
         if (obj) {
 
-            if (method === 'GET' || method === 'DELETE') {
-
-                for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
-
-                url = url + '?' + $.param(obj);
-
-            }
+            if (method === 'GET' || method === 'DELETE') url = url + self.objToUrlParam(obj);
 
             else init.body = JSON.stringify(obj);
 
@@ -346,7 +352,7 @@ Battuta.prototype = {
 
             blocking && $.unblockUI();
 
-            if (response.ok) return response.json();
+            if (response.ok ) return response.status === 204 ? {data: {}} : response.json();
 
             else {
 
@@ -378,7 +384,7 @@ Battuta.prototype = {
 
                 Battuta.prototype.statusAlert('danger', $messageContainer);
 
-                throw response.statusText
+                throw response.errors
 
             }
 
@@ -399,8 +405,7 @@ Battuta.prototype = {
 
             return response.text()
 
-        })
-        .then(text => {
+        }).then(text => {
 
             let $elements = $(text);
 
@@ -433,7 +438,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        return self.fetchJson('GET', self.apiPath + '/' + self.id, blocking).then(response => {
+        return self.fetchJson('GET', self.apiPath + '/' + self.id, null, blocking).then(response => {
 
             self.loadParam(response.data);
 
@@ -449,7 +454,7 @@ Battuta.prototype = {
 
         return self.fetchJson('PATCH', self.apiPath + '/' + self.id, {data: self.serialize()}, blocking).then(response => {
 
-            response.data[self.key] && self.loadParam(response.data[self.key]);
+            self.loadParam(response.data);
 
             return response
 
@@ -463,7 +468,7 @@ Battuta.prototype = {
 
         self.deleteAlert(function() {
 
-            self.fetchJson('DELETE', self.apiPath + '/' + self.id, blocking).then(response => {
+            self.fetchJson('DELETE', self.apiPath + '/' + self.id, null, blocking).then(response => {
 
                 callback && callback(response)
 
@@ -633,8 +638,6 @@ Battuta.prototype = {
     entityDialog: function () {
 
         let $dialog = Battuta.prototype.confirmationDialog();
-
-        $dialog.find('.dialog-header').attr('data-bind', 'header');
 
         $dialog.find('div.dialog-content').append(
             $('<div>').attr('class', 'form-group').append(
@@ -851,7 +854,7 @@ Battuta.prototype = {
 
         $container.find('button').prop('disabled', locked).click(function () {
 
-             let oldPattern = self.get(binding);
+            let oldPattern = self.get(binding);
 
             self.fetchHtml('form_PatternBuilder.html').then($element => {
 
@@ -1008,9 +1011,9 @@ Battuta.prototype = {
 
             $('#manage_inventory_anchor').attr('href', self.paths.inventory + 'manage');
 
-            $('#user_view_anchor').attr('href', self.paths.views.user + self.username + '/');
+            $('#user_view_anchor').attr('href', self.paths.selector.user + self.username + '/');
 
-            $('#user_file_anchor').attr('href', self.paths.views.user + self.username + '/files/');
+            $('#user_file_anchor').attr('href', self.paths.selector.user + self.username + '/files/');
 
             $('#user_icon').attr('title', self.username);
 
@@ -1175,6 +1178,8 @@ Battuta.prototype = {
 
         }).then(() => {
 
+            document.title = 'Battuta - ' + self.name;
+
             $('#edit_button').toggleClass('hidden', !self.editable).click(function () {
 
                 self.editor(function () {
@@ -1197,17 +1202,15 @@ Battuta.prototype = {
 
             self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
 
-            self.crud.info && self.crud.info(self, $element.find("#info_container"));
+            self.info && self.info($element.find("#info_container"));
 
-            Object.keys(self.crud.tabs).forEach(function (key) {
+            Object.keys(self.tabs).forEach(function (key) {
 
-                self.crud.tabs[key].validator(self) && self.crud.tabs[key].generator(self, self.addTab(key))
+                self.tabs[key].validator(self) && self.tabs[key].generator(self, self.addTab(key))
 
             });
 
-            self.crud.onFinish && self.crud.onFinish(self);
-
-            $('ul.nav-tabs').attr('id', self.crud.tabsId + '_' + self.id + '_tabs').rememberTab();
+            $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
         });
 
@@ -1221,11 +1224,11 @@ Battuta.prototype = {
 
         self.bindElement($dialog);
 
-        self.set('header', self.id ? 'Edit ' + self.crud.type : 'Add ' + self.crud.type);
+        $dialog.find('.dialog-header').html(self.id ? 'Edit ' + self.title.single : 'Add ' + self.title.single);
 
         $dialog.find('button.confirm-button').click(function () {
 
-            let conclusion = response => {
+            let callback = response => {
 
                 $dialog.dialog('close');
 
@@ -1233,9 +1236,9 @@ Battuta.prototype = {
 
             };
 
-            if (self.id) self.update().then(conclusion);
+            if (self.id) self.update().then(callback);
 
-            else self.create().then(conclusion);
+            else self.create().then(callback);
 
         });
 

@@ -3,10 +3,8 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            document.title = 'Battuta - {{ node.name }}';
-
-            new Node({id: '{{ node.id }}', type: '{{ node.type }}'}).view();
+            new Group().selector();
 
         });
     </script>
-{% endblock %}
+{% endblock%}

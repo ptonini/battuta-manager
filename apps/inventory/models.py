@@ -15,9 +15,27 @@ class Node(models.Model):
 
     group_set = None
 
+    members = None
+
+    children = None
+
     def __str__(self):
 
         return self.name
+
+    def get_relationships(self, relation):
+
+        if relation == 'parents':
+
+            return self.group_set, Group
+
+        elif relation == 'children':
+
+            return self.children, Group
+
+        elif relation == 'members':
+
+            return self.members, Host
 
     def get_ancestors(self):
 
@@ -54,26 +72,31 @@ class Node(models.Model):
         data = {
             'type': self.type,
             'id': self.id,
-            'attributes': {},
-            'links': {
-                'self': '/'.join([request._current_scheme_host + request.path, str(self.id)]),
-                'parents': '/'.join([request._current_scheme_host + request.path, str(self.id), 'parents']),
-                'vars': '/'.join([request._current_scheme_host + request.path, str(self.id), 'vars']),
-                'view': '/'.join([request._current_scheme_host, 'inventory', self.type, str(self.id)])
-            }
+            'meta': {'editable': request.user.has_perm('users.edit_' + self.type + 's')}
         }
 
-        data['attributes']['name'] = self.name
+        attributes = ['name', 'description']
 
-        data['attributes']['description'] = self.description
+        links = {
+            'self': request.path,
+            'vars': '/'.join([request.path, Variable.type]),
+            'parents': '/'.join([request.path, 'parents']),
+            'view': '/'.join(['/inventory', self.type, str(self.id)])
+        }
 
-        if self.type == 'group' and self.name == 'all':
+        fields = request.JSON.get('fields', False)
 
-            data['attributes']['editable'] = False
+        if not fields or 'attributes' in fields:
 
-        else:
+            data['attributes'] = {a: getattr(self, a) for a in attributes if not fields or a in fields['attributes']}
 
-            data['attributes']['editable'] = request.user.has_perm('users.edit_' + self.type + 's')
+        if not fields or 'links' in fields:
+
+            data['links'] = {k: v for k, v in links.items() if not fields or k in fields['links']}
+
+        if self.type == Group.type and self.name == 'all':
+
+            data['meta']['editable'] = False
 
         return data
 
@@ -86,7 +109,7 @@ class Host(Node):
 
     facts = models.TextField(max_length=65353, default='{}')
 
-    type = 'host'
+    type = 'hosts'
 
     def serialize(self, request):
 
@@ -94,22 +117,31 @@ class Host(Node):
 
         facts = json.loads(self.facts)
 
-        data['links']['facts'] = data['links']['self'] + '/facts'
+        attributes = {
+            'public_address': facts.get('ec2_public_ipv4'),
+            'instance_type': facts.get('ec2_instance_type'),
+            'cores': facts.get('processor_count'),
+            'memory': facts.get('memtotal_mb'),
+            'address': facts.get('default_ipv4', {}).get('address'),
+            'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
+            'instance_id': facts.get('ec2_instance_id'),
+        }
 
-        data['attributes']['public_address'] = facts.get('ec2_public_ipv4')
+        links = {'facts': request.path + '/facts'}
 
-        data['attributes']['instance_type'] = facts.get('ec2_instance_type')
+        fields = request.JSON.get('fields', False)
 
-        data['attributes']['cores'] = facts.get('processor_count')
+        if not fields or 'attributes' in fields:
 
-        data['attributes']['memory'] = facts.get('memtotal_mb')
+            data['attributes'].update({k: v for k, v in attributes.items() if not fields or k in fields['attributes']})
 
-        data['attributes']['address'] = facts.get('default_ipv4', {}).get('address')
+        if not fields or 'links' in fields:
 
-        data['attributes']['disc'] = sum([m['size_total'] for m in facts.get('mounts', [])])
+            data['links'].update({k: v for k, v in links.items() if not fields or k in fields['links']})
 
-        data['attributes']['instance_id'] = facts.get('ec2_instance_id')
+        if fields and 'facts' in fields.get('attributes', {}):
 
+            data['attributes'] = {'facts': facts}
 
         return data
 
@@ -120,7 +152,7 @@ class Group(Node):
 
     members = models.ManyToManyField('Host', blank=True)
 
-    type = 'group'
+    type = 'groups'
 
     def get_descendants(self):
 
@@ -150,22 +182,35 @@ class Group(Node):
 
         data = super(Group, self).serialize(request)
 
-        data['links']['children'] =  data['links']['self'] + '/children'
+        attributes = {
+            'members': self.members.all().count(),
+            'parents': self.group_set.all().count(),
+            'children': self.children.all().count(),
+            'variables': self.variable_set.all().count()
+        }
 
-        data['links']['members'] =  data['links']['self'] + '/members'
+        links = {
+            'children': request.path + '/children',
+            'members': request.path + '/members'
+        }
 
-        data['attributes']['members'] = self.members.all().count()
+        fields = request.JSON.get('fields', False)
 
-        data['attributes']['parents'] = self.group_set.all().count()
+        if not fields or 'attributes' in fields:
 
-        data['attributes']['children'] =  self.children.all().count()
+            data['attributes'].update({k: v for k, v in attributes.items() if not fields or k in fields['attributes']})
 
-        data['attributes']['variables'] =  self.variable_set.all().count()
+        if not fields or 'links' in fields:
+
+            data['links'].update({k: v for k, v in links.items() if not fields or k in fields['links']})
 
         return data
 
 
+
 class Variable(models.Model):
+
+    type = 'vars'
 
     key = models.CharField(max_length=128, blank=False, validators=[
         RegexValidator(regex='\-', message='Key names cannot contain "-"', inverse_match=True)
@@ -177,17 +222,16 @@ class Variable(models.Model):
 
     group = models.ForeignKey('Group', blank=True, null=True, on_delete=models.CASCADE)
 
-    def serialize(self):
+    def serialize(self, request):
 
         return {
             'id': self.id,
-            'type': 'vars',
+            'type': self.type,
             'attributes': {
                 'key': self.key,
                 'value': self.value,
             }
         }
-
 
     class Meta:
 

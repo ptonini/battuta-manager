@@ -3,7 +3,7 @@ from django.views.generic import View
 from django.http import HttpResponseBadRequest, HttpResponseNotFound
 from django.contrib.auth import authenticate, login, logout
 
-from main.extras import api_response
+from main.extras.views import ApiView
 
 class PageView(View):
 
@@ -23,10 +23,9 @@ class PageView(View):
             return HttpResponseNotFound()
 
 
-class LoginView(View):
+class LoginView(ApiView):
 
-    @staticmethod
-    def post(request, action):
+    def post(self, request, action):
 
         if action == 'login':
 
@@ -59,4 +58,4 @@ class LoginView(View):
 
             return HttpResponseBadRequest()
 
-        return api_response(response)
+        return self._api_response(response)

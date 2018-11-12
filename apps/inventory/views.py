@@ -19,9 +19,10 @@ from xml.etree.ElementTree import ElementTree, Element, SubElement
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
-from apps.inventory.extras import AnsibleInventory, load_node, node_classes, inventory_to_dict
+from apps.inventory.extras import AnsibleInventory, inventory_to_dict
 
-from main.extras import download_file, api_response
+from main.extras import download_file
+from main.extras.views import ApiView
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import Authorizer
 
@@ -40,7 +41,7 @@ class PageView(View):
 
             if request.user.is_authenticated or ip in get_preferences()['ansible_servers'].split(','):
 
-                return HttpResponse(json.dumps(inventory_to_dict()))
+                return HttpResponse(json.dumps(inventory_to_dict()), content_type='application/json')
 
             else:
 
@@ -52,15 +53,11 @@ class PageView(View):
 
         elif page == 'selector':
 
-            context = {'node_type': node_type}
-
-            return render(request, 'inventory/node_selector.html', context)
+            return render(request, 'inventory/' + ('host_selector.html' if node_type == Host.type else 'group_selector.html'))
 
         elif page == 'view':
 
-            context = {'node': (get_object_or_404(node_classes[node_type]['node'], pk=node_id))}
-
-            return render(request, 'inventory/node_view.html', context)
+            return render(request, 'inventory/' + ('host_view.html' if node_type == Host.type else 'group_view.html'))
 
         else:
 
@@ -311,8 +308,7 @@ class InventoryView(View):
 
             return HttpResponseBadRequest()
 
-    @staticmethod
-    def patch(request):
+    def patch(self, request):
 
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
@@ -472,14 +468,14 @@ class InventoryView(View):
 
                     return HttpResponseBadRequest()
 
-                return api_response({'data': data})
+                return self.api_response({'data': data})
 
         else:
 
             return HttpResponseForbidden()
 
 
-class NodeView(View):
+class NodeView(ApiView):
 
     type = None
 
@@ -487,73 +483,11 @@ class NodeView(View):
 
     form_class = None
 
-    @staticmethod
-    def _get_relationships(node, relation):
-
-        if relation == 'parents':
-
-            related_set = node.group_set
-
-            related_class = Group
-
-            related_type = 'group'
-
-        elif relation == 'children':
-
-            related_set = node.children
-
-            related_class = Group
-
-            related_type = 'group'
-
-        elif relation == 'members':
-
-            related_set = node.members
-
-            related_class = Host
-
-            related_type = 'host'
-
-        else:
-
-            raise ValueError('Invalid relation')
-
-        return related_set, related_class, related_type
-
-    def _save_node(self, request, node):
-
-        form = self.form_class(request.JSON.get('data', {}).get('attributes') or None, instance=node)
-
-        if form.is_valid():
-
-            node = form.save(commit=True)
-
-            response = {'data': node.serialize(request)}
-
-        else:
-
-            errors = []
-
-            for k, v in form.errors.get_json_data().items():
-
-                for e in v:
-
-                    errors.append({
-                        'code': e['code'],
-                        'title': e['message'],
-                        'status': '400',
-                        'source': {'parameter': k}
-                    })
-
-            response = {'errors': errors}
-
-        return response
-
     def post(self, request, node_id):
 
         if request.user.has_perm('users.edit_' + self.type + 's'):
 
-            return api_response(self._save_node(request, self.model_class()))
+            return self._api_response(self._save_instance(request, self.model_class()))
 
         else:
 
@@ -590,13 +524,13 @@ class NodeView(View):
 
             response = {'data': data}
 
-        return api_response(response)
+        return self._api_response(response)
 
     def patch(self, request, node_id):
 
         if request.user.has_perm('users.edit_' + self.type + 's'):
 
-            return api_response(self._save_node(request, get_object_or_404(self.model_class, pk=node_id)))
+            return self._api_response(self._save_instance(request, get_object_or_404(self.model_class, pk=node_id)))
 
         else:
 
@@ -614,118 +548,11 @@ class NodeView(View):
 
                 self.model_class.objects.filter(pk__in=[n['id'] for n in request.JSON.get('data')]).delete()
 
-            return api_response({'meta': {'selector': '/'.join([request._current_scheme_host, 'inventory', self.type])}})
+            return self._api_response({'meta': {'selector': '/'.join(['/inventory', self.type])}})
 
         else:
 
             return HttpResponseForbidden()
-
-    #project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
-
-
-    #
-    # elif action == 'save_var':
-    #
-    #     if node.editable or project_auth.can_edit_variables(node):
-    #
-    #         var_dict = json.loads(request.POST['variable'])
-    #
-    #         variable = get_object_or_404(Variable, pk=var_dict['id']) if var_dict.get('id') else Variable()
-    #
-    #         var_dict[node_type] = node.id
-    #
-    #         form = VariableForm(var_dict or None, instance=variable)
-    #
-    #         if form.is_valid():
-    #
-    #             form.save(commit=True)
-    #
-    #             data = {'status': 'ok', 'msg': 'Variable saved'}
-    #
-    #         else:
-    #
-    #             error_dict = json.loads(form.errors.as_json())
-    #
-    #             data = {'status': 'failed', 'error': error_dict}
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    # elif action == 'delete_var':
-    #
-    #     if node.editable or project_auth.can_edit_variables(node):
-    #
-    #         variable = get_object_or_404(Variable, pk=json.loads(request.POST['variable'])['id'])
-    #
-    #         variable.delete()
-    #
-    #         data = {'status': 'ok', 'msg': 'Variable deleted'}
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    # elif action == 'copy_vars':
-    #
-    #     if node.editable or project_auth.can_edit_variables(node):
-    #
-    #         source_dict = json.loads(request.POST['source'])
-    #
-    #         source = build_node(source_dict, source_dict['type'], request.user)
-    #
-    #         for source_var in source.variable_set.all():
-    #
-    #             var, created = node.variable_set.get_or_create(key=source_var.key)
-    #
-    #             var.value = source_var.value
-    #
-    #             var.save()
-    #
-    #         data = {'status': 'ok', 'msg': 'Variable copied from ' + source.name}
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    # elif action in ['add_parents', 'add_children', 'add_members']:
-    #
-    #     if node.editable:
-    #
-    #         related_set, related_class, related_type = self._get_relationships(node, action.split('_')[1])
-    #
-    #         for selected in json.loads(request.POST['selection']):
-    #
-    #             related_set.add(get_object_or_404(related_class, pk=selected['id']))
-    #
-    #         data = {'status': 'ok'}
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    # elif action in ['remove_parents', 'remove_children', 'remove_members']:
-    #
-    #     if node.editable:
-    #
-    #         related_set, related_class, related_type = self._get_relationships(node, action.split('_')[1])
-    #
-    #         for selected in json.loads(request.POST['selection']):
-    #
-    #             related_set.remove(get_object_or_404(related_class, pk=selected['id']))
-    #
-    #         data = {'status': 'ok'}
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    # else:
-    #
-    #     return HttpResponseNotFound('Invalid action')
-
-    # return HttpResponse(json.dumps(data), status=201, content_type='application/json')
-
 
         #
         # elif action == 'descendants':
@@ -736,102 +563,10 @@ class NodeView(View):
         #         'host_descendants': [host.to_dict() for host in node.host_descendants]
         #     }
 
-        # elif action == 'vars':
-        #
-        #     variables = dict()
-        #
-        #     inventory = AnsibleInventory()
-        #
-        #     for var in node.variable_set.all():
-        #
-        #         variables[var.key] = [{'key': var.key, 'value': var.value, 'source': '', 'id': var.id, 'primary': True}]
-        #
-        #     for ancestor in node.get_ancestors():
-        #
-        #         for var in ancestor.variable_set.all():
-        #
-        #             var_dict = {
-        #                 'key': var.key,
-        #                 'value': var.value,
-        #                 'source': var.group.name,
-        #                 'id': var.group.id,
-        #                 'primary': False
-        #             }
-        #
-        #             if var.key in variables:
-        #
-        #                 variables[var.key].append(var_dict)
-        #
-        #             else:
-        #
-        #                 variables[var.key] = [var_dict]
-        #
-        #     var_list = list()
-        #
-        #     for key in variables:
-        #
-        #         primary_count = len([value for value in variables[key] if value['primary']])
-        #
-        #         if primary_count == 0 and len(variables[key]) == 1:
-        #
-        #             variables[key][0]['primary'] = True
-        #
-        #         elif primary_count == 0 and len(variables[key]) > 1:
-        #
-        #             actual_value = inventory.get_variable(key, node)
-        #
-        #             for value in variables[key]:
-        #
-        #                 if value['value'] == actual_value:
-        #
-        #                     value['primary'] = True
-        #
-        #                     break
-        #
-        #         var_list += variables[key]
-        #
-        #     data = {'status': 'ok', 'var_list': var_list}
-
-        # elif action in ['parents', 'children', 'members']:
-        #
-        #     related_set, related_class, related_type = self._get_relationships(node, action)
-        #
-        #     if 'related' not in request.GET or request.GET['related'] == 'true':
-        #
-        #         node_list = [related_node.to_dict() for related_node in related_set.order_by('name')]
-        #
-        #     else:
-        #
-        #         candidate_set = related_class.objects.order_by('name').exclude(name='all')
-        #
-        #         candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
-        #
-        #         if related_class == type(node):
-        #
-        #             candidate_set = candidate_set.exclude(pk=node.id)
-        #
-        #         if action == 'parents' and node.group_descendants:
-        #
-        #             candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.group_descendants])
-        #
-        #         elif action == 'children' and node.get_ancestors():
-        #
-        #             candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.get_ancestors()])
-        #
-        #         node_list = [candidate.to_dict() for candidate in candidate_set]
-        #
-        #     data = {'status': 'ok', 'nodes': node_list}
-        #
-        # else:
-        #
-        #     return HttpResponseNotFound('Invalid action')
-
-        #return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')
-
 
 class HostView(NodeView):
 
-    type = 'host'
+    type = Host.type
 
     model_class = Host
 
@@ -840,40 +575,41 @@ class HostView(NodeView):
 
 class GroupView(NodeView):
 
-    type = 'group'
+    type = Group.type
 
     model_class = Group
 
     form_class = GroupForm
 
 
-class FactsView(View):
+class VarsView(ApiView):
 
-    @staticmethod
-    def get(request, node_id):
+    type = Variable.type
 
-        node = get_object_or_404(Host, pk=node_id)
+    form_class = VariableForm
 
-        facts = collections.OrderedDict(sorted(json.loads(node.facts).items()))
+    def post(self, request, node_id, var_id, node_type):
 
-        data = {'id': node.id, 'type': node.type, 'attributes': {'facts': facts if facts else None}}
+        if request.user.has_perm('users.edit_' + node_type + 's'):
 
-        return api_response({'data': data})
+            if 'data' in request.JSON:
+
+                request.JSON['data']['attributes'][node_type] = node_id
+
+                return self._api_response(self._save_instance(request, Variable()))
+
+            else:
+
+                return HttpResponseBadRequest()
 
 
-class VarsView(View):
+        else:
 
-    @staticmethod
-    def post(request, node_id, var_id, node_type):
+            return HttpResponseForbidden()
 
-        node = get_object_or_404(Host if node_type == 'host' else Group, pk=node_id)
+    def get(self, request, node_id, var_id, node_type):
 
-        pass
-
-    @staticmethod
-    def get(request, node_id, var_id, node_type):
-
-        node = get_object_or_404(Host if node_type == 'host' else Group, pk=node_id)
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
         variables = dict()
 
@@ -881,7 +617,7 @@ class VarsView(View):
 
         for var in node.variable_set.all():
 
-            variables[var.key] = [var.serialize()]
+            variables[var.key] = [var.serialize(request)]
 
             variables[var.key][0]['meta'] = {'primary': True}
 
@@ -889,12 +625,13 @@ class VarsView(View):
 
             for var in ancestor.variable_set.all():
 
-                var_dict = var.serialize()
+                var_dict = var.serialize(request)
+
+                request.JSON = {'fields': {'attributes': ['name'], 'links': ['view']}}
 
                 var_dict['meta'] = {
                     'primary': False,
-                    'source_name': var.group.name,
-                    'source_id': var.group.id
+                    'source': var.group.serialize(request)
                 }
 
                 if var.key in variables:
@@ -929,15 +666,124 @@ class VarsView(View):
 
             data += variables[key]
 
-        return api_response({'data': data})
+        return self._api_response({'data': data})
 
     def patch(self, request, node_id, var_id, node_type):
 
-        pass
+        if request.user.has_perm('users.edit_' + node_type + 's'):
 
-    def delete(self, request, node_id, var_id, node_type):
+            if 'data' in request.JSON:
 
-        pass
+                request.JSON['data']['attributes'][node_type] = node_id
+
+                return self._api_response(self._save_instance(request, get_object_or_404(Variable, pk=var_id)))
+
+            elif 'source' in request.JSON.get('meta', {}):
+
+                data = request.JSON['meta']['source']
+
+                node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+                source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
+
+                for source_var in source.variable_set.all():
+
+                    var, created = node.variable_set.get_or_create(key=source_var.key)
+
+                    var.value = source_var.value
+
+                    var.save()
+
+                return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    @staticmethod
+    def delete(request, node_id, var_id, node_type):
+
+        if request.user.has_perm('users.edit_' + node_type + 's'):
+
+            get_object_or_404(Variable, pk=var_id).delete()
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
 
 
+class RelationsView(ApiView):
 
+    @staticmethod
+    def post(request, relation, node_id, node_type):
+
+        if request.user.has_perm('users.edit_' + node_type + 's'):
+
+            node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+            related_set, related_class = node.get_relationships(relation)
+
+            for selected in request.JSON.get('data', []):
+
+                related_set.add(get_object_or_404(related_class, pk=selected['id']))
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def get(self, request, relation, node_id, node_type):
+
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+        related_set, related_class = node.get_relationships(relation)
+
+        if 'related' not in request.GET or request.GET['related'] == 'true':
+
+            data = [related_node.serialize(request) for related_node in related_set.order_by('name')]
+
+        else:
+
+            candidate_set = related_class.objects.order_by('name').exclude(name='all')
+
+            candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
+
+            if related_class == type(node):
+
+                candidate_set = candidate_set.exclude(pk=node.id)
+
+            if relation == 'parents' and node_type == Group.type:
+
+                group_descendants, host_descendants = node.get_descendants()
+
+                candidate_set = candidate_set.exclude(pk__in=[group.id for group in group_descendants])
+
+            elif relation == 'children':
+
+                candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.get_ancestors()])
+
+            data = [candidate.serialize(request) for candidate in candidate_set]
+
+        return self._api_response({'data': data})
+
+    @staticmethod
+    def delete(request, relation, node_id, node_type):
+
+        if request.user.has_perm('users.edit_' + node_type + 's'):
+
+            node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+            related_set, related_class = node.get_relationships(relation)
+
+            for selected in request.JSON.get('data', []):
+
+                related_set.remove(get_object_or_404(related_class, pk=selected['id']))
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
