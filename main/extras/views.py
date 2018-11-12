@@ -33,7 +33,7 @@ class ApiView(View):
                         'source': {'parameter': k}
                     })
 
-            response = {'errors': errors.reverse()}
+            response = {'errors': errors}
 
         return response
 

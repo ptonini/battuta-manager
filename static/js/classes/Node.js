@@ -154,6 +154,8 @@ Node.prototype.selector = function () {
 
         };
 
+        document.title = 'Battuta - ' + self.label.plural;
+
         if (Host.prototype.isPrototypeOf(self)) {
 
             if (sessionStorage.getItem('use_ec2_facts') === 'true') columns = [
@@ -337,8 +339,6 @@ Node.prototype.selector = function () {
             $table.DataTable().search($(this).val()).draw();
 
         });
-
-        document.title = 'Battuta - ' + self.title.plural;
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 

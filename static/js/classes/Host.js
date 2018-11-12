@@ -10,7 +10,7 @@ Host.prototype.constructor = Host;
 
 Host.prototype.type = 'hosts';
 
-Host.prototype.title = {single: 'host', plural: 'hosts'};
+Host.prototype.label = {single: 'host', plural: 'hosts'};
 
 Host.prototype.apiPath = Battuta.prototype.paths.api.node.hosts;
 

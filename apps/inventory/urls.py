@@ -6,16 +6,16 @@ from .models import Host, Group
 
 urlpatterns = [
 
-    path('', views.PageView.as_view(), kwargs={'node_type': None, 'node_id': None, 'page': 'ansible'}),
+    path('', views.PageView.as_view(), kwargs={'node_id': None, 'page': 'ansible'}),
 
-    path('manage', login_required(views.PageView.as_view()), kwargs={'node_type': None, 'node_id': None, 'page': 'manage'}),
+    path("manage", login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'manage'}),
 
-    path(Host.type, login_required(views.PageView.as_view()), kwargs={'node_type': Host.type, 'node_id': None, 'page': 'selector'}),
+    path(Host.type, login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'host_selector'}),
 
-    path(Host.type + '/<int:node_id>', login_required(views.PageView.as_view()), kwargs={'node_type': Host.type, 'page': 'view'}),
+    path(Host.type + '/<int:node_id>', login_required(views.PageView.as_view()), kwargs={'page': 'host_view'}),
 
-    path(Group.type, login_required(views.PageView.as_view()), kwargs={'node_type': Group.type, 'node_id': None, 'page': 'selector'}),
+    path(Group.type, login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'group_selector'}),
 
-    path(Group.type + '/<int:node_id>', login_required(views.PageView.as_view()), kwargs={'node_type': Group.type, 'page': 'view'}),
+    path(Group.type + '/<int:node_id>', login_required(views.PageView.as_view()), kwargs={'page': 'group_view'}),
 
 ]

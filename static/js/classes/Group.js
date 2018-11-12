@@ -10,7 +10,7 @@ Group.prototype.constructor = Group;
 
 Group.prototype.type = 'groups';
 
-Group.prototype.title = {single: 'group', plural: 'groups'};
+Group.prototype.label = {single: 'group', plural: 'groups'};
 
 Group.prototype.apiPath = Battuta.prototype.paths.api.node.groups;
 

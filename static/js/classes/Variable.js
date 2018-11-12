@@ -18,9 +18,15 @@ Variable.prototype.loadParam = function (param) {
 
     self.set('id', param.id);
 
-    self.set('type', param.type);
+    if (param.hasOwnProperty('node')) {
 
-    self.set('apiPath', param.hasOwnProperty('node') ? param.node.links.vars : param.apiPath );
+        self.set('apiPath', param.node.links.vars);
+
+        self.set(param.node.title.single, param.node.id)
+
+    }
+
+    else self.set('apiPath', param.apiPath);
 
     if (param.hasOwnProperty('attributes')) {
 
@@ -55,7 +61,7 @@ Variable.prototype.table = function ($container) {
                 className: 'btn-sm btn-icon',
                 action: function () {
 
-                    new Variable({id: null, apiPath: self.apiPath}).editor(function () {
+                    self.clone().editor(function () {
 
                         $table.DataTable().ajax.reload()
 

@@ -1,5 +1,6 @@
 import json
 
+from collections import OrderedDict
 from django.db import models
 from django.core.validators import RegexValidator
 
@@ -127,21 +128,15 @@ class Host(Node):
             'instance_id': facts.get('ec2_instance_id'),
         }
 
-        links = {'facts': request.path + '/facts'}
-
         fields = request.JSON.get('fields', False)
 
         if not fields or 'attributes' in fields:
 
             data['attributes'].update({k: v for k, v in attributes.items() if not fields or k in fields['attributes']})
 
-        if not fields or 'links' in fields:
-
-            data['links'].update({k: v for k, v in links.items() if not fields or k in fields['links']})
-
         if fields and 'facts' in fields.get('attributes', {}):
 
-            data['attributes'] = {'facts': facts}
+            data['attributes'] = {'facts': OrderedDict(sorted(facts.items()))}
 
         return data
 
@@ -207,7 +202,6 @@ class Group(Node):
         return data
 
 
-
 class Variable(models.Model):
 
     type = 'vars'
@@ -224,7 +218,7 @@ class Variable(models.Model):
 
     def serialize(self, request):
 
-        return {
+        data = {
             'id': self.id,
             'type': self.type,
             'attributes': {
@@ -232,6 +226,16 @@ class Variable(models.Model):
                 'value': self.value,
             }
         }
+
+        if self.host:
+
+            data['attributes']['host'] = str(self.host.id)
+
+        else:
+
+            data['attributes']['group'] = str(self.group.id)
+
+        return data
 
     class Meta:
 

@@ -8,15 +8,13 @@ User.prototype = Object.create(Battuta.prototype);
 
 User.prototype.constructor = User;
 
-User.prototype.key = 'user';
+User.prototype.type = 'users';
+
+User.prototype.label = {single: 'user', plural: 'users'};
 
 User.prototype.apiPath = Battuta.prototype.paths.api.user;
 
 User.prototype.crud = {
-    titlePlural: 'Users',
-    type: 'user',
-    dataSrc: 'users',
-    tabsId: 'user',
     table: {
         columns: [
             {title: 'user', data: 'username', width: '50%'},
@@ -202,23 +200,7 @@ User.prototype.crud = {
 
         }
     },
-    callbacks: {
-        add: function (data) {
 
-            window.open(data.user.username + '/', '_self');
-
-        },
-        editor: function (data) {
-
-            window.open(data.user.username + '/', '_self');
-
-        },
-        delete: function () {
-
-            window.open(User.prototype.paths.selector.user , '_self')
-
-        },
-    },
     onFinish: function (self) {
 
         $('#edit_button').remove();

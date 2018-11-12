@@ -1,7 +1,6 @@
 import json
 import csv
 import tempfile
-import collections
 import os
 import shutil
 import configparser
@@ -31,7 +30,7 @@ from apps.projects.extras import Authorizer
 class PageView(View):
 
     @staticmethod
-    def get(request, node_type, node_id, page):
+    def get(request, node_id, page):
 
         if page == 'ansible':
 
@@ -51,13 +50,21 @@ class PageView(View):
 
             return render(request, 'inventory/manage.html')
 
-        elif page == 'selector':
+        elif page == 'host_selector':
 
-            return render(request, 'inventory/' + ('host_selector.html' if node_type == Host.type else 'group_selector.html'))
+            return render(request, 'inventory/host_selector.html' )
 
-        elif page == 'view':
+        elif page == 'group_selector':
 
-            return render(request, 'inventory/' + ('host_view.html' if node_type == Host.type else 'group_view.html'))
+            return render(request, 'inventory/group_selector.html' )
+
+        elif page == 'host_view':
+
+            return render(request, 'inventory/host_view.html')
+
+        elif page == 'group_view':
+
+            return render(request, 'inventory/group_view.html')
 
         else:
 
@@ -590,11 +597,13 @@ class VarsView(ApiView):
 
     def post(self, request, node_id, var_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type + 's'):
+        authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
 
             if 'data' in request.JSON:
-
-                request.JSON['data']['attributes'][node_type] = node_id
 
                 return self._api_response(self._save_instance(request, Variable()))
 
@@ -670,7 +679,11 @@ class VarsView(ApiView):
 
     def patch(self, request, node_id, var_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type + 's'):
+        authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+        if request.user.has_perm('users.edit_' + node_type + 's') or authorizer.can_edit_variables(node):
 
             if 'data' in request.JSON:
 
@@ -703,7 +716,11 @@ class VarsView(ApiView):
     @staticmethod
     def delete(request, node_id, var_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type + 's'):
+        authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+        if request.user.has_perm('users.edit_' + node_type + 's') or authorizer.can_edit_variables(node):
 
             get_object_or_404(Variable, pk=var_id).delete()
 

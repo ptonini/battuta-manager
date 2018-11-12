@@ -6,6 +6,8 @@ from django.contrib.auth.models import User, Group as UserGroup
 
 class Project(models.Model):
 
+    type = 'projects'
+
     name = models.CharField(max_length=64, blank=False, unique=True)
 
     description = models.TextField(max_length=256, blank=True)
@@ -33,4 +35,5 @@ class Project(models.Model):
     def __str__(self):
 
         return self.name
+
 

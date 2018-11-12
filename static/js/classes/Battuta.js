@@ -59,6 +59,18 @@ Battuta.prototype = {
         modules: '/static/templates/ansible_modules/'
     },
 
+    internalProperties: [
+        'pubSub',
+        'bindings',
+        'type',
+        'id',
+        'apiPath',
+        'facts',
+        'title',
+        'pattern',
+        'links'
+    ],
+
     loadParam: function (param) {
 
         let self = this;
@@ -130,8 +142,6 @@ Battuta.prototype = {
 
         let self = this;
 
-        let excludeKeys = ['apiPath', 'pubSub', 'bindings', 'facts', 'title', 'pattern', 'type', 'id', 'links'];
-
         let data = {
             id: self.id,
             type: self.type,
@@ -140,7 +150,7 @@ Battuta.prototype = {
 
         for (let p in self) {
 
-            if (self.hasOwnProperty(p) && excludeKeys.indexOf(p) === -1 && p != null) {
+            if (self.hasOwnProperty(p) && self.internalProperties.indexOf(p) === -1 && p != null) {
 
                 if (typeof self[p] === 'object') data.attributes[p] = JSON.stringify(self[p]);
 
@@ -151,6 +161,18 @@ Battuta.prototype = {
         }
 
         return data
+
+    },
+
+    clone: function () {
+
+        let self = this;
+
+        let newObj = new self.constructor();
+
+        for (let p in self) if (self.hasOwnProperty(p)) newObj[p] = self[p];
+
+        return newObj
 
     },
 
@@ -468,7 +490,7 @@ Battuta.prototype = {
 
         self.deleteAlert(function() {
 
-            self.fetchJson('DELETE', self.apiPath + '/' + self.id, null, blocking).then(response => {
+            return self.fetchJson('DELETE', self.apiPath + '/' + self.id, null, blocking).then(response => {
 
                 callback && callback(response)
 
@@ -1224,7 +1246,7 @@ Battuta.prototype = {
 
         self.bindElement($dialog);
 
-        $dialog.find('.dialog-header').html(self.id ? 'Edit ' + self.title.single : 'Add ' + self.title.single);
+        $dialog.find('.dialog-header').html(self.id ? 'Edit ' + self.label.single : 'Add ' + self.label.single);
 
         $dialog.find('button.confirm-button').click(function () {
 
