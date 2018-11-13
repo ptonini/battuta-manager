@@ -677,7 +677,7 @@ class VarsView(ApiView):
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if request.user.has_perm('users.edit_' + node_type + 's') or authorizer.can_edit_variables(node):
+        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
 
             if 'data' in request.JSON:
 
@@ -714,7 +714,7 @@ class VarsView(ApiView):
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if request.user.has_perm('users.edit_' + node_type + 's') or authorizer.can_edit_variables(node):
+        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
 
             get_object_or_404(Variable, pk=var_id).delete()
 
@@ -730,7 +730,7 @@ class RelationsView(ApiView):
     @staticmethod
     def post(request, relation, node_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type + 's'):
+        if request.user.has_perm('users.edit_' + node_type):
 
             node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
@@ -783,7 +783,7 @@ class RelationsView(ApiView):
     @staticmethod
     def delete(request, relation, node_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type + 's'):
+        if request.user.has_perm('users.edit_' + node_type):
 
             node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 

@@ -56,7 +56,7 @@ class JSONParsingMiddleware(MiddlewareMixin):
 
                 if request.method in ['PATCH', 'PUT', 'POST']:
 
-                    request.JSON = json.loads(request.body.decode('utf8'))
+                    request.JSON = json.loads(request.body.decode('utf8') if request.body else '{}')
 
                 elif request.method in ['GET', 'DELETE']:
 
