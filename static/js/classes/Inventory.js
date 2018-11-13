@@ -22,7 +22,7 @@ Inventory.prototype.loadParam = function (param) {
 
 };
 
-Inventory.prototype.manage = function () {
+Inventory.prototype.selector = function () {
 
     let self = this;
 

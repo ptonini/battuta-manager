@@ -32,6 +32,7 @@
     <script type="text/javascript" src="{% static 'js/jquery/extensions.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery/templates.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Battuta.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/NavBar.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AdHoc.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/FileObj.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/UserGroup.js' %}"></script>
@@ -50,9 +51,7 @@
         <script type="text/javascript">
             $(document).ready(function () {
 
-                let battuta = new Battuta({username: '{{ user.username }}'});
-
-                battuta.navBar('{% if user.is_authenticated %}True{% endif %}')
+                new NavBar().build();
 
             })
         </script>

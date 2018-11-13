@@ -4,9 +4,9 @@
         <li class="nav-item dropdown">
             <a id="inventory-menu" class="nav-link" href="#" data-toggle="dropdown">Inventory</a>
             <div class="dropdown-menu" aria-labelledby="inventory-menu">
-                <a class="dropdown-item" data-bind="paths.selector.node.hosts">Hosts</a>
-                <a class="dropdown-item" data-bind="paths.selector.node.groups">Groups</a>
-                <a class="dropdown-item" id="manage_inventory_anchor">Manage inventory</a>
+                <a href="#" class="dropdown-item inventory-hosts">Hosts</a>
+                <a href="#" class="dropdown-item inventory-groups">Groups</a>
+                <a href="#" class="dropdown-item inventory-manage">Manage inventory</a>
             </div>
         </li>
         <li class="nav-item dropdown">
@@ -27,12 +27,13 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" data-bind="paths.selector.project">Projects</a>
+
         </li>
         <li class="nav-item dropdown">
             <a id="iam-menu" href="#" class="nav-link" data-toggle="dropdown">IAM</a>
             <div class="dropdown-menu">
-                <a class="dropdown-item" data-bind="paths.selector.user">Users</a>
-                <a class="dropdown-item" data-bind="paths.selector.group">Groups</a>
+                <a class="dropdown-item" data-bind="aim_users">Users</a>
+                <a class="dropdown-item" data-bind="aim_group">Groups</a>
             </div>
         </li>
     </ul>

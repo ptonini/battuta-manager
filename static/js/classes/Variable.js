@@ -10,7 +10,7 @@ Variable.prototype.constructor = Variable;
 
 Variable.prototype.type = 'vars';
 
-Variable.prototype.title = {single: 'variable', plural: 'variables'};
+Variable.prototype.label = {single: 'variable', plural: 'variables'};
 
 Variable.prototype.loadParam = function (param) {
 
@@ -22,7 +22,7 @@ Variable.prototype.loadParam = function (param) {
 
         self.set('apiPath', param.node.links.vars);
 
-        self.set(param.node.title.single, param.node.id)
+        self.set(param.node.label.single, param.node.id)
 
     }
 

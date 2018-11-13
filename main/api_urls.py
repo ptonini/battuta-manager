@@ -1,10 +1,14 @@
 from django.urls import path
 from django.contrib.auth.decorators import login_required
 
+from main.views import MainView
+
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.views import InventoryView, HostView, GroupView, VarsView, RelationsView
 
 urlpatterns = [
+
+    path('', MainView.as_view()),
 
     path('inventory', login_required(InventoryView.as_view())),
 

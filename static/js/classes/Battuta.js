@@ -39,20 +39,8 @@ Battuta.prototype = {
             user: '/iam/user/',
             group: '/iam/group/',
             project: '/projects/',
-            node: {
-                hosts: '/inventory/hosts',
-                groups: '/inventory/groups'
-            }
         },
-        // views: {
-        //     job: '/runner/job/',
-        //     user: '/iam/user/',
-        //     group: '/iam/group/',
-        //     node: {
-        //         hosts: '/inventory/hosts',
-        //         groups: '/inventory/groups'
-        //     }
-        // },
+
         runner: '/runner/',
         inventory: '/inventory/',
         templates: '/static/templates/',
@@ -71,13 +59,7 @@ Battuta.prototype = {
         'links'
     ],
 
-    loadParam: function (param) {
-
-        let self = this;
-
-        self.set('username', param.username);
-
-    },
+    loadParam: function () {},
 
 
     // Properties methods *************
@@ -1014,80 +996,6 @@ Battuta.prototype = {
         })
 
     },
-
-    navBar: function (authenticated) {
-
-        let self = this;
-
-        let $navBar = $('nav.navbar');
-
-        if (authenticated === 'True') self.fetchHtml('navbar_Main.html', $navBar).then($element => {
-
-            self.bindElement($element);
-
-            self.set('pattern', '');
-
-            let prefs = new Preferences();
-
-            prefs.load();
-
-            $('#manage_inventory_anchor').attr('href', self.paths.inventory + 'manage');
-
-            $('#user_view_anchor').attr('href', self.paths.selector.user + self.username + '/');
-
-            $('#user_file_anchor').attr('href', self.paths.selector.user + self.username + '/files/');
-
-            $('#user_icon').attr('title', self.username);
-
-            $('#preferences_button').click(function () {
-
-                prefs.dialog()
-
-            });
-
-            $('#menu_search_form').submit(function (event) {
-
-                event.preventDefault();
-
-                self.pattern && window.open('/search/' + self.pattern, '_self')
-
-            });
-
-            $('#logout_anchor').click(function () {
-
-                self.fetchJson('POST', '/logout', {}, false).then(() => {
-
-                    window.open('/', '_self');
-
-                });
-
-            })
-
-        });
-
-        else return self.fetchHtml('navbar_Login.html', $navBar).then($element => {
-
-            $element.find('a.login-button').click(function () {
-
-                let requestData = {
-                    data: {
-                        username: $element.find('input[type=text]').val(),
-                        password: $element.find('input[type=password]').val()
-                    }
-                };
-
-                self.fetchJson('POST', '/login', requestData, false).then(() => {
-
-                    window.open('/', '_self');
-
-                });
-
-            })
-
-        });
-
-    },
-
 
     // Views **************************
 

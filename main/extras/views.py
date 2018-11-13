@@ -6,6 +6,10 @@ from django.http import HttpResponse
 
 class ApiView(View):
 
+    type = None
+
+    model_class = None
+
     form_class = None
 
     def _save_instance(self, request, instance):
@@ -20,18 +24,11 @@ class ApiView(View):
 
         else:
 
-            errors = []
+            errors = list()
 
             for k, v in form.errors.get_json_data().items():
 
-                for e in v:
-
-                    errors.append({
-                        'code': e['code'],
-                        'title': e['message'],
-                        'status': '400',
-                        'source': {'parameter': k}
-                    })
+                errors = errors + [{'code': e['code'], 'title': e['message'],'source': {'parameter': k}} for e in v]
 
             response = {'errors': errors}
 

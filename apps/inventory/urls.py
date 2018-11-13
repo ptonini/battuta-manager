@@ -8,7 +8,7 @@ urlpatterns = [
 
     path('', views.PageView.as_view(), kwargs={'node_id': None, 'page': 'ansible'}),
 
-    path("manage", login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'manage'}),
+    path("view", login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'view'}),
 
     path(Host.type, login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'host_selector'}),
 

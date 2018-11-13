@@ -154,6 +154,8 @@ Node.prototype.selector = function () {
 
         };
 
+        let nodeClass = Host.prototype.isPrototypeOf(self) ? Host : Group;
+
         document.title = 'Battuta - ' + self.label.plural;
 
         if (Host.prototype.isPrototypeOf(self)) {
@@ -220,7 +222,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(data.links.view, '_self')
+                        node.view();
 
                     });
 
@@ -267,7 +269,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        window.open(data.links.view, '_self')
+                       new nodeClass(data).view()
 
                     });
 

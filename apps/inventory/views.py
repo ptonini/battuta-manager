@@ -46,7 +46,7 @@ class PageView(View):
 
                 return HttpResponseForbidden()
 
-        elif page == 'manage':
+        elif page == 'view':
 
             return render(request, 'inventory/manage.html')
 
@@ -71,7 +71,7 @@ class PageView(View):
             return HttpResponseNotFound()
 
 
-class InventoryView(View):
+class InventoryView(ApiView):
 
     @staticmethod
     def _create_node_var_file(node, folder):
@@ -483,12 +483,6 @@ class InventoryView(View):
 
 
 class NodeView(ApiView):
-
-    type = None
-
-    model_class = None
-
-    form_class = None
 
     def post(self, request, node_id):
 

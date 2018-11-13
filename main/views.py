@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate, login, logout
 
 from main.extras.views import ApiView
 
+from apps.inventory.models import Host, Group, Variable
+
 class PageView(View):
 
     @staticmethod
@@ -22,6 +24,37 @@ class PageView(View):
 
             return HttpResponseNotFound()
 
+class MainView(ApiView):
+
+    def get(self, request):
+
+        if request.user.is_authenticated:
+
+            response = {
+                'links': [
+                    {'inventory_manage': '/inventory/view'},
+                    {'inventory_hosts': '/inventory/hosts'},
+                    {'inventory_groups': '/inventory/groups'},
+                    {'aim_users': '/aim/users'},
+                    {'aim_groups': '/aim/groups'},
+                ],
+                'meta': {
+                    'username': request.user.username,
+                    'routes': {
+                        'inventory_manage': {'link': '/inventory/view', 'class': 'Inventory'},
+                        'inventory_hosts': {'link': '/inventory/hosts', 'class': 'Host'},
+                        'inventory_groups': {'link': '/inventory/groups', 'class': 'Group'},
+                        'aim_users': {'link': '/aim/users', 'class': 'User'},
+                        'aim_groups': {'link': '/aim/groups', 'class': 'UserGroup'},
+                    }
+                }
+            }
+
+        else:
+
+            response = {'meta': {'authenticated': False}}
+
+        return self._api_response(response)
 
 class LoginView(ApiView):
 
