@@ -2,6 +2,17 @@ function NavBar(param) {
 
     Battuta.call(this, param);
 
+    Battuta.prototype.routes = {
+        'inventory-manage': Inventory,
+        'inventory-hosts': Host,
+        'inventory-groups': Group,
+        'runner': Runner,
+        'runner-jobs': Job,
+        'projects': Project,
+        'iam-users': User,
+        'iam-groups': UserGroup
+    }
+
 }
 
 NavBar.prototype = Object.create(Battuta.prototype);
@@ -16,7 +27,7 @@ NavBar.prototype.build = function () {
 
     self.fetchJson('GET', '/api', null, false).then(response => {
 
-        if (response.links) {
+        if (response.meta['username']) {
 
             let load = function (url) {
 
@@ -60,11 +71,11 @@ NavBar.prototype.build = function () {
             //
             // });
 
-            for (let k in response.meta['routes']) {
-
-                if (response.meta['routes'].hasOwnProperty(k)) self[response.meta['routes'][k]['key']] = k
-
-            }
+            // for (let k in response.meta['routes']) {
+            //
+            //     if (response.meta['routes'].hasOwnProperty(k)) self[response.meta['routes'][k]['key']] = k
+            //
+            // }
 
             // sessionStorage.getItem('page-state') && load(sessionStorage.getItem('page-state'));
 
@@ -72,17 +83,13 @@ NavBar.prototype.build = function () {
 
                 self.set('pattern', '');
 
-                let prefs = new Preferences();
-
-                prefs.load();
+                new Preferences().load();
 
                 $element.find('a[data-bind]').each(function () {
 
-                    $(this).click(function (e) {
+                    $(this).click(function () {
 
-                        e.preventDefault();
-
-                        load(self[$(this).data('bind')]);
+                        new self.routes[$(this).data('bind')]().selector()
 
                     })
 
@@ -92,7 +99,9 @@ NavBar.prototype.build = function () {
 
                 $('#preferences_button').click(function () {
 
-                    prefs.dialog()
+                    console.log('2222');
+
+                    new Preferences().dialog()
 
                 });
 
