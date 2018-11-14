@@ -1,6 +1,7 @@
 function Preferences(param) {
 
     Battuta.call(this, param);
+
 }
 
 Preferences.prototype = Object.create(Battuta.prototype);

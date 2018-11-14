@@ -222,7 +222,9 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        node.view();
+                        Router.navigate('/inventory/' + node.type + '/' + node.id)
+
+                        //node.view();
 
                     });
 

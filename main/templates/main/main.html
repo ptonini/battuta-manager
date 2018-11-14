@@ -47,9 +47,13 @@
     <script type="text/javascript" src="{% static 'js/classes/User.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Project.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Variable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/classes/Router.js' %}"></script>
+
     {% block navbar %}
         <script type="text/javascript">
             $(document).ready(function () {
+
+                Router.listen().check(window.location.hash.split('#')[1]);
 
                 new NavBar().build();
 

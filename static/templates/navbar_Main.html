@@ -4,16 +4,16 @@
         <li class="nav-item dropdown">
             <a id="inventory-menu" class="nav-link" href="#" data-toggle="dropdown">Inventory</a>
             <div class="dropdown-menu" aria-labelledby="inventory-menu">
-                <a href="#" class="dropdown-item" data-bind="inventory-hosts">Hosts</a>
-                <a href="#" class="dropdown-item" data-bind="inventory-groups">Groups</a>
-                <a href="#" class="dropdown-item" data-bind="inventory-manage">Manage inventory</a>
+                <a href="#" class="dropdown-item" data-route="/inventory/hosts">Hosts</a>
+                <a href="#" class="dropdown-item" data-route="/inventory/groups">Groups</a>
+                <a href="#" class="dropdown-item" data-route="/inventory/manage">Manage inventory</a>
             </div>
         </li>
         <li class="nav-item dropdown">
             <a id="runner-menu" href="#" class="nav-link" data-toggle="dropdown">Runner</a>
             <div class="dropdown-menu">
-                <a class="dropdown-item" data-bind="paths.runner">Runner</a>
-                <a class="dropdown-item" data-bind="paths.selector.job">Job history</a>
+                <a class="dropdown-item" data-bind="/runner">Runner</a>
+                <a class="dropdown-item" data-bind="/runner/job">Job history</a>
             </div>
         </li>
         <li class="nav-item dropdown">
@@ -32,8 +32,8 @@
         <li class="nav-item dropdown">
             <a id="iam-menu" href="#" class="nav-link" data-toggle="dropdown">IAM</a>
             <div class="dropdown-menu">
-                <a class="dropdown-item" data-bind="iam-users">Users</a>
-                <a class="dropdown-item" data-bind="iam-groups">Groups</a>
+                <a class="dropdown-item" data-bind="/iam/users">Users</a>
+                <a class="dropdown-item" data-bind="/iam/groups">Groups</a>
             </div>
         </li>
     </ul>
