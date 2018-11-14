@@ -48,7 +48,6 @@ Node.prototype.relationships = function (relation, $container) {
 
     $grid.DynaGrid({
             headerTag: '<div>',
-            ajaxDataKey: 'data',
             showAddButton: true,
             showFilter: true,
             showCount: true,
@@ -60,13 +59,13 @@ Node.prototype.relationships = function (relation, $container) {
             maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.links[relation] + self.objToUrlParam({fields: {attributes: ['name'], links: ['view']}}),
+            ajaxUrl: self.links[relation] + self.objToUrlParam({fields: {attributes: ['name'], links: ['self']}}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
                 $gridItem.append(
                     $('<span>').append(data.attributes.name).css('cursor', 'pointer').click(function () {
 
-                        window.open(data.links.view, '_self')
+                        Router.navigate(data.links.self)
 
                     }),
                     spanFA.clone().addClass('fa-minus-circle')
@@ -222,9 +221,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                        Router.navigate('/inventory/' + node.type + '/' + node.id)
-
-                        //node.view();
+                        Router.navigate(node.links.self)
 
                     });
 
@@ -271,7 +268,7 @@ Node.prototype.selector = function () {
                     .css('cursor', 'pointer')
                     .click(function () {
 
-                       new nodeClass(data).view()
+                        Router.navigate(data.links.self)
 
                     });
 

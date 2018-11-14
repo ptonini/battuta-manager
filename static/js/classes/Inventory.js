@@ -8,7 +8,7 @@ Inventory.prototype = Object.create(Battuta.prototype);
 
 Inventory.prototype.constructor = Inventory;
 
-Inventory.prototype.apiPath = Battuta.prototype.paths.api.inventory;
+Inventory.prototype.apiPath = Battuta.prototype.paths['inventory-manage'];
 
 Inventory.prototype.loadParam = function (param) {
 

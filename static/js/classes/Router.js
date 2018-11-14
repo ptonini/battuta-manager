@@ -106,6 +106,7 @@ let Router = {
                 self.routes[i].handler.apply({}, match);
 
                 return self;
+
             }
         }
 
@@ -155,6 +156,13 @@ let Router = {
     }
 };
 
+Router.add(/search\/?([-_a-zA-Z0-9]+)?/, function (param) {
+
+    new Search().selector(param)
+
+});
+
+
 Router.add(/inventory\/manage/, function () {
 
     new Inventory().selector()
@@ -163,18 +171,13 @@ Router.add(/inventory\/manage/, function () {
 
 Router.add(/inventory\/hosts\/?([0-9]+)?/, function (param) {
 
-    if (param) new Host({id: param}).view();
-
-    else new Host().selector();
+    param ? new Host({id: param}).view() : new Host().selector();
 
 });
 
-
 Router.add(/inventory\/groups\/?([0-9]+)?/, function (param) {
 
-    if (param) new Group({id: param}).view();
-
-    else new Group().selector();
+    param ? new Group({id: param}).view() : new Group().selector();
 
 });
 

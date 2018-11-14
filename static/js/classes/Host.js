@@ -12,7 +12,7 @@ Host.prototype.type = 'hosts';
 
 Host.prototype.label = {single: 'host', plural: 'hosts'};
 
-Host.prototype.apiPath = Battuta.prototype.paths.api.node.hosts;
+Host.prototype.apiPath = Battuta.prototype.paths['inventory-hosts'];
 
 Host.prototype.info = function ($container) {
 

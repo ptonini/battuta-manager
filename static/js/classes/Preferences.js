@@ -10,7 +10,7 @@ Preferences.prototype.constructor = Preferences;
 
 Preferences.prototype.key = 'prefs';
 
-Preferences.prototype.apiPath = Battuta.prototype.paths.api.preferences;
+Preferences.prototype.apiPath = Battuta.prototype.paths.preferences;
 
 Preferences.prototype.loadParam = function (param) {
 
@@ -54,11 +54,7 @@ Preferences.prototype.load = function () {
 
         });
 
-
     });
-
-
-
 
 };
 

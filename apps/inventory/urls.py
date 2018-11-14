@@ -1,21 +1,38 @@
 from django.urls import path
 from django.contrib.auth.decorators import login_required
 
-from . import views
-from .models import Host, Group
+from apps.inventory.models import Host, Group, Variable
+from apps.inventory.views import InventoryView, ManageView, HostView, GroupView, VarsView, RelationsView
 
 urlpatterns = [
 
-    path('', views.PageView.as_view(), kwargs={'node_id': None, 'page': 'ansible'}),
+    path('', InventoryView.as_view()),
 
-    path("view", login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'view'}),
+    path('manage', login_required(ManageView.as_view())),
 
-    path(Host.type, login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'host_selector'}),
+    path(Host.type, login_required(HostView.as_view()), kwargs={'node_id': None}),
 
-    path(Host.type + '/<int:node_id>', login_required(views.PageView.as_view()), kwargs={'page': 'host_view'}),
+    path(Host.type + '/<int:node_id>', login_required(HostView.as_view())),
 
-    path(Group.type, login_required(views.PageView.as_view()), kwargs={'node_id': None, 'page': 'group_selector'}),
+    path(Host.type + '/<int:node_id>/' + Variable.type, login_required(VarsView.as_view()), kwargs={'var_id': None, 'node_type': Host.type}),
 
-    path(Group.type + '/<int:node_id>', login_required(views.PageView.as_view()), kwargs={'page': 'group_view'}),
+    path(Host.type + '/<int:node_id>/' + Variable.type + '/<int:var_id>', login_required(VarsView.as_view()), kwargs={'node_type': Host.type}),
+
+    path(Host.type + '/<int:node_id>/parents', login_required(RelationsView.as_view()), kwargs={'relation': 'parents', 'node_type': Host.type}),
+
+    path(Group.type, login_required(GroupView.as_view()), kwargs={'node_id': None}),
+
+    path(Group.type + '/<int:node_id>', login_required(GroupView.as_view())),
+
+    path(Group.type + '/<int:node_id>/' + Variable.type, login_required(VarsView.as_view()), kwargs={'var_id': None, 'node_type': Group.type}),
+
+    path(Group.type + '/<int:node_id>/' + Variable.type + '/<int:var_id>', login_required(VarsView.as_view()), kwargs={'node_type': Group.type}),
+
+    path(Group.type + '/<int:node_id>/parents', login_required(RelationsView.as_view()), kwargs={'relation': 'parents', 'node_type': Group.type}),
+
+    path(Group.type + '/<int:node_id>/children', login_required(RelationsView.as_view()), kwargs={'relation': 'children', 'node_type': Group.type}),
+
+    path(Group.type + '/<int:node_id>/members', login_required(RelationsView.as_view()), kwargs={'relation': 'members', 'node_type': Group.type}),
+
 
 ]

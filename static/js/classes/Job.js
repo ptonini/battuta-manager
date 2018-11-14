@@ -10,7 +10,7 @@ Job.prototype.constructor = Job;
 
 Job.prototype.key = 'job';
 
-Job.prototype.apiPath = Battuta.prototype.paths.api.job;
+Job.prototype.apiPath = '';
 
 Job.prototype.crud = {
     titlePlural: 'Jobs',

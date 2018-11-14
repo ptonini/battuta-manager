@@ -309,23 +309,23 @@ Project.prototype.crud = {
 
 };
 
-Project.prototype.apiPath = Battuta.prototype.paths.api.project;
+Project.prototype.apiPath = Battuta.prototype.paths['preferences'];
 
 Project.prototype.properties = {
     manager: {
-        url: Battuta.prototype.paths.api.user + 'list/?',
+        url: '' + 'list/?',
         type: 'user',
         key: 'users',
         item: 'username'
     },
     host_group: {
-        url: Battuta.prototype.paths.api.inventory + 'list/?type=group&',
+        url: '' + 'list/?type=group&',
         type: 'group',
         key: 'nodes',
         item: 'name'
     },
     others: {
-        url: Battuta.prototype.paths.api.group + 'list/?editable=true&',
+        url: '' + 'list/?editable=true&',
         type: 'user group',
         key: 'groups',
         item: 'name'

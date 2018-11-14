@@ -13,36 +13,21 @@ function Battuta (param) {
 Battuta.prototype = {
 
     paths: {
-        api:{
-            file: '/files/api/',
-            inventory: '/api/inventory',
-            adhoc: '/runner/api/adhoc/',
-            playbook: '/runner/api/playbook/',
-            job: '/runner/api/job/',
-            login: '/iam/api/',
-            user: '/iam/api/user/',
-            group: '/iam/api/group/',
-            project: '/projects/api/',
-            preferences:'/preferences/',
-            node: {
-                hosts: '/api/inventory/hosts',
-                groups: '/api/inventory/groups'
-            }
-        },
-        selector: {
-            file: '/files/',
-            playbook: '/files/playbooks/',
-            role: '/files/roles/',
-            userFiles: '/files/user/',
-            adhoc: '/runner/adhoc/',
-            job: '/runner/job/',
-            user: '/iam/user/',
-            group: '/iam/group/',
-            project: '/projects/',
-        },
+        main: '/main',
+        search: '/search',
+        'inventory-hosts': '/inventory/hosts',
+        'inventory-groups': '/inventory/groups',
+        'inventory-manage': '/inventory/manage',
+        file: '/files/api/',
+        adhoc: '/runner/api/adhoc/',
+        playbook: '/runner/api/playbook/',
+        job: '/runner/api/job/',
+        login: '/iam/api/',
+        user: '/iam/api/user/',
+        group: '/iam/api/group/',
+        project: '/projects/api/',
+        preferences:'/preferences/',
 
-        runner: '/runner/',
-        inventory: '/inventory/',
         templates: '/static/templates/',
         modules: '/static/templates/ansible_modules/'
     },
@@ -479,37 +464,6 @@ Battuta.prototype = {
             });
 
         })
-
-    },
-
-
-    refresh: function (blocking) {
-
-        let self = this;
-
-        return self.fetchJson('GET', self.apiPath, {data: self.serialize()}, blocking).then(response => {
-
-            self.loadParam(response.data);
-
-            return response
-
-        });
-
-    },
-
-    list: function (blocking, callback) {
-
-        let self = this;
-
-        self.getData('list', blocking, callback)
-
-    },
-
-    del: function (callback) {
-
-        let self = this;
-
-        self.deleteAlert('delete', callback)
 
     },
 
@@ -997,49 +951,8 @@ Battuta.prototype = {
 
     },
 
+
     // Views **************************
-
-    search: function (pattern) {
-
-        let self = this;
-
-        self.fetchHtml('search.html', $('section.container')).then($element => {
-
-            self.bindElement($element);
-
-            $element.find('.search-result-container').css('max-height', window.innerHeight - sessionStorage.getItem('search_box_offset'));
-
-            self.set('pattern', pattern);
-
-            $.each(['group', 'host'], function (index, type) {
-
-                $('#' + type + '_result_grid').DynaGrid({
-                    gridTitle: type.capitalize() + 's',
-                    ajaxDataKey: 'nodes',
-                    itemValueKey: 'name',
-                    showCount: true,
-                    hideIfEmpty: true,
-                    headerTag: '<h5>',
-                    headerBottomMargin: '0',
-                    gridBodyBottomMargin: '20px',
-                    columns: sessionStorage.getItem('node_grid_columns'),
-                    ajaxUrl: self.paths.api.inventory + 'list/?filter=' + pattern + '&type=' + type,
-                    formatItem: function ($gridContainer, $gridItem) {
-
-                        $gridItem.click(function () {
-
-                            window.open(self.paths.inventory + type + '/' + $(this).data('name') + '/', '_self')
-
-                        });
-
-                    }
-                });
-
-            });
-
-        })
-
-    },
 
     selector: function () {
 

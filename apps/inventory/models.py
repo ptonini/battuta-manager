@@ -79,10 +79,9 @@ class Node(models.Model):
         attributes = ['name', 'description']
 
         links = {
-            'self': request.path,
-            'vars': '/'.join([request.path, Variable.type]),
-            'parents': '/'.join([request.path, 'parents']),
-            'view': '/'.join(['/inventory', self.type, str(self.id)])
+            'self': '/'.join(['inventory', self.type, str(self.id)]) ,
+            'vars': '/'.join(['inventory', self.type, str(self.id), Variable.type]),
+            'parents': '/'.join(['inventory', self.type, str(self.id), 'parents']),
         }
 
         fields = request.JSON.get('fields', False)
@@ -94,10 +93,6 @@ class Node(models.Model):
         if not fields or 'links' in fields:
 
             data['links'] = {k: v for k, v in links.items() if not fields or k in fields['links']}
-
-        if self.type == Group.type and self.name == 'all':
-
-            data['meta']['editable'] = False
 
         return data
 
@@ -185,8 +180,8 @@ class Group(Node):
         }
 
         links = {
-            'children': request.path + '/children',
-            'members': request.path + '/members'
+            'children': '/'.join(['inventory', self.type, str(self.id), 'children']),
+            'members': '/'.join(['inventory', self.type, str(self.id), 'members'])
         }
 
         fields = request.JSON.get('fields', False)
@@ -198,6 +193,8 @@ class Group(Node):
         if not fields or 'links' in fields:
 
             data['links'].update({k: v for k, v in links.items() if not fields or k in fields['links']})
+
+        data['meta']['editable'] = False if self.name == 'all' else data['meta']['editable']
 
         return data
 

@@ -12,7 +12,7 @@ User.prototype.type = 'users';
 
 User.prototype.label = {single: 'user', plural: 'users'};
 
-User.prototype.apiPath = Battuta.prototype.paths.api.user;
+User.prototype.apiPath = '';
 
 User.prototype.crud = {
     table: {

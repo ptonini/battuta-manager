@@ -9,11 +9,13 @@ urlpatterns = [
 
     path('', views.PageView.as_view(), kwargs={'page': 'main'}),
 
+    path('main', views.MainView.as_view()),
+
     re_path(r'^(?P<action>login|logout)$', views.LoginView.as_view()),
 
     path('search/<str:pattern>/', login_required(views.PageView.as_view()), kwargs={'page': 'search'}),
 
-    # path('inventory/', include('apps.inventory.urls')),
+    path('inventory/', include('apps.inventory.urls')),
 
     path('runner/', include('apps.runner.urls')),
 
@@ -26,9 +28,5 @@ urlpatterns = [
     path('projects/', include('apps.projects.urls')),
 
     path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
-
-    path('api/', include('main.api_urls')),
-
-    #re_path(r'^.*/$', views.PageView.as_view(), kwargs={'page': 'main'})
 
 ]

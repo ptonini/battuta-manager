@@ -27,51 +27,26 @@ from apps.projects.extras import Authorizer
 
 
 
-class PageView(View):
+class InventoryView(View):
 
     @staticmethod
-    def get(request, node_id, page):
+    def get(request):
 
-        if page == 'ansible':
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
 
-            ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+        if request.user.is_authenticated or ip in get_preferences()['ansible_servers'].split(','):
 
-            if request.user.is_authenticated or ip in get_preferences()['ansible_servers'].split(','):
-
-                return HttpResponse(json.dumps(inventory_to_dict()), content_type='application/json')
-
-            else:
-
-                return HttpResponseForbidden()
-
-        elif page == 'view':
-
-            return render(request, 'inventory/manage.html')
-
-        elif page == 'host_selector':
-
-            return render(request, 'inventory/host_selector.html' )
-
-        elif page == 'group_selector':
-
-            return render(request, 'inventory/group_selector.html' )
-
-        elif page == 'host_view':
-
-            return render(request, 'inventory/host_view.html')
-
-        elif page == 'group_view':
-
-            return render(request, 'inventory/group_view.html')
+            return HttpResponse(json.dumps(inventory_to_dict()), content_type='application/json')
 
         else:
 
-            return HttpResponseNotFound()
+            return HttpResponseForbidden()
 
 
-class InventoryView(ApiView):
+
+class ManageView(ApiView):
 
     @staticmethod
     def _create_node_var_file(node, folder):

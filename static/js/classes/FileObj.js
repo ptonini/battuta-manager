@@ -8,7 +8,7 @@ FileObj.prototype = Object.create(Battuta.prototype);
 
 FileObj.prototype.constructor = FileObj;
 
-FileObj.prototype.apiPath = Battuta.prototype.paths.api.file;
+FileObj.prototype.apiPath = '';
 
 FileObj.prototype.editable = [
     'inode/x-empty',

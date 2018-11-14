@@ -10,7 +10,7 @@ AdHoc.prototype.constructor = AdHoc;
 
 AdHoc.prototype.key = 'task';
 
-AdHoc.prototype.apiPath = Battuta.prototype.paths.api.adhoc;
+AdHoc.prototype.apiPath = '';
 
 AdHoc.prototype.type = 'adhoc';
 

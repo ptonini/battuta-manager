@@ -8,7 +8,7 @@ UserGroup.prototype = Object.create(Battuta.prototype);
 
 UserGroup.prototype.constructor = UserGroup;
 
-UserGroup.prototype.apiPath = Battuta.prototype.paths.api.group;
+UserGroup.prototype.apiPath = '';
 
 UserGroup.prototype.key = 'group';
 
