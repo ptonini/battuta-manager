@@ -24,8 +24,31 @@ Node.prototype.loadParam = function (param) {
 
     }
 
-    if (param.hasOwnProperty('links')) self.set('links', param.links)
+    if (param && param.hasOwnProperty('links')) {
 
+        for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
+
+    }
+
+};
+
+Node.prototype.tabs = {
+    variables: {
+        validator: function () {return true},
+        generator: function (self, $container) {
+
+            new Variable().table($container, self)
+
+        }
+    },
+    parents: {
+        validator: function () {return true},
+        generator: function (self, $container) {
+
+            self.relationships('parents', $container)
+
+        }
+    },
 };
 
 Node.prototype.relationships = function (relation, $container) {
@@ -119,6 +142,8 @@ Node.prototype.selector = function () {
 
         self.bindElement($element);
 
+        let route = routes[self.type].href;
+
         let $table = $element.find('#node_table');
 
         let $grid = $element.find('#node_grid');
@@ -127,7 +152,7 @@ Node.prototype.selector = function () {
 
         let loadData = () => {
 
-            self.fetchJson('GET', self.apiPath, null, true).then(response => {
+            self.fetchJson('GET', route, null, true).then(response => {
 
                 $grid.DynaGrid('load', response.data);
 
@@ -145,15 +170,13 @@ Node.prototype.selector = function () {
 
             let nodeClass = Host.prototype.isPrototypeOf(self) ? Host : Group;
 
-            new nodeClass().editor(function () {
+            new nodeClass({links: {self: route}}).editor(function () {
 
                 loadData()
 
             });
 
         };
-
-        let nodeClass = Host.prototype.isPrototypeOf(self) ? Host : Group;
 
         document.title = 'Battuta - ' + self.label.plural;
 
@@ -300,13 +323,13 @@ Node.prototype.selector = function () {
                 title: 'Delete nodes',
                 type: 'many',
                 objectType: self.type,
-                url: self.apiPath + self.objToUrlParam({fields: {attributes: ['name']}}),
+                url: route + self.objToUrlParam({fields: {attributes: ['name']}}),
                 itemValueKey: 'name',
                 action: function (selection, $dialog) {
 
                     self.deleteAlert(function () {
 
-                        self.fetchJson('DELETE', self.apiPath, {data: selection}, true).then(() => {
+                        self.fetchJson('DELETE', route, {data: selection}, true).then(() => {
 
                             $dialog
                                 .dialog({

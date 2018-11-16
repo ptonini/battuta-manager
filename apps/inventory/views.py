@@ -45,7 +45,6 @@ class InventoryView(View):
             return HttpResponseForbidden()
 
 
-
 class ManageView(ApiView):
 
     @staticmethod
@@ -450,7 +449,7 @@ class ManageView(ApiView):
 
                     return HttpResponseBadRequest()
 
-                return self.api_response({'data': data})
+                return self._api_response({'data': data})
 
         else:
 
@@ -605,7 +604,7 @@ class VarsView(ApiView):
 
                 var_dict = var.serialize(request)
 
-                request.JSON = {'fields': {'attributes': ['name'], 'links': ['view']}}
+                request.JSON = {'fields': {'attributes': ['name'], 'links': ['self']}}
 
                 var_dict['meta'] = {
                     'primary': False,
@@ -644,7 +643,9 @@ class VarsView(ApiView):
 
             data += variables[key]
 
-        return self._api_response({'data': data})
+        response = {'data': data, 'links': {'self': request.META['PATH_INFO']}}
+
+        return self._api_response(response)
 
     def patch(self, request, node_id, var_id, node_type):
 
@@ -656,23 +657,17 @@ class VarsView(ApiView):
 
             if 'data' in request.JSON:
 
-                request.JSON['data']['attributes'][node_type] = node_id
-
                 return self._api_response(self._save_instance(request, get_object_or_404(Variable, pk=var_id)))
 
             elif 'source' in request.JSON.get('meta', {}):
 
                 data = request.JSON['meta']['source']
 
-                node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
-
                 source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
 
                 for source_var in source.variable_set.all():
 
-                    var, created = node.variable_set.get_or_create(key=source_var.key)
-
-                    var.value = source_var.value
+                    var, created = node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
 
                     var.save()
 

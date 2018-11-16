@@ -2,45 +2,13 @@ function Runner() {
 
     let self = this;
 
-    return self.fetchHtml('view_Runner.html', $('section.container')).then($element => {
+    let $element;
+
+    return self.fetchHtml('view_Runner.html', $('section.container')).then($template => {
+
+        $element = $template;
 
         $element.find('#job_tabs').rememberTab();
-
-        return Promise.all([self.fetchJson('GET', self.paths.api.file + 'search/', {root: 'playbooks'}), $element])
-
-    }).then(([data, $element]) => {
-
-        $.each(data, (index, value) => {
-
-            let filename = value.folder ? value.folder + '/' + value.name : value.name;
-
-            $element.find('#playbook_list').append(
-                $('<option>').data(value).attr('value', filename).html(filename)
-            );
-
-        });
-
-        $element.find('#playbook_list')
-            .change(function () {
-
-                let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
-
-                if (file_data) {
-
-                    let playbook = new Playbook(file_data);
-
-                    $('#edit_playbook').off().click(function () {
-
-                        playbook.edit()
-
-                    });
-
-                    playbook.form($('#playbook_args'));
-
-                }
-
-            })
-            .change();
 
         $element.find('#adhoc_table').DataTable({
             scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
@@ -122,9 +90,43 @@ function Runner() {
 
         });
 
-        return Promise.resolve()
+        return self.fetchJson('GET', self.paths.api.file + 'search/', {root: 'playbooks'})
 
-    });
+    }).then(data => {
+
+        for (let i = 0; i < data.length; i++) {
+
+            let filename = data[i].folder ? data[i].folder + '/' + data[i].name : data[i].name;
+
+            $element.find('#playbook_list').append(
+                $('<option>').data(data[i]).attr('value', filename).html(filename)
+            );
+
+        }
+
+        $element.find('#playbook_list')
+            .change(function () {
+
+                let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
+
+                if (file_data) {
+
+                    let playbook = new Playbook(file_data);
+
+                    $('#edit_playbook').off().click(function () {
+
+                        playbook.edit()
+
+                    });
+
+                    playbook.form($('#playbook_args'));
+
+                }
+
+            })
+            .change();
+
+        });
 
 }
 

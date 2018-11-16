@@ -2,25 +2,46 @@ function Preferences(param) {
 
     Battuta.call(this, param);
 
+    return this;
+
 }
 
 Preferences.prototype = Object.create(Battuta.prototype);
 
 Preferences.prototype.constructor = Preferences;
 
-Preferences.prototype.key = 'prefs';
-
-Preferences.prototype.apiPath = Battuta.prototype.paths.preferences;
+Preferences.prototype.links = {self: '/preferences'};
 
 Preferences.prototype.loadParam = function (param) {
 
     let self = this;
 
-    self.set('default', param.default);
+    self.set('items', []);
 
-    self.set('stored', param.stored ? param.stored : {});
+    self.set('groups', []);
 
-    self.set('user', param.user ? param.user : {});
+    if (param.data) for (let i = 0; i < param.data.length; i++) {
+
+        self.items.push({
+            name: param.data[i]['id'],
+            description: param.data[i]['attributes']['description'],
+            default: param.data[i]['attributes']['default'],
+            stored: param.data[i]['attributes']['stored'],
+            dataType: param.data[i]['attributes']['data_type'],
+            group: param.data[i]['attributes']['group'],
+        })
+
+    }
+
+    if (param.include) for (let j = 0; j < param.include.length; j++) {
+
+        self.groups.push({
+            id: param.include[j]['id'],
+            name: param.include[j]['attributes']['name'],
+            description: param.include[j]['attributes']['description'],
+        })
+
+    }
 
 };
 
@@ -28,31 +49,18 @@ Preferences.prototype.load = function () {
 
     let self = this;
 
-    return self.fetchJson('GET', self.apiPath).then(response => {
+    return self.fetchJson('GET', self.links.self).then(response => {
 
-        self.loadParam(response.data);
+        self.loadParam(response);
 
-        sessionStorage.setItem('user_name', self.user.name);
 
-        sessionStorage.setItem('user_id', self.user.id);
+        for (let i = 0; i < self.items.length; i++) {
 
-        sessionStorage.setItem('timezone', self.user.tz);
+            let value = self.items[i].stored ? self.items[i].stored : self.items[i].default;
 
-        $.each(self.default, function (i) {
+            sessionStorage.setItem(self.items[i]['name'], value)
 
-            $.each(self.default[i].items, function (j, item) {
-
-                sessionStorage.setItem(item.name, item.value)
-
-            })
-
-        });
-
-        Object.keys(self.stored).forEach(function (key) {
-
-            sessionStorage.setItem(key, self.stored[key])
-
-        });
+        }
 
     });
 
@@ -62,94 +70,106 @@ Preferences.prototype.dialog = function () {
 
     let self = this;
 
-    self.fetchHtml('templates_Preferences.html').then($element => {
+    let $element;
 
-        let $dialog = self.confirmationDialog().dialog({autoOpen: false, width: 800});
+    let $dialog = self.confirmationDialog().dialog({autoOpen: false, width: 800});
 
-        $dialog.find('.dialog-header').append(
-            'Preferences',
-            $('<button>').attr({class: 'restore-button btn btn-sm btn-icon float-right', title:'Restore defaults'}).append(
-                $('<span>').attr('class', 'fas fa-fw fa-undo-alt')
-            )
-        );
+    $dialog.find('.dialog-header').append(
+        'Preferences',
+        $('<button>').attr({class: 'restore-button btn btn-sm btn-icon float-right', title:'Restore defaults'}).append(
+            $('<span>').attr('class', 'fas fa-fw fa-undo-alt')
+        )
+    );
 
-        $dialog.find('button.restore-button').click(function () {
+    $dialog.find('button.restore-button').click(function () {
 
-            self.warningAlert('Restore all preferences to default values?', function () {
+        self.warningAlert('Restore all preferences to default values?', function () {
 
-                $.each(self.default, function (i) {
+            $dialog.find('.item-input').each(function (index, input) {
 
-                    $.each(self.default[i].items, function (j, item) {
-
-                        $('#item_' + item.name).val(item.value.toString());
-
-                    })
-
-                });
-
-                self.statusAlert('success', 'Preferences restored')
-
-            })
-
-        });
-
-        $dialog.find('button.cancel-button').click(function () {
-
-            $dialog.dialog('close');
-
-        });
-
-        $dialog.find('button.confirm-button').click(function () {
-
-            let prefs = {};
-
-            let noError = true;
-
-            let validatePreference = (dataType, dataValue) => {
-
-                if (dataType === 'number' && isNaN(dataValue)) return [false, 'Value must be a number'];
-
-                else return [true, null];
-
-            };
-
-            $dialogContent.find('input,select').each(function () {
-
-                let result = validatePreference($(this).data('data_type'), $(this).val());
-
-                if (result[0]) prefs[$(this).data('name')] = $(this).val();
-
-                else {
-
-                    $('#' + $(this).data('name') + '_error').html(result[1]);
-
-                    noError = false;
-
-                }
+                $(input).val($(input).data('default').toString())
 
             });
 
-            if (noError) {
+            self.statusAlert('success', 'Preferences restored')
 
-                self.prefs = prefs;
+        })
 
-                self.save(function () {
+    });
 
-                    setTimeout(function () {
+    $dialog.find('button.cancel-button').click(function () {
 
-                        location.reload()
+        $dialog.dialog('close');
 
-                    }, 1000)
+    });
 
-                });
+    $dialog.find('button.confirm-button').click(function () {
+
+        let data = [];
+
+        let noError = true;
+
+        let validatePreference = (dataType, dataValue) => {
+
+            if (dataType === 'number' && isNaN(dataValue)) return [false, 'Value must be a number'];
+
+            else return [true, null];
+
+        };
+
+        $dialog.find('.item-input').each(function () {
+
+            let result = validatePreference($(this).data('dataType'), $(this).val());
+
+            if (result[0]) {
+
+                data.push({
+                    id: $(this).data('name'),
+                    type: 'preference_item',
+                    attributes: {value: $(this).val()}
+                })
+
+            }
+
+            else {
+
+                $('#' + $(this).data('name') + '_error').html(result[1]);
+
+                noError = false;
 
             }
 
         });
 
-        let $dialogContent = $dialog.find('div.dialog-content')
-            .attr('class', 'inset-container scrollbar')
-            .css('max-height', window.innerHeight * 0.5 + 'px');
+        if (noError) {
+
+            self.fetchJson('PATCH', self.links.self, {data: data}, true).then(() => {
+
+                $dialog.dialog('close');
+
+                new NavBar().build();
+
+                Router.check(window.location.hash.split('#')[1]);
+
+            });
+
+        }
+
+    });
+
+    let $dialogContent = $dialog.find('div.dialog-content')
+        .attr('class', 'inset-container scrollbar')
+        .css('max-height', window.innerHeight * 0.5 + 'px');
+
+    self.fetchHtml('templates_Preferences.html').then($templates => {
+
+        $element = $templates;
+
+        return self.fetchJson('GET', self.links.self)
+
+    }).then(response => {
+
+        self.loadParam(response);
 
         let $itemTemplate = $element.find('div.item-template').removeClass('item-template');
 
@@ -169,56 +189,41 @@ Preferences.prototype.dialog = function () {
 
         };
 
-        let defaultValues;
+        $dialogContent.empty();
 
-        self.refresh(false, function () {
+        for (let i = 0; i < self.groups.length; i++) {
 
-            defaultValues = [];
+            let $header = $element.find('div.header-template').clone();
 
-            $dialogContent.empty();
+            $header.find('h6').attr('title', self.groups[i].description).html(self.groups[i].name);
 
-            $.each(self.default, function (index, item_group) {
+            $dialogContent.append($header);
 
-                let $header = $element.find('div.header-template').clone();
+            for (let j = 0; j < self.items.length; j++) if (self.items[j].group === self.groups[i].id) {
 
-                $header.find('h6').attr('title', item_group.description).html(item_group.name);
+                let $itemContainer = $itemTemplate.clone();
 
-                $dialogContent.append($header);
+                let itemValue = self.items[j].stored ? self.items[j].stored : self.items[j].default;
 
-                $.each(item_group.items, function (index, item) {
+                $itemContainer.find('.item-label').html(self.items[j].name + ':').attr('title', self.items[i].description);
 
-                    let $itemContainer = $itemTemplate.clone();
+                $itemContainer.find('div.input_container').addClass(fieldType[self.items[j].dataType].class).append(
+                    fieldType[self.items[j].dataType].template.clone()
+                        .attr('id', 'item_' + self.items[j].name)
+                        .data({name: self.items[j].name, dataType: self.items[j].dataType, default: self.items[j].default})
+                        .val(itemValue.toString())
+                );
 
-                    $itemContainer.find('.item-label').html(item.name + ':');
+                $itemContainer.find('.error_label').attr('id', self.items[j].name + '_error');
 
-                    $itemContainer.find('div.input_container').addClass(fieldType[item.data_type].class).append(
-                        fieldType[item.data_type].template.clone()
-                            .attr({id: 'item_' + item.name})
-                            .data({name: item.name, data_type: item.data_type})
-                            .val(item.value.toString())
-                    );
+                $dialogContent.append($itemContainer);
+            }
 
-                    $itemContainer.find('.error_label').attr('id', item.name + '_error');
+            $dialogContent.children().last().removeClass('mb-1').addClass('mb-4')
 
-                    $dialogContent.append($itemContainer);
+        }
 
-                    defaultValues.push([item.name, item.value]);
-
-                });
-
-                $dialogContent.children().last().removeClass('mb-1').addClass('mb-4')
-
-            });
-
-            Object.keys(self.stored).forEach(function (key) {
-
-                $dialogContent.find('#item_' + key).val(self.stored[key].toString());
-
-            });
-
-            $dialog.dialog('open')
-
-        });
+        $dialog.dialog('open')
 
     });
 

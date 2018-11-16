@@ -4,9 +4,9 @@
         <li class="nav-item dropdown">
             <a id="inventory-menu" class="nav-link" href="#" data-toggle="dropdown">Inventory</a>
             <div class="dropdown-menu" aria-labelledby="inventory-menu">
-                <a href="#/inventory/hosts" class="dropdown-item">Hosts</a>
-                <a href="#/inventory/groups" class="dropdown-item">Groups</a>
-                <a href="#/inventory/manage" class="dropdown-item">Manage inventory</a>
+                <a href='#' class="dropdown-item" data-route="hosts">Hosts</a>
+                <a href='#' class="dropdown-item" data-route="groups">Groups</a>
+                <a href='#' class="dropdown-item" data-route="manage">Manage inventory</a>
             </div>
         </li>
         <li class="nav-item dropdown">
@@ -32,28 +32,26 @@
         <li class="nav-item dropdown">
             <a id="iam-menu" href="#" class="nav-link" data-toggle="dropdown">IAM</a>
             <div class="dropdown-menu">
-                <a href="#/iam/users" class="dropdown-item">Users</a>
-                <a href="#/iam/groups" class="dropdown-item">Groups</a>
+                <a href="#" class="dropdown-item" data-route="users">Users</a>
+                <a href="#" class="dropdown-item" data-route="usergroups">Groups</a>
             </div>
         </li>
     </ul>
     <ul class="navbar-nav navbar-right mr-3">
         <li class="nav-item">
-            <form id="menu_search_form" class="navbar-form">
-                <div class="input-group">
-                    <input class="form-control form-control-sm" type="text" data-bind="pattern" title="Search">
-                    <div class="input-group-append">
-                        <button class="btn btn-light btn-sm">
-                            <span class="fas fa-fw fa-search"></span>
-                        </button>
-                    </div>
+            <div class="input-group">
+                <input class="form-control form-control-sm search-input" type="text" title="Search">
+                <div class="input-group-append">
+                    <button class="btn btn-light btn-sm search-button" type="button">
+                        <span class="fas fa-fw fa-search"></span>
+                    </button>
                 </div>
-            </form>
+            </div>
         </li>
     </ul>
     <ul class="navbar-nav navbar-right">
         <li class="nav-item">
-            <a href="#" class="nav-link" id="preferences_button" style="border-radius: 5px;" title="Preferences">
+            <a href="#" class="nav-link preferences-link" title="Preferences">
                 <span class="fas fa-fw fa-cog"></span>
             </a>
         </li>
@@ -62,8 +60,8 @@
                 <span id="user_icon" class="fas fa-fw fa-user"></span>
             </a>
             <div class="dropdown-menu">
-                <a class="dropdown-item" id="user_view_anchor">Profile</a>
-                <a class="dropdown-item" id="logout_anchor" href="#">Logout</a>
+                <a href="#" class="dropdown-item">Profile</a>
+                <a href="#" class="dropdown-item logout-link">Logout</a>
             </div>
         </li>
     </ul>

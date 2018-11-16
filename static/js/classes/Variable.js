@@ -18,27 +18,29 @@ Variable.prototype.loadParam = function (param) {
 
     self.set('id', param.id);
 
-    if (param.hasOwnProperty('node')) {
-
-        self.set('apiPath', param.node.links.vars);
-
-        self.set(param.node.label.single, param.node.id)
-
-    }
-
-    else self.set('apiPath', param.apiPath);
-
     if (param.hasOwnProperty('attributes')) {
 
         self.set('key', param.attributes.key);
 
         self.set('value', param.attributes.value);
 
+        param.attributes.host && self.set('host', param.attributes.host);
+
+        param.attributes.group && self.set('group', param.attributes.group);
+
     }
+
+    if (param && param.hasOwnProperty('links')) {
+
+        for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
+
+    }
+
+    return self;
 
 };
 
-Variable.prototype.table = function ($container) {
+Variable.prototype.table = function ($container, node) {
 
     let self = this;
 
@@ -61,7 +63,11 @@ Variable.prototype.table = function ($container) {
                 className: 'btn-sm btn-icon',
                 action: function () {
 
-                    self.clone().editor(function () {
+                    let variable = new Variable({links: {self: node.links.vars}});
+
+                    variable.set(node.label.single, node.id);
+
+                    variable.editor(function () {
 
                         $table.DataTable().ajax.reload()
 
@@ -74,7 +80,7 @@ Variable.prototype.table = function ($container) {
                 className: 'btn-sm btn-icon',
                 action: function () {
 
-                    self.copyVariables(function () {
+                    self.copyVariables(node, function () {
 
                         $table.DataTable().ajax.reload()
 
@@ -83,7 +89,7 @@ Variable.prototype.table = function ($container) {
                 }
             }
         ],
-        ajax: {url: self.apiPath ,dataSrc: 'data'},
+        ajax: {url: node.links.vars ,dataSrc: 'data'},
         columns: [
             {title: 'key', data: 'attributes.key', width: '30%'},
             {title: 'value', data: 'attributes.value', width: '50%'},
@@ -100,15 +106,13 @@ Variable.prototype.table = function ($container) {
                     .attr('title', 'Open ' + data.meta.source.attributes.name)
                     .click(function () {
 
-                        window.open(data.meta.source.links.view, '_self')
+                        Router.navigate(data.meta.source.links.self)
 
                     });
 
             }
 
             else  {
-
-                data.apiPath = self.apiPath;
 
                 let variable =  new Variable(data);
 
@@ -267,7 +271,7 @@ Variable.prototype.entityDialog = function () {
     return $dialog
 };
 
-Variable.prototype.copyVariables = function (callback) {
+Variable.prototype.copyVariables = function (node, callback) {
 
     let self = this;
 
@@ -278,10 +282,10 @@ Variable.prototype.copyVariables = function (callback) {
     $dialog.find('div.dialog-content').append(
         $('<div>').attr('class', 'row').append(
             $('<div>').attr('class', 'col text-right').append(
-                $('<button>').attr('class', 'btn btn-light btn-sm node-button').data('type', 'host').html('Hosts')
+                $('<button>').attr('class', 'btn btn-light btn-sm node-button').data('type', Host.prototype.type).html('Hosts')
             ),
             $('<div>').attr('class', 'col').append(
-                $('<button>').attr('class', 'btn btn-light btn-sm node-button').data('type', 'group').html('Groups')
+                $('<button>').attr('class', 'btn btn-light btn-sm node-button').data('type', Group.prototype.type).html('Groups')
             )
         )
     );
@@ -294,12 +298,12 @@ Variable.prototype.copyVariables = function (callback) {
             title: 'Select node',
             type: 'one',
             objectType: $(this).data('type'),
-            url: self.paths.api.node[$(this).data('type')],
+            url: routes[$(this).data('type')].href,
             ajaxDataKey: 'data',
             itemValueKey: 'name',
             action: function (selection, $dialog) {
 
-                self.fetchJson('PATCH', self.apiPath, {'meta': {'source': selection}}, true).then(() => {
+                self.fetchJson('PATCH', node.links.vars, {'meta': {'source': selection}}, true).then(() => {
 
                     $dialog.dialog('close');
 

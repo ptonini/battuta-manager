@@ -12,8 +12,6 @@ Host.prototype.type = 'hosts';
 
 Host.prototype.label = {single: 'host', plural: 'hosts'};
 
-Host.prototype.apiPath = Battuta.prototype.paths['inventory-hosts'];
-
 Host.prototype.info = function ($container) {
 
     let self = this;
@@ -153,23 +151,4 @@ Host.prototype.info = function ($container) {
 
     });
 
-};
-
-Host.prototype.tabs = {
-    variables: {
-        validator: function () {return true},
-        generator: function (self, $container) {
-
-            new Variable({id: null, node: self}).table($container)
-
-        }
-    },
-    parents: {
-        validator: function () {return true},
-        generator: function (self, $container) {
-
-            self.relationships('parents', $container)
-
-        }
-    },
 };

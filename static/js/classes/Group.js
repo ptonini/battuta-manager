@@ -12,27 +12,9 @@ Group.prototype.type = 'groups';
 
 Group.prototype.label = {single: 'group', plural: 'groups'};
 
-Group.prototype.apiPath = Battuta.prototype.paths['inventory-groups'];
-
 Group.prototype.info = null;
 
-Group.prototype.tabs = {
-    variables: {
-        validator: function () {return true},
-        generator: function (self, $container) {
-
-            new Variable({id: null, node: self}).table($container)
-
-        }
-    },
-    parents: {
-        validator: function () {return true},
-        generator: function (self, $container) {
-
-            self.relationships('parents', $container)
-
-        }
-    },
+Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
     children: {
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
@@ -49,9 +31,9 @@ Group.prototype.tabs = {
 
         }
     },
-};
+});
 
-Group.prototype.selectorColumns = {}
+Group.prototype.selectorColumns = {};
 
 Group.prototype.descendants = function (offset, $container) {
 
@@ -84,11 +66,11 @@ Group.prototype.descendants = function (offset, $container) {
                 gridBodyTopMargin: 10,
                 maxHeight: window.innerHeight - offset,
                 columns: Math.ceil(sessionStorage.getItem('node_grid_columns') / Object.keys(grids).length),
-                formatItem: function (gridContainer, gridItem) {
+                formatItem: function (gridContainer, gridItem, data) {
 
                     gridItem.click(function () {
 
-                        window.open(self.paths.views.node[key] + $(this).data('name') + '/', '_self')
+                        Router.navigate(data.links.self)
 
                     });
 

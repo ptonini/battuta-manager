@@ -1,7 +1,4 @@
-function NavBar(param) {
-
-    Battuta.call(this, param);
-}
+function NavBar() {}
 
 NavBar.prototype = Object.create(Battuta.prototype);
 
@@ -21,25 +18,37 @@ NavBar.prototype.build = function () {
 
             $('#user_icon').attr('title', response.meta.username);
 
-            $('#preferences_button').click(function () {
+            $element.find('a[data-route]').click(function (e) {
+
+                e.preventDefault();
+
+                Router.navigate(routes[$(this).data('route')].href)
+
+            });
+
+            $element.find('a.preferences-link').click(function (e) {
+
+                e.preventDefault();
 
                 new Preferences().dialog()
 
             });
 
-            $('#menu_search_form').submit(function (event) {
+            $element.find('button.search-button').click(function () {
 
-                event.preventDefault();
+                let pattern = $element.find('input.search-input').val();
 
-                self.pattern && window.open('/search/' + self.pattern, '_self')
+                pattern && Router.navigate(routes.search.href + '/' + pattern)
 
             });
 
-            $('#logout_anchor').click(function () {
+            $element.find('a.logout-link').click(function () {
 
                 self.fetchJson('POST', 'logout', null, false).then(() => {
 
-                    window.open('/', '_self');
+                    self.build();
+
+                    Router.navigate('/main');
 
                 });
 
@@ -60,7 +69,9 @@ NavBar.prototype.build = function () {
 
                 self.fetchJson('POST', '/login', requestData, false).then(() => {
 
-                    window.open('/', '_self');
+                    self.build();
+
+                    Router.navigate('/main');
 
                 });
 
@@ -70,4 +81,4 @@ NavBar.prototype.build = function () {
 
     })
 
-}
+};

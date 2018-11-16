@@ -12,38 +12,6 @@ function Battuta (param) {
 
 Battuta.prototype = {
 
-    paths: {
-        main: '/main',
-        search: '/search',
-        'inventory-hosts': '/inventory/hosts',
-        'inventory-groups': '/inventory/groups',
-        'inventory-manage': '/inventory/manage',
-        file: '/files/api/',
-        adhoc: '/runner/api/adhoc/',
-        playbook: '/runner/api/playbook/',
-        job: '/runner/api/job/',
-        login: '/iam/api/',
-        user: '/iam/api/user/',
-        group: '/iam/api/group/',
-        project: '/projects/api/',
-        preferences:'/preferences/',
-
-        templates: '/static/templates/',
-        modules: '/static/templates/ansible_modules/'
-    },
-
-    internalProperties: [
-        'pubSub',
-        'bindings',
-        'type',
-        'id',
-        'apiPath',
-        'facts',
-        'title',
-        'pattern',
-        'links'
-    ],
-
     loadParam: function () {},
 
 
@@ -109,37 +77,23 @@ Battuta.prototype = {
 
         let self = this;
 
+        let internalProperties = ['id', 'type', 'pubSub', 'bindings', 'facts', 'links' ];
+
         let data = {
             id: self.id,
             type: self.type,
             attributes: {}
         };
 
-        for (let p in self) {
+        for (let p in self) if (self.hasOwnProperty(p) && internalProperties.indexOf(p) === -1 && p != null) {
 
-            if (self.hasOwnProperty(p) && self.internalProperties.indexOf(p) === -1 && p != null) {
+            if (typeof self[p] === 'object') data.attributes[p] = JSON.stringify(self[p]);
 
-                if (typeof self[p] === 'object') data.attributes[p] = JSON.stringify(self[p]);
-
-                else data.attributes[p] = self[p]
-
-            }
+            else data.attributes[p] = self[p]
 
         }
 
         return data
-
-    },
-
-    clone: function () {
-
-        let self = this;
-
-        let newObj = new self.constructor();
-
-        for (let p in self) if (self.hasOwnProperty(p)) newObj[p] = self[p];
-
-        return newObj
 
     },
 
@@ -206,8 +160,6 @@ Battuta.prototype = {
     },
 
     ajaxError: function (xhr, status, error) {
-
-        console.log(xhr, status, error);
 
         let message;
 
@@ -307,11 +259,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        let init = {};
-
-        init.credentials = 'include';
-
-        init.method = method;
+        let init = {credentials: 'include', method: method};
 
         init.headers = new Headers({
             'Content-Type': 'application/vnd.api+json',
@@ -341,7 +289,7 @@ Battuta.prototype = {
 
             blocking && $.unblockUI();
 
-            if (response.ok ) return response.status === 204 ? {data: {}} : response.json();
+            if (response.ok ) return response.status === 204 ? response : response.json();
 
             else {
 
@@ -353,13 +301,13 @@ Battuta.prototype = {
 
         }).then(response => {
 
-            if (response.hasOwnProperty('data') || response.hasOwnProperty('meta')) return response;
+            if (response.hasOwnProperty('data') || response.hasOwnProperty('meta') || response.status === 204) return response;
 
             else if (response.hasOwnProperty('errors')) {
 
                 let $messageContainer = $('<div>');
 
-                for (let i in response.errors) if (response.errors.hasOwnProperty(i)) {
+                for (let i = 0; i < response.errors.length; i++) {
 
                     let message = response.errors[i].title;
 
@@ -390,7 +338,7 @@ Battuta.prototype = {
 
     fetchHtml: function (file, $container) {
 
-        return fetch(Battuta.prototype.paths.templates + file, {credentials: 'include'}).then(response => {
+        return fetch('/static/templates/' + file, {credentials: 'include'}).then(response => {
 
             return response.text()
 
@@ -398,7 +346,7 @@ Battuta.prototype = {
 
             let $elements = $(text);
 
-            $container ? $container.html($elements) : $('<div>').append($elements);
+            $container ? $container.empty().html($elements) : $('<div>').append($elements);
 
             return $elements
 
@@ -413,7 +361,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        return self.fetchJson('POST', self.apiPath, {data: self.serialize()}, blocking).then(response => {
+        return self.fetchJson('POST', self.links.self, {data: self.serialize()}, blocking).then(response => {
 
             self.loadParam(response.data);
 
@@ -427,7 +375,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        return self.fetchJson('GET', self.apiPath + '/' + self.id, null, blocking).then(response => {
+        return self.fetchJson('GET', self.links.self, null, blocking).then(response => {
 
             self.loadParam(response.data);
 
@@ -441,7 +389,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        return self.fetchJson('PATCH', self.apiPath + '/' + self.id, {data: self.serialize()}, blocking).then(response => {
+        return self.fetchJson('PATCH', self.links.self, {data: self.serialize()}, blocking).then(response => {
 
             self.loadParam(response.data);
 
@@ -457,7 +405,7 @@ Battuta.prototype = {
 
         self.deleteAlert(function() {
 
-            return self.fetchJson('DELETE', self.apiPath + '/' + self.id, null, blocking).then(response => {
+            return self.fetchJson('DELETE', self.links.self, null, blocking).then(response => {
 
                 callback && callback(response)
 
@@ -856,7 +804,7 @@ Battuta.prototype = {
 
                 self.bindElement($element);
 
-                ['host', 'group'].forEach(function (type) {
+                [Host.prototype.type, Group.prototype.type].forEach(function (type) {
 
                     $element.find('div.' + type + '-grid').DynaGrid({
                         showFilter: true,
@@ -867,12 +815,10 @@ Battuta.prototype = {
                         truncateItemText: true,
                         gridBodyClasses: 'inset-container scrollbar',
                         columns: sessionStorage.getItem('selection_modal_columns'),
-                        ajaxUrl: self.paths.api.inventory + 'list/?type=' + type,
-                        ajaxDataKey: 'nodes',
-                        itemValueKey: 'name',
-                        formatItem: function($gridContainer, $item) {
+                        ajaxUrl: routes[type].href,
+                        formatItem: function($gridContainer, $item, data) {
 
-                            let nodeName = $item.data()['name'];
+                            let nodeName = data.attributes.name;
 
                             $item.html('').removeAttr('title').removeClass('text-truncate').addClass('dropdown').append(
                                 $('<a>').attr({'data-toggle': 'dropdown', href: '#', class: 'pattern-grid'}).html(nodeName),
@@ -964,8 +910,8 @@ Battuta.prototype = {
             scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
             scrollCollapse: true,
             ajax: {
-                url: self.apiPath + 'list/',
-                dataSrc: self.crud.dataSrc
+                url: routes[self.type].href,
+                dataSrc: 'data'
             },
             paging: false,
             dom: 'Bfrtip',
@@ -984,9 +930,7 @@ Battuta.prototype = {
 
         $('section.container').append(
             $('<h4>').html(self.crud.titlePlural),
-            $('<div>').attr('class', 'card shadow p-3').append(
-                $table
-            )
+            $('<div>').attr('class', 'card shadow p-3').append($table)
         );
 
         Object.keys(self.crud.table).forEach(function (key) {
@@ -998,10 +942,6 @@ Battuta.prototype = {
         });
 
         $table.DataTable(tableOptions);
-
-        self.crud.onFinish && self.crud.onFinish(self);
-
-
 
     },
 

@@ -1,15 +1,18 @@
 import json
 
-from django.views.generic import View
-from django.http import HttpResponse, HttpResponseNotFound
+
+from django.http import HttpResponseNotFound, HttpResponseForbidden
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 from apps.preferences.models import Item
 from apps.preferences.extras import get_default_value
 
 from apps.iam.extras import create_userdata
-
 from main.extras.views import ApiView
+
+
 
 class PreferencesView(ApiView):
 
@@ -17,50 +20,83 @@ class PreferencesView(ApiView):
 
         create_userdata(request.user)
 
-        pref_dict = dict()
+        data = []
 
-        pref_dict['default'] = settings.DEFAULT_PREFERENCES
+        include = []
 
-        pref_dict['stored'] = {item.name: item.value for item in Item.objects.all()}
+        for i, group in enumerate(settings.DEFAULT_PREFERENCES):
 
-        pref_dict['user'] = {
-            'name': request.user.username,
-            'id': request.user.id,
-            'tz': request.user.userdata.timezone
-        }
+            include.append({
+                'id': i,
+                'type': 'preference_group',
+                'attributes': {
+                    'name': group['name'],
+                    'description': group['description'],
 
-        return self._api_response({'data': pref_dict})
+                }
+            })
 
-    def post(self, request, action):
+            for item in group['items']:
+
+                try:
+
+                    stored_item = Item.objects.get(name=item['name'])
+
+                    stored_value = stored_item.value
+
+                except ObjectDoesNotExist:
+
+                    stored_value = None
+
+                data.append({
+                    'id': item['name'],
+                    'type': 'preference_item',
+                    'attributes': {
+                        'default': item['value'],
+                        'stored': stored_value,
+                        'description': item['description'],
+                        'data_type': item['data_type'],
+                        'group': i,
+                    }
+                })
+
+        return self._api_response({'data': data, 'include': include})
+
+    def patch(self, request):
 
         if request.user.has_perm('users.edit_preferences'):
 
-            if action == 'save':
+            for item in request.JSON['data']:
 
-                prefs_dict = json.loads(request.POST['prefs'])
+                if item['attributes']['value'] == get_default_value(item['id']):
 
-                for key in prefs_dict:
+                    Item.objects.filter(name=item['id']).delete()
 
-                    if prefs_dict[key] == get_default_value(key):
+                else:
 
-                        Item.objects.filter(name=key).delete()
+                    Item.objects.update_or_create(name=item['id'], value=item['attributes']['value'])
 
-                    else:
 
-                        item, created = Item.objects.get_or_create(name=key)
+            #prefs_dict =request.JSON['data']
 
-                        item.value = prefs_dict[key]
+            # for key in prefs_dict:
+            #
+            #     if prefs_dict[key] == get_default_value(key):
+            #
+            #         Item.objects.filter(name=key).delete()
+            #
+            #     else:
+            #
+            #         item, created = Item.objects.get_or_create(name=key)
+            #
+            #         item.value = prefs_dict[key]
+            #
+            #         item.save()
 
-                        item.save()
-
-                data = {'status': 'ok', 'msg': 'Preferences saved - reloading page'}
-
-            else:
-
-                return HttpResponseNotFound('Invalid action')
+            data = {'status': 'ok', 'msg': 'Preferences saved - reloading page'}
 
         else:
 
-            data = {'status': 'denied'}
+            return HttpResponseForbidden()
 
         return self._api_response({'data': data})

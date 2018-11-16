@@ -309,8 +309,6 @@ Project.prototype.crud = {
 
 };
 
-Project.prototype.apiPath = Battuta.prototype.paths['preferences'];
-
 Project.prototype.properties = {
     manager: {
         url: '' + 'list/?',

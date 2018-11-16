@@ -1,34 +1,8 @@
-function Inventory(param) {
-
-    Battuta.call(this, param);
-
-}
-
-Inventory.prototype = Object.create(Battuta.prototype);
-
-Inventory.prototype.constructor = Inventory;
-
-Inventory.prototype.apiPath = Battuta.prototype.paths['inventory-manage'];
-
-Inventory.prototype.loadParam = function (param) {
-
-    let self = this;
-
-    Object.keys(param).forEach(function (key) {
-
-        self.set(key, param[key])
-
-    });
-
-};
-
-Inventory.prototype.selector = function () {
+function Inventory() {
 
     let self = this;
 
     self.fetchHtml('view_InventoryManager.html', $('section.container')).then($element => {
-
-        self.bindElement($element);
 
         $element.find('#manage_inventory_tabs').rememberTab();
 
@@ -36,7 +10,7 @@ Inventory.prototype.selector = function () {
             .fileinput({
                 ajaxSettings: {method: 'PATCH', beforeSend: self.ajaxBeforeSend, error: self.ajaxError},
                 mergeAjaxCallbacks: 'before',
-                uploadUrl: self.apiPath,
+                uploadUrl: routes.manage.href,
                 uploadExtraData: function () {
 
                     return {format: $('input[type="radio"][name="import_file_type"]:checked').val()}
@@ -106,7 +80,7 @@ Inventory.prototype.selector = function () {
 
                     if (self.sftp_user) {
 
-                        window.open(self.apiPath + '?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
+                        window.open(routes.manage.href + '?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
 
                         $dialog.dialog('close')
 
@@ -122,10 +96,15 @@ Inventory.prototype.selector = function () {
 
             }
 
-            else window.open(self.apiPath + '?format=' + format, '_self');
+            else window.open(routes.manage.href + '?format=' + format, '_self');
 
         });
 
     });
 
-};
+}
+
+Inventory.prototype = Object.create(Battuta.prototype);
+
+Inventory.prototype.constructor = Inventory;
+

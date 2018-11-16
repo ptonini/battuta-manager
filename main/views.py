@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import View
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
 
 from main.extras.views import ApiView
@@ -9,19 +9,9 @@ from main.extras.views import ApiView
 class PageView(View):
 
     @staticmethod
-    def get(request, **kwargs):
+    def get(request):
 
-        if kwargs['page'] == 'main':
-
-            return render(request, 'main/main.html')
-
-        elif kwargs['page'] == 'search':
-
-            return render(request, 'main/search.html', {'pattern': kwargs['pattern']})
-
-        else:
-
-            return HttpResponseNotFound()
+        return render(request, 'main/main.html')
 
 
 class MainView(ApiView):
@@ -48,24 +38,22 @@ class LoginView(ApiView):
 
                     login(request, user)
 
-                    response = {'data': {}}
+                    return HttpResponse(status=204)
 
                 else:
 
-                    response = {'errors': [{'title': 'Account disabled'}]}
+                    self._api_response({'errors': [{'title': 'Account disabled'}]})
 
             else:
 
-                response = {'errors': [{'title': 'Invalid login'}]}
+                self._api_response({'errors': [{'title': 'Invalid login'}]})
 
         elif action == 'logout':
 
             logout(request)
 
-            response = {'data': {}}
+            return HttpResponse(status=204)
 
         else:
 
             return HttpResponseBadRequest()
-
-        return self._api_response(response)

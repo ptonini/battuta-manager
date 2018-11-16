@@ -14,6 +14,8 @@ class Node(models.Model):
 
     type = None
 
+    route = None
+
     group_set = None
 
     members = None
@@ -73,15 +75,15 @@ class Node(models.Model):
         data = {
             'type': self.type,
             'id': self.id,
-            'meta': {'editable': request.user.has_perm('users.edit_' + self.type + 's')}
+            'meta': {'editable': request.user.has_perm('users.edit_' + self.type)}
         }
 
         attributes = ['name', 'description']
 
         links = {
-            'self': '/'.join(['inventory', self.type, str(self.id)]) ,
-            'vars': '/'.join(['inventory', self.type, str(self.id), Variable.type]),
-            'parents': '/'.join(['inventory', self.type, str(self.id), 'parents']),
+            'self': '/'.join([self.route, str(self.id)]) ,
+            'vars': '/'.join([self.route, str(self.id), Variable.type]),
+            'parents': '/'.join([self.route, str(self.id), 'parents']),
         }
 
         fields = request.JSON.get('fields', False)
@@ -106,6 +108,8 @@ class Host(Node):
     facts = models.TextField(max_length=65353, default='{}')
 
     type = 'hosts'
+
+    route = '/inventory/hosts'
 
     def serialize(self, request):
 
@@ -144,6 +148,8 @@ class Group(Node):
 
     type = 'groups'
 
+    route = '/inventory/groups'
+
     def get_descendants(self):
 
         group_descendants = set()
@@ -180,8 +186,8 @@ class Group(Node):
         }
 
         links = {
-            'children': '/'.join(['inventory', self.type, str(self.id), 'children']),
-            'members': '/'.join(['inventory', self.type, str(self.id), 'members'])
+            'children': '/'.join([self.route, str(self.id), 'children']),
+            'members': '/'.join([self.route, str(self.id), 'members'])
         }
 
         fields = request.JSON.get('fields', False)
@@ -220,8 +226,9 @@ class Variable(models.Model):
             'type': self.type,
             'attributes': {
                 'key': self.key,
-                'value': self.value,
-            }
+                'value': self.value
+            },
+            'links': {'self': '/'.join([request.META['PATH_INFO'], str(self.id)])}
         }
 
         if self.host:

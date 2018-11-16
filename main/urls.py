@@ -1,4 +1,4 @@
-from django.urls import include, path, re_path
+from django.urls import include, path
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views.generic.base import RedirectView
@@ -7,13 +7,15 @@ from . import views
 
 urlpatterns = [
 
-    path('', views.PageView.as_view(), kwargs={'page': 'main'}),
+    path('', views.PageView.as_view()),
 
     path('main', views.MainView.as_view()),
 
-    re_path(r'^(?P<action>login|logout)$', views.LoginView.as_view()),
+    path('login', views.LoginView.as_view(), kwargs={'action': 'login'}),
 
-    path('search/<str:pattern>/', login_required(views.PageView.as_view()), kwargs={'page': 'search'}),
+    path('logout', login_required(views.LoginView.as_view()), kwargs={'action': 'logout'}),
+
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
 
     path('inventory/', include('apps.inventory.urls')),
 
@@ -23,10 +25,8 @@ urlpatterns = [
 
     path('files/', include('apps.files.urls')),
 
-    path('preferences/', include('apps.preferences.urls')),
+    path('preferences', include('apps.preferences.urls')),
 
     path('projects/', include('apps.projects.urls')),
-
-    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
 
 ]

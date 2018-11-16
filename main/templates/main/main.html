@@ -54,7 +54,11 @@
         <script type="text/javascript">
             $(document).ready(function () {
 
-                Router.listen().check(window.location.hash.split('#')[1]);
+                Router.listen();
+
+                if (window.location.hash) Router.check(window.location.hash.substring(2));
+
+                else Router.navigate(routes.main.href);
 
                 new NavBar().build();
 

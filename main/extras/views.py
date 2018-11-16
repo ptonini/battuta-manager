@@ -16,6 +16,8 @@ class ApiView(View):
 
         form = self.form_class(request.JSON.get('data', {}).get('attributes'), instance=instance)
 
+        print(request.JSON.get('data', {}).get('attributes'))
+
         if form.is_valid():
 
             instance = form.save(commit=True)

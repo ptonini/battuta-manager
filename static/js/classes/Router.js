@@ -7,16 +7,6 @@ let Router = {
         return path.toString().replace(/\/$/, '').replace(/^\//, '');
 
     },
-    config: function(options) {
-
-        let self = this;
-
-        self.mode = options && options.mode && options.mode === 'history' && !!(history.pushState) ? 'history' : 'hash';
-
-        self.root = options && options.root ? '/' + self.clearSlashes(options.root) + '/' : '/';
-
-        return self;
-    },
     add: function(re, handler) {
 
         let self = this;
@@ -28,65 +18,17 @@ let Router = {
             re = '';
         }
 
-        self.routes.push({ re: re, handler: handler});
+        self.routes.push({re: re, handler: handler});
 
         return self;
-    },
-    remove: function(param) {
-
-        let self = this;
-
-        for (let i = 0, r; i < self.routes.length, r = self.routes[i]; i++) {
-
-            if (r.handler === param || r.re.toString() === param.toString()) {
-
-                self.routes.splice(i, 1);
-
-                return self;
-
-            }
-        }
-
-        return self;
-
-    },
-    flush: function() {
-
-        let self = this;
-
-        self.routes = [];
-
-        self.mode = self;
-
-        self.root = '/';
-
-        return self;
-
     },
     getFragment: function() {
 
         let self = this;
 
-        let fragment = '';
+        let match = window.location.href.match(/#(.*)$/);
 
-        if (this.mode === 'history') {
-
-            fragment = self.clearSlashes(decodeURI(location.pathname + location.search));
-
-            fragment = fragment.replace(/\?(.*)$/, '');
-
-            fragment = self.root !== '/' ? fragment.replace(self.root, '') : fragment;
-        }
-
-        else {
-
-            let match = window.location.href.match(/#(.*)$/);
-
-            fragment = match ? match[1] : '';
-
-        }
-
-        return self.clearSlashes(fragment);
+        return self.clearSlashes(match ? match[1] : '');
 
     },
     check: function(f) {
@@ -103,7 +45,7 @@ let Router = {
 
                 match.shift();
 
-                self.routes[i].handler.apply({}, match);
+                self.routes[i].handler.apply({}, [match]);
 
                 return self;
 
@@ -140,49 +82,89 @@ let Router = {
     },
     navigate: function(path) {
 
+        let self = this;
+
         path = path ? path : '';
 
-        if (this.mode === 'history') {
+        window.location.href = window.location.href.replace(/#(.*)$/, '') + '#' + path;
 
-            history.pushState(null, null, this.root + this.clearSlashes(path));
-        }
+        return self;
 
-        else {
-
-            window.location.href = window.location.href.replace(/#(.*)$/, '') + '#' + path;
-        }
-
-        return this;
     }
 };
 
-Router.add(/search\/?([-_a-zA-Z0-9]+)?/, function (param) {
+let routes = {
+    main: {
+        href: '/main',
+        regex: /^main$/,
+        action: function () {
 
-    new Search().selector(param)
+            $('section.container').empty()
 
-});
+        }
+    },
+    search: {
+        href: '/search',
+        regex: /^search\/?([-_a-zA-Z0-9]+)?/,
+        action: function (param) {
 
+            new Search(param[0])
 
-Router.add(/inventory\/manage/, function () {
+        }
+    },
+    manage: {
+        href: '/inventory/manage',
+        regex: /^inventory\/manage$/,
+        action: function () {
 
-    new Inventory().selector()
+            new Inventory()
 
-});
+        }
+    },
+    hosts: {
+        href: '/inventory/hosts',
+        regex: /^inventory\/hosts\/?([0-9]+)?$/,
+        action: function (param) {
 
-Router.add(/inventory\/hosts\/?([0-9]+)?/, function (param) {
+            param[0] ? new Host({id: param[0], links: {self: param.input}}).view() : new Host().selector();
 
-    param ? new Host({id: param}).view() : new Host().selector();
+        }
+    },
+    groups: {
+        href: '/inventory/groups',
+        regex: /^inventory\/groups\/?([0-9]+)?$/,
+        action: function (param) {
 
-});
+            param[0] ? new Group({id: param[0], links: {self: param.input}}).view() : new Group().selector();
 
-Router.add(/inventory\/groups\/?([0-9]+)?/, function (param) {
+        }
+    },
+    users: {
+        href: '/iam/users',
+        regex: /^iam\/users\/?([0-9]+)?$/,
+        action: function (param) {
 
-    param ? new Group({id: param}).view() : new Group().selector();
+            param[0] ? new User({id: param[0], links: {self: param.input}}).view() : new User().selector();
 
-});
+        }
+    },
+    usergroups: {
+        href: '/iam/usergroups',
+        regex: /^iam\/usergroups\/?([0-9]+)?$/,
+        action: function (param) {
 
-Router.add(function () {
+            param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).view() : new UserGroup().selector();
 
-    $('section.container').empty()
+        }
+    },
+};
+
+for (let k in routes) if (routes.hasOwnProperty(k)) Router.add(routes[k].regex, routes[k].action);
+
+Router.add(/[\s\S]*/, function () {
+
+    $('section.container').empty();
+
+    Battuta.prototype.statusAlert('warning', 'Page not found')
 
 });
