@@ -86,7 +86,7 @@ Node.prototype.relationships = function (relation, $container) {
             maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.links[relation] + self.objToUrlParam({fields: {attributes: ['name'], links: ['self']}}),
+            ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: ['name'], links: ['self']}}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
                 $gridItem.append(
@@ -327,7 +327,7 @@ Node.prototype.selector = function () {
                 title: 'Delete nodes',
                 type: 'many',
                 objectType: self.type,
-                url: route + self.objToUrlParam({fields: {attributes: ['name']}}),
+                url: route + self.objToQueryStr({fields: {attributes: ['name']}}),
                 itemValueKey: 'name',
                 action: function (selection, $dialog) {
 

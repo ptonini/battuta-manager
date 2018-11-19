@@ -12,34 +12,6 @@ Variable.prototype.type = 'vars';
 
 Variable.prototype.label = {single: 'variable', plural: 'variables'};
 
-// Variable.prototype.loadParam = function (param) {
-//
-//     let self = this;
-//
-//     self.set('id', param.id);
-//
-//     if (param.hasOwnProperty('attributes')) {
-//
-//         self.set('key', param.attributes.key);
-//
-//         self.set('value', param.attributes.value);
-//
-//         param.attributes.host && self.set('host', param.attributes.host);
-//
-//         param.attributes.group && self.set('group', param.attributes.group);
-//
-//     }
-//
-//     if (param && param.hasOwnProperty('links')) {
-//
-//         for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
-//
-//     }
-//
-//     return self;
-//
-// };
-
 Variable.prototype.table = function ($container, node) {
 
     let self = this;
@@ -116,7 +88,9 @@ Variable.prototype.table = function ($container, node) {
 
                 let variable =  new Variable(data);
 
-                $(row).find('td:eq(3)').empty().append(
+                let buttonCell = $(row).find('td:eq(3)').empty();
+
+                variable['meta']['editable'] && buttonCell.append(
                     self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
 
                         variable.editor(function () {
@@ -125,7 +99,10 @@ Variable.prototype.table = function ($container, node) {
 
                         })
 
-                    }),
+                    })
+                );
+
+                variable['meta']['deletable'] && buttonCell.append(
                     self.tableBtn('fas fa-trash', 'Delete', function () {
 
                         variable.delete(false, function () {

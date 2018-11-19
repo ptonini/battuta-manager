@@ -6,10 +6,6 @@ from django.conf import settings
 
 from apps.projects.models import Project
 
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
-
 class ProjectAuthorizer:
 
     def __init__(self, user):
@@ -124,10 +120,6 @@ class ProjectAuthorizer:
 
                         self._editable_files.add(os.path.join(root, d))
 
-    @staticmethod
-    def list():
-
-        pass
 
     def is_manager(self):
 

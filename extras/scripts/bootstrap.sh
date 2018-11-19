@@ -5,7 +5,7 @@ update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password battuta'
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password battuta'
 apt update
-apt -y upgrade
+#apt -y upgrade
 apt -y install curl
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 curl -sL https://bootstrap.pypa.io/get-pip.py | sudo -E python -

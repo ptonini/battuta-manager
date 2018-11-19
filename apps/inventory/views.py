@@ -460,7 +460,7 @@ class NodeView(ApiView):
 
     def post(self, request, node_id):
 
-        if request.user.has_perm('users.edit_' + self.type + 's'):
+        if request.user.has_perm('users.edit_' + self.type):
 
             return self._api_response(self._save_instance(request, self.model_class()))
 
@@ -501,9 +501,11 @@ class NodeView(ApiView):
 
     def patch(self, request, node_id):
 
-        if request.user.has_perm('users.edit_' + self.type):
+        node = get_object_or_404(self.model_class, pk=node_id)
 
-            return self._api_response(self._save_instance(request, get_object_or_404(self.model_class, pk=node_id)))
+        if node.authorizer(request.user)['editable']:
+
+            return self._api_response(self._save_instance(request, node))
 
         else:
 
@@ -511,23 +513,37 @@ class NodeView(ApiView):
 
     def delete(self, request, node_id):
 
-        if request.user.has_perm('users.edit_' + self.type):
+        # if request.user.has_perm('users.edit_' + self.type):
 
-            if node_id:
+        if node_id:
 
-                get_object_or_404(self.model_class, pk=node_id).delete()
+            node = get_object_or_404(self.model_class, pk=node_id)
+
+            if node.authorizer(request.user)['deletable']:
+
+                node.delete()
 
                 return HttpResponse(status=204)
 
             else:
 
-                self.model_class.objects.filter(pk__in=[n['id'] for n in request.JSON.get('data')]).delete()
-
-                return HttpResponse(status=204)
+                return HttpResponseForbidden()
 
         else:
 
-            return HttpResponseForbidden()
+            id_list = list()
+
+            for node_dict in request.JSON.get('data'):
+
+                node = self.model_class.objects.get(pk=node_dict['id'])
+
+                if node.authorizer(request.user)['deletable']:
+
+                    id_list.append(node_dict['id'])
+
+            self.model_class.objects.filter(pk__in=id_list).delete()
+
+            return HttpResponse(status=204)
 
         #
         # elif action == 'descendants':
@@ -579,7 +595,6 @@ class VarsView(ApiView):
 
                 return HttpResponseBadRequest()
 
-
         else:
 
             return HttpResponseForbidden()
@@ -596,7 +611,7 @@ class VarsView(ApiView):
 
             variables[var.key] = [var.serialize(request.JSON.get('fields'), request.user)]
 
-            variables[var.key][0]['meta'] = {'primary': True}
+            variables[var.key][0]['meta']['primary'] = True
 
         for ancestor in node.get_ancestors():
 
@@ -604,10 +619,12 @@ class VarsView(ApiView):
 
                 var_dict = var.serialize(request.JSON.get('fields'), request.user)
 
-                var_dict['meta'] = {
+                additional_meta = {
                     'primary': False,
                     'source': var.group.serialize({'attributes': ['name'], 'links': ['self']}, request.user)
                 }
+
+                var_dict['meta'].update(additional_meta)
 
                 if var.key in variables:
 
@@ -647,21 +664,29 @@ class VarsView(ApiView):
 
     def patch(self, request, node_id, var_id, node_type):
 
-        authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+        if 'data' in request.JSON:
 
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+            var = get_object_or_404(Variable, pk=var_id)
 
-        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
+            if var.authorizer(request.user)['editable']:
 
-            if 'data' in request.JSON:
+                return self._api_response(self._save_instance(request, var))
 
-                return self._api_response(self._save_instance(request, get_object_or_404(Variable, pk=var_id)))
+            else:
 
-            elif 'source' in request.JSON.get('meta', {}):
+                return HttpResponseForbidden()
 
-                data = request.JSON['meta']['source']
+        elif 'source' in request.JSON.get('meta', {}):
 
-                source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
+            data = request.JSON['meta']['source']
+
+            node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+
+            source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
+
+            authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+
+            if request.user.has_perm('edit_' + node_type) or authorizer.can_edit_variables(node):
 
                 for source_var in source.variable_set.all():
 
@@ -671,18 +696,16 @@ class VarsView(ApiView):
 
                 return HttpResponse(status=204)
 
-        else:
+            else:
 
-            return HttpResponseForbidden()
+                return HttpResponseForbidden()
 
     @staticmethod
     def delete(request, node_id, var_id, node_type):
 
-        authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+        var = get_object_or_404(Variable, pk=var_id)
 
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
-
-        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
+        if var.authorizer(request.user)['deletable']:
 
             get_object_or_404(Variable, pk=var_id).delete()
 
@@ -698,9 +721,9 @@ class RelationsView(ApiView):
     @staticmethod
     def post(request, relation, node_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type):
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-            node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        if node.authorizer(request.user)['editable']:
 
             related_set, related_class = node.get_relationships(relation)
 
@@ -751,9 +774,9 @@ class RelationsView(ApiView):
     @staticmethod
     def delete(request, relation, node_id, node_type):
 
-        if request.user.has_perm('users.edit_' + node_type):
+        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-            node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        if node.authorizer(request.user)['editable']:
 
             related_set, related_class = node.get_relationships(relation)
 

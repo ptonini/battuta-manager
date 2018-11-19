@@ -147,7 +147,7 @@ Battuta.prototype = {
 
     },
 
-    objToUrlParam: function (obj) {
+    objToQueryStr: function (obj) {
 
         for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
 
@@ -285,7 +285,7 @@ Battuta.prototype = {
 
         if (obj) {
 
-            if (method === 'GET' || method === 'DELETE') url = url + self.objToUrlParam(obj);
+            if (method === 'GET' || method === 'DELETE') url = url + self.objToQueryStr(obj);
 
             else init.body = JSON.stringify(obj);
 

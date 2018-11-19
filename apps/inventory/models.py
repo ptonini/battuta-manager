@@ -3,8 +3,11 @@ import json
 from collections import OrderedDict
 from django.db import models
 from django.core.validators import RegexValidator
+from django.conf import settings
+from django.core.cache import cache
 
 from main.extras.models import SerializerModelMixin
+from apps.projects.extras import ProjectAuthorizer
 
 
 
@@ -78,14 +81,19 @@ class Node(models.Model, SerializerModelMixin):
             'parents': '/'.join([self.route, str(self.id), 'parents']),
         }
 
-        meta = {
-            'editable': user.has_perm('users.edit_' + self.type),
-            'deletable': user.has_perm('users.edit_' + self.type)
-        }
+        meta = self.authorizer(user)
 
         data = self.serializer(fields, attributes, links, meta)
 
         return data
+
+    def authorizer(self, user):
+
+        return {
+            'editable': user.has_perm('users.edit_' + self.type),
+            'deletable': user.has_perm('users.edit_' + self.type)
+        }
+
 
     class Meta:
 
@@ -171,14 +179,18 @@ class Group(Node):
             'members': '/'.join([self.route, str(self.id), 'members'])
         }
 
-        meta = {
-            'editable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
-            'deletable': user.has_perm('users.edit_' + self.type) and not self.name =='all'
-        }
+        meta = self.authorizer(user)
 
         data = self.serializer(fields, attributes, links, meta, super(Group, self).serialize(fields, user))
 
         return data
+
+    def authorizer(self, user):
+
+        return {
+            'editable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
+            'deletable': user.has_perm('users.edit_' + self.type) and not self.name =='all'
+        }
 
 
 class Variable(models.Model, SerializerModelMixin):
@@ -194,6 +206,10 @@ class Variable(models.Model, SerializerModelMixin):
     host = models.ForeignKey('Host', blank=True, null=True, on_delete=models.CASCADE)
 
     group = models.ForeignKey('Group', blank=True, null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+
+        return self.key
 
     def serialize(self, fields, user):
 
@@ -211,12 +227,23 @@ class Variable(models.Model, SerializerModelMixin):
 
             attributes['group'] = str(self.group.id)
 
-        return self.serializer(fields, attributes, links, {})
+        meta = self.authorizer(user)
+
+        return self.serializer(fields, attributes, links, meta)
+
+    def authorizer(self, user):
+
+        project_authorizer = cache.get_or_set(user.username + '_auth', ProjectAuthorizer(user), settings.CACHE_TIMEOUT)
+
+        node = Host.objects.get(pk=self.host.id) if self.host else Group.objects.get(pk=self.group.id)
+
+        return {
+            'editable': user.has_perm('users.edit_' + node.type) or project_authorizer.can_edit_variables(node),
+            'deletable': user.has_perm('users.edit_' + node.type) or project_authorizer.can_edit_variables(node),
+        }
 
     class Meta:
 
         unique_together = (('key', 'host'), ('key', 'group'))
 
-    def __str__(self):
 
-        return self.key
