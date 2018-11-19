@@ -3,7 +3,8 @@ import json
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.contrib.auth.models import User, Group as UserGroup
+
+from apps.iam.models import LocalUser
 
 from apps.projects.models import Project
 from apps.projects.forms import ProjectForm
@@ -31,14 +32,14 @@ class PageView(View):
 class ProjectView(View):
 
     classes = {
-        'manager': User,
-        'host_group': HostGroup,
-        'can_edit_variables': UserGroup,
-        'can_run_tasks': UserGroup,
-        'can_edit_tasks': UserGroup,
-        'can_run_playbooks': UserGroup,
-        'can_edit_playbooks': UserGroup,
-        'can_edit_roles': UserGroup,
+        # 'manager': User,
+        # 'host_group': HostGroup,
+        # 'can_edit_variables': UserGroup,
+        # 'can_run_tasks': UserGroup,
+        # 'can_edit_tasks': UserGroup,
+        # 'can_run_playbooks': UserGroup,
+        # 'can_edit_playbooks': UserGroup,
+        # 'can_edit_roles': UserGroup,
     }
 
     @staticmethod

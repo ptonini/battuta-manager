@@ -1,20 +1,17 @@
-from django.conf.urls import url
+from django.urls import path
 from django.contrib.auth.decorators import login_required
 
-from . import views
+from .views import UserView #, UserGroupView
+from .models import LocalUser
 
 
 urlpatterns = [
 
-    url(r'^user/$', login_required(views.PageView.as_view()), kwargs={'page': 'user_selector'}),
+    path(LocalUser.type, login_required(UserView.as_view()), kwargs={'user_id': None}),
 
-    url(r'^user/([a-zA-Z0-9-._]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'user_view'}),
+    path(LocalUser.type + '/<int:user_id>', login_required(UserView.as_view())),
 
-    url(r'^group/$', login_required(views.PageView.as_view()), kwargs={'page': 'group_selector'}),
-
-    url(r'^group/([a-zA-Z0-9-._" "]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'group_view'}),
-
-    url(r'^api/user/([a-z_]+)/$', login_required(views.UserView.as_view())),
-
-    url(r'^api/group/([a-z_]+)/$', login_required(views.UserGroupView.as_view())),
+    # path(LocalUser.type, login_required(UserGroupView.as_view()), kwargs={'usergroup_id': None}),
+    #
+    # path(LocalUser.type + '/<int:usergroup_id>', login_required(UserGroupView.as_view())),
 ]

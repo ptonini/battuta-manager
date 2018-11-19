@@ -12,7 +12,7 @@ SECRET_KEY = 'i^12*307fk^lm#^r_@)dvdmzy$b9*+2*s-630ith=g$!=rkfkb'
 
 # Application definition
 INSTALLED_APPS = (
-    'django.contrib.admin',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -40,6 +40,8 @@ MIDDLEWARE = (
 )
 
 ROOT_URLCONF = 'main.urls'
+
+AUTH_USER_MODEL = 'iam.LocalUser'
 
 TEMPLATES = [
     {

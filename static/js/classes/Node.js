@@ -8,29 +8,29 @@ Node.prototype = Object.create(Battuta.prototype);
 
 Node.prototype.constructor = Node;
 
-Node.prototype.loadParam = function (param) {
-
-    let self = this;
-
-    self.set('id', param.id || null);
-
-    if (param.hasOwnProperty('attributes')) {
-
-        self.set('name', param.attributes.name);
-
-        self.set('description', param.attributes.description || '');
-
-        self.set('editable', param.attributes.editable);
-
-    }
-
-    if (param && param.hasOwnProperty('links')) {
-
-        for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
-
-    }
-
-};
+// Node.prototype.loadParam = function (param) {
+//
+//     let self = this;
+//
+//     self.set('id', param.id || null);
+//
+//     if (param.hasOwnProperty('attributes')) {
+//
+//         self.set('name', param.attributes.name);
+//
+//         self.set('description', param.attributes.description || '');
+//
+//     }
+//
+//     if (param && param.hasOwnProperty('links')) {
+//
+//         for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
+//
+//     }
+//
+//     if (param && param.hasOwnProperty('meta')) self.set('editable', param['meta'].editable)
+//
+// };
 
 Node.prototype.tabs = {
     variables: {
@@ -42,7 +42,11 @@ Node.prototype.tabs = {
         }
     },
     parents: {
-        validator: function () {return true},
+        validator: function (self) {
+
+            return (self.type === Host.prototype.type || self.name !== 'all')
+
+        },
         generator: function (self, $container) {
 
             self.relationships('parents', $container)

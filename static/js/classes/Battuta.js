@@ -2,18 +2,33 @@ function Battuta (param) {
 
     let self = this;
 
-    self.pubSub = $({});
+    if (!self.pubSub) self.pubSub = $({});
 
-    self.bindings = {};
+    if (!self.bindings) self.bindings = {};
 
-    self.loadParam(param ? param : {});
+    self.set('id', param ? param.id : null);
+
+    if (param && param.hasOwnProperty('attributes')) {
+
+        for (let k in param.attributes) if (param.attributes.hasOwnProperty(k)) self.set(k, param.attributes[k])
+
+    }
+
+    if (param && param.hasOwnProperty('links')) {
+
+        for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
+
+    }
+
+    if (param && param.hasOwnProperty('meta')) {
+
+        for (let k in param.meta) if (param.meta.hasOwnProperty(k)) self.set('meta.' + k, param.meta[k])
+
+    }
 
 }
 
 Battuta.prototype = {
-
-    loadParam: function () {},
-
 
     // Properties methods *************
 
@@ -77,7 +92,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        let internalProperties = ['id', 'type', 'pubSub', 'bindings', 'facts', 'links' ];
+        let internalProperties = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts' ];
 
         let data = {
             id: self.id,
@@ -363,7 +378,7 @@ Battuta.prototype = {
 
         return self.fetchJson('POST', self.links.self, {data: self.serialize()}, blocking).then(response => {
 
-            self.loadParam(response.data);
+            self.constructor(response.data);
 
             return response
 
@@ -377,7 +392,7 @@ Battuta.prototype = {
 
         return self.fetchJson('GET', self.links.self, null, blocking).then(response => {
 
-            self.loadParam(response.data);
+            self.constructor(response.data);
 
             return response
 
@@ -391,7 +406,7 @@ Battuta.prototype = {
 
         return self.fetchJson('PATCH', self.links.self, {data: self.serialize()}, blocking).then(response => {
 
-            self.loadParam(response.data);
+            self.constructor(response.data);
 
             return response
 
@@ -917,10 +932,16 @@ Battuta.prototype = {
             dom: 'Bfrtip',
             buttons: [
                 {
-                    text: '<span class="fas fa-plus fa-fw" title="Add ' + self.crud.type + '"></span>',
+                    text: '<span class="fas fa-plus fa-fw" title="Add ' + self.type + '"></span>',
                     action: function () {
 
-                        new self.constructor().editor(self.crud.callbacks.add);
+                        let objPrototype = Object.getPrototypeOf(self);
+
+                        new objPrototype.constructor({links: {self: routes[self.type].href}}).editor(function () {
+
+                            $table.DataTable().ajax.reload()
+
+                        });
 
                     },
                     className: 'btn-sm btn-icon'
@@ -928,16 +949,16 @@ Battuta.prototype = {
             ],
         };
 
-        $('section.container').append(
-            $('<h4>').html(self.crud.titlePlural),
+        $('section.container').empty().append(
+            $('<h4>').attr('class', 'text-capitalize').html(self.label.plural),
             $('<div>').attr('class', 'card shadow p-3').append($table)
         );
 
-        Object.keys(self.crud.table).forEach(function (key) {
+        Object.keys(self.table).forEach(function (key) {
 
-            if (self.crud.table[key] === null) delete tableOptions[key];
+            if (self.table[key] === null) delete tableOptions[key];
 
-            else tableOptions[key] = self.crud.table[key]
+            else tableOptions[key] = self.table[key]
 
         });
 
@@ -963,7 +984,7 @@ Battuta.prototype = {
 
             document.title = 'Battuta - ' + self.name;
 
-            $('#edit_button').toggleClass('hidden', !self.editable).click(function () {
+            $('#edit_button').toggleClass('d-none', !self.meta['editable']).click(function () {
 
                 self.editor(function () {
 
@@ -973,11 +994,11 @@ Battuta.prototype = {
 
             });
 
-            $('#delete_button').toggleClass('hidden', !self.editable).click(function () {
+            $('#delete_button').toggleClass('d-none', !self.meta['deletable']).click(function () {
 
-                self.delete(false, function (response) {
+                self.delete(false, function () {
 
-                    window.open(response.meta.selector, '_self')
+                    Router.navigate(routes[self.type].href)
 
                 })
 
@@ -1011,17 +1032,21 @@ Battuta.prototype = {
 
         $dialog.find('button.confirm-button').click(function () {
 
-            let callback = response => {
+            if (self.entityFormValidator()) {
 
-                $dialog.dialog('close');
+                let callback = response => {
 
-                action && action(response);
+                    $dialog.dialog('close');
 
-            };
+                    action && action(response);
 
-            if (self.id) self.update().then(callback);
+                };
 
-            else self.create().then(callback);
+                if (self.id) self.update().then(callback);
+
+                else self.create().then(callback);
+
+            }
 
         });
 
@@ -1034,5 +1059,7 @@ Battuta.prototype = {
         $dialog.dialog();
 
     },
+
+    entityFormValidator: function () {return true}
 
 };

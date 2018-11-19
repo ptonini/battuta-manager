@@ -10,7 +10,7 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 
-class Authorizer:
+class ProjectAuthorizer:
 
     def __init__(self, user):
 

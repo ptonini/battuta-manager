@@ -16,7 +16,7 @@ NavBar.prototype.build = function () {
 
             new Preferences().load();
 
-            $('#user_icon').attr('title', response.meta.username);
+            $('#user_icon').attr('title', sessionStorage.getItem('current_user'));
 
             $element.find('a[data-route]').click(function (e) {
 
@@ -42,7 +42,9 @@ NavBar.prototype.build = function () {
 
             });
 
-            $element.find('a.logout-link').click(function () {
+            $element.find('a.logout-link').click(function (e) {
+
+                e.preventDefault();
 
                 self.fetchJson('POST', 'logout', null, false).then(() => {
 
@@ -58,7 +60,9 @@ NavBar.prototype.build = function () {
 
         else self.fetchHtml('navbar_Login.html', $navBar).then($element => {
 
-            $element.find('a.login-button').click(function () {
+            $element.find('a.login-button').click(function (e) {
+
+                e.preventDefault();
 
                 let requestData = {
                     data: {
@@ -67,7 +71,11 @@ NavBar.prototype.build = function () {
                     }
                 };
 
-                self.fetchJson('POST', '/login', requestData, false).then(() => {
+                self.fetchJson('POST', '/login', requestData, false).then(response => {
+;
+                    sessionStorage.setItem('current_user', response.data.attributes['username']);
+
+                    sessionStorage.setItem('current_user_tz', response.data.attributes['timezone']);
 
                     self.build();
 

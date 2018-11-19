@@ -23,7 +23,7 @@ from apps.inventory.extras import AnsibleInventory, inventory_to_dict
 from main.extras import download_file
 from main.extras.views import ApiView
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 
 
 
@@ -474,7 +474,7 @@ class NodeView(ApiView):
 
             node = get_object_or_404(self.model_class, pk=node_id)
 
-            response = {'data': node.serialize(request)}
+            response = {'data': node.serialize(request.JSON.get('fields'), request.user)}
 
         else:
 
@@ -484,18 +484,16 @@ class NodeView(ApiView):
 
             exclude_pattern = request.JSON.get('exclude')
 
-            for node_dict in self.model_class.objects.order_by('name').all().values():
+            for node in self.model_class.objects.order_by('name').all():
 
                 match_conditions = {
-                    not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
-                    not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
+                    not filter_pattern or node.name.find(filter_pattern) > -1,
+                    not exclude_pattern or node.name.find(exclude_pattern) <= -1
                 }
 
                 if False not in match_conditions:
 
-                    node = get_object_or_404(self.model_class, pk=node_dict['id'])
-
-                    data.append(node.serialize(request))
+                    data.append(node.serialize(request.JSON.get('fields'), request.user))
 
             response = {'data': data}
 
@@ -503,7 +501,7 @@ class NodeView(ApiView):
 
     def patch(self, request, node_id):
 
-        if request.user.has_perm('users.edit_' + self.type + 's'):
+        if request.user.has_perm('users.edit_' + self.type):
 
             return self._api_response(self._save_instance(request, get_object_or_404(self.model_class, pk=node_id)))
 
@@ -513,17 +511,19 @@ class NodeView(ApiView):
 
     def delete(self, request, node_id):
 
-        if request.user.has_perm('users.edit_' + self.type + 's'):
+        if request.user.has_perm('users.edit_' + self.type):
 
             if node_id:
 
                 get_object_or_404(self.model_class, pk=node_id).delete()
 
+                return HttpResponse(status=204)
+
             else:
 
                 self.model_class.objects.filter(pk__in=[n['id'] for n in request.JSON.get('data')]).delete()
 
-            return self._api_response({'meta': {'selector': '/'.join(['/inventory', self.type])}})
+                return HttpResponse(status=204)
 
         else:
 
@@ -565,7 +565,7 @@ class VarsView(ApiView):
 
     def post(self, request, node_id, var_id, node_type):
 
-        authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
@@ -594,7 +594,7 @@ class VarsView(ApiView):
 
         for var in node.variable_set.all():
 
-            variables[var.key] = [var.serialize(request)]
+            variables[var.key] = [var.serialize(request.JSON.get('fields'), request.user)]
 
             variables[var.key][0]['meta'] = {'primary': True}
 
@@ -602,13 +602,11 @@ class VarsView(ApiView):
 
             for var in ancestor.variable_set.all():
 
-                var_dict = var.serialize(request)
-
-                request.JSON = {'fields': {'attributes': ['name'], 'links': ['self']}}
+                var_dict = var.serialize(request.JSON.get('fields'), request.user)
 
                 var_dict['meta'] = {
                     'primary': False,
-                    'source': var.group.serialize(request)
+                    'source': var.group.serialize({'attributes': ['name'], 'links': ['self']}, request.user)
                 }
 
                 if var.key in variables:
@@ -649,7 +647,7 @@ class VarsView(ApiView):
 
     def patch(self, request, node_id, var_id, node_type):
 
-        authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
@@ -680,7 +678,7 @@ class VarsView(ApiView):
     @staticmethod
     def delete(request, node_id, var_id, node_type):
 
-        authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
@@ -722,9 +720,9 @@ class RelationsView(ApiView):
 
         related_set, related_class = node.get_relationships(relation)
 
-        if 'related' not in request.GET or request.GET['related'] == 'true':
+        if 'related' not in request.JSON or request.JSON['related']:
 
-            data = [related_node.serialize(request) for related_node in related_set.order_by('name')]
+            data = [related_node.serialize(request.JSON.get('fields'), request.user) for related_node in related_set.order_by('name')]
 
         else:
 
@@ -746,7 +744,7 @@ class RelationsView(ApiView):
 
                 candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.get_ancestors()])
 
-            data = [candidate.serialize(request) for candidate in candidate_set]
+            data = [candidate.serialize(request.JSON.get('fields'), request.user) for candidate in candidate_set]
 
         return self._api_response({'data': data})
 

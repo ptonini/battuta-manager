@@ -15,7 +15,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 
 
 class PageView(View):
@@ -180,7 +180,7 @@ class FileView(View):
 
         prefs = get_preferences()
 
-        authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         if action == 'search':
 
@@ -333,7 +333,7 @@ class FileView(View):
 
     def post(self, request, action):
 
-        authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         root = self.set_root(request.POST['root'], request.POST.get('owner'), request.user)
 

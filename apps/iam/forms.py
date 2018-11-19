@@ -1,31 +1,22 @@
 from django import forms
 
-from .models import User, Group, UserData, Credential
+from .models import LocalUser, LocalGroup, Credential
 
 
-class UserForm(forms.ModelForm):
-
-    class Meta:
-
-        model = User
-
-        fields = ('username', 'password', 'first_name', 'last_name', 'email')
-
-
-class UserDataForm(forms.ModelForm):
+class LocalUserForm(forms.ModelForm):
 
     class Meta:
 
-        model = UserData
+        model = LocalUser
 
-        fields = ('timezone',)
+        fields = ('username', 'first_name', 'last_name', 'email', 'timezone')
 
 
-class GroupForm(forms.ModelForm):
+class LocalGroupForm(forms.ModelForm):
 
     class Meta:
 
-        model = Group
+        model = LocalGroup
 
         fields = ('name',)
 

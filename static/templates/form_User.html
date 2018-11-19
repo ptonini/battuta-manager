@@ -6,34 +6,32 @@
         <div class="col-11 item-value font-weight-bold" data-bind="last_login"></div>
     </div>
     <div class="row">
-        <div class="col-3 form-group">
-            <label for="input-first-name">First name</label>
-            <input id="input-first-name" class="form-control form-control-sm" type="text" data-bind="first_name">
-        </div>
-        <div class="col-3 form-group">
-            <label for="input-last-name">Last name</label>
-            <input id="input-last-name" class="form-control form-control-sm" type="text" data-bind="last_name">
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-3 form-group">
-            <label for="input-email">E-mail</label>
-            <input id="input-email" class="form-control form-control-sm" type="email" data-bind="email">
+        <div class="col-4">
+            <div class="row">
+                <div class="col-12 form-group">
+                    <label for="input-first-name">First name</label>
+                    <input id="input-first-name" class="form-control form-control-sm" type="text" data-bind="first_name">
+                </div>
+                <div class="col-12 form-group">
+                    <label for="input-last-name">Last name</label>
+                    <input id="input-last-name" class="form-control form-control-sm" type="text" data-bind="last_name">
+                </div>
 
-        </div>
-        <div class="col-3 form-group">
-            <label for="select-timezone">Timezone</label>
-            <select id="select-timezone" data-bind="timezone" class="select form-control form-control-sm"></select>
-        </div>
-    </div>
-    <div>
-        <div class="col-6 text-right">
-            <button class="password-button btn btn-icon" type="button" title="Reset password">
-                <span class="fas fa-fw fa-key"></span>
-            </button>
-            <button class="save-button btn btn-icon" type="button" title="Save">
-                <span class="fas fa-fw fa-save"></span>
-            </button>
+                <div class="col-12 form-group">
+                    <label for="input-email">E-mail</label>
+                    <input id="input-email" class="form-control form-control-sm" type="email" data-bind="email">
+                </div>
+                <div class="col-12 form-group">
+                    <label for="select-timezone">Timezone</label>
+                    <select id="select-timezone" data-bind="timezone" class="select form-control form-control-sm"></select>
+                </div>
+                <div class="col-12 text-right">
+                    <button class="save-button btn btn-icon" type="button" title="Save">
+                        <span class="fas fa-fw fa-check"></span>
+                    </button>
+                </div>
+
+            </div>
         </div>
     </div>
 </form>

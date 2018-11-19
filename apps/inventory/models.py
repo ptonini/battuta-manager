@@ -4,9 +4,11 @@ from collections import OrderedDict
 from django.db import models
 from django.core.validators import RegexValidator
 
+from main.extras.models import SerializerModelMixin
 
 
-class Node(models.Model):
+
+class Node(models.Model, SerializerModelMixin):
 
     name = models.CharField(max_length=64, blank=False, unique=True)
 
@@ -28,17 +30,13 @@ class Node(models.Model):
 
     def get_relationships(self, relation):
 
-        if relation == 'parents':
+        relations = {
+            'parents': [self.group_set, Group],
+            'children': [self.children, Group],
+            'members': [self.members, Host]
+        }
 
-            return self.group_set, Group
-
-        elif relation == 'children':
-
-            return self.children, Group
-
-        elif relation == 'members':
-
-            return self.members, Host
+        return relations[relation]
 
     def get_ancestors(self):
 
@@ -70,31 +68,22 @@ class Node(models.Model):
 
         return ancestors
 
-    def serialize(self, request):
+    def serialize(self, fields, user):
 
-        data = {
-            'type': self.type,
-            'id': self.id,
-            'meta': {'editable': request.user.has_perm('users.edit_' + self.type)}
-        }
-
-        attributes = ['name', 'description']
+        attributes = {'name': self.name, 'description': self.description}
 
         links = {
             'self': '/'.join([self.route, str(self.id)]) ,
-            'vars': '/'.join([self.route, str(self.id), Variable.type]),
+            Variable.type: '/'.join([self.route, str(self.id), Variable.type]),
             'parents': '/'.join([self.route, str(self.id), 'parents']),
         }
 
-        fields = request.JSON.get('fields', False)
+        meta = {
+            'editable': user.has_perm('users.edit_' + self.type),
+            'deletable': user.has_perm('users.edit_' + self.type)
+        }
 
-        if not fields or 'attributes' in fields:
-
-            data['attributes'] = {a: getattr(self, a) for a in attributes if not fields or a in fields['attributes']}
-
-        if not fields or 'links' in fields:
-
-            data['links'] = {k: v for k, v in links.items() if not fields or k in fields['links']}
+        data = self.serializer(fields, attributes, links, meta)
 
         return data
 
@@ -111,9 +100,7 @@ class Host(Node):
 
     route = '/inventory/hosts'
 
-    def serialize(self, request):
-
-        data = super(Host, self).serialize(request)
+    def serialize(self, fields, user):
 
         facts = json.loads(self.facts)
 
@@ -127,11 +114,7 @@ class Host(Node):
             'instance_id': facts.get('ec2_instance_id'),
         }
 
-        fields = request.JSON.get('fields', False)
-
-        if not fields or 'attributes' in fields:
-
-            data['attributes'].update({k: v for k, v in attributes.items() if not fields or k in fields['attributes']})
+        data = self.serializer(fields, attributes, {}, {}, super(Host, self).serialize(fields, user))
 
         if fields and 'facts' in fields.get('attributes', {}):
 
@@ -174,9 +157,7 @@ class Group(Node):
 
         return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
 
-    def serialize(self, request):
-
-        data = super(Group, self).serialize(request)
+    def serialize(self, fields, user):
 
         attributes = {
             'members': self.members.all().count(),
@@ -190,22 +171,17 @@ class Group(Node):
             'members': '/'.join([self.route, str(self.id), 'members'])
         }
 
-        fields = request.JSON.get('fields', False)
+        meta = {
+            'editable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
+            'deletable': user.has_perm('users.edit_' + self.type) and not self.name =='all'
+        }
 
-        if not fields or 'attributes' in fields:
-
-            data['attributes'].update({k: v for k, v in attributes.items() if not fields or k in fields['attributes']})
-
-        if not fields or 'links' in fields:
-
-            data['links'].update({k: v for k, v in links.items() if not fields or k in fields['links']})
-
-        data['meta']['editable'] = False if self.name == 'all' else data['meta']['editable']
+        data = self.serializer(fields, attributes, links, meta, super(Group, self).serialize(fields, user))
 
         return data
 
 
-class Variable(models.Model):
+class Variable(models.Model, SerializerModelMixin):
 
     type = 'vars'
 
@@ -219,27 +195,23 @@ class Variable(models.Model):
 
     group = models.ForeignKey('Group', blank=True, null=True, on_delete=models.CASCADE)
 
-    def serialize(self, request):
+    def serialize(self, fields, user):
 
-        data = {
-            'id': self.id,
-            'type': self.type,
-            'attributes': {
-                'key': self.key,
-                'value': self.value
-            },
-            'links': {'self': '/'.join([request.META['PATH_INFO'], str(self.id)])}
-        }
+        attributes = {'key': self.key, 'value': self.value}
 
         if self.host:
 
-            data['attributes']['host'] = str(self.host.id)
+            links = {'self': '/'.join([Host.route, str(self.host.id), Variable.type, str(self.id)])}
+
+            attributes['host'] = str(self.host.id)
 
         else:
 
-            data['attributes']['group'] = str(self.group.id)
+            links = {'self': '/'.join([Group.route, str(self.group.id), Variable.type, str(self.id)])}
 
-        return data
+            attributes['group'] = str(self.group.id)
+
+        return self.serializer(fields, attributes, links, {})
 
     class Meta:
 

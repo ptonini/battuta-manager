@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
 
 from main.extras.views import ApiView
+from apps.iam.models import LocalUser
 
 
 class PageView(View):
@@ -38,15 +39,15 @@ class LoginView(ApiView):
 
                     login(request, user)
 
-                    return HttpResponse(status=204)
+                    return self._api_response({'data': user.serialize({'attributes': ['username', 'timezone']}, user)})
 
                 else:
 
-                    self._api_response({'errors': [{'title': 'Account disabled'}]})
+                    return self._api_response({'errors': [{'title': 'Account disabled'}]})
 
             else:
 
-                self._api_response({'errors': [{'title': 'Invalid login'}]})
+                return self._api_response({'errors': [{'title': 'Invalid login'}]})
 
         elif action == 'logout':
 

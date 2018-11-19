@@ -21,7 +21,7 @@ from apps.runner.extras.handlers import JobTableHandler
 from apps.iam.models import Credential
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
-from apps.projects.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 
 
 class PageView(View):
@@ -138,7 +138,7 @@ class JobView(View):
 
         prefs = get_preferences()
 
-        authorizer = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         data = None
 
@@ -402,7 +402,7 @@ class AdHocView(View):
     @staticmethod
     def get(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         inventory = AnsibleInventory()
 
@@ -442,7 +442,7 @@ class AdHocView(View):
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         auth = {
             request.user.has_perm('users.edit_tasks'),
@@ -499,7 +499,7 @@ class PlaybookView(View):
     @staticmethod
     def get(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['name'])
 
@@ -528,7 +528,7 @@ class PlaybookView(View):
     @staticmethod
     def post(request, action):
 
-        project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
+        project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         ansible_inventory = AnsibleInventory(subset=request.POST.get('subset'))
 

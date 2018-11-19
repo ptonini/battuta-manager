@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
-from apps.iam.models import Credential
+
+from apps.iam.models import LocalUser, Credential
 
 
 class AdHocTask(models.Model):
@@ -35,7 +35,7 @@ class PlaybookArgs(models.Model):
 
 class Job(models.Model):
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(LocalUser, on_delete=models.CASCADE)
 
     cred = models.ForeignKey(Credential, blank=True, null=True, on_delete=models.CASCADE)
 
