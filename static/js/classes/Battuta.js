@@ -32,6 +32,7 @@ Battuta.prototype = {
 
     templates: null,
 
+
     // Properties methods *************
 
     _setValue: function (keyArray, value, obj) {
@@ -916,7 +917,6 @@ Battuta.prototype = {
             });
 
             $table.DataTable(tableOptions);
-
 
         })
 

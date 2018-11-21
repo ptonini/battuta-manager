@@ -19,28 +19,28 @@ from apps.projects.extras import ProjectAuthorizer
 
 from main.extras.views import ApiView
 
-class PageView(View):
-
-    @staticmethod
-    def get(request, *args, **kwargs):
-
-        if kwargs['page'] == 'user_selector':
-
-            return render(request, 'users/user_selector.html')
-
-        elif kwargs['page'] == 'user_view':
-
-            return render(request, 'users/user_view.html', {'user_name': args[0]})
-
-        elif kwargs['page'] == 'group_selector':
-
-            return render(request, 'users/group_selector.html')
-
-        elif kwargs['page'] == 'group_view':
-
-            return render(request, 'users/group_view.html', {'group_name': args[0]})
-
-        raise Http404()
+# class PageView(View):
+#
+#     @staticmethod
+#     def get(request, *args, **kwargs):
+#
+#         if kwargs['page'] == 'user_selector':
+#
+#             return render(request, 'users/user_selector.html')
+#
+#         elif kwargs['page'] == 'user_view':
+#
+#             return render(request, 'users/user_view.html', {'user_name': args[0]})
+#
+#         elif kwargs['page'] == 'group_selector':
+#
+#             return render(request, 'users/group_selector.html')
+#
+#         elif kwargs['page'] == 'group_view':
+#
+#             return render(request, 'users/group_view.html', {'group_name': args[0]})
+#
+#         raise Http404()
 
 
 class UserView(ApiView):
@@ -59,7 +59,6 @@ class UserView(ApiView):
         return user
 
     def post(self, request, user_id):
-
 
         user = self._set_password(request, LocalUser())
 
@@ -82,29 +81,6 @@ class UserView(ApiView):
                 response = {'data': (user.serialize(request.JSON.get('fields'), request.user))}
 
             else:
-
-                # data = [u.serialize(request) for u in LocalUser.objects.order_by('username').all()]
-                #
-                # for user in LocalUser.objects.order_by('username').all():
-                #
-                #     data.append(user.serialize(request))
-
-                # filter_pattern = request.JSON.get('filter')
-                #
-                # exclude_pattern = request.JSON.get('exclude')
-                #
-                # for user_dict in LocalUser.objects.order_by('username').all().values():
-                #
-                #     match_conditions = {
-                #         not filter_pattern or node_dict['name'].find(filter_pattern) > -1,
-                #         not exclude_pattern or node_dict['name'].find(exclude_pattern) <= -1
-                #     }
-                #
-                #     if False not in match_conditions:
-                #
-                #         node = get_object_or_404(self.model_class, pk=node_dict['id'])
-                #
-                #         data.append(node.serialize(request))
 
                 data = list()
 
@@ -378,6 +354,30 @@ class UserView(ApiView):
     #         data = {'status': 'denied'}
     #
     #     return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+class CredsView(ApiView):
+
+    def post(self, request, user_id, cred_id):
+
+        pass
+
+    def get(self, request, user_id, cred_id):
+
+        user = get_object_or_404(LocalUser, pk=user_id)
+
+        data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
+
+        return self._api_response({'data': data})
+
+
+    def patch(self, request, user_id, cred_id):
+
+        pass
+
+    def delete(self, request, user_id, cred_id):
+
+        pass
 
 
 # class UserGroupView(View):

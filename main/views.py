@@ -19,7 +19,13 @@ class MainView(ApiView):
 
     def get(self, request):
 
-        response = {'meta': {'username': request.user.username if request.user.is_authenticated else False}}
+        if request.user.is_authenticated:
+
+            response = {'meta': {'user': request.user.serialize({'attributes': ['username', 'timezone']}, request.user)}}
+
+        else:
+
+            response = {'meta': {'user': None}}
 
         return self._api_response(response)
 
@@ -39,7 +45,7 @@ class LoginView(ApiView):
 
                     login(request, user)
 
-                    return self._api_response({'data': user.serialize({'attributes': ['username', 'timezone']}, user)})
+                    return HttpResponse(status=204)
 
                 else:
 

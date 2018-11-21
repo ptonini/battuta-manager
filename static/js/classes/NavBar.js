@@ -12,7 +12,11 @@ NavBar.prototype.build = function () {
 
     self.fetchJson('GET', '/main', null, false).then(response => {
 
-        if (response.meta['username']) self.fetchHtml('navbar_Main.html', $navBar).then($element => {
+        if (response.meta['user']) self.fetchHtml('navbar_Main.html', $navBar).then($element => {
+
+            sessionStorage.setItem('current_user', response.meta.user.attributes['username']);
+
+            sessionStorage.setItem('current_user_tz', response.meta.user.attributes['timezone']);
 
             new Preferences().load();
 
@@ -71,12 +75,8 @@ NavBar.prototype.build = function () {
                     }
                 };
 
-                self.fetchJson('POST', '/login', requestData, false).then(response => {
+                self.fetchJson('POST', '/login', requestData, false).then(() => {
 ;
-                    sessionStorage.setItem('current_user', response.data.attributes['username']);
-
-                    sessionStorage.setItem('current_user_tz', response.data.attributes['timezone']);
-
                     self.build();
 
                     Router.navigate('/main');

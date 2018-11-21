@@ -5,6 +5,18 @@ from main.extras.models import SerializerModelMixin
 from apps.preferences.extras import get_preferences
 
 
+
+def create_userdata(user):
+
+    if not user.default_cred:
+
+        cred, created = Credential.objects.get_or_create(user=user, username=user.username, title='Default')
+
+        user.default_cred = cred
+
+        user.save()
+
+
 class LocalUser(AbstractUser, SerializerModelMixin):
 
     type = 'users'
@@ -13,7 +25,11 @@ class LocalUser(AbstractUser, SerializerModelMixin):
 
     timezone = models.CharField(max_length=64)
 
+    default_cred = models.ForeignKey('iam.Credential', blank=True, null=True, on_delete=models.CASCADE)
+
     def serialize(self, fields, user):
+
+        create_userdata(self)
 
         prefs = get_preferences()
 
@@ -68,8 +84,7 @@ class LocalGroup(Group, SerializerModelMixin):
         )
 
 
-
-class Credential(models.Model):
+class Credential(models.Model, SerializerModelMixin):
 
     type = 'creds'
 
@@ -98,6 +113,28 @@ class Credential(models.Model):
     def __str__(self):
 
         return self.user.username + '_' + self.title
+
+    def serialize(self, fields, user):
+
+        prefs = get_preferences()
+
+        attributes = {
+            'user': self.user.id,
+            'title': self.title,
+            'is_shared': self.is_shared,
+            'is_default': self.is_default,
+            'username': self.username,
+            'password': prefs['password_placeholder'] if self.password else None,
+            'rsa_key': prefs['password_placeholder'] if self.rsa_key else None,
+            'sudo_user': self.sudo_user,
+            'sudo_pass': prefs['password_placeholder'] if self.sudo_pass else None,
+            'ask_pass': self.ask_pass,
+            'ask_sudo_pass': self.ask_sudo_pass
+        }
+
+        links = {'self': '/'.join([self.user.route, str(self.user.id), Credential.type, str(self.id)])}
+
+        return self.serializer(fields, attributes, links, {})
 
     class Meta:
 

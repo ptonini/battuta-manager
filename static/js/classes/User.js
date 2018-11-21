@@ -23,6 +23,8 @@ User.prototype.constructor = User;
 
 User.prototype.type = 'users';
 
+User.prototype.templates = 'templates_User.html';
+
 
 // HTML elements
 
@@ -69,72 +71,66 @@ User.prototype.info = function ($container) {
 
     $('h4.description-header').remove();
 
-    self.fetchHtml('form_UserDetails.html', $container).then($element => {
+    $container.append(Template['user-details-form']());
 
-        $element.find('[data-bind="timezone"]').timezones();
+    $container.find('[data-bind="timezone"]').timezones();
 
-        self.bindElement($element);
+    self.bindElement($container);
 
-        self.set('current_user', sessionStorage.getItem('user_name'));
+    self.set('current_user', sessionStorage.getItem('user_name'));
 
-        $element.find('button.password-button').click(function () {
+    $container.find('button.save-button').click(function () {
 
-            self.changePassword();
-
-        });
-
-        $element.find('button.save-button').click(function () {
-
-            self.save();
-
-        });
+        self.save();
 
     });
 
 };
 
 User.prototype.tabs = {
-//     credentials: {
-//         validator: function () {return true},
-//         generator: function (self, $container) {
-//
-//             self.fetchHtml('form_Credentials.html', $container).then($element => {
-//
-//                 self.bindElement($element);
-//
-//                 $element.find('button.save-button').click(function () {
-//
-//                     self.postData('save_cred', true, function (data) {
-//
-//                         $('#credentials_selector').trigger('build', data.cred.id);
-//
-//                     });
-//
-//                 });
-//
-//                 $element.find('button.delete-button').click(function () {
-//
-//                     self.deleteAlert('delete_cred', function (data) {
-//
-//                         $('#credentials_selector').trigger('build', data.cred.id);
-//
-//                     });
-//
-//                 });
-//
-//                 return self.credentialsSelector(null, false, $('#credentials_selector'))
-//
-//             }).then($element => {
-//
-//                 $element.change(function () {
-//
-//                     self.set('cred', $('option:selected', $(this)).data());
-//
-//                 });
-//
-//             })
-//         }
-//     },
+    credentials: {
+        validator: function () {return true},
+        generator: function (self, $container) {
+
+            new Credential({links: {self: self.links[Credential.prototype.type]}}).form(self, $container)
+
+            // self.fetchHtml('templates_Credential.html', $container).then($element => {
+            //
+            //     self.bindElement($element);
+            //
+            //     $element.find('button.save-button').click(function () {
+            //
+            //         self.postData('save_cred', true, function (data) {
+            //
+            //             $('#credentials_selector').trigger('build', data.cred.id);
+            //
+            //         });
+            //
+            //     });
+            //
+            //     $element.find('button.delete-button').click(function () {
+            //
+            //         self.deleteAlert('delete_cred', function (data) {
+            //
+            //             $('#credentials_selector').trigger('build', data.cred.id);
+            //
+            //         });
+            //
+            //     });
+            //
+            //     return self.credentialsSelector(null, false, $('#credentials_selector'))
+            //
+            // }).then($element => {
+            //
+            //     $element.change(function () {
+            //
+            //         self.set('cred', $('option:selected', $(this)).data());
+            //
+            //     });
+            //
+            // })
+        }
+    },
 //     groups: {
 //         validator: function (self) {return !self.is_superuser},
 //         generator: function (self, $container) {
@@ -222,40 +218,17 @@ User.prototype.entityDialog = function () {
 
     $dialog.find('.dialog-header').html('Add user');
 
-    return self.fetchHtml('templates_User.html', $dialog.find('div.dialog-content')).then($element => {
+    $dialog.find('div.dialog-content').append(Template['user-form']());
 
-        // $dialog.find('div.dialog-content').append(
-        //     $('<form>').append(
-        //         $('<div>').attr('class', 'form-group d-none current-pass-input-container').append(
-        //             $('<label>').attr('for', 'current-pass-input').append('Current password (', $('<span>').attr('class', 'current-user'),')'),
-        //             $('<input>').attr({id: 'current-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'current_password', autocomplete: 'new-password'})
-        //         ),
-        //         $('<div>').attr('class', 'form-group').append(
-        //             $('<label>').attr('for', 'username-input').html('Username'),
-        //             $('<input>').attr({id: 'username-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'username'})
-        //         ),
-        //         $('<div>').attr('class', 'form-group').append(
-        //             $('<label>').attr('for', 'password-input').html('Password'),
-        //             $('<input>').attr({id: 'password-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'password', autocomplete: 'new-password'})
-        //         ),
-        //         $('<div>').attr('class', 'form-group').append(
-        //             $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
-        //             $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
-        //         )
-        //     )
-        // );
+    if (self.id) {
 
-        if (self.id) {
+        $dialog.find('div.current-pass-input-container').removeClass('d-none');
 
-            $dialog.find('div.current-pass-input-container').removeClass('d-none');
+        $dialog.find('span.current-user').html(sessionStorage.getItem('current_user'))
 
-            $dialog.find('span.current-user').html(sessionStorage.getItem('current_user'))
+    }
 
-        }
-
-        return $dialog
-
-    });
+    return $dialog
 
 };
 
@@ -272,7 +245,6 @@ User.prototype.entityFormValidator = function () {
 
     else return true
 };
-
 
 
 User.prototype.changePassword = function (callback) {
