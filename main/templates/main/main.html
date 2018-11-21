@@ -30,7 +30,6 @@
     <script type="text/javascript" src="{% static 'components/blockUI/jquery.blockUI.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery/extensions.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery/templates.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Battuta.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/NavBar.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/AdHoc.js' %}"></script>
@@ -47,20 +46,25 @@
     <script type="text/javascript" src="{% static 'js/classes/User.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Project.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Variable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/classes/Router.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Search.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/singletons/Router.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/singletons/Template.js' %}"></script>
 
     {% block navbar %}
         <script type="text/javascript">
             $(document).ready(function () {
 
-                Router.listen();
+                Template._load().then(() => {
 
-                if (window.location.hash) Router.check(window.location.hash.substring(2));
+                    Router.listen();
 
-                else Router.navigate(routes.main.href);
+                    if (window.location.hash) Router.check(window.location.hash.substring(2));
 
-                new NavBar().build();
+                    else Router.navigate(routes.main.href);
+
+                    new NavBar().build();
+
+                });
 
             })
         </script>

@@ -30,6 +30,8 @@ function Battuta (param) {
 
 Battuta.prototype = {
 
+    templates: null,
+
     // Properties methods *************
 
     _setValue: function (keyArray, value, obj) {
@@ -194,7 +196,7 @@ Battuta.prototype = {
 
             callback && callback(response);
 
-            response.msg && Battuta.prototype.statusAlert('success', response.msg);
+            response['msg'] && Battuta.prototype.statusAlert('success', response['msg']);
 
         }
 
@@ -210,7 +212,7 @@ Battuta.prototype = {
 
             }
 
-            else if (response.msg) $message.html(response.msg);
+            else if (response['msg']) $message.html(response['msg']);
 
             Battuta.prototype.statusAlert('danger', $message);
 
@@ -359,11 +361,7 @@ Battuta.prototype = {
 
         }).then(text => {
 
-            let $elements = $(text);
-
-            $container ? $container.empty().html($elements) : $('<div>').append($elements);
-
-            return $elements
+            return $container ? $container.empty().html(text) : $('<div>').append(text);
 
         })
 
@@ -507,34 +505,16 @@ Battuta.prototype = {
 
     // Templates **********************
 
-    tableTemplate: function () {
-
-        return $('<table>').attr('class', 'table table-condensed table-hover table-striped')
-
-    },
-
-    dialogTemplate: function () {
-
-        return $('<div>').append(
-            $('<h5>').attr('class', 'dialog-header'),
-            $('<div>').attr('class', 'dialog-content'),
-            $('<div>').attr('class', 'dialog-footer text-right mt-3')
-        )
-
-    },
-
     notificationDialog: function () {
 
-        let $dialog = Battuta.prototype.dialogTemplate();
+        let $dialog = Template['dialog']();
 
         $dialog.find('div.dialog-footer').append(
-            $('<button>').attr({class: 'close-button btn btn-icon', title: 'Close', type: 'button'})
-                .append($('<span>').attr('class', 'fas fa-fw fa-times'))
-                .click(function () {
+            Template['close-button']().click(function () {
 
-                    $dialog.dialog('close')
+                $dialog.dialog('close')
 
-                }),
+            })
         );
 
         return $dialog
@@ -543,14 +523,9 @@ Battuta.prototype = {
 
     confirmationDialog: function () {
 
-        let $dialog = Battuta.prototype.dialogTemplate();
+        let $dialog = Template['dialog']();
 
-        $dialog.find('div.dialog-footer').append(
-            $('<button>').attr({class: 'cancel-button btn btn-icon', title: 'Cancel', type: 'button'})
-                .append($('<span>').attr('class', 'fas fa-fw fa-times')),
-            $('<button>').attr({class: 'confirm-button btn btn-icon', title: 'Confirm', type: 'button'})
-                .append($('<span>').attr('class', 'fas fa-fw fa-check'))
-        );
+        $dialog.find('div.dialog-footer').append(Template['cancel-button'](), Template['confirm-button']());
 
         return $dialog
 
@@ -560,39 +535,16 @@ Battuta.prototype = {
 
         let $dialog = Battuta.prototype.confirmationDialog();
 
-        $dialog.find('div.dialog-content').append(
-            $('<div>').attr('class', 'form-group').append(
-                $('<label>').attr('for', 'name-input').html('Name'),
-                $('<input>').attr({id: 'name-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'name'})
-            ),
-            $('<div>').attr('class', 'form-group').append(
-                $('<label>').attr('for', 'description-input').html('Description'),
-                $('<textarea>').attr({id: 'description-input', class: 'textarea form-control form-control-sm', 'data-bind': 'description'})
-            )
-        );
+        $dialog.find('div.dialog-content').append(Template['entity-form']());
 
         return $dialog
     },
 
-    alertTemplate: function () {
-
-        return $('<div>').attr('class', 'alert-container container').append(
-            $('<div>').attr('class', ' alert').append(
-                $('<div>').attr('class', 'row').append(
-                    $('<div>').attr('class', 'col-9 item-label message-container').css('font-size', 'larger'),
-                    $('<div>').attr('class', 'col-3 text-right button-container py-1').append()
-                )
-            )
-        );
-    },
-
     notificationAlert: function () {
 
-        let $alert = Battuta.prototype.alertTemplate();
+        let $alert = Template['alert']();
 
-        $alert.find('div.button-container').append(
-            $('<span>').attr({class: 'fas fa-fw fa-times', title: 'Close'})
-        );
+        $alert.find('div.button-container').append(Template['close-icon']());
 
         return $alert
 
@@ -600,12 +552,9 @@ Battuta.prototype = {
 
     confirmationAlert: function () {
 
-        let $alert = Battuta.prototype.alertTemplate();
+        let $alert = Template['alert']();
 
-        $alert.find('div.button-container').append(
-            $('<span>').attr({class: 'fas fa-fw fa-times cancel-button mr-2', title: 'Cancel'}),
-            $('<span>').attr({class: 'fas fa-fw fa-check confirm-button', title: 'Confirm'})
-        );
+        $alert.find('div.button-container').append(Template['cancel-icon'](), Template['confirm-icon']());
 
         return $alert
 
@@ -648,7 +597,7 @@ Battuta.prototype = {
 
             $alert.find('span.fa-times').click()
 
-        }, 1000000)
+        }, 10000)
 
     },
 
@@ -715,7 +664,7 @@ Battuta.prototype = {
         $dialog.find('div.dialog-content').DynaGrid({
             gridTitle: options.title,
             showFilter: true,
-            addButtonTitle: 'Add ' + options.entityType,
+            addButtonTitle: 'Add ' + options['entityType'],
             minHeight: 400,
             maxHeight: 400,
             gridBodyTopMargin: 10,
@@ -731,7 +680,7 @@ Battuta.prototype = {
 
                 $gridItem
                     .html(data.attributes[options.itemValueKey])
-                    .css('cursor', 'pointer')
+                    .addClass('pointer')
                     .data({id: data.id, type: data.type});
 
                 if (options.type === 'one') $gridItem.click(function () {
@@ -919,50 +868,57 @@ Battuta.prototype = {
 
         let self = this;
 
-        let $table = self.tableTemplate();
+        let $container = $('section.container');
 
-        let tableOptions = {
-            scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
-            scrollCollapse: true,
-            ajax: {
-                url: routes[self.type].href,
-                dataSrc: 'data'
-            },
-            paging: false,
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: '<span class="fas fa-plus fa-fw" title="Add ' + self.type + '"></span>',
-                    action: function () {
+        Template._load(self.templates).then(() => {
 
-                        let objPrototype = Object.getPrototypeOf(self);
+            let $table = Template['table']();
 
-                        new objPrototype.constructor({links: {self: routes[self.type].href}}).editor(function () {
+            let tableOptions = {
+                scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
+                scrollCollapse: true,
+                ajax: {
+                    url: routes[self.type].href,
+                    dataSrc: 'data'
+                },
+                paging: false,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
+                        action: function () {
 
-                            $table.DataTable().ajax.reload()
+                            let proto = Object.getPrototypeOf(self);
 
-                        });
+                            new proto.constructor({links: {self: routes[self.type].href}}).editor(function () {
 
-                    },
-                    className: 'btn-sm btn-icon'
-                }
-            ],
-        };
+                                $table.DataTable().ajax.reload()
 
-        $('section.container').empty().append(
-            $('<h4>').attr('class', 'text-capitalize').html(self.label.plural),
-            $('<div>').attr('class', 'card shadow p-3').append($table)
-        );
+                            });
 
-        Object.keys(self.table).forEach(function (key) {
+                        },
+                        className: 'btn-sm btn-icon'
+                    }
+                ],
+            };
 
-            if (self.table[key] === null) delete tableOptions[key];
+            $container.empty().append(
+                $('<h4>').attr('class', 'text-capitalize').html(self.label.plural),
+                $('<div>').attr('class', 'card shadow p-3').append($table)
+            );
 
-            else tableOptions[key] = self.table[key]
+            Object.keys(self.table).forEach(function (key) {
 
-        });
+                if (self.table[key] === null) delete tableOptions[key];
 
-        $table.DataTable(tableOptions);
+                else tableOptions[key] = self.table[key]
+
+            });
+
+            $table.DataTable(tableOptions);
+
+
+        })
 
     },
 
@@ -970,13 +926,13 @@ Battuta.prototype = {
 
         let self = this;
 
-        let $element;
+        let $container = $('section.container');
 
-        self.fetchHtml('view_Entity.html', $('section.container')).then($template => {
+        Template._load(self.templates).then(() => {
 
-            $element = $template;
+            $container.html(Template['entity-view']());
 
-            self.bindElement($element);
+            self.bindElement($container);
 
             return self.read(false)
 
@@ -1006,7 +962,7 @@ Battuta.prototype = {
 
             self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
 
-            self.info && self.info($element.find("#info_container"));
+            self.info && self.info($container.find("#info_container"));
 
             Object.keys(self.tabs).forEach(function (key) {
 

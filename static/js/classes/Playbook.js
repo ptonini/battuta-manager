@@ -160,7 +160,7 @@ Playbook.prototype.dialog = function (args) {
 
     let self = this;
 
-    let $dialog = self.dialogTemplate();
+    let $dialog = Template['dialog']();
 
     $dialog.find('.dialog-header').html(self.name);
 

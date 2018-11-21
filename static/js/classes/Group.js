@@ -8,9 +8,15 @@ Group.prototype = Object.create(Node.prototype);
 
 Group.prototype.constructor = Group;
 
+
+
 Group.prototype.type = 'groups';
 
 Group.prototype.label = {single: 'group', plural: 'groups'};
+
+Group.prototype.templates = 'templates_Group.html';
+
+
 
 Group.prototype.info = null;
 
@@ -33,7 +39,7 @@ Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
     },
 });
 
-Group.prototype.selectorColumns = {};
+
 
 Group.prototype.descendants = function (offset, $container) {
 

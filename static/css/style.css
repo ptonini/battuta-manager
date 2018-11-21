@@ -7,6 +7,7 @@
     --scrollbar-thumb-color: #cbcbcb;
 
     --btn-icon-hover-color: #e6e6e6;
+    --btn-icon-focus-border-color: #f3f3f3;
 
     --btn-checked-color: #cdcdcd;
     --input-border-color: #ced4da;
@@ -143,7 +144,8 @@ button.btn-icon {
 }
 
 button.btn-icon:focus {
-    box-shadow: none
+    outline: 0;
+    box-shadow: 0 0 0 1px var(--btn-icon-focus-border-color);
 }
 
 button.btn-icon:hover {
@@ -394,4 +396,8 @@ div.dataTables_paginate a.page-link:hover {
 .checked_button:focus,
 .checked_button:hover {
     background-color: var(--btn-checked-color)
+}
+
+.pointer:hover {
+    cursor: pointer;
 }

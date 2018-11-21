@@ -1,4 +1,23 @@
-<form>
+<form data-template="user-edit-form">
+    <div class="form-group current-pass-input-container">
+        <label for="current-pass-input">Current password (<span class="current-user"></span>)</label>
+        <input id="current-pass-input" class="form-control form-control-sm" type="password" data-bind="current_password" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+        <label for="username-input">Username</label>
+        <input id="username-input" class="form-control form-control-sm" type="text" data-bind="username">
+    </div>
+
+    <div class="form-group">
+        <label for="password-input">Password</label>
+        <input id="password-input" class="form-control form-control-sm" type="password" data-bind="password" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+        <label for="retype-pass-input">Retype password</label>
+        <input id="retype-pass-input" class="form-control form-control-sm" type="password" data-bind="retype_pass" autocomplete="new-password">
+    </div>
+</form>
+<form data-template="user-details-form">
     <div class="row no-gutters mb-4">
         <div class="col-1 item-label">Joined in:</div>
         <div class="col-11 item-value font-weight-bold" data-bind="date_joined"></div>
@@ -35,5 +54,3 @@
         </div>
     </div>
 </form>
-
-

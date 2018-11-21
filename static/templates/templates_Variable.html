@@ -1,0 +1,22 @@
+<form data-template="variable-form">
+    <div class="form-group">
+        <label for="key-input">Key</label>
+        <input id="key-input" class="form-control form-control-sm" type="text" data-bind="key">
+    </div>
+    <div class="form-group">
+        <label for="value-input">Value</label>
+        <textarea id="value-input" class="textarea form-control form-control-sm" data-bind="value"></textarea>
+    </div>
+</form>
+
+
+<div data-template="source-type-selector" class="row">
+    <div class="col text-right">
+        <button class="btn btn-light btn-sm node-button">Hosts</button>
+    </div>
+    <div class="col">
+        <button class="btn btn-light btn-sm node-button">Groups</button>
+    </div>
+</div>
+
+<span data-template="show-values-icon" class="fas fa-fw fa-chevron-down ml-auto float-right pointer" title="Show values"></span>

@@ -8,30 +8,6 @@ Node.prototype = Object.create(Battuta.prototype);
 
 Node.prototype.constructor = Node;
 
-// Node.prototype.loadParam = function (param) {
-//
-//     let self = this;
-//
-//     self.set('id', param.id || null);
-//
-//     if (param.hasOwnProperty('attributes')) {
-//
-//         self.set('name', param.attributes.name);
-//
-//         self.set('description', param.attributes.description || '');
-//
-//     }
-//
-//     if (param && param.hasOwnProperty('links')) {
-//
-//         for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
-//
-//     }
-//
-//     if (param && param.hasOwnProperty('meta')) self.set('editable', param['meta'].editable)
-//
-// };
-
 Node.prototype.tabs = {
     variables: {
         validator: function () {return true},
@@ -74,65 +50,62 @@ Node.prototype.relationships = function (relation, $container) {
     $container.append($grid);
 
     $grid.DynaGrid({
-            headerTag: '<div>',
-            showAddButton: true,
-            showFilter: true,
-            showCount: true,
-            gridBodyTopMargin: 10,
-            gridBodyBottomMargin: 10,
-            addButtonType: 'icon',
-            addButtonClass: 'btn-icon',
-            addButtonTitle: 'Add ' + relation,
-            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
-            hideBodyIfEmpty: true,
-            columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: ['name'], links: ['self']}}),
-            formatItem: function ($gridContainer, $gridItem, data) {
+        headerTag: '<div>',
+        showAddButton: true,
+        showFilter: true,
+        showCount: true,
+        gridBodyTopMargin: 10,
+        gridBodyBottomMargin: 10,
+        addButtonType: 'icon',
+        addButtonClass: 'btn-icon',
+        addButtonTitle: 'Add ' + relation,
+        maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+        hideBodyIfEmpty: true,
+        columns: sessionStorage.getItem('node_grid_columns'),
+        ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: ['name'], links: ['self']}}),
+        formatItem: function ($gridContainer, $gridItem, data) {
 
-                $gridItem.append(
-                    $('<span>').append(data.attributes.name).css('cursor', 'pointer').click(function () {
+            $gridItem.append(
+                $('<span>').append(data.attributes.name).css('cursor', 'pointer').click(function () {
 
-                        Router.navigate(data.links.self)
+                    Router.navigate(data.links.self)
 
-                    }),
-                    spanFA.clone().addClass('fa-minus-circle')
-                        .css({'font-size': '15px', cursor: 'pointer', 'margin-left': 'auto', order: 2})
-                        .attr('title', 'Remove')
-                        .click(function () {
+                }),
+                Template['remove-icon']().click(function () {
 
-                            self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
+                    self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
 
-                                reloadData($gridContainer);
+                        reloadData($gridContainer);
 
-                            })
+                    })
 
-                        })
-                )
+                })
+            )
 
-            },
-            addButtonAction: function ($gridContainer) {
+        },
+        addButtonAction: function ($gridContainer) {
 
-                self.gridDialog({
-                    title: 'Select ' + relation,
-                    type: 'many',
-                    objectType: self.type,
-                    url: self.links[relation] + '?related=false',
-                    ajaxDataKey: 'data',
-                    itemValueKey: 'name',
-                    action: function (selection, $dialog) {
+            self.gridDialog({
+                title: 'Select ' + relation,
+                type: 'many',
+                objectType: self.type,
+                url: self.links[relation] + '?related=false',
+                ajaxDataKey: 'data',
+                itemValueKey: 'name',
+                action: function (selection, $dialog) {
 
-                        self.fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
+                    self.fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
 
-                            reloadData($gridContainer);
+                        reloadData($gridContainer);
 
-                            $dialog.dialog('close')
+                        $dialog.dialog('close')
 
-                        })
+                    })
 
-                    }
-                });
+                }
+            });
 
-            }
+        }
 
     });
 
@@ -142,15 +115,17 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    self.fetchHtml('selector_Node.html', $('section.container')).then($element => {
+    let $container = $('section.container');
 
-        self.bindElement($element);
+    self.fetchHtml('selector_Node.html', $container).then(() => {
+
+        self.bindElement($container);
 
         let route = routes[self.type].href;
 
-        let $table = $element.find('#node_table');
+        let $table = $container.find('#node_table');
 
-        let $grid = $element.find('#node_grid');
+        let $grid = $container.find('#node_grid');
 
         let columns;
 
@@ -356,7 +331,7 @@ Node.prototype.selector = function () {
 
         });
 
-        $element.find('.dataTables_filter input[type="search"]').keyup(function(){
+        $container.find('.dataTables_filter input[type="search"]').keyup(function(){
 
             $grid.find('input').val($(this).val()).trigger('keyup');
 

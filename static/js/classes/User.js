@@ -8,11 +8,7 @@ function User(param) {
 
     self.set('name', self.get('username'));
 
-    if (param && self.get('is_superuser')) {
-
-        self.set('label', {single: 'superuser', plural: 'users'});
-
-    }
+    if (param && self.get('is_superuser')) self.set('label', {single: 'superuser', plural: 'users'});
 
     else self.set('label', {single: 'user', plural: 'users'});
 
@@ -73,7 +69,7 @@ User.prototype.info = function ($container) {
 
     $('h4.description-header').remove();
 
-    self.fetchHtml('form_User.html', $container).then($element => {
+    self.fetchHtml('form_UserDetails.html', $container).then($element => {
 
         $element.find('[data-bind="timezone"]').timezones();
 
@@ -226,40 +222,40 @@ User.prototype.entityDialog = function () {
 
     $dialog.find('.dialog-header').html('Add user');
 
-    $dialog.find('div.dialog-content').append(
-        $('<form>').append(
-            $('<div>').attr('class', 'form-group').append(
-                $('<label>').attr('for', 'username-input').html('Username'),
-                $('<input>').attr({id: 'username-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'username'})
-            ),
-            $('<div>').attr('class', 'form-group d-none current-pass-input-container').append(
-                $('<label>').attr('for', 'current-pass-input').append(
-                    'Current password (',
-                    $('<span>').attr('class', 'current-user'),
-                    ')'
-                ),
-                $('<input>').attr({id: 'current-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'current_password', autocomplete: 'new-password'})
-            ),
-            $('<div>').attr('class', 'form-group').append(
-                $('<label>').attr('for', 'password-input').html('Password'),
-                $('<input>').attr({id: 'password-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'password', autocomplete: 'new-password'})
-            ),
-            $('<div>').attr('class', 'form-group').append(
-                $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
-                $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
-            )
-        )
-    );
+    return self.fetchHtml('templates_User.html', $dialog.find('div.dialog-content')).then($element => {
 
-    if (self.id) {
+        // $dialog.find('div.dialog-content').append(
+        //     $('<form>').append(
+        //         $('<div>').attr('class', 'form-group d-none current-pass-input-container').append(
+        //             $('<label>').attr('for', 'current-pass-input').append('Current password (', $('<span>').attr('class', 'current-user'),')'),
+        //             $('<input>').attr({id: 'current-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'current_password', autocomplete: 'new-password'})
+        //         ),
+        //         $('<div>').attr('class', 'form-group').append(
+        //             $('<label>').attr('for', 'username-input').html('Username'),
+        //             $('<input>').attr({id: 'username-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'username'})
+        //         ),
+        //         $('<div>').attr('class', 'form-group').append(
+        //             $('<label>').attr('for', 'password-input').html('Password'),
+        //             $('<input>').attr({id: 'password-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'password', autocomplete: 'new-password'})
+        //         ),
+        //         $('<div>').attr('class', 'form-group').append(
+        //             $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
+        //             $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
+        //         )
+        //     )
+        // );
 
-        $dialog.find('div.current-pass-input-container').removeClass('d-none');
+        if (self.id) {
 
-        $dialog.find('span.current-user').html(sessionStorage.getItem('current_user'))
+            $dialog.find('div.current-pass-input-container').removeClass('d-none');
 
-    }
+            $dialog.find('span.current-user').html(sessionStorage.getItem('current_user'))
 
-    return $dialog
+        }
+
+        return $dialog
+
+    });
 
 };
 
