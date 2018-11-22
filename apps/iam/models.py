@@ -29,8 +29,6 @@ class LocalUser(AbstractUser, SerializerModelMixin):
 
     def serialize(self, fields, user):
 
-        create_userdata(self)
-
         prefs = get_preferences()
 
         attributes = {
@@ -50,12 +48,16 @@ class LocalUser(AbstractUser, SerializerModelMixin):
             Credential.type: '/'.join([self.route, str(self.id), Credential.type]),
         }
 
-        meta = {
+        meta = self.authorizer(user)
+
+        return self.serializer(fields, attributes, links, meta)
+
+    def authorizer(self, user):
+
+        return {
             'editable': user.has_perm('users.edit_users') and not self.is_superuser or user.is_superuser,
             'deletable': user.has_perm('users.edit_users') and not self.is_superuser and user is not self
         }
-
-        return self.serializer(fields, attributes, links, meta)
 
 
 class LocalGroup(Group, SerializerModelMixin):
@@ -94,8 +96,6 @@ class Credential(models.Model, SerializerModelMixin):
 
     is_shared = models.BooleanField(default=False)
 
-    is_default = models.BooleanField(default=False)
-
     username = models.CharField(max_length=32)
 
     password = models.CharField(max_length=64, blank=True)
@@ -122,7 +122,6 @@ class Credential(models.Model, SerializerModelMixin):
             'user': self.user.id,
             'title': self.title,
             'is_shared': self.is_shared,
-            'is_default': self.is_default,
             'username': self.username,
             'password': prefs['password_placeholder'] if self.password else None,
             'rsa_key': prefs['password_placeholder'] if self.rsa_key else None,
@@ -134,7 +133,9 @@ class Credential(models.Model, SerializerModelMixin):
 
         links = {'self': '/'.join([self.user.route, str(self.user.id), Credential.type, str(self.id)])}
 
-        return self.serializer(fields, attributes, links, {})
+        meta = {'is_default': self == self.user.default_cred}
+
+        return self.serializer(fields, attributes, links, meta)
 
     class Meta:
 

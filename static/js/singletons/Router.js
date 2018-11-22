@@ -1,12 +1,15 @@
 let Router = {
+
     routes: [],
-    mode:'hash',
+
     root: '/',
+
     clearSlashes: function(path) {
 
         return path.toString().replace(/\/$/, '').replace(/^\//, '');
 
     },
+
     add: function(re, handler) {
 
         let self = this;
@@ -22,6 +25,7 @@ let Router = {
 
         return self;
     },
+
     getFragment: function() {
 
         let self = this;
@@ -31,6 +35,7 @@ let Router = {
         return self.clearSlashes(match ? match[1] : '');
 
     },
+
     check: function(f) {
 
         let self = this;
@@ -55,6 +60,7 @@ let Router = {
         return self;
 
     },
+
     listen: function() {
 
         let self = this;
@@ -80,6 +86,7 @@ let Router = {
         return self;
 
     },
+
     navigate: function(path) {
 
         let self = this;
@@ -91,6 +98,7 @@ let Router = {
         return self;
 
     }
+
 };
 
 let routes = {

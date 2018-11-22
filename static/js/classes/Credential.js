@@ -21,57 +21,20 @@ Credential.prototype.form = function (user, $container) {
 
     let self = this;
 
+    let $selectorContainer;
+
     Template._load(self.templates).then(() => {
 
-        $container.html(Template['credential-form']());
+        $selectorContainer = Template['credentials-selector']();
 
-        self.bindElement($container);
+        self.selector(null, false, $selectorContainer.find('select'), $selectorContainer.find('div.credentials-form-container'));
 
-        $container.find('button.save-button').click(function () {
-
-            self.postData('save_cred', true, function (data) {
-
-                $('#credentials_selector').trigger('build', data.cred.id);
-
-            });
-
-        });
-
-        $container.find('button.delete-button').click(function () {
-
-            self.deleteAlert('delete_cred', function (data) {
-
-                $('#credentials_selector').trigger('build', data.cred.id);
-
-            });
-
-        });
-
-        self.select(null, false, $('#credentials_selector'));
-
-        // $('#credentials_selector').change(function () {
-        //
-        //     self.set('cred', $('option:selected', $(this)).data());
-        //
-        // });
+        $container.html($selectorContainer);
 
     })
-
-    //     .then($element => {
-    //
-    //     $element.change(function () {
-    //
-    //         self.set('cred', $('option:selected', $(this)).data());
-    //
-    //     });
-    //
-    // })
-    //
-
-
 };
 
-Credential.prototype.select = function (startValue, runner, $selector) {
+Credential.prototype.selector = function (startValue, runner, $selector, $formContainer) {
 
     let self = this;
 
@@ -89,7 +52,8 @@ Credential.prototype.select = function (startValue, runner, $selector) {
             sudo_pass: '',
             sudo_user: '',
             title: ''
-        }
+        },
+        links: {self: self.links.self}
     };
 
     $selector
@@ -100,8 +64,6 @@ Credential.prototype.select = function (startValue, runner, $selector) {
                 $selector.empty();
 
                 for (let i = 0; i < response.data.length; i++) {
-
-                    //let cred = Object.assign({}, {id: response.data[i].id, type: response.data[i].type}, response.data[i].attributes);
 
                     let cred = response.data[i];
 
@@ -123,18 +85,53 @@ Credential.prototype.select = function (startValue, runner, $selector) {
 
                 else $selector.append($('<option>').val('new').data(emptyCred).append('new'));
 
-                $selector.val(startValue).change();
+                startValue ? $selector.val(startValue).change() : $selector.val('new').change();
 
             });
 
         })
         .on('change', function () {
 
-            console.log('change', $(this).find(':selected').data());
+            let cred = new self.constructor($(this).find(':selected').data());
 
-            self.constructor($(this).find(':selected').data());
+            if ($formContainer) {
 
-        })
-        .trigger('build', startValue);
+                $formContainer.html(Template['credential-form']());
+
+                cred.bindElement($formContainer);
+
+                $formContainer.find('button.save-button').off().click(function () {
+
+                    let callback = response => {
+
+                        $selector.trigger('build', response.data.id)
+
+                    };
+
+                    if (cred.id) cred.update(false).then(callback);
+
+                    else cred.create(false).then(callback)
+
+
+                });
+
+                $formContainer.find('button.delete-button').off().click(function () {
+
+                    cred.delete(false, function () {
+
+                        $selector.trigger('build', null)
+
+                    })
+
+                });
+
+            }
+
+        });
+
+    $selector.trigger('build', startValue);
+
+
+
 
 };

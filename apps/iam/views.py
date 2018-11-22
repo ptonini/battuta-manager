@@ -62,9 +62,19 @@ class UserView(ApiView):
 
         user = self._set_password(request, LocalUser())
 
-        if user.serialize(None, request.user)['meta']['editable']:
+        if user.authorizer(request.user)['editable']:
 
-            return self._api_response(self._save_instance(request, user))
+            response = self._save_instance(request, user)
+
+            if 'data' in response:
+
+                cred, created = Credential.objects.get_or_create(user=user, username=user.username, title='Default')
+
+                user.default_cred = cred
+
+                user.save()
+
+            return self._api_response(response)
 
         else:
 
