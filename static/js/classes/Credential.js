@@ -17,7 +17,8 @@ Credential.prototype.label = {single: 'credential', plural: 'credentials'};
 Credential.prototype.templates = 'templates_Credential.html';
 
 
-Credential.prototype.form = function (user, $container) {
+
+Credential.prototype.selector = function (user, $container) {
 
     let self = this;
 
@@ -27,14 +28,14 @@ Credential.prototype.form = function (user, $container) {
 
         $selectorContainer = Template['credentials-selector']();
 
-        self.selector(null, false, $selectorContainer.find('select'), $selectorContainer.find('div.credentials-form-container'));
+        self.buildSelector($selectorContainer.find('select'), $selectorContainer.find('div.credentials-form-container'));
 
         $container.html($selectorContainer);
 
     })
 };
 
-Credential.prototype.selector = function (startValue, runner, $selector, $formContainer) {
+Credential.prototype.buildSelector = function ($selector, $formContainer, startValue) {
 
     let self = this;
 
@@ -67,25 +68,25 @@ Credential.prototype.selector = function (startValue, runner, $selector, $formCo
 
                     let cred = response.data[i];
 
-                    let display = cred.attributes.title;
+                    let title = cred.attributes.title;
 
                     if (cred.attributes.is_default) {
 
-                        display += ' (default)';
+                        title += ' (default)';
 
                         if (!startValue) startValue = cred.id;
 
                     }
 
-                    $selector.append($('<option>').val(cred.id).data(cred).append(cred.attributes.title));
+                    $selector.append($('<option>').val(cred.id).data(cred).append(title));
 
                 }
 
-                if (runner) $selector.append($('<option>').val('').html('ask').data('id', 0));
+                if ($formContainer) $selector.append($('<option>').val('new').data(emptyCred).append('new'));
 
-                else $selector.append($('<option>').val('new').data(emptyCred).append('new'));
+                else $selector.append($('<option>').val('').html('ask').data('id', 0));
 
-                startValue ? $selector.val(startValue).change() : $selector.val('new').change();
+                startValue ? $selector.val(startValue).change() : $formContainer && $selector.val('new').change();
 
             });
 
@@ -130,8 +131,5 @@ Credential.prototype.selector = function (startValue, runner, $selector, $formCo
         });
 
     $selector.trigger('build', startValue);
-
-
-
 
 };

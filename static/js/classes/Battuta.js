@@ -988,7 +988,7 @@ Battuta.prototype = {
 
         $dialog.find('button.confirm-button').click(function () {
 
-            if (self.entityFormValidator()) {
+            if (self.entityFormValidator($dialog)) {
 
                 let callback = response => {
 

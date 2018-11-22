@@ -15,8 +15,4 @@ urlpatterns = [
 
     path(LocalUser.type + '/<int:user_id>/' + Credential.type + '/<int:cred_id>', login_required(CredsView.as_view())),
 
-
-    # path(LocalUser.type, login_required(UserGroupView.as_view()), kwargs={'usergroup_id': None}),
-    #
-    # path(LocalUser.type + '/<int:usergroup_id>', login_required(UserGroupView.as_view())),
 ]

@@ -67,21 +67,17 @@ let Router = {
 
         let current = self.getFragment();
 
-        let fn = function() {
-
-            if (current !== self.getFragment()) {
-
-                current = self.getFragment();
-
-                self.check(current);
-
-            }
-        };
-
-
         clearInterval(self.interval);
 
-        self.interval = setInterval(fn, 50);
+        self.interval = setInterval(function () {
+
+            if (current === self.getFragment()) return;
+
+            current = self.getFragment();
+
+            self.check(current);
+
+        }, 50);
 
         return self;
 

@@ -92,43 +92,8 @@ User.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            new Credential({links: {self: self.links[Credential.prototype.type]}}).form(self, $container)
+            new Credential({links: {self: self.links[Credential.prototype.type]}}).selector(self, $container)
 
-            // self.fetchHtml('templates_Credential.html', $container).then($element => {
-            //
-            //     self.bindElement($element);
-            //
-            //     $element.find('button.save-button').click(function () {
-            //
-            //         self.postData('save_cred', true, function (data) {
-            //
-            //             $('#credentials_selector').trigger('build', data.cred.id);
-            //
-            //         });
-            //
-            //     });
-            //
-            //     $element.find('button.delete-button').click(function () {
-            //
-            //         self.deleteAlert('delete_cred', function (data) {
-            //
-            //             $('#credentials_selector').trigger('build', data.cred.id);
-            //
-            //         });
-            //
-            //     });
-            //
-            //     return self.credentialsSelector(null, false, $('#credentials_selector'))
-            //
-            // }).then($element => {
-            //
-            //     $element.change(function () {
-            //
-            //         self.set('cred', $('option:selected', $(this)).data());
-            //
-            //     });
-            //
-            // })
         }
     },
 //     groups: {
@@ -232,11 +197,11 @@ User.prototype.entityDialog = function () {
 
 };
 
-User.prototype.entityFormValidator = function () {
+User.prototype.entityFormValidator = function ($dialog) {
 
     let self = this;
 
-    if (self.password !== self.retype_pass) {
+    if (self.password !== $dialog.find('input#retype-new-password').val()) {
 
         self.statusAlert('danger', 'Passwords do not match');
 
@@ -247,180 +212,10 @@ User.prototype.entityFormValidator = function () {
 };
 
 
-User.prototype.changePassword = function (callback) {
-
-    let self = this;
-
-    let $dialog = self.confirmationDialog();
-
-    $dialog.find('.dialog-header').html('Change password');
-
-    $dialog.find('div.dialog-content').append(
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr('for', 'current-pass-input').append(
-                'Current password (',
-                $('<span>').attr('data-bind', 'current_user'),
-                ')'
-            ),
-            $('<input>').attr({id: 'current-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'current_password', autocomplete: 'new-password'})
-        ),
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr('for', 'new-pass-input').html('New password'),
-            $('<input>').attr({id: 'new-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'new_password', autocomplete: 'new-password'})
-        ),
-        $('<div>').attr('class', 'form-group').append(
-            $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
-            $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
-        ),
-    );
-
-    $dialog.find('button.cancel-button').click(function () {
-
-        $dialog.dialog('close');
-
-    });
-
-    $dialog.find('button.confirm-button').click(function () {
-
-        if (self.current_password) {
-
-            if (self.new_password && self.new_password === self.retype_pass) self.postData('chgpass', true, function() {
-
-                $dialog.dialog('close').find('input').val('')
-
-            });
-
-            else self.statusAlert('danger', 'Passwords do not match');
-
-        }
-
-        else self.statusAlert('danger', 'Enter current user password');
-
-    });
-
-    self.bindElement($dialog);
-
-    $dialog.dialog()
-
-};
-
-// User.prototype.edit = function (callback) {
-//
-//     let self = this;
-//
-//     let $dialog = self.confirmationDialog();
-//
-//     $dialog.find('.dialog-header').html('Add user');
-//
-//     $dialog.find('div.dialog-content').append(
-//         $('<div>').attr('class', 'form-group').append(
-//             $('<label>').attr('for', 'username-input').html('Username'),
-//             $('<input>').attr({id: 'username-input', class: 'form-control form-control-sm', type: 'text', 'data-bind': 'username'})
-//         ),
-//         $('<div>').attr('class', 'form-group').append(
-//             $('<label>').attr('for', 'password-input').html('Password'),
-//             $('<input>').attr({id: 'password-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'password', autocomplete: 'new-password'})
-//         ),
-//         $('<div>').attr('class', 'form-group').append(
-//             $('<label>').attr('for', 'retype-pass-input').html('Retype password'),
-//             $('<input>').attr({id: 'retype-pass-input', class: 'form-control form-control-sm', type: 'password', 'data-bind': 'retype_pass', autocomplete: 'new-password'})
-//         ),
-//     );
-//
-//     $dialog.find('button.cancel-button').click(function () {
-//
-//         $dialog.dialog('close');
-//
-//     });
-//
-//     $dialog.find('button.confirm-button').click(function () {
-//
-//         self.timezone = sessionStorage.getItem('default_timezone');
-//
-//         if (self.password !== self.retype_pass) self.statusAlert('danger', 'Passwords do not match');
-//
-//         else self.save(data => {
-//
-//             $dialog.dialog('close');
-//
-//             callback && callback(data);
-//
-//         });
-//
-//     });
-//
-//     self.bindElement($dialog);
-//
-//     $dialog.dialog()
-//
-// };
-
 User.prototype.defaultCred = function (callback) {
 
     let self = this;
 
     self.getData('default_cred', false, callback)
-
-};
-
-User.prototype.credentialsSelector = function (startValue, runner, $selector) {
-
-    let self = this;
-
-    let emptyCred = {
-        ask_pass: true,
-        ask_sudo_pass: true,
-        id: '',
-        is_default: false,
-        is_shared: false,
-        password: '',
-        rsa_key: '',
-        sudo_pass: '',
-        sudo_user: '',
-        title: '',
-        user_id: self.id,
-        username: ''
-    };
-
-    self.runner = runner;
-
-    return $selector
-        .on('build', function (event, startValue) {
-
-            self.getData('creds', false, function (data) {
-
-                $selector.empty();
-
-                $.each(data.creds, function (index, cred) {
-
-                    let display = cred.title;
-
-                    if (cred.is_default) {
-
-                        display += ' (default)';
-
-                        if (!startValue) startValue = cred.id;
-
-                    }
-
-                    $selector.append($('<option>').val(cred.id).data(cred).append(display));
-
-                });
-
-                if (self.runner) $selector.append($('<option>').val('').html('ask').data('id', 0));
-
-                else $selector.append($('<option>').val('new').data(emptyCred).append('new'));
-
-                $selector.val(startValue).change();
-
-            });
-
-        })
-        .on('change', function () {
-
-            self.set('cred', $('option:selected', $(this)).data());
-
-        })
-        .trigger('build', startValue);
 
 };

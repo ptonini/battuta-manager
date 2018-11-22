@@ -122,6 +122,7 @@ class Credential(models.Model, SerializerModelMixin):
             'user': self.user.id,
             'title': self.title,
             'is_shared': self.is_shared,
+            'is_default': self == self.user.default_cred,
             'username': self.username,
             'password': prefs['password_placeholder'] if self.password else None,
             'rsa_key': prefs['password_placeholder'] if self.rsa_key else None,
@@ -133,13 +134,14 @@ class Credential(models.Model, SerializerModelMixin):
 
         links = {'self': '/'.join([self.user.route, str(self.user.id), Credential.type, str(self.id)])}
 
-        meta = {'is_default': self == self.user.default_cred}
+        meta = {}
 
         return self.serializer(fields, attributes, links, meta)
 
     class Meta:
 
         unique_together = ('user', 'title')
+
 
 # class UserData(models.Model):
 #
