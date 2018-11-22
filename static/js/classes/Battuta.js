@@ -95,7 +95,9 @@ Battuta.prototype = {
 
         let self = this;
 
-        let internalProperties = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts' ];
+        console.log(self)
+
+        let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts' ];
 
         let data = {
             id: self.id,
@@ -103,13 +105,15 @@ Battuta.prototype = {
             attributes: {}
         };
 
-        for (let p in self) if (self.hasOwnProperty(p) && internalProperties.indexOf(p) === -1 && p != null) {
+        for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && p != null) {
 
-            if (typeof self[p] === 'object') data.attributes[p] = JSON.stringify(self[p]);
+            if (typeof self[p] === 'object' ) data.attributes[p] = JSON.stringify(self[p]);
 
             else data.attributes[p] = self[p]
 
         }
+
+        console.log(data);
 
         return data
 
@@ -468,13 +472,17 @@ Battuta.prototype = {
 
         self.bindings[bindId] = $container;
 
-        $container.find('button[data-bind]').off('click').attr('type', 'button').click(function () {
+        $container.find('button[data-bind]')
+            .off('click')
+            .attr('type', 'button')
+            .data('bind-id', bindId)
+            .click(function () {
 
-            $(this).toggleClass('checked_button');
+                $(this).toggleClass('checked_button');
 
-            self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
+                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
 
-        });
+            });
 
         $container.find('[data-bind]')
             .off('change')
@@ -483,6 +491,7 @@ Battuta.prototype = {
                 self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]);
 
             })
+            .data('bindId', bindId)
             .each(function () {
 
                 loadData($(this), self.get($(this).data('bind')));
@@ -495,7 +504,7 @@ Battuta.prototype = {
 
             $container.find('[data-bind="' + property + '"]').each(function () {
 
-                loadData($(this), value);
+                if ($(this).data('bindId') === bindId) loadData($(this), value);
 
             });
 

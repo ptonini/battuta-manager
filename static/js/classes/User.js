@@ -81,7 +81,11 @@ User.prototype.info = function ($container) {
 
     $container.find('button.save-button').click(function () {
 
-        self.save();
+        self.update(true).then(() => {
+
+            Battuta.prototype.statusAlert('success', 'User saved')
+
+        });
 
     });
 
@@ -92,7 +96,12 @@ User.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            new Credential({links: {self: self.links[Credential.prototype.type]}}).selector(self, $container)
+            let data =  {
+                links: {self: self.links[Credential.prototype.type]},
+                attributes: {user: self.id}
+            };
+
+            new Credential(data).selector($container)
 
         }
     },

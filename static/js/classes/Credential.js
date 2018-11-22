@@ -18,7 +18,7 @@ Credential.prototype.templates = 'templates_Credential.html';
 
 
 
-Credential.prototype.selector = function (user, $container) {
+Credential.prototype.selector = function ($container) {
 
     let self = this;
 
@@ -43,6 +43,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
         id: '',
         type: self.type,
         attributes: {
+            user: self.user,
             ask_pass: true,
             ask_sudo_pass: true,
             is_default: false,

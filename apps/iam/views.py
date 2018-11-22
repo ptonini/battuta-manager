@@ -108,13 +108,6 @@ class UserView(ApiView):
 
         # else:
         #
-        #     user = get_object_or_404(User, username=request.GET['username'])
-        #
-        #     if request.user.has_perm('users.edit_users') or request.user.username == user.username:
-        #
-        #         if action == 'get':
-        #
-        #             data = {'status': 'ok', 'user': self._user_to_dict(user, request)}
         #
         #         elif action == 'groups':
         #
@@ -127,29 +120,8 @@ class UserView(ApiView):
         #                 groups = [[group.name, group.id] for group in user.groups.all()]
         #
         #             data = {'status': 'ok', 'groups': groups}
-        #
-        #         elif action == 'creds':
-        #
-        #             cred_list = list()
-        #
-        #             for cred in Credential.objects.filter(user=user).values():
-        #
-        #                 cred['is_default'] = (cred['id'] == user.userdata.default_cred.id)
-        #
-        #                 cred_list.append(self._truncate_secure_data(cred))
-        #
-        #             if request.GET['runner'] == 'true':
-        #
-        #                 for cred in Credential.objects.filter(is_shared=True).exclude(user=user).values():
-        #
-        #                     cred_owner = get_object_or_404(User, id=cred['user_id'])
-        #
-        #                     cred['title'] += ' (' + cred_owner.username + ')'
-        #
-        #                     cred_list.append(self._truncate_secure_data(cred))
-        #
-        #             data = {'status': 'ok', 'creds': cred_list}
-        #
+
+
         #         elif action == 'default_cred':
         #
         #             data = {
@@ -165,6 +137,34 @@ class UserView(ApiView):
         #
         #         data = {'status': 'denied'}
 
+    def patch(self, request, user_id):
+
+        user = get_object_or_404(LocalUser, pk=user_id)
+
+        if user.authorizer(request.user)['editable']:
+
+            attr = request.JSON.get('data', {}).get('attributes', {})
+
+            if attr.get('username') != user.username or attr.get('password'):
+
+                if request.user.check_password(attr.get('current_password')):
+
+                    self._set_password(request, user)
+
+                    return self._api_response(self._save_instance(request, user))
+
+                else:
+
+                    return HttpResponseForbidden()
+
+            else:
+
+                return self._api_response(self._save_instance(request, user))
+
+        else:
+
+            return HttpResponseForbidden()
+
     @staticmethod
     def delete(request, user_id):
 
@@ -172,7 +172,7 @@ class UserView(ApiView):
 
             user = get_object_or_404(LocalUser, pk=user_id)
 
-            if user.serialize(None, request.user)['meta']['deletable']:
+            if user.authorizer(request.user)['deletable']:
 
                 user.delete()
 
@@ -182,73 +182,6 @@ class UserView(ApiView):
 
                 return HttpResponseForbidden()
 
-
-
-
-        #
-        # elif action == 'descendants':
-        #
-        #     data = {
-        #         'status': 'ok',
-        #         'group_descendants': [group.to_dict() for group in node.group_descendants],
-        #         'host_descendants': [host.to_dict() for host in node.host_descendants]
-        #     }
-
-    #     return user_dict
-
-    # @staticmethod
-    # def _truncate_secure_data(cred):
-    #
-    #     prefs = get_preferences()
-    #
-    #     if cred['password']:
-    #
-    #         cred['password'] = prefs['password_placeholder']
-    #
-    #     if cred['sudo_pass']:
-    #
-    #         cred['sudo_pass'] = prefs['password_placeholder']
-    #
-    #     if cred['rsa_key']:
-    #
-    #         cred['rsa_key'] = prefs['password_placeholder']
-    #
-    #     return cred
-
-
-    # def post(self, request, action):
-    #
-    #         elif action == 'delete':
-    #
-    #             if user.is_superuser:
-    #
-    #                 data = {'status': 'failed', 'msg': 'Cannot delete a superuser'}
-    #
-    #             elif user == request.user:
-    #
-    #                 data = {'status': 'failed', 'msg': 'User cannot delete itself'}
-    #
-    #             else:
-    #
-    #                 user.userdata.delete()
-    #
-    #                 user.delete()
-    #
-    #                 data = {'status': 'ok', 'msg': 'User deleted'}
-    #
-    #         elif action == 'chgpass':
-    #
-    #             if request.user.check_password(request.POST['current_password']):
-    #
-    #                 user.set_password(form_data['new_password'])
-    #
-    #                 user.save()
-    #
-    #                 data = {'status': 'ok', 'msg': 'The password was changed'}
-    #
-    #             else:
-    #
-    #                 data = {'status': 'failed', 'msg': 'Invalid password'}
     #
     #         elif action == 'add_groups':
     #
@@ -368,9 +301,16 @@ class UserView(ApiView):
 
 class CredsView(ApiView):
 
+    form_class = CredentialForm
+
     def post(self, request, user_id, cred_id):
 
-        pass
+        cred = Credential(user=LocalUser.objects.get(pk=user_id))
+
+        cred.user.default_cred = cred if request.JSON.get('data', {}).get('attributes', {}).get('is_default') else cred.user.default_cred
+
+        return self._api_response(self._save_instance(request, cred))
+
 
     def get(self, request, user_id, cred_id):
 
@@ -383,7 +323,11 @@ class CredsView(ApiView):
 
     def patch(self, request, user_id, cred_id):
 
-        pass
+        cred = get_object_or_404(Credential, pk=cred_id)
+
+        cred.user.default_cred = cred if request.JSON.get('data', {}).get('attributes', {}).get('is_default') else cred.user.default_cred
+
+        return self._api_response(self._save_instance(request, cred))
 
     def delete(self, request, user_id, cred_id):
 
