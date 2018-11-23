@@ -208,21 +208,31 @@ User.prototype.entityFormValidator = function ($dialog) {
 
     let self = this;
 
-    if (self.password !== $dialog.find('input#retype-pass-input').val()) {
+    let messages = [];
 
-        self.statusAlert('danger', 'Passwords do not match');
+    if (self.id && !self.current_password) messages.push('Please enter current user password.');
 
-        return false
+    if (self.password && self.password !== $dialog.find('input#retype-pass-input').val()) messages.push('Passwords do not match.')
+
+    if (messages.length === 0) return true;
+
+    else {
+
+        let $messagesContainer = $('<div>');
+
+        for (let i = 0; i < messages.length; i++) $messagesContainer.append($('<div>').html(messages[i]))
+
+        Battuta.prototype.statusAlert('danger', $messagesContainer)
+
     }
 
-    else return true
 };
 
 
-User.prototype.defaultCred = function (callback) {
-
-    let self = this;
-
-    self.getData('default_cred', false, callback)
-
-};
+// User.prototype.defaultCred = function (callback) {
+//
+//     let self = this;
+//
+//     self.getData('default_cred', false, callback)
+//
+// };

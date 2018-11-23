@@ -8,9 +8,10 @@ UserGroup.prototype = Object.create(Battuta.prototype);
 
 UserGroup.prototype.constructor = UserGroup;
 
-UserGroup.prototype.apiPath = '';
 
-UserGroup.prototype.key = 'group';
+Usergroup;
+
+
 
 UserGroup.prototype.crud = {
     titlePlural: 'User groups',

@@ -33,6 +33,7 @@ Credential.prototype.selector = function ($container) {
         $container.html($selectorContainer);
 
     })
+
 };
 
 Credential.prototype.buildSelector = function ($selector, $formContainer, startValue) {
@@ -131,7 +132,11 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                 $formContainer.find('button.save-button').prop('disabled', !cred.meta['editable']);
 
-                cred.is_default && $formContainer.find('button[data-bind="is_default"]').off()
+                cred.is_default && $formContainer.find('button[data-bind="is_default"]').off();
+
+                cred.password && $formContainer.find('button[data-bind="ask_pass"]').prop('disabled', true);
+
+                cred.sudo_pass && $formContainer.find('button[data-bind="ask_sudo_pass"]').prop('disabled', true);
 
             }
 

@@ -225,53 +225,7 @@ Battuta.prototype = {
     },
 
 
-    // Data request methods (ajax) ****
-
-    ajaxRequest: function (type, obj, url, blocking, callback, failCallback) {
-
-        let self = this;
-
-        $.ajax({
-            url: url,
-            type: type,
-            dataType: 'json',
-            data: self.serialize(obj),
-            cache: false,
-            blocking: blocking,
-            beforeSend: self.ajaxBeforeSend,
-            success: function (data) {
-
-                self.ajaxSuccess(data, callback, failCallback)
-
-            },
-            error: self.ajaxError,
-            complete: function () {
-
-                blocking && $.unblockUI();
-
-            }
-        });
-
-    },
-
-    getData: function (action, blocking, callback, failCallback) {
-
-        let self = this;
-
-        self.ajaxRequest('GET', self, self.apiPath + action + '/', blocking, callback, failCallback);
-
-    },
-
-    postData: function (action, blocking, callback, failCallback) {
-
-        let self = this;
-
-        self.ajaxRequest('POST', self, self.apiPath + action + '/', blocking, callback, failCallback);
-
-    },
-
-
-    // Data request methods (fetch) ***
+    // Data request methods ***********
 
     fetchJson: function (method, url, obj, blocking) {
 

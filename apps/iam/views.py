@@ -203,7 +203,7 @@ class CredsView(ApiView):
 
             if request.JSON.get('data', {}).get('attributes',{}).get('sudo_pass'):
 
-                request.JSON['data']['attributes']['sudo_pass'] = False
+                request.JSON['data']['attributes']['ask_sudo_pass'] = False
 
             response = self._save_instance(request, cred)
 
