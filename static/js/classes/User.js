@@ -77,8 +77,6 @@ User.prototype.info = function ($container) {
 
     self.bindElement($container);
 
-    self.set('current_user', sessionStorage.getItem('user_name'));
-
     $container.find('button.save-button').click(function () {
 
         self.update(true).then(() => {
@@ -210,7 +208,7 @@ User.prototype.entityFormValidator = function ($dialog) {
 
     let self = this;
 
-    if (self.password !== $dialog.find('input#retype-new-password').val()) {
+    if (self.password !== $dialog.find('input#retype-pass-input').val()) {
 
         self.statusAlert('danger', 'Passwords do not match');
 

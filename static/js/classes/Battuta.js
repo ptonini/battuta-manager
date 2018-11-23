@@ -95,8 +95,6 @@ Battuta.prototype = {
 
         let self = this;
 
-        console.log(self)
-
         let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts' ];
 
         let data = {
@@ -105,15 +103,13 @@ Battuta.prototype = {
             attributes: {}
         };
 
-        for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && p != null) {
+        for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && self[p] != null) {
 
             if (typeof self[p] === 'object' ) data.attributes[p] = JSON.stringify(self[p]);
 
             else data.attributes[p] = self[p]
 
         }
-
-        console.log(data);
 
         return data
 

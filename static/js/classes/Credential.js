@@ -39,8 +39,8 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
     let self = this;
 
-    let emptyCred = {
-        id: '',
+    let newCred = {
+        id: null,
         type: self.type,
         attributes: {
             user: self.user,
@@ -48,14 +48,15 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
             ask_sudo_pass: true,
             is_default: false,
             is_shared: false,
-            username: '',
-            password: '',
-            rsa_key: '',
-            sudo_pass: '',
-            sudo_user: '',
-            title: ''
+            username: null,
+            password: null,
+            rsa_key: null,
+            sudo_pass: null,
+            sudo_user: null,
+            title: null
         },
-        links: {self: self.links.self}
+        links: {self: self.links.self},
+        meta: {deletable: false, editable: true}
     };
 
     $selector
@@ -83,7 +84,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                 }
 
-                if ($formContainer) $selector.append($('<option>').val('new').data(emptyCred).append('new'));
+                if ($formContainer) $selector.append($('<option>').val('new').data(newCred).append('new'));
 
                 else $selector.append($('<option>').val('').html('ask').data('id', 0));
 
@@ -94,7 +95,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
         })
         .on('change', function () {
 
-            let cred = new self.constructor($(this).find(':selected').data());
+            let cred = new Credential($(this).find(':selected').data());
 
             if ($formContainer) {
 
@@ -106,7 +107,9 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                     let callback = response => {
 
-                        $selector.trigger('build', response.data.id)
+                        $selector.trigger('build', response.data.id);
+
+                        Battuta.prototype.statusAlert('success', 'Credential saved')
 
                     };
 
@@ -114,10 +117,9 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                     else cred.create(false).then(callback)
 
-
                 });
 
-                $formContainer.find('button.delete-button').off().click(function () {
+                $formContainer.find('button.delete-button').off().prop('disabled', !cred.meta['deletable']).click(function () {
 
                     cred.delete(false, function () {
 
@@ -126,6 +128,10 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
                     })
 
                 });
+
+                $formContainer.find('button.save-button').prop('disabled', !cred.meta['editable']);
+
+                cred.is_default && $formContainer.find('button[data-bind="is_default"]').off()
 
             }
 

@@ -134,9 +134,21 @@ class Credential(models.Model, SerializerModelMixin):
 
         links = {'self': '/'.join([self.user.route, str(self.user.id), Credential.type, str(self.id)])}
 
-        meta = {}
+        meta = self.authorizer(user)
 
         return self.serializer(fields, attributes, links, meta)
+
+    def authorizer(self, user):
+
+        deletable_conditions = [
+            self != self.user.default_cred,
+            user.has_perm('users.edit_users') and not self.user.is_superuser or user.is_superuser
+        ]
+
+        return {
+            'editable': user.has_perm('users.edit_users') and not self.user.is_superuser or user.is_superuser,
+            'deletable': False if False in deletable_conditions else True
+        } 
 
     class Meta:
 

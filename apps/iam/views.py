@@ -19,28 +19,6 @@ from apps.projects.extras import ProjectAuthorizer
 
 from main.extras.views import ApiView
 
-# class PageView(View):
-#
-#     @staticmethod
-#     def get(request, *args, **kwargs):
-#
-#         if kwargs['page'] == 'user_selector':
-#
-#             return render(request, 'users/user_selector.html')
-#
-#         elif kwargs['page'] == 'user_view':
-#
-#             return render(request, 'users/user_view.html', {'user_name': args[0]})
-#
-#         elif kwargs['page'] == 'group_selector':
-#
-#             return render(request, 'users/group_selector.html')
-#
-#         elif kwargs['page'] == 'group_view':
-#
-#             return render(request, 'users/group_view.html', {'group_name': args[0]})
-#
-#         raise Http404()
 
 
 class UserView(ApiView):
@@ -106,37 +84,6 @@ class UserView(ApiView):
 
             return HttpResponseForbidden()
 
-        # else:
-        #
-        #
-        #         elif action == 'groups':
-        #
-        #             if 'reverse' in request.GET and request.GET['reverse'] == 'true':
-        #
-        #                 groups = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
-        #
-        #             else:
-        #
-        #                 groups = [[group.name, group.id] for group in user.groups.all()]
-        #
-        #             data = {'status': 'ok', 'groups': groups}
-
-
-        #         elif action == 'default_cred':
-        #
-        #             data = {
-        #                 'status': 'ok',
-        #                 'cred': self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
-        #             }
-        #
-        #         else:
-        #
-        #             return HttpResponseNotFound('Invalid action')
-        #
-        #     else:
-        #
-        #         data = {'status': 'denied'}
-
     def patch(self, request, user_id):
 
         user = get_object_or_404(LocalUser, pk=user_id)
@@ -182,7 +129,139 @@ class UserView(ApiView):
 
                 return HttpResponseForbidden()
 
+
+
+class CredsView(ApiView):
+
+    form_class = CredentialForm
+
+
+    @staticmethod
+    def _set_default_cred(cred, request, response):
+
+        if 'data' in response and request.JSON.get('data', {}).get('attributes', {}).get('is_default'):
+
+            cred.user.default_cred = cred
+
+            cred.user.save()
+
+    def post(self, request, user_id, cred_id):
+
+        cred = Credential(user=LocalUser.objects.get(pk=user_id))
+
+        if cred.authorizer(request.user)['editable']:
+
+            response = self._save_instance(request, cred)
+
+            self._set_default_cred(cred, request, response)
+
+            return self._api_response(response)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def get(self, request, user_id, cred_id):
+
+        user = get_object_or_404(LocalUser, pk=user_id)
+
+        cred = Credential(user=user)
+
+        if cred.authorizer(request.user)['editable']:
+
+            data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
+
+            return self._api_response({'data': data})
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def patch(self, request, user_id, cred_id):
+
+        cred = get_object_or_404(Credential, pk=cred_id)
+
+        placeholder = get_preferences()['password_placeholder']
+
+        if cred.authorizer(request.user)['editable']:
+
+            if request.JSON.get('data', {}).get('attributes',{}).get('password') == placeholder:
+
+                request.JSON['data']['attributes']['password'] = cred.password
+
+            if request.JSON.get('data', {}).get('attributes',{}).get('sudo_pass') == placeholder:
+
+                request.JSON['data']['attributes']['sudo_pass'] = cred.sudo_pass
+
+            if request.JSON.get('data', {}).get('attributes',{}).get('rsa_key') == placeholder:
+
+                request.JSON['data']['attributes']['rsa_key'] = cred.rsa_key
+
+            if request.JSON.get('data', {}).get('attributes',{}).get('password') or request.JSON.get('data', {}).get('attributes',{}).get('rsa_key'):
+
+                request.JSON['data']['attributes']['ask_pass'] = False
+
+            if request.JSON.get('data', {}).get('attributes',{}).get('sudo_pass'):
+
+                request.JSON['data']['attributes']['sudo_pass'] = False
+
+            response = self._save_instance(request, cred)
+
+            self._set_default_cred(cred, request, response)
+
+            return self._api_response(response)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    @staticmethod
+    def delete(request, user_id, cred_id):
+
+        cred = get_object_or_404(Credential, pk=cred_id)
+
+        if cred.authorizer(request.user)['deletable']:
+
+            cred.delete()
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    # else:
     #
+    #
+    #         elif action == 'groups':
+    #
+    #             if 'reverse' in request.GET and request.GET['reverse'] == 'true':
+    #
+    #                 groups = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
+    #
+    #             else:
+    #
+    #                 groups = [[group.name, group.id] for group in user.groups.all()]
+    #
+    #             data = {'status': 'ok', 'groups': groups}
+
+
+    #         elif action == 'default_cred':
+    #
+    #             data = {
+    #                 'status': 'ok',
+    #                 'cred': self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
+    #             }
+    #
+    #         else:
+    #
+    #             return HttpResponseNotFound('Invalid action')
+    #
+    #     else:
+    #
+    #         data = {'status': 'denied'}
+
+
     #         elif action == 'add_groups':
     #
     #             if request.user.has_perm('users.edit_user_groups'):
@@ -211,127 +290,9 @@ class UserView(ApiView):
     #
     #                 data = {'status': 'denied'}
     #
-    #         elif action == 'save_cred':
-    #
-    #             cred_dict = json.loads(form_data['cred'])
-    #
-    #             cred_dict['user'] = cred_dict['user_id']
-    #
-    #             # Build credential object
-    #
-    #             cred = get_object_or_404(Credential, pk=cred_dict['id']) if cred_dict.get('id') else Credential(user=user)
-    #
-    #             # Set form data passwords
-    #             if cred_dict['password'] == prefs['password_placeholder']:
-    #
-    #                 cred_dict['password'] = cred.password
-    #
-    #             if cred_dict['sudo_pass'] == prefs['password_placeholder']:
-    #
-    #                 cred_dict['sudo_pass'] = cred.sudo_pass
-    #
-    #             if cred_dict['rsa_key'] == prefs['password_placeholder']:
-    #
-    #                 cred_dict['rsa_key'] = cred.rsa_key
-    #
-    #             if cred_dict['password'] or cred_dict['rsa_key']:
-    #
-    #                 cred_dict['ask_pass'] = False
-    #
-    #             if cred_dict['sudo_pass']:
-    #
-    #                 cred_dict['ask_sudo_pass'] = False
-    #
-    #             form = CredentialForm(cred_dict or None, instance=cred)
-    #
-    #             # Validate form data
-    #             if form.is_valid():
-    #
-    #                 # Set credential as default
-    #                 if cred_dict['is_default']:
-    #
-    #                     user.userdata.default_cred = cred
-    #
-    #                     user.userdata.save()
-    #
-    #                 # Save credential
-    #                 cred.save()
-    #
-    #                 data = {
-    #                     'status': 'ok',
-    #                     'msg': 'Credential saved',
-    #                     'cred': self._truncate_secure_data(model_to_dict(cred))
-    #                 }
-    #
-    #             else:
-    #
-    #                 data = {'status': 'failed', 'msg': str(form.errors)}
-    #
-    #         elif action == 'delete_cred':
-    #
-    #             cred_dict = json.loads(form_data['cred'])
-    #
-    #             cred = get_object_or_404(Credential, pk=cred_dict['id'])
-    #
-    #             # List users using this credential as default
-    #             user_list = [user_data.user.username for user_data in UserData.objects.filter(default_cred=cred)]
-    #
-    #             # Return fail if credential is default for a user(s)
-    #             if len(user_list) > 0:
-    #
-    #                 data = {'status': 'failed', 'msg': 'Credential is default for ' + ', '.join(user_list)}
-    #
-    #             else:
-    #
-    #                 # Delete credential
-    #                 cred.delete()
-    #
-    #                 data = {'status': 'ok', 'msg': 'Credential deleted', 'cred': {'id': None}}
-    #
-    #         else:
-    #
-    #             return HttpResponseNotFound('Invalid action')
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    #     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
-class CredsView(ApiView):
 
-    form_class = CredentialForm
-
-    def post(self, request, user_id, cred_id):
-
-        cred = Credential(user=LocalUser.objects.get(pk=user_id))
-
-        cred.user.default_cred = cred if request.JSON.get('data', {}).get('attributes', {}).get('is_default') else cred.user.default_cred
-
-        return self._api_response(self._save_instance(request, cred))
-
-
-    def get(self, request, user_id, cred_id):
-
-        user = get_object_or_404(LocalUser, pk=user_id)
-
-        data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
-
-        return self._api_response({'data': data})
-
-
-    def patch(self, request, user_id, cred_id):
-
-        cred = get_object_or_404(Credential, pk=cred_id)
-
-        cred.user.default_cred = cred if request.JSON.get('data', {}).get('attributes', {}).get('is_default') else cred.user.default_cred
-
-        return self._api_response(self._save_instance(request, cred))
-
-    def delete(self, request, user_id, cred_id):
-
-        pass
 
 
 # class UserGroupView(View):
