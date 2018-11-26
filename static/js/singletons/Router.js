@@ -101,6 +101,7 @@ let routes = {
     main: {
         href: '/main',
         regex: /^main$/,
+        Class: null,
         action: function () {
 
             $('section.container').empty()
@@ -110,6 +111,7 @@ let routes = {
     search: {
         href: '/search',
         regex: /^search\/?([-_a-zA-Z0-9]+)?/,
+        Class: null,
         action: function (param) {
 
             new Search(param[0])
@@ -119,6 +121,7 @@ let routes = {
     manage: {
         href: '/inventory/manage',
         regex: /^inventory\/manage$/,
+        Class: null,
         action: function () {
 
             new Inventory()
@@ -128,6 +131,7 @@ let routes = {
     hosts: {
         href: '/inventory/hosts',
         regex: /^inventory\/hosts\/?([0-9]+)?$/,
+        Class: Host,
         action: function (param) {
 
             param[0] ? new Host({id: param[0], links: {self: param.input}}).view() : new Host().selector();
@@ -137,6 +141,7 @@ let routes = {
     groups: {
         href: '/inventory/groups',
         regex: /^inventory\/groups\/?([0-9]+)?$/,
+        Class: Group,
         action: function (param) {
 
             param[0] ? new Group({id: param[0], links: {self: param.input}}).view() : new Group().selector();
@@ -146,6 +151,7 @@ let routes = {
     users: {
         href: '/iam/users',
         regex: /^iam\/users\/?([0-9]+)?$/,
+        Class: User,
         action: function (param) {
 
             param[0] ? new User({id: param[0], links: {self: param.input}}).view() : new User().selector();
@@ -155,6 +161,7 @@ let routes = {
     usergroups: {
         href: '/iam/usergroups',
         regex: /^iam\/usergroups\/?([0-9]+)?$/,
+        Class: UserGroup,
         action: function (param) {
 
             param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).view() : new UserGroup().selector();

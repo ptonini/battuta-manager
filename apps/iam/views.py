@@ -4,15 +4,15 @@ from pytz import timezone
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.forms import model_to_dict
-from django.http import HttpResponse, HttpResponseForbidden, Http404, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, Http404, HttpResponseNotFound
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.conf import settings
+from django.contrib.auth.models import Group
 
-from apps.iam.models import LocalUser,  Credential
-from apps.iam.forms import LocalUserForm, CredentialForm
-#from apps.iam.extras import create_userdata, create_groupdata
+from apps.iam.models import LocalUser,  Credential, LocalGroup
+from apps.iam.forms import LocalUserForm, CredentialForm, LocalGroupForm
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import ProjectAuthorizer
@@ -39,6 +39,10 @@ class UserView(ApiView):
     def post(self, request, user_id):
 
         user = self._set_password(request, LocalUser())
+
+        if not request.JSON.get('data', {}).get('attributes', {}).get('timezone'):
+
+            request.JSON['data']['attributes']['timezone'] = get_preferences()['default_timezone']
 
         if user.authorizer(request.user)['editable']:
 
@@ -128,13 +132,14 @@ class UserView(ApiView):
             else:
 
                 return HttpResponseForbidden()
+        else:
 
+            return HttpResponseBadRequest()
 
 
 class CredsView(ApiView):
 
     form_class = CredentialForm
-
 
     @staticmethod
     def _set_default_cred(cred, request, response):
@@ -185,23 +190,23 @@ class CredsView(ApiView):
 
         if cred.authorizer(request.user)['editable']:
 
-            if request.JSON.get('data', {}).get('attributes',{}).get('password') == placeholder:
+            if request.JSON.get('data', {}).get('attributes', {}).get('password') == placeholder:
 
                 request.JSON['data']['attributes']['password'] = cred.password
 
-            if request.JSON.get('data', {}).get('attributes',{}).get('sudo_pass') == placeholder:
+            if request.JSON.get('data', {}).get('attributes', {}).get('sudo_pass') == placeholder:
 
                 request.JSON['data']['attributes']['sudo_pass'] = cred.sudo_pass
 
-            if request.JSON.get('data', {}).get('attributes',{}).get('rsa_key') == placeholder:
+            if request.JSON.get('data', {}).get('attributes', {}).get('rsa_key') == placeholder:
 
                 request.JSON['data']['attributes']['rsa_key'] = cred.rsa_key
 
-            if request.JSON.get('data', {}).get('attributes',{}).get('password') or request.JSON.get('data', {}).get('attributes',{}).get('rsa_key'):
+            if request.JSON.get('data', {}).get('attributes', {}).get('password') or request.JSON.get('data', {}).get('attributes',{}).get('rsa_key'):
 
                 request.JSON['data']['attributes']['ask_pass'] = False
 
-            if request.JSON.get('data', {}).get('attributes',{}).get('sudo_pass'):
+            if request.JSON.get('data', {}).get('attributes', {}).get('sudo_pass'):
 
                 request.JSON['data']['attributes']['ask_sudo_pass'] = False
 
@@ -229,6 +234,83 @@ class CredsView(ApiView):
         else:
 
             return HttpResponseForbidden()
+
+
+class UserGroupView(ApiView):
+
+    form_class = LocalGroupForm
+
+    def post(self, request, group_id):
+
+        group = LocalGroup()
+
+        if group.authorizer(request.user)['editable']:
+
+            return self._api_response(self._save_instance(request, group))
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def get(self, request, group_id):
+
+        if request.user.has_perm('users.edit_users'):
+
+            if group_id:
+
+                group = get_object_or_404(LocalGroup, pk=group_id)
+
+                response = {'data': (group.serialize(request.JSON.get('fields'), request.user))}
+
+            else:
+
+                data = list()
+
+                for group in LocalGroup.objects.order_by('name').all():
+
+                    data.append(group.serialize(request.JSON.get('fields'), request.user))
+
+                response = {'data': data}
+
+            return self._api_response(response)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def patch(self, request, group_id):
+
+        group = get_object_or_404(LocalGroup, pk=group_id)
+
+        if group.authorizer(request.user)['editable']:
+
+            return self._api_response(self._save_instance(request, group))
+
+        else:
+
+            return HttpResponseForbidden()
+
+    @staticmethod
+    def delete(request, group_id):
+
+        if group_id:
+
+            group = get_object_or_404(LocalGroup, pk=group_id)
+
+            if group.authorizer(request.user)['deletable']:
+
+                group.delete()
+
+                return HttpResponse(status=204)
+
+            else:
+
+                return HttpResponseForbidden()
+
+        else:
+
+            return HttpResponseBadRequest()
+
 
     # else:
     #
@@ -292,245 +374,154 @@ class CredsView(ApiView):
     #
 
 
+class RelationsView(ApiView):
+
+    @staticmethod
+    def _get_relations(relation, obj_id, obj_type):
+
+        obj = get_object_or_404(LocalUser if obj_type == LocalUser.type else LocalGroup, pk=obj_id)
+
+        if relation == LocalUser.type:
+
+            related_set_out = obj.user_set
+
+            related_set_in = obj.user_set
+
+            related_class = LocalUser
+
+        elif relation == LocalGroup.type:
+
+            related_set_out = LocalGroup.objects.filter(user=obj)
+
+            related_set_in= obj.groups
+
+            related_class = LocalGroup
+
+        return obj, related_set_out, related_set_in, related_class
+
+    def post(self, request, relation, obj_id, obj_type):
+
+        obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
+
+        if obj.authorizer(request.user)['editable']:
+
+            for selected in request.JSON.get('data', []):
+
+                related_set_in.add(get_object_or_404(related_class, pk=selected['id']))
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def get(self, request, relation, obj_id, obj_type):
+
+        obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
+
+        if request.JSON.get('related', True):
+
+            data = [o.serialize(request.JSON.get('fields'), request.user) for o in related_set_out.all()]
+
+        else:
+
+            data = list()
+
+            for o in related_class.objects.exclude(pk__in=[related.id for related in related_set_out.all()]):
+
+                data.append(o.serialize(request.JSON.get('fields'), request.user))
+
+        return self._api_response({'data': data})
+
+    def delete(self, request, relation, obj_id, obj_type):
+
+        obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
+
+        if obj.authorizer(request.user)['editable']:
+
+            for selected in request.JSON.get('data', []):
+
+                related_set_in.remove(get_object_or_404(related_class, pk=selected['id']))
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
 
 
+class PermissionView(ApiView):
 
-# class UserGroupView(View):
-#
-#     @staticmethod
-#     def _group_to_dict(group):
-#
-#         create_groupdata(group)
-#
-#         return {
-#             'id': group.id,
-#             'name': group.name,
-#             'description': group.groupdata.description,
-#             'member_count': len(User.objects.filter(groups__name=group.name)),
-#             'editable': group.groupdata.editable
-#         }
-#
-#     def get(self, request, action):
-#
-#         project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
-#
-#         if action == 'list':
-#
-#             query_set = Group.objects.all().exclude(name=request.GET.get('exclude'))
-#
-#             if request.GET.get('editable') == 'true':
-#
-#                 query_set = query_set.filter(groupdata__editable=True)
-#
-#             group_list = list()
-#
-#             for group in query_set:
-#
-#                 auth = {
-#                     request.user.has_perm('users.edit_user_groups'),
-#                     group in request.user.groups.all(),
-#                     project_auth.can_add_to_group(group)
-#                 }
-#
-#                 if True in auth:
-#
-#                     group_list.append(self._group_to_dict(group))
-#
-#             data = {'status': 'ok', 'groups': group_list}
-#
-#         else:
-#
-#             group = get_object_or_404(Group, name=request.GET['name'])
-#
-#             if action == 'get':
-#
-#                 group = get_object_or_404(Group, name=request.GET['name'])
-#
-#                 auth = {
-#                     request.user.has_perm('users.edit_user_groups'),
-#                     group in request.user.groups.all(),
-#                     project_auth.can_add_to_group(group)
-#                 }
-#
-#                 data = {'status': 'ok', 'group': self._group_to_dict(group)} if True in auth else {'status': 'denied'}
-#
-#             elif action == 'members':
-#
-#                 group = get_object_or_404(Group, name=request.GET['name'])
-#
-#                 members = []
-#
-#                 if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
-#
-#                     if 'reverse' in request.GET and request.GET['reverse'] == 'true':
-#
-#                         for user in User.objects.exclude(groups__name=request.GET['name']):
-#
-#                             if not user.is_superuser:
-#
-#                                 members.append({'username': user.username, 'id': user.id})
-#
-#                     else:
-#
-#                         for user in User.objects.filter(groups__name=request.GET['name']):
-#
-#                             members.append({'username': user.username, 'id': user.id})
-#
-#                 data = {'status': 'ok', 'members': members}
-#
-#             elif action == 'permissions':
-#
-#                 data = {'status': 'ok', 'permissions': list()}
-#
-#                 if request.GET.get('reverse', False):
-#
-#                     content_type = ContentType.objects.get_for_model(GroupData)
-#
-#                     exclude_list = [p['codename'] for p in json.loads(request.GET.get('exclude', '[]'))]
-#
-#                     for p in Permission.objects.filter(content_type=content_type):
-#
-#                         if p.codename.split('_')[1] != 'groupdata' and p.codename not in exclude_list:
-#
-#                             data['permissions'].append({'codename': p.codename, 'name': p.name})
-#
-#                 else:
-#
-#                     data['permissions'] = [{'name': p.name, 'codename': p.codename} for p in group.permissions.all()]
-#
-#             else:
-#
-#                 return HttpResponseNotFound('Invalid action')
-#
-#         return HttpResponse(json.dumps(data), content_type='application/json')
-#
-#     def post(self, request, action):
-#
-#         project_auth = cache.get_or_set(str(request.user.username + '_auth'), Authorizer(request.user), settings.CACHE_TIMEOUT)
-#
-#         form_data = request.POST.dict()
-#
-#         if form_data.get('id'):
-#
-#             group = get_object_or_404(Group, pk=request.POST['id'])
-#
-#         else:
-#
-#             group = Group()
-#
-#             group.groupdata = GroupData()
-#
-#         if action == 'save':
-#
-#             if group.groupdata.editable and request.user.has_perm('users.edit_user_groups'):
-#
-#                 group_form = GroupForm(form_data or None, instance=group)
-#
-#                 if group_form.is_valid():
-#
-#                     group = group_form.save()
-#
-#                     GroupData.objects.get_or_create(group=group)
-#
-#                     group.groupdata.description = request.POST.get('description', '')
-#
-#                     group.groupdata.save()
-#
-#                     data = {'status': 'ok', 'group': self._group_to_dict(group), 'msg': 'User group saved'}
-#
-#                 else:
-#
-#                     data = {'status': 'denied', 'msg': str(group_form.errors)}
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#         elif action == 'delete':
-#
-#             if group.groupdata.editable and request.user.has_perm('users.edit_user_groups'):
-#
-#                 group.delete()
-#
-#                 data = {'status': 'ok', 'msg': 'Group deleted'}
-#
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#         elif action == 'add_members':
-#
-#             if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
-#
-#                 for selected in json.loads(request.POST['selection']):
-#
-#                     group.user_set.add(get_object_or_404(User, pk=selected['id']))
-#
-#                 data = {'status': 'ok'}
-#
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#         elif action == 'remove_members':
-#
-#             if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
-#
-#                 for selected in json.loads(request.POST['selection']):
-#
-#                     group.user_set.remove(get_object_or_404(User, pk=selected['id']))
-#
-#                 data = {'status': 'ok'}
-#
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#             if request.user.has_perm('users.edit_user_groups') or project_auth.can_add_to_group(group):
-#
-#                 for selected in json.loads(request.POST['selection']):
-#
-#                     group.user_set.remove(get_object_or_404(User, pk=selected['id']))
-#
-#                 data = {'status': 'ok'}
-#
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#         elif action == 'add_permissions':
-#
-#             if request.user.has_perm('edit_preferences') and group.groupdata.editable:
-#
-#                 for permission in json.loads(request.POST.get('selection', '[]')):
-#
-#                     perm = Permission.objects.get(codename=permission['codename'])
-#
-#                     group.permissions.add(perm)
-#
-#                 data = {'status': 'ok'}
-#
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#         elif action == 'remove_permissions':
-#
-#             if request.user.has_perm('edit_preferences') and group.groupdata.editable:
-#
-#                 for permission in json.loads(request.POST.get('selection', '[]')):
-#
-#                     perm = Permission.objects.get(codename=permission['codename'])
-#
-#                     group.permissions.remove(perm)
-#
-#                 data = {'status': 'ok'}
-#
-#             else:
-#
-#                 data = {'status': 'denied'}
-#
-#         else:
-#
-#             return HttpResponseNotFound('Invalid action')
-#
-#         return HttpResponse(json.dumps(data), content_type='application/json')
+    _excluded_perms = [
+        'add_group',
+        'change_group',
+        'delete_group',
+        'view_group',
+        'add_localgroup',
+        'change_localgroup',
+        'delete_localgroup',
+        'view_localgroup'
+    ]
+
+    @staticmethod
+    def _serialize(permission):
+
+        return {
+            'id': permission.codename,
+            'type': 'permissions',
+            'attributes': {'name': permission.name}
+        }
+
+    @staticmethod
+    def post(request, group_id):
+
+        group = get_object_or_404(LocalGroup, pk=group_id)
+
+        if group.authorizer(request.user)['editable']:
+
+            for selected in request.JSON.get('data', []):
+
+                group.permissions.add(Permission.objects.get(codename=selected['id']))
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
+
+    def get(self, request, group_id):
+
+        group = get_object_or_404(LocalGroup, pk=group_id)
+
+        response = {'data': list()}
+
+        if request.JSON.get('related', True):
+
+            return self._api_response({'data': [self._serialize(p) for p in group.permissions.all()]})
+
+        else:
+
+            for permission in Permission.objects.filter(content_type=ContentType.objects.get_for_model(LocalGroup)):
+
+                if permission not in group.permissions.all() and permission.codename not in self._excluded_perms:
+
+                    response['data'].append(self._serialize(permission))
+
+            return self._api_response(response)
+
+    @staticmethod
+    def delete(request, group_id):
+
+        group = get_object_or_404(LocalGroup, pk=group_id)
+
+        if group.authorizer(request.user)['editable']:
+
+            for selected in request.JSON.get('data', []):
+
+                group.permissions.remove(Permission.objects.get(codename=selected['id']))
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()

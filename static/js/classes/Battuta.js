@@ -95,7 +95,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts' ];
+        let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts', 'label'];
 
         let data = {
             id: self.id,
@@ -135,6 +135,7 @@ Battuta.prototype = {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
 
                     break;
+
                 }
             }
 
@@ -160,7 +161,7 @@ Battuta.prototype = {
 
     ajaxBeforeSend: function (xhr, settings) {
 
-        settings.blocking && $.blockUI({
+        settings['blocking'] && $.blockUI({
             message: null,
             css: {
                 border: 'none',
@@ -199,9 +200,7 @@ Battuta.prototype = {
 
             response['msg'] && Battuta.prototype.statusAlert('success', response['msg']);
 
-        }
-
-        else  if (response.hasOwnProperty('errors')) {
+        } else  if (response.hasOwnProperty('errors')) {
 
             failCallback && failCallback(response);
 
@@ -261,7 +260,7 @@ Battuta.prototype = {
 
             blocking && $.unblockUI();
 
-            if (response.ok ) return response.status === 204 ? response : response.json();
+            if (response.ok) return response.status === 204 ? response : response.json();
 
             else {
 
@@ -285,9 +284,7 @@ Battuta.prototype = {
 
                     if (response.errors[i].hasOwnProperty('source')) message = response.errors[i].source.parameter + ': ' + message;
 
-                    $messageContainer.append(
-                        $('<div>').html(message)
-                    )
+                    $messageContainer.append($('<div>').html(message))
 
                 }
 
@@ -295,13 +292,12 @@ Battuta.prototype = {
 
                 throw response.errors
 
-            }
-
-            else {
+            } else {
 
                 Battuta.prototype.statusAlert('danger', 'Unknown response');
 
                 throw 'Unknown response'
+
             }
 
         })
@@ -339,11 +335,11 @@ Battuta.prototype = {
 
     },
 
-    read: function (blocking) {
+    read: function (blocking, param) {
 
         let self = this;
 
-        return self.fetchJson('GET', self.links.self, null, blocking).then(response => {
+        return self.fetchJson('GET', self.links.self, param, blocking).then(response => {
 
             self.constructor(response.data);
 
@@ -371,7 +367,7 @@ Battuta.prototype = {
 
         let self = this;
 
-        self.deleteAlert(function() {
+        self.deleteAlert(() => {
 
             return self.fetchJson('DELETE', self.links.self, null, blocking).then(response => {
 
@@ -436,17 +432,9 @@ Battuta.prototype = {
 
         $container.find('[data-bind]')
             .off('change')
-            .on('change', function () {
-
-                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]);
-
-            })
+            .on('change', function () { self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).val()]) })
             .data('bindId', bindId)
-            .each(function () {
-
-                loadData($(this), self.get($(this).data('bind')));
-
-            });
+            .each(function () { loadData($(this), self.get($(this).data('bind'))) });
 
         self.pubSub.off(message).on(message, function (event, source, property, value) {
 
@@ -470,11 +458,7 @@ Battuta.prototype = {
         let $dialog = Template['dialog']();
 
         $dialog.find('div.dialog-footer').append(
-            Template['close-button']().click(function () {
-
-                $dialog.dialog('close')
-
-            })
+            Template['close-button']().click(function () { $dialog.dialog('close') })
         );
 
         return $dialog
@@ -533,31 +517,19 @@ Battuta.prototype = {
 
     _deployAlert: function ($alert) {
 
-        $('div.alert').fadeOut(function() {
-
-            $(this).remove()
-
-        });
+        $('div.alert').fadeOut(function() { $(this).remove() });
 
         $('section.container').append($alert.hide());
 
         $alert.find('span.fa-times').click(function () {
 
-            $alert.fadeOut(function () {
-
-                $alert.remove()
-
-            })
+            $alert.fadeOut(function () { $alert.remove() })
 
         });
 
         $alert.fadeIn();
 
-        setTimeout(function () {
-
-            $alert.find('span.fa-times').click()
-
-        }, 10000)
+        setTimeout(function () { $alert.find('span.fa-times').click() }, 10000)
 
     },
 
@@ -766,6 +738,7 @@ Battuta.prototype = {
                             )
 
                         }
+
                     });
 
                 });
@@ -821,6 +794,104 @@ Battuta.prototype = {
 
     },
 
+    selectorRowCallback: function(row, data) {
+
+        $(row).find('td:eq(0)')
+            .css('cursor', 'pointer')
+            .click(function () {
+
+                Router.navigate(data.links.self)
+
+            });
+
+        if (data.meta.deletable) $(row).find('td:last').empty().append(
+            Battuta.prototype.tableBtn('fas fa-trash', 'Delete', function () {
+
+                new routes[data.type].Class(data).delete(false, function () {
+
+                    $('section.container').trigger('reload')
+
+                })
+
+            })
+        );
+    },
+
+    relationGrid: function (relation, $container, label, reloadCallback) {
+
+        let self = this;
+
+        let $grid = $('<div>').attr('id', relation + '_grid').on('reload', function () {
+
+            $(this).DynaGrid('load');
+
+            reloadCallback && reloadCallback();
+
+        });
+
+        $container.append($grid);
+
+        $grid.DynaGrid({
+            headerTag: '<div>',
+            showAddButton: true,
+            showFilter: true,
+            showCount: true,
+            gridBodyTopMargin: 10,
+            gridBodyBottomMargin: 10,
+            addButtonType: 'icon',
+            addButtonClass: 'btn-icon',
+            addButtonTitle: 'Add ' + relation,
+            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+            hideBodyIfEmpty: true,
+            columns: sessionStorage.getItem('node_grid_columns'),
+            ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: [label], links: ['self']}}),
+            formatItem: function ($gridContainer, $gridItem, data) {
+
+                $gridItem.append(
+                    $('<span>').append(data.attributes[label]).toggleClass('pointer', !!data['links']).click(function () {
+
+                        data['links'] && Router.navigate(data.links.self)
+
+                    }),
+                    Template['remove-icon']().click(function () {
+
+                        self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
+
+                            $grid.trigger('reload');
+
+                        })
+
+                    })
+                )
+
+            },
+            addButtonAction: function () {
+
+                self.gridDialog({
+                    title: 'Select ' + relation,
+                    type: 'many',
+                    objectType: self.type,
+                    url: self.links[relation] + self.objToQueryStr({fields: {attributes: [label], links: ['self']}, related: false}),
+                    itemValueKey: label,
+                    action: function (selection, $dialog) {
+
+                        self.fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
+
+                            $grid.trigger('reload');
+
+                            $dialog.dialog('close')
+
+                        })
+
+                    }
+                });
+
+            }
+
+        });
+
+    },
+
 
     // Views **************************
 
@@ -843,16 +914,15 @@ Battuta.prototype = {
                 },
                 paging: false,
                 dom: 'Bfrtip',
+                columns: self.selectorColumns(),
                 buttons: [
                     {
                         text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
                         action: function () {
 
-                            let proto = Object.getPrototypeOf(self);
+                            new routes[self.type].Class({links: {self: routes[self.type].href}}).editor(function () {
 
-                            new proto.constructor({links: {self: routes[self.type].href}}).editor(function () {
-
-                                $table.DataTable().ajax.reload()
+                                $container.trigger('reload')
 
                             });
 
@@ -860,20 +930,21 @@ Battuta.prototype = {
                         className: 'btn-sm btn-icon'
                     }
                 ],
+                rowCallback: self.selectorRowCallback
             };
 
-            $container.empty().append(
-                $('<h4>').attr('class', 'text-capitalize').html(self.label.plural),
-                $('<div>').attr('class', 'card shadow p-3').append($table)
-            );
+            $container
+                .off()
+                .on('reload', function () {
 
-            Object.keys(self.table).forEach(function (key) {
+                    $table.DataTable().ajax.reload()
 
-                if (self.table[key] === null) delete tableOptions[key];
-
-                else tableOptions[key] = self.table[key]
-
-            });
+                })
+                .empty()
+                .append(
+                    $('<h4>').attr('class', 'text-capitalize').html(self.label.plural),
+                    $('<div>').attr('class', 'card shadow p-3').append($table)
+                );
 
             $table.DataTable(tableOptions);
 

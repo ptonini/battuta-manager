@@ -18,6 +18,31 @@ Host.prototype.templates = 'templates_Host.html';
 
 
 
+Host.prototype.selectorColumns = function () {
+
+    if (sessionStorage.getItem('use_ec2_facts') === 'true') return [
+        {title: 'Host', data: 'attributes.name'},
+        {title: 'Address', data: 'attributes.address'},
+        {title: 'Public address', data: 'attributes.public_address'},
+        {title: 'Instance Id', data: 'attributes.instance_id'},
+        {title: 'Type', data: 'attributes.instance_type'},
+        {title: 'Cores', data: 'attributes.cores'},
+        {title: 'Memory', data: 'attributes.memory', render: function(data) { return humanBytes(data, 'MB') }},
+        {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false},
+    ];
+
+    else return [
+        {title: 'Host', data: 'attributes.name'},
+        {title: 'Address', data: 'attributes.address'},
+        {title: 'Cores', data: 'attributes.cores'},
+        {title: 'Memory', data: 'attributes.memory', render: function(data) { return  humanBytes(data, 'MB') }},
+        {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false}
+    ];
+
+};
+
 Host.prototype.info = function ($container) {
 
     let self = this;
@@ -28,13 +53,11 @@ Host.prototype.info = function ($container) {
 
     $container.find('.hide_when_empty').hide();
 
-    return self.fetchJson('GET', self.links.self, {fields: {attributes: ['facts']}})
+    return self.fetchJson('GET', self.links.self, {fields: {attributes: ['facts']}}).then(response => {
 
-    .then(response => {
+        self.set('facts', response.data['facts']);
 
-        self.set('facts', response.data.facts);
-
-        if (self.facts) {
+        if (self.get('facts')) {
 
             $container.find('button.hide_when_empty').show();
 
@@ -42,11 +65,11 @@ Host.prototype.info = function ($container) {
 
             $container.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
 
-            if (self.facts.system === 'Win32NT') self.facts.processor = ['&nbsp;'];
+            if (self.get('facts').system === 'Win32NT') self.get('facts').processor = ['&nbsp;'];
 
-            if (self.facts.virtualization_role === 'host' || !self.facts.ec2_hostname) $container.find('div.host-info-column').show();
+            if (self.get('facts')['virtualization_role'] === 'host' || !self.get('facts')['ec2_hostname']) $container.find('div.host-info-column').show();
 
-            if (self.facts.virtualization_role === 'guest') $container.find('div.guest-info-column').show();
+            if (self.get('facts')['virtualization_role'] === 'guest') $container.find('div.guest-info-column').show();
 
             let infoTables = {
                 networking: {
@@ -54,9 +77,9 @@ Host.prototype.info = function ($container) {
 
                         let interfacesArray = [];
 
-                        $.each(self.facts.interfaces, function (index, value) {
+                        $.each(self.get('facts').interfaces, function (index, value) {
 
-                            interfacesArray.push(self.facts[value])
+                            interfacesArray.push(self.get('facts')[value])
 
                         });
 
@@ -75,7 +98,7 @@ Host.prototype.info = function ($container) {
 
                 },
                 storage: {
-                    data: self.facts.mounts,
+                    data: self.get('facts')['mounts'],
                     columns: [
                         {title: 'device', data: 'device'},
                         {title: 'mount', data: 'mount'},
@@ -130,7 +153,7 @@ Host.prototype.info = function ($container) {
                     $('<div>')
                         .attr('class', 'well inset-container scrollbar')
                         .css('max-height', (window.innerHeight * .6).toString() + 'px')
-                        .JSONView(self.facts, {'collapsed': true})
+                        .JSONView(self.get('facts'), {'collapsed': true})
                 );
 
                 $dialog.dialog({width: 900})

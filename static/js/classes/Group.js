@@ -17,6 +17,19 @@ Group.prototype.label = {single: 'group', plural: 'groups'};
 Group.prototype.templates = 'templates_Group.html';
 
 
+Group.prototype.selectorColumns = function () {
+
+    return [
+        {title: 'Group', data: 'attributes.name'},
+        {title: 'Description', data: 'attributes.description'},
+        {title: 'Members', data: 'attributes.members'},
+        {title: 'Parents', data: 'attributes.parents'},
+        {title: 'Children', data: 'attributes.children'},
+        {title: 'Variables', data: 'attributes.variables'},
+        {title: '', defaultContent: '', class: 'float-right',  orderable: false}
+    ]
+
+};
 
 Group.prototype.info = null;
 
@@ -25,7 +38,7 @@ Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
 
-            self.relationships('children', $container)
+            self.relationGrid('children', $container, 'name', self.reloadTables)
 
         }
     },
@@ -33,13 +46,11 @@ Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
 
-            self.relationships('members', $container)
+            self.relationGrid('members', $container, 'name', self.reloadTables)
 
         }
     },
 });
-
-
 
 Group.prototype.descendants = function (offset, $container) {
 

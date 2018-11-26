@@ -15,9 +15,13 @@ div.dynagrid-item {
     display: flex;
     align-items: center;
 }
+
 div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}
 
-div.dynagrid-item.toggle-on, div.dynagrid-item:active  {background: #D3D3D3; box-shadow: 0 0 0;}
+div.dynagrid-item.toggle-on, div.dynagrid-item:active  {
+    background: #D3D3D3;
+    box-shadow: 0 0 0 !important;
+}
 
 div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 

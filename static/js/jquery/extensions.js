@@ -129,6 +129,30 @@ $.fn.prettyBoolean = function () {
 
 };
 
+function humanBytes(value, unit) {
+
+    if (value) {
+
+        if (!unit) unit = 'B';
+
+        let sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        value = value * Math.pow(1024, sizes.indexOf(unit));
+
+        if (value === 0) return value;
+
+        else {
+
+            let i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
+
+            return parseFloat(value / Math.pow(1024, i)).toFixed(i < 4 ? 0 : 2) + ' ' + sizes[i];
+
+        }
+    }
+
+    else return value
+
+}
 
 $.fn.humanBytes = function (suffix) {
 
