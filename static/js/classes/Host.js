@@ -1,6 +1,6 @@
 function Host(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
@@ -116,7 +116,7 @@ Host.prototype.info = function ($container) {
 
             for (let key in infoTables) $container.find('#show_' + key).click(function () {
 
-                let $dialog = Battuta.prototype.notificationDialog();
+                let $dialog = Main.prototype.notificationDialog();
 
                 let $table = Template['table']();
 
@@ -145,7 +145,7 @@ Host.prototype.info = function ($container) {
 
             $('#show_facts').click(function () {
 
-                let $dialog = Battuta.prototype.notificationDialog();
+                let $dialog = Main.prototype.notificationDialog();
 
                 $dialog.find('.dialog-header').html(self.name + ' facts');
 

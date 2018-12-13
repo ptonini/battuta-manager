@@ -168,6 +168,26 @@ let routes = {
 
         }
     },
+    projects: {
+        href: '/projects',
+        regex: /^projects\/?([0-9]+)?$/,
+        Class: Project,
+        action: function (param) {
+
+            param[0] ? new Project({id: param[0], links: {self: param.input}}).view() : new Project().selector();
+
+        }
+    },
+    repository: {
+        href: '/files/repository',
+        regex: /^files\/repository\/?[\s\S]*$/,
+        Class: FileObj,
+        action: function (param) {
+
+            new FileObj().selector(param.input);
+
+        }
+    },
 };
 
 for (let k in routes) if (routes.hasOwnProperty(k)) Router.add(routes[k].regex, routes[k].action);
@@ -176,6 +196,6 @@ Router.add(/[\s\S]*/, function () {
 
     $('section.container').empty();
 
-    Battuta.prototype.statusAlert('warning', 'Page not found')
+    Main.prototype.statusAlert('warning', 'Page not found')
 
 });

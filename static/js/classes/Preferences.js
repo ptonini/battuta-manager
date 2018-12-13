@@ -31,7 +31,7 @@ function Preferences(param) {
 
 }
 
-Preferences.prototype = Object.create(Battuta.prototype);
+Preferences.prototype = Object.create(Main.prototype);
 
 Preferences.prototype.constructor = Preferences;
 

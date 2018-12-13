@@ -9,16 +9,11 @@ from django.conf import settings
 from apps.inventory.models import Host, Group
 
 
-
 def inventory_to_dict(internal_vars=True):
 
     data = {
-        '_meta': {
-            'hostvars': dict()
-        },
-        'ungrouped': {
-            'hosts': list()
-        }
+        '_meta': {'hostvars': dict()},
+        'ungrouped': {'hosts': list()}
     }
 
     for host in Host.objects.order_by('name'):
@@ -81,7 +76,7 @@ def inventory_to_dict(internal_vars=True):
 
         data['all']['vars']['roles_path'] = settings.ROLES_PATH
 
-        data['all']['vars']['files_path'] = settings.FILES_PATH
+        data['all']['vars']['repository_path'] = settings.REPOSITORY_PATH
 
         data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
 

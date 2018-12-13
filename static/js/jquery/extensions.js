@@ -129,6 +129,7 @@ $.fn.prettyBoolean = function () {
 
 };
 
+
 function humanBytes(value, unit) {
 
     if (value) {
@@ -154,25 +155,10 @@ function humanBytes(value, unit) {
 
 }
 
-$.fn.humanBytes = function (suffix) {
 
-    if (!suffix) suffix = 'B';
+function toUserTZ(time, zone) {
 
-    let sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    return time ? moment.utc(time).tz(zone).format('YYYY-MM-DD HH:mm:ss') : null
 
-    let value = parseInt(this.html()) * Math.pow(1024, sizes.indexOf(suffix));
-
-    if (value === 0) this.html(value);
-
-    else {
-
-        let i = parseInt(Math.floor(Math.log(value) / Math.log(1024)));
-
-        this.html(parseFloat(value / Math.pow(1024, i)).toFixed(i < 4 ? 0 : 2) + ' ' + sizes[i]);
-
-    }
-
-    return this;
-
-};
+}
 

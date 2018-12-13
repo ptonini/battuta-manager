@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser, Group
 
 from main.extras.models import SerializerModelMixin
 from apps.preferences.extras import get_preferences
-
+from apps.iam import builtin_groups
 
 
 class LocalUser(AbstractUser, SerializerModelMixin):
@@ -40,7 +40,7 @@ class LocalUser(AbstractUser, SerializerModelMixin):
 
         meta = self.authorizer(user)
 
-        return self.serializer(fields, attributes, links, meta)
+        return self._serializer(fields, attributes, links, meta, {})
 
     def authorizer(self, user):
 
@@ -49,64 +49,9 @@ class LocalUser(AbstractUser, SerializerModelMixin):
             'deletable': user.has_perm('users.edit_users') and not self.is_superuser and user is not self
         }
 
-
-class LocalGroup(Group, SerializerModelMixin):
-
-    type = 'usergroups'
-
-    route = '/iam/usergroups'
-
-    def serialize(self, fields, user):
-
-        attributes = {'name': self.name, 'member_count': len(LocalUser.objects.filter(groups__name=self.name))}
-
-        links = {
-            'self': '/'.join([self.route, str(self.id)]),
-            LocalUser.type: '/'.join([self.route, str(self.id), LocalUser.type]),
-            'permissions': '/'.join([self.route, str(self.id), 'permissions'])
-        }
-
-        meta = self.authorizer(user)
-
-        return self.serializer(fields, attributes, links, meta)
-
-    def authorizer(self, user):
-
-        builtin_groups = [
-            'Inventory Admins',
-            'Runner Admins',
-            'User Admins',
-            'File Admins',
-            'Preferences Admins',
-            'System Admins',
-            'Project Admins'
-        ]
-
-        return {
-            'editable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups'),
-            'deletable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
-        }
-
     class Meta:
 
-        proxy = True
-
-        permissions = (
-            ('edit_groups', 'Can create and edit groups'),
-            ('edit_hosts', 'Can create and edit hosts'),
-            ('edit_playbooks', 'Can edit playbooks'),
-            ('edit_tasks', 'Can edit tasks'),
-            ('edit_roles', 'Can edit roles'),
-            ('execute_jobs', 'Can execute jobs'),
-            ('view_job_history', 'Can view job history'),
-            ('edit_files', 'Can create and edit files'),
-            ('edit_users', 'Can create and edit users'),
-            ('edit_user_groups', 'Can create and edit user groups'),
-            ('edit_user_files', 'Can create and edit user files'),
-            ('edit_permissions', 'Can edit user group permissions'),
-            ('edit_preferences', 'Can edit preferences'),
-            ('edit_projects', 'Can edit projects'),
-        )
+        ordering = ['username']
 
 
 class Credential(models.Model, SerializerModelMixin):
@@ -159,7 +104,7 @@ class Credential(models.Model, SerializerModelMixin):
 
         meta = self.authorizer(user)
 
-        return self.serializer(fields, attributes, links, meta)
+        return self._serializer(fields, attributes, links, meta, {})
 
     def authorizer(self, user):
 
@@ -176,3 +121,56 @@ class Credential(models.Model, SerializerModelMixin):
     class Meta:
 
         unique_together = ('user', 'title')
+
+        ordering = ['title']
+
+
+class LocalGroup(Group, SerializerModelMixin):
+
+    type = 'usergroups'
+
+    route = '/iam/usergroups'
+
+    def serialize(self, fields, user):
+
+        attributes = {'name': self.name, 'member_count': self.user_set.all().count()}
+
+        links = {
+            'self': '/'.join([self.route, str(self.id)]),
+            LocalUser.type: '/'.join([self.route, str(self.id), LocalUser.type]),
+            'permissions': '/'.join([self.route, str(self.id), 'permissions'])
+        }
+
+        meta = self.authorizer(user)
+
+        return self._serializer(fields, attributes, links, meta, {})
+
+    def authorizer(self, user):
+
+        return {
+            'editable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups'),
+            'deletable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
+        }
+
+    class Meta:
+
+        proxy = True
+
+        ordering = ['name']
+
+        permissions = (
+            ('edit_groups', 'Can create and edit groups'),
+            ('edit_hosts', 'Can create and edit hosts'),
+            ('edit_playbooks', 'Can edit playbooks'),
+            ('edit_tasks', 'Can edit tasks'),
+            ('edit_roles', 'Can edit roles'),
+            ('execute_jobs', 'Can execute jobs'),
+            ('view_job_history', 'Can view job history'),
+            ('edit_files', 'Can create and edit files'),
+            ('edit_users', 'Can create and edit users'),
+            ('edit_user_groups', 'Can create and edit user groups'),
+            ('edit_user_files', 'Can create and edit user files'),
+            ('edit_permissions', 'Can edit user group permissions'),
+            ('edit_preferences', 'Can edit preferences'),
+            ('edit_projects', 'Can edit projects'),
+        )

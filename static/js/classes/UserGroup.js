@@ -1,10 +1,10 @@
 function UserGroup(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
-UserGroup.prototype = Object.create(Battuta.prototype);
+UserGroup.prototype = Object.create(Main.prototype);
 
 UserGroup.prototype.constructor = UserGroup;
 

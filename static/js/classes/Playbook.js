@@ -1,6 +1,6 @@
 function Playbook (param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
     let self = this;
 

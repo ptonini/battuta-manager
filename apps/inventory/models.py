@@ -83,7 +83,7 @@ class Node(models.Model, SerializerModelMixin):
 
         meta = self.authorizer(user)
 
-        data = self.serializer(fields, attributes, links, meta)
+        data = self._serializer(fields, attributes, links, meta, {})
 
         return data
 
@@ -94,8 +94,9 @@ class Node(models.Model, SerializerModelMixin):
             'deletable': user.has_perm('users.edit_' + self.type)
         }
 
-
     class Meta:
+
+        ordering = ['name']
 
         abstract = True
 
@@ -122,7 +123,7 @@ class Host(Node):
             'instance_id': facts.get('ec2_instance_id'),
         }
 
-        data = self.serializer(fields, attributes, {}, {}, super(Host, self).serialize(fields, user))
+        data = self._serializer(fields, attributes, {}, {}, {}, super(Host, self).serialize(fields, user))
 
         if fields and 'facts' in fields.get('attributes', {}):
 
@@ -168,10 +169,10 @@ class Group(Node):
     def serialize(self, fields, user):
 
         attributes = {
-            'members': self.members.all().count(),
-            'parents': self.group_set.all().count(),
-            'children': self.children.all().count(),
-            'variables': self.variable_set.all().count()
+            'members': self.members.all().count() if self.id else None,
+            'parents': self.group_set.all().count() if self.id else None,
+            'children': self.children.all().count() if self.id else None,
+            'variables': self.variable_set.all().count() if self.id else None
         }
 
         links = {
@@ -181,7 +182,7 @@ class Group(Node):
 
         meta = self.authorizer(user)
 
-        data = self.serializer(fields, attributes, links, meta, super(Group, self).serialize(fields, user))
+        data = self._serializer(fields, attributes, links, meta, {}, super(Group, self).serialize(fields, user))
 
         return data
 
@@ -229,7 +230,7 @@ class Variable(models.Model, SerializerModelMixin):
 
         meta = self.authorizer(user)
 
-        return self.serializer(fields, attributes, links, meta)
+        return self._serializer(fields, attributes, links, meta, {})
 
     def authorizer(self, user):
 

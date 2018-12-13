@@ -1,10 +1,10 @@
 function Credential(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
-Credential.prototype = Object.create(Battuta.prototype);
+Credential.prototype = Object.create(Main.prototype);
 
 Credential.prototype.constructor = Credential;
 
@@ -110,7 +110,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                         $selector.trigger('build', response.data.id);
 
-                        Battuta.prototype.statusAlert('success', 'Credential saved')
+                        Main.prototype.statusAlert('success', 'Credential saved')
 
                     };
 

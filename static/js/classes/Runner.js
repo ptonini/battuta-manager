@@ -130,7 +130,7 @@ function Runner() {
 
 }
 
-Runner.prototype = Object.create(Battuta.prototype);
+Runner.prototype = Object.create(Main.prototype);
 
 Runner.prototype.constructor = Runner;
 

@@ -1,18 +1,14 @@
-from django.conf.urls import url
+from django.urls import path, re_path
 from django.contrib.auth.decorators import login_required
 
 from . import views
 
 urlpatterns = [
 
-    url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'files'}),
+    re_path(r'^repository/(?P<path>(?s).*)$', login_required(views.FileView.as_view()), kwargs={'root': 'repository'}),
 
-    url(r'^playbooks/$', login_required(views.PageView.as_view()), kwargs={'page': 'playbooks'}),
+    re_path(r'^playbooks/(?P<path>(?s).*)$', login_required(views.FileView.as_view()), kwargs={'root': 'playbooks'}),
 
-    url(r'^roles/$', login_required(views.PageView.as_view()), kwargs={'page': 'roles'}),
-
-    url(r'^user/$', login_required(views.PageView.as_view()), kwargs={'page': 'user'}),
-
-    url(r'^api/([a-z_]+)/$', login_required(views.FileView.as_view()))
+    re_path(r'^roles/(?P<path>(?s).*)$', login_required(views.FileView.as_view()), kwargs={'root': 'roles'})
 
 ]

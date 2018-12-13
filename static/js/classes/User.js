@@ -2,15 +2,21 @@ function User(param) {
 
     let self = this;
 
-    Battuta.call(self, param);
+    let tz = sessionStorage.getItem('current_user_tz');
 
-    self.set('name', self.get('username'));
+    Main.call(self, param);
+
+    self.get('date_joined') && self.set('date_joined', toUserTZ(param.attributes['date_joined'], tz));
+
+    self.get('last_login') && self.set('last_login', toUserTZ(param.attributes['last_login'], tz));
 
     self.get('is_superuser') ? self.set('label', {single: 'superuser', plural: 'users'}) : self.set('label', {single: 'user', plural: 'users'});
 
+    self.set('name', self.get('username'));
+
 }
 
-User.prototype = Object.create(Battuta.prototype);
+User.prototype = Object.create(Main.prototype);
 
 User.prototype.constructor = User;
 
@@ -28,8 +34,16 @@ User.prototype.selectorColumns = function () {
 
     return [
         {title: 'user', data: 'attributes.username', width: '50%'},
-        {title: 'date joined', data: 'attributes.date_joined', width: '15%'},
-        {title: 'last login', data: 'attributes.last_login', width: '15%'},
+        {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: function(data) {
+
+            return toUserTZ(data, sessionStorage.getItem('current_user_tz'))
+
+        }},
+        {title: 'last login', data: 'attributes.last_login', width: '15%', render: function(data) {
+
+            return toUserTZ(data, sessionStorage.getItem('current_user_tz'))
+
+        }},
         {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: function (data) {return data ? '<span class="fas fa-check"></span>' : ''}},
         {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
     ]
@@ -52,7 +66,7 @@ User.prototype.info = function ($container) {
 
         self.update(true).then(() => {
 
-            Battuta.prototype.statusAlert('success', 'User saved')
+            Main.prototype.statusAlert('success', 'User saved')
 
         });
 
@@ -125,7 +139,7 @@ User.prototype.entityFormValidator = function ($dialog) {
 
         for (let i = 0; i < messages.length; i++) $messagesContainer.append($('<div>').html(messages[i]))
 
-        Battuta.prototype.statusAlert('danger', $messagesContainer)
+        Main.prototype.statusAlert('danger', $messagesContainer)
 
     }
 

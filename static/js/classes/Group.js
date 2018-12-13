@@ -1,13 +1,12 @@
 function Group(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
 Group.prototype = Object.create(Node.prototype);
 
 Group.prototype.constructor = Group;
-
 
 
 Group.prototype.type = 'groups';

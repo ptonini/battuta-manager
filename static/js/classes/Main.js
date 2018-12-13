@@ -1,4 +1,4 @@
-function Battuta (param) {
+function Main (param) {
 
     let self = this;
 
@@ -10,28 +10,39 @@ function Battuta (param) {
 
     if (param && param.hasOwnProperty('attributes')) {
 
-        for (let k in param.attributes) if (param.attributes.hasOwnProperty(k)) self.set(k, param.attributes[k])
+        for (let k in param.attributes) if (param.attributes.hasOwnProperty(k) && param.attributes[k]) self.set(k, param.attributes[k])
 
     }
 
     if (param && param.hasOwnProperty('links')) {
 
-        for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k])
+        for (let k in param.links) if (param.links.hasOwnProperty(k) && param.links[k]) self.set('links.' + k, param.links[k])
 
     }
 
     if (param && param.hasOwnProperty('meta')) {
 
-        for (let k in param.meta) if (param.meta.hasOwnProperty(k)) self.set('meta.' + k, param.meta[k])
+        for (let k in param.meta) if (param.meta.hasOwnProperty(k) && param.meta[k]) self.set('meta.' + k, param.meta[k])
+
+    }
+
+    if (param && param.hasOwnProperty('relationships')) {
+
+        for (let k in param.relationships) if (param.relationships.hasOwnProperty(k) && param.relationships[k]) {
+
+            let obj = new routes[param.relationships[k].type].Class(param.relationships[k]);
+
+            self.set(k, obj)
+
+        }
 
     }
 
 }
 
-Battuta.prototype = {
+Main.prototype = {
 
-    templates: null,
-
+    templates: 'templates_Main.html',
 
     // Properties methods *************
 
@@ -81,7 +92,7 @@ Battuta.prototype = {
 
         for (let i = 0; i < keyArray.length; ++i) {
 
-            if (keyArray[i] in value) value = value[keyArray[i]];
+            if (value && typeof value === 'object' && keyArray[i] in value) value = value[keyArray[i]];
 
             else return
 
@@ -105,7 +116,11 @@ Battuta.prototype = {
 
         for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && self[p] != null) {
 
-            if (typeof self[p] === 'object' ) data.attributes[p] = JSON.stringify(self[p]);
+            if (typeof self[p] === 'object' ) {
+
+                data.attributes[p] = Main.prototype.isPrototypeOf(self[p]) ?  self[p].serialize() : JSON.stringify(self[p]);
+
+            }
 
             else data.attributes[p] = self[p]
 
@@ -170,9 +185,9 @@ Battuta.prototype = {
             overlayCSS: {backgroundColor: 'transparent'}
         });
 
-        if (!Battuta.prototype._csrfSafeMethod(settings.type) && !settings.crossDomain) {
+        if (!Main.prototype._csrfSafeMethod(settings.type) && !settings.crossDomain) {
 
-            xhr.setRequestHeader("X-CSRFToken", Battuta.prototype._getCookie('csrftoken'));
+            xhr.setRequestHeader("X-CSRFToken", Main.prototype._getCookie('csrftoken'));
 
         }
 
@@ -188,7 +203,7 @@ Battuta.prototype = {
 
         else message = error;
 
-        Battuta.prototype.statusAlert('danger', message + ' (' + xhr.status + ')')
+        Main.prototype.statusAlert('danger', message + ' (' + xhr.status + ')')
 
     },
 
@@ -198,7 +213,7 @@ Battuta.prototype = {
 
             callback && callback(response);
 
-            response['msg'] && Battuta.prototype.statusAlert('success', response['msg']);
+            response['msg'] && Main.prototype.statusAlert('success', response['msg']);
 
         } else  if (response.hasOwnProperty('errors')) {
 
@@ -214,12 +229,12 @@ Battuta.prototype = {
 
             else if (response['msg']) $message.html(response['msg']);
 
-            Battuta.prototype.statusAlert('danger', $message);
+            Main.prototype.statusAlert('danger', $message);
 
 
         }
 
-        else Battuta.prototype.statusAlert('danger', 'Unknown response');
+        else Main.prototype.statusAlert('danger', 'Unknown response');
 
     },
 
@@ -264,7 +279,7 @@ Battuta.prototype = {
 
             else {
 
-                Battuta.prototype.statusAlert('danger', response.statusText);
+                Main.prototype.statusAlert('danger', response.statusText);
 
                 throw response.statusText
 
@@ -288,13 +303,13 @@ Battuta.prototype = {
 
                 }
 
-                Battuta.prototype.statusAlert('danger', $messageContainer);
+                Main.prototype.statusAlert('danger', $messageContainer);
 
                 throw response.errors
 
             } else {
 
-                Battuta.prototype.statusAlert('danger', 'Unknown response');
+                Main.prototype.statusAlert('danger', 'Unknown response');
 
                 throw 'Unknown response'
 
@@ -453,9 +468,11 @@ Battuta.prototype = {
 
     // Templates **********************
 
-    notificationDialog: function () {
+    notificationDialog: function (headless=false) {
 
         let $dialog = Template['dialog']();
+
+        headless && $dialog.find('.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(
             Template['close-button']().click(function () { $dialog.dialog('close') })
@@ -465,9 +482,11 @@ Battuta.prototype = {
 
     },
 
-    confirmationDialog: function () {
+    confirmationDialog: function (headless=false) {
 
         let $dialog = Template['dialog']();
+
+        headless && $dialog.find('.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(Template['cancel-button'](), Template['confirm-button']());
 
@@ -477,7 +496,7 @@ Battuta.prototype = {
 
     entityDialog: function () {
 
-        let $dialog = Battuta.prototype.confirmationDialog();
+        let $dialog = Main.prototype.confirmationDialog();
 
         $dialog.find('div.dialog-content').append(Template['entity-form']());
 
@@ -535,7 +554,7 @@ Battuta.prototype = {
 
     warningAlert: function (message, confirmationCallback) {
 
-        let $alert = Battuta.prototype.confirmationAlert();
+        let $alert = Main.prototype.confirmationAlert();
 
         $alert.find('div.alert').addClass('alert-warning');
 
@@ -553,19 +572,19 @@ Battuta.prototype = {
 
         });
 
-        Battuta.prototype._deployAlert($alert)
+        Main.prototype._deployAlert($alert)
 
     },
 
     statusAlert: function (status, message) {
 
-        let $alert = Battuta.prototype.notificationAlert();
+        let $alert = Main.prototype.notificationAlert();
 
         $alert.find('div.alert').addClass('alert-' + status);
 
         $alert.find('div.message-container').append(message);
 
-        Battuta.prototype._deployAlert($alert)
+        Main.prototype._deployAlert($alert)
 
     },
 
@@ -805,7 +824,7 @@ Battuta.prototype = {
             });
 
         if (data.meta.deletable) $(row).find('td:last').empty().append(
-            Battuta.prototype.tableBtn('fas fa-trash', 'Delete', function () {
+            Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
                 new routes[data.type].Class(data).delete(false, function () {
 

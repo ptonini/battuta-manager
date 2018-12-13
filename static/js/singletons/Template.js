@@ -6,7 +6,7 @@ let Template = {
 
         let self = this;
 
-        file = file ? file : 'templates_Main.html';
+        file = file ? file : Main.prototype.templates;
 
         if (self._loaded.includes(file)) return Promise.resolve();
 

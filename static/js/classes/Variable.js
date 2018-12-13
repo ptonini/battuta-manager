@@ -1,10 +1,10 @@
 function Variable(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
-Variable.prototype = Object.create(Battuta.prototype);
+Variable.prototype = Object.create(Main.prototype);
 
 Variable.prototype.constructor = Variable;
 
@@ -242,7 +242,7 @@ Variable.prototype.table = function ($container, node) {
 
 Variable.prototype.entityDialog = function () {
 
-    let $dialog = Battuta.prototype.confirmationDialog();
+    let $dialog = Main.prototype.confirmationDialog();
 
     $dialog.find('div.dialog-content').append(Template['variable-form']());
 

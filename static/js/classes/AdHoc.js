@@ -1,10 +1,10 @@
 function AdHoc (param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
-AdHoc.prototype = Object.create(Battuta.prototype);
+AdHoc.prototype = Object.create(Main.prototype);
 
 AdHoc.prototype.constructor = AdHoc;
 

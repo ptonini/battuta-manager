@@ -36,7 +36,7 @@ function Search(pattern) {
 
 }
 
-Search.prototype = Object.create(Battuta.prototype);
+Search.prototype = Object.create(Main.prototype);
 
 Search.prototype.constructor = Search;
 

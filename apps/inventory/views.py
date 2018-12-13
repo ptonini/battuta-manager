@@ -513,8 +513,6 @@ class NodeView(ApiView):
 
     def delete(self, request, node_id):
 
-        # if request.user.has_perm('users.edit_' + self.type):
-
         if node_id:
 
             node = get_object_or_404(self.model_class, pk=node_id)
@@ -573,7 +571,7 @@ class GroupView(NodeView):
     form_class = GroupForm
 
 
-class VarsView(ApiView):
+class VariableView(ApiView):
 
     type = Variable.type
 

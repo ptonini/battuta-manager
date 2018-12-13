@@ -1,24 +1,15 @@
-import json
-from pytz import timezone
-
-from django.shortcuts import get_object_or_404, render
-from django.views.generic import View
-from django.forms import model_to_dict
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, Http404, HttpResponseNotFound
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
-from django.conf import settings
-from django.contrib.auth.models import Group
 
+from apps.iam import builtin_groups
 from apps.iam.models import LocalUser,  Credential, LocalGroup
 from apps.iam.forms import LocalUserForm, CredentialForm, LocalGroupForm
 
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import ProjectAuthorizer
 
 from main.extras.views import ApiView
-
 
 
 class UserView(ApiView):
@@ -137,7 +128,7 @@ class UserView(ApiView):
             return HttpResponseBadRequest()
 
 
-class CredsView(ApiView):
+class CredentialView(ApiView):
 
     form_class = CredentialForm
 
@@ -260,7 +251,7 @@ class UserGroupView(ApiView):
 
                 group = get_object_or_404(LocalGroup, pk=group_id)
 
-                response = {'data': (group.serialize(request.JSON.get('fields'), request.user))}
+                response = {'data': group.serialize(request.JSON.get('fields'), request.user)}
 
             else:
 

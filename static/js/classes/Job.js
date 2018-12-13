@@ -1,10 +1,10 @@
 function Job(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
-Job.prototype = Object.create(Battuta.prototype);
+Job.prototype = Object.create(Main.prototype);
 
 Job.prototype.constructor = Job;
 
@@ -28,7 +28,7 @@ Job.prototype.crud = {
 
             $(row).addClass(Job.prototype.states[data[4]]).css('cursor', 'pointer').click(function () {
 
-                Battuta.prototype.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
+                Main.prototype.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
 
             })
         },

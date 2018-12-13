@@ -1,6 +1,6 @@
 function NavBar() {}
 
-NavBar.prototype = Object.create(Battuta.prototype);
+NavBar.prototype = Object.create(Main.prototype);
 
 NavBar.prototype.constructor = NavBar;
 

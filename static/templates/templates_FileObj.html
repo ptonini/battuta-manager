@@ -1,0 +1,50 @@
+<div data-template="file-selector">
+    <div class="row">
+        <div class="col-12">
+            <h4 data-bind="title" class="text-capitalize"></h4>
+        </div>
+    </div>
+    <div class="card shadow p-3">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb" id="path_links">
+                        <li class="breadcrumb-item" id="root_path">&lt;root&gt;</li>
+                    </ol>
+                    <button class="btn btn-icon" id="edit_path" title="Edit path">
+                        <span class="fas fa-fw fa-pencil-alt"></span>
+                    </button>
+                </nav>
+            </div>
+            <div class="col-12">
+                <table class="table table-condensed table-hover table-striped file-table"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<form data-template="file-editor-form">
+    <div class="row form-group">
+        <div class="col-4">
+            <label for="input-filename" >File name</label>
+            <input id="input-filename" data-bind="new_name" class="form-control form-control-sm" type="text">
+        </div>
+        <div class="col-2 offset-6">
+            <label for="mode-selector">Mode</label>
+            <select id="mode-selector" class="select form-control form-control-sm"></select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col editor_column">
+            <div id="editor_container" contenteditable="true" style="border: 1px solid lightgrey"></div>
+        </div>
+    </div>
+</form>
+<table>
+    <tr data-template="previous-folder-row">
+        <td class="pointer font-weight-bold previous-folder-link">..</td><td></td><td></td><td></td><td></td>
+    </tr>
+</table>
+
+
+
+

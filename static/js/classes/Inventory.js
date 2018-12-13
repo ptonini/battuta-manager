@@ -104,7 +104,7 @@ function Inventory() {
 
 }
 
-Inventory.prototype = Object.create(Battuta.prototype);
+Inventory.prototype = Object.create(Main.prototype);
 
 Inventory.prototype.constructor = Inventory;
 

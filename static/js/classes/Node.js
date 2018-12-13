@@ -1,10 +1,10 @@
 function Node(param) {
 
-    Battuta.call(this, param);
+    Main.call(this, param);
 
 }
 
-Node.prototype = Object.create(Battuta.prototype);
+Node.prototype = Object.create(Main.prototype);
 
 Node.prototype.constructor = Node;
 
@@ -129,23 +129,19 @@ Node.prototype.selector = function () {
                 itemValueKey: 'name',
                 action: function (selection, $dialog) {
 
+                    $dialog.dialog({
+                        close: function () {
+
+                            $(this).remove();
+
+                            $container.trigger('reload')
+
+                        }
+                    });
+
                     self.deleteAlert(function () {
 
-                        self.fetchJson('DELETE', route, {data: selection}, true).then(() => {
-
-                            $dialog
-                                .dialog({
-                                    close: function () {
-
-                                        $(this).remove();
-
-                                        loadData()
-
-                                    }
-                                })
-                                .dialog('close');
-
-                        })
+                        self.fetchJson('DELETE', route, {data: selection}, true).then(() => { $dialog.dialog('close') })
 
                     })
 
