@@ -11,9 +11,42 @@ FileObj.prototype.constructor = FileObj;
 
 FileObj.prototype.type = 'fileObject';
 
-FileObj.prototype.label = {single: 'file', plural: 'files'};
+FileObj.prototype.label = {single: 'file', plural: 'file repository'};
 
 FileObj.prototype.templates = 'templates_FileObj.html';
+
+FileObj.prototype.tableButtons = [
+    {
+        text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
+        className: 'btn-sm btn-icon',
+        action: function () {
+
+            // let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
+            //
+            // file.dialog('create', function () {
+            //
+            //     $table.DataTable().ajax.reload()
+            //
+            // });
+
+        }
+    },
+    {
+        text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
+        className: 'btn-sm btn-icon',
+        action: function () {
+
+            // let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
+            //
+            // file.upload(function () {
+            //
+            //     $table.DataTable().ajax.reload()
+            //
+            // });
+
+        }
+    }
+]
 
 //
 // FileObj.prototype.validator = {
@@ -58,30 +91,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //
 // };
 //
-// FileObj.prototype.loadParam = function (param) {
-//
-//     let self = this;
-//
-//     self.set('name', param.name ? param.name : '');
-//
-//     self.set('new_name', param.new_name ? param.new_name : self.name);
-//
-//     self.set('type', param.type ? param.type : '');
-//
-//     self.set('size', param.size);
-//
-//     self.set('modified', param.modified);
-//
-//     self.set('root', param.root);
-//
-//     self.set('folder', param.folder ? param.folder : '');
-//
-//     self.set('owner', param.owner);
-//
-//     self.set('text', param.text);
-//
-// };
-//
+
 // FileObj.prototype.edit = function (callback) {
 //
 //     let self = this;
@@ -105,7 +115,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //     self.getData('read', false, callback);
 //
 // };
-//
+
 // FileObj.prototype.upload = function (callback) {
 //
 //     let self = this;
@@ -181,7 +191,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //         });
 //
 // };
-//
+
 // FileObj.prototype.exists = function (callback) {
 //
 //     let self = this;
@@ -195,7 +205,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //     })
 //
 // };
-//
+
 // FileObj.prototype.editorDialog = function (callback) {
 //
 //     let self = this;
@@ -342,7 +352,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //     });
 //
 // };
-//
+
 // FileObj.prototype.dialog = function (action, callback) {
 //
 //     let self = this;
@@ -410,7 +420,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //
 //
 // };
-//
+
 // FileObj.prototype.roleDialog = function (callback) {
 //
 //     let self = this;
@@ -463,7 +473,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 //
 // };
 
-FileObj.prototype.selector = function (param) {
+FileObj.prototype.selector = function (path) {
 
     let self = this;
 
@@ -473,11 +483,17 @@ FileObj.prototype.selector = function (param) {
 
         $container.html(Template['file-selector']());
 
-        return self.fetchJson('GET', '/' + param, null, false)
+        return self.fetchJson('GET', '/' + path, null, false)
 
     }).then((response) => {
 
         let $table = $container.find('table.file-table');
+
+        let pathArray = path.split('/');
+
+        self.constructor(response.data);
+
+        self.bindElement($container);
 
         $table.DataTable({
             scrollY: (window.innerHeight - 316).toString() + 'px',
@@ -493,7 +509,7 @@ FileObj.prototype.selector = function (param) {
             order: [[0, 'asc']],
             paging: false,
             dom: 'Bfrtip',
-            buttons: [],
+            buttons: self.tableButtons,
             rowCallback: function (row, data) {
 
                 if (data.type === 'folder') {
@@ -506,18 +522,13 @@ FileObj.prototype.selector = function (param) {
                 }
 
                 $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                    self.tableBtn('fas fa-trash', 'Delete', function () {
+                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
 
-                        // new FileObj(data).delete(false, function () {
+                        // file.edit(function () {
                         //
-                        //     Router.navigate('/' + param)
+                        //     $table.DataTable().ajax.reload()
                         //
-                        // })
-
-                    }),
-                    self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
-
-                        // window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
+                        // });
 
                     }),
                     self.tableBtn('fas fa-clone', 'Copy', function () {
@@ -529,16 +540,22 @@ FileObj.prototype.selector = function (param) {
                         // });
 
                     }),
-                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+                    self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
 
-                        // file.edit(function () {
+                        // window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
+
+                    }),
+                    self.tableBtn('fas fa-trash', 'Delete', function () {
+
+                        // new FileObj(data).delete(false, function () {
                         //
-                        //     $table.DataTable().ajax.reload()
+                        //     Router.navigate('/' + param)
                         //
-                        // });
+                        // })
 
                     })
-                );
+
+                )
             },
             drawCallback: function () {
 
@@ -559,6 +576,24 @@ FileObj.prototype.selector = function (param) {
 
             }
         });
+
+        $container.find('li.root-breadcrumb').click(function () {
+
+            Router.navigate(self.links.root)
+
+        });
+
+        for (let i = 2; i < pathArray.length; i ++) {
+
+            $container.find('ol.path-breadcrumbs').append(
+                $('<li>').attr('class', 'breadcrumb-item').html(pathArray[i]).click(function() {
+
+                    Router.navigate('/' + pathArray.slice(0,i + 1).join('/'))
+
+                })
+            )
+
+        }
 
     })
 
@@ -637,38 +672,6 @@ FileObj.prototype.selector = function (param) {
     //         }
     //     };
 
-    //     let buttons = [
-    //         {
-    //             text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
-    //             className: 'btn-sm btn-icon',
-    //             action: function () {
-    //
-    //                 let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
-    //
-    //                 file.dialog('create', function () {
-    //
-    //                     $table.DataTable().ajax.reload()
-    //
-    //                 });
-    //
-    //             }
-    //         },
-    //         {
-    //             text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
-    //             className: 'btn-sm btn-icon',
-    //             action: function () {
-    //
-    //                 let file = new FileObj({root: self.root, folder: self.folder, owner: owner});
-    //
-    //                 file.upload(function () {
-    //
-    //                     $table.DataTable().ajax.reload()
-    //
-    //                 });
-    //
-    //             }
-    //         }
-    //     ];
 
     //     let buildBreadcrumbs = () => {
     //

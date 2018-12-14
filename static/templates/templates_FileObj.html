@@ -1,15 +1,11 @@
 <div data-template="file-selector">
-    <div class="row">
-        <div class="col-12">
-            <h4 data-bind="title" class="text-capitalize"></h4>
-        </div>
-    </div>
+    <h4 data-bind="label.plural" class="title-header"></h4>
     <div class="card shadow p-3">
         <div class="row">
             <div class="col-12">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb" id="path_links">
-                        <li class="breadcrumb-item" id="root_path">&lt;root&gt;</li>
+                    <ol class="breadcrumb path-breadcrumbs">
+                        <li class="breadcrumb-item root-breadcrumb">&lt;root&gt;</li>
                     </ol>
                     <button class="btn btn-icon" id="edit_path" title="Edit path">
                         <span class="fas fa-fw fa-pencil-alt"></span>

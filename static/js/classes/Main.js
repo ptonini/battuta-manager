@@ -922,6 +922,8 @@ Main.prototype = {
 
         Template._load(self.templates).then(() => {
 
+            let $selector = Template['entity-selector']();
+
             let $table = Template['table']();
 
             let tableOptions = {
@@ -952,6 +954,8 @@ Main.prototype = {
                 rowCallback: self.selectorRowCallback
             };
 
+            $selector.find('div.table-container').append($table);
+
             $container
                 .off()
                 .on('reload', function () {
@@ -960,10 +964,7 @@ Main.prototype = {
 
                 })
                 .empty()
-                .append(
-                    $('<h4>').attr('class', 'text-capitalize').html(self.label.plural),
-                    $('<div>').attr('class', 'card shadow p-3').append($table)
-                );
+                .append($selector);
 
             $table.DataTable(tableOptions);
 

@@ -52,6 +52,10 @@ div.item-value,
 }
 
 
+.title-header:first-letter {
+    text-transform: capitalize;
+}
+
 /* FontAwesome icons ******************/
 
 button .fas, button .far, button .fal, button .fab {

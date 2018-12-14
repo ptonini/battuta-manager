@@ -26,7 +26,7 @@ class FileHandler(SerializerModelMixin):
 
         if os.path.isdir(absolute_path) or os.path.isfile(absolute_path):
 
-            self.id = os.path.basename(os.path.normpath(path))
+            self.id = os.path.basename(os.path.normpath(path)) if path else None
 
             self.type = 'file' if os.path.isfile(absolute_path) else 'folder'
 
@@ -102,8 +102,9 @@ class FileHandler(SerializerModelMixin):
                 'root': self.root
             },
             'links': {
-                'self': '/'.join(['/files', self.root, path, self.id] if self.path else ['/files', self.root, self.id]),
-                'parent': '/'.join(['/files', self.root, path] if self.path else ['/files', self.root])
+                'self': '/'.join(filter(None, ['/files', self.root, self.path])),
+                'parent': '/'.join(['/files', self.root, path]) if self.path else None,
+                'root': '/'.join(['/files', self.root])
             }
         }
 
