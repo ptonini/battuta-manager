@@ -102,21 +102,13 @@ let routes = {
         href: '/main',
         regex: /^main$/,
         Class: null,
-        action: function () {
-
-            $('section.container').empty()
-
-        }
+        action: function () { $('section.container').empty() }
     },
     search: {
         href: '/search',
         regex: /^search\/?([-_a-zA-Z0-9]+)?/,
         Class: null,
-        action: function (param) {
-
-            new Search(param[0])
-
-        }
+        action: function (param) { new Search(param[0]) }
     },
     manage: {
         href: '/inventory/manage',
@@ -182,11 +174,7 @@ let routes = {
         href: '/files/repository',
         regex: /^files\/repository\/?[\s\S]*$/,
         Class: FileObj,
-        action: function (param) {
-
-            new FileObj().selector(param.input);
-
-        }
+        action: function (param) { new FileObj({links: {self: param.input}}).selector() }
     },
 };
 

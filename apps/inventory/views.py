@@ -294,11 +294,11 @@ class ManageView(ApiView):
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
             # Create temp file and load import data
-            with tempfile.TemporaryFile() as source_file:
+            with tempfile.TemporaryFile(mode='w+') as source_file:
 
                 for chunk in request.FILES['file_data']:
 
-                    source_file.write(chunk)
+                    source_file.write(chunk.decode("utf-8"))
 
                 source_file.seek(0, 0)
 
@@ -309,7 +309,7 @@ class ManageView(ApiView):
 
                     csv_data = csv.reader(source_file)
 
-                    header = next(csv_data.decode('utf8'))
+                    header = next(csv_data)
 
                     try:
 
@@ -357,7 +357,7 @@ class ManageView(ApiView):
                     # Load JSON data
                     try:
 
-                        json_data = json.loads(source_file.read().decode("utf-8"))
+                        json_data = json.loads(source_file.read())
 
                     except ValueError:
 

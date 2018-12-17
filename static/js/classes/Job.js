@@ -181,7 +181,7 @@ Job.prototype.run = function (sameWindow) {
 
             let $dialog = self.confirmationDialog();
 
-            $dialog.find('.dialog-header').remove();
+            $dialog.find('h5.dialog-header').remove();
 
             $dialog.find('div.dialog-content').append($element);
 
@@ -200,12 +200,6 @@ Job.prototype.run = function (sameWindow) {
                 $dialog.dialog('close');
 
                 post(sameWindow)
-
-            });
-
-            $dialog.find('button.cancel-button').click(function () {
-
-                $dialog.dialog('close');
 
             });
 
@@ -251,7 +245,7 @@ Job.prototype.statistics = function (modal) {
 
         let $dialog = self.notificationDialog();
 
-        $dialog.find('.dialog-header').html('Statistics');
+        $dialog.find('h5.dialog-header').html('Statistics');
 
         $dialog.find('.dialog-content').append($table);
 

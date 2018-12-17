@@ -162,7 +162,7 @@ Playbook.prototype.dialog = function (args) {
 
     let $dialog = Template['dialog']();
 
-    $dialog.find('.dialog-header').html(self.name);
+    $dialog.find('h5.dialog-header').html(self.name);
 
     $dialog.find('div.dialog-footer').remove();
 

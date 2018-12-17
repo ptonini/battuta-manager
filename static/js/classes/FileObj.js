@@ -1,6 +1,10 @@
 function FileObj(param) {
 
+    let self = this;
+
     Main.call(this, param);
+
+    param && self.set('type', param.type)
 
 }
 
@@ -8,8 +12,6 @@ FileObj.prototype = Object.create(Main.prototype);
 
 FileObj.prototype.constructor = FileObj;
 
-
-FileObj.prototype.type = 'fileObject';
 
 FileObj.prototype.label = {single: 'file', plural: 'file repository'};
 
@@ -46,7 +48,7 @@ FileObj.prototype.tableButtons = [
 
         }
     }
-]
+];
 
 //
 // FileObj.prototype.validator = {
@@ -122,7 +124,7 @@ FileObj.prototype.tableButtons = [
 //
 //     let $dialog = self.confirmationDialog();
 //
-//     $dialog.find('.dialog-header').html('Upload file');
+//     $dialog.find('h5.dialog-header').html('Upload file');
 //
 //     $dialog.find('div.dialog-content').addClass('pt-2').append(
 //         $('<label>').attr({for: 'upload-input', class: 'sr-only'}).html('Filename'),
@@ -184,7 +186,7 @@ FileObj.prototype.tableButtons = [
 //
 //                 $dialog.find('div.file-caption-main').show();
 //
-//                 $dialog.find('.dialog-header').html('Select file');
+//                 $dialog.find('h5.dialog-header').html('Select file');
 //
 //             })
 //
@@ -313,7 +315,7 @@ FileObj.prototype.tableButtons = [
 //
 //         $element.find('#editor_container').css('height', window.innerHeight * 0.7);
 //
-//         $dialog.find('.dialog-header').remove();
+//         $dialog.find('h5.dialog-header').remove();
 //
 //         $dialog.find('div.dialog-content').append($element);
 //
@@ -353,74 +355,6 @@ FileObj.prototype.tableButtons = [
 //
 // };
 
-// FileObj.prototype.dialog = function (action, callback) {
-//
-//     let self = this;
-//
-//     let $dialog = self.confirmationDialog();
-//
-//     $dialog.find('.dialog-header').attr('class', 'text-capitalize').html(action);
-//
-//     $dialog.find('div.dialog-content').addClass('pt-2').append(
-//         $('<label>').attr({for: 'filename-input', class: 'sr-only'}).html('File name'),
-//         $('<div>').attr('class', 'input-group').append(
-//             $('<input>').attr({id: 'filename-input', 'data-bind': 'new_name', class: 'form-control form-control-sm', type: 'text'}),
-//             $('<div>').attr('class', 'input-group-append').append(
-//                 $('<button>').attr({class: 'is-folder-button btn btn-light btn-sm', 'data-bind': 'is_folder', type: 'button', title: 'Folder'}).append(
-//                     $('<span>').attr('class', 'fas fa-folder')
-//                 )
-//             )
-//         )
-//     );
-//
-//     self.bindElement($dialog);
-//
-//     self.set('action', action);
-//
-//     self.set('is_folder', false);
-//
-//     action === 'copy' && self.set('new_name', 'copy_' + self.name);
-//
-//     if (action === 'copy' || action === 'rename') {
-//
-//         $dialog.find('div.input-group').removeClass('input-group');
-//
-//         $dialog.find('div.input-group-append').hide();
-//
-//     }
-//
-//     $dialog.find('button.confirm-button').click(function() {
-//
-//         if (self.is_folder) self.type = 'directory';
-//
-//         if (self.new_name && self.new_name !== self.name) self.postData(action, true, (data) => {
-//
-//             $dialog.dialog('close');
-//
-//             callback && callback(data);
-//
-//         });
-//
-//     });
-//
-//     $dialog.find('button.cancel-button').click(function() {
-//
-//         $dialog.dialog('close')
-//
-//     });
-//
-//     $dialog
-//         .dialog()
-//         .keypress(function (event) {
-//
-//             event.keyCode === 13 && $dialog.find('.confirm-button').click()
-//
-//         });
-//
-//
-//
-// };
-
 // FileObj.prototype.roleDialog = function (callback) {
 //
 //     let self = this;
@@ -437,7 +371,7 @@ FileObj.prototype.tableButtons = [
 //
 //         });
 //
-//         $dialog.find('.dialog-header').html('Create role');
+//         $dialog.find('h5.dialog-header').html('Create role');
 //
 //         $dialog.find('div.dialog-content').append($element);
 //
@@ -473,434 +407,320 @@ FileObj.prototype.tableButtons = [
 //
 // };
 
-FileObj.prototype.selector = function (path) {
+//     let roots = {
+//         playbooks: {
+//             button: {
+//                 text: '<span class="fas fa-plus fa-fw" title="New playbook"></span>',
+//                 className: 'btn-sm btn-icon',
+//                 action: function () {
+//
+//                     $.ajax({
+//                         url: '/static/templates/playbook_template.yml',
+//                         success: function (data) {
+//
+//                             let file = new FileObj({root: 'playbooks', folder: self.folder, text: data});
+//
+//                             file.editorDialog(function () {
+//
+//                                 $table.DataTable().ajax.reload()
+//
+//                             })
+//
+//                         }
+//                     });
+//
+//                 }
+//             }
+//         },
+//         roles: {
+//             button: {
+//                 text: '<span class="fas fa-plus fa-fw" title="Add role"></span>',
+//                 className: 'btn-sm btn-icon',
+//                 action: function () {
+//
+//                     let role = new FileObj({name: '', root: 'roles', folder: '', type: 'directory'});
+//
+//                     role.roleDialog(function (data, role) {
+//
+//                         setFolder(role.name);
+//
+//                     });
+//
+//                 }
+//             }
+//
+//         }
+//     };
+
+FileObj.prototype.dialog = function (action) {
+
+    let self = this;
+
+    let actions = {
+        create: {
+            displayName: null,
+            title: 'Create',
+            template: 'create-file-form'},
+        rename: {
+            displayName: self.id,
+            title: 'Rename ' + self.type,
+            template: 'update-file-form'},
+        copy: {
+            displayName: self.id + '_copy',
+            title: 'Copy ' + self.id,
+            template: 'update-file-form'
+        }
+    };
+
+    let $dialog = self.confirmationDialog();
+
+    $dialog.find('div.dialog-content').html(Template[actions[action].template]());
+
+    $dialog.find('h5.dialog-header').replaceWith($('<h6>').html(actions[action].title));
+
+    $dialog.find('input.filename-input').val(actions[action].displayName);
+
+    $dialog.find('button.folder-button').click(function () {
+
+        let $button = $(this);
+
+        if ($button.hasClass('checked-button')) self.set('type', 'file');
+
+        else self.set('type', 'folder');
+
+        $button.toggleClass('checked-button');
+
+    });
+
+    $dialog.find('button.confirm-button').click(function() {
+
+        self.set('new_name', $dialog.find('input.filename-input').val());
+
+        if (self.get('new_name') && self.get('new_name') !== self.get('id')) self.update(false).then(() => {
+
+            $dialog.dialog('close');
+
+            Router.navigate(self.links.parent)
+
+        });
+
+    });
+
+    $dialog
+        .dialog()
+        .keypress(function (event) {
+
+            event.keyCode === 13 && $dialog.find('.confirm-button').click()
+
+        });
+
+
+
+};
+
+FileObj.prototype.edit = function () {
+
+    let self = this;
+
+    return self.read().then(response => {
+
+        if (self.get('content')) console.log(self.get('content'));
+
+        else self.dialog('rename');
+
+    })
+
+};
+
+FileObj.prototype.selector = function () {
 
     let self = this;
 
     let $container = $('section.container');
 
-    Template._load(self.templates).then(() => {
+    Template._load(self.templates).then(() => { return self.read(false, null) }).then(response => {
 
-        $container.html(Template['file-selector']());
+        if (self.type === 'file') Router.navigate(self.links.parent);
 
-        return self.fetchJson('GET', '/' + path, null, false)
+        else {
 
-    }).then((response) => {
+            $container.html(Template['file-selector']());
 
-        let $table = $container.find('table.file-table');
+            self.bindElement($container);
 
-        let pathArray = path.split('/');
+            let $table = $container.find('table.file-table');
 
-        self.constructor(response.data);
+            let pathArray = self.links.self.split('/');
 
-        self.bindElement($container);
+            let pathArrayViewableIndex = 3;
 
-        $table.DataTable({
-            scrollY: (window.innerHeight - 316).toString() + 'px',
-            scrollCollapse: true,
-            data: response['included'],
-            columns: [
-                {title: 'name', data: 'id', width: '50%'},
-                {title: 'type', data: 'attributes.mime_type', width: '15%'},
-                {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
-                {title: 'modified', data: 'attributes.modified', width: '20%'},
-                {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
-            ],
-            order: [[0, 'asc']],
-            paging: false,
-            dom: 'Bfrtip',
-            buttons: self.tableButtons,
-            rowCallback: function (row, data) {
+            let buildBreadcrumbs = () => {
 
-                if (data.type === 'folder') {
+                $container.find('li.path-breadcrumb').remove();
 
-                    $(row).attr('class', 'folder-row').find('td:eq(0)')
-                        .css({'cursor': 'pointer', 'font-weight': '700'})
-                        .off('click')
-                        .click(function () { Router.navigate(data.links.self) });
+                for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
+
+                    $container.find('ol.path-breadcrumbs').append(
+                        Template['path-breadcrumb']().html(pathArray[i]).click(function() {
+
+                            Router.navigate(pathArray.slice(0,i + 1).join('/'))
+
+                        })
+                    )
 
                 }
 
-                $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+            };
 
-                        // file.edit(function () {
-                        //
-                        //     $table.DataTable().ajax.reload()
-                        //
-                        // });
+            // let $currentTable = $container.find('table.file-table');
+            //
+            // let $table;
+            //
+            // if ($.fn.DataTable.isDataTable($currentTable)) {
+            //
+            //     $table = Template['table']().addClass('file-table');
+            //
+            //     $currentTable.DataTable().destroy();
+            //
+            //     $currentTable.replaceWith($table)
+            //
+            // } else $table = $currentTable;
 
-                    }),
-                    self.tableBtn('fas fa-clone', 'Copy', function () {
+            $table.DataTable({
+                stateSave: false,
+                scrollY: (window.innerHeight - 316).toString() + 'px',
+                scrollCollapse: true,
+                data: response['included'],
+                columns: [
+                    {title: 'name', data: 'id', width: '50%'},
+                    {title: 'type', data: 'attributes.mime_type', width: '15%'},
+                    {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
+                    {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data, sessionStorage.getItem('current_user_tz')) }},
+                    {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
+                ],
+                order: [[0, 'asc']],
+                paging: false,
+                dom: 'Bfrtip',
+                buttons: self.tableButtons,
+                rowCallback: function (row, data) {
 
-                        // file.dialog('copy', function () {
-                        //
-                        //     $table.DataTable().ajax.reload()
-                        //
-                        // });
+                    if (data.type === 'folder') $(row).attr('class', 'folder-row').find('td:eq(0)')
+                        .addClass('pointer font-weight-bold')
+                        .off('click')
+                        .click(function () { Router.navigate(data.links.self) });
 
-                    }),
-                    self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
+                    $(row).find('td:eq(4)').html('').removeAttr('title').append(
+                        self.tableBtn('fas fa-pencil-alt', 'Edit', function () { new FileObj(data).edit() }),
+                        self.tableBtn('fas fa-clone', 'Copy', function () {
 
-                        // window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
+                            // file.dialog('copy', function () {
+                            //
+                            //     $table.DataTable().ajax.reload()
+                            //
+                            // });
 
-                    }),
-                    self.tableBtn('fas fa-trash', 'Delete', function () {
+                        }),
+                        self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
 
-                        // new FileObj(data).delete(false, function () {
-                        //
-                        //     Router.navigate('/' + param)
-                        //
-                        // })
+                            // window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
 
-                    })
+                        }),
+                        self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                )
-            },
-            drawCallback: function () {
+                            // new FileObj(data).delete(false, function () {
+                            //
+                            //     Router.navigate('/' + param)
+                            //
+                            // })
 
-                $table.find('tr.folder-row').reverse().each(function (index, row) {
+                        })
+                    )
 
-                    $table.prepend(row)
+                },
+                drawCallback: function () {
 
-                });
+                    $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
 
-                if (response.data.attributes.path !== null) $table
-                    .prepend(Template['previous-folder-row']())
-                    .find('td.previous-folder-link')
-                    .click(function () {
+                    if (self.links.root !== self.links.self) {
 
-                        Router.navigate(response.data.links.parent)
+                        $table
+                            .prepend(Template['previous-folder-row']())
+                            .find('td.previous-folder-link')
+                            .click(function () {
 
-                    })
+                                Router.navigate(self.links.parent)
 
-            }
-        });
+                            })
+                    }
 
-        $container.find('li.root-breadcrumb').click(function () {
+                }
+            });
 
-            Router.navigate(self.links.root)
+            $container.find('li.root-breadcrumb').off().click(function () { Router.navigate(self.links.root) });
 
-        });
+            $container.find('button.edit-path-button').off().click(function () {
 
-        for (let i = 2; i < pathArray.length; i ++) {
+                let $pathButton = $(this);
 
-            $container.find('ol.path-breadcrumbs').append(
-                $('<li>').attr('class', 'breadcrumb-item').html(pathArray[i]).click(function() {
+                if ($pathButton.hasClass('checked_button')) {
 
-                    Router.navigate('/' + pathArray.slice(0,i + 1).join('/'))
+                    $pathButton.removeClass('checked_button');
 
-                })
-            )
+                    buildBreadcrumbs()
+
+                }
+
+                else {
+
+                    $pathButton.addClass('checked_button');
+
+                    let $pathInput = Template['path-input']();
+
+                    let $breadCrumbs = $container.find('ol.path-breadcrumbs');
+
+                    $container.find('li.path-breadcrumb').remove();
+
+                    $breadCrumbs.append(Template['path-breadcrumb']().append($pathInput));
+
+                    $pathInput
+                        .focus()
+                        .val(pathArray.slice(pathArrayViewableIndex).join('/'))
+                        .css('width', $breadCrumbs.width() * .90 + 'px')
+                        .keypress(function (event) {
+
+                            if (event.keyCode === 13) {
+
+                                self.fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
+
+                                    $pathButton.removeClass('checked_button');
+
+                                    buildBreadcrumbs();
+
+                                    Router.navigate(self.links.root + '/' + $(this).val());
+
+                                })
+
+                            }
+
+                            else if (event.key === 27) {
+
+                                $pathButton.removeClass('checked_button');
+
+                                buildBreadcrumbs();
+
+                            }
+
+                        })
+
+                }
+            });
+
+            buildBreadcrumbs()
 
         }
 
-    })
-
-    // self.fetchHtml('selector_File.html', $('section.container')).then($element => {
-    //
-    //     self.bindElement($element);
-    //
-    //     self.set('title', owner ? owner + ' files' : self.root);
-    //
-    //     self.folder = window.location.hash.slice(1);
-    //
-    //     let $table = $('#file_table');
-    //
-    //     let $breadCrumb = $('#path_links');
-    //
-    //     let $pathInputField = $('<input>').attr({id: 'path_input', class: 'rounded px-1'});
-    //
-    //     let $previousFolderRow = $('<tr>').attr('role', 'row').append(
-    //         $('<td>').css({cursor: 'pointer', 'font-weight': 'bold'}).html('..').click(function () {
-    //
-    //             let folderArray = self.folder.split('/');
-    //
-    //             folderArray.pop();
-    //
-    //             setFolder(folderArray.join('/'));
-    //
-    //         }),
-    //         $('<td>'),
-    //         $('<td>'),
-    //         $('<td>'),
-    //         $('<td>')
-    //     );
-
-    //     let roots = {
-    //         playbooks: {
-    //             button: {
-    //                 text: '<span class="fas fa-plus fa-fw" title="New playbook"></span>',
-    //                 className: 'btn-sm btn-icon',
-    //                 action: function () {
-    //
-    //                     $.ajax({
-    //                         url: '/static/templates/playbook_template.yml',
-    //                         success: function (data) {
-    //
-    //                             let file = new FileObj({root: 'playbooks', folder: self.folder, text: data});
-    //
-    //                             file.editorDialog(function () {
-    //
-    //                                 $table.DataTable().ajax.reload()
-    //
-    //                             })
-    //
-    //                         }
-    //                     });
-    //
-    //                 }
-    //             }
-    //         },
-    //         roles: {
-    //             button: {
-    //                 text: '<span class="fas fa-plus fa-fw" title="Add role"></span>',
-    //                 className: 'btn-sm btn-icon',
-    //                 action: function () {
-    //
-    //                     let role = new FileObj({name: '', root: 'roles', folder: '', type: 'directory'});
-    //
-    //                     role.roleDialog(function (data, role) {
-    //
-    //                         setFolder(role.name);
-    //
-    //                     });
-    //
-    //                 }
-    //             }
-    //
-    //         }
-    //     };
+    });
 
 
-    //     let buildBreadcrumbs = () => {
-    //
-    //         $('.path_link').remove();
-    //
-    //         $('#edit_path').removeClass('checked_button');
-    //
-    //         self.folder && $.each(self.folder.split('/'), function (index, value) {
-    //
-    //             $('#path_links').append(
-    //
-    //                 $('<li>')
-    //                     .attr({id: 'path_link_' + index, class: 'breadcrumb-item path_link'})
-    //                     .html(value)
-    //                     .click(function () {
-    //
-    //                         let nextFolder = '';
-    //
-    //                         for (let i = 0; i <= index; i++) {
-    //
-    //                             nextFolder += $('#path_link_' + i).html();
-    //
-    //                             if (i < index) nextFolder += '/'
-    //
-    //                         }
-    //
-    //                         $(this).nextAll('.path_link').remove();
-    //
-    //                         setFolder(nextFolder)
-    //
-    //                     })
-    //             )
-    //
-    //         });
-    //
-    //     };
-
-    //     let setFolder = folder => {
-    //
-    //         self.folder = folder;
-    //
-    //         location.hash = folder;
-    //
-    //         $table.DataTable().search('');
-    //
-    //         $table.DataTable().ajax.reload()
-    //
-    //     };
-
-    //     let buildTable = () => {
-    //
-    //         $table.DataTable({
-    //             scrollY: (window.innerHeight - 316).toString() + 'px',
-    //             scrollCollapse: true,
-    //             ajax: {
-    //                 url: self.apiPath + 'list/',
-    //                 dataSrc: 'file_list',
-    //                 data: function () {
-    //
-    //                     return {folder: self.folder, root: self.root, owner: owner}
-    //
-    //                 }
-    //             },
-    //             columns: [
-    //                 {title: 'name', data: 'name', width: '60%'},
-    //                 {title: 'type', data: 'type', width: '10%'},
-    //                 {title: 'size', data: 'size', width: '10%'},
-    //                 {title: 'modified', data: 'modified', width: '10%'},
-    //                 {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-    //             ],
-    //             order: [[0, 'asc']],
-    //             paging: false,
-    //             dom: 'Bfti',
-    //             buttons: buttons,
-    //             rowCallback: function (row, data) {
-    //
-    //                 let file = new FileObj(data);
-    //
-    //                 if (file.type === 'directory') {
-    //
-    //                     $(row).attr('class', 'directory_row').find('td:eq(0)')
-    //                         .css({'cursor': 'pointer', 'font-weight': '700'})
-    //                         .off('click')
-    //                         .click(function () {
-    //
-    //                             file.folder ? setFolder(file.folder + '/' + file.name) : setFolder(file.name)
-    //
-    //                         });
-    //
-    //                 }
-    //
-    //                 $(row).find('td:eq(2)').humanBytes();
-    //
-    //                 $(row).find('td:eq(4)').html('').removeAttr('title').append(
-    //                     self.tableBtn('fas fa-trash', 'Delete', function () {
-    //
-    //                         file.del(function () {
-    //
-    //                             $table.DataTable().ajax.reload()
-    //
-    //                         })
-    //
-    //                     }),
-    //                     self.tableBtn('fas fa-download ', 'Download ' + file.name, function () {
-    //
-    //                         window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
-    //
-    //                     }),
-    //                     self.tableBtn('fas fa-clone', 'Copy', function () {
-    //
-    //                         file.dialog('copy', function () {
-    //
-    //                             $table.DataTable().ajax.reload()
-    //
-    //                         });
-    //
-    //                     }),
-    //                     self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
-    //
-    //                         file.edit(function () {
-    //
-    //                             $table.DataTable().ajax.reload()
-    //
-    //                         });
-    //
-    //                     })
-    //                 );
-    //             },
-    //             drawCallback: function () {
-    //
-    //                 buildBreadcrumbs();
-    //
-    //                 $table.find('tr.directory_row').reverse().each(function (index, row) {
-    //
-    //                     $table.prepend($(row))
-    //
-    //                 });
-    //
-    //                 if (self.folder) {
-    //
-    //                     $('.dataTables_empty').parent().remove();
-    //
-    //                     $table.prepend($previousFolderRow)
-    //
-    //                 }
-    //
-    //             }
-    //         });
-    //
-    //     };
-
-    //     $('#root_path').click(function () {
-    //
-    //         setFolder('')
-    //
-    //     });
-    //
-    //     $('#edit_path').click(function () {
-    //
-    //         $('.path_link').remove();
-    //
-    //         if ($(this).hasClass('checked_button')) {
-    //
-    //             $(this).removeClass('checked_button');
-    //
-    //             buildBreadcrumbs()
-    //
-    //         }
-    //
-    //         else {
-    //
-    //             $(this).addClass('checked_button');
-    //
-    //             $('#path_links').append($('<li>').attr('class', 'breadcrumb-item path_link').append($pathInputField));
-    //
-    //             $pathInputField
-    //                 .off()
-    //                 .focus()
-    //                 .val(self.folder)
-    //                 .css('width', $breadCrumb.width() * .90 + 'px')
-    //                 .keypress(function (event) {
-    //
-    //                     if (event.keyCode === 13) {
-    //
-    //                         let fieldValue = $pathInputField.val();
-    //
-    //                         let folder = new FileObj({name: fieldValue, type: 'directory', root: self.root, user: owner});
-    //
-    //                         if (fieldValue.charAt(fieldValue.length - 1) === '/') {
-    //
-    //                             fieldValue = fieldValue.substr(0, fieldValue.length - 1)
-    //
-    //                         }
-    //
-    //                         folder.exists(function (data) {
-    //
-    //                             data.exists && setFolder(fieldValue)
-    //
-    //                         });
-    //
-    //                     }
-    //                 })
-    //         }
-    //     });
-    //
-    //     roots[self.root] && roots[self.root].button && buttons.unshift(roots[self.root].button);
-    //
-    //     if (self.folder) {
-    //
-    //         let folderObj = new FileObj({name: self.folder, type: 'directory', root: self.root, owner: owner});
-    //
-    //         folderObj.exists(function (data) {
-    //
-    //             if (!data.exists) {
-    //
-    //                 self.folder = '';
-    //
-    //                 location.hash = self.folder
-    //
-    //             }
-    //
-    //             buildTable()
-    //
-    //         });
-    //
-    //     }
-    //
-    //     else buildTable();
-    //
-    // });
 
 };

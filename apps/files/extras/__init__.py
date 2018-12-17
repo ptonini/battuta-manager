@@ -6,9 +6,9 @@ import datetime
 from django.conf import settings
 
 from apps.preferences.extras import get_preferences
-from main.extras.models import SerializerModelMixin
 
-class FileHandler(SerializerModelMixin):
+
+class FileHandler:
 
     root_path = settings.REPOSITORY_PATH
 
@@ -26,13 +26,15 @@ class FileHandler(SerializerModelMixin):
 
         if os.path.isdir(absolute_path) or os.path.isfile(absolute_path):
 
-            self.id = os.path.basename(os.path.normpath(path)) if path else None
+            self.parent_path, self.id = os.path.split(path)
 
             self.type = 'file' if os.path.isfile(absolute_path) else 'folder'
 
             self.path = path
 
             self.absolute_path = absolute_path
+
+            self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
 
         else:
 
@@ -68,6 +70,16 @@ class FileHandler(SerializerModelMixin):
 
             return {'data': self.serialize()}
 
+    def update(self, attributes):
+
+        new_name = attributes.get('new_name')
+
+        if new_name :
+
+            os.rename(self.absolute_path, os.path.join(self.absolute_parent_path, new_name))
+
+            self.__init__(os.path.join(self.parent_path, new_name))
+
     def search(self):
 
         file_list = list()
@@ -84,8 +96,6 @@ class FileHandler(SerializerModelMixin):
 
         prefs = get_preferences()
 
-        path = '/'.join(self.path.split('/')[:-1]) if self.path else None
-
         mime_type = magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else None
 
         size = os.path.getsize(self.absolute_path) if self.type == 'file' else None
@@ -95,15 +105,13 @@ class FileHandler(SerializerModelMixin):
             'type': self.type,
             'attributes': {
                 'size': size,
-                'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(
-                    prefs['date_format']),
-                'path': path,
+                'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
                 'mime_type': mime_type,
-                'root': self.root
+                'path': self.path
             },
             'links': {
                 'self': '/'.join(filter(None, ['/files', self.root, self.path])),
-                'parent': '/'.join(['/files', self.root, path]) if self.path else None,
+                'parent': '/'.join(['/files', self.root, self.parent_path]) if self.path else None,
                 'root': '/'.join(['/files', self.root])
             }
         }

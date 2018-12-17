@@ -255,7 +255,7 @@ Variable.prototype.copyVariables = function (node, callback) {
 
     let $dialog = self.notificationDialog();
 
-    $dialog.find('.dialog-header').addClass('text-center mb-3').html('Select source type');
+    $dialog.find('h5.dialog-header').addClass('text-center mb-3').html('Select source type');
 
     $dialog.find('div.dialog-content').append(Template['source-type-selector']);
 

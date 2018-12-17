@@ -65,7 +65,7 @@ Preferences.prototype.dialog = function () {
 
     let $dialog = self.confirmationDialog().dialog({autoOpen: false, width: 800});
 
-    $dialog.find('.dialog-header').append('Preferences', Template['restore-button']());
+    $dialog.find('h5.dialog-header').append('Preferences', Template['restore-button']());
 
     $dialog.find('button.restore-button').click(function () {
 
@@ -80,12 +80,6 @@ Preferences.prototype.dialog = function () {
             self.statusAlert('success', 'Preferences restored')
 
         })
-
-    });
-
-    $dialog.find('button.cancel-button').click(function () {
-
-        $dialog.dialog('close');
 
     });
 

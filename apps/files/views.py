@@ -159,6 +159,15 @@ class FileView(ApiView):
 
             return self._api_response(fs_obj.read())
 
+
+    def patch(self, request, root, path):
+
+        fs_obj = FileHandler.build(root, path)
+
+        fs_obj.update(request.JSON.get('data', {}).get('attributes'))
+
+        return self._api_response(fs_obj.read())
+
     # def get(self, request, action):
     #
     #     prefs = get_preferences()

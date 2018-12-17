@@ -21,7 +21,12 @@ class MainView(ApiView):
 
         if request.user.is_authenticated:
 
-            response = {'meta': {'user': request.user.serialize({'attributes': ['username', 'timezone']}, request.user)}}
+            fields = {
+                'attributes': ['username', 'timezone'],
+                'links':['self']
+            }
+
+            response = {'meta': {'user': request.user.serialize(fields, request.user)}}
 
         else:
 

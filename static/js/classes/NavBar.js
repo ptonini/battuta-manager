@@ -46,6 +46,14 @@ NavBar.prototype.build = function () {
 
             });
 
+            $element.find('a.profile-link').click(function (e) {
+
+                e.preventDefault();
+
+                Router.navigate(response['meta']['user']['links']['self'])
+
+            });
+
             $element.find('a.logout-link').click(function (e) {
 
                 e.preventDefault();

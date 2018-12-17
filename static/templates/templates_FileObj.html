@@ -7,7 +7,7 @@
                     <ol class="breadcrumb path-breadcrumbs">
                         <li class="breadcrumb-item root-breadcrumb">&lt;root&gt;</li>
                     </ol>
-                    <button class="btn btn-icon" id="edit_path" title="Edit path">
+                    <button class="btn btn-icon edit-path-button" type="button" title="Edit path">
                         <span class="fas fa-fw fa-pencil-alt"></span>
                     </button>
                 </nav>
@@ -18,6 +18,7 @@
         </div>
     </div>
 </div>
+
 <form data-template="file-editor-form">
     <div class="row form-group">
         <div class="col-4">
@@ -35,11 +36,31 @@
         </div>
     </div>
 </form>
+
+<form data-template="update-file-form">
+    <input class="filename-input form-control form-control-sm" title="Enter name" type="text">
+</form>
+
+<form data-template="create-file-form">
+    <div class="input-group">
+        <input class="filename-input form-control form-control-sm" title="Enter name" type="text">
+        <div class="input-group-append">
+            <button class="folder-button btn btn-light btn-sm" type="button" title="Folder">
+                <span class="fas fa-folder"></span>
+            </button>
+        </div>
+    </div>
+</form>
+
 <table>
     <tr data-template="previous-folder-row">
         <td class="pointer font-weight-bold previous-folder-link">..</td><td></td><td></td><td></td><td></td>
     </tr>
 </table>
+
+<input data-template="path-input" class="path-input rounded px-1" title="Enter path">
+
+<li data-template="path-breadcrumb" class="breadcrumb-item path-breadcrumb"></li>
 
 
 

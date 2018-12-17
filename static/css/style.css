@@ -250,7 +250,7 @@ li.breadcrumb-item {
     cursor: pointer
 }
 
-button#edit_path {
+button.edit-path-button {
     position:absolute;
     right:1rem;
     top:35%;
@@ -258,9 +258,11 @@ button#edit_path {
     margin-right: 8px;
 }
 
-#root_path {font-weight: bold; font-style: italic;}
-
-#path_input {border: none; padding: 0}
+input.path-input {
+    padding: 0;
+    color: var(--main-font-color) !important;
+    border: 0 solid var(--input-border-color);
+}
 
 
 /* JQuery dialog *************************/

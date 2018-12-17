@@ -120,7 +120,7 @@ Host.prototype.info = function ($container) {
 
                 let $table = Template['table']();
 
-                $dialog.find('.dialog-header').html(key).addClass('text-capitalize');
+                $dialog.find('h5.dialog-header').html(key).addClass('text-capitalize');
 
                 $dialog.find('.dialog-content').append($table);
 
@@ -147,7 +147,7 @@ Host.prototype.info = function ($container) {
 
                 let $dialog = Main.prototype.notificationDialog();
 
-                $dialog.find('.dialog-header').html(self.name + ' facts');
+                $dialog.find('h5.dialog-header').html(self.name + ' facts');
 
                 $dialog.find('.dialog-content').append(
                     $('<div>')

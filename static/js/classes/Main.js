@@ -472,7 +472,7 @@ Main.prototype = {
 
         let $dialog = Template['dialog']();
 
-        headless && $dialog.find('.dialog-header').remove();
+        headless && $dialog.find('h5.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(
             Template['close-button']().click(function () { $dialog.dialog('close') })
@@ -486,9 +486,11 @@ Main.prototype = {
 
         let $dialog = Template['dialog']();
 
-        headless && $dialog.find('.dialog-header').remove();
+        headless && $dialog.find('h5.dialog-header').remove();
 
-        $dialog.find('div.dialog-footer').append(Template['cancel-button'](), Template['confirm-button']());
+        $dialog.find('div.dialog-footer').append(
+            Template['cancel-button']().click(function () { $dialog.dialog('close') }),
+            Template['confirm-button']());
 
         return $dialog
 
@@ -594,13 +596,11 @@ Main.prototype = {
 
         let $dialog = self.confirmationDialog();
 
-        $dialog.find('.dialog-header').remove();
+        $dialog.find('h5.dialog-header').remove();
 
         $dialog.find('button.cancel-button').click(function () {
 
             $dialog.find('input.filter_box').val('');
-
-            $dialog.dialog('close');
 
         });
 
@@ -762,7 +762,7 @@ Main.prototype = {
 
                 });
 
-                $dialog.find('.dialog-header').remove();
+                $dialog.find('h5.dialog-header').remove();
 
                 $dialog.find('div.dialog-content').append($element);
 
@@ -958,13 +958,11 @@ Main.prototype = {
 
             $container
                 .off()
-                .on('reload', function () {
-
-                    $table.DataTable().ajax.reload()
-
-                })
+                .on('reload', function () { $table.DataTable().ajax.reload() })
                 .empty()
                 .append($selector);
+
+            self.bindElement($container);
 
             $table.DataTable(tableOptions);
 
@@ -982,11 +980,11 @@ Main.prototype = {
 
             $container.html(Template['entity-view']());
 
-            self.bindElement($container);
-
             return self.read(false)
 
         }).then(() => {
+
+            self.bindElement($container);
 
             document.title = 'Battuta - ' + self.name;
 
@@ -1034,7 +1032,7 @@ Main.prototype = {
 
         self.bindElement($dialog);
 
-        $dialog.find('.dialog-header').html(self.id ? 'Edit ' + self.label.single : 'Add ' + self.label.single);
+        $dialog.find('h5.dialog-header').html(self.id ? 'Edit ' + self.label.single : 'Add ' + self.label.single);
 
         $dialog.find('button.confirm-button').click(function () {
 
@@ -1053,12 +1051,6 @@ Main.prototype = {
                 else self.create().then(callback);
 
             }
-
-        });
-
-        $dialog.find('button.cancel-button').click(function () {
-
-            $dialog.dialog('close');
 
         });
 

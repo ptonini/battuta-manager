@@ -63,18 +63,12 @@ function Inventory() {
 
                 let $dialog = self.confirmationDialog();
 
-                $dialog.find('.dialog-header').remove();
+                $dialog.find('h5.dialog-header').remove();
 
                 $dialog.find('div.dialog-content').append(
                     $('<label>').attr('for', 'input-sftp-user').html('SFTP default user'),
                     $('<input>').attr({id: 'input-sftp-user', 'data-bind': 'sftp_user', class: 'form-control form-control-sm', type: 'text', })
                 );
-
-                $dialog.find('button.cancel-button').click(function () {
-
-                    $dialog.dialog('close');
-
-                });
 
                 $dialog.find('button.confirm-button').click(function () {
 

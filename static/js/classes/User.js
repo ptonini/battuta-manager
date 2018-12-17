@@ -32,18 +32,12 @@ User.prototype.templates = 'templates_User.html';
 
 User.prototype.selectorColumns = function () {
 
+    let tz = sessionStorage.getItem('current_user_tz');
+
     return [
         {title: 'user', data: 'attributes.username', width: '50%'},
-        {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: function(data) {
-
-            return toUserTZ(data, sessionStorage.getItem('current_user_tz'))
-
-        }},
-        {title: 'last login', data: 'attributes.last_login', width: '15%', render: function(data) {
-
-            return toUserTZ(data, sessionStorage.getItem('current_user_tz'))
-
-        }},
+        {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: function(data) { return toUserTZ(data, tz) }},
+        {title: 'last login', data: 'attributes.last_login', width: '15%', render: function(data) { return toUserTZ(data, tz) }},
         {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: function (data) {return data ? '<span class="fas fa-check"></span>' : ''}},
         {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
     ]
@@ -105,7 +99,7 @@ User.prototype.entityDialog = function () {
 
     let $dialog = self.confirmationDialog();
 
-    $dialog.find('.dialog-header').html('Add user');
+    $dialog.find('h5.dialog-header').html('Add user');
 
     $dialog.find('div.dialog-content').append(Template['user-form']());
 
