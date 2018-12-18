@@ -500,7 +500,7 @@ FileObj.prototype.dialog = function (action) {
 
             $dialog.dialog('close');
 
-            Router.navigate(self.links.parent)
+            $('section.container').trigger('reload')
 
         });
 
@@ -513,8 +513,6 @@ FileObj.prototype.dialog = function (action) {
             event.keyCode === 13 && $dialog.find('.confirm-button').click()
 
         });
-
-
 
 };
 
@@ -538,7 +536,7 @@ FileObj.prototype.selector = function () {
 
     let $container = $('section.container');
 
-    Template._load(self.templates).then(() => { return self.read(false, null) }).then(response => {
+    Template._load(self.templates).then(() => {
 
         if (self.type === 'file') Router.navigate(self.links.parent);
 
@@ -550,47 +548,12 @@ FileObj.prototype.selector = function () {
 
             let $table = $container.find('table.file-table');
 
-            let pathArray = self.links.self.split('/');
-
             let pathArrayViewableIndex = 3;
-
-            let buildBreadcrumbs = () => {
-
-                $container.find('li.path-breadcrumb').remove();
-
-                for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
-
-                    $container.find('ol.path-breadcrumbs').append(
-                        Template['path-breadcrumb']().html(pathArray[i]).click(function() {
-
-                            Router.navigate(pathArray.slice(0,i + 1).join('/'))
-
-                        })
-                    )
-
-                }
-
-            };
-
-            // let $currentTable = $container.find('table.file-table');
-            //
-            // let $table;
-            //
-            // if ($.fn.DataTable.isDataTable($currentTable)) {
-            //
-            //     $table = Template['table']().addClass('file-table');
-            //
-            //     $currentTable.DataTable().destroy();
-            //
-            //     $currentTable.replaceWith($table)
-            //
-            // } else $table = $currentTable;
 
             $table.DataTable({
                 stateSave: false,
                 scrollY: (window.innerHeight - 316).toString() + 'px',
                 scrollCollapse: true,
-                data: response['included'],
                 columns: [
                     {title: 'name', data: 'id', width: '50%'},
                     {title: 'type', data: 'attributes.mime_type', width: '15%'},
@@ -656,66 +619,99 @@ FileObj.prototype.selector = function () {
                 }
             });
 
-            $container.find('li.root-breadcrumb').off().click(function () { Router.navigate(self.links.root) });
+            $container.off().on('reload', function () {
 
-            $container.find('button.edit-path-button').off().click(function () {
+                self.read(false).then(response => {
 
-                let $pathButton = $(this);
+                    let pathArray = self.links.self.split('/');
 
-                if ($pathButton.hasClass('checked_button')) {
+                    let buildBreadcrumbs = () => { $container.find('li.path-breadcrumb').remove();
 
-                    $pathButton.removeClass('checked_button');
+                        for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
 
-                    buildBreadcrumbs()
+                            $container.find('ol.path-breadcrumbs').append(
+                                Template['path-breadcrumb']().html(pathArray[i]).click(function() {
 
-                }
+                                    Router.navigate(pathArray.slice(0,i + 1).join('/'))
 
-                else {
+                                })
+                            )
 
-                    $pathButton.addClass('checked_button');
+                        }
+                    };
 
-                    let $pathInput = Template['path-input']();
+                    $container.find('li.root-breadcrumb').off().click(function () { Router.navigate(self.links.root) });
 
-                    let $breadCrumbs = $container.find('ol.path-breadcrumbs');
+                    $container.find('button.edit-path-button').off().click(function () {
 
-                    $container.find('li.path-breadcrumb').remove();
+                        let $pathButton = $(this);
 
-                    $breadCrumbs.append(Template['path-breadcrumb']().append($pathInput));
+                        if ($pathButton.hasClass('checked_button')) {
 
-                    $pathInput
-                        .focus()
-                        .val(pathArray.slice(pathArrayViewableIndex).join('/'))
-                        .css('width', $breadCrumbs.width() * .90 + 'px')
-                        .keypress(function (event) {
+                            $pathButton.removeClass('checked_button');
 
-                            if (event.keyCode === 13) {
+                            buildBreadcrumbs()
 
-                                self.fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
+                        }
 
-                                    $pathButton.removeClass('checked_button');
+                        else {
 
-                                    buildBreadcrumbs();
+                            $pathButton.addClass('checked_button');
 
-                                    Router.navigate(self.links.root + '/' + $(this).val());
+                            let $pathInput = Template['path-input']();
+
+                            let $breadCrumbs = $container.find('ol.path-breadcrumbs');
+
+                            $container.find('li.path-breadcrumb').remove();
+
+                            $breadCrumbs.append(Template['path-breadcrumb']().append($pathInput));
+
+                            $pathInput
+                                .focus()
+                                .val(pathArray.slice(pathArrayViewableIndex).join('/'))
+                                .css('width', $breadCrumbs.width() * .90 + 'px')
+                                .keypress(function (event) {
+
+                                    if (event.keyCode === 13) {
+
+                                        self.fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
+
+                                            $pathButton.removeClass('checked_button');
+
+                                            buildBreadcrumbs();
+
+                                            Router.navigate(self.links.root + '/' + $(this).val());
+
+                                        })
+
+                                    }
+
+                                    else if (event.key === 27) {
+
+                                        $pathButton.removeClass('checked_button');
+
+                                        buildBreadcrumbs();
+
+                                    }
 
                                 })
 
-                            }
+                        }
+                    });
 
-                            else if (event.key === 27) {
+                    $table.DataTable().clear();
 
-                                $pathButton.removeClass('checked_button');
+                    $table.DataTable().rows.add(response['included']);
 
-                                buildBreadcrumbs();
+                    $table.DataTable().columns.adjust().draw();
 
-                            }
+                    buildBreadcrumbs()
 
-                        })
+                })
 
-                }
             });
 
-            buildBreadcrumbs()
+            $container.trigger('reload')
 
         }
 
