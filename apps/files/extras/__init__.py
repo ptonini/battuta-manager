@@ -74,11 +74,19 @@ class FileHandler:
 
         new_name = attributes.get('new_name')
 
+        content = attributes.get('content')
+
         if new_name :
 
             os.rename(self.absolute_path, os.path.join(self.absolute_parent_path, new_name))
 
             self.__init__(os.path.join(self.parent_path, new_name))
+
+        if content:
+
+            with open(self.absolute_path, 'w') as f:
+
+                f.write(content)
 
     def search(self):
 
@@ -98,7 +106,7 @@ class FileHandler:
 
         mime_type = magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else None
 
-        size = os.path.getsize(self.absolute_path) if self.type == 'file' else None
+        size = os.path.getsize(self.absolute_path) if self.type == 'file' else 0
 
         fs_obj_dict = {
             'id': self.id,
@@ -107,7 +115,8 @@ class FileHandler:
                 'size': size,
                 'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
                 'mime_type': mime_type,
-                'path': self.path
+                'path': self.path,
+                'root': self.root
             },
             'links': {
                 'self': '/'.join(filter(None, ['/files', self.root, self.path])),
@@ -120,7 +129,7 @@ class FileHandler:
             content,
             self.type == 'file',
             mime_type in self.editable_mime_types or mime_type and mime_type.split('/')[0] == 'text',
-            size and size < prefs['max_edit_size']
+            size < prefs['max_edit_size']
         ]
 
         if False not in conditions:

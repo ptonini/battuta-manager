@@ -24,11 +24,7 @@ let Template = {
 
                 let $template = $(this);
 
-                self[$template.data('template')] = function () {
-
-                    return $template.clone().removeAttr('data-template')
-
-                }
+                self[$template.data('template')] = function () { return $template.clone().removeAttr('data-template') }
 
             });
 

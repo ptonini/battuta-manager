@@ -50,6 +50,8 @@ FileObj.prototype.tableButtons = [
     }
 ];
 
+FileObj.prototype.validator = function () { return true };
+
 //
 // FileObj.prototype.validator = {
 //     playbooks: function (text) {
@@ -93,30 +95,6 @@ FileObj.prototype.tableButtons = [
 //
 // };
 //
-
-// FileObj.prototype.edit = function (callback) {
-//
-//     let self = this;
-//
-//     if (self.type.split('/')[0] === 'text' || self.editable.indexOf(self.type) > -1) self.read(function (data) {
-//
-//             self.text = data.text;
-//
-//             self.editorDialog(callback);
-//
-//     });
-//
-//     else self.dialog('rename', callback);
-//
-// };
-//
-// FileObj.prototype.read = function (callback) {
-//
-//     let self = this;
-//
-//     self.getData('read', false, callback);
-//
-// };
 
 // FileObj.prototype.upload = function (callback) {
 //
@@ -194,166 +172,158 @@ FileObj.prototype.tableButtons = [
 //
 // };
 
-// FileObj.prototype.exists = function (callback) {
-//
-//     let self = this;
-//
-//     self.getData('exists', false, function (data) {
-//
-//         data.exists || self.statusAlert('warning', 'Folder does not exist');
-//
-//         callback && callback(data)
-//
-//     })
-//
-// };
+FileObj.prototype.editorDialog = function () {
 
-// FileObj.prototype.editorDialog = function (callback) {
-//
-//     let self = this;
-//
-//     self.fetchHtml('form_FileEditor.html').then($element => {
-//
-//         self.bindElement($element);
-//
-//         let $selector = $element.find('#mode-selector');
-//
-//         let $dialog = self.confirmationDialog();
-//
-//         let aceMode = 'text';
-//
-//         let modes = [
-//             {name: 'apache_conf', label: 'Apache conf'},
-//             {name: 'batchfile', label: 'BatchFile'},
-//             {name: 'css', label: 'CSS'},
-//             {name: 'dockerfile', label: 'Dockerfile'},
-//             {name: 'gitignore', label: 'Gitignore'},
-//             {name: 'ini', label: 'INI'},
-//             {name: 'java', label: 'Java'},
-//             {name: 'javascript', label: 'JavaScript'},
-//             {name: 'json', label: 'JSON'},
-//             {name: 'php', label: 'PHP'},
-//             {name: 'powershell', label: 'Powershell'},
-//             {name: 'properties', label: 'Properties'},
-//             {name: 'python', label: 'Python'},
-//             {name: 'sh', label: 'SH'},
-//             {name: 'sql', label: 'SQL'},
-//             {name: 'text', label: 'Text'},
-//             {name: 'vbscript', label: 'VBScript'},
-//             {name: 'xml', label: 'XML'},
-//             {name: 'yaml', label: 'YAML'}
-//         ];
-//
-//         let textEditor = ace.edit($element.find('#editor_container')[0]);
-//
-//         if (!self.type || self.type === 'text/plain' || self.type === 'inode/x-empty') {
-//
-//             let fileNameArray = self.name.split('.');
-//
-//             let fileExtension = fileNameArray[fileNameArray.length - 1];
-//
-//             if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
-//
-//             if (['properties', 'conf', 'ccf'].indexOf(fileExtension) > -1) aceMode = 'properties';
-//
-//             else if (['yml', 'yaml'].indexOf(fileExtension) > -1) aceMode = 'yaml';
-//
-//             else if (['js'].indexOf(fileExtension) > -1) aceMode = 'javascript';
-//
-//             else if (['json'].indexOf(fileExtension) > -1) aceMode = 'json';
-//
-//             else if (['java'].indexOf(fileExtension) > -1) aceMode = 'java';
-//
-//             else if (['py', 'python'].indexOf(fileExtension) > -1) aceMode = 'python';
-//
-//             else if (['sh'].indexOf(fileExtension) > -1) aceMode = 'sh';
-//
-//             else if (['xml'].indexOf(fileExtension) > -1) aceMode = 'xml';
-//
-//         }
-//
-//         else if (self.type === 'application/xml') aceMode = 'xml';
-//
-//         else if (self.type === 'application/json') aceMode = 'json';
-//
-//         else if (self.type === 'text/x-shellscript') aceMode = 'sh';
-//
-//         else if (self.type === 'text/yaml') aceMode = 'yaml';
-//
-//         else if (self.type === 'text/x-python') aceMode = 'python';
-//
-//         $.each(modes, function (index, mode){
-//
-//             $selector.append($('<option>').attr('value', mode.name).html(mode.label))
-//
-//         });
-//
-//         $selector
-//             .val(aceMode)
-//             .change(function () {
-//
-//                 textEditor.getSession().setMode('ace/mode/' + $(this).val())
-//
-//             })
-//             .change();
-//
-//         textEditor.setTheme('ace/theme/chrome');
-//
-//         textEditor.renderer.setShowPrintMargin(false);
-//
-//         textEditor.setHighlightActiveLine(false);
-//
-//         textEditor.setFontSize(13);
-//
-//         textEditor.$blockScrolling = Infinity;
-//
-//         textEditor.setValue(self.text);
-//
-//         textEditor.session.getUndoManager().reset();
-//
-//         textEditor.selection.moveCursorFileStart();
-//
-//         $element.find('#editor_container').css('height', window.innerHeight * 0.7);
-//
-//         $dialog.find('h5.dialog-header').remove();
-//
-//         $dialog.find('div.dialog-content').append($element);
-//
-//         $dialog.find('button.confirm-button').click(function () {
-//
-//             if (self.new_name) {
-//
-//                 self.text = textEditor.getValue();
-//
-//                 self.validator[self.root](self.text) && self.save(data => {
-//
-//                     $dialog.dialog('close');
-//
-//                     delete self.text;
-//
-//                     callback && callback(data);
-//
-//                 });
-//
-//             }
-//
-//             else self.statusAlert('warning', 'Please enter a filename');
-//
-//         });
-//
-//         $dialog.find('button.cancel-button').click(function () {
-//
-//             $dialog.dialog('close')
-//
-//         });
-//
-//         $dialog.dialog({width: 900, closeOnEscape: false});
-//
-//         textEditor.focus();
-//
-//     });
-//
-// };
+    let self = this;
+
+    let aceMode = 'text';
+
+    let modes = [
+        {name: 'apache_conf', label: 'Apache conf'},
+        {name: 'batchfile', label: 'BatchFile'},
+        {name: 'css', label: 'CSS'},
+        {name: 'dockerfile', label: 'Dockerfile'},
+        {name: 'gitignore', label: 'Gitignore'},
+        {name: 'ini', label: 'INI'},
+        {name: 'java', label: 'Java'},
+        {name: 'javascript', label: 'JavaScript'},
+        {name: 'json', label: 'JSON'},
+        {name: 'php', label: 'PHP'},
+        {name: 'powershell', label: 'Powershell'},
+        {name: 'properties', label: 'Properties'},
+        {name: 'python', label: 'Python'},
+        {name: 'sh', label: 'SH'},
+        {name: 'sql', label: 'SQL'},
+        {name: 'text', label: 'Text'},
+        {name: 'vbscript', label: 'VBScript'},
+        {name: 'xml', label: 'XML'},
+        {name: 'yaml', label: 'YAML'}
+    ];
+
+    let matchExtension = (filename) => {
+
+        let extensions = {
+            properties: function () { return 'properties'},
+            conf: function () { return 'properties'},
+            ccf:  function () { return 'properties'},
+            yml:  function () { return 'yaml'},
+            js:  function () { return 'javascript'},
+            json:  function () { return 'json'},
+            java:  function () { return 'java'},
+            'py':  function () { return 'python'},
+            python:  function () { return 'python'},
+            'sh':  function () { return 'sh'},
+            xml:  function () { return 'xml'}
+        };
+
+        let fileNameArray = filename.split('.');
+
+        let fileExtension = fileNameArray[fileNameArray.length - 1];
+
+        if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
+
+        return extensions.hasOwnProperty(fileExtension) ? extensions[fileExtension]() : false
+
+    };
+
+    if (!self.get('mime_type') || self.get('mime_type') === 'text/plain' || self.get('mime_type') === 'inode/x-empty') {
+
+        let mode = matchExtension(self.get('id'));
+
+        if (mode) aceMode = mode;
+
+    }
+
+    else if (self.get('mime_type') === 'application/xml') aceMode = 'xml';
+
+    else if (self.get('mime_type') === 'application/json') aceMode = 'json';
+
+    else if (self.get('mime_type') === 'text/x-shellscript') aceMode = 'sh';
+
+    else if (self.get('mime_type') === 'text/yaml') aceMode = 'yaml';
+
+    else if (self.get('mime_type') === 'text/x-python') aceMode = 'python';
+
+    let $form = Template['file-editor-form']();
+
+    let $selector = $form.find('select.mode-selector');
+
+    let $dialog = self.confirmationDialog();
+
+    let textEditor = ace.edit($form.find('div.editor-container')[0]);
+
+    $.each(modes, function (index, mode){
+
+        $selector.append($('<option>').attr('value', mode.name).html(mode.label))
+
+    });
+
+    $selector
+        .val(aceMode)
+        .change(function () {
+
+            textEditor.getSession().setMode('ace/mode/' + $(this).val())
+
+        })
+        .change();
+
+    textEditor.setTheme('ace/theme/chrome');
+
+    textEditor.renderer.setShowPrintMargin(false);
+
+    textEditor.setHighlightActiveLine(false);
+
+    textEditor.setFontSize(13);
+
+    textEditor.$blockScrolling = Infinity;
+
+    textEditor.setValue(self.content);
+
+    textEditor.session.getUndoManager().reset();
+
+    textEditor.selection.moveCursorFileStart();
+
+    $form.find('div.editor-container').css('height', window.innerHeight * 0.7);
+
+    $dialog.find('h5.dialog-header').remove();
+
+    $dialog.find('div.dialog-content').append($form);
+
+    $dialog.find('input.filename-input').val(self.get('id'));
+
+    $dialog.find('button.confirm-button').click(function () {
+
+        self.set('new_name', $dialog.find('input.filename-input').val());
+
+        if (self.get('new_name')) {
+
+            self.set('content', textEditor.getValue());
+
+            self.validator(self.get('content')) && self.update(false).then(() => {
+
+                $dialog.dialog('close');
+
+                $('section.container').trigger('reload')
+
+            });
+
+        }
+
+        else self.statusAlert('warning', 'Please enter a filename');
+
+    });
+
+    $dialog.find('button.cancel-button').click(function () {
+
+        $dialog.dialog('close')
+
+    });
+
+    $dialog.dialog({width: 900, closeOnEscape: false});
+
+    textEditor.focus();
+
+};
 
 // FileObj.prototype.roleDialog = function (callback) {
 //
@@ -520,9 +490,9 @@ FileObj.prototype.edit = function () {
 
     let self = this;
 
-    return self.read().then(response => {
+    return self.read().then(() => {
 
-        if (self.get('content')) console.log(self.get('content'));
+        if (self.hasOwnProperty('content')) self.editorDialog();
 
         else self.dialog('rename');
 
@@ -567,10 +537,15 @@ FileObj.prototype.selector = function () {
                 buttons: self.tableButtons,
                 rowCallback: function (row, data) {
 
-                    if (data.type === 'folder') $(row).attr('class', 'folder-row').find('td:eq(0)')
-                        .addClass('pointer font-weight-bold')
-                        .off('click')
-                        .click(function () { Router.navigate(data.links.self) });
+                    if (data.type === 'folder') {
+
+                        let $row = $(row).attr('class', 'folder-row');
+
+                        $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(data.links.self) });
+
+                        $row.find('td:eq(2)').html('');
+
+                    }
 
                     $(row).find('td:eq(4)').html('').removeAttr('title').append(
                         self.tableBtn('fas fa-pencil-alt', 'Edit', function () { new FileObj(data).edit() }),
@@ -640,9 +615,12 @@ FileObj.prototype.selector = function () {
                         }
                     };
 
-                    $container.find('li.root-breadcrumb').off().click(function () { Router.navigate(self.links.root) });
+                    $container.find('li.root-breadcrumb')
+                        .html(self.get('root'))
+                        .off()
+                        .click(function () { Router.navigate(self.links.root) });
 
-                    $container.find('button.edit-path-button').off().click(function () {
+                    $container.find('button.edit-path-button').off().click(function ()  {
 
                         let $pathButton = $(this);
 
@@ -652,9 +630,7 @@ FileObj.prototype.selector = function () {
 
                             buildBreadcrumbs()
 
-                        }
-
-                        else {
+                        } else {
 
                             $pathButton.addClass('checked_button');
 
@@ -669,7 +645,7 @@ FileObj.prototype.selector = function () {
                             $pathInput
                                 .focus()
                                 .val(pathArray.slice(pathArrayViewableIndex).join('/'))
-                                .css('width', $breadCrumbs.width() * .90 + 'px')
+                                .css('width', $breadCrumbs.width() * .87 + 'px')
                                 .keypress(function (event) {
 
                                     if (event.keyCode === 13) {

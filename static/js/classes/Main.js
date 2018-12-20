@@ -8,35 +8,11 @@ function Main (param) {
 
     self.set('id', param ? param.id : null);
 
-    if (param && param.hasOwnProperty('attributes')) {
+    if (param && param.hasOwnProperty('attributes')) for (let k in param.attributes) if (param.attributes.hasOwnProperty(k)) self.set(k, param.attributes[k]);
 
-        for (let k in param.attributes) if (param.attributes.hasOwnProperty(k) && param.attributes[k]) self.set(k, param.attributes[k])
+    if (param && param.hasOwnProperty('links')) for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k]);
 
-    }
-
-    if (param && param.hasOwnProperty('links')) {
-
-        for (let k in param.links) if (param.links.hasOwnProperty(k) && param.links[k]) self.set('links.' + k, param.links[k])
-
-    }
-
-    if (param && param.hasOwnProperty('meta')) {
-
-        for (let k in param.meta) if (param.meta.hasOwnProperty(k) && param.meta[k]) self.set('meta.' + k, param.meta[k])
-
-    }
-
-    if (param && param.hasOwnProperty('relationships')) {
-
-        for (let k in param.relationships) if (param.relationships.hasOwnProperty(k) && param.relationships[k]) {
-
-            let obj = new routes[param.relationships[k].type].Class(param.relationships[k]);
-
-            self.set(k, obj)
-
-        }
-
-    }
+    if (param && param.hasOwnProperty('meta')) for (let k in param.meta) if (param.meta.hasOwnProperty(k)) self.set('meta.' + k, param.meta[k]);
 
 }
 
