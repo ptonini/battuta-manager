@@ -2,6 +2,7 @@ import os
 import errno
 import magic
 import datetime
+import shutil
 
 from django.conf import settings
 
@@ -51,24 +52,22 @@ class FileHandler:
 
         return roots[root](path)
 
-    def read(self):
+    @classmethod
+    def create(cls, root, path, fs_obj_type, source):
 
-        if self.type == 'folder':
+        new_path = os.path.join(root, path)
 
-            response = {
-                'data': self.serialize(False),
-                'included': []
-            }
+        if source:
 
-            for fs_obj_name in os.listdir(self.absolute_path):
+            source_path =  os.path.join(source.attributes.root, source.attributes.path)
 
-                response['included'].append(FileHandler.build(self.root, os.path.join(self.path, fs_obj_name)).serialize(False))
-
-            return response
+            shutil.copy(source_path, new_path) if fs_obj_type == 'file' else shutil.copytree(source_path, new_path)
 
         else:
 
-            return {'data': self.serialize()}
+            os.makedirs(path) if fs_obj_type == 'folder' else open(path, 'a').close()
+
+        return cls.build(root, new_path)
 
     def update(self, attributes):
 
@@ -87,6 +86,10 @@ class FileHandler:
             with open(self.absolute_path, 'w') as f:
 
                 f.write(content)
+
+    def delete(self):
+
+        os.remove(self.absolute_path) if self.type == 'file' else shutil.rmtree(self.absolute_path)
 
     def search(self):
 

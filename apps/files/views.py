@@ -1,7 +1,5 @@
-import json
 import os
 import shutil
-import magic
 import ntpath
 import tempfile
 import datetime
@@ -10,7 +8,7 @@ from pytz import timezone, utc
 
 from django.shortcuts import render
 from django.views.generic import View
-from django.http import HttpResponse, Http404, StreamingHttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.core.cache import cache
 
@@ -20,6 +18,78 @@ from apps.files.extras import FileHandler
 from main.extras.views import ApiView
 
 class FileView(ApiView):
+
+    def post(self, request, root, path):
+
+        try:
+
+            FileHandler.build(root, path)
+
+        except FileNotFoundError:
+
+            fs_obj = FileHandler.create(root, path, request.JSON.get('type', 'file'), request.JSON.get('source', None))
+
+            return self._api_response(fs_obj.read())
+
+        else:
+
+            return self._api_response({'errors': [{'title': 'Name in use'}]})
+
+    def get(self, request, root, path):
+
+        try:
+
+            fs_obj = FileHandler.build(root, path)
+
+        except FileNotFoundError:
+
+            return HttpResponseNotFound()
+
+        else:
+
+            if request.GET.get('download', False):
+
+                if fs_obj.type == 'file':
+
+                    target = fs_obj.absolute_path
+
+                else:
+
+                    archive_name = os.path.join(tempfile.gettempdir(), fs_obj.id)
+
+                    target = shutil.make_archive(archive_name, 'zip', fs_obj.absolute_path)
+
+                stream = StreamingHttpResponse((line for line in open(target, 'rb')))
+
+                stream['Content-Length'] = os.path.getsize(target)
+
+                stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
+
+                os.remove(target) if fs_obj.type == 'folder' else None
+
+                return stream
+
+            else:
+
+                return self._api_response(fs_obj.read())
+
+    def patch(self, request, root, path):
+
+        fs_obj = FileHandler.build(root, path)
+
+        fs_obj.update(request.JSON.get('data', {}).get('attributes'))
+
+        return self._api_response(fs_obj.read())
+
+    @staticmethod
+    def delete(request, root, path):
+
+        fs_obj = FileHandler.build(root, path)
+
+        fs_obj.delete()
+
+        return HttpResponse(status=204)
+
 
     # file_sources = {
     #     'files': {
@@ -145,28 +215,6 @@ class FileView(ApiView):
     #
     #         return 'ok'
 
-    def get(self, request, root, path):
-
-        try:
-
-            fs_obj = FileHandler.build(root, path)
-
-        except FileNotFoundError:
-
-            return HttpResponseNotFound()
-
-        else:
-
-            return self._api_response(fs_obj.read())
-
-
-    def patch(self, request, root, path):
-
-        fs_obj = FileHandler.build(root, path)
-
-        fs_obj.update(request.JSON.get('data', {}).get('attributes'))
-
-        return self._api_response(fs_obj.read())
 
     # def get(self, request, action):
     #
@@ -272,57 +320,18 @@ class FileView(ApiView):
     #             else:
     #
     #                 data = {'status': 'failed', 'msg': 'The file was not found'}
-    #
-    #         elif action == 'exists':
-    #
-    #             if request.GET['type'] == 'directory':
-    #
-    #                 check_method = os.path.isdir
-    #
-    #             elif request.GET['type'] == 'file':
-    #
-    #                 check_method = os.path.isfile
-    #
-    #             else:
-    #
-    #                 return HttpResponseNotFound('Invalid object type')
-    #
-    #             data = {'status': 'ok', 'exists': check_method(os.path.join(root['path'], request.GET['name']))}
-    #
+
+
     #         elif action == 'download':
     #
-    #             full_path = os.path.join(root['path'], request.GET['folder'], request.GET['name'])
-    #
-    #             if os.path.isfile(full_path):
-    #
-    #                 target = full_path
-    #
-    #                 delete_after = False
-    #
-    #             else:
-    #
-    #                 archive_name = os.path.join(tempfile.gettempdir(), request.GET['name'])
-    #
-    #                 target = shutil.make_archive(archive_name, 'zip', full_path)
-    #
-    #                 delete_after = True
-    #
-    #             stream = StreamingHttpResponse((line for line in open(target, 'r')))
-    #
-    #             stream['Content-Length'] = os.path.getsize(target)
-    #
-    #             stream['Content-Disposition'] = 'attachment; filename=' + ntpath.basename(target)
-    #
-    #             os.remove(target) if delete_after else None
-    #
-    #             return stream
+
     #
     #         else:
     #
     #             return HttpResponseNotFound('Invalid action')
     #
     #     return HttpResponse(json.dumps(data), content_type='application/json')
-    # #
+
     # def post(self, request, action):
     #
     #     authorizer = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
@@ -409,7 +418,7 @@ class FileView(ApiView):
     #
     #                 if result == 'ok':
     #
-    #                     for folder in json.loads(request.POST['role_folders']):
+    #                    fs_obj = FileHandler.build(root, path) for folder in json.loads(request.POST['role_folders']):
     #
     #                         folder_path = os.path.join(new_path, folder['folder'])
     #

@@ -303,68 +303,6 @@ class UserGroupView(ApiView):
             return HttpResponseBadRequest()
 
 
-    # else:
-    #
-    #
-    #         elif action == 'groups':
-    #
-    #             if 'reverse' in request.GET and request.GET['reverse'] == 'true':
-    #
-    #                 groups = [[group.name, group.id] for group in Group.objects.all() if group not in user.groups.all()]
-    #
-    #             else:
-    #
-    #                 groups = [[group.name, group.id] for group in user.groups.all()]
-    #
-    #             data = {'status': 'ok', 'groups': groups}
-
-
-    #         elif action == 'default_cred':
-    #
-    #             data = {
-    #                 'status': 'ok',
-    #                 'cred': self._truncate_secure_data(model_to_dict(user.userdata.default_cred))
-    #             }
-    #
-    #         else:
-    #
-    #             return HttpResponseNotFound('Invalid action')
-    #
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-
-
-    #         elif action == 'add_groups':
-    #
-    #             if request.user.has_perm('users.edit_user_groups'):
-    #
-    #                 for selected in json.loads(request.POST['selection']):
-    #
-    #                     user.groups.add(get_object_or_404(Group, pk=selected['id']))
-    #
-    #                 data = {'status': 'ok'}
-    #
-    #             else:
-    #
-    #                 data = {'status': 'denied'}
-    #
-    #         elif action == 'remove_groups':
-    #
-    #             if request.user.has_perm('users.edit_user_groups'):
-    #
-    #                 for selected in json.loads(request.POST['selection']):
-    #
-    #                     user.groups.remove(get_object_or_404(Group, pk=selected['id']))
-    #
-    #                 data = {'status': 'ok'}
-    #
-    #             else:
-    #
-    #                 data = {'status': 'denied'}
-    #
-
-
 class RelationsView(ApiView):
 
     @staticmethod

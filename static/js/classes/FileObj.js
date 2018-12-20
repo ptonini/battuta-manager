@@ -560,16 +560,12 @@ FileObj.prototype.selector = function () {
                         }),
                         self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
 
-                            // window.open(self.apiPath + 'download/?name=' + file.name + '&root=' + file.root  + '&folder=' + file.folder + '&owner=' + owner,  '_self')
+                            window.open(data.links.self + '?download=true', '_self');
 
                         }),
                         self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                            // new FileObj(data).delete(false, function () {
-                            //
-                            //     Router.navigate('/' + param)
-                            //
-                            // })
+                            new FileObj(data).delete(false, function () { $container.trigger('reload') })
 
                         })
                     )

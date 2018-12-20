@@ -1,24 +1,16 @@
-import json
-
-
-from django.http import HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
 from apps.preferences.models import Item
 from apps.preferences.extras import get_default_value
 
-#from apps.iam.extras import create_userdata
 from main.extras.views import ApiView
-
 
 
 class PreferencesView(ApiView):
 
     def get(self, request):
-
-        #create_userdata(request.user)
 
         data = []
 
@@ -62,11 +54,12 @@ class PreferencesView(ApiView):
 
         return self._api_response({'data': data, 'include': include})
 
-    def patch(self, request):
+    @staticmethod
+    def patch(request):
 
         if request.user.has_perm('users.edit_preferences'):
 
-            for item in request.JSON['data']:
+            for item in request.JSON.get('data', {}):
 
                 if item['attributes']['value'] == get_default_value(item['id']):
 
@@ -76,27 +69,8 @@ class PreferencesView(ApiView):
 
                     Item.objects.update_or_create(name=item['id'], value=item['attributes']['value'])
 
-
-            #prefs_dict =request.JSON['data']
-
-            # for key in prefs_dict:
-            #
-            #     if prefs_dict[key] == get_default_value(key):
-            #
-            #         Item.objects.filter(name=key).delete()
-            #
-            #     else:
-            #
-            #         item, created = Item.objects.get_or_create(name=key)
-            #
-            #         item.value = prefs_dict[key]
-            #
-            #         item.save()
-
-            data = {'status': 'ok', 'msg': 'Preferences saved - reloading page'}
+            return HttpResponse(status=204)
 
         else:
 
             return HttpResponseForbidden()
-
-        return self._api_response({'data': data})
