@@ -41,6 +41,54 @@ class FileHandler:
 
             raise  FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
+    @staticmethod
+    def _create_file(path):
+
+        open(path, 'a').close()
+
+    @staticmethod
+    def _create_folder(path):
+
+        os.makedirs(path)
+
+    @staticmethod
+    def _copy_file(source, path):
+
+        shutil.copy(source, path)
+
+    @staticmethod
+    def _copy_folder(source, path):
+
+        shutil.copytree(source, path)
+
+    @staticmethod
+    def _delete_file(path):
+
+        os.remove(path)
+
+    @staticmethod
+    def _delete_folder(path):
+
+        shutil.rmtree(path)
+
+    @classmethod
+    def _actions(cls, action):
+
+        actions = {
+            'file': {
+                'create': cls._create_file,
+                'copy': cls._copy_file,
+                'delete': cls._delete_file
+            },
+            'folder': {
+                'create': cls._create_folder,
+                'copy': cls._copy_folder,
+                'delete': cls._delete_folder
+            },
+        }
+
+        return actions[action]
+
     @classmethod
     def build(cls, root, path):
 
@@ -59,15 +107,32 @@ class FileHandler:
 
         if source:
 
-            source_path =  os.path.join(source.attributes.root, source.attributes.path)
-
-            shutil.copy(source_path, new_path) if fs_obj_type == 'file' else shutil.copytree(source_path, new_path)
+           cls._actions(fs_obj_type)['copy'](os.path.join(source.attributes.root, source.attributes.path), new_path)
 
         else:
 
-            os.makedirs(path) if fs_obj_type == 'folder' else open(path, 'a').close()
+            cls._actions(fs_obj_type)['create'](new_path)
 
         return cls.build(root, new_path)
+
+    def read(self):
+
+        if self.type == 'folder':
+
+            response = {
+                'data': self.serialize(False),
+                'included': []
+            }
+
+            for fs_obj_name in os.listdir(self.absolute_path):
+
+                response['included'].append(FileHandler.build(self.root, os.path.join(self.path, fs_obj_name)).serialize(False))
+
+            return response
+
+        else:
+
+            return {'data': self.serialize()}
 
     def update(self, attributes):
 
@@ -89,7 +154,7 @@ class FileHandler:
 
     def delete(self):
 
-        os.remove(self.absolute_path) if self.type == 'file' else shutil.rmtree(self.absolute_path)
+        self._actions(self.type)['delete'](self.absolute_path)
 
     def search(self):
 

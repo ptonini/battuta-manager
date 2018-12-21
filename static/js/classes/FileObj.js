@@ -430,15 +430,32 @@ FileObj.prototype.dialog = function (action) {
         create: {
             displayName: null,
             title: 'Create',
-            template: 'create-file-form'},
+            template: 'create-file-form',
+            save: function () {
+
+            }
+        },
         rename: {
             displayName: self.id,
             title: 'Rename ' + self.type,
-            template: 'update-file-form'},
+            template: 'update-file-form',
+            save: function (newName) {
+
+                self.set('new_name', newName);
+
+                if (self.get('new_name') && self.get('new_name') !== self.get('id')) return self.update(false)
+
+            }
+        },
         copy: {
             displayName: self.id + '_copy',
-            title: 'Copy ' + self.id,
-            template: 'update-file-form'
+            title: 'Copy ' + self.type + ' ' + self.id,
+            template: 'update-file-form',
+            save: function () {
+
+
+
+            }
         }
     };
 
@@ -464,15 +481,13 @@ FileObj.prototype.dialog = function (action) {
 
     $dialog.find('button.confirm-button').click(function() {
 
-        self.set('new_name', $dialog.find('input.filename-input').val());
-
-        if (self.get('new_name') && self.get('new_name') !== self.get('id')) self.update(false).then(() => {
+        actions[action].save($dialog.find('input.filename-input').val()).then(() => {
 
             $dialog.dialog('close');
 
             $('section.container').trigger('reload')
 
-        });
+        })
 
     });
 
@@ -500,11 +515,21 @@ FileObj.prototype.edit = function () {
 
 };
 
+FileObj.prototype.copy = function () {
+
+    let self = this;
+
+    self.dialog('copy')
+
+};
+
 FileObj.prototype.selector = function () {
 
     let self = this;
 
     let $container = $('section.container');
+
+    let pathArrayViewableIndex = 3;
 
     Template._load(self.templates).then(() => {
 
@@ -517,8 +542,6 @@ FileObj.prototype.selector = function () {
             self.bindElement($container);
 
             let $table = $container.find('table.file-table');
-
-            let pathArrayViewableIndex = 3;
 
             $table.DataTable({
                 stateSave: false,
@@ -549,15 +572,7 @@ FileObj.prototype.selector = function () {
 
                     $(row).find('td:eq(4)').html('').removeAttr('title').append(
                         self.tableBtn('fas fa-pencil-alt', 'Edit', function () { new FileObj(data).edit() }),
-                        self.tableBtn('fas fa-clone', 'Copy', function () {
-
-                            // file.dialog('copy', function () {
-                            //
-                            //     $table.DataTable().ajax.reload()
-                            //
-                            // });
-
-                        }),
+                        self.tableBtn('fas fa-clone', 'Copy', function () { new FileObj(data).dialog('copy') }),
                         self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
 
                             window.open(data.links.self + '?download=true', '_self');
