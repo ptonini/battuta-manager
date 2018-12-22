@@ -205,15 +205,15 @@ FileObj.prototype.editorDialog = function () {
         let extensions = {
             properties: function () { return 'properties'},
             conf: function () { return 'properties'},
-            ccf:  function () { return 'properties'},
+            'ccf':  function () { return 'properties'},
             yml:  function () { return 'yaml'},
-            js:  function () { return 'javascript'},
+            'js':  function () { return 'javascript'},
             json:  function () { return 'json'},
-            java:  function () { return 'java'},
+            'java':  function () { return 'java'},
             'py':  function () { return 'python'},
             python:  function () { return 'python'},
             'sh':  function () { return 'sh'},
-            xml:  function () { return 'xml'}
+            'xml':  function () { return 'xml'}
         };
 
         let fileNameArray = filename.split('.');
@@ -515,14 +515,6 @@ FileObj.prototype.edit = function () {
 
 };
 
-FileObj.prototype.copy = function () {
-
-    let self = this;
-
-    self.dialog('copy')
-
-};
-
 FileObj.prototype.selector = function () {
 
     let self = this;
@@ -571,8 +563,8 @@ FileObj.prototype.selector = function () {
                     }
 
                     $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                        self.tableBtn('fas fa-pencil-alt', 'Edit', function () { new FileObj(data).edit() }),
-                        self.tableBtn('fas fa-clone', 'Copy', function () { new FileObj(data).dialog('copy') }),
+                        self.tableBtn('fas fa-pencil-alt', 'Edit', function () { new Classes[data.attributes.root].Class(data).edit() }),
+                        self.tableBtn('fas fa-clone', 'Copy', function () { new new Classes[data.attributes.root].Class(data).dialog('copy') }),
                         self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
 
                             window.open(data.links.self + '?download=true', '_self');
@@ -580,7 +572,7 @@ FileObj.prototype.selector = function () {
                         }),
                         self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                            new FileObj(data).delete(false, function () { $container.trigger('reload') })
+                            new new Classes[data.attributes.root].Class(data).delete(false, function () { $container.trigger('reload') })
 
                         })
                     )

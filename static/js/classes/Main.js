@@ -706,7 +706,7 @@ Main.prototype = {
                         truncateItemText: true,
                         gridBodyClasses: 'inset-container scrollbar',
                         columns: sessionStorage.getItem('selection_modal_columns'),
-                        ajaxUrl: routes[type].href,
+                        ajaxUrl: Classes[type].href,
                         formatItem: function($gridContainer, $item, data) {
 
                             let nodeName = data.attributes.name;
@@ -802,7 +802,7 @@ Main.prototype = {
         if (data.meta.deletable) $(row).find('td:last').empty().append(
             Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
-                new routes[data.type].Class(data).delete(false, function () {
+                new Classes[data.type].Class(data).delete(false, function () {
 
                     $('section.container').trigger('reload')
 
@@ -906,7 +906,7 @@ Main.prototype = {
                 scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
                 scrollCollapse: true,
                 ajax: {
-                    url: routes[self.type].href,
+                    url: Classes[self.type].href,
                     dataSrc: 'data'
                 },
                 paging: false,
@@ -917,7 +917,7 @@ Main.prototype = {
                         text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
                         action: function () {
 
-                            new routes[self.type].Class({links: {self: routes[self.type].href}}).editor(function () {
+                            new Classes[self.type].Class({links: {self: Classes[self.type].href}}).editor(function () {
 
                                 $container.trigger('reload')
 
@@ -978,7 +978,7 @@ Main.prototype = {
 
                 self.delete(false, function () {
 
-                    Router.navigate(routes[self.type].href)
+                    Router.navigate(Classes[self.type].href)
 
                 })
 

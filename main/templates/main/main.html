@@ -52,6 +52,7 @@
     <script type="text/javascript" src="{% static 'js/classes/Search.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/singletons/Router.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/singletons/Template.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/singletons/Classes.js' %}"></script>
 
     {% block navbar %}
         <script type="text/javascript">
@@ -63,7 +64,7 @@
 
                     if (window.location.hash) Router.check(window.location.hash.substring(2));
 
-                    else Router.navigate(routes.main.href);
+                    else Router.navigate(Classes.main.href);
 
                     new NavBar().build();
 

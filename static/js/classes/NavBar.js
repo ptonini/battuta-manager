@@ -26,7 +26,7 @@ NavBar.prototype.build = function () {
 
                 e.preventDefault();
 
-                Router.navigate(routes[$(this).data('route')].href)
+                Router.navigate(Classes[$(this).data('route')].href)
 
             });
 
@@ -42,7 +42,7 @@ NavBar.prototype.build = function () {
 
                 let pattern = $element.find('input.search-input').val();
 
-                pattern && Router.navigate(routes.search.href + '/' + pattern)
+                pattern && Router.navigate(Classes.search.href + '/' + pattern)
 
             });
 

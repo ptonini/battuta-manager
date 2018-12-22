@@ -267,7 +267,7 @@ Variable.prototype.copyVariables = function (node, callback) {
             title: 'Select node',
             type: 'one',
             objectType: $(this).data('type'),
-            url: routes[$(this).data('type')].href,
+            url: Classes[$(this).data('type')].href,
             ajaxDataKey: 'data',
             itemValueKey: 'name',
             action: function (selection, $dialog) {
