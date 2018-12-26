@@ -29,6 +29,7 @@ function Preferences(param) {
 
     }
 
+    return this;
 }
 
 Preferences.prototype = Object.create(Main.prototype);

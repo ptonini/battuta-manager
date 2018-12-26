@@ -96,6 +96,8 @@ function Inventory() {
 
     });
 
+    return this;
+
 }
 
 Inventory.prototype = Object.create(Main.prototype);

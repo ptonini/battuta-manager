@@ -2,6 +2,8 @@ function Variable(param) {
 
     Main.call(this, param);
 
+    return this;
+
 }
 
 Variable.prototype = Object.create(Main.prototype);

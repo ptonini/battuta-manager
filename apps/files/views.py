@@ -8,13 +8,13 @@ from pytz import timezone, utc
 
 from django.shortcuts import render
 from django.views.generic import View
-from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.conf import settings
 from django.core.cache import cache
 
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import ProjectAuthorizer
-from apps.files.extras import FileHandler
+from apps.files.extras import FileHandler, FileHandlerForbiddenExt
 from main.extras.views import ApiView
 
 class FileView(ApiView):
@@ -27,9 +27,17 @@ class FileView(ApiView):
 
         except FileNotFoundError:
 
-            fs_obj = FileHandler.create(root, path, request.JSON.get('type', 'file'), request.JSON.get('source', None))
+            try:
 
-            return self._api_response(fs_obj.read())
+                fs_obj = FileHandler.create(root, path, request)
+
+            except FileHandlerForbiddenExt:
+
+                return self._api_response({'errors': [{'title': 'Forbidden file extension'}]})
+
+            else:
+
+                return self._api_response(fs_obj.read())
 
         else:
 
@@ -75,21 +83,44 @@ class FileView(ApiView):
 
     def patch(self, request, root, path):
 
-        fs_obj = FileHandler.build(root, path)
+        try:
 
-        fs_obj.update(request.JSON.get('data', {}).get('attributes'))
+            fs_obj = FileHandler.build(root, path)
 
-        return self._api_response(fs_obj.read())
+        except FileNotFoundError:
+
+            return HttpResponseNotFound()
+
+        else:
+
+            try:
+
+                fs_obj.update(request.JSON.get('data', {}).get('attributes'))
+
+            except FileHandlerForbiddenExt:
+
+                return self._api_response({'errors': [{'title': 'Forbidden file extension'}]})
+
+            else:
+
+                return self._api_response(fs_obj.read())
 
     @staticmethod
     def delete(request, root, path):
 
-        fs_obj = FileHandler.build(root, path)
+        try:
 
-        fs_obj.delete()
+            fs_obj = FileHandler.build(root, path)
 
-        return HttpResponse(status=204)
+        except FileNotFoundError:
 
+            return HttpResponseNotFound()
+
+        else:
+
+            fs_obj.delete()
+
+            return HttpResponse(status=204)
 
     # file_sources = {
     #     'files': {
@@ -121,13 +152,9 @@ class FileView(ApiView):
     #     }
     # }
     #
-    # archive_types = [
-    #     'application/zip',
-    #     'application/gzip',
-    #     'application/x-tar',
-    #     'application/x-gtar'
-    # ]
-    #
+
+
+
     # def set_root(self, root, owner, user):
     #
     #     root_dict = self.file_sources[root]
@@ -147,7 +174,8 @@ class FileView(ApiView):
     #         os.makedirs(root_dict['path'])
     #
     #     return root_dict
-    #
+
+
     # def search_files(self, source, request, prefs, project_auth):
     #
     #     file_list = list()
@@ -202,18 +230,6 @@ class FileView(ApiView):
     #
     #         return sorted(file_list, key=lambda k: (k.get('folder'), k.get('name')))
     #
-    # @staticmethod
-    # def create_file(path, is_directory):
-    #
-    #     if os.path.exists(path):
-    #
-    #         return 'exists'
-    #
-    #     else:
-    #
-    #         os.makedirs(path) if is_directory else open(path, 'a').close()
-    #
-    #         return 'ok'
 
 
     # def get(self, request, action):

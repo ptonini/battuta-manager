@@ -2,6 +2,7 @@ function Job(param) {
 
     Main.call(this, param);
 
+    return this;
 }
 
 Job.prototype = Object.create(Main.prototype);

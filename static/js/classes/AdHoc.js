@@ -2,6 +2,8 @@ function AdHoc (param) {
 
     Main.call(this, param);
 
+    return this;
+
 }
 
 AdHoc.prototype = Object.create(Main.prototype);

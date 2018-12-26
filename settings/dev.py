@@ -27,3 +27,6 @@ REPOSITORY_PATH = os.path.join(DATA_PATH, 'files')
 ROLES_PATH = os.path.join(DATA_PATH, 'roles')
 PLAYBOOK_PATH = os.path.join(DATA_PATH, 'playbooks')
 USERDATA_PATH = os.path.join(DATA_PATH, 'userdata')
+
+PLAYBOOK_TEMPLATE = os.path.join(DATA_PATH, 'templates', 'playbook.yml')
+ROLE_TEMPLATE = os.path.join(DATA_PATH, 'templates', 'role')

@@ -2,6 +2,8 @@ function Credential(param) {
 
     Main.call(this, param);
 
+    return this;
+
 }
 
 Credential.prototype = Object.create(Main.prototype);

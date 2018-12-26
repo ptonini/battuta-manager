@@ -14,11 +14,14 @@ function Main (param) {
 
     if (param && param.hasOwnProperty('meta')) for (let k in param.meta) if (param.meta.hasOwnProperty(k)) self.set('meta.' + k, param.meta[k]);
 
+    return self;
+
 }
 
 Main.prototype = {
 
     templates: 'templates_Main.html',
+
 
     // Properties methods *************
 
@@ -57,6 +60,8 @@ Main.prototype = {
         self._setValue(key.split('.'), value, self);
 
         self._updateDOM(key, value);
+
+        return self;
 
     },
 
@@ -267,19 +272,7 @@ Main.prototype = {
 
             else if (response.hasOwnProperty('errors')) {
 
-                let $messageContainer = $('<div>');
-
-                for (let i = 0; i < response.errors.length; i++) {
-
-                    let message = response.errors[i].title;
-
-                    if (response.errors[i].hasOwnProperty('source')) message = response.errors[i].source.parameter + ': ' + message;
-
-                    $messageContainer.append($('<div>').html(message))
-
-                }
-
-                Main.prototype.statusAlert('danger', $messageContainer);
+                self.errorAlert(response.errors);
 
                 throw response.errors
 
@@ -306,6 +299,24 @@ Main.prototype = {
             return $container ? $container.empty().html(text) : $('<div>').append(text);
 
         })
+
+    },
+
+    errorAlert: function (errors) {
+
+        let $messageContainer = $('<div>');
+
+        for (let i = 0; i < errors.length; i++) {
+
+            let message = errors[i].title;
+
+            if (errors[i].hasOwnProperty('source')) message = errors[i].source.parameter + ': ' + message;
+
+            $messageContainer.append($('<div>').html(message))
+
+        }
+
+        Main.prototype.statusAlert('danger', $messageContainer);
 
     },
 
@@ -397,7 +408,7 @@ Main.prototype = {
 
                 else if ($element.is('checkbox')) $element.attr('checked', value);
 
-                else if ($element.is('button')) $element.toggleClass('checked_button', value);
+                else if ($element.is('button')) $element.toggleClass('checked-button', value);
 
                 else if ($element.is('a')) $element.attr('href', value);
 
@@ -415,9 +426,9 @@ Main.prototype = {
             .data('bind-id', bindId)
             .click(function () {
 
-                $(this).toggleClass('checked_button');
+                $(this).toggleClass('checked-button');
 
-                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked_button')]);
+                self.pubSub.trigger(message, ['dom', $(this).data('bind'), $(this).hasClass('checked-button')]);
 
             });
 
@@ -563,63 +574,6 @@ Main.prototype = {
         $alert.find('div.message-container').append(message);
 
         Main.prototype._deployAlert($alert)
-
-    },
-
-    gridDialog: function (options) {
-
-        let self = this;
-
-        let $dialog = self.confirmationDialog();
-
-        $dialog.find('h5.dialog-header').remove();
-
-        $dialog.find('button.cancel-button').click(function () {
-
-            $dialog.find('input.filter_box').val('');
-
-        });
-
-        $dialog.find('button.confirm-button').click(function () {
-
-            options.action($dialog.find('div.dialog-content').DynaGrid('getSelected'), $dialog);
-
-        });
-
-        options.type === 'one' && $dialog.find('button.confirm-button').remove();
-
-        $dialog.find('div.dialog-content').DynaGrid({
-            gridTitle: options.title,
-            showFilter: true,
-            addButtonTitle: 'Add ' + options['entityType'],
-            minHeight: 400,
-            maxHeight: 400,
-            gridBodyTopMargin: 10,
-            itemToggle: (options.type === 'many'),
-            truncateItemText: true,
-            gridBodyClasses: 'inset-container scrollbar',
-            columns: sessionStorage.getItem('selection_modal_columns'),
-            ajaxUrl: options.url,
-            ajaxData: options.data,
-            dataSource: options.dataSource || 'ajax',
-            dataArray: options.dataArray || [],
-            formatItem: function($gridContainer, $gridItem, data) {
-
-                $gridItem
-                    .html(data.attributes[options.itemValueKey])
-                    .addClass('pointer')
-                    .data({id: data.id, type: data.type});
-
-                if (options.type === 'one') $gridItem.click(function () {
-
-                    options.action && options.action($(this).data(), $dialog)
-
-                });
-
-            }
-        });
-
-        $dialog.dialog({width: 700})
 
     },
 
@@ -791,7 +745,7 @@ Main.prototype = {
 
     selectorRowCallback: function(row, data) {
 
-        $(row).find('td:eq(0)')
+        $(row).find('td:first')
             .css('cursor', 'pointer')
             .click(function () {
 
@@ -802,14 +756,67 @@ Main.prototype = {
         if (data.meta.deletable) $(row).find('td:last').empty().append(
             Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
-                new Classes[data.type].Class(data).delete(false, function () {
-
-                    $('section.container').trigger('reload')
-
-                })
+                new Classes[data.type].Class(data).delete(false, function () { $('section.container').trigger('reload') })
 
             })
         );
+    },
+
+    gridDialog: function (options) {
+
+        let self = this;
+
+        let $dialog = self.confirmationDialog();
+
+        $dialog.find('h5.dialog-header').remove();
+
+        $dialog.find('button.cancel-button').click(function () {
+
+            $dialog.find('input.filter_box').val('');
+
+        });
+
+        $dialog.find('button.confirm-button').click(function () {
+
+            options.action($dialog.find('div.dialog-content').DynaGrid('getSelected'), $dialog);
+
+        });
+
+        options.type === 'one' && $dialog.find('button.confirm-button').remove();
+
+        $dialog.find('div.dialog-content').DynaGrid({
+            gridTitle: options.title,
+            showFilter: true,
+            addButtonTitle: 'Add ' + options['entityType'],
+            minHeight: 400,
+            maxHeight: 400,
+            gridBodyTopMargin: 10,
+            itemToggle: (options.type === 'many'),
+            truncateItemText: true,
+            gridBodyClasses: 'inset-container scrollbar',
+            columns: sessionStorage.getItem('selection_modal_columns'),
+            ajaxUrl: options.url,
+            ajaxData: options.data,
+            dataSource: options.dataSource || 'ajax',
+            dataArray: options.dataArray || [],
+            formatItem: function($gridContainer, $gridItem, data) {
+
+                $gridItem
+                    .html(data.attributes[options.itemValueKey])
+                    .addClass('pointer')
+                    .data({id: data.id, type: data.type});
+
+                if (options.type === 'one') $gridItem.click(function () {
+
+                    options.action && options.action($(this).data(), $dialog)
+
+                });
+
+            }
+        });
+
+        $dialog.dialog({width: 700})
+
     },
 
     relationGrid: function (relation, $container, label, reloadCallback) {

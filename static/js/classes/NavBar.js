@@ -1,4 +1,8 @@
-function NavBar() {}
+function NavBar() {
+
+    return this;
+
+}
 
 NavBar.prototype = Object.create(Main.prototype);
 

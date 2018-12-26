@@ -3,6 +3,7 @@ import errno
 import magic
 import datetime
 import shutil
+import json
 
 from django.conf import settings
 
@@ -15,11 +16,27 @@ class FileHandler:
 
     root = 'repository'
 
-    editable_mime_types = [
-        'inode/x-empty',
-        'application/xml',
-        'application/json'
-    ]
+    mime_types = {
+        'editable': [
+            'inode/x-empty',
+            'application/xml',
+            'application/json'
+        ],
+        'archive': [
+            'application/zip',
+            'application/gzip',
+            'application/x-tar',
+            'application/x-gtar'
+        ]
+    }
+
+    file_template = None
+
+    root_folder_template = None
+
+    allowed_mime_types = None
+
+    allowed_extensions = None
 
     def __init__(self, path):
 
@@ -39,17 +56,29 @@ class FileHandler:
 
         else:
 
-            raise  FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
     @staticmethod
-    def _create_file(path):
+    def _create_file(cls, path):
 
-        open(path, 'a').close()
+        if cls.file_template:
+
+            cls._copy_file(cls.file_template, path)
+
+        else:
+
+            open(path, 'w').close()
 
     @staticmethod
-    def _create_folder(path):
+    def _create_folder(cls, path):
 
-        os.makedirs(path)
+        if cls.root_folder_template and os.path.dirname(path) == cls.root_path:
+
+            cls._copy_folder(cls.root_folder_template, path)
+
+        else:
+
+            os.makedirs(path)
 
     @staticmethod
     def _copy_file(source, path):
@@ -72,7 +101,7 @@ class FileHandler:
         shutil.rmtree(path)
 
     @classmethod
-    def _actions(cls, action):
+    def _get_action(cls, action):
 
         actions = {
             'file': {
@@ -90,7 +119,7 @@ class FileHandler:
         return actions[action]
 
     @classmethod
-    def build(cls, root, path):
+    def _get_root(cls, root):
 
         roots = {
             'repository': cls,
@@ -98,22 +127,60 @@ class FileHandler:
             'roles': RoleHandler
         }
 
-        return roots[root](path)
+        return roots[root]
 
     @classmethod
-    def create(cls, root, path, fs_obj_type, source):
+    def validate_extension(cls, root, path):
 
-        new_path = os.path.join(root, path)
+        root_class = cls._get_root(root)
 
-        if source:
+        fs_obj_name, fs_obj_ext = os.path.splitext(path)
 
-           cls._actions(fs_obj_type)['copy'](os.path.join(source.attributes.root, source.attributes.path), new_path)
+        return True if not root_class.allowed_extensions or fs_obj_ext in root_class.allowed_extensions else False
+
+    @classmethod
+    def build(cls, root, path):
+
+        return cls._get_root(root)(path)
+
+    @classmethod
+    def create(cls, root, path, request):
+
+        root_path = cls._get_root(root).root_path
+
+        source = request.JSON.get('data', {}).get('attributes', {}).get('source', False)
+
+        file_data = request.FILES.get('file_data', False)
+
+        fs_obj_type = request.JSON.get('data', {}).get('type', 'file')
+
+        absolute_path = os.path.join(root_path, path)
+
+        if fs_obj_type == 'folder' or cls.validate_extension(root, path):
+
+            if file_data:
+
+                with open(absolute_path, 'wb') as f:
+
+                    for chunk in file_data:
+
+                        f.write(chunk)
+
+            elif source:
+
+                source_path = os.path.join(root_path, json.loads(source)['path'])
+
+                cls._get_action(fs_obj_type)['copy'](source_path, absolute_path)
+
+            else:
+
+                cls._get_action(fs_obj_type)['create'](cls._get_root(root), absolute_path)
+
+            return cls.build(root, path)
 
         else:
 
-            cls._actions(fs_obj_type)['create'](new_path)
-
-        return cls.build(root, new_path)
+            raise FileHandlerForbiddenExt
 
     def read(self):
 
@@ -142,9 +209,15 @@ class FileHandler:
 
         if new_name :
 
-            os.rename(self.absolute_path, os.path.join(self.absolute_parent_path, new_name))
+            if self.validate_extension(self.root, new_name) or self.type == 'folder':
 
-            self.__init__(os.path.join(self.parent_path, new_name))
+                os.rename(self.absolute_path, os.path.join(self.absolute_parent_path, new_name))
+
+                self.__init__(os.path.join(self.parent_path, new_name))
+
+            else:
+
+                raise FileHandlerForbiddenExt
 
         if content:
 
@@ -154,7 +227,7 @@ class FileHandler:
 
     def delete(self):
 
-        self._actions(self.type)['delete'](self.absolute_path)
+        self._get_action(self.type)['delete'](self.absolute_path)
 
     def search(self):
 
@@ -188,7 +261,7 @@ class FileHandler:
             },
             'links': {
                 'self': '/'.join(filter(None, ['/files', self.root, self.path])),
-                'parent': '/'.join(['/files', self.root, self.parent_path]) if self.path else None,
+                'parent': '/'.join(filter(None, ['/files', self.root, self.parent_path])) if self.path else None,
                 'root': '/'.join(['/files', self.root])
             }
         }
@@ -196,7 +269,7 @@ class FileHandler:
         conditions = [
             content,
             self.type == 'file',
-            mime_type in self.editable_mime_types or mime_type and mime_type.split('/')[0] == 'text',
+            mime_type in self.mime_types['editable'] or mime_type and mime_type.split('/')[0] == 'text',
             size < prefs['max_edit_size']
         ]
 
@@ -215,9 +288,20 @@ class PlaybookHandler(FileHandler):
 
     root = 'playbooks'
 
+    file_template = settings.PLAYBOOK_TEMPLATE
+
+    allowed_extensions = ['.yaml', '.yml']
+
 
 class RoleHandler(FileHandler):
 
     root_path = settings.ROLES_PATH
 
+    root_folder_template = settings.ROLE_TEMPLATE
+
     root = 'roles'
+
+
+class FileHandlerForbiddenExt(Exception):
+
+    pass

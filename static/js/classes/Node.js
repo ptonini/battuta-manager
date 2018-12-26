@@ -2,6 +2,7 @@ function Node(param) {
 
     Main.call(this, param);
 
+    return this;
 }
 
 Node.prototype = Object.create(Main.prototype);

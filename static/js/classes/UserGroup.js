@@ -2,6 +2,8 @@ function UserGroup(param) {
 
     Main.call(this, param);
 
+    return this;
+
 }
 
 UserGroup.prototype = Object.create(Main.prototype);

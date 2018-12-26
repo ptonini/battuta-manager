@@ -2,6 +2,8 @@ function Group(param) {
 
     Main.call(this, param);
 
+    return this;
+
 }
 
 Group.prototype = Object.create(Node.prototype);

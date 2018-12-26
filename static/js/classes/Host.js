@@ -2,6 +2,8 @@ function Host(param) {
 
     Main.call(this, param);
 
+    return this;
+
 }
 
 Host.prototype = Object.create(Node.prototype);

@@ -96,7 +96,8 @@ input, textarea, select {
 
 select.form-control:focus,
 textarea.form-control:focus,
-input.form-control:focus {
+input.form-control:focus,
+div.kv-fileinput-caption:focus{
     box-shadow: none;
     border: 1px solid var(--input-border-color);
 }
@@ -116,6 +117,11 @@ input.form-check-input {
 
 div.form-check {
     margin-bottom: 5px
+}
+
+ {
+
+
 }
 
 
@@ -398,9 +404,9 @@ div.dataTables_paginate a.page-link:hover {
 
 /* Checked button ********************/
 
-.checked_button,
-.checked_button:focus,
-.checked_button:hover {
+.checked-button,
+.checked-button:focus,
+.checked-button:hover {
     background-color: var(--btn-checked-color)
 }
 

@@ -77,6 +77,18 @@ let Classes = {
         Class: FileObj,
         action: function (param) { new FileObj({links: {self: param.input}}).selector() }
     },
+    playbooks: {
+        href: '/files/playbooks',
+        regex: /^files\/playbooks\/?[\s\S]*$/,
+        Class: Playbook,
+        action: function (param) { new Playbook({links: {self: param.input}}).selector() }
+    },
+    roles: {
+        href: '/files/roles',
+        regex: /^files\/roles\/?[\s\S]*$/,
+        Class: Role,
+        action: function (param) { new Role({links: {self: param.input}}).selector() }
+    },
 };
 
 for (let k in Classes) if (Classes.hasOwnProperty(k)) Router.add(Classes[k].regex, Classes[k].action);

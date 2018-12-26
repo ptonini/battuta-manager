@@ -2,6 +2,7 @@ function Project(param) {
 
     Main.call(this, param);
 
+    return this;
 }
 
 Project.prototype = Object.create(Main.prototype);

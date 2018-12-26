@@ -34,6 +34,8 @@ function Search(pattern) {
 
     });
 
+    return this;
+
 }
 
 Search.prototype = Object.create(Main.prototype);

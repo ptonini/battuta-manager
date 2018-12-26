@@ -14,6 +14,8 @@ function User(param) {
 
     self.set('name', self.get('username'));
 
+    return this;
+
 }
 
 User.prototype = Object.create(Main.prototype);
