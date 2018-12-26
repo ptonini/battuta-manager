@@ -515,7 +515,7 @@ FileObj.prototype.selector = function () {
                     {title: 'name', data: 'id', width: '50%'},
                     {title: 'type', data: 'attributes.mime_type', width: '15%'},
                     {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
-                    {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data, sessionStorage.getItem('current_user_tz')) }},
+                    {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data) }},
                     {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
                 ],
                 order: [[0, 'asc']],

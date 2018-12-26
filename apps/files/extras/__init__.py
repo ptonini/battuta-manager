@@ -229,17 +229,18 @@ class FileHandler:
 
         self._get_action(self.type)['delete'](self.absolute_path)
 
-    def search(self):
+    @classmethod
+    def list(cls):
 
         file_list = list()
 
-        for root, dirs, files in os.walk(self.root_path):
+        for root, dirs, files in os.walk(cls.root_path):
 
             for file_name in files:
 
                 file_list.append([root, file_name])
 
-        return file_list
+        return file_list, 'sunda'
 
     def serialize(self, content=True):
 
@@ -291,6 +292,15 @@ class PlaybookHandler(FileHandler):
     file_template = settings.PLAYBOOK_TEMPLATE
 
     allowed_extensions = ['.yaml', '.yml']
+
+    # @classmethod
+    # def list(cls):
+    #
+    #     file_list = list()
+    #
+    #     for root, dirs, files in os.walk(cls.root_path):
+    #
+    #         file_list.append([root, file_name])
 
 
 class RoleHandler(FileHandler):

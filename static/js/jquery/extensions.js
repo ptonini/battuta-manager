@@ -156,9 +156,9 @@ function humanBytes(value, unit) {
 }
 
 
-function toUserTZ(time, zone) {
+function toUserTZ(time) {
 
-    return time ? moment.utc(time).tz(zone).format('YYYY-MM-DD HH:mm:ss') : null
+    return time ? moment.utc(time).tz(sessionStorage.getItem('current_user_tz')).format('YYYY-MM-DD HH:mm:ss') : time
 
 }
 
