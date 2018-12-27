@@ -72,6 +72,8 @@ class Project(models.Model, SerializerModelMixin):
             'can_run_playbooks': '/'.join([self.route, str(self.id), 'can_run_playbooks']),
             'can_edit_playbooks': '/'.join([self.route, str(self.id), 'can_edit_playbooks']),
             'can_edit_roles': '/'.join([self.route, str(self.id), 'can_edit_roles']),
+            'playbooks': '/'.join([self.route, str(self.id), 'playbooks']),
+            'roles': '/'.join([self.route, str(self.id), 'roles']),
         }
 
         relationships = {

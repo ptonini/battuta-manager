@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth.decorators import login_required
 
-from .views import ProjectView, RelationsView
+from .views import ProjectView, RelationsView, FsObjRelationsView
 
 urlpatterns = [
 
@@ -24,5 +24,9 @@ urlpatterns = [
     path('/<int:project_id>/can_edit_playbooks', login_required(RelationsView.as_view()), kwargs={'relation': 'can_edit_playbooks'}),
 
     path('/<int:project_id>/can_edit_roles', login_required(RelationsView.as_view()), kwargs={'relation': 'can_edit_roles'}),
+
+    path('/<int:project_id>/playbooks', login_required(FsObjRelationsView.as_view()), kwargs={'relation': 'playbooks'}),
+
+    path('/<int:project_id>/roles', login_required(FsObjRelationsView.as_view()), kwargs={'relation': 'roles'}),
 
 ]

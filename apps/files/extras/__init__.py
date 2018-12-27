@@ -139,6 +139,21 @@ class FileHandler:
         return True if not root_class.allowed_extensions or fs_obj_ext in root_class.allowed_extensions else False
 
     @classmethod
+    def list(cls):
+
+        file_list = list()
+
+        for root, dirs, files in os.walk(cls.root_path):
+
+            for file_name in files:
+
+                file_list.append(os.path.join(root.replace(cls.root_path, ''), file_name))
+
+        file_list.sort()
+
+        return file_list
+
+    @classmethod
     def build(cls, root, path):
 
         return cls._get_root(root)(path)
@@ -229,19 +244,6 @@ class FileHandler:
 
         self._get_action(self.type)['delete'](self.absolute_path)
 
-    @classmethod
-    def list(cls):
-
-        file_list = list()
-
-        for root, dirs, files in os.walk(cls.root_path):
-
-            for file_name in files:
-
-                file_list.append([root, file_name])
-
-        return file_list, 'sunda'
-
     def serialize(self, content=True):
 
         prefs = get_preferences()
@@ -293,15 +295,6 @@ class PlaybookHandler(FileHandler):
 
     allowed_extensions = ['.yaml', '.yml']
 
-    # @classmethod
-    # def list(cls):
-    #
-    #     file_list = list()
-    #
-    #     for root, dirs, files in os.walk(cls.root_path):
-    #
-    #         file_list.append([root, file_name])
-
 
 class RoleHandler(FileHandler):
 
@@ -311,6 +304,14 @@ class RoleHandler(FileHandler):
 
     root = 'roles'
 
+    @classmethod
+    def list(cls):
+
+        role_list = [f for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
+
+        role_list.sort()
+
+        return role_list
 
 class FileHandlerForbiddenExt(Exception):
 

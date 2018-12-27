@@ -1,3 +1,5 @@
+import json
+
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from main.extras.views import ApiView
@@ -195,43 +197,21 @@ class FsObjRelationsView(ApiView):
 
     def post(self, request, relation, project_id):
 
-        project = get_object_or_404(Project, pk=project_id)
-
-        related_model = getattr(getattr(getattr(Project, relation), 'field'), 'related_model')
-
-        if project.authorizer(request.user)['editable']:
-
-            project.__setattr__(relation, get_object_or_404(related_model, pk=request.JSON['data']['id']))
-
-            project.save()
-
-            return self._api_response({'data': getattr(project, relation).serialize(None, request.user)})
-
-        else:
-
-            return HttpResponseForbidden()
+        pass
 
     def get(self, request, relation, project_id):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        related_fs_obj = getattr(project, relation)
-
-        related_fs_handler = self.handlers[relation]
-
         if request.JSON.get('related', True):
 
-            return self._api_response({'data': related_fs_obj})
-        #
-        # else:
-        #
-        #     related_set = related_model.objects.all() if related_model != LocalGroup else related_model.objects.exclude(name__in=builtin_groups)
-        #
-        #     related_set = related_set.exclude(pk=related_instance.id) if related_instance else related_set
-        #
-        #     data = [r.serialize(fields, request.user) for r in related_set]
-        #
-        # return self._api_response({'data': data})
+            return self._api_response({'data': json.loads(getattr(project, relation))})
+
+        else:
+
+            fs_obj_list = self.handlers[relation].list()
+
+            return self._api_response({'data': [{'attributes': {'path': f}} for f in fs_obj_list if f not in getattr(project, relation)]})
 
     @staticmethod
     def delete(request, relation, project_id):
