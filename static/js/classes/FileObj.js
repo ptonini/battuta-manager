@@ -35,7 +35,6 @@ FileObj.prototype.tableButtons = function (self) {
 };
 
 
-
 FileObj.prototype.validator = function () { return true };
 
 //
@@ -126,58 +125,6 @@ FileObj.prototype.validator = function () { return true };
 //
 //         }
 //     };
-
-// FileObj.prototype.roleDialog = function (callback) {
-//
-//     let self = this;
-//
-//     let $dialog = self.confirmationDialog();
-//
-//     self.fetchHtml('form_Role.html').then($element => {
-//
-//         self.bindElement($element);
-//
-//         $element.find('button').click(function () {
-//
-//             $(this).toggleClass('checked-button')
-//
-//         });
-//
-//         $dialog.find('h5.dialog-header').html('Create role');
-//
-//         $dialog.find('div.dialog-content').append($element);
-//
-//         $dialog.find('button.confirm-button').click(function () {
-//
-//             self.role_folders = [];
-//
-//             $dialog.find('button.btn-block.checked-button').each(function() {
-//
-//                 self.role_folders.push($(this).data())
-//
-//             });
-//
-//             self.postData('create_role', false, (data) => {
-//
-//                 callback && callback(data, self);
-//
-//                 $dialog.dialog('close');
-//
-//             });
-//
-//         });
-//
-//         $dialog.find('button.cancel-button').click(function () {
-//
-//             $dialog.dialog('close')
-//
-//         });
-//
-//         $dialog.dialog()
-//
-//     })
-//
-// };
 
 FileObj.prototype.upload = function () {
 
@@ -271,15 +218,15 @@ FileObj.prototype.contentEditor = function () {
         let extensions = {
             properties: 'properties',
             conf: 'properties',
-            ccf:  'properties',
-            yml:  'yaml',
+            ccf: 'properties',
+            yml: 'yaml',
             js: 'javascript',
             json: 'json',
             java: 'java',
-            py:  'python',
-            python:  'python',
-            sh:  'sh',
-            xml:  'xml'
+            py: 'python',
+            python: 'python',
+            sh: 'sh',
+            xml: 'xml'
         };
 
         let fileNameArray = filename.split('.');
@@ -355,7 +302,7 @@ FileObj.prototype.contentEditor = function () {
 
     $dialog.find('div.dialog-content').append($form);
 
-    $dialog.find('input.filename-input').val(self.get('id'));
+    $dialog.find('input.filename-input').val(self.get('name'));
 
     $dialog.find('button.confirm-button').click(function () {
 
@@ -411,13 +358,13 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
             }
         },
         rename: {
-            displayName: self.id,
+            displayName: self.name,
             title: 'Rename',
             template: 'update-file-form',
             save: function (newName) { return self.set('new_name', newName).update(false) }
         },
         copy: {
-            displayName: self.id + '_copy',
+            displayName: self.name + '_copy',
             title: 'Copy',
             template: 'update-file-form',
             save: function (newName) {
@@ -512,7 +459,7 @@ FileObj.prototype.selector = function () {
                 scrollY: (window.innerHeight - 316).toString() + 'px',
                 scrollCollapse: true,
                 columns: [
-                    {title: 'name', data: 'id', width: '50%'},
+                    {title: 'name', data: 'attributes.name', width: '50%'},
                     {title: 'type', data: 'attributes.mime_type', width: '15%'},
                     {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
                     {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data) }},
@@ -667,7 +614,5 @@ FileObj.prototype.selector = function () {
         }
 
     });
-
-
 
 };

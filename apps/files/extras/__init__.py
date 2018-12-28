@@ -40,23 +40,25 @@ class FileHandler:
 
     def __init__(self, path):
 
-        absolute_path = os.path.join(self.root_path, path)
+        self.absolute_path = os.path.join(self.root_path, path)
 
-        if os.path.isdir(absolute_path) or os.path.isfile(absolute_path):
+        if os.path.isdir(self.absolute_path):
 
-            self.parent_path, self.id = os.path.split(path)
+            self.type  = 'folder'
 
-            self.type = 'file' if os.path.isfile(absolute_path) else 'folder'
+        elif os.path.isfile(self.absolute_path):
 
-            self.path = path
-
-            self.absolute_path = absolute_path
-
-            self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
+            self.type  = 'file'
 
         else:
 
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
+
+        self.id = path
+
+        self.parent_path, self.name = os.path.split(path)
+
+        self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
 
     @staticmethod
     def _create_file(cls, path):
@@ -141,17 +143,17 @@ class FileHandler:
     @classmethod
     def list(cls):
 
-        file_list = list()
+        fs_obj_list = list()
 
         for root, dirs, files in os.walk(cls.root_path):
 
             for file_name in files:
 
-                file_list.append(os.path.join(root.replace(cls.root_path, ''), file_name))
+                file_path = file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name)
 
-        file_list.sort()
+                fs_obj_list.append(cls(file_path))
 
-        return file_list
+        return fs_obj_list
 
     @classmethod
     def build(cls, root, path):
@@ -208,7 +210,7 @@ class FileHandler:
 
             for fs_obj_name in os.listdir(self.absolute_path):
 
-                response['included'].append(FileHandler.build(self.root, os.path.join(self.path, fs_obj_name)).serialize(False))
+                response['included'].append(FileHandler.build(self.root, os.path.join(self.id, fs_obj_name)).serialize(False))
 
             return response
 
@@ -256,15 +258,16 @@ class FileHandler:
             'id': self.id,
             'type': self.type,
             'attributes': {
+                'name': self.name,
                 'size': size,
                 'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
                 'mime_type': mime_type,
-                'path': self.path,
-                'root': self.root
+                'root': self.root,
+                'path': self.id,
             },
             'links': {
-                'self': '/'.join(filter(None, ['/files', self.root, self.path])),
-                'parent': '/'.join(filter(None, ['/files', self.root, self.parent_path])) if self.path else None,
+                'self': '/'.join(filter(None, ['/files', self.root, self.id])),
+                'parent': '/'.join(filter(None, ['/files', self.root, self.parent_path])) if self.id else None,
                 'root': '/'.join(['/files', self.root])
             }
         }
@@ -307,11 +310,10 @@ class RoleHandler(FileHandler):
     @classmethod
     def list(cls):
 
-        role_list = [f for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
-
-        role_list.sort()
+        role_list = [cls(f) for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
 
         return role_list
+
 
 class FileHandlerForbiddenExt(Exception):
 

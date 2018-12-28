@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from main.extras.views import ApiView
 
@@ -87,44 +87,6 @@ class ProjectView(ApiView):
 
             return HttpResponseForbidden()
 
-    # def get(self, request, action):
-    #
-    #
-    #         elif action in ['add_playbooks', 'add_roles']:
-    #
-    #             file_type = action.split('_')[1]
-    #
-    #             files = json.loads(project.__getattribute__(file_type))
-    #
-    #             files = files + [r for r in (json.loads(request.POST[file_type])) if r not in files]
-    #
-    #             project.__setattr__(file_type, json.dumps(files))
-    #
-    #             project.save()
-    #
-    #             data = {'status': 'ok'}
-    #
-    #         elif action in ['remove_playbook', 'remove_role']:
-    #
-    #             file_type = action.split('_')[1] + 's'
-    #
-    #             files = [p for p in json.loads(project.__getattribute__(file_type)) if p not in (json.loads(request.POST[file_type]))]
-    #
-    #             project.__setattr__(file_type, json.dumps(files))
-    #
-    #             project.save()
-    #
-    #             data = {'status': 'ok'}
-    #
-    #         else:
-    #
-    #             return HttpResponseNotFound('Invalid action')
-    #     else:
-    #
-    #         data = {'status': 'denied'}
-    #
-    #     return HttpResponse(json.dumps(data), content_type='application/json')
-
 
 class RelationsView(ApiView):
 
@@ -195,23 +157,39 @@ class FsObjRelationsView(ApiView):
         'roles': RoleHandler
     }
 
-    def post(self, request, relation, project_id):
+    @staticmethod
+    def post(request, relation, project_id):
 
-        pass
+        project = get_object_or_404(Project, pk=project_id)
+
+        if project.authorizer(request.user)['editable']:
+
+            result_set = set(json.loads(getattr(project, relation)) + [f['id'] for f in request.JSON.get('data', list())])
+
+            project.__setattr__(relation, json.dumps(list(result_set)))
+
+            project.save()
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
+
 
     def get(self, request, relation, project_id):
 
         project = get_object_or_404(Project, pk=project_id)
 
+        related_fs_obj_list = json.loads(getattr(project, relation))
+
         if request.JSON.get('related', True):
 
-            return self._api_response({'data': json.loads(getattr(project, relation))})
+            return self._api_response({'data': [self.handlers[relation](f).serialize(content=False) for f in related_fs_obj_list]})
 
         else:
 
-            fs_obj_list = self.handlers[relation].list()
-
-            return self._api_response({'data': [{'attributes': {'path': f}} for f in fs_obj_list if f not in getattr(project, relation)]})
+            return self._api_response({'data': [f.serialize() for f in self.handlers[relation].list() if f.id not in related_fs_obj_list]})
 
     @staticmethod
     def delete(request, relation, project_id):
@@ -220,7 +198,9 @@ class FsObjRelationsView(ApiView):
 
         if project.authorizer(request.user)['editable']:
 
-            project.__setattr__(relation, None)
+            delete_ids = [f['id'] for f in request.JSON.get('data', list())]
+
+            project.__setattr__(relation, json.dumps([i for i in json.loads(getattr(project, relation)) if i not in delete_ids]))
 
             project.save()
 
