@@ -4,13 +4,17 @@ import magic
 import datetime
 import shutil
 import json
+import yaml
+import re
 
 from django.conf import settings
+
+from main.extras.models import SerializerModelMixin
 
 from apps.preferences.extras import get_preferences
 
 
-class FileHandler:
+class FileHandler(SerializerModelMixin):
 
     root_path = settings.REPOSITORY_PATH
 
@@ -34,11 +38,13 @@ class FileHandler:
 
     root_folder_template = None
 
-    allowed_mime_types = None
+    root_skeleton = None
 
-    allowed_extensions = None
+    def __init__(self, path, user):
 
-    def __init__(self, path):
+        path = self._strip_trailing_slash(path)
+
+        self.user = user
 
         self.absolute_path = os.path.join(self.root_path, path)
 
@@ -54,7 +60,9 @@ class FileHandler:
 
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
-        self.id = path
+        self.path = path
+
+        self.id = os.path.join(self.root, path)
 
         self.parent_path, self.name = os.path.split(path)
 
@@ -102,6 +110,80 @@ class FileHandler:
 
         shutil.rmtree(path)
 
+    @staticmethod
+    def _strip_trailing_slash(path):
+
+        return re.sub(r'\/$', '', path)\
+
+    @classmethod
+    def _validate(cls, root, fs_obj_type, path, content):
+
+        def validate_yaml(stream):
+
+            try:
+
+                yaml.load(stream)
+
+            except yaml.YAMLError as e:
+
+                return ''.join(['YAML error: ', e.problem, ' (line ', str(e.problem_mark.line), ', column ', str(e.problem_mark.column), ')'])
+
+            else:
+
+                return True
+
+        def validate_skeleton():
+
+            matched = False
+
+            for p in cls._get_root(root).root_skeleton:
+
+                pattern_list = list()
+
+                pattern_list.append(p['folder']) if p['folder'] else None
+
+                if p['file'] and fs_obj_type == 'file':
+
+                    pattern_list.append('\/') if p['folder'] else None
+
+                    pattern_list.append(p['file'])
+
+                if re.compile(''.join(['^', ''.join(pattern_list), '$'])).match(path):
+
+                    matched = True if fs_obj_type == 'folder' or p['file'] else False
+
+                    break
+
+            return True if matched else ''.join([fs_obj_type.capitalize(), ' name or type not allowed on this path'])
+
+        file_types = {
+            'yaml': {'ext': ['.yml', '.yaml'], 'validator': validate_yaml}
+        }
+
+        fs_obj_name_part, fs_obj_ext = os.path.splitext(path)
+
+        errors = list()
+
+        if cls._get_root(root).root_skeleton:
+
+            validation = validate_skeleton()
+
+            errors.append(validation) if validation is not True else None
+
+        if fs_obj_type == 'file'and content:
+
+            for key, value in file_types.items():
+
+                if fs_obj_ext in value['ext'] and value.get('validator', False):
+
+                    validation = value['validator'](content)
+
+                    errors.append(validation) if validation is not True else None
+
+                    break
+
+        return True if len(errors) == 0 else errors
+
     @classmethod
     def _get_action(cls, action):
 
@@ -132,16 +214,7 @@ class FileHandler:
         return roots[root]
 
     @classmethod
-    def validate_extension(cls, root, path):
-
-        root_class = cls._get_root(root)
-
-        fs_obj_name, fs_obj_ext = os.path.splitext(path)
-
-        return True if not root_class.allowed_extensions or fs_obj_ext in root_class.allowed_extensions else False
-
-    @classmethod
-    def list(cls):
+    def list(cls, user):
 
         fs_obj_list = list()
 
@@ -151,14 +224,14 @@ class FileHandler:
 
                 file_path = file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name)
 
-                fs_obj_list.append(cls(file_path))
+                fs_obj_list.append(cls(file_path, user))
 
         return fs_obj_list
 
     @classmethod
-    def build(cls, root, path):
+    def factory(cls, root, path, user):
 
-        return cls._get_root(root)(path)
+        return cls._get_root(root)(path, user)
 
     @classmethod
     def create(cls, root, path, request):
@@ -173,7 +246,9 @@ class FileHandler:
 
         absolute_path = os.path.join(root_path, path)
 
-        if fs_obj_type == 'folder' or cls.validate_extension(root, path):
+        validation = cls._validate(root, fs_obj_type, path, None)
+
+        if validation is True:
 
             if file_data:
 
@@ -193,30 +268,27 @@ class FileHandler:
 
                 cls._get_action(fs_obj_type)['create'](cls._get_root(root), absolute_path)
 
-            return cls.build(root, path)
+            return cls.factory(root, path, request.user)
 
         else:
 
-            raise FileHandlerForbiddenExt
+            raise FileHandlerException(validation)
 
-    def read(self):
+    def read(self, fields=None):
 
         if self.type == 'folder':
 
-            response = {
-                'data': self.serialize(False),
-                'included': []
-            }
+            response = {'data': self.serialize(fields), 'included': list()}
 
             for fs_obj_name in os.listdir(self.absolute_path):
 
-                response['included'].append(FileHandler.build(self.root, os.path.join(self.id, fs_obj_name)).serialize(False))
+                response['included'].append(FileHandler.factory(self.root, os.path.join(self.path, fs_obj_name), self.user).serialize(fields))
 
             return response
 
         else:
 
-            return {'data': self.serialize()}
+            return {'data': self.serialize(fields)}
 
     def update(self, attributes):
 
@@ -224,79 +296,103 @@ class FileHandler:
 
         content = attributes.get('content')
 
-        if new_name :
+        validation = self._validate(self.root, self.type, new_name, content)
 
-            if self.validate_extension(self.root, new_name) or self.type == 'folder':
+        if validation is True:
+
+            if new_name :
 
                 os.rename(self.absolute_path, os.path.join(self.absolute_parent_path, new_name))
 
-                self.__init__(os.path.join(self.parent_path, new_name))
+                self.__init__(os.path.join(self.parent_path, new_name), self.user)
 
-            else:
+            if content:
 
-                raise FileHandlerForbiddenExt
+                with open(self.absolute_path, 'w') as f:
 
-        if content:
+                    f.write(content)
 
-            with open(self.absolute_path, 'w') as f:
+        else:
 
-                f.write(content)
+            raise FileHandlerException(validation)
 
     def delete(self):
 
         self._get_action(self.type)['delete'](self.absolute_path)
 
-    def serialize(self, content=True):
+    def serialize(self, fields=None):
 
         prefs = get_preferences()
 
-        mime_type = magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else None
-
-        size = os.path.getsize(self.absolute_path) if self.type == 'file' else 0
-
-        fs_obj_dict = {
-            'id': self.id,
-            'type': self.type,
-            'attributes': {
-                'name': self.name,
-                'size': size,
-                'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
-                'mime_type': mime_type,
-                'root': self.root,
-                'path': self.id,
-            },
-            'links': {
-                'self': '/'.join(filter(None, ['/files', self.root, self.id])),
-                'parent': '/'.join(filter(None, ['/files', self.root, self.parent_path])) if self.id else None,
-                'root': '/'.join(['/files', self.root])
-            }
+        attributes = {
+            'name': self.name,
+            'size': os.path.getsize(self.absolute_path) if self.type == 'file' else 0,
+            'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
+            'mime_type': magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else None,
+            'root': self.root,
+            'path': self.path,
         }
 
-        conditions = [
-            content,
+        links = {
+            'self': '/'.join(filter(None, ['/files', self.root, self.path])),
+            'parent': '/'.join(filter(None, ['/files', self.root, self.parent_path])) if self.path else None,
+            'root': '/'.join(['/files', self.root])
+        }
+
+        read_conditions = [
+            fields and 'content' in fields.get('attribute', []) or prefs['validate_content_on_read'],
             self.type == 'file',
-            mime_type in self.mime_types['editable'] or mime_type and mime_type.split('/')[0] == 'text',
-            size < prefs['max_edit_size']
+            attributes['mime_type'] in self.mime_types['editable'] or attributes['mime_type'] and attributes['mime_type'].split('/')[0] == 'text',
+            attributes['size'] <= prefs['max_edit_size']
         ]
 
-        if False not in conditions:
+        if all(read_conditions):
 
             with open(self.absolute_path, 'r') as f:
 
-                fs_obj_dict['attributes']['content'] = f.read()
+                attributes['content'] = f.read()
 
-        return fs_obj_dict
+        meta = {
+            'valid': self._validate(self.root, self.type, self.path, attributes.get('content')),
+            'readable': True,
+            'editable': True,
+            'deletable': True
+        }
+
+        return self._serializer(fields, attributes, links, meta, None)
+
+    def authorizer(self):
+
+        pass
+
+    def get_paths(self):
+
+        paths = [self.root_path]
+
+        current_path = None
+
+        for step_path in self.parent_path.split('/'):
+
+            current_path = os.path.join(*filter(None, [current_path, step_path]))
+
+            paths.append(os.path.join(self.root_path, current_path))
+
+        return paths
+
 
 
 class PlaybookHandler(FileHandler):
 
     root_path = settings.PLAYBOOK_PATH
 
-    root = 'playbooks'
-
     file_template = settings.PLAYBOOK_TEMPLATE
 
-    allowed_extensions = ['.yaml', '.yml']
+    root = 'playbooks'
+
+    root_skeleton = [
+        {'folder': None, 'file': '[^\/]*\.(yml|yaml)'},
+        {'folder': '.*', 'file': '[^\/]*\.(yml|yaml)'}
+    ]
 
 
 class RoleHandler(FileHandler):
@@ -307,14 +403,21 @@ class RoleHandler(FileHandler):
 
     root = 'roles'
 
+    root_skeleton = [
+        {'folder': '[^\/]*', 'file': None},
+        {'folder': '.*\/(defaults|handlers|meta|tasks|vars)', 'file': '[^\/]*\.(yml|yaml)'},
+        {'folder': '.*\/(files|templates)', 'file': '[^\/]*'},
+        {'folder': '.*\/(files|templates)\/.*', 'file': '[^\/]*'},
+    ]
+
     @classmethod
-    def list(cls):
+    def list(cls, user):
 
-        role_list = [cls(f) for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
-
-        return role_list
+        return [cls(f, user) for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
 
 
-class FileHandlerForbiddenExt(Exception):
+class FileHandlerException(Exception):
 
-    pass
+    def __init__(self, errors):
+
+        self.errors = errors

@@ -2,20 +2,12 @@ import os
 import shutil
 import ntpath
 import tempfile
-import datetime
-import sys
-from pytz import timezone, utc
 
-from django.shortcuts import render
-from django.views.generic import View
-from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound, HttpResponseBadRequest
-from django.conf import settings
-from django.core.cache import cache
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound
 
-from apps.preferences.extras import get_preferences
-from apps.projects.extras import ProjectAuthorizer
-from apps.files.extras import FileHandler, FileHandlerForbiddenExt
+from apps.files.extras import FileHandler, FileHandlerException
 from main.extras.views import ApiView
+
 
 class FileView(ApiView):
 
@@ -23,7 +15,7 @@ class FileView(ApiView):
 
         try:
 
-            FileHandler.build(root, path)
+            FileHandler.factory(root, path, request.user)
 
         except FileNotFoundError:
 
@@ -31,9 +23,9 @@ class FileView(ApiView):
 
                 fs_obj = FileHandler.create(root, path, request)
 
-            except FileHandlerForbiddenExt:
+            except FileHandlerException as e:
 
-                return self._api_response({'errors': [{'title': 'Forbidden file extension'}]})
+                return self._api_response({'errors': [{'title': error} for error in e.errors]})
 
             else:
 
@@ -47,7 +39,7 @@ class FileView(ApiView):
 
         try:
 
-            fs_obj = FileHandler.build(root, path)
+            fs_obj = FileHandler.factory(root, path, request.user)
 
         except FileNotFoundError:
 
@@ -63,7 +55,7 @@ class FileView(ApiView):
 
                 else:
 
-                    archive_name = os.path.join(tempfile.gettempdir(), fs_obj.id)
+                    archive_name = os.path.join(tempfile.gettempdir(), fs_obj.name)
 
                     target = shutil.make_archive(archive_name, 'zip', fs_obj.absolute_path)
 
@@ -79,13 +71,13 @@ class FileView(ApiView):
 
             else:
 
-                return self._api_response(fs_obj.read())
+                return self._api_response(fs_obj.read(request.JSON.get('fields')))
 
     def patch(self, request, root, path):
 
         try:
 
-            fs_obj = FileHandler.build(root, path)
+            fs_obj = FileHandler.factory(root, path, request.user)
 
         except FileNotFoundError:
 
@@ -97,9 +89,9 @@ class FileView(ApiView):
 
                 fs_obj.update(request.JSON.get('data', {}).get('attributes'))
 
-            except FileHandlerForbiddenExt:
+            except FileHandlerException as e:
 
-                return self._api_response({'errors': [{'title': 'Forbidden file extension'}]})
+                return self._api_response({'errors': [{'title': error} for error in e.errors]})
 
             else:
 
@@ -110,7 +102,7 @@ class FileView(ApiView):
 
         try:
 
-            fs_obj = FileHandler.build(root, path)
+            fs_obj = FileHandler.factory(root, path, request.user)
 
         except FileNotFoundError:
 

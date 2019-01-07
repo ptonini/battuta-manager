@@ -13,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.conf import settings
-from django.core.cache import cache
+from django.core.cache import caches
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 
 from apps.inventory.models import Host, Group, Variable
@@ -23,7 +23,7 @@ from apps.inventory.extras import AnsibleInventory, inventory_to_dict
 from main.extras import download_file
 from main.extras.views import ApiView
 from apps.preferences.extras import get_preferences
-from apps.projects.extras import ProjectAuthorizer
+from apps.iam.extras import Authorizer
 
 
 
@@ -579,11 +579,11 @@ class VariableView(ApiView):
 
     def post(self, request, node_id, var_id, node_type):
 
-        authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+        #authorizer = caches['authorizer'].get_or_set(request.user.username, Authorizer(request.user))
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
+        if request.user.has_perm('users.edit_' + node_type): #or authorizer.can_edit_variables(node):
 
             if 'data' in request.JSON:
 
@@ -682,9 +682,9 @@ class VariableView(ApiView):
 
             source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
 
-            authorizer = cache.get_or_set(request.user.username + '_auth', ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+            #authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
 
-            if request.user.has_perm('edit_' + node_type) or authorizer.can_edit_variables(node):
+            if request.user.has_perm('edit_' + node_type): #or authorizer.can_edit_variables(node):
 
                 for source_var in source.variable_set.all():
 

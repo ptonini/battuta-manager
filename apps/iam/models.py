@@ -45,8 +45,9 @@ class LocalUser(AbstractUser, SerializerModelMixin):
     def authorizer(self, user):
 
         return {
-            'editable': user.has_perm('users.edit_users') and not self.is_superuser or user.is_superuser,
-            'deletable': user.has_perm('users.edit_users') and not self.is_superuser and user is not self
+            'editable': user.has_perm('users.edit_users') and not self.is_superuser or user.is_superuser or user.id == self.id,
+            'deletable': user.has_perm('users.edit_users') and not self.is_superuser and user is not self,
+            'readable': user.has_perm('users.edit_users') or user.id == self.id,
         }
 
     class Meta:
@@ -110,12 +111,13 @@ class Credential(models.Model, SerializerModelMixin):
 
         deletable_conditions = [
             self != self.user.default_cred,
-            user.has_perm('users.edit_users') and not self.user.is_superuser or user.is_superuser
+            user.has_perm('users.edit_users') and not self.user.is_superuser, user.is_superuser or user.id == self.user.id,
         ]
 
         return {
-            'editable': user.has_perm('users.edit_users') and not self.user.is_superuser or user.is_superuser,
-            'deletable': False if False in deletable_conditions else True
+            'editable': user.has_perm('users.edit_users') and not self.user.is_superuser or user.is_superuser or user.id == self.user.id,
+            'deletable': False if False in deletable_conditions else True,
+            'readable': user.has_perm('users.edit_users') or user.is_superuser or user.id == self.user.id
         }
 
     class Meta:
@@ -149,7 +151,9 @@ class LocalGroup(Group, SerializerModelMixin):
 
         return {
             'editable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups'),
-            'deletable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
+            'deletable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups'),
+            'readable':  user.has_perm('users.edit_user_groups'),
+            'builtin': self.name in builtin_groups,
         }
 
     class Meta:

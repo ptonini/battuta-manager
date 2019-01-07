@@ -5,14 +5,6 @@ from django.views.generic.base import RedirectView
 
 from . import views
 
-# from .views import ProjectView
-
-# urlpatterns = [
-#
-#     path('', login_required(ProjectView.as_view()), kwargs={'project_id': None}),
-#
-#     url('/<int:project_id>', login_required(ProjectView.as_view())),
-
 urlpatterns = [
 
     path('', views.PageView.as_view()),

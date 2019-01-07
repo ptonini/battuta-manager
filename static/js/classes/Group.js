@@ -36,18 +36,20 @@ Group.prototype.info = null;
 
 Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
     children: {
+        label: 'Children',
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
 
-            self.relationGrid('children', $container, 'name', self.reloadTables)
+            self.relationGrid('children', self.label.plural, $container, 'name', self.reloadTables)
 
         }
     },
     members: {
+        label: 'Members',
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
 
-            self.relationGrid('members', $container, 'name', self.reloadTables)
+            self.relationGrid('members', self.label.plural, $container, 'name', self.reloadTables)
 
         }
     },

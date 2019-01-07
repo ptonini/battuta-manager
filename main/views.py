@@ -4,13 +4,15 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
 
 from main.extras.views import ApiView
-from apps.iam.models import LocalUser
-
+from apps.iam.extras import Authorizer
+from django.core.cache import caches
 
 class PageView(View):
 
     @staticmethod
     def get(request):
+
+        authorizer = Authorizer(request.user)
 
         return render(request, 'main/main.html')
 

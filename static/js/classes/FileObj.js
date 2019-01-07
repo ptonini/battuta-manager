@@ -21,110 +21,21 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 
 FileObj.prototype.tableButtons = function (self) {
 
-    return [{
-        text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
-        className: 'btn-sm btn-icon',
-        action: function () { new Classes[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create') }
-    },
-    {
-        text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
-        className: 'btn-sm btn-icon',
-        action: function () { self.upload() }
-    }];
+    return [
+        {
+            text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
+            className: 'btn-sm btn-icon',
+            action: function () { new Classes[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create') }
+        },
+        {
+            text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
+            className: 'btn-sm btn-icon',
+            action: function () { self.upload() }
+        }
+    ];
 
 };
 
-
-FileObj.prototype.validator = function () { return true };
-
-//
-// FileObj.prototype.validator = {
-//     playbooks: function (text) {
-//
-//         try {
-//
-//             jsyaml.load(text);
-//
-//             return true
-//
-//         }
-//
-//         catch (error) {
-//
-//             let $alert = $('<div>').append(
-//                 $('<spam>').html('Invalid yaml:'),
-//                 $('<div>').css('white-space', 'pre-line').html(error.message)
-//             );
-//
-//             Main.prototype.statusAlert('danger', $alert);
-//
-//             return false
-//         }
-//
-//     },
-//     roles: function () {
-//
-//         return true
-//
-//     },
-//     files: function () {
-//
-//         return true
-//
-//     },
-//     users: function () {
-//
-//         return true
-//
-//     }
-//
-// };
-//
-
-//     let roots = {
-//         playbooks: {
-//             button: {
-//                 text: '<span class="fas fa-plus fa-fw" title="New playbook"></span>',
-//                 className: 'btn-sm btn-icon',
-//                 action: function () {
-//
-//                     $.ajax({
-//                         url: '/static/templates/playbook.yml',
-//                         success: function (data) {
-//
-//                             let file = new FileObj({root: 'playbooks', folder: self.folder, text: data});
-//
-//                             file.contentEditor(function () {
-//
-//                                 $table.DataTable().ajax.reload()
-//
-//                             })
-//
-//                         }
-//                     });
-//
-//                 }
-//             }
-//         },
-//         roles: {
-//             button: {
-//                 text: '<span class="fas fa-plus fa-fw" title="Add role"></span>',
-//                 className: 'btn-sm btn-icon',
-//                 action: function () {
-//
-//                     let role = new FileObj({name: '', root: 'roles', folder: '', type: 'directory'});
-//
-//                     role.roleDialog(function (data, role) {
-//
-//                         setFolder(role.name);
-//
-//                     });
-//
-//                 }
-//             }
-//
-//         }
-//     };
 
 FileObj.prototype.upload = function () {
 
@@ -213,21 +124,22 @@ FileObj.prototype.contentEditor = function () {
         {name: 'yaml', label: 'YAML'}
     ];
 
-    let matchExtension = (filename) => {
+    let extensions = {
+        properties: 'properties',
+        conf: 'properties',
+        ccf: 'properties',
+        yml: 'yaml',
+        yaml: 'yaml',
+        js: 'javascript',
+        json: 'json',
+        java: 'java',
+        py: 'python',
+        python: 'python',
+        sh: 'sh',
+        xml: 'xml'
+    };
 
-        let extensions = {
-            properties: 'properties',
-            conf: 'properties',
-            ccf: 'properties',
-            yml: 'yaml',
-            js: 'javascript',
-            json: 'json',
-            java: 'java',
-            py: 'python',
-            python: 'python',
-            sh: 'sh',
-            xml: 'xml'
-        };
+    let matchExtension = (filename) => {
 
         let fileNameArray = filename.split('.');
 
@@ -312,7 +224,7 @@ FileObj.prototype.contentEditor = function () {
 
             self.set('content', textEditor.getValue());
 
-            self.validator(self.get('content')) && self.update(false).then(() => {
+            self.update(false).then(() => {
 
                 $dialog.dialog('close');
 
@@ -445,80 +357,86 @@ FileObj.prototype.selector = function () {
 
     Template._load(self.templates).then(() => {
 
-        if (self.type === 'file') Router.navigate(self.links.parent);
+        $container.html(Template['file-selector']());
 
-        else {
+        self.bindElement($container);
 
-            $container.html(Template['file-selector']());
+        let $table = $container.find('table.file-table');
 
-            self.bindElement($container);
+        $table.DataTable({
+            scrollY: (window.innerHeight - 316).toString() + 'px',
+            scrollCollapse: true,
+            columns: [
+                {title: 'name', data: 'attributes.name', width: '50%'},
+                {title: 'type', data: 'attributes.mime_type', width: '15%'},
+                {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
+                {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data) }},
+                {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
+            ],
+            order: [[0, 'asc']],
+            paging: false,
+            dom: 'Bfrtip',
+            buttons: self.tableButtons(self),
+            rowCallback: function (row, data) {
 
-            let $table = $container.find('table.file-table');
+                let fs_obj = new Classes[data.attributes.root].Class(data);
 
-            $table.DataTable({
-                scrollY: (window.innerHeight - 316).toString() + 'px',
-                scrollCollapse: true,
-                columns: [
-                    {title: 'name', data: 'attributes.name', width: '50%'},
-                    {title: 'type', data: 'attributes.mime_type', width: '15%'},
-                    {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
-                    {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data) }},
-                    {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
-                ],
-                order: [[0, 'asc']],
-                paging: false,
-                dom: 'Bfrtip',
-                buttons: self.tableButtons(self),
-                rowCallback: function (row, data) {
+                if (fs_obj.type === 'folder') {
 
-                    if (data.type === 'folder') {
+                    let $row = $(row).attr('class', 'folder-row');
 
-                        let $row = $(row).attr('class', 'folder-row');
+                    $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(fs_obj.links.self) });
 
-                        $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(data.links.self) });
-
-                        $row.find('td:eq(2)').html('');
-
-                    }
-
-                    $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                        self.tableBtn('fas fa-pencil-alt', 'Edit', function () { new Classes[data.attributes.root].Class(data).edit() }),
-                        self.tableBtn('fas fa-clone', 'Copy', function () { new Classes[data.attributes.root].Class(data).nameEditor('copy') }),
-                        self.tableBtn('fas fa-download ', 'Download ' + data.id, function () {
-
-                            window.open(data.links.self + '?download=true', '_self');
-
-                        }),
-                        self.tableBtn('fas fa-trash', 'Delete', function () {
-
-                            new Classes[data.attributes.root].Class(data).delete(false, function () { $container.trigger('reload') })
-
-                        })
-                    )
-
-                },
-                drawCallback: function () {
-
-                    $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
-
-                    if (self.links.root !== self.links.self) {
-
-                        $table
-                            .prepend(Template['previous-folder-row']())
-                            .find('td.previous-folder-link')
-                            .click(function () {
-
-                                Router.navigate(self.links.parent)
-
-                            })
-                    }
+                    $row.find('td:eq(2)').html('');
 
                 }
-            });
 
-            $container.off().on('reload', function () {
+                if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
 
-                self.read(false).then(response => {
+                $(row).find('td:eq(4)').html('').removeAttr('title').append(
+                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () { fs_obj.edit() }),
+                    self.tableBtn('fas fa-clone', 'Copy', function () { fs_obj.nameEditor('copy') }),
+                    self.tableBtn('fas fa-download ', 'Download ' + fs_obj.name, function () {
+
+                        window.open(fs_obj.links.self + '?download=true', '_self');
+
+                    }),
+                    self.tableBtn('fas fa-trash', 'Delete', function () {
+
+                        fs_obj.delete(false, function () { $container.trigger('reload') })
+
+                    })
+                )
+
+            },
+            drawCallback: function () {
+
+                $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
+
+                if (self.links.root !== self.links.self) {
+
+                    $table
+                        .prepend(Template['previous-folder-row']())
+                        .find('td.previous-folder-link')
+                        .click(function () {
+
+                            Router.navigate(self.links.parent)
+
+                        })
+                }
+
+            }
+        });
+
+        $container.off().on('reload', function () {
+
+            let fields = {attributes: ['name', 'mime_type', 'size', 'modified', 'root']};
+
+            self.read(false, {fields: fields}).then(response => {
+
+                if (self.type === 'file') Router.navigate(self.links.parent);
+
+                else {
 
                     let pathArray = self.links.self.split('/');
 
@@ -605,13 +523,15 @@ FileObj.prototype.selector = function () {
 
                     buildBreadcrumbs()
 
-                })
+                }
 
-            });
 
-            $container.trigger('reload')
 
-        }
+            })
+
+        });
+
+        $container.trigger('reload')
 
     });
 

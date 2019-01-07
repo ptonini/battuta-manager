@@ -30,20 +30,30 @@ UserGroup.prototype.selectorColumns = function () {
 
 };
 
+UserGroup.prototype.selectorRowCallback = function(row, data) {
+
+    Main.prototype.selectorRowCallback(row, data);
+
+    if (data.meta['builtin']) $(row).attr('class', 'top-row')
+
+};
+
 UserGroup.prototype.tabs = {
     members: {
+        label: 'Members',
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('users', $container, 'username', function() {});
+            self.relationGrid('users', 'users', $container, 'username', function() {});
 
         }
     },
     permissions: {
+        label: 'Permissions',
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('permissions', $container, 'name', function() {});
+            self.relationGrid('permissions', 'permissions',$container, 'name', function() {});
 
         }
     }

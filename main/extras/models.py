@@ -1,39 +1,27 @@
 class SerializerModelMixin:
 
+    id = None
+
+    type = None
+
     def _serializer(self, fields, attributes, links, meta, relationships, data=False):
 
-        data = data if data else {'id': self.id, 'type': self.type, 'attributes': {}, 'links': {}, 'meta':{}, 'relationships': {}}
+        def filter_fields(field_dict, field_dict_name):
 
-        att_dict = False
+            if fields and field_dict_name in fields:
 
-        link_dict = False
+                return {k: v for k, v in field_dict.items() if k in fields[field_dict_name]}
 
-        meta_dict = False
+            else:
 
-        # relationships_dict = False
+                return field_dict
 
-        if not fields or 'attributes' in fields:
+        data = data if data else {'id': self.id, 'type': self.type, 'attributes': {}, 'links': {}, 'meta':{}}
 
-            att_dict = {k: v for k, v in attributes.items() if not fields or k in fields['attributes']}
+        data['attributes'].update(filter_fields(attributes, 'attributes'))
 
-        if not fields or 'links' in fields:
+        data['links'].update(filter_fields(links, 'links'))
 
-            link_dict = {k: v for k, v in links.items() if not fields or k in fields['links']}
-
-        if not fields or 'meta' in fields:
-
-            meta_dict = {k: v for k, v in meta.items() if not fields or k in fields['meta']}
-
-        # if not fields or 'relationships' in fields:
-        #
-        #     relationships_dict = {k: v for k, v in relationships.items() if not fields or k in fields['relationships']}
-
-        att_dict and data['attributes'].update(att_dict)
-
-        link_dict and data['links'].update(link_dict)
-
-        meta_dict and data['meta'].update(meta_dict)
-
-        # relationships_dict and data['relationships'].update(relationships_dict)
+        data['meta'].update(filter_fields(meta, 'meta'))
 
         return data

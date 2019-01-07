@@ -11,6 +11,7 @@ Node.prototype.constructor = Node;
 
 Node.prototype.tabs = {
     variables: {
+        label: 'Variables',
         validator: function () {return true},
         generator: function (self, $container) {
 
@@ -19,6 +20,7 @@ Node.prototype.tabs = {
         }
     },
     parents: {
+        label: 'Parents',
         validator: function (self) {
 
             return (self.type === Host.prototype.type || self.name !== 'all')
@@ -26,7 +28,7 @@ Node.prototype.tabs = {
         },
         generator: function (self, $container) {
 
-            self.relationGrid('parents', $container, 'name', self.reloadTables)
+            self.relationGrid('parents', self.label.plural, $container, 'name', self.reloadTables)
 
         }
     },

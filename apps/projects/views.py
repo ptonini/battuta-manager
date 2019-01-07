@@ -94,15 +94,25 @@ class RelationsView(ApiView):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        related_model = getattr(getattr(getattr(Project, relation), 'field'), 'related_model')
-
         if project.authorizer(request.user)['editable']:
 
-            project.__setattr__(relation, get_object_or_404(related_model, pk=request.JSON['data']['id']))
+            related = project.get_relationships(relation)
 
-            project.save()
+            if related['many']:
 
-            return self._api_response({'data': getattr(project, relation).serialize(None, request.user)})
+                for selected in request.JSON.get('data', []):
+
+                    getattr(project, relation).add(get_object_or_404(related['class'], pk=selected['id']))
+
+                return HttpResponse(status=204)
+
+            else:
+
+                project.__setattr__(relation, get_object_or_404(related['class'], pk=request.JSON['data']['id']))
+
+                project.save()
+
+                return self._api_response({'data': getattr(project, relation).serialize(None, request.user)})
 
         else:
 
@@ -112,36 +122,65 @@ class RelationsView(ApiView):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        related_instance = getattr(project, relation)
+        if project.authorizer(request.user)['readable']:
 
-        related_model = getattr(getattr(getattr(Project, relation), 'field'), 'related_model')
+            fields = request.JSON.get('fields')
 
-        fields = request.JSON.get('fields')
+            related = project.get_relationships(relation)
 
-        if request.JSON.get('related', True):
+            related_manager = getattr(project, relation)
 
-            data = related_instance.serialize(fields, request.user) if related_instance else None
+            if request.JSON.get('related', True):
+
+                if related['many']:
+
+                    data = [r.serialize(fields, request.user) for r in related_manager.all()]
+
+                else:
+
+                    data = related_manager.serialize(fields, request.user) if related_manager else None
+
+            else:
+
+                data = list()
+
+                if related['many']:
+
+                    excluded_ids = [related.id for related in related_manager.all()]
+
+                else:
+
+                    excluded_ids = [related_manager.id] if related_manager else []
+
+                for r in related['class'].objects.exclude(pk__in=excluded_ids):
+
+                    data.append(r.serialize(request.JSON.get('fields'), request.user))
+
+
+            return self._api_response({'data': data})
 
         else:
 
-            related_set = related_model.objects.all() if related_model != LocalGroup else related_model.objects.exclude(name__in=builtin_groups)
-
-            related_set = related_set.exclude(pk=related_instance.id) if related_instance else related_set
-
-            data = [r.serialize(fields, request.user) for r in related_set]
-
-        return self._api_response({'data': data})
+            return HttpResponseForbidden()
 
     @staticmethod
     def delete(request, relation, project_id):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['editable']:
+        if project.authorizer(request.user)['deletable']:
 
-            project.__setattr__(relation, None)
+            related = project.get_relationships(relation)
 
-            project.save()
+            if related['many']:
+
+                for selected in request.JSON.get('data', []):
+
+                    getattr(project, relation).remove(get_object_or_404(related['class'], pk=selected['id']))
+
+            else:
+
+                project.__setattr__(relation, None)
 
             return HttpResponse(status=204)
 
@@ -164,7 +203,7 @@ class FsObjRelationsView(ApiView):
 
         if project.authorizer(request.user)['editable']:
 
-            result_set = set(json.loads(getattr(project, relation)) + [f['id'] for f in request.JSON.get('data', list())])
+            result_set = set(json.loads(getattr(project, relation)) + [f['id'].replace(relation + '/', '') for f in request.JSON.get('data', list())])
 
             project.__setattr__(relation, json.dumps(list(result_set)))
 
@@ -183,13 +222,17 @@ class FsObjRelationsView(ApiView):
 
         related_fs_obj_list = json.loads(getattr(project, relation))
 
+        related_fs_obj_list.sort()
+
         if request.JSON.get('related', True):
 
-            return self._api_response({'data': [self.handlers[relation](f).serialize(content=False) for f in related_fs_obj_list]})
+            return self._api_response({'data': [self.handlers[relation](f, request.user).serialize(request.JSON.get('fields')) for f in related_fs_obj_list]})
 
         else:
 
-            return self._api_response({'data': [f.serialize() for f in self.handlers[relation].list() if f.id not in related_fs_obj_list]})
+            file_list = [f.serialize(request.JSON.get('fields')) for f in self.handlers[relation].list(request.user) if f.path not in related_fs_obj_list]
+
+            return self._api_response({'data': sorted(file_list, key=lambda k: k['id']) })
 
     @staticmethod
     def delete(request, relation, project_id):
@@ -198,7 +241,7 @@ class FsObjRelationsView(ApiView):
 
         if project.authorizer(request.user)['editable']:
 
-            delete_ids = [f['id'] for f in request.JSON.get('data', list())]
+            delete_ids = [f['attributes']['path'] for f in request.JSON.get('data', list())]
 
             project.__setattr__(relation, json.dumps([i for i in json.loads(getattr(project, relation)) if i not in delete_ids]))
 

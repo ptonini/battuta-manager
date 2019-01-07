@@ -72,6 +72,7 @@ User.prototype.info = function ($container) {
 
 User.prototype.tabs = {
     credentials: {
+        label: 'Credentials',
         validator: function () {return true},
         generator: function (self, $container) {
 
@@ -85,10 +86,11 @@ User.prototype.tabs = {
         }
     },
     groups: {
+        label: 'Groups',
         validator: function (self) {return !self.get('is_superuser')},
         generator: function (self, $container) {
 
-            self.relationGrid('usergroups', $container, 'name', function() {})
+            self.relationGrid('usergroups', UserGroup.prototype.label.plural, $container, 'name', function() {})
 
         }
 

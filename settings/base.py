@@ -59,6 +59,15 @@ TEMPLATES = [
     },
 ]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    'authorizer': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 # Sessions
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
@@ -171,6 +180,12 @@ DEFAULT_PREFERENCES = [
                 'value': False,
                 'data_type': 'bool',
                 'description': 'Show hidden files and folders'
+            },
+            {
+                'name': 'validate_content_on_read',
+                'value': True,
+                'data_type': 'bool',
+                'description': 'Validate file content on read'
             }
         ]
     },

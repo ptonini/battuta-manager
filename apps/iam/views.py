@@ -55,29 +55,32 @@ class UserView(ApiView):
 
     def get(self, request, user_id):
 
-        if request.user.has_perm('users.edit_users'):
+        if user_id:
 
-            if user_id:
+            user = get_object_or_404(LocalUser, pk=user_id)
 
-                user = get_object_or_404(LocalUser, pk=user_id)
+            if user.authorizer(request.user)['readable']:
 
                 response = {'data': (user.serialize(request.JSON.get('fields'), request.user))}
 
             else:
 
-                data = list()
-
-                for user in LocalUser.objects.order_by('username').all():
-
-                    data.append(user.serialize(request.JSON.get('fields'), request.user))
-
-                response = {'data': data}
-
-            return self._api_response(response)
+                return HttpResponseForbidden()
 
         else:
 
-            return HttpResponseForbidden()
+            data = list()
+
+            for user in LocalUser.objects.order_by('username').all():
+
+                if user.authorizer(request.user)['readable']:
+
+                    data.append(user.serialize(request.JSON.get('fields'), request.user))
+
+            response = {'data': data}
+
+        return self._api_response(response)
+
 
     def patch(self, request, user_id):
 
@@ -163,7 +166,7 @@ class CredentialView(ApiView):
 
         cred = Credential(user=user)
 
-        if cred.authorizer(request.user)['editable']:
+        if cred.authorizer(request.user)['readable']:
 
             data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
 
@@ -245,29 +248,30 @@ class UserGroupView(ApiView):
 
     def get(self, request, group_id):
 
-        if request.user.has_perm('users.edit_users'):
+        if group_id:
 
-            if group_id:
+            group = get_object_or_404(LocalGroup, pk=group_id)
 
-                group = get_object_or_404(LocalGroup, pk=group_id)
+            if group.authorizer(request.user)['readable']:
 
-                response = {'data': group.serialize(request.JSON.get('fields'), request.user)}
+                return self._api_response({'data': group.serialize(request.JSON.get('fields'), request.user)})
 
             else:
 
-                data = list()
-
-                for group in LocalGroup.objects.order_by('name').all():
-
-                    data.append(group.serialize(request.JSON.get('fields'), request.user))
-
-                response = {'data': data}
-
-            return self._api_response(response)
+                return HttpResponseForbidden()
 
         else:
 
-            return HttpResponseForbidden()
+            data = list()
+
+            for group in LocalGroup.objects.order_by('name').all():
+
+                if group.authorizer(request.user)['readable']:
+
+                    data.append(group.serialize(request.JSON.get('fields'), request.user))
+
+            return self._api_response({'data': data})
+
 
     def patch(self, request, group_id):
 
@@ -312,27 +316,43 @@ class RelationsView(ApiView):
 
         if relation == LocalUser.type:
 
-            related_set_out = obj.user_set
-
-            related_set_in = obj.user_set
-
-            related_class = LocalUser
+            return obj, obj.user_set, obj.user_set, LocalUser
 
         elif relation == LocalGroup.type:
 
-            related_set_out = LocalGroup.objects.filter(user=obj)
+            return obj, LocalGroup.objects.filter(user=obj), obj.groups, LocalGroup
 
-            related_set_in= obj.groups
 
-            related_class = LocalGroup
 
-        return obj, related_set_out, related_set_in, related_class
+
+
+
+        # relations_dict = {
+        #     LocalUser.type: {
+        #         'related_set_out': obj.user_set,
+        #         'related_set_in': obj.user_set,
+        #         'related_class': LocalUser
+        #     },
+        #     LocalGroup.type: {
+        #         'related_set_out': LocalGroup.objects.filter(user=obj),
+        #         'related_set_in': obj.groups,
+        #         'related_class': LocalUser
+        #     }
+        # }
+        #
+        # return [
+        #     obj,
+        #     relations_dict[relation]['related_set_out'],
+        #     relations_dict[relation]['related_set_in'],
+        #     relations_dict[relation]['related_class']
+        # ]
+
 
     def post(self, request, relation, obj_id, obj_type):
 
         obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
 
-        if obj.authorizer(request.user)['editable']:
+        if obj.authorizer(request.user)['editable'] and related_class().authorizer(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
@@ -358,7 +378,9 @@ class RelationsView(ApiView):
 
             for o in related_class.objects.exclude(pk__in=[related.id for related in related_set_out.all()]):
 
-                data.append(o.serialize(request.JSON.get('fields'), request.user))
+                if related_class().authorizer(request.user)['readable']:
+
+                    data.append(o.serialize(request.JSON.get('fields'), request.user))
 
         return self._api_response({'data': data})
 
@@ -366,7 +388,7 @@ class RelationsView(ApiView):
 
         obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
 
-        if obj.authorizer(request.user)['editable']:
+        if obj.authorizer(request.user)['editable'] and related_class().authorizer(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
@@ -422,21 +444,27 @@ class PermissionView(ApiView):
 
         group = get_object_or_404(LocalGroup, pk=group_id)
 
-        response = {'data': list()}
+        if group.authorizer(request.user)['readable']:
 
-        if request.JSON.get('related', True):
+            response = {'data': list()}
 
-            return self._api_response({'data': [self._serialize(p) for p in group.permissions.all()]})
+            if request.JSON.get('related', True):
+
+                return self._api_response({'data': [self._serialize(p) for p in group.permissions.all()]})
+
+            else:
+
+                for permission in Permission.objects.filter(content_type=ContentType.objects.get_for_model(LocalGroup)):
+
+                    if permission not in group.permissions.all() and permission.codename not in self._excluded_perms:
+
+                        response['data'].append(self._serialize(permission))
+
+                return self._api_response(response)
 
         else:
 
-            for permission in Permission.objects.filter(content_type=ContentType.objects.get_for_model(LocalGroup)):
-
-                if permission not in group.permissions.all() and permission.codename not in self._excluded_perms:
-
-                    response['data'].append(self._serialize(permission))
-
-            return self._api_response(response)
+            return HttpResponseForbidden()
 
     @staticmethod
     def delete(request, group_id):

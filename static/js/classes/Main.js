@@ -588,13 +588,13 @@ Main.prototype = {
 
     },
 
-    addTab: function (title) {
+    addTab: function (name, title) {
 
-        let $tabContentContainer = $('<div>').attr({id: title + '_tab', class: 'tab-pane'});
+        let $tabContentContainer = $('<div>').attr({id: name + '_tab', class: 'tab-pane'});
 
         $('ul.nav-tabs').append(
             $('<li>').attr('class', 'nav-item').append(
-                $('<a>').attr({class: 'nav-link text-capitalize', href: '#' + title + '_tab', 'data-toggle': 'tab'}).html(title)
+                $('<a>').attr({class: 'nav-link', href: '#' + name + '_tab', 'data-toggle': 'tab'}).html(title)
             )
         );
 
@@ -773,6 +773,14 @@ Main.prototype = {
         );
     },
 
+    selectorDrawCallback: function(settings) {
+
+        let $table = $(settings.nTable);
+
+        $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) })
+
+    },
+
     gridDialog: function (options) {
 
         let self = this;
@@ -830,7 +838,7 @@ Main.prototype = {
 
     },
 
-    relationGrid: function (relation, $container, label, reloadCallback) {
+    relationGrid: function (relation, relationType, $container, key, reloadCallback) {
 
         let self = this;
 
@@ -853,19 +861,26 @@ Main.prototype = {
             gridBodyBottomMargin: 10,
             addButtonType: 'icon',
             addButtonClass: 'btn-icon',
-            addButtonTitle: 'Add ' + relation,
+            addButtonTitle: 'Add ' + relationType,
             maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: [label], links: ['self']}}),
+            ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: [key], links: ['self']}}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
-                $gridItem.append(
-                    $('<span>').append(data.attributes[label]).toggleClass('pointer', !!data['links']).click(function () {
+                let link = data.links.self;
 
-                        data['links'] && Router.navigate(data.links.self)
+                let readable = data.meta.hasOwnProperty('readable') ? data.meta.readable : true;
+
+                $gridItem.append(
+                    $('<span>').append(data.attributes[key]).toggleClass('pointer', readable && link).click(function () {
+
+                        readable && link && Router.navigate(link);
 
                     }),
+                );
+
+                $gridItem.append(
                     Template['remove-icon']().click(function () {
 
                         self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
@@ -881,11 +896,11 @@ Main.prototype = {
             addButtonAction: function () {
 
                 self.gridDialog({
-                    title: 'Select ' + relation,
+                    title: 'Select ' + relationType,
                     type: 'many',
                     objectType: self.type,
-                    url: self.links[relation] + self.objToQueryStr({fields: {attributes: [label], links: ['self']}, related: false}),
-                    itemValueKey: label,
+                    url: self.links[relation] + self.objToQueryStr({fields: {attributes: [key], links: ['self']}, related: false}),
+                    itemValueKey: key,
                     action: function (selection, $dialog) {
 
                         self.fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
@@ -945,7 +960,8 @@ Main.prototype = {
                         className: 'btn-sm btn-icon'
                     }
                 ],
-                rowCallback: self.selectorRowCallback
+                rowCallback: self.selectorRowCallback,
+                drawCallback: self.selectorDrawCallback,
             };
 
             $selector.find('div.table-container').append($table);
@@ -1008,7 +1024,7 @@ Main.prototype = {
 
             Object.keys(self.tabs).forEach(function (key) {
 
-                self.tabs[key].validator(self) && self.tabs[key].generator(self, self.addTab(key))
+                self.tabs[key].validator(self) && self.tabs[key].generator(self, self.addTab(key, self.tabs[key].label))
 
             });
 

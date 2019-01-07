@@ -4,10 +4,10 @@ from collections import OrderedDict
 from django.db import models
 from django.core.validators import RegexValidator
 from django.conf import settings
-from django.core.cache import cache
+from django.core.cache import caches
 
 from main.extras.models import SerializerModelMixin
-from apps.projects.extras import ProjectAuthorizer
+from apps.iam.extras import Authorizer
 
 
 
@@ -234,13 +234,13 @@ class Variable(models.Model, SerializerModelMixin):
 
     def authorizer(self, user):
 
-        project_authorizer = cache.get_or_set(user.username + '_auth', ProjectAuthorizer(user), settings.CACHE_TIMEOUT)
+        #authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
 
         node = Host.objects.get(pk=self.host.id) if self.host else Group.objects.get(pk=self.group.id)
 
         return {
-            'editable': user.has_perm('users.edit_' + node.type) or project_authorizer.can_edit_variables(node),
-            'deletable': user.has_perm('users.edit_' + node.type) or project_authorizer.can_edit_variables(node),
+            'editable': user.has_perm('users.edit_' + node.type), #or authorizer.can_edit_variables(node),
+            'deletable': user.has_perm('users.edit_' + node.type), # or authorizer.can_edit_variables(node),
         }
 
     class Meta:
