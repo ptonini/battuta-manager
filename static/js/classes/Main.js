@@ -868,9 +868,9 @@ Main.prototype = {
             ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: [key], links: ['self']}}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
-                let link = data.links.self;
+                let link = data.links ? data.links.self : false;
 
-                let readable = data.meta.hasOwnProperty('readable') ? data.meta.readable : true;
+                let readable = data.meta && data.meta.hasOwnProperty('readable') ? data.meta.readable : true;
 
                 $gridItem.append(
                     $('<span>').append(data.attributes[key]).toggleClass('pointer', readable && link).click(function () {

@@ -4,13 +4,13 @@ import magic
 import datetime
 import shutil
 import json
-import yaml
+
 import re
 
 from django.conf import settings
 
+from apps.files import file_types
 from main.extras.models import SerializerModelMixin
-
 from apps.preferences.extras import get_preferences
 
 
@@ -22,15 +22,16 @@ class FileHandler(SerializerModelMixin):
 
     mime_types = {
         'editable': [
-            'inode/x-empty',
-            'application/xml',
-            'application/json'
+            '^text\/',
+            '^inode\/x-empty$',
+            '^\/xml$',
+            '^\/json$'
         ],
         'archive': [
-            'application/zip',
-            'application/gzip',
-            'application/x-tar',
-            'application/x-gtar'
+            '\/zip$',
+            '\/gzip$',
+            '\/x-tar$',
+            '\/x-gtar$'
         ]
     }
 
@@ -118,20 +119,6 @@ class FileHandler(SerializerModelMixin):
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):
 
-        def validate_yaml(stream):
-
-            try:
-
-                yaml.load(stream)
-
-            except yaml.YAMLError as e:
-
-                return ''.join(['YAML error: ', e.problem, ' (line ', str(e.problem_mark.line), ', column ', str(e.problem_mark.column), ')'])
-
-            else:
-
-                return True
-
         def validate_skeleton():
 
             matched = False
@@ -155,10 +142,6 @@ class FileHandler(SerializerModelMixin):
                     break
 
             return True if matched else ''.join([fs_obj_type.capitalize(), ' name or type not allowed on this path'])
-
-        file_types = {
-            'yaml': {'ext': ['.yml', '.yaml'], 'validator': validate_yaml}
-        }
 
         fs_obj_name_part, fs_obj_ext = os.path.splitext(path)
 
@@ -328,7 +311,7 @@ class FileHandler(SerializerModelMixin):
             'name': self.name,
             'size': os.path.getsize(self.absolute_path) if self.type == 'file' else 0,
             'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
-            'mime_type': magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else None,
+            'mime_type': magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else '',
             'root': self.root,
             'path': self.path,
         }
@@ -342,7 +325,7 @@ class FileHandler(SerializerModelMixin):
         read_conditions = [
             fields and 'content' in fields.get('attribute', []) or prefs['validate_content_on_read'],
             self.type == 'file',
-            attributes['mime_type'] in self.mime_types['editable'] or attributes['mime_type'] and attributes['mime_type'].split('/')[0] == 'text',
+            re.match('|'.join(self.mime_types['editable']), attributes.get('mime_type')),
             attributes['size'] <= prefs['max_edit_size']
         ]
 
@@ -352,18 +335,19 @@ class FileHandler(SerializerModelMixin):
 
                 attributes['content'] = f.read()
 
-        meta = {
-            'valid': self._validate(self.root, self.type, self.path, attributes.get('content')),
+        meta = self.authorizer(self.user)
+
+        meta['valid'] = self._validate(self.root, self.type, self.path, attributes.get('content'))
+
+        return self._serializer(fields, attributes, links, meta, None)
+
+    def authorizer(self, user):
+
+        return {
             'readable': True,
             'editable': True,
             'deletable': True
         }
-
-        return self._serializer(fields, attributes, links, meta, None)
-
-    def authorizer(self):
-
-        pass
 
     def get_paths(self):
 

@@ -75,6 +75,8 @@ class UserView(ApiView):
 
                 if user.authorizer(request.user)['readable']:
 
+                    print(user.username)
+
                     data.append(user.serialize(request.JSON.get('fields'), request.user))
 
             response = {'data': data}
@@ -316,7 +318,7 @@ class RelationsView(ApiView):
 
         if relation == LocalUser.type:
 
-            return obj, obj.user_set, obj.user_set, LocalUser
+            return obj, obj.user_set.order_by('username'), obj.user_set.order_by('username'), LocalUser
 
         elif relation == LocalGroup.type:
 
@@ -360,6 +362,8 @@ class RelationsView(ApiView):
             for o in related_class.objects.exclude(pk__in=[related.id for related in related_set_out.all()]):
 
                 if related_class().authorizer(request.user)['readable'] and not getattr(o, 'is_superuser', False):
+
+                    print(o.username)
 
                     data.append(o.serialize(request.JSON.get('fields'), request.user))
 

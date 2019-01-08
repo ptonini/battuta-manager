@@ -124,6 +124,28 @@ FileObj.prototype.contentEditor = function () {
         {name: 'yaml', label: 'YAML'}
     ];
 
+    // let file_types = {
+    //     'apache_conf': {label: 'Apache conf'},
+    //     'batchfile': {label: 'BatchFile'},
+    //     'css': {label: 'CSS'},
+    //     'dockerfile': {label: 'Dockerfile'},
+    //     'gitignore': {label: 'Gitignore'},
+    //     'ini': {label: 'INI'},
+    //     'java': {label: 'Java'},
+    //     'javascript': {label: 'JavaScript'},
+    //     'json': {label: 'JSON'},
+    //     'php': {label: 'PHP'},
+    //     'powershell': {label: 'Powershell'},
+    //     'properties': {label: 'Properties'},
+    //     'python': {label: 'Python'},
+    //     'sh': {label: 'SH'},
+    //     'sql': {label: 'SQL'},
+    //     'text': {label: 'Text'},
+    //     'vbscript': {label: 'VBScript'},
+    //     'xml': {label: 'XML'},
+    //     'yaml': {label: 'YAML'}
+    // }
+
     let extensions = {
         properties: 'properties',
         conf: 'properties',
