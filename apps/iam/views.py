@@ -323,31 +323,6 @@ class RelationsView(ApiView):
             return obj, LocalGroup.objects.filter(user=obj), obj.groups, LocalGroup
 
 
-
-
-
-
-        # relations_dict = {
-        #     LocalUser.type: {
-        #         'related_set_out': obj.user_set,
-        #         'related_set_in': obj.user_set,
-        #         'related_class': LocalUser
-        #     },
-        #     LocalGroup.type: {
-        #         'related_set_out': LocalGroup.objects.filter(user=obj),
-        #         'related_set_in': obj.groups,
-        #         'related_class': LocalUser
-        #     }
-        # }
-        #
-        # return [
-        #     obj,
-        #     relations_dict[relation]['related_set_out'],
-        #     relations_dict[relation]['related_set_in'],
-        #     relations_dict[relation]['related_class']
-        # ]
-
-
     def post(self, request, relation, obj_id, obj_type):
 
         obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
@@ -370,7 +345,13 @@ class RelationsView(ApiView):
 
         if request.JSON.get('related', True):
 
-            data = [o.serialize(request.JSON.get('fields'), request.user) for o in related_set_out.all()]
+            if obj.authorizer(request.user)['readable']:
+
+                data = [o.serialize(request.JSON.get('fields'), request.user) for o in related_set_out.all()]
+
+            else:
+
+                return HttpResponseForbidden()
 
         else:
 
@@ -378,7 +359,7 @@ class RelationsView(ApiView):
 
             for o in related_class.objects.exclude(pk__in=[related.id for related in related_set_out.all()]):
 
-                if related_class().authorizer(request.user)['readable']:
+                if related_class().authorizer(request.user)['readable'] and not getattr(o, 'is_superuser', False):
 
                     data.append(o.serialize(request.JSON.get('fields'), request.user))
 

@@ -4,9 +4,6 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from main.extras.views import ApiView
 
-from apps.iam import builtin_groups
-from apps.iam.models import LocalGroup
-
 from apps.files.extras import PlaybookHandler, RoleHandler
 
 from apps.projects.models import Project
@@ -146,11 +143,15 @@ class RelationsView(ApiView):
 
                 if related['many']:
 
-                    excluded_ids = [related.id for related in related_manager.all()]
+                    excluded_ids = [r.id for r in related_manager.all()]
 
                 else:
 
-                    excluded_ids = [related_manager.id] if related_manager else []
+                    excluded_ids = [related_manager.id] if related_manager else set()
+
+                if relation != 'host_group':
+
+                    excluded_ids = excluded_ids + [r.id for r in related['class'].objects.filter(is_superuser=1)]
 
                 for r in related['class'].objects.exclude(pk__in=excluded_ids):
 

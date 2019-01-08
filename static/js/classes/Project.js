@@ -37,11 +37,7 @@ Project.prototype.info = function ($container) {
 
     self.bindElement($container);
 
-    $container.find('button.set_property').click(function () {
-
-        self.setProperty($(this).data('property'))
-
-    });
+    $container.find('button.set_property').click(function () { self.setProperty($(this).data('property')) });
 
     $container.find('button.clear_property').click(function () {
 
@@ -143,7 +139,7 @@ Project.prototype.setProperty =  function (property) {
         type: 'one',
         url:  self.links[property] + '?related=false',
         objectType: property,
-        itemValueKey: label,
+        itemValueKey: properties[property]['key'],
         action: function (selection, $dialog) {
 
             self.fetchJson('POST', self.links[property], {data: {type: selection.type, id: selection.id}}, false).then(response => {

@@ -95,9 +95,9 @@ class Authorizer:
 
            self._editable_folders.update({RoleHandler(role, self._user).absolute_path for role in json.loads(project.roles)})
 
-    def is_manager(self):
+    def is_manager(self, project):
 
-        return True if len(self._managed_projects) > 0 else False
+        return True if project in self._managed_projects else False
 
     def can_edit_variables(self, node):
 

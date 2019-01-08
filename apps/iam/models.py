@@ -44,15 +44,28 @@ class LocalUser(AbstractUser, SerializerModelMixin):
 
     def authorizer(self, user):
 
-        return {
-            'editable': user.has_perm('users.edit_users') and not self.is_superuser or user.is_superuser or user.id == self.id,
-            'deletable': user.has_perm('users.edit_users') and not self.is_superuser and user is not self,
-            'readable': user.has_perm('users.edit_users') or user.id == self.id,
-        }
+        readable = any([
+            user.has_perm('users.edit_users'),
+            user.id == self.id
+        ])
 
-    class Meta:
+        editable = any([
+            user.has_perm('users.edit_users') and not self.is_superuser,
+            user.is_superuser,
+            user.id == self.id,
+        ])
 
-        ordering = ['username']
+        deletable = all([
+            user.has_perm('users.edit_users'),
+            not self.is_superuser,
+            user.id != self.id
+        ])
+
+        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+
+class Meta:
+
+        ordering = ['-username']
 
 
 class Credential(models.Model, SerializerModelMixin):
@@ -109,16 +122,25 @@ class Credential(models.Model, SerializerModelMixin):
 
     def authorizer(self, user):
 
-        deletable_conditions = [
-            self != self.user.default_cred,
-            user.has_perm('users.edit_users') and not self.user.is_superuser, user.is_superuser or user.id == self.user.id,
-        ]
+        readable = any([
+            user.has_perm('users.edit_users'),
+            user.is_superuser,
+            user.id == self.user.id
+        ]),
 
-        return {
-            'editable': user.has_perm('users.edit_users') and not self.user.is_superuser or user.is_superuser or user.id == self.user.id,
-            'deletable': False if False in deletable_conditions else True,
-            'readable': user.has_perm('users.edit_users') or user.is_superuser or user.id == self.user.id
-        }
+        editable = any([
+            user.has_perm('users.edit_users') and not self.user.is_superuser,
+            user.is_superuser,
+            user.id == self.user.id
+        ])
+
+        deletable = all([
+            self != self.user.default_cred,
+            user.has_perm('users.edit_users') and not self.user.is_superuser,
+            user.is_superuser or user.id == self.user.id,
+        ])
+
+        return {'readable': readable, 'editable': editable, 'deletable': deletable}
 
     class Meta:
 
@@ -145,16 +167,19 @@ class LocalGroup(Group, SerializerModelMixin):
 
         meta = self.authorizer(user)
 
+        meta['builtin'] = self.name in builtin_groups
+
         return self._serializer(fields, attributes, links, meta, {})
 
     def authorizer(self, user):
 
-        return {
-            'editable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups'),
-            'deletable': False if self.name in builtin_groups else user.has_perm('users.edit_user_groups'),
-            'readable':  user.has_perm('users.edit_user_groups'),
-            'builtin': self.name in builtin_groups,
-        }
+        editable = False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
+
+        deletable = False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
+
+        readable = user.has_perm('users.edit_user_groups')
+
+        return {'readable': readable, 'editable': editable, 'deletable': deletable}
 
     class Meta:
 

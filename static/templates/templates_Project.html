@@ -1,32 +1,33 @@
 <form data-template="project-form">
     <div class="row my-4">
-        <div class="col-4 form-group">
-            <label>Manager</label>
-            <div class="input-group">
-                <input data-bind="manager" class="form-control form-control-sm" type="text" title="Project manager" readonly>
-                <div class="input-group-append">
-                    <button class="btn btn-light btn-sm set_property" data-property="manager" type="button">
-                        <span class="fas fa-pencil-alt"></span>
-                    </button>
-                    <button class="btn btn-light btn-sm clear_property" data-property="manager" type="button">
-                        <span class="fas fa-minus-circle"></span>
-                    </button>
-                </div>
-            </div>
+        <div class="col-12 mt-2">
+            <label>Project manager</label>
         </div>
-        <div class="col-4 form-group">
+        <div class="col-3 mt-1">
+            <h6 data-bind="manager"></h6>
+        </div>
+        <div class="col-9">
+            <button class="btn btn-icon btn-sm set_property" data-property="manager" type="button" title="Edit">
+                <span class="fas fa-pencil-alt "></span>
+            </button>
+            <button class="btn btn-icon btn-sm clear_property" data-property="manager" type="button" title="Remove">
+                <span class="fas fa-minus-circle"></span>
+            </button>
+        </div>
+        <div class="col-4"><hr></div>
+        <div class="col-12 mt-2">
             <label>Host group</label>
-            <div class="input-group">
-                <input data-bind="host_group" class="form-control form-control-sm" type="text" title="Host group" readonly>
-                <div class="input-group-append">
-                    <button class="btn btn-light btn-sm set_property" data-property="host_group" type="button">
-                        <span class="fas fa-pencil-alt"></span>
-                    </button>
-                    <button class="btn btn-light btn-sm clear_property" data-property="host_group" type="button">
-                        <span class="fas fa-minus-circle"></span>
-                    </button>
-                </div>
-            </div>
+        </div>
+        <div class="col-3 mt-1">
+            <h6 data-bind="host_group"></h6>
+        </div>
+        <div class="col-9">
+            <button class="btn btn-icon btn-sm set_property" data-property="host_group" type="button" title="Edit">
+                <span class="fas fa-pencil-alt "></span>
+            </button>
+            <button class="btn btn-icon btn-sm clear_property" data-property="host_group" type="button" title="Remove">
+                <span class="fas fa-minus-circle"></span>
+            </button>
         </div>
     </div>
 </form>

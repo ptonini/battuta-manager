@@ -5,14 +5,17 @@ from django.contrib.auth import authenticate, login, logout
 
 from main.extras.views import ApiView
 from apps.iam.extras import Authorizer
-from django.core.cache import caches
 
 class PageView(View):
 
     @staticmethod
     def get(request):
 
-        authorizer = Authorizer(request.user)
+        if request.user.is_authenticated and not request.user.is_superuser:
+
+            authorizer = Authorizer(request.user)
+
+            print()
 
         return render(request, 'main/main.html')
 
