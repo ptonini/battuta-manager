@@ -460,7 +460,9 @@ class NodeView(ApiView):
 
     def post(self, request, node_id):
 
-        if request.user.has_perm('users.edit_' + self.type):
+        node = self.model_class()
+
+        if node.authorizer(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, self.model_class()))
 
@@ -474,7 +476,13 @@ class NodeView(ApiView):
 
             node = get_object_or_404(self.model_class, pk=node_id)
 
-            response = {'data': node.serialize(request.JSON.get('fields'), request.user)}
+            if node.authorizer(request.user)['readable']:
+
+                return self._api_response({'data': node.serialize(request.JSON.get('fields'), request.user)})
+
+            else:
+
+                return HttpResponseForbidden()
 
         else:
 
@@ -482,20 +490,18 @@ class NodeView(ApiView):
 
             filter_pattern = request.JSON.get('filter')
 
-            exclude_pattern = request.JSON.get('exclude')
-
             for node in self.model_class.objects.order_by('name').all():
 
-                match_conditions = {
+                match_conditions = all({
                     not filter_pattern or node.name.find(filter_pattern) > -1,
-                    not exclude_pattern or node.name.find(exclude_pattern) <= -1
-                }
+                    node.authorizer(request.user)['readable']
+                })
 
-                if False not in match_conditions:
+                if match_conditions:
 
                     data.append(node.serialize(request.JSON.get('fields'), request.user))
 
-            response = {'data': data}
+            return self._api_response({'data': data})
 
         return self._api_response(response)
 
@@ -579,11 +585,11 @@ class VariableView(ApiView):
 
     def post(self, request, node_id, var_id, node_type):
 
-        #authorizer = caches['authorizer'].get_or_set(request.user.username, Authorizer(request.user))
+        authorizer = caches['authorizer'].get_or_set(request.user.username, Authorizer(request.user))
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if request.user.has_perm('users.edit_' + node_type): #or authorizer.can_edit_variables(node):
+        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
 
             if 'data' in request.JSON:
 

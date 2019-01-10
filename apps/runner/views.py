@@ -138,7 +138,7 @@ class JobView(View):
 
         prefs = get_preferences()
 
-        authorizer = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+        authorizer = caches['authorizer'].get_or_set(request.user.username, ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
 
         data = None
 

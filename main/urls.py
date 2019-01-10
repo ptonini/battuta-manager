@@ -17,16 +17,16 @@ urlpatterns = [
 
     path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('images/favicon.ico')), name='favicon'),
 
-    path('inventory', include('apps.inventory.urls')),
+    path('inventory/', include('apps.inventory.urls')),
 
     path('runner/', include('apps.runner.urls')),
 
-    path('iam', include('apps.iam.urls')),
+    path('iam/', include('apps.iam.urls')),
 
     path('files/', include('apps.files.urls')),
 
-    path('preferences', include('apps.preferences.urls')),
+    path('preferences/', include('apps.preferences.urls')),
 
-    path('projects', include('apps.projects.urls')),
+    path('projects/', include('apps.projects.urls')),
 
 ]

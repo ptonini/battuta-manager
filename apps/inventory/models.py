@@ -3,12 +3,10 @@ import json
 from collections import OrderedDict
 from django.db import models
 from django.core.validators import RegexValidator
-from django.conf import settings
 from django.core.cache import caches
 
 from main.extras.models import ModelSerializerMixin
 from apps.iam.extras import Authorizer
-
 
 
 class Node(models.Model, ModelSerializerMixin):
@@ -91,7 +89,8 @@ class Node(models.Model, ModelSerializerMixin):
 
         return {
             'editable': user.has_perm('users.edit_' + self.type),
-            'deletable': user.has_perm('users.edit_' + self.type)
+            'deletable': user.has_perm('users.edit_' + self.type),
+            'readable': True
         }
 
     class Meta:
@@ -190,7 +189,8 @@ class Group(Node):
 
         return {
             'editable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
-            'deletable': user.has_perm('users.edit_' + self.type) and not self.name =='all'
+            'deletable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
+            'readable': True
         }
 
 
@@ -234,11 +234,14 @@ class Variable(models.Model, ModelSerializerMixin):
 
     def authorizer(self, user):
 
+        authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
+
         node = Host.objects.get(pk=self.host.id) if self.host else Group.objects.get(pk=self.group.id)
 
         return {
-            'editable': user.has_perm('users.edit_' + node.type), #or authorizer.can_edit_variables(node),
-            'deletable': user.has_perm('users.edit_' + node.type), # or authorizer.can_edit_variables(node),
+            'editable': user.has_perm('users.edit_' + node.type) or authorizer.can_edit_variables(node),
+            'deletable': user.has_perm('users.edit_' + node.type) or authorizer.can_edit_variables(node),
+            'readable': True
         }
 
     class Meta:
