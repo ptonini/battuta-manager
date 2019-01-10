@@ -12,19 +12,16 @@ class PreferencesView(ApiView):
 
     def get(self, request):
 
-        data = []
-
-        include = []
+        response = {'data': list(), 'include': list()}
 
         for i, group in enumerate(settings.DEFAULT_PREFERENCES):
 
-            include.append({
+            response['include'].append({
                 'id': i,
                 'type': 'preference_group',
                 'attributes': {
                     'name': group['name'],
-                    'description': group['description'],
-
+                    'description': group['description']
                 }
             })
 
@@ -40,7 +37,7 @@ class PreferencesView(ApiView):
 
                     stored_value = None
 
-                data.append({
+                response['data'].append({
                     'id': item['name'],
                     'type': 'preference_item',
                     'attributes': {
@@ -48,11 +45,11 @@ class PreferencesView(ApiView):
                         'stored': stored_value,
                         'description': item['description'],
                         'data_type': item['data_type'],
-                        'group': i,
+                        'group': i
                     }
                 })
 
-        return self._api_response({'data': data, 'include': include})
+        return self._api_response(response)
 
     @staticmethod
     def patch(request):

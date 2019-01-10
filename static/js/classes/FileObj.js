@@ -392,7 +392,7 @@ FileObj.prototype.selector = function () {
                 {title: 'name', data: 'attributes.name', width: '50%'},
                 {title: 'type', data: 'attributes.mime_type', width: '15%'},
                 {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
-                {title: 'modified', data: 'attributes.modified', width: '20%', render: function(data) { return toUserTZ(data) }},
+                {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
                 {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
             ],
             order: [[0, 'asc']],
@@ -454,7 +454,7 @@ FileObj.prototype.selector = function () {
 
             let fields = {attributes: ['name', 'mime_type', 'size', 'modified', 'root']};
 
-            self.read(false, {fields: fields}).then(response => {
+            self.read(true, {fields: fields}).then(response => {
 
                 if (self.type === 'file') Router.navigate(self.links.parent);
 

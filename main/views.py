@@ -4,18 +4,12 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
 
 from main.extras.views import ApiView
-from apps.iam.extras import Authorizer
+
 
 class PageView(View):
 
     @staticmethod
     def get(request):
-
-        if request.user.is_authenticated and not request.user.is_superuser:
-
-            authorizer = Authorizer(request.user)
-
-            print()
 
         return render(request, 'main/main.html')
 
@@ -26,10 +20,7 @@ class MainView(ApiView):
 
         if request.user.is_authenticated:
 
-            fields = {
-                'attributes': ['username', 'timezone'],
-                'links':['self']
-            }
+            fields = {'attributes': ['username', 'timezone'], 'links':['self']}
 
             response = {'meta': {'user': request.user.serialize(fields, request.user)}}
 

@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 'abstract': False,
                 'verbose_name_plural': 'users',
             },
-            bases=(models.Model, main.extras.models.SerializerModelMixin),
+            bases=(models.Model, main.extras.models.ModelSerializerMixin),
             managers=[
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
                 ('ask_sudo_pass', models.BooleanField(default=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
-            bases=(models.Model, main.extras.models.SerializerModelMixin),
+            bases=(models.Model, main.extras.models.ModelSerializerMixin),
         ),
         migrations.CreateModel(
             name='LocalGroup',
@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
                 'indexes': [],
                 'permissions': (('edit_groups', 'Can create and edit groups'), ('edit_hosts', 'Can create and edit hosts'), ('edit_playbooks', 'Can edit playbooks'), ('edit_tasks', 'Can edit tasks'), ('edit_roles', 'Can edit roles'), ('execute_jobs', 'Can execute jobs'), ('view_job_history', 'Can view job history'), ('edit_files', 'Can create and edit files'), ('edit_users', 'Can create and edit users'), ('edit_user_groups', 'Can create and edit user groups'), ('edit_user_files', 'Can create and edit user files'), ('edit_permissions', 'Can edit user group permissions'), ('edit_preferences', 'Can edit preferences'), ('edit_projects', 'Can edit projects')),
             },
-            bases=('auth.group', main.extras.models.SerializerModelMixin),
+            bases=('auth.group', main.extras.models.ModelSerializerMixin),
             managers=[
                 ('objects', django.contrib.auth.models.GroupManager()),
             ],

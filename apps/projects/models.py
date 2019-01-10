@@ -1,11 +1,13 @@
 import json
 
 from django.db import models
+from django.core.cache import caches
 
-from main.extras.models import SerializerModelMixin
+from main.extras.models import ModelSerializerMixin
+from apps.iam.extras import Authorizer
 
 
-class Project(models.Model, SerializerModelMixin):
+class Project(models.Model, ModelSerializerMixin):
 
     type = 'projects'
 
@@ -47,7 +49,8 @@ class Project(models.Model, SerializerModelMixin):
 
         return {
             'many': False if relation in ['manager', 'host_group'] else True,
-            'class': Group if relation == 'host_group' else LocalUser
+            'class': Group if relation == 'host_group' else LocalUser,
+            'sort': 'name' if relation == 'host_group' else 'username'
         }
 
     def serialize(self, fields, user):
@@ -77,14 +80,24 @@ class Project(models.Model, SerializerModelMixin):
 
         return self._serializer(fields, attributes, links, meta, None)
 
-    @staticmethod
-    def authorizer(user):
+    def authorizer(self, user):
 
-        return {
-            'editable': True,
-            'deletable': True,
-            'readable': True
-        }
+        authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
+
+        readable = any([
+            user.has_perm('users.edit_projects'),
+            authorizer.is_manager(self),
+            user.is_superuser
+        ])
+
+        editable = readable
+
+        deletable = any([
+            user.has_perm('users.edit_projects'),
+            user.is_superuser
+        ])
+
+        return {'editable': editable, 'deletable': deletable, 'readable': readable }
 
     class Meta:
 

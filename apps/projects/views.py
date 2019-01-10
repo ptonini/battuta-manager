@@ -2,10 +2,9 @@ import json
 
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+
 from main.extras.views import ApiView
-
 from apps.files.extras import PlaybookHandler, RoleHandler
-
 from apps.projects.models import Project
 from apps.projects.forms import ProjectForm
 
@@ -32,24 +31,21 @@ class ProjectView(ApiView):
 
             project = get_object_or_404(Project, pk=project_id)
 
-            response = {'data': project.serialize(request.JSON.get('fields'), request.user)}
+            if project.authorizer(request.user)['readable']:
+
+                response = {'data': project.serialize(request.JSON.get('fields'), request.user)}
+
+            else:
+
+                response = HttpResponseForbidden()
 
         else:
 
             data = list()
 
-            filter_pattern = request.JSON.get('filter')
-
-            exclude_pattern = request.JSON.get('exclude')
-
             for project in Project.objects.order_by('name').all():
 
-                match_conditions = {
-                    not filter_pattern or project.name.find(filter_pattern) > -1,
-                    not exclude_pattern or project.name.find(exclude_pattern) <= -1
-                }
-
-                if False not in match_conditions:
+                if project.authorizer(request.user)['readable']:
 
                     data.append(project.serialize(request.JSON.get('fields'), request.user))
 
@@ -99,15 +95,23 @@ class RelationsView(ApiView):
 
                 for selected in request.JSON.get('data', []):
 
-                    getattr(project, relation).add(get_object_or_404(related['class'], pk=selected['id']))
+                    s = get_object_or_404(related['class'], pk=selected['id'])
+
+                    if not getattr(s, 'is_superuser', False):
+
+                        getattr(project, relation).add(s)
 
                 return HttpResponse(status=204)
 
             else:
 
-                project.__setattr__(relation, get_object_or_404(related['class'], pk=request.JSON['data']['id']))
+                r = get_object_or_404(related['class'], pk=request.JSON['data']['id'])
 
-                project.save()
+                if not getattr(r, 'is_superuser', False):
+
+                    project.__setattr__(relation, r)
+
+                    project.save()
 
                 return self._api_response({'data': getattr(project, relation).serialize(None, request.user)})
 
@@ -131,7 +135,7 @@ class RelationsView(ApiView):
 
                 if related['many']:
 
-                    data = [r.serialize(fields, request.user) for r in related_manager.all()]
+                    data = [r.serialize(fields, request.user) for r in related_manager.order_by(related['sort']).all() if not getattr(r, 'is_superuser', False)]
 
                 else:
 
@@ -149,13 +153,11 @@ class RelationsView(ApiView):
 
                     excluded_ids = [related_manager.id] if related_manager else set()
 
-                if relation != 'host_group':
+                for r in related['class'].objects.order_by(related['sort']).exclude(pk__in=excluded_ids):
 
-                    excluded_ids = excluded_ids + [r.id for r in related['class'].objects.filter(is_superuser=1)]
+                    if not getattr(r, 'is_superuser', False):
 
-                for r in related['class'].objects.exclude(pk__in=excluded_ids):
-
-                    data.append(r.serialize(request.JSON.get('fields'), request.user))
+                        data.append(r.serialize(request.JSON.get('fields'), request.user))
 
 
             return self._api_response({'data': data})
@@ -169,7 +171,7 @@ class RelationsView(ApiView):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['deletable']:
+        if project.authorizer(request.user)['editable']:
 
             related = project.get_relationships(relation)
 
@@ -182,6 +184,8 @@ class RelationsView(ApiView):
             else:
 
                 project.__setattr__(relation, None)
+
+                project.save()
 
             return HttpResponse(status=204)
 
@@ -225,15 +229,21 @@ class FsObjRelationsView(ApiView):
 
         related_fs_obj_list.sort()
 
-        if request.JSON.get('related', True):
+        if project.authorizer(request.user)['readable']:
 
-            return self._api_response({'data': [self.handlers[relation](f, request.user).serialize(request.JSON.get('fields')) for f in related_fs_obj_list]})
+            if request.JSON.get('related', True):
+
+                return self._api_response({'data': [self.handlers[relation](f, request.user).serialize(request.JSON.get('fields')) for f in related_fs_obj_list]})
+
+            else:
+
+                file_list = [f.serialize(request.JSON.get('fields')) for f in self.handlers[relation].list(request.user) if f.path not in related_fs_obj_list]
+
+                return self._api_response({'data': sorted(file_list, key=lambda k: k['id']) })
 
         else:
 
-            file_list = [f.serialize(request.JSON.get('fields')) for f in self.handlers[relation].list(request.user) if f.path not in related_fs_obj_list]
-
-            return self._api_response({'data': sorted(file_list, key=lambda k: k['id']) })
+            return HttpResponseForbidden()
 
     @staticmethod
     def delete(request, relation, project_id):

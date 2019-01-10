@@ -3,13 +3,18 @@ import os
 import yaml
 
 from django.conf import settings
+from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.dispatch import receiver
+from django.core.cache import caches
 
-from apps.projects.models import Project
-from apps.files.extras import PlaybookHandler, RoleHandler
 
 class Authorizer:
 
     def __init__(self, user):
+
+        from apps.projects.models import Project
+
+        from apps.files.extras import PlaybookHandler, RoleHandler
 
         self._user = user
 
@@ -144,3 +149,11 @@ class Authorizer:
         else:
 
             return self.can_run_tasks(inventory, job.subset)
+
+
+@receiver(post_save)
+@receiver(post_delete)
+@receiver(m2m_changed)
+def clear_authorizers(sender, **kwargs):
+
+    caches['authorizer'].clear()

@@ -65,6 +65,7 @@ CACHES = {
     },
     'authorizer': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'TIMEOUT': 3600
     }
 }
 

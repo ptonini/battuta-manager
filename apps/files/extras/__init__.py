@@ -10,11 +10,11 @@ import re
 from django.conf import settings
 
 from apps.files import file_types
-from main.extras.models import SerializerModelMixin
+from main.extras.models import ModelSerializerMixin
 from apps.preferences.extras import get_preferences
 
 
-class FileHandler(SerializerModelMixin):
+class FileHandler(ModelSerializerMixin):
 
     root_path = settings.REPOSITORY_PATH
 
@@ -24,8 +24,8 @@ class FileHandler(SerializerModelMixin):
         'editable': [
             '^text\/',
             '^inode\/x-empty$',
-            '^\/xml$',
-            '^\/json$'
+            '\/xml$',
+            '\/json$'
         ],
         'archive': [
             '\/zip$',
@@ -114,7 +114,7 @@ class FileHandler(SerializerModelMixin):
     @staticmethod
     def _strip_trailing_slash(path):
 
-        return re.sub(r'\/$', '', path)\
+        return re.sub(r'/$', '', path)\
 
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):

@@ -6,12 +6,12 @@ from django.core.validators import RegexValidator
 from django.conf import settings
 from django.core.cache import caches
 
-from main.extras.models import SerializerModelMixin
+from main.extras.models import ModelSerializerMixin
 from apps.iam.extras import Authorizer
 
 
 
-class Node(models.Model, SerializerModelMixin):
+class Node(models.Model, ModelSerializerMixin):
 
     name = models.CharField(max_length=64, blank=False, unique=True)
 
@@ -194,7 +194,7 @@ class Group(Node):
         }
 
 
-class Variable(models.Model, SerializerModelMixin):
+class Variable(models.Model, ModelSerializerMixin):
 
     type = 'vars'
 

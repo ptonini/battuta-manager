@@ -3,7 +3,6 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
-from apps.iam import builtin_groups
 from apps.iam.models import LocalUser,  Credential, LocalGroup
 from apps.iam.forms import LocalUserForm, CredentialForm, LocalGroupForm
 
@@ -318,22 +317,36 @@ class RelationsView(ApiView):
 
         if relation == LocalUser.type:
 
-            return obj, obj.user_set.order_by('username'), obj.user_set.order_by('username'), LocalUser
+            return obj, obj.user_set, obj.user_set, LocalUser
 
         elif relation == LocalGroup.type:
 
             return obj, LocalGroup.objects.filter(user=obj), obj.groups, LocalGroup
 
 
+    obj_types = {
+        'users': {'class': LocalUser, 'field': 'user_set', 'sort': 'username'},
+        'usergroups': {'class': LocalGroup, 'field': 'groups', 'sort': 'name'}
+    }
+
+
     def post(self, request, relation, obj_id, obj_type):
 
-        obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
+        obj = get_object_or_404(self.obj_types[obj_type]['class'], pk=obj_id)
+
+        related_class = self.obj_types[relation]['class']
+
+        related_manager = getattr(obj, self.obj_types[relation]['field'])
 
         if obj.authorizer(request.user)['editable'] and related_class().authorizer(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
-                related_set_in.add(get_object_or_404(related_class, pk=selected['id']))
+                new_relation = get_object_or_404(related_class, pk=selected['id'])
+
+                if not getattr(new_relation, 'is_superuser', False):
+
+                    related_manager.add(new_relation)
 
             return HttpResponse(status=204)
 
@@ -343,13 +356,17 @@ class RelationsView(ApiView):
 
     def get(self, request, relation, obj_id, obj_type):
 
-        obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
+        obj = get_object_or_404(self.obj_types[obj_type]['class'], pk=obj_id)
+
+        related_class = self.obj_types[relation]['class']
+
+        related_manager = getattr(obj, self.obj_types[relation]['field']).order_by(self.obj_types[relation]['sort'])
 
         if request.JSON.get('related', True):
 
             if obj.authorizer(request.user)['readable']:
 
-                data = [o.serialize(request.JSON.get('fields'), request.user) for o in related_set_out.all()]
+                data = [o.serialize(request.JSON.get('fields'), request.user) for o in related_manager.all() if not getattr(o, 'is_superuser', False)]
 
             else:
 
@@ -359,7 +376,7 @@ class RelationsView(ApiView):
 
             data = list()
 
-            for o in related_class.objects.exclude(pk__in=[related.id for related in related_set_out.all()]):
+            for o in related_class.objects.order_by(self.obj_types[relation]['sort']).exclude(pk__in=[related.id for related in related_manager.all()]):
 
                 if related_class().authorizer(request.user)['readable'] and not getattr(o, 'is_superuser', False):
 

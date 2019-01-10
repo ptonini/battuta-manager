@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 
-from main.extras.models import SerializerModelMixin
+from main.extras.models import ModelSerializerMixin
 from apps.preferences.extras import get_preferences
 from apps.iam import builtin_groups
 
 
-class LocalUser(AbstractUser, SerializerModelMixin):
+class LocalUser(AbstractUser, ModelSerializerMixin):
 
     type = 'users'
 
@@ -45,15 +45,12 @@ class LocalUser(AbstractUser, SerializerModelMixin):
     def authorizer(self, user):
 
         readable = any([
-            user.has_perm('users.edit_users'),
+            user.has_perm('users.edit_users') and not self.is_superuser,
+            user.is_superuser,
             user.id == self.id
         ])
 
-        editable = any([
-            user.has_perm('users.edit_users') and not self.is_superuser,
-            user.is_superuser,
-            user.id == self.id,
-        ])
+        editable = readable
 
         deletable = all([
             user.has_perm('users.edit_users'),
@@ -65,10 +62,10 @@ class LocalUser(AbstractUser, SerializerModelMixin):
 
 class Meta:
 
-        ordering = ['-username']
+        ordering = ['username']
 
 
-class Credential(models.Model, SerializerModelMixin):
+class Credential(models.Model, ModelSerializerMixin):
 
     type = 'creds'
 
@@ -123,16 +120,12 @@ class Credential(models.Model, SerializerModelMixin):
     def authorizer(self, user):
 
         readable = any([
-            user.has_perm('users.edit_users'),
+            user.has_perm('users.edit_users') and not self.user.is_superuser,
             user.is_superuser,
             user.id == self.user.id
         ]),
 
-        editable = any([
-            user.has_perm('users.edit_users') and not self.user.is_superuser,
-            user.is_superuser,
-            user.id == self.user.id
-        ])
+        editable = readable
 
         deletable = all([
             self != self.user.default_cred,
@@ -149,7 +142,7 @@ class Credential(models.Model, SerializerModelMixin):
         ordering = ['title']
 
 
-class LocalGroup(Group, SerializerModelMixin):
+class LocalGroup(Group, ModelSerializerMixin):
 
     type = 'usergroups'
 
@@ -173,11 +166,11 @@ class LocalGroup(Group, SerializerModelMixin):
 
     def authorizer(self, user):
 
+        readable = user.has_perm('users.edit_user_groups')
+
         editable = False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
 
-        deletable = False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
-
-        readable = user.has_perm('users.edit_user_groups')
+        deletable = editable
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
 

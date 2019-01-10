@@ -2,13 +2,11 @@ function User(param) {
 
     let self = this;
 
-    let tz = sessionStorage.getItem('current_user_tz');
-
     Main.call(self, param);
 
-    self.get('date_joined') && self.set('date_joined', toUserTZ(param.attributes['date_joined'], tz));
+    self.get('date_joined') && self.set('date_joined', toUserTZ(param.attributes['date_joined']));
 
-    self.get('last_login') && self.set('last_login', toUserTZ(param.attributes['last_login'], tz));
+    self.get('last_login') && self.set('last_login', toUserTZ(param.attributes['last_login']));
 
     self.get('is_superuser') ? self.set('label', {single: 'superuser', plural: 'users'}) : self.set('label', {single: 'user', plural: 'users'});
 
@@ -34,12 +32,10 @@ User.prototype.templates = 'templates_User.html';
 
 User.prototype.selectorColumns = function () {
 
-    let tz = sessionStorage.getItem('current_user_tz');
-
     return [
         {title: 'user', data: 'attributes.username', width: '50%'},
-        {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: function(data) { return toUserTZ(data, tz) }},
-        {title: 'last login', data: 'attributes.last_login', width: '15%', render: function(data) { return toUserTZ(data, tz) }},
+        {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: toUserTZ},
+        {title: 'last login', data: 'attributes.last_login', width: '15%', render: toUserTZ},
         {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: function (data) {return data ? '<span class="fas fa-check"></span>' : ''}},
         {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
     ]

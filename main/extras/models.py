@@ -1,4 +1,4 @@
-class SerializerModelMixin:
+class ModelSerializerMixin:
 
     id = None
 
