@@ -63,7 +63,7 @@ class ManageView(ApiView):
 
             json_file = tempfile.TemporaryFile(mode='w+')
 
-            json_file.write(json.dumps(inventory_to_dict()))
+            json_file.write(json.dumps(inventory_to_dict(include_internal_vars=False)))
 
             return download_file(json_file, 'inventory.json')
 
@@ -129,9 +129,7 @@ class ManageView(ApiView):
 
             mappings = dict()
 
-            config_dict = {
-                '__PAC__EXPORTED__': {'children': dict()}
-            }
+            config_dict = {'__PAC__EXPORTED__': {'children': dict()}}
 
             root = Element('FileZilla3')
 
@@ -141,9 +139,9 @@ class ManageView(ApiView):
 
             for group in pac_groups:
 
-                group_descendants, host_descendants = group.get_descendants()
+                groups, hosts = group.get_descendants()
 
-                descendants = [g for g in group_descendants if len(g.variable_set.filter(key='pac_group', value='true'))]
+                descendants = [g for g in groups if len(g.variable_set.filter(key='pac_group', value='true'))]
 
                 ancestors = [g for g in group.get_ancestors() if len(g.variable_set.filter(key='pac_group', value='true'))]
 
@@ -175,7 +173,7 @@ class ManageView(ApiView):
 
                 if not len(descendants):
 
-                    for host in host_descendants:
+                    for host in hosts:
 
                         try:
 
@@ -502,8 +500,6 @@ class NodeView(ApiView):
 
             return self._api_response({'data': data})
 
-        return self._api_response(response)
-
     def patch(self, request, node_id):
 
         node = get_object_or_404(self.model_class, pk=node_id)
@@ -584,19 +580,13 @@ class VariableView(ApiView):
 
     def post(self, request, node_id, var_id, node_type):
 
-        authorizer = caches['authorizer'].get_or_set(request.user.username, Authorizer(request.user))
-
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if request.user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(node):
+        var = node.variable_set.create()
 
-            if 'data' in request.JSON:
+        if var.authorizer(request.user)['editable']:
 
-                return self._api_response(self._save_instance(request, Variable()))
-
-            else:
-
-                return HttpResponseBadRequest()
+            return self._api_response(self._save_instance(request, var))
 
         else:
 
@@ -606,64 +596,74 @@ class VariableView(ApiView):
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        variables = dict()
+        temp_var = Variable()
 
-        inventory = AnsibleInventory()
+        temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
 
-        for var in node.variable_set.all():
+        if temp_var.authorizer(request.user)['readable']:
 
-            variables[var.key] = [var.serialize(request.JSON.get('fields'), request.user)]
+            variables = dict()
 
-            variables[var.key][0]['meta']['primary'] = True
+            inventory = AnsibleInventory()
 
-        for ancestor in node.get_ancestors():
+            for var in node.variable_set.all():
 
-            for var in ancestor.variable_set.all():
+                variables[var.key] = [var.serialize(request.JSON.get('fields'), request.user)]
 
-                var_dict = var.serialize(request.JSON.get('fields'), request.user)
+                variables[var.key][0]['meta']['primary'] = True
 
-                additional_meta = {
-                    'primary': False,
-                    'source': var.group.serialize({'attributes': ['name'], 'links': ['self']}, request.user)
-                }
+            for ancestor in node.get_ancestors():
 
-                var_dict['meta'].update(additional_meta)
+                for var in ancestor.variable_set.all():
 
-                if var.key in variables:
+                    var_dict = var.serialize(request.JSON.get('fields'), request.user)
 
-                    variables[var.key].append(var_dict)
+                    additional_meta = {
+                        'primary': False,
+                        'source': var.group.serialize({'attributes': ['name'], 'links': ['self']}, request.user)
+                    }
 
-                else:
+                    var_dict['meta'].update(additional_meta)
 
-                    variables[var.key] = [var_dict]
+                    if var.key in variables:
 
-        data = list()
+                        variables[var.key].append(var_dict)
 
-        for key in variables:
+                    else:
 
-            if len([value for value in variables[key] if value['meta']['primary']]) == 0:
+                        variables[var.key] = [var_dict]
 
-                if len(variables[key]) == 1:
+            data = list()
 
-                    variables[key][0]['meta']['primary'] = True
+            for key in variables:
 
-                else:
+                if len([value for value in variables[key] if value['meta']['primary']]) == 0:
 
-                    actual_value = inventory.get_variable(key, node)
+                    if len(variables[key]) == 1:
 
-                    for value in variables[key]:
+                        variables[key][0]['meta']['primary'] = True
 
-                        if value['attributes']['value'] == actual_value:
+                    else:
 
-                            value['meta']['primary'] = True
+                        actual_value = inventory.get_variable(key, node)
 
-                            break
+                        for value in variables[key]:
 
-            data += variables[key]
+                            if value['attributes']['value'] == actual_value:
 
-        response = {'data': data, 'links': {'self': request.META['PATH_INFO']}}
+                                value['meta']['primary'] = True
 
-        return self._api_response(response)
+                                break
+
+                data += variables[key]
+
+            response = {'data': data, 'links': {'self': request.META['PATH_INFO']}}
+
+            return self._api_response(response)
+
+        else:
+
+            return HttpResponseForbidden()
 
     def patch(self, request, node_id, var_id, node_type):
 
@@ -681,21 +681,21 @@ class VariableView(ApiView):
 
         elif 'source' in request.JSON.get('meta', {}):
 
-            data = request.JSON['meta']['source']
+            source_data = request.JSON['meta']['source']
+
+            source = get_object_or_404(Host if source_data['type'] == Host.type else Group, pk=source_data['id'])
 
             node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-            source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
+            temp_var = Variable()
 
-            authorizer = caches['authorizer'].get_or_set(request.user.username, Authorizer(request.user))
+            temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
 
-            if request.user.has_perm('edit_' + node_type) or authorizer.can_edit_variables(node):
+            if temp_var.authorizer(request.user)['editable']:
 
                 for source_var in source.variable_set.all():
 
-                    var, created = node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
-
-                    var.save()
+                    node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
 
                 return HttpResponse(status=204)
 

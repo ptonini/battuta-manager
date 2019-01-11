@@ -21,6 +21,8 @@ class Node(models.Model, ModelSerializerMixin):
 
     group_set = None
 
+    variable_set = None
+
     members = None
 
     children = None
@@ -93,6 +95,22 @@ class Node(models.Model, ModelSerializerMixin):
 
         return { 'readable': True, 'editable': editable, 'deletable': deletable}
 
+    def vars_dict(self):
+
+        vars_dict = dict()
+
+        for var in self.variable_set.all():
+
+            try:
+
+                vars_dict[var.key] = json.loads(var.value)
+
+            except ValueError or TypeError:
+
+                vars_dict[var.key] = var.value
+
+        return vars_dict
+
     class Meta:
 
         ordering = ['name']
@@ -164,6 +182,24 @@ class Group(Node):
         members = {host for host in self.members.all()}
 
         return group_descendants, members.union({host for group in group_descendants for host in group.members.all()})
+
+    def to_ansible_dict(self):
+
+        group_dict = dict()
+
+        if self.members.all().exists():
+
+            group_dict['hosts'] = [host.name for host in self.members.all()]
+
+        if self.children.all().exists():
+
+            group_dict['children'] = [child.name for child in self.children.all()]
+
+        if self.variable_set.all().exists():
+
+            group_dict['vars'] = self.vars_dict()
+
+        return group_dict
 
     def serialize(self, fields, user):
 

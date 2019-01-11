@@ -9,66 +9,15 @@ from django.conf import settings
 from apps.inventory.models import Host, Group
 
 
-def inventory_to_dict(internal_vars=True):
+def inventory_to_dict(include_internal_vars=True):
 
-    data = {
-        '_meta': {'hostvars': dict()},
-        'ungrouped': {'hosts': list()}
-    }
+    data = {g.name: g.to_ansible_dict() for g in Group.objects.all()}
 
-    for host in Host.objects.order_by('name'):
+    data['ungrouped'] = [h.name for h in Host.objects.filter(group=None)]
 
-        if host.variable_set.all().exists() or host.description:
+    data['_meta'] = {'hostvars': {h.name: h.vars_dict() for h in Host.objects.exclude(variable=None)}}
 
-            data['_meta']['hostvars'][host.name] = dict()
-
-            for var in host.variable_set.all():
-
-                try:
-
-                    data['_meta']['hostvars'][host.name][var.key] = json.loads(var.value)
-
-                except ValueError or TypeError:
-
-                    data['_meta']['hostvars'][host.name][var.key] = var.value
-
-            if host.description and not internal_vars:
-
-                data['_meta']['hostvars'][host.name]['_description'] = host.description
-
-        if host.group_set.count() == 0 and internal_vars:
-
-            data['ungrouped']['hosts'].append(host.name)
-
-    for group in Group.objects.order_by('name'):
-
-        data[group.name] = dict()
-
-        if group.members.all().exists():
-
-            data[group.name]['hosts'] = [host.name for host in group.members.all()]
-
-        data[group.name]['children'] = [child.name for child in group.children.all()]
-
-        if group.variable_set.all().exists() or group.description:
-
-            data[group.name]['vars'] = dict()
-
-            for var in group.variable_set.all():
-
-                try:
-
-                    data[group.name]['vars'][var.key] = json.loads(var.value)
-
-                except ValueError or TypeError:
-
-                    data[group.name]['vars'][var.key] = var.value
-
-        if group.description and not internal_vars:
-
-            data[group.name]['vars']['_description'] = group.description
-
-    if internal_vars:
+    if include_internal_vars:
 
         if 'vars' not in data['all']:
 
