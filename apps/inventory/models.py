@@ -87,11 +87,11 @@ class Node(models.Model, ModelSerializerMixin):
 
     def authorizer(self, user):
 
-        return {
-            'editable': user.has_perm('users.edit_' + self.type),
-            'deletable': user.has_perm('users.edit_' + self.type),
-            'readable': True
-        }
+        editable = user.has_perm('users.edit_' + self.type)
+
+        deletable = editable
+
+        return { 'readable': True, 'editable': editable, 'deletable': deletable}
 
     class Meta:
 
@@ -187,11 +187,14 @@ class Group(Node):
 
     def authorizer(self, user):
 
-        return {
-            'editable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
-            'deletable': user.has_perm('users.edit_' + self.type) and not self.name =='all',
-            'readable': True
-        }
+        editable = all([
+            user.has_perm('users.edit_' + self.type),
+            not self.name =='all',
+        ])
+
+        deletable = editable
+
+        return { 'readable': True, 'editable': editable, 'deletable': deletable}
 
 
 class Variable(models.Model, ModelSerializerMixin):

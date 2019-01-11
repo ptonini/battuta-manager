@@ -8,22 +8,21 @@ import yaml
 import uuid
 
 from ruamel import yaml
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.views.generic import View
-from django.conf import settings
 from django.core.cache import caches
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, inventory_to_dict
-
-from main.extras import download_file
-from main.extras.views import ApiView
 from apps.preferences.extras import get_preferences
 from apps.iam.extras import Authorizer
+from main.extras import download_file
+from main.extras.views import ApiView
+
 
 
 
@@ -688,9 +687,9 @@ class VariableView(ApiView):
 
             source = get_object_or_404(Host if data['type'] == Host.type else Group, pk=data['id'])
 
-            #authorizer = cache.get_or_set(request.user.username + '_auth', Authorizer(request.user), settings.CACHE_TIMEOUT)
+            authorizer = caches['authorizer'].get_or_set(request.user.username, Authorizer(request.user))
 
-            if request.user.has_perm('edit_' + node_type): #or authorizer.can_edit_variables(node):
+            if request.user.has_perm('edit_' + node_type) or authorizer.can_edit_variables(node):
 
                 for source_var in source.variable_set.all():
 
