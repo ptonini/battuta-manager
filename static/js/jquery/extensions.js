@@ -162,3 +162,19 @@ function toUserTZ(time) {
 
 }
 
+
+function generateCopiedFileName(name) {
+
+    let nameArray = name.split('.');
+
+    let ext = nameArray.length > 0 ? nameArray.pop() : null;
+
+    let stripedName = nameArray.join('.')
+
+}
+
+
+
+
+
+

@@ -38,10 +38,6 @@ class FileHandler(ModelSerializerMixin):
         ]
     }
 
-    file_template = None
-
-    root_folder_template = None
-
     skeleton = None
 
     def __init__(self, path, user):
@@ -75,13 +71,7 @@ class FileHandler(ModelSerializerMixin):
     @staticmethod
     def _create_file(cls, path):
 
-        if cls.file_template:
-
-            cls._copy_file(cls.file_template, path)
-
-        else:
-
-            open(path, 'w').close()
+        cls._copy_file(cls.file_template, path) if cls.file_template else open(path, 'w').close()
 
     @staticmethod
     def _create_folder(cls, path):
@@ -212,7 +202,7 @@ class FileHandler(ModelSerializerMixin):
 
                 fs_obj_list.append(cls(file_path, user))
 
-        return fs_obj_list
+        return fs_obj_list.sort(key=lambda x: x.path)
 
     @classmethod
     def factory(cls, root, path, user):
@@ -224,9 +214,9 @@ class FileHandler(ModelSerializerMixin):
 
         root_path = cls._get_root_class(root).root_path
 
-        source = request.JSON.get('data', {}).get('attributes', {}).get('source', False)
+        source_dict = request.JSON.get('source', None)
 
-        file_data = request.FILES.get('file_data', False)
+        file_data = request.FILES.get('file_data', None)
 
         fs_obj_type = request.JSON.get('data', {}).get('type', 'file')
 
@@ -248,11 +238,17 @@ class FileHandler(ModelSerializerMixin):
 
                             f.write(chunk)
 
-                elif source:
+                elif source_dict:
 
-                    source_path = os.path.join(root_path, json.loads(source)['path'])
+                    source = cls.factory(source_dict['root'], source_dict['path'], request.user)
 
-                    cls._get_action(fs_obj_type)['copy'](source_path, absolute_path)
+                    if source.authorizer()['readable']:
+
+                        cls._get_action(fs_obj_type)['copy'](source.absolute_path, absolute_path)
+
+                    else:
+
+                        raise PermissionDenied
 
                 else:
 
@@ -375,7 +371,7 @@ class FileHandler(ModelSerializerMixin):
 
         meta['valid'] = self._validate(self.root, self.type, self.path, attributes.get('content'))
 
-        return self._serializer(fields, attributes, links, meta, None)
+        return self._serializer(fields, attributes, links, meta)
 
     def authorizer(self):
 

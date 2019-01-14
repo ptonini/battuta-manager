@@ -40,7 +40,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
 
         meta = self.authorizer(user)
 
-        return self._serializer(fields, attributes, links, meta, {})
+        return self._serializer(fields, attributes, links, meta)
 
     def authorizer(self, user):
 
@@ -115,7 +115,7 @@ class Credential(models.Model, ModelSerializerMixin):
 
         meta = self.authorizer(user)
 
-        return self._serializer(fields, attributes, links, meta, {})
+        return self._serializer(fields, attributes, links, meta)
 
     def authorizer(self, user):
 
@@ -162,7 +162,7 @@ class LocalGroup(Group, ModelSerializerMixin):
 
         meta['builtin'] = self.name in builtin_groups
 
-        return self._serializer(fields, attributes, links, meta, {})
+        return self._serializer(fields, attributes, links, meta)
 
     def authorizer(self, user):
 

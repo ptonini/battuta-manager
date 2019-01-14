@@ -5,15 +5,9 @@ from django.http import HttpResponse
 
 class ApiViewMixin:
 
-    type = None
-
-    model_class = None
-
-    form_class = None
-
     def _save_instance(self, request, instance):
 
-        form = self.form_class(request.JSON.get('data', {}).get('attributes'), instance=instance)
+        form = getattr(self, 'form_class')(request.JSON.get('data', {}).get('attributes'), instance=instance)
 
         if form.is_valid():
 
@@ -41,28 +35,32 @@ class ApiViewMixin:
 
 class ModelSerializerMixin:
 
-    id = None
+    def _serializer(self, fields, attributes, links, meta, data=False):
 
-    type = None
-
-    def _serializer(self, fields, attributes, links, meta, relationships, data=False):
+        data = data if data else {'id': getattr(self, 'id'), 'type': getattr(self, 'type')}
 
         def filter_fields(field_dict, field_dict_name):
 
             if fields and field_dict_name in fields:
 
-                return {k: v for k, v in field_dict.items() if k in fields[field_dict_name]}
+                filtered_fields = {k: v for k, v in field_dict.items() if k in fields[field_dict_name]}
 
             else:
 
-                return field_dict
+                filtered_fields = field_dict
 
-        data = data if data else {'id': self.id, 'type': self.type, 'attributes': {}, 'links': {}, 'meta':{}}
+            if len(filtered_fields) > 0:
 
-        data['attributes'].update(filter_fields(attributes, 'attributes'))
+                if field_dict_name not in data:
 
-        data['links'].update(filter_fields(links, 'links'))
+                    data[field_dict_name] = dict()
 
-        data['meta'].update(filter_fields(meta, 'meta'))
+                data[field_dict_name].update(filtered_fields)
+
+        filter_fields(attributes, 'attributes')
+
+        filter_fields(links, 'links')
+
+        filter_fields(meta, 'meta')
 
         return data

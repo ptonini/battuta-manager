@@ -78,7 +78,7 @@ class Project(models.Model, ModelSerializerMixin):
 
         meta = self.authorizer(user)
 
-        return self._serializer(fields, attributes, links, meta, None)
+        return self._serializer(fields, attributes, links, meta)
 
     def authorizer(self, user):
 

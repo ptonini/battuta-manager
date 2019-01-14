@@ -334,11 +334,13 @@ Main.prototype = {
 
     // Resource CRUD helpers ***********
 
-    create: function (blocking) {
+    create: function (blocking, param) {
 
         let self = this;
 
-        return self.fetchJson('POST', self.links.self, {data: self.serialize()}, blocking).then(response => {
+        param.data = self.serialize();
+
+        return self.fetchJson('POST', self.links.self, param, blocking).then(response => {
 
             self.constructor(response.data);
 

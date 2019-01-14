@@ -305,9 +305,9 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
             template: 'update-file-form',
             save: function (newName) {
 
-                let fsObj =  new Entities[self.root].Class({links: {self: [self.links.parent, newName].join('/')}, type: self.type});
+                let fsObj = new Entities[self.root].Class({links: {self: [self.links.parent, newName].join('/')}, type: self.type});
 
-                return fsObj.set('source', {root: self.root, path: self.path}).create(false);
+                return fsObj.create(false, {source: {root: self.root, path: self.path}});
 
             }
         }
@@ -437,24 +437,17 @@ FileObj.prototype.selector = function () {
 
                 $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
 
-                if (self.links.root !== self.links.self) {
-
-                    $table
-                        .prepend(Templates['previous-folder-row']())
-                        .find('td.previous-folder-link')
-                        .click(function () {
-
-                            Router.navigate(self.links.parent)
-
-                        })
-                }
+                if (self.links.root !== self.links.self) $table
+                    .prepend(Templates['previous-folder-row']())
+                    .find('td.previous-folder-link')
+                    .click(function () { Router.navigate(self.links.parent) })
 
             }
         });
 
         $container.off().on('reload', function () {
 
-            let fields = {attributes: ['name', 'mime_type', 'size', 'modified', 'root']};
+            let fields = {attributes: ['name', 'mime_type', 'size', 'modified', 'root', 'path']};
 
             self.read(true, {fields: fields}).then(response => {
 

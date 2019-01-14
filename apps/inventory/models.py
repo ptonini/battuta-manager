@@ -15,18 +15,6 @@ class Node(models.Model, ModelSerializerMixin):
 
     description = models.TextField(max_length=256, blank=True)
 
-    type = None
-
-    route = None
-
-    group_set = None
-
-    variable_set = None
-
-    members = None
-
-    children = None
-
     def __str__(self):
 
         return self.name
@@ -34,9 +22,9 @@ class Node(models.Model, ModelSerializerMixin):
     def get_relationships(self, relation):
 
         relations = {
-            'parents': [self.group_set, Group],
-            'children': [self.children, Group],
-            'members': [self.members, Host]
+            'parents': [getattr(self, 'group_set'), Group],
+            'children': [getattr(self, 'children'), Group],
+            'members': [getattr(self, 'members'), Host]
         }
 
         return relations[relation]
@@ -47,7 +35,7 @@ class Node(models.Model, ModelSerializerMixin):
 
         if self.id:
 
-            parents = self.group_set.all()
+            parents = getattr(self, 'group_set').all()
 
             while len(parents) > 0:
 
@@ -75,7 +63,7 @@ class Node(models.Model, ModelSerializerMixin):
 
         vars_dict = dict()
 
-        for var in self.variable_set.all():
+        for var in getattr(self, 'variable_set').all():
 
             try:
 
@@ -92,20 +80,20 @@ class Node(models.Model, ModelSerializerMixin):
         attributes = {'name': self.name, 'description': self.description}
 
         links = {
-            'self': '/'.join([self.route, str(self.id)]) ,
-            Variable.type: '/'.join([self.route, str(self.id), Variable.type]),
-            'parents': '/'.join([self.route, str(self.id), 'parents']),
+            'self': '/'.join([getattr(self, 'route'), str(self.id)]) ,
+            Variable.type: '/'.join([getattr(self, 'route'), str(self.id), Variable.type]),
+            'parents': '/'.join([getattr(self, 'route'), str(self.id), 'parents']),
         }
 
         meta = self.authorizer(user)
 
-        data = self._serializer(fields, attributes, links, meta, {})
+        data = self._serializer(fields, attributes, links, meta)
 
         return data
 
     def authorizer(self, user):
 
-        editable = user.has_perm('users.edit_' + self.type)
+        editable = user.has_perm('users.edit_' + getattr(self, 'type'))
 
         deletable = editable
 
@@ -140,7 +128,7 @@ class Host(Node):
             'instance_id': facts.get('ec2_instance_id'),
         }
 
-        data = self._serializer(fields, attributes, {}, {}, {}, super(Host, self).serialize(fields, user))
+        data = self._serializer(fields, attributes, {}, {}, super(Host, self).serialize(fields, user))
 
         if fields and 'facts' in fields.get('attributes', {}):
 
@@ -217,7 +205,7 @@ class Group(Node):
 
         meta = self.authorizer(user)
 
-        data = self._serializer(fields, attributes, links, meta, {}, super(Group, self).serialize(fields, user))
+        data = self._serializer(fields, attributes, links, meta, super(Group, self).serialize(fields, user))
 
         return data
 
@@ -257,25 +245,29 @@ class Variable(models.Model, ModelSerializerMixin):
 
         if self.host:
 
-            links = {'self': '/'.join([Host.route, str(self.host.id), Variable.type, str(self.id)])}
+            host_id_str = str(getattr(self.host, 'id'))
 
-            attributes['host'] = str(self.host.id)
+            links = {'self': '/'.join([Host.route, host_id_str, Variable.type, str(self.id)])}
+
+            attributes['host'] = host_id_str
 
         else:
 
-            links = {'self': '/'.join([Group.route, str(self.group.id), Variable.type, str(self.id)])}
+            group_id_str = str(getattr(self.group, 'id'))
 
-            attributes['group'] = str(self.group.id)
+            links = {'self': '/'.join([Group.route, group_id_str, Variable.type, str(self.id)])}
+
+            attributes['group'] = group_id_str
 
         meta = self.authorizer(user)
 
-        return self._serializer(fields, attributes, links, meta, {})
+        return self._serializer(fields, attributes, links, meta)
 
     def authorizer(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
 
-        node = Host.objects.get(pk=self.host.id) if self.host else Group.objects.get(pk=self.group.id)
+        node = Host.objects.get(pk=getattr(self.host, 'id')) if self.host else Group.objects.get(pk=getattr(self.group, 'id'))
 
         return {
             'editable': user.has_perm('users.edit_' + node.type) or authorizer.can_edit_variables(node),

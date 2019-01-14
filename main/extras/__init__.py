@@ -4,7 +4,6 @@ from pytz import timezone
 from django.http import HttpResponse
 
 
-
 class DataTableRequestHandler:
 
     def __init__(self, request, queryset):
