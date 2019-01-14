@@ -49,7 +49,7 @@ Host.prototype.info = function ($container) {
 
     let self = this;
 
-    $container.html(Template['host-info']());
+    $container.html(Templates['host-info']());
 
     self.bindElement($container);
 
@@ -120,7 +120,7 @@ Host.prototype.info = function ($container) {
 
                 let $dialog = Main.prototype.notificationDialog();
 
-                let $table = Template['table']();
+                let $table = Templates['table']();
 
                 $dialog.find('h5.dialog-header').html(key).addClass('text-capitalize');
 

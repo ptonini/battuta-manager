@@ -15,5 +15,9 @@ def validate_yaml(stream):
         return True
 
 file_types = {
-    'yaml': {'ext': ['.yml', '.yaml'], 'validator': validate_yaml}
+    'yaml': {
+        'ext': ['.yml', '.yaml'],
+        'validator': validate_yaml,
+        're': '[^\/]*\.(yml|yaml)'
+    }
 }

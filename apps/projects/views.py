@@ -2,14 +2,15 @@ import json
 
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+from django.views.generic import View
 
-from main.extras.views import ApiView
+from main.extras.mixins import ApiViewMixin
 from apps.files.extras import PlaybookHandler, RoleHandler
 from apps.projects.models import Project
 from apps.projects.forms import ProjectForm
 
 
-class ProjectView(ApiView):
+class ProjectView(View, ApiViewMixin):
 
     form_class = ProjectForm
 
@@ -81,7 +82,7 @@ class ProjectView(ApiView):
             return HttpResponseForbidden()
 
 
-class RelationsView(ApiView):
+class RelationsView(View, ApiViewMixin):
 
     def post(self, request, relation, project_id):
 
@@ -194,7 +195,7 @@ class RelationsView(ApiView):
             return HttpResponseForbidden()
 
 
-class FsObjRelationsView(ApiView):
+class FsObjRelationsView(View, ApiViewMixin):
 
     handlers = {
         'playbooks': PlaybookHandler,

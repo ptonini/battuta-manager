@@ -12,18 +12,14 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
-from django.core.cache import caches
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, inventory_to_dict
 from apps.preferences.extras import get_preferences
-from apps.iam.extras import Authorizer
 from main.extras import download_file
-from main.extras.views import ApiView
-
-
+from main.extras.mixins import ApiViewMixin
 
 
 class InventoryView(View):
@@ -44,7 +40,7 @@ class InventoryView(View):
             return HttpResponseForbidden()
 
 
-class ManageView(ApiView):
+class ManageView(View, ApiViewMixin):
 
     @staticmethod
     def _create_node_var_file(node, folder):
@@ -144,6 +140,8 @@ class ManageView(ApiView):
                 descendants = [g for g in groups if len(g.variable_set.filter(key='pac_group', value='true'))]
 
                 ancestors = [g for g in group.get_ancestors() if len(g.variable_set.filter(key='pac_group', value='true'))]
+
+                group_uuid = None
 
                 if request.GET['format'] == 'pac':
 
@@ -453,7 +451,7 @@ class ManageView(ApiView):
             return HttpResponseForbidden()
 
 
-class NodeView(ApiView):
+class NodeView(View, ApiViewMixin):
 
     def post(self, request, node_id):
 
@@ -572,7 +570,7 @@ class GroupView(NodeView):
     form_class = GroupForm
 
 
-class VariableView(ApiView):
+class VariableView(View, ApiViewMixin):
 
     type = Variable.type
 
@@ -719,7 +717,7 @@ class VariableView(ApiView):
             return HttpResponseForbidden()
 
 
-class RelationsView(ApiView):
+class RelationsView(View, ApiViewMixin):
 
     @staticmethod
     def post(request, relation, node_id, node_type):
@@ -754,21 +752,21 @@ class RelationsView(ApiView):
 
             candidate_set = related_class.objects.order_by('name').exclude(name='all')
 
-            candidate_set = candidate_set.exclude(pk__in=[related.id for related in related_set.all()])
+            excluded_ids = [related.id for related in related_set.all()]
 
             if related_class == type(node):
 
-                candidate_set = candidate_set.exclude(pk=node.id)
+                excluded_ids.append(node.id)
 
             if relation == 'parents' and node_type == Group.type:
 
-                group_descendants, host_descendants = node.get_descendants()
-
-                candidate_set = candidate_set.exclude(pk__in=[group.id for group in group_descendants])
+                excluded_ids = excluded_ids + [g.id for g in node.get_descendants()[0]]
 
             elif relation == 'children':
 
-                candidate_set = candidate_set.exclude(pk__in=[group.id for group in node.get_ancestors()])
+                excluded_ids = excluded_ids + [g.id for g in node.get_ancestors()]
+
+            candidate_set = candidate_set.exclude(pk__in=excluded_ids)
 
             data = [candidate.serialize(request.JSON.get('fields'), request.user) for candidate in candidate_set]
 

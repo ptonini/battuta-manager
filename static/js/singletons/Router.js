@@ -4,60 +4,51 @@ let Router = {
 
     root: '/',
 
-    clearSlashes: function(path) {
-
-        return path.toString().replace(/\/$/, '').replace(/^\//, '');
-
-    },
+    clearSlashes: function(path) { return path.toString().replace(/\/$/, '').replace(/^\//, '')},
 
     add: function(re, handler) {
-
-        let self = this;
 
         if (typeof re === 'function') {
 
             handler = re;
 
             re = '';
+
         }
 
-        self.routes.push({re: re, handler: handler});
+        this.routes.push({re: re, handler: handler});
 
-        return self;
+        return this;
     },
 
     getFragment: function() {
 
-        let self = this;
-
         let match = window.location.href.match(/#(.*)$/);
 
-        return self.clearSlashes(match ? match[1] : '');
+        return this.clearSlashes(match ? match[1] : '');
 
     },
 
     check: function(f) {
 
-        let self = this;
+        let fragment = f || this.getFragment();
 
-        let fragment = f || self.getFragment();
+        for (let i = 0; i < this.routes.length; i++) {
 
-        for (let i = 0; i < self.routes.length; i++) {
-
-            let match = fragment.match(self.routes[i].re);
+            let match = fragment.match(this.routes[i].re);
 
             if (match) {
 
                 match.shift();
 
-                self.routes[i].handler.apply({}, [match]);
+                this.routes[i].handler.apply({}, [match]);
 
-                return self;
+                return this;
 
             }
         }
 
-        return self;
+        return this;
 
     },
 
@@ -85,13 +76,11 @@ let Router = {
 
     navigate: function(path) {
 
-        let self = this;
-
         path = path ? path : '';
 
         window.location.href = window.location.href.replace(/#(.*)$/, '') + '#' + path;
 
-        return self;
+        return this;
 
     }
 

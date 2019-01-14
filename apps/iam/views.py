@@ -2,16 +2,15 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.views.generic import View
 
 from apps.iam.models import LocalUser,  Credential, LocalGroup
 from apps.iam.forms import LocalUserForm, CredentialForm, LocalGroupForm
-
 from apps.preferences.extras import get_preferences
+from main.extras.mixins import ApiViewMixin
 
-from main.extras.views import ApiView
 
-
-class UserView(ApiView):
+class UserView(View, ApiViewMixin):
 
     form_class = LocalUserForm
 
@@ -82,7 +81,6 @@ class UserView(ApiView):
 
         return self._api_response(response)
 
-
     def patch(self, request, user_id):
 
         user = get_object_or_404(LocalUser, pk=user_id)
@@ -132,7 +130,7 @@ class UserView(ApiView):
             return HttpResponseBadRequest()
 
 
-class CredentialView(ApiView):
+class CredentialView(View, ApiViewMixin):
 
     form_class = CredentialForm
 
@@ -231,7 +229,7 @@ class CredentialView(ApiView):
             return HttpResponseForbidden()
 
 
-class UserGroupView(ApiView):
+class UserGroupView(View, ApiViewMixin):
 
     form_class = LocalGroupForm
 
@@ -308,7 +306,7 @@ class UserGroupView(ApiView):
             return HttpResponseBadRequest()
 
 
-class RelationsView(ApiView):
+class RelationsView(View, ApiViewMixin):
 
     @staticmethod
     def _get_relations(relation, obj_id, obj_type):
@@ -403,7 +401,7 @@ class RelationsView(ApiView):
             return HttpResponseForbidden()
 
 
-class PermissionView(ApiView):
+class PermissionView(View, ApiViewMixin):
 
     _excluded_perms = [
         'add_group',

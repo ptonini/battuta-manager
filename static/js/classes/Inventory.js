@@ -10,7 +10,7 @@ function Inventory() {
             .fileinput({
                 ajaxSettings: {method: 'PATCH', beforeSend: self.ajaxBeforeSend, error: self.ajaxError},
                 mergeAjaxCallbacks: 'before',
-                uploadUrl: Classes.manage.href,
+                uploadUrl: Entities.manage.href,
                 uploadExtraData: function () {
 
                     return {format: $('input[type="radio"][name="import_file_type"]:checked').val()}
@@ -74,7 +74,7 @@ function Inventory() {
 
                     if (self.sftp_user) {
 
-                        window.open(Classes.manage.href + '?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
+                        window.open(Entities.manage.href + '?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
 
                         $dialog.dialog('close')
 
@@ -90,7 +90,7 @@ function Inventory() {
 
             }
 
-            else window.open(Classes.manage.href + '?format=' + format, '_self');
+            else window.open(Entities.manage.href + '?format=' + format, '_self');
 
         });
 

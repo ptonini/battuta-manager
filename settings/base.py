@@ -172,7 +172,7 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'max_edit_size',
-                'value': 65536,
+                'value': 262144,
                 'data_type': 'number',
                 'description': 'Maximum file size for the text editor'
             },

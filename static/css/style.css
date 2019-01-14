@@ -119,11 +119,6 @@ div.form-check {
     margin-bottom: 5px
 }
 
- {
-
-
-}
-
 
 /* Anchors ***************************/
 
@@ -197,7 +192,7 @@ nav.navbar a.dropdown-item:active {
 
 /* Inset container *******************/
 
-div.inset-container {
+.inset-container {
     overflow-x: hidden;
     padding: 10px;
     box-shadow: inset 1px 1px 3px 0 rgba(0,0,0,0.3);

@@ -468,12 +468,12 @@ Main.prototype = {
 
     notificationDialog: function (headless=false) {
 
-        let $dialog = Template['dialog']();
+        let $dialog = Templates['dialog']();
 
         headless && $dialog.find('h5.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(
-            Template['close-button']().click(function () { $dialog.dialog('close') })
+            Templates['close-button']().click(function () { $dialog.dialog('close') })
         );
 
         return $dialog
@@ -482,13 +482,13 @@ Main.prototype = {
 
     confirmationDialog: function (headless=false) {
 
-        let $dialog = Template['dialog']();
+        let $dialog = Templates['dialog']();
 
         headless && $dialog.find('h5.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(
-            Template['cancel-button']().click(function () { $dialog.dialog('close') }),
-            Template['confirm-button']());
+            Templates['cancel-button']().click(function () { $dialog.dialog('close') }),
+            Templates['confirm-button']());
 
         return $dialog
 
@@ -498,16 +498,16 @@ Main.prototype = {
 
         let $dialog = Main.prototype.confirmationDialog();
 
-        $dialog.find('div.dialog-content').append(Template['entity-form']());
+        $dialog.find('div.dialog-content').append(Templates['entity-form']());
 
         return $dialog
     },
 
     notificationAlert: function () {
 
-        let $alert = Template['alert']();
+        let $alert = Templates['alert']();
 
-        $alert.find('div.button-container').append(Template['close-icon']());
+        $alert.find('div.button-container').append(Templates['close-icon']());
 
         return $alert
 
@@ -515,9 +515,9 @@ Main.prototype = {
 
     confirmationAlert: function () {
 
-        let $alert = Template['alert']();
+        let $alert = Templates['alert']();
 
-        $alert.find('div.button-container').append(Template['cancel-icon'](), Template['confirm-icon']());
+        $alert.find('div.button-container').append(Templates['cancel-icon'](), Templates['confirm-icon']());
 
         return $alert
 
@@ -671,7 +671,7 @@ Main.prototype = {
                         truncateItemText: true,
                         gridBodyClasses: 'inset-container scrollbar',
                         columns: sessionStorage.getItem('selection_modal_columns'),
-                        ajaxUrl: Classes[type].href,
+                        ajaxUrl: Entities[type].href,
                         formatItem: function($gridContainer, $item, data) {
 
                             let nodeName = data.attributes.name;
@@ -767,7 +767,7 @@ Main.prototype = {
         if (data.meta.deletable) $(row).find('td:last').empty().append(
             Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
-                new Classes[data.type].Class(data).delete(false, function () { $('section.container').trigger('reload') })
+                new Entities[data.type].Class(data).delete(false, function () { $('section.container').trigger('reload') })
 
             })
         );
@@ -822,8 +822,7 @@ Main.prototype = {
 
                 $gridItem
                     .html(data.attributes[options.itemValueKey])
-                    .addClass('pointer')
-                    .data({id: data.id, type: data.type});
+                    .addClass('pointer');
 
                 if (options.type === 'one') $gridItem.click(function () {
 
@@ -878,10 +877,7 @@ Main.prototype = {
                         readable && link && Router.navigate(link);
 
                     }),
-                );
-
-                $gridItem.append(
-                    Template['remove-icon']().click(function () {
+                    Templates['remove-icon']().click(function () {
 
                         self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
 
@@ -929,17 +925,17 @@ Main.prototype = {
 
         let $container = $('section.container');
 
-        Template._load(self.templates).then(() => {
+        Templates.load(self.templates).then(() => {
 
-            let $selector = Template['entity-selector']();
+            let $selector = Templates['entity-selector']();
 
-            let $table = Template['table']();
+            let $table = Templates['table']();
 
             let tableOptions = {
                 scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
                 scrollCollapse: true,
                 ajax: {
-                    url: Classes[self.type].href,
+                    url: Entities[self.type].href,
                     dataSrc: 'data'
                 },
                 paging: false,
@@ -950,7 +946,7 @@ Main.prototype = {
                         text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
                         action: function () {
 
-                            new Classes[self.type].Class({links: {self: Classes[self.type].href}}).editor(function () {
+                            new Entities[self.type].Class({links: {self: Entities[self.type].href}}).editor(function () {
 
                                 $container.trigger('reload')
 
@@ -986,9 +982,9 @@ Main.prototype = {
 
         let $container = $('section.container');
 
-        Template._load(self.templates).then(() => {
+        Templates.load(self.templates).then(() => {
 
-            $container.html(Template['entity-view']());
+            $container.html(Templates['entity-view']());
 
             return self.read(false)
 
@@ -1012,7 +1008,7 @@ Main.prototype = {
 
                 self.delete(false, function () {
 
-                    Router.navigate(Classes[self.type].href)
+                    Router.navigate(Entities[self.type].href)
 
                 })
 

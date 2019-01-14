@@ -61,7 +61,7 @@
 
                 $.each(opts.dataArray, function (index, data) {
 
-                    let $item = $('<div>').attr('class', 'dynagrid-item ' + opts.gridItemClasses);
+                    let $item = $('<div>').attr('class', 'dynagrid-item ' + opts.gridItemClasses).data(data);
 
                     opts.formatItem($gridContainer, $item, data);
 
@@ -211,15 +211,7 @@
 
                                     $gridBody.children('div.dynagrid-item').each(function () {
 
-                                        let data = $(this).data();
-
-                                        let value;
-
-                                        if (Object.prototype.toString.call(data) === '[object Array]') value = data[0];
-
-                                        else if (Object.prototype.toString.call(data) === '[object Object]') value = data[opts.itemValueKey];
-
-                                        value.indexOf(pattern) >= 0 ? $(this).show() : $(this).hide();
+                                        $(this).text().indexOf(pattern) >= 0 ? $(this).show() : $(this).hide();
 
                                     });
 

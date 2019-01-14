@@ -19,7 +19,7 @@ function Search(pattern) {
             headerBottomMargin: '0',
             gridBodyBottomMargin: '20px',
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: Classes[type].href + self.objToQueryStr({filter: pattern}),
+            ajaxUrl: Entities[type].href + self.objToQueryStr({filter: pattern}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
                 $gridItem.css('cursor', 'pointer').html(data.attributes.name).click(function () {

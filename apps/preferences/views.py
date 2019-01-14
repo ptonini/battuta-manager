@@ -1,14 +1,14 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.generic import View
 
 from apps.preferences.models import Item
 from apps.preferences.extras import get_default_value
+from main.extras.mixins import ApiViewMixin
 
-from main.extras.views import ApiView
 
-
-class PreferencesView(ApiView):
+class PreferencesView(View, ApiViewMixin):
 
     def get(self, request):
 

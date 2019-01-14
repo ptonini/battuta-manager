@@ -1,4 +1,4 @@
-let Classes = {
+let Entities = {
     main: {
         href: '/main',
         regex: /^main$/,
@@ -15,61 +15,37 @@ let Classes = {
         href: '/inventory/manage',
         regex: /^inventory\/manage$/,
         Class: null,
-        action: function () {
-
-            new Inventory()
-
-        }
+        action: function () { new Inventory() }
     },
     hosts: {
         href: '/inventory/hosts',
         regex: /^inventory\/hosts\/?([0-9]+)?$/,
         Class: Host,
-        action: function (param) {
-
-            param[0] ? new Host({id: param[0], links: {self: param.input}}).view() : new Host().selector();
-
-        }
+        action: function (param) { param[0] ? new Host({id: param[0], links: {self: param.input}}).view() : new Host().selector() }
     },
     groups: {
         href: '/inventory/groups',
         regex: /^inventory\/groups\/?([0-9]+)?$/,
         Class: Group,
-        action: function (param) {
-
-            param[0] ? new Group({id: param[0], links: {self: param.input}}).view() : new Group().selector();
-
-        }
+        action: function (param) { param[0] ? new Group({id: param[0], links: {self: param.input}}).view() : new Group().selector() }
     },
     users: {
         href: '/iam/users',
         regex: /^iam\/users\/?([0-9]+)?$/,
         Class: User,
-        action: function (param) {
-
-            param[0] ? new User({id: param[0], links: {self: param.input}}).view() : new User().selector();
-
-        }
+        action: function (param) { param[0] ? new User({id: param[0], links: {self: param.input}}).view() : new User().selector() }
     },
     usergroups: {
         href: '/iam/usergroups',
         regex: /^iam\/usergroups\/?([0-9]+)?$/,
         Class: UserGroup,
-        action: function (param) {
-
-            param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).view() : new UserGroup().selector();
-
-        }
+        action: function (param) { param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).view() : new UserGroup().selector() }
     },
     projects: {
         href: '/projects',
         regex: /^projects\/?([0-9]+)?$/,
         Class: Project,
-        action: function (param) {
-
-            param[0] ? new Project({id: param[0], links: {self: param.input}}).view() : new Project().selector();
-
-        }
+        action: function (param) { param[0] ? new Project({id: param[0], links: {self: param.input}}).view() : new Project().selector() }
     },
     repository: {
         href: '/files/repository',
@@ -91,7 +67,7 @@ let Classes = {
     },
 };
 
-for (let k in Classes) if (Classes.hasOwnProperty(k)) Router.add(Classes[k].regex, Classes[k].action);
+for (let k in Entities) if (Entities.hasOwnProperty(k)) Router.add(Entities[k].regex, Entities[k].action);
 
 Router.add(/[\s\S]*/, function () {
 

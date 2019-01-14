@@ -25,7 +25,7 @@ FileObj.prototype.tableButtons = function (self) {
         {
             text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
             className: 'btn-sm btn-icon',
-            action: function () { new Classes[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create') }
+            action: function () { new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create') }
         },
         {
             text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
@@ -43,7 +43,7 @@ FileObj.prototype.upload = function () {
 
     let $dialog = self.confirmationDialog();
 
-    let $form = Template['upload-file-form']();
+    let $form = Templates['upload-file-form']();
 
     let $input = $form.find('input.input-file');
 
@@ -191,11 +191,13 @@ FileObj.prototype.contentEditor = function () {
 
     else if (self.get('mime_type') === 'text/x-python') aceMode = 'python';
 
-    let $form = Template['file-editor-form']();
+    let $form = Templates['file-editor-form']();
 
     let $selector = $form.find('select.mode-selector');
 
     let $dialog = self.confirmationDialog();
+
+    let beautify = ace.require("ace/ext/beautify");
 
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
@@ -303,7 +305,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
             template: 'update-file-form',
             save: function (newName) {
 
-                let fsObj =  new Classes[self.root].Class({links: {self: [self.links.parent, newName].join('/')}, type: self.type});
+                let fsObj =  new Entities[self.root].Class({links: {self: [self.links.parent, newName].join('/')}, type: self.type});
 
                 return fsObj.set('source', {root: self.root, path: self.path}).create(false);
 
@@ -313,7 +315,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     let $dialog = self.confirmationDialog();
 
-    $dialog.find('div.dialog-content').html(Template[actions[action].template]());
+    $dialog.find('div.dialog-content').html(Templates[actions[action].template]());
 
     $dialog.find('h5.dialog-header').replaceWith(
         $('<h6>').html(actions[action].title).append('&nbsp;', $('<span>').attr('data-bind', 'type'))
@@ -377,9 +379,9 @@ FileObj.prototype.selector = function () {
 
     let pathArrayViewableIndex = 3;
 
-    Template._load(self.templates).then(() => {
+    Templates.load(self.templates).then(() => {
 
-        $container.html(Template['file-selector']());
+        $container.html(Templates['file-selector']());
 
         self.bindElement($container);
 
@@ -401,7 +403,7 @@ FileObj.prototype.selector = function () {
             buttons: self.tableButtons(self),
             rowCallback: function (row, data) {
 
-                let fs_obj = new Classes[data.attributes.root].Class(data);
+                let fs_obj = new Entities[data.attributes.root].Class(data);
 
                 if (fs_obj.type === 'folder') {
 
@@ -438,7 +440,7 @@ FileObj.prototype.selector = function () {
                 if (self.links.root !== self.links.self) {
 
                     $table
-                        .prepend(Template['previous-folder-row']())
+                        .prepend(Templates['previous-folder-row']())
                         .find('td.previous-folder-link')
                         .click(function () {
 
@@ -467,7 +469,7 @@ FileObj.prototype.selector = function () {
                         for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
 
                             $container.find('ol.path-breadcrumbs').append(
-                                Template['path-breadcrumb']().html(pathArray[i]).click(function() {
+                                Templates['path-breadcrumb']().html(pathArray[i]).click(function() {
 
                                     Router.navigate(pathArray.slice(0,i + 1).join('/'))
 
@@ -496,13 +498,13 @@ FileObj.prototype.selector = function () {
 
                             $pathButton.addClass('checked-button');
 
-                            let $pathInput = Template['path-input']();
+                            let $pathInput = Templates['path-input']();
 
                             let $breadCrumbs = $container.find('ol.path-breadcrumbs');
 
                             $container.find('li.path-breadcrumb').remove();
 
-                            $breadCrumbs.append(Template['path-breadcrumb']().append($pathInput));
+                            $breadCrumbs.append(Templates['path-breadcrumb']().append($pathInput));
 
                             $pathInput
                                 .focus()
@@ -546,8 +548,6 @@ FileObj.prototype.selector = function () {
                     buildBreadcrumbs()
 
                 }
-
-
 
             })
 

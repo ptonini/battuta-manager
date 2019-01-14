@@ -26,9 +26,9 @@ Credential.prototype.selector = function ($container) {
 
     let $selectorContainer;
 
-    Template._load(self.templates).then(() => {
+    Templates.load(self.templates).then(() => {
 
-        $selectorContainer = Template['credentials-selector']();
+        $selectorContainer = Templates['credentials-selector']();
 
         self.buildSelector($selectorContainer.find('select'), $selectorContainer.find('div.credentials-form-container'));
 
@@ -102,7 +102,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
             if ($formContainer) {
 
-                $formContainer.html(Template['credential-form']());
+                $formContainer.html(Templates['credential-form']());
 
                 cred.bindElement($formContainer);
 

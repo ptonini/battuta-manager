@@ -24,9 +24,9 @@ Variable.prototype.table = function ($container, node) {
 
     let self = this;
 
-    let $table = Template['table']();
+    let $table = Templates['table']();
 
-    Template._load(self.templates).then(() => {
+    Templates.load(self.templates).then(() => {
 
         $table.addClass('class', 'variable-table');
 
@@ -204,7 +204,7 @@ Variable.prototype.table = function ($container, node) {
 
                             $(mainValue[1]).find('td:eq(0)').html('').append(
                                 $('<span>').html(mainValue[0].attributes.key),
-                                Template['show-values-icon']().click(function () {
+                                Templates['show-values-icon']().click(function () {
 
                                     if (rowApi.child.isShown()) {
 
@@ -246,7 +246,7 @@ Variable.prototype.entityDialog = function () {
 
     let $dialog = Main.prototype.confirmationDialog();
 
-    $dialog.find('div.dialog-content').append(Template['variable-form']());
+    $dialog.find('div.dialog-content').append(Templates['variable-form']());
 
     return $dialog
 };
@@ -259,7 +259,7 @@ Variable.prototype.copyVariables = function (node, callback) {
 
     $dialog.find('h5.dialog-header').addClass('text-center mb-3').html('Select source type');
 
-    $dialog.find('div.dialog-content').append(Template['source-type-selector']);
+    $dialog.find('div.dialog-content').append(Templates['source-type-selector']);
 
     $dialog.find('button.node-button').click(function () {
 
@@ -269,7 +269,7 @@ Variable.prototype.copyVariables = function (node, callback) {
             title: 'Select node',
             type: 'one',
             objectType: $(this).data('type'),
-            url: Classes[$(this).data('type')].href,
+            url: Entities[$(this).data('type')].href,
             ajaxDataKey: 'data',
             itemValueKey: 'name',
             action: function (selection, $dialog) {

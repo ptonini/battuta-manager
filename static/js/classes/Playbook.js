@@ -181,7 +181,7 @@ Playbook.prototype.tableButtons = function (self) {
 //
 //     let self = this;
 //
-//     let $dialog = Template['dialog']();
+//     let $dialog = Templates['dialog']();
 //
 //     $dialog.find('h5.dialog-header').html(self.name);
 //

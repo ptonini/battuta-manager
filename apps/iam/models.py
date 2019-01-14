@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 
-from main.extras.models import ModelSerializerMixin
+from main.extras.mixins import ModelSerializerMixin
 from apps.preferences.extras import get_preferences
 from apps.iam import builtin_groups
 
@@ -183,12 +183,12 @@ class LocalGroup(Group, ModelSerializerMixin):
         permissions = (
             ('edit_groups', 'Can create and edit groups'),
             ('edit_hosts', 'Can create and edit hosts'),
-            ('edit_playbooks', 'Can edit playbooks'),
             ('edit_tasks', 'Can edit tasks'),
-            ('edit_roles', 'Can edit roles'),
             ('execute_jobs', 'Can execute jobs'),
             ('view_job_history', 'Can view job history'),
             ('edit_files', 'Can create and edit files'),
+            ('edit_playbooks', 'Can edit playbooks'),
+            ('edit_roles', 'Can edit roles'),
             ('edit_users', 'Can create and edit users'),
             ('edit_user_groups', 'Can create and edit user groups'),
             ('edit_user_files', 'Can create and edit user files'),

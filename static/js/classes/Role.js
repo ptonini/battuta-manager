@@ -3,6 +3,7 @@ function Role (param) {
     FileObj.call(this, param);
 
     return this;
+
 }
 
 Role.prototype = Object.create(FileObj.prototype);

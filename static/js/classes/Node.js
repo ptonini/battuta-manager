@@ -44,7 +44,7 @@ Node.prototype.selector = function () {
 
         self.bindElement($container);
 
-        let route = Classes[self.type].href;
+        let route = Entities[self.type].href;
 
         let $table = $container.find('#node_table');
 
@@ -52,7 +52,7 @@ Node.prototype.selector = function () {
 
         let addNode = () => {
 
-            new Classes[self.type].Class({links: {self: route}}).editor(function () {
+            new Entities[self.type].Class({links: {self: route}}).editor(function () {
 
                 $container.trigger('reload')
 

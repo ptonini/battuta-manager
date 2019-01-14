@@ -1,5 +1,5 @@
 ---
-- name: Template playbook
+- name: Templates playbook
   gather_facts: no
   hosts: all
   become: no

@@ -7,6 +7,7 @@ from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.dispatch import receiver
 from django.core.cache import caches
 
+from main.extras.signals import clear_authorizer
 
 class Authorizer:
 
@@ -29,6 +30,8 @@ class Authorizer:
         self._editable_files = set()
 
         self._editable_folders = set()
+
+        self._readable_files = set()
 
         self._readable_folders = set()
 
@@ -84,7 +87,13 @@ class Authorizer:
 
         for project in can_run_playbooks:
 
-            self._runnable_playbooks.update({PlaybookHandler(p, self._user) for p in json.loads(project.playbooks)})
+            for p in json.loads(project.playbooks):
+
+                playbook = PlaybookHandler(p, self._user)
+
+                self._runnable_playbooks.add(playbook)
+
+                self._readable_files.add(playbook.absolute_path)
 
         for project in can_edit_playbooks:
 
@@ -93,6 +102,8 @@ class Authorizer:
                 playbook = PlaybookHandler(p, self._user)
 
                 self._editable_files.add(playbook.absolute_path)
+
+                self._readable_files.add(playbook.absolute_path)
 
                 self._readable_folders.update({path for path in playbook.get_paths()})
 
@@ -130,13 +141,31 @@ class Authorizer:
 
     def can_view_fs_obj(self, path, fs_obj_type):
 
+        for editable_path in self._editable_folders:
+
+            if path.startswith(editable_path):
+
+                return True
+
+        if fs_obj_type == 'file':
+
+            return True if path in self._readable_files else False
+
+        else:
+
+            return True if path in self._readable_folders else False
+
+    def can_edit_fs_obj(self, path, fs_obj_type):
+
+        for editable_path in self._editable_folders:
+
+            if path.startswith(editable_path):
+
+                return True
+
         if fs_obj_type == 'file':
 
             return True if path in self._editable_files else False
-
-    def can_edit_fs_obj(self, file_path):
-
-        return True if file_path in self._editable_files else False
 
     def authorize_job(self, inventory, job):
 
@@ -150,7 +179,7 @@ class Authorizer:
 
             return self.can_run_tasks(inventory, job.subset)
 
-
+@receiver(clear_authorizer)
 @receiver(post_save)
 @receiver(post_delete)
 @receiver(m2m_changed)

@@ -3,7 +3,7 @@ import json
 from django.db import models
 from django.core.cache import caches
 
-from main.extras.models import ModelSerializerMixin
+from main.extras.mixins import ModelSerializerMixin
 from apps.iam.extras import Authorizer
 
 

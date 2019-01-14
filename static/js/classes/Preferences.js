@@ -66,7 +66,7 @@ Preferences.prototype.dialog = function () {
 
     let $dialog = self.confirmationDialog().dialog({autoOpen: false, width: 800});
 
-    $dialog.find('h5.dialog-header').append('Preferences', Template['restore-button']());
+    $dialog.find('h5.dialog-header').append('Preferences', Templates['restore-button']());
 
     $dialog.find('button.restore-button').click(function () {
 
@@ -150,7 +150,7 @@ Preferences.prototype.dialog = function () {
 
         for (let i = 0; i < self.groups.length; i++) {
 
-            let $header = Template['prefs-header']();
+            let $header = Templates['prefs-header']();
 
             $header.find('h6').attr('title', self.groups[i].description).html(self.groups[i].name);
 
@@ -158,9 +158,9 @@ Preferences.prototype.dialog = function () {
 
             for (let j = 0; j < self.items.length; j++) if (self.items[j].group === self.groups[i].id) {
 
-                let $itemContainer = Template['prefs-item-row']();
+                let $itemContainer = Templates['prefs-item-row']();
 
-                let $inputContainer = Template['prefs-input-' + self.items[j].dataType]();
+                let $inputContainer = Templates['prefs-input-' + self.items[j].dataType]();
 
                 let itemValue = self.items[j].stored ? self.items[j].stored : self.items[j].default;
 

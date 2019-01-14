@@ -3,7 +3,7 @@ from django.views.generic import View
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
 
-from main.extras.views import ApiView
+from main.extras.mixins import ApiViewMixin
 
 
 class PageView(View):
@@ -14,7 +14,7 @@ class PageView(View):
         return render(request, 'main/main.html')
 
 
-class MainView(ApiView):
+class MainView(View, ApiViewMixin):
 
     def get(self, request):
 
@@ -31,7 +31,7 @@ class MainView(ApiView):
         return self._api_response(response)
 
 
-class LoginView(ApiView):
+class LoginView(View, ApiViewMixin):
 
     def post(self, request, action):
 

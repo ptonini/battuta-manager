@@ -1,8 +1,8 @@
-let Template = {
+let Templates = {
 
     _loaded: [],
 
-    _load: function (file) {
+    load: function (file) {
 
         let self = this;
 

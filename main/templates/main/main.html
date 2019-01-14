@@ -29,6 +29,7 @@
     <script type="text/javascript" src="{% static 'components/moment/min/moment.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/moment-timezone/builds/moment-timezone-with-data.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ace.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ext-beautify.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/blockUI/jquery.blockUI.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery/extensions.js' %}"></script>
@@ -52,20 +53,20 @@
     <script type="text/javascript" src="{% static 'js/classes/Variable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/classes/Search.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/singletons/Router.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/singletons/Template.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/singletons/Classes.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/singletons/Templates.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/singletons/Entities.js' %}"></script>
 
     {% block navbar %}
         <script type="text/javascript">
             $(document).ready(function () {
 
-                Template._load().then(() => {
+                Templates.load().then(() => {
 
                     Router.listen();
 
                     if (window.location.hash) Router.check(window.location.hash.substring(2));
 
-                    else Router.navigate(Classes.main.href);
+                    else Router.navigate(Entities.main.href);
 
                     new NavBar().build();
 

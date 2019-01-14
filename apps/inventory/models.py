@@ -5,7 +5,7 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.cache import caches
 
-from main.extras.models import ModelSerializerMixin
+from main.extras.mixins import ModelSerializerMixin
 from apps.iam.extras import Authorizer
 
 
@@ -71,6 +71,22 @@ class Node(models.Model, ModelSerializerMixin):
 
         return ancestors
 
+    def vars_dict(self):
+
+        vars_dict = dict()
+
+        for var in self.variable_set.all():
+
+            try:
+
+                vars_dict[var.key] = json.loads(var.value)
+
+            except ValueError or TypeError:
+
+                vars_dict[var.key] = var.value
+
+        return vars_dict
+
     def serialize(self, fields, user):
 
         attributes = {'name': self.name, 'description': self.description}
@@ -94,22 +110,6 @@ class Node(models.Model, ModelSerializerMixin):
         deletable = editable
 
         return { 'readable': True, 'editable': editable, 'deletable': deletable}
-
-    def vars_dict(self):
-
-        vars_dict = dict()
-
-        for var in self.variable_set.all():
-
-            try:
-
-                vars_dict[var.key] = json.loads(var.value)
-
-            except ValueError or TypeError:
-
-                vars_dict[var.key] = var.value
-
-        return vars_dict
 
     class Meta:
 
@@ -284,6 +284,8 @@ class Variable(models.Model, ModelSerializerMixin):
         }
 
     class Meta:
+
+        ordering = ['key']
 
         unique_together = (('key', 'host'), ('key', 'group'))
 

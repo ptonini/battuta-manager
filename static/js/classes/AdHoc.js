@@ -62,7 +62,7 @@ AdHoc.prototype.dialog = function (callback) {
 
         self.patternField($element.find('#pattern_field_group'), 'hosts');
 
-        $element.find('#run_task').click(function () {
+        $element.find('#run_task').click(function ()  {
 
             let job = new Job(self);
 
@@ -84,11 +84,7 @@ AdHoc.prototype.dialog = function (callback) {
 
         });
 
-        $element.find('#close_task').click(function () {
-
-            $element.dialog('close');
-
-        });
+        $element.find('#close_task').click(function () { $element.dialog('close') });
 
         $element.dialog({autoOpen: false, width: 600, closeOnEscape: false});
 
