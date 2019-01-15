@@ -70,15 +70,15 @@ Node.prototype.selector = function () {
             scrollCollapse: true,
             columns: self.selectorColumns(),
             dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: '<span class="fas fa-plus fa-fw" title="Add '+ self.type + '"></span>',
-                    action: addNode,
-                    className: 'btn-sm btn-icon'
-                }
-            ],
+            buttons: [{
+                text: '<span class="fas fa-plus fa-fw" title="Add '+ self.type + '"></span>',
+                action: addNode,
+                className: 'btn-sm btn-icon'
+            }],
             order: [[0, "asc"]],
-            rowCallback: self.selectorRowCallback
+            rowCallback: self.selectorRowCallback,
+            preDrawCallback: function () { sessionStorage.setItem('current_table_position', $table.parent().scrollTop()) },
+            drawCallback: function () {  $table.parent().scrollTop(sessionStorage.getItem('current_table_position'))  }
         });
 
         $grid.DynaGrid({

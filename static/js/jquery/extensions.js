@@ -165,11 +165,17 @@ function toUserTZ(time) {
 
 function generateCopiedFileName(name) {
 
-    let nameArray = name.split('.');
+    let ext = name.split('.').pop();
 
-    let ext = nameArray.length > 0 ? nameArray.pop() : null;
+    if (ext === name) ext = null;
 
-    let stripedName = nameArray.join('.')
+    name = name.replace('.' + ext, '');
+
+    let match = name.match(/(.*)(?:_)?(copy)(?:_)?([0-9]*)?$/);
+
+    name = match ? match[1] + 'copy_' + (match[3] ? parseInt(match[3]) + 1 : 2) : name + '_copy'
+
+    return name + (ext ? '.' + ext : '')
 
 }
 

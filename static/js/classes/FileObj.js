@@ -300,7 +300,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
             save: function (newName) { return self.set('new_name', newName).update(false) }
         },
         copy: {
-            displayName: self.name + '_copy',
+            displayName: generateCopiedFileName(self.name),
             title: 'Copy',
             template: 'update-file-form',
             save: function (newName) {
@@ -433,6 +433,7 @@ FileObj.prototype.selector = function () {
                 )
 
             },
+            preDrawCallback: function () { sessionStorage.setItem('current_table_position', $table.parent().scrollTop()) },
             drawCallback: function () {
 
                 $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
@@ -441,6 +442,8 @@ FileObj.prototype.selector = function () {
                     .prepend(Templates['previous-folder-row']())
                     .find('td.previous-folder-link')
                     .click(function () { Router.navigate(self.links.parent) })
+
+                $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 
             }
         });

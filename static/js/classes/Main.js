@@ -779,7 +779,9 @@ Main.prototype = {
 
         let $table = $(settings.nTable);
 
-        $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) })
+        $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) });
+
+        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 
     },
 
@@ -959,6 +961,7 @@ Main.prototype = {
                     }
                 ],
                 rowCallback: self.selectorRowCallback,
+                preDrawCallback: function () { sessionStorage.setItem('current_table_position', $table.parent().scrollTop()) },
                 drawCallback: self.selectorDrawCallback,
             };
 
