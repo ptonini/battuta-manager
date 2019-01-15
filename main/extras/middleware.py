@@ -16,23 +16,23 @@ class FileDataParsingMiddleware(MiddlewareMixin):
 
             if hasattr(request, '_post'):
 
-                del request._post
+                delattr(request, '_post')
 
-                del request._files
+                delattr(request, '_files')
 
             try:
 
                 request.method = "POST"
 
-                request._load_post_and_files()
+                getattr(request, '_load_post_and_files')()
 
                 request.method = method
 
-            except AttributeError as e:
+            except AttributeError:
 
                 request.META['REQUEST_METHOD'] = 'POST'
 
-                request._load_post_and_files()
+                getattr(request, '_load_post_and_files')()
 
                 request.META['REQUEST_METHOD'] = method
 

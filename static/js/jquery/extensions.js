@@ -173,7 +173,7 @@ function generateCopiedFileName(name) {
 
     let match = name.match(/(.*)(?:_)?(copy)(?:_)?([0-9]*)?$/);
 
-    name = match ? match[1] + 'copy_' + (match[3] ? parseInt(match[3]) + 1 : 2) : name + '_copy'
+    name = match ? match[1] + 'copy_' + (match[3] ? parseInt(match[3]) + 1 : 2) : name + '_copy';
 
     return name + (ext ? '.' + ext : '')
 
