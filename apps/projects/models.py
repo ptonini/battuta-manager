@@ -99,6 +99,10 @@ class Project(models.Model, ModelSerializerMixin):
 
         return {'editable': editable, 'deletable': deletable, 'readable': readable }
 
+    def get_fs_obj_relations(self, relation):
+
+        pass
+
     class Meta:
 
         ordering = ['name']

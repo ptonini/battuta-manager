@@ -334,7 +334,7 @@ Main.prototype = {
 
     // Resource CRUD helpers ***********
 
-    create: function (blocking, param) {
+    create: function (blocking, param={}) {
 
         let self = this;
 
@@ -748,11 +748,7 @@ Main.prototype = {
 
         let self = this;
 
-        self.warningAlert('This action cannot be reversed. Continue?', function () {
-
-            action && action()
-
-        })
+        self.warningAlert('This action cannot be reversed. Continue?', function () { action && action() })
 
     },
 
@@ -760,11 +756,7 @@ Main.prototype = {
 
         $(row).find('td:first')
             .css('cursor', 'pointer')
-            .click(function () {
-
-                Router.navigate(data.links.self)
-
-            });
+            .click(function () { Router.navigate(data.links.self) });
 
         if (data.meta.deletable) $(row).find('td:last').empty().append(
             Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
