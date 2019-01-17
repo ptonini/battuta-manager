@@ -124,28 +124,6 @@ FileObj.prototype.contentEditor = function () {
         {name: 'yaml', label: 'YAML'}
     ];
 
-    // let file_types = {
-    //     'apache_conf': {label: 'Apache conf'},
-    //     'batchfile': {label: 'BatchFile'},
-    //     'css': {label: 'CSS'},
-    //     'dockerfile': {label: 'Dockerfile'},
-    //     'gitignore': {label: 'Gitignore'},
-    //     'ini': {label: 'INI'},
-    //     'java': {label: 'Java'},
-    //     'javascript': {label: 'JavaScript'},
-    //     'json': {label: 'JSON'},
-    //     'php': {label: 'PHP'},
-    //     'powershell': {label: 'Powershell'},
-    //     'properties': {label: 'Properties'},
-    //     'python': {label: 'Python'},
-    //     'sh': {label: 'SH'},
-    //     'sql': {label: 'SQL'},
-    //     'text': {label: 'Text'},
-    //     'vbscript': {label: 'VBScript'},
-    //     'xml': {label: 'XML'},
-    //     'yaml': {label: 'YAML'}
-    // }
-
     let extensions = {
         properties: 'properties',
         conf: 'properties',
@@ -197,23 +175,13 @@ FileObj.prototype.contentEditor = function () {
 
     let $dialog = self.confirmationDialog();
 
-    let beautify = ace.require("ace/ext/beautify");
-
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
-    $.each(modes, function (index, mode){
-
-        $selector.append($('<option>').attr('value', mode.name).html(mode.label))
-
-    });
+    $.each(modes, function (index, mode){ $selector.append($('<option>').attr('value', mode.name).html(mode.label)) });
 
     $selector
         .val(aceMode)
-        .change(function () {
-
-            textEditor.getSession().setMode('ace/mode/' + $(this).val())
-
-        })
+        .change(function () { textEditor.getSession().setMode('ace/mode/' + $(this).val()) })
         .change();
 
     textEditor.setTheme('ace/theme/chrome');

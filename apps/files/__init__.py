@@ -15,6 +15,11 @@ def validate_yaml(stream):
         return True
 
 file_types = {
+    'any': {
+        'ext': [],
+        'validator': lambda x: True,
+        're': '[^\/]*'
+    },
     'yaml': {
         'ext': ['.yml', '.yaml'],
         'validator': validate_yaml,

@@ -4,6 +4,7 @@ from django.db import models
 from django.core.cache import caches
 
 from main.extras.mixins import ModelSerializerMixin
+from main.extras.signals import clear_authorizer
 from apps.iam.extras import Authorizer
 from apps.files.extras import FileHandler
 
@@ -104,9 +105,9 @@ class Project(models.Model, ModelSerializerMixin):
 
         related_list = json.loads(getattr(self, relation))
 
-        output = list()
-
         if related:
+
+            output = list()
 
             for related in related_list:
 
@@ -124,14 +125,11 @@ class Project(models.Model, ModelSerializerMixin):
 
                 self.save()
 
+                clear_authorizer.send(self)
+
         else:
 
-            file_class = FileHandler.get_root_class(relation)
-
-            file_list = file_class.list(user)
-
-            output = [f for f in file_list if f.path not in related_list]
-
+            output = [f for f in FileHandler.get_root_class(relation).list(user) if f.path not in related_list]
 
         output.sort(key=lambda f: f.path)
 

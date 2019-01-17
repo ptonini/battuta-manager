@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
 from main.extras.mixins import ApiViewMixin
-from apps.files.extras import PlaybookHandler, RoleHandler
 from apps.projects.models import Project
 from apps.projects.forms import ProjectForm
 
@@ -197,11 +196,6 @@ class RelationsView(View, ApiViewMixin):
 
 class FsObjRelationsView(View, ApiViewMixin):
 
-    handlers = {
-        'playbooks': PlaybookHandler,
-        'roles': RoleHandler
-    }
-
     @staticmethod
     def post(request, relation, project_id):
 
@@ -209,7 +203,9 @@ class FsObjRelationsView(View, ApiViewMixin):
 
         if project.authorizer(request.user)['editable']:
 
-            result_set = set(json.loads(getattr(project, relation)) + [f['id'].replace(relation + '/', '') for f in request.JSON.get('data', list())])
+            result_set = set(json.loads(getattr(project, relation)))
+
+            result_set.update([f['id'].replace(relation + '/', '') for f in request.JSON.get('data', list())])
 
             project.__setattr__(relation, json.dumps(list(result_set)))
 
@@ -220,7 +216,6 @@ class FsObjRelationsView(View, ApiViewMixin):
         else:
 
             return HttpResponseForbidden()
-
 
     def get(self, request, relation, project_id):
 

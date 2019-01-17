@@ -202,7 +202,11 @@ class FileHandler(ModelSerializerMixin):
 
                 fs_obj_list.append(cls(file_path, user))
 
-        return fs_obj_list.sort(key=lambda x: x.path)
+        fs_obj_list.sort(key=lambda x: x.path)
+
+        return fs_obj_list
+
+        #return fs_obj_list
 
     @classmethod
     def factory(cls, root, path, user):
@@ -431,14 +435,18 @@ class RoleHandler(FileHandler):
     skeleton = [
         {'folder': '[^\/]*', 'file': None},
         {'folder': '.*\/(defaults|handlers|meta|tasks|vars)', 'file': file_types['yaml']['re']},
-        {'folder': '.*\/(files|templates)', 'file': '[^\/]*'},
-        {'folder': '.*\/(files|templates)\/.*', 'file': '[^\/]*'},
+        {'folder': '.*\/(files|templates)', 'file': file_types['any']['re']},
+        {'folder': '.*\/(files|templates)\/.*', 'file': file_types['any']['re']},
     ]
 
     @classmethod
     def list(cls, user):
 
-        return [cls(f, user) for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
+        fs_obj_list = [cls(f, user) for f in os.listdir(cls.root_path) if os.path.isdir(os.path.join(cls.root_path, f))]
+
+        fs_obj_list.sort(key=lambda f: f.path)
+
+        return fs_obj_list
 
 
 class FileHandlerException(Exception):
