@@ -5,6 +5,7 @@ from django.core.cache import caches
 
 from main.extras.mixins import ModelSerializerMixin
 from apps.iam.extras import Authorizer
+from apps.files.extras import FileHandler
 
 
 class Project(models.Model, ModelSerializerMixin):
@@ -99,9 +100,42 @@ class Project(models.Model, ModelSerializerMixin):
 
         return {'editable': editable, 'deletable': deletable, 'readable': readable }
 
-    def get_fs_obj_relations(self, relation):
+    def get_fs_obj_relations(self, relation, user, related=True):
 
-        pass
+        related_list = json.loads(getattr(self, relation))
+
+        output = list()
+
+        if related:
+
+            for related in related_list:
+
+                try:
+
+                    output.append(FileHandler.factory(relation, related, user))
+
+                except FileNotFoundError:
+
+                    pass
+
+            if len(related_list) != len(output):
+
+                self.__setattr__(relation, json.dumps([f.path for f in output]))
+
+                self.save()
+
+        else:
+
+            file_class = FileHandler.get_root_class(relation)
+
+            file_list = file_class.list(user)
+
+            output = [f for f in file_list if f.path not in related_list]
+
+
+        output.sort(key=lambda f: f.path)
+
+        return output
 
     class Meta:
 

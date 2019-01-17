@@ -226,21 +226,13 @@ class FsObjRelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        related_fs_obj_list = json.loads(getattr(project, relation))
-
-        related_fs_obj_list.sort()
-
         if project.authorizer(request.user)['readable']:
 
-            if request.JSON.get('related', True):
+            fields = request.JSON.get('fields')
 
-                return self._api_response({'data': [self.handlers[relation](f, request.user).serialize(request.JSON.get('fields')) for f in related_fs_obj_list]})
+            related_list = project.get_fs_obj_relations(relation, request.user, request.JSON.get('related', True))
 
-            else:
-
-                file_list = [f.serialize(request.JSON.get('fields')) for f in self.handlers[relation].list(request.user) if f.path not in related_fs_obj_list]
-
-                return self._api_response({'data': sorted(file_list, key=lambda k: k['id']) })
+            return self._api_response({'data': [f.serialize(fields) for f in related_list]})
 
         else:
 

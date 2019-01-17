@@ -116,7 +116,7 @@ class FileHandler(ModelSerializerMixin):
 
             matched = False
 
-            for p in cls._get_root_class(root).skeleton:
+            for p in cls.get_root_class(root).skeleton:
 
                 pattern_elements = list()
 
@@ -140,7 +140,7 @@ class FileHandler(ModelSerializerMixin):
 
         errors = list()
 
-        if cls._get_root_class(root).skeleton:
+        if cls.get_root_class(root).skeleton:
 
             validation = validate_skeleton()
 
@@ -179,7 +179,7 @@ class FileHandler(ModelSerializerMixin):
         return actions[action]
 
     @classmethod
-    def _get_root_class(cls, root):
+    def get_root_class(cls, root):
 
         roots = {
             'repository': cls,
@@ -207,12 +207,12 @@ class FileHandler(ModelSerializerMixin):
     @classmethod
     def factory(cls, root, path, user):
 
-        return cls._get_root_class(root)(path, user)
+        return cls.get_root_class(root)(path, user)
 
     @classmethod
     def create(cls, root, path, request):
 
-        root_path = cls._get_root_class(root).root_path
+        root_path = cls.get_root_class(root).root_path
 
         source_dict = request.JSON.get('source', None)
 
@@ -252,7 +252,7 @@ class FileHandler(ModelSerializerMixin):
 
                 else:
 
-                    cls._get_action(fs_obj_type)['create'](cls._get_root_class(root), absolute_path)
+                    cls._get_action(fs_obj_type)['create'](cls.get_root_class(root), absolute_path)
 
                 clear_authorizer.send(cls)
 
