@@ -248,7 +248,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     let actions = {
         create: {
-            displayName: null,
+            displayName: function () {},
             title: 'Create',
             template: 'create-file-form',
             save: function (newName) {
@@ -262,13 +262,13 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
             }
         },
         rename: {
-            displayName: self.name,
+            displayName: function () { return self.name },
             title: 'Rename',
             template: 'update-file-form',
             save: function (newName) { return self.set('new_name', newName).update(false) }
         },
         copy: {
-            displayName: generateCopiedFileName(self.name),
+            displayName: generateCopiedFileName,
             title: 'Copy',
             template: 'update-file-form',
             save: function (newName) {
@@ -289,7 +289,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
         $('<h6>').html(actions[action].title).append('&nbsp;', $('<span>').attr('data-bind', 'type'))
     );
 
-    $dialog.find('input.filename-input').val(actions[action].displayName);
+    $dialog.find('input.filename-input').val(actions[action].displayName(self.name));
 
     $dialog.find('button.folder-button').click(function () {
 
@@ -317,11 +317,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     $dialog
         .dialog()
-        .keypress(function (event) {
-
-            event.keyCode === 13 && $dialog.find('.confirm-button').click()
-
-        });
+        .keypress(function (event) { event.keyCode === 13 && $dialog.find('.confirm-button').click() });
 
 };
 
@@ -393,11 +389,7 @@ FileObj.prototype.selector = function () {
                         window.open(fs_obj.links.self + '?download=true', '_self');
 
                     }),
-                    self.tableBtn('fas fa-trash', 'Delete', function () {
-
-                        fs_obj.delete(false, function () { $container.trigger('reload') })
-
-                    })
+                    self.tableBtn('fas fa-trash', 'Delete', function () { fs_obj.delete(false, function () { $container.trigger('reload') }) })
                 )
 
             },
@@ -409,7 +401,7 @@ FileObj.prototype.selector = function () {
                 if (self.links.root !== self.links.self) $table
                     .prepend(Templates['previous-folder-row']())
                     .find('td.previous-folder-link')
-                    .click(function () { Router.navigate(self.links.parent) })
+                    .click(function () { Router.navigate(self.links.parent) });
 
                 $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 

@@ -38,6 +38,10 @@ class FileHandler(ModelSerializerMixin):
         ]
     }
 
+    file_template = None
+
+    root_template = None
+
     skeleton = None
 
     def __init__(self, path, user):
@@ -205,8 +209,6 @@ class FileHandler(ModelSerializerMixin):
         fs_obj_list.sort(key=lambda x: x.path)
 
         return fs_obj_list
-
-        #return fs_obj_list
 
     @classmethod
     def factory(cls, root, path, user):
