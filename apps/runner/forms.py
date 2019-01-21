@@ -9,7 +9,7 @@ class JobForm(forms.ModelForm):
 
         model = Job
 
-        fields = ['name', 'folder', 'check', 'tags', 'skip_tags', 'subset', 'type', 'extra_vars', 'cred']
+        fields = ['path', 'check', 'tags', 'skip_tags', 'subset', 'type', 'extra_vars', 'cred']
 
 
 class AdHocTaskForm(forms.ModelForm):
@@ -27,4 +27,4 @@ class PlaybookArgsForm(forms.ModelForm):
 
         model = PlaybookArgs
 
-        fields = ['name', 'folder', 'subset', 'tags', 'skip_tags', 'extra_vars']
+        fields = ['path', 'subset', 'tags', 'skip_tags', 'extra_vars']

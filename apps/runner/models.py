@@ -16,9 +16,7 @@ class AdHocTask(models.Model):
 
 class PlaybookArgs(models.Model):
 
-    name = models.CharField(max_length=64)
-
-    path = models.CharField(max_length=256)
+    path = models.CharField(max_length=1024)
 
     tags = models.CharField(max_length=64, blank=True, null=True)
 
@@ -30,7 +28,7 @@ class PlaybookArgs(models.Model):
 
     class Meta:
 
-        unique_together = ('name','path', 'tags', 'subset', 'skip_tags', 'extra_vars')
+        unique_together = ('path', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
 class Job(models.Model):
@@ -47,9 +45,7 @@ class Job(models.Model):
 
     created_on = models.DateTimeField(auto_now_add=True)
 
-    name = models.CharField(max_length=128)
-
-    folder = models.CharField(max_length=256, blank=True, null=True)
+    path = models.CharField(max_length=1024, blank=True, null=True)
 
     pid = models.IntegerField(blank=True, null=True)
 
