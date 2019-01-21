@@ -22,9 +22,9 @@ class Node(models.Model, ModelSerializerMixin):
     def get_relationships(self, relation):
 
         relations = {
-            'parents': [getattr(self, 'group_set'), Group],
-            'children': [getattr(self, 'children'), Group],
-            'members': [getattr(self, 'members'), Host]
+            'parents': [getattr(self, 'group_set', None), Group],
+            'children': [getattr(self, 'children', None), Group],
+            'members': [getattr(self, 'members', None), Host]
         }
 
         return relations[relation]
@@ -143,6 +143,8 @@ class Group(Node):
 
     members = models.ManyToManyField('Host', blank=True)
 
+    config = models.BooleanField(default=False, blank=False)
+
     type = 'groups'
 
     route = '/inventory/groups'
@@ -192,6 +194,7 @@ class Group(Node):
     def serialize(self, fields, user):
 
         attributes = {
+            'config': self.config,
             'members': self.members.all().count() if self.id else None,
             'parents': self.group_set.all().count() if self.id else None,
             'children': self.children.all().count() if self.id else None,

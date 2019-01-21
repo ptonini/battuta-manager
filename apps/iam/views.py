@@ -309,42 +309,44 @@ class UserGroupView(View, ApiViewMixin):
 class RelationsView(View, ApiViewMixin):
 
     @staticmethod
-    def _get_relations(relation, obj_id, obj_type):
+    def _build_data(obj_type, obj_id, relation):
 
-        obj = get_object_or_404(LocalUser if obj_type == LocalUser.type else LocalGroup, pk=obj_id)
+        types = {
+            'users': {
+                'class': LocalUser,
+                'manager': 'user_set',
+                'sort': 'username'
+            },
+            'usergroups': {
+                'class': LocalGroup,
+                'manager': 'groups',
+                'sort': 'name'
+            }
+        }
 
-        if relation == LocalUser.type:
+        obj = get_object_or_404(types[obj_type]['class'], pk=obj_id)
 
-            return obj, obj.user_set, obj.user_set, LocalUser
+        r_class = types[relation]['class']
 
-        elif relation == LocalGroup.type:
+        r_manager = getattr(obj, types[relation]['manager']).order_by(types[relation]['sort'])
 
-            return obj, LocalGroup.objects.filter(user=obj), obj.groups, LocalGroup
+        return obj, r_class, r_manager
 
-
-    obj_types = {
-        'users': {'class': LocalUser, 'field': 'user_set', 'sort': 'username'},
-        'usergroups': {'class': LocalGroup, 'field': 'groups', 'sort': 'name'}
-    }
 
 
     def post(self, request, relation, obj_id, obj_type):
 
-        obj = get_object_or_404(self.obj_types[obj_type]['class'], pk=obj_id)
+        obj, r_class, r_manager = self._build_data(obj_type, obj_id, relation)
 
-        related_class = self.obj_types[relation]['class']
-
-        related_manager = getattr(obj, self.obj_types[relation]['field'])
-
-        if obj.authorizer(request.user)['editable'] and related_class().authorizer(request.user)['editable']:
+        if obj.authorizer(request.user)['editable'] and r_class().authorizer(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
-                new_relation = get_object_or_404(related_class, pk=selected['id'])
+                new_relation = get_object_or_404(r_class, pk=selected['id'])
 
                 if not getattr(new_relation, 'is_superuser', False):
 
-                    related_manager.add(new_relation)
+                    r_manager.add(new_relation)
 
             return HttpResponse(status=204)
 
@@ -354,17 +356,19 @@ class RelationsView(View, ApiViewMixin):
 
     def get(self, request, relation, obj_id, obj_type):
 
-        obj = get_object_or_404(self.obj_types[obj_type]['class'], pk=obj_id)
-
-        related_class = self.obj_types[relation]['class']
-
-        related_manager = getattr(obj, self.obj_types[relation]['field']).order_by(self.obj_types[relation]['sort'])
+        obj ,r_class, r_manager = self._build_data(obj_type, obj_id, relation)
 
         if request.JSON.get('related', True):
 
+            data = list()
+
             if obj.authorizer(request.user)['readable']:
 
-                data = [o.serialize(request.JSON.get('fields'), request.user) for o in related_manager.all() if not getattr(o, 'is_superuser', False)]
+                for r in r_manager.all():
+
+                    if not getattr(r, 'is_superuser', False):
+
+                        data.append(r_class.objects.get(pk=r.id).serialize(request.JSON.get('fields'), request.user))
 
             else:
 
@@ -374,25 +378,23 @@ class RelationsView(View, ApiViewMixin):
 
             data = list()
 
-            for o in related_class.objects.order_by(self.obj_types[relation]['sort']).exclude(pk__in=[related.id for related in related_manager.all()]):
+            for r in r_class.objects.exclude(pk__in=[related.id for related in r_manager.all()]):
 
-                if related_class().authorizer(request.user)['readable'] and not getattr(o, 'is_superuser', False):
+                if r_class().authorizer(request.user)['readable'] and not getattr(r, 'is_superuser', False):
 
-                    print(o.username)
-
-                    data.append(o.serialize(request.JSON.get('fields'), request.user))
+                    data.append(r.serialize(request.JSON.get('fields'), request.user))
 
         return self._api_response({'data': data})
 
     def delete(self, request, relation, obj_id, obj_type):
 
-        obj, related_set_out, related_set_in, related_class = self._get_relations(relation, obj_id, obj_type)
+        obj ,related_class, related_manager = self._build_data(obj_type, obj_id, relation)
 
         if obj.authorizer(request.user)['editable'] and related_class().authorizer(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
-                related_set_in.remove(get_object_or_404(related_class, pk=selected['id']))
+                related_manager.remove(get_object_or_404(related_class, pk=selected['id']))
 
             return HttpResponse(status=204)
 

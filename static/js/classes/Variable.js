@@ -20,6 +20,29 @@ Variable.prototype.templates = 'templates_Variable.html';
 
 
 
+Variable.prototype.internalVars = [
+    'ansible_connection',
+    'ansible_host',
+    'ansible_port',
+    'ansible_user',
+    'ansible_ssh_pass',
+    'ansible_ssh_private_key_file',
+    'ansible_ssh_common_args',
+    'ansible_sftp_extra_args',
+    'ansible_scp_extra_args',
+    'ansible_ssh_extra_args',
+    'ansible_ssh_pipelining',
+    'ansible_ssh_executable',
+    'ansible_become',
+    'ansible_become_method',
+    'ansible_become_user',
+    'ansible_become_pass',
+    'ansible_become_exe',
+    'ansible_become_flags',
+    'ansible_python_interpreter',
+    'ansible_shell_executable'
+];
+
 Variable.prototype.table = function ($container, node) {
 
     let self = this;
@@ -86,11 +109,7 @@ Variable.prototype.table = function ($container, node) {
                         .addClass('font-italic')
                         .css('cursor', 'pointer')
                         .attr('title', 'Open ' + data.meta.source.attributes.name)
-                        .click(function () {
-
-                            Router.navigate(data.meta.source.links.self)
-
-                        });
+                        .click(function () { Router.navigate(data.meta.source.links.self) });
 
                 }
 
@@ -103,11 +122,7 @@ Variable.prototype.table = function ($container, node) {
                     variable['meta']['editable'] && buttonCell.append(
                         self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
 
-                            variable.editor(function () {
-
-                                $table.DataTable().ajax.reload()
-
-                            })
+                            variable.editor(function () { $table.DataTable().ajax.reload() })
 
                         })
                     );
@@ -115,11 +130,7 @@ Variable.prototype.table = function ($container, node) {
                     variable['meta']['deletable'] && buttonCell.append(
                         self.tableBtn('fas fa-trash', 'Delete', function () {
 
-                            variable.delete(false, function () {
-
-                                $table.DataTable().ajax.reload()
-
-                            });
+                            variable.delete(false, function () { $table.DataTable().ajax.reload() });
 
                         })
                     );
@@ -247,6 +258,8 @@ Variable.prototype.entityDialog = function () {
     let $dialog = Main.prototype.confirmationDialog();
 
     $dialog.find('div.dialog-content').append(Templates['variable-form']());
+
+    $dialog.find('#key-input').autocomplete({source: this.internalVars});
 
     return $dialog
 };

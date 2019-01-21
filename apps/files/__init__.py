@@ -17,7 +17,7 @@ def validate_yaml(stream):
 file_types = {
     'any': {
         'ext': [],
-        'validator': lambda x: True,
+        'validator': lambda: True,
         're': '[^\/]*'
     },
     'yaml': {

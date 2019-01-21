@@ -137,9 +137,9 @@ class ManageView(View, ApiViewMixin):
 
                 groups, hosts = group.get_descendants()
 
-                descendants = [g for g in groups if len(g.variable_set.filter(key='pac_group', value='true'))]
+                descendants = [g for g in groups if g.config]
 
-                ancestors = [g for g in group.get_ancestors() if len(g.variable_set.filter(key='pac_group', value='true'))]
+                ancestors = [g for g in group.get_ancestors() if g.config]
 
                 group_uuid = None
 
@@ -455,11 +455,11 @@ class NodeView(View, ApiViewMixin):
 
     def post(self, request, node_id):
 
-        node = self.model_class()
+        node = getattr(self, 'model_class')()
 
         if node.authorizer(request.user)['editable']:
 
-            return self._api_response(self._save_instance(request, self.model_class()))
+            return self._api_response(self._save_instance(request, getattr(self, 'model_class')()))
 
         else:
 
@@ -469,7 +469,7 @@ class NodeView(View, ApiViewMixin):
 
         if node_id:
 
-            node = get_object_or_404(self.model_class, pk=node_id)
+            node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
             if node.authorizer(request.user)['readable']:
 
@@ -485,7 +485,7 @@ class NodeView(View, ApiViewMixin):
 
             filter_pattern = request.JSON.get('filter')
 
-            for node in self.model_class.objects.order_by('name').all():
+            for node in getattr(self, 'model_class').objects.order_by('name').all():
 
                 match_conditions = all({
                     not filter_pattern or node.name.find(filter_pattern) > -1,
@@ -500,7 +500,7 @@ class NodeView(View, ApiViewMixin):
 
     def patch(self, request, node_id):
 
-        node = get_object_or_404(self.model_class, pk=node_id)
+        node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
         if node.authorizer(request.user)['editable']:
 
@@ -514,7 +514,7 @@ class NodeView(View, ApiViewMixin):
 
         if node_id:
 
-            node = get_object_or_404(self.model_class, pk=node_id)
+            node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
             if node.authorizer(request.user)['deletable']:
 
@@ -532,13 +532,13 @@ class NodeView(View, ApiViewMixin):
 
             for node_dict in request.JSON.get('data'):
 
-                node = self.model_class.objects.get(pk=node_dict['id'])
+                node = getattr(self, 'model_class').objects.get(pk=node_dict['id'])
 
                 if node.authorizer(request.user)['deletable']:
 
                     id_list.append(node_dict['id'])
 
-            self.model_class.objects.filter(pk__in=id_list).delete()
+            getattr(self, 'model_class').objects.filter(pk__in=id_list).delete()
 
             return HttpResponse(status=204)
 

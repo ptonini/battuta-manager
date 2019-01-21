@@ -325,7 +325,7 @@ FileObj.prototype.edit = function () {
 
     let self = this;
 
-    return self.read().then(() => {
+    return self.read(false, {fields: {attributes: ['name', 'content']}}).then(() => {
 
         if (self.hasOwnProperty('content')) self.contentEditor();
 

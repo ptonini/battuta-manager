@@ -1,94 +1,104 @@
-function Runner() {
+function Runner() { return this; }
+
+Runner.prototype = Object.create(Main.prototype);
+
+Runner.prototype.constructor = Runner;
+
+Runner.prototype.templates = 'templates_Runner.html';
+
+Runner.prototype.view = function () {
 
     let self = this;
 
-    let $element;
+    let $container = $('section.container');
 
-    return self.fetchHtml('view_Runner.html', $('section.container')).then($template => {
+    console.log(self);
 
-        $element = $template;
+    Templates.load(self.templates).then(() => {
 
-        $element.find('#job_tabs').rememberTab();
+        $container.html(Templates['runner-view']());
 
-        $element.find('#adhoc_table').DataTable({
-            scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
-            scrollCollapse: true,
-            autoWidth: false,
-            pageLength: 50,
-            ajax: {
-                url: self.paths.api.adhoc + 'list/?pattern=',
-                dataSrc: 'task_list'
-            },
-            columns: [
-                {title: 'hosts', data: 'hosts', width: '20%'},
-                {title: 'module', data: 'module', width: '15%'},
-                {title: 'arguments', data: 'arguments', width: '45%'},
-                {title: 'sudo', data: 'become', width: '10%'},
-                {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
-            ],
-            paging: false,
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: '<span class="fas fa-plus fa-fw" title="Create task"></span>',
-                    className: 'btn-sm btn-icon',
-                    action: function () {
+        $container.find('#job_tabs').rememberTab();
 
-                        new AdHoc().dialog(function () {
-
-                            $('#adhoc_table').DataTable().ajax.reload()
-
-                        });
-
-                    }
-                }
-            ],
-            rowCallback: function (row, data) {
-
-                let adhoc = new AdHoc(data);
-
-                $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
-
-                $(row).find('td:eq(3)').prettyBoolean();
-
-                $(row).find('td:eq(4)').empty().append(
-                    // self.tableBtn('fas fa-cogs', 'Run', function () {
-                    //
-                    //     new Job(adhoc).run();
-                    //
-                    // }),
-                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
-
-                        adhoc.dialog(function () {
-
-                            $('#adhoc_table').DataTable().ajax.reload()
-
-                        });
-
-                    }),
-                    self.tableBtn('fas fa-clone', 'Copy', function () {
-
-                        adhoc.id = '';
-
-                        adhoc.save(function () {
-
-                            $('#adhoc_table').DataTable().ajax.reload()
-
-                        })
-
-                    }),
-                    self.tableBtn('fas fa-trash', 'Delete', function () {
-
-                        adhoc.del(function () {
-
-                            $('#adhoc_table').DataTable().ajax.reload()
-
-                        });
-                    })
-                )
-            }
-
-        });
+        // $container.find('#adhoc_table').DataTable({
+        //     scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
+        //     scrollCollapse: true,
+        //     autoWidth: false,
+        //     pageLength: 50,
+        //     ajax: {
+        //         url: self.paths.api.adhoc + 'list/?pattern=',
+        //         dataSrc: 'task_list'
+        //     },
+        //     columns: [
+        //         {title: 'hosts', data: 'hosts', width: '20%'},
+        //         {title: 'module', data: 'module', width: '15%'},
+        //         {title: 'arguments', data: 'arguments', width: '45%'},
+        //         {title: 'sudo', data: 'become', width: '10%'},
+        //         {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
+        //     ],
+        //     paging: false,
+        //     dom: 'Bfrtip',
+        //     buttons: [
+        //         {
+        //             text: '<span class="fas fa-plus fa-fw" title="Create task"></span>',
+        //             className: 'btn-sm btn-icon',
+        //             action: function () {
+        //
+        //                 new AdHoc().dialog(function () {
+        //
+        //                     $('#adhoc_table').DataTable().ajax.reload()
+        //
+        //                 });
+        //
+        //             }
+        //         }
+        //     ],
+        //     rowCallback: function (row, data) {
+        //
+        //         let adhoc = new AdHoc(data);
+        //
+        //         $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
+        //
+        //         $(row).find('td:eq(3)').prettyBoolean();
+        //
+        //         $(row).find('td:eq(4)').empty().append(
+        //             // self.tableBtn('fas fa-cogs', 'Run', function () {
+        //             //
+        //             //     new Job(adhoc).run();
+        //             //
+        //             // }),
+        //             self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+        //
+        //                 adhoc.dialog(function () {
+        //
+        //                     $('#adhoc_table').DataTable().ajax.reload()
+        //
+        //                 });
+        //
+        //             }),
+        //             self.tableBtn('fas fa-clone', 'Copy', function () {
+        //
+        //                 adhoc.id = '';
+        //
+        //                 adhoc.save(function () {
+        //
+        //                     $('#adhoc_table').DataTable().ajax.reload()
+        //
+        //                 })
+        //
+        //             }),
+        //             self.tableBtn('fas fa-trash', 'Delete', function () {
+        //
+        //                 adhoc.del(function () {
+        //
+        //                     $('#adhoc_table').DataTable().ajax.reload()
+        //
+        //                 });
+        //             })
+        //         )
+        //     }
+        //
+        // });
 
         return self.fetchJson('GET', self.paths.api.file + 'search/', {root: 'playbooks'})
 
@@ -104,7 +114,7 @@ function Runner() {
 
         }
 
-        $element.find('#playbook_list')
+        $container.find('#playbook_list')
             .change(function () {
 
                 let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
@@ -126,11 +136,7 @@ function Runner() {
             })
             .change();
 
-        });
+    });
 
-}
-
-Runner.prototype = Object.create(Main.prototype);
-
-Runner.prototype.constructor = Runner;
+};
 

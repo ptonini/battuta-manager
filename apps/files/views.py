@@ -7,8 +7,8 @@ from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFoun
 from django.core.exceptions import PermissionDenied
 from django.views.generic import View
 
-from apps.files.extras import FileHandler, FileHandlerException
 from main.extras.mixins import ApiViewMixin
+from apps.files.extras import FileHandler, FileHandlerException
 
 
 class FileView(View, ApiViewMixin):

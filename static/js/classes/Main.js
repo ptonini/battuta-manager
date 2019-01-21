@@ -415,7 +415,11 @@ Main.prototype = {
 
         let loadData = ($element, value) => {
 
+            let defaultValue = $element.data('default');
+
             if (value !== undefined && value !== null) {
+
+                if (value === '' && defaultValue) value = defaultValue;
 
                 if ($element.is('input, textarea, select')) $element.val(value);
 
@@ -987,31 +991,23 @@ Main.prototype = {
 
         }).then(() => {
 
-            self.bindElement($container);
-
             document.title = 'Battuta - ' + self.name;
 
-            $('#edit_button').toggleClass('d-none', !self.meta['editable']).click(function () {
+            $container.find('[data-bind="description"]').data('default', '<i>No description available</i>');
 
-                self.editor(function () {
+            self.bindElement($container);
 
-                    self.read(false)
+            $container.find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
 
-                });
-
-            });
-
-            $('#delete_button').toggleClass('d-none', !self.meta['deletable']).click(function () {
-
-                self.delete(false, function () {
-
-                    Router.navigate(Entities[self.type].href)
-
-                })
+                self.editor(function () { self.read(false) });
 
             });
 
-            self.description || $('[data-bind="description"]').html($('<small>').html($('<i>').html('No description available')));
+            $container.find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
+
+                self.delete(false, function () {  Router.navigate(Entities[self.type].href) })
+
+            });
 
             self.info && self.info($container.find("#info_container"));
 

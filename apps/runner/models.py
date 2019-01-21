@@ -18,7 +18,7 @@ class PlaybookArgs(models.Model):
 
     name = models.CharField(max_length=64)
 
-    folder = models.CharField(max_length=256, default='', blank=True)
+    path = models.CharField(max_length=256)
 
     tags = models.CharField(max_length=64, blank=True, null=True)
 
@@ -30,7 +30,7 @@ class PlaybookArgs(models.Model):
 
     class Meta:
 
-        unique_together = ('name', 'tags', 'subset', 'skip_tags', 'extra_vars')
+        unique_together = ('name','path', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
 class Job(models.Model):

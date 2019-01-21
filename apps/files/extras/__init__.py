@@ -3,7 +3,6 @@ import errno
 import magic
 import datetime
 import shutil
-import json
 import re
 
 from django.conf import settings
@@ -12,22 +11,26 @@ from django.core.exceptions import PermissionDenied
 
 from main.extras.mixins import ModelSerializerMixin
 from main.extras.signals import clear_authorizer
-from apps.files import file_types
+
 from apps.preferences.extras import get_preferences
 from apps.iam.extras import Authorizer
+
+from apps.files import file_types
 
 
 class FileHandler(ModelSerializerMixin):
 
+    root = 'repository'
+
     root_path = settings.REPOSITORY_PATH
 
-    root = 'repository'
+    root_route = 'files/repository'
 
     mime_types = {
         'editable': [
             '^text\/',
              '\/xml$',
-            '\/json$'
+            '\/json$',
             '^inode\/x-empty$',
         ],
         'archive': [
@@ -40,7 +43,7 @@ class FileHandler(ModelSerializerMixin):
 
     file_template = None
 
-    root_template = None
+    root_folder_template = None
 
     skeleton = None
 
@@ -73,45 +76,9 @@ class FileHandler(ModelSerializerMixin):
         self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
 
     @staticmethod
-    def _create_file(cls, path):
-
-        cls._copy_file(cls.file_template, path) if cls.file_template else open(path, 'w').close()
-
-    @staticmethod
-    def _create_folder(cls, path):
-
-        if cls.root_folder_template and os.path.dirname(path) == cls.root_path:
-
-            cls._copy_folder(cls.root_folder_template, path)
-
-        else:
-
-            os.makedirs(path)
-
-    @staticmethod
-    def _copy_file(source, path):
-
-        shutil.copy(source, path)
-
-    @staticmethod
-    def _copy_folder(source, path):
-
-        shutil.copytree(source, path)
-
-    @staticmethod
-    def _delete_file(path):
-
-        os.remove(path)
-
-    @staticmethod
-    def _delete_folder(path):
-
-        shutil.rmtree(path)
-
-    @staticmethod
     def _strip_trailing_slash(path):
 
-        return re.sub(r'/$', '', path)\
+        return re.sub(r'/$', '', path)
 
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):
@@ -150,7 +117,7 @@ class FileHandler(ModelSerializerMixin):
 
             errors.append(validation) if validation is not True else None
 
-        if fs_obj_type == 'file'and content:
+        if fs_obj_type == 'file' and content:
 
             for key, value in file_types.items():
 
@@ -165,22 +132,36 @@ class FileHandler(ModelSerializerMixin):
         return True if len(errors) == 0 else errors
 
     @classmethod
-    def _get_action(cls, action):
+    def _actions(cls, fs_object_type):
+
+        def create_file(path):
+
+            cls._actions('file')['copy'](cls.file_template, path) if cls.file_template else open(path, 'w').close()
+
+        def create_folder(path):
+
+            if cls.root_folder_template and os.path.dirname(path) == cls.root_path:
+
+                cls._actions('folder')['copy'](cls.root_folder_template, path)
+
+            else:
+
+                os.makedirs(path)
 
         actions = {
             'file': {
-                'create': cls._create_file,
-                'copy': cls._copy_file,
-                'delete': cls._delete_file
+                'create': create_file,
+                'copy': shutil.copy,
+                'delete': os.remove
             },
             'folder': {
-                'create': cls._create_folder,
-                'copy': cls._copy_folder,
-                'delete': cls._delete_folder
+                'create': create_folder,
+                'copy': shutil.copytree,
+                'delete': shutil.rmtree
             },
         }
 
-        return actions[action]
+        return actions[fs_object_type]
 
     @classmethod
     def get_root_class(cls, root):
@@ -218,21 +199,19 @@ class FileHandler(ModelSerializerMixin):
     @classmethod
     def create(cls, root, path, request):
 
-        root_path = cls.get_root_class(root).root_path
+        if cls.factory(root, os.path.split(path)[0], request.user).authorizer()['editable']:
 
-        source_dict = request.JSON.get('source', None)
+            root_path = cls.get_root_class(root).root_path
 
-        file_data = request.FILES.get('file_data', None)
+            source_dict = request.JSON.get('source', None)
 
-        fs_obj_type = request.JSON.get('data', {}).get('type', 'file')
+            file_data = request.FILES.get('file_data', None)
 
-        absolute_path = os.path.join(root_path, path)
+            fs_obj_type = request.JSON.get('data', {}).get('type', 'file')
 
-        validation = cls._validate(root, fs_obj_type, path, None)
+            absolute_path = os.path.join(root_path, path)
 
-        parent_path_obj = cls.factory(root, os.path.split(path)[0], request.user)
-
-        if parent_path_obj.authorizer()['editable']:
+            validation = cls._validate(root, fs_obj_type, path, None)
 
             if validation is True:
 
@@ -241,7 +220,6 @@ class FileHandler(ModelSerializerMixin):
                     with open(absolute_path, 'wb') as f:
 
                         for chunk in file_data:
-
                             f.write(chunk)
 
                 elif source_dict:
@@ -250,7 +228,7 @@ class FileHandler(ModelSerializerMixin):
 
                     if source.authorizer()['readable']:
 
-                        cls._get_action(fs_obj_type)['copy'](source.absolute_path, absolute_path)
+                        cls._actions(fs_obj_type)['copy'](source.absolute_path, absolute_path)
 
                     else:
 
@@ -258,7 +236,7 @@ class FileHandler(ModelSerializerMixin):
 
                 else:
 
-                    cls._get_action(fs_obj_type)['create'](cls.get_root_class(root), absolute_path)
+                    cls._actions(fs_obj_type)['create'](absolute_path)
 
                 clear_authorizer.send(cls)
 
@@ -333,7 +311,7 @@ class FileHandler(ModelSerializerMixin):
 
         if self.authorizer()['deletable']:
 
-            self._get_action(self.type)['delete'](self.absolute_path)
+            self._actions(self.type)['delete'](self.absolute_path)
 
             clear_authorizer.send(self.__class__)
 
@@ -345,6 +323,8 @@ class FileHandler(ModelSerializerMixin):
 
         prefs = get_preferences()
 
+        file_content = None
+
         attributes = {
             'name': self.name,
             'size': os.path.getsize(self.absolute_path) if self.type == 'file' else 0,
@@ -355,27 +335,32 @@ class FileHandler(ModelSerializerMixin):
         }
 
         links = {
-            'self': '/'.join(filter(None, ['/files', self.root, self.path])),
-            'parent': '/'.join(filter(None, ['/files', self.root, self.parent_path])) if self.path else None,
-            'root': '/'.join(['/files', self.root])
+            'self': '/'.join(filter(None, [self.root_route, self.path])),
+            'parent': '/'.join(filter(None, [self.root_route, self.parent_path])) if self.path else None,
+            'root': self.root_route,
         }
 
-        read_conditions = [
-            fields and 'content' in fields.get('attribute', []) or prefs['validate_content_on_read'],
+        content_is_readable = all([
             self.type == 'file',
             re.match('|'.join(self.mime_types['editable']), attributes.get('mime_type')),
-            attributes['size'] <= prefs['max_edit_size']
-        ]
+            attributes['size'] <= prefs['max_edit_size'],
+        ])
 
-        if all(read_conditions):
+        content_is_requested = fields and 'content' in fields.get('attributes', [])
+
+        if content_is_readable and (content_is_requested or prefs['validate_content_on_read']):
 
             with open(self.absolute_path, 'r') as f:
 
-                attributes['content'] = f.read()
+                file_content = f.read()
+
+            if content_is_requested:
+
+                attributes['content'] = file_content
 
         meta = self.authorizer()
 
-        meta['valid'] = self._validate(self.root, self.type, self.path, attributes.get('content'))
+        meta['valid'] = self._validate(self.root, self.type, self.path, file_content)
 
         return self._serializer(fields, attributes, links, meta)
 
@@ -383,15 +368,11 @@ class FileHandler(ModelSerializerMixin):
 
         authorizer = caches['authorizer'].get_or_set(self.user.username, Authorizer(self.user))
 
-        readable = any([
-            authorizer.can_view_fs_obj(self.absolute_path, self.type),
-            self.user.has_perm('users.edit_' + 'files' if self.root == 'repository' else self.root)
-        ])
+        group_auth = self.user.has_perm('users.edit_' + 'files' if self.root == 'repository' else self.root)
 
-        editable = any([
-            authorizer.can_edit_fs_obj(self.absolute_path, self.type),
-            self.user.has_perm('users.edit_' + 'files' if self.root == 'repository' else self.root)
-        ])
+        readable = any([authorizer.can_view_fs_obj(self.absolute_path, self.type), group_auth])
+
+        editable = any([authorizer.can_edit_fs_obj(self.absolute_path, self.type), group_auth])
 
         deletable = editable
 
@@ -414,11 +395,13 @@ class FileHandler(ModelSerializerMixin):
 
 class PlaybookHandler(FileHandler):
 
+    root = 'playbooks'
+
     root_path = settings.PLAYBOOK_PATH
 
-    file_template = settings.PLAYBOOK_TEMPLATE
+    root_route = 'files/playbooks'
 
-    root = 'playbooks'
+    file_template = settings.PLAYBOOK_TEMPLATE
 
     skeleton = [
         {'folder': None, 'file': file_types['yaml']['re']},
@@ -428,11 +411,13 @@ class PlaybookHandler(FileHandler):
 
 class RoleHandler(FileHandler):
 
+    root = 'roles'
+
     root_path = settings.ROLES_PATH
 
-    root_folder_template = settings.ROLE_TEMPLATE
+    root_route = 'files/roles'
 
-    root = 'roles'
+    root_folder_template = settings.ROLE_TEMPLATE
 
     skeleton = [
         {'folder': '[^\/]*', 'file': None},

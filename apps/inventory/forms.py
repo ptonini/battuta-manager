@@ -18,7 +18,7 @@ class GroupForm(forms.ModelForm):
 
         model = Group
 
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'config']
 
 
 class VariableForm(forms.ModelForm):

@@ -19,6 +19,7 @@ body {
     color: var(--main-font-color);
 }
 
+
 /* Fonts *****************************/
 
 @font-face {
@@ -56,6 +57,12 @@ div.item-value,
     text-transform: capitalize;
 }
 
+button.toggle-config-button {
+    color: var(--main-font-color);
+    font-family: "Headers", sans-serif !important;
+    font-size: smaller;
+}
+
 /* FontAwesome icons ******************/
 
 button .fas, button .far, button .fal, button .fab {
@@ -74,7 +81,6 @@ a.pattern-tab.nav-link.active {
 a.pattern-grid {
     font-size: .875rem
 }
-
 
 /* Tabs  *****************************/
 

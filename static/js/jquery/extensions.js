@@ -130,11 +130,9 @@ $.fn.prettyBoolean = function () {
 };
 
 
-function humanBytes(value, unit) {
+function humanBytes(value, unit='B') {
 
     if (value) {
-
-        if (!unit) unit = 'B';
 
         let sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 
