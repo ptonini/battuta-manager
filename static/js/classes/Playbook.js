@@ -33,6 +33,48 @@ Playbook.prototype.tableButtons = function (self) {
 
 };
 
+
+Playbook.prototype.selectorField = function ($selector) {
+
+    let self = this;
+
+    self.read(true, {list: true}).then(result => {
+
+        for (let i = 0; i < result.data.length; i++) {
+
+            $selector.append(
+                $('<option>').data(result.data[i]).attr('value', result.data[i].attributes.path).html(result.data[i].attributes.path)
+            );
+
+        }
+
+        // $container.find('#playbook_list')
+        //     .change(function () {
+        //
+        //         let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
+        //
+        //         if (file_data) {
+        //
+        //             let playbook = new Playbook(file_data);
+        //
+        //             $('#edit_playbook').off().click(function () {
+        //
+        //                 playbook.edit()
+        //
+        //             });
+        //
+        //             playbook.form($('#playbook_args'));
+        //
+        //         }
+        //
+        //     })
+        //     .change();
+
+    });
+
+
+}
+
 // Playbook.prototype.form = function ($container, args) {
 //
 //     let self = this;

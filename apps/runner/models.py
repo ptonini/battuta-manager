@@ -16,7 +16,7 @@ class AdHocTask(models.Model):
 
 class PlaybookArgs(models.Model):
 
-    path = models.CharField(max_length=1024)
+    path = models.CharField(max_length=512)
 
     tags = models.CharField(max_length=64, blank=True, null=True)
 
@@ -45,7 +45,7 @@ class Job(models.Model):
 
     created_on = models.DateTimeField(auto_now_add=True)
 
-    path = models.CharField(max_length=1024, blank=True, null=True)
+    path = models.CharField(max_length=512, blank=True, null=True)
 
     pid = models.IntegerField(blank=True, null=True)
 

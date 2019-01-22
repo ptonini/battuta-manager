@@ -65,9 +65,7 @@ class FileView(View, ApiViewMixin):
 
                 else:
 
-                    archive_name = os.path.join(tempfile.gettempdir(), fs_obj.name)
-
-                    target = shutil.make_archive(archive_name, 'zip', fs_obj.absolute_path)
+                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), fs_obj.name), 'zip', fs_obj.absolute_path)
 
                 stream = StreamingHttpResponse((line for line in open(target, 'rb')))
 
@@ -78,6 +76,18 @@ class FileView(View, ApiViewMixin):
                 os.remove(target) if fs_obj.type == 'folder' else None
 
                 return stream
+
+            elif request.GET.get('list', False):
+
+                data = list()
+
+                for f in FileHandler.get_root_class(root).list(request.user):
+
+                    if f.authorizer()['readable']:
+
+                        data.append(f.serialize({'attributes': ['path'], 'links': ['self', 'args']}))
+
+                return self._api_response({'data': data})
 
             else:
 
