@@ -14,6 +14,7 @@ div.dynagrid-item {
     border: thin solid #F8F8F8;
     display: flex;
     align-items: center;
+    word-break: break-all !important;
 }
 
 div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}

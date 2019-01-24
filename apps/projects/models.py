@@ -103,7 +103,7 @@ class Project(models.Model, ModelSerializerMixin):
 
     def get_fs_obj_relations(self, relation, user, related=True):
 
-        related_list = json.loads(getattr(self, relation))
+        related_list = FileHandler.sort_path_list(json.loads(getattr(self, relation)))
 
         if related:
 
@@ -130,8 +130,6 @@ class Project(models.Model, ModelSerializerMixin):
         else:
 
             output = [f for f in FileHandler.get_root_class(relation).list(user) if f.path not in related_list]
-
-        output.sort(key=lambda f: f.path)
 
         return output
 

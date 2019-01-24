@@ -80,6 +80,23 @@ class FileHandler(ModelSerializerMixin):
 
         return re.sub(r'/$', '', path)
 
+    @staticmethod
+    def sort_path_list(path_list):
+
+        root_file_list = list()
+
+        subfolder_file_list = list()
+
+        for path in path_list:
+
+            root_file_list.append(path) if '/' not in path else subfolder_file_list.append(path)
+
+        root_file_list.sort()
+
+        subfolder_file_list.sort(key=lambda f: os.path.basename(f))
+
+        return root_file_list + subfolder_file_list
+
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):
 
@@ -174,22 +191,19 @@ class FileHandler(ModelSerializerMixin):
 
         return roots[root]
 
+
     @classmethod
     def list(cls, user):
 
-        fs_obj_list = list()
+        path_list = list()
 
         for root, dirs, files in os.walk(cls.root_path):
 
             for file_name in files:
 
-                file_path = file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name)
+                path_list.append(file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name))
 
-                fs_obj_list.append(cls(file_path, user))
-
-        fs_obj_list.sort(key=lambda x: x.path)
-
-        return fs_obj_list
+        return [cls(p, user) for p in cls.sort_path_list(path_list)]
 
     @classmethod
     def factory(cls, root, path, user):
@@ -220,6 +234,7 @@ class FileHandler(ModelSerializerMixin):
                     with open(absolute_path, 'wb') as f:
 
                         for chunk in file_data:
+
                             f.write(chunk)
 
                 elif source_dict:
@@ -422,6 +437,7 @@ class RoleHandler(FileHandler):
     skeleton = [
         {'folder': '[^\/]*', 'file': None},
         {'folder': '.*\/(defaults|handlers|meta|tasks|vars)', 'file': file_types['yaml']['re']},
+        {'folder': '.*\/(defaults|handlers|meta|tasks|vars)\/.*', 'file': file_types['yaml']['re']},
         {'folder': '.*\/(files|templates)', 'file': file_types['any']['re']},
         {'folder': '.*\/(files|templates)\/.*', 'file': file_types['any']['re']},
     ]
