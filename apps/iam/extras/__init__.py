@@ -91,7 +91,7 @@ class Authorizer:
 
                 playbook = PlaybookHandler(p, self._user)
 
-                self._runnable_playbooks.add(playbook)
+                self._runnable_playbooks.add(playbook.absolute_path)
 
                 self._readable_files.add(playbook.absolute_path)
 
@@ -127,21 +127,21 @@ class Authorizer:
 
         return inventory.get_host_names(pattern).issubset(self._editable_task_hosts)
 
-    def can_run_playbooks(self, inventory, playbook_path):
+    def can_run_playbooks(self, inventory, path):
 
         from apps.files.extras import PlaybookHandler
 
-        playbook = PlaybookHandler(playbook_path, self._user)
+        playbook = PlaybookHandler(path, self._user)
 
-        with open(os.path.join(playbook_path), 'r') as playbook_file:
+        playbook_dict = playbook.parse()
 
-            auth = set()
+        conditions = [path in self._runnable_playbooks]
 
-            for pattern in [play['hosts'] for play in yaml.load(playbook_file.read())]:
+        for pattern in [play['hosts'] for play in playbook_dict]:
 
-                auth.add(inventory.get_host_names(pattern).issubset(self._runnable_task_hosts))
+            conditions.add(inventory.get_host_names(pattern).issubset(self._runnable_task_hosts))
 
-        return True if playbook_path in self._runnable_playbooks and False not in auth else False
+        return all(conditions)
 
     def can_view_fs_obj(self, path, fs_obj_type):
 

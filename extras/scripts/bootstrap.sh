@@ -5,7 +5,6 @@ update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password battuta'
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password battuta'
 apt update
-#apt -y upgrade
 apt -y install curl software-properties-common dirmngr
 apt-key adv --no-tty --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
 add-apt-repository 'deb http://mirror.ufscar.br/mariadb/repo/10.3/debian stretch main'

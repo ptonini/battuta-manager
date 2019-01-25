@@ -34,11 +34,11 @@ Playbook.prototype.tableButtons = function (self) {
 };
 
 
-Playbook.prototype.playbookForm = function ($playbookForm, $argsForm) {
+Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 
     let self = this;
 
-    let $playbookSelector = $playbookForm.find('select#playbook-list');
+    let $playbookSelector = $playbookForm.find('select.playbook-selector');
 
     self.read(true, {list: true}).then(result => {
 
@@ -52,19 +52,17 @@ Playbook.prototype.playbookForm = function ($playbookForm, $argsForm) {
 
         $playbookSelector.change(function () {
 
-            let args = new PlaybookArgs({links: {self: self.links.args}});
+            let playbook = new Playbook($(this).find(':selected').data());
 
-            args.argsForm($argsForm)
+            let args = new PlaybookArgs({links: {self: playbook.links.args}});
 
-            // $('#edit_playbook').off().click(function () {
-            //
-            //     playbook.edit()
-            //
-            // });
-            //
-            // playbook.form($('#playbook_args'));
+            args.argsForm($argsForm);
 
+            $playbookForm.find('button.edit-playbook-button').off().click(function () {
 
+                Templates.load(FileObj.prototype.templates).then(() => playbook.edit());
+
+            });
 
         }).change();
 

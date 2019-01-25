@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.cache import caches
+from django.core.cache import caches, cache
 
 from main.extras.mixins import ModelSerializerMixin
 from apps.inventory.extras import AnsibleInventory
@@ -52,9 +52,11 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
         authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
 
+        inventory = cache.get_or_set('inventory', AnsibleInventory())
+
         readable = [
             user.has_perm('users.execute_jobs'),
-            authorizer.can_run_playbooks(AnsibleInventory(), self.path)
+            authorizer.can_run_playbooks(inventory, self.path)
         ]
 
         editable = readable

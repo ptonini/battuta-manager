@@ -4,6 +4,7 @@ import magic
 import datetime
 import shutil
 import re
+import yaml
 
 from django.conf import settings
 from django.core.cache import caches
@@ -422,6 +423,18 @@ class PlaybookHandler(FileHandler):
         {'folder': '.*', 'file': file_types['yaml']['re']}
     ]
 
+    def parse(self):
+
+        if self.type == 'file':
+
+            with open(os.path.join(self.absolute_path), 'r') as f:
+
+                return yaml.load(f.read())
+
+        else:
+
+            raise FileHandlerException(['Can only parse playbook files'])
+
     def serialize(self, fields=None):
 
         links = {'args': '/'.join(['runner', str(self.id), 'args'])}
@@ -457,6 +470,8 @@ class RoleHandler(FileHandler):
         fs_obj_list.sort(key=lambda f: f.path)
 
         return fs_obj_list
+
+
 
 
 class FileHandlerException(Exception):

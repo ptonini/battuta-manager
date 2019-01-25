@@ -21,9 +21,9 @@ Runner.prototype.view = function () {
 
         $container.find('#job_tabs').rememberTab();
 
-        let playbookRoot = new Playbook({links: {self: Entities['playbooks'].href}});
+        let playbook = new Playbook({links: {self: Entities['playbooks'].href}});
 
-        playbookRoot.playbookForm($container.find('form.playbook-form'), $container.find('form.args-form'))
+        playbook.buildSelector($container.find('div.playbook-selector-container'), $container.find('form.args-form'))
 
         // self.fetchJson('GET', '/runner/playbooks').then(result => {
         //

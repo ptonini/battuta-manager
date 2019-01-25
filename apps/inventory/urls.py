@@ -2,13 +2,13 @@ from django.urls import path
 from django.contrib.auth.decorators import login_required
 
 from apps.inventory.models import Host, Group, Variable
-from apps.inventory.views import InventoryView, ManageView, HostView, GroupView, VariableView, RelationsView
+from apps.inventory.views import InventoryView, ManagerView, HostView, GroupView, VariableView, RelationsView
 
 urlpatterns = [
 
     path('', InventoryView.as_view()),
 
-    path('manage', login_required(ManageView.as_view())),
+    path('manage', login_required(ManagerView.as_view())),
 
     path(Host.type, login_required(HostView.as_view()), kwargs={'node_id': None}),
 

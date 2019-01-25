@@ -6,13 +6,13 @@ import shutil
 import configparser
 import yaml
 import uuid
+from xml.etree.ElementTree import ElementTree, Element, SubElement
 
-from ruamel import yaml
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
-from xml.etree.ElementTree import ElementTree, Element, SubElement
+from django.core.cache import cache
 
 from apps.inventory.models import Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
@@ -40,7 +40,7 @@ class InventoryView(View):
             return HttpResponseForbidden()
 
 
-class ManageView(View, ApiViewMixin):
+class ManagerView(View, ApiViewMixin):
 
     @staticmethod
     def _create_node_var_file(node, folder):
@@ -602,7 +602,7 @@ class VariableView(View, ApiViewMixin):
 
             variables = dict()
 
-            inventory = AnsibleInventory()
+            inventory = cache.get_or_set('inventory', AnsibleInventory())
 
             for var in node.variable_set.all():
 
