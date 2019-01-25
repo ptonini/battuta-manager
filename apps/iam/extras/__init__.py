@@ -129,6 +129,10 @@ class Authorizer:
 
     def can_run_playbooks(self, inventory, playbook_path):
 
+        from apps.files.extras import PlaybookHandler
+
+        playbook = PlaybookHandler(playbook_path, self._user)
+
         with open(os.path.join(playbook_path), 'r') as playbook_file:
 
             auth = set()

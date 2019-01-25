@@ -49,7 +49,6 @@ from apps.inventory.extras import AnsibleInventory
 
 class PlaybookView(View, ApiViewMixin):
 
-
     def get(self, request):
 
         data = list()
@@ -61,35 +60,6 @@ class PlaybookView(View, ApiViewMixin):
                 data.append(p.serialize({'attributes': ['path'], 'links': ['self', 'args']}))
 
         return self._api_response({'data': data})
-
-
-
-
-        # project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
-        #
-        # playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['name'])
-        #
-        # if request.user.has_perm('users.execute_jobs') or project_auth.can_run_playbooks(AnsibleInventory(), playbook_path):
-        #
-        #     if action == 'getArgs':
-        #
-        #         args_list = list()
-        #
-        #         for args in PlaybookArgs.objects.filter(name=request.GET['name'], folder=request.GET['folder']).values():
-        #
-        #             args_list.append(args)
-        #
-        #         data = {'status': 'ok', 'args': args_list}
-        #
-        #     else:
-        #
-        #         return HttpResponseNotFound('Invalid action')
-        #
-        # else:
-        #
-        #     data = {'status': 'denied'}
-        #
-        # return HttpResponse(json.dumps(data), content_type='application/json')
 
     @staticmethod
     def post(request, action):
@@ -163,8 +133,38 @@ class PlaybookView(View, ApiViewMixin):
 
 class PlaybookArgsView(View, ApiViewMixin):
 
-    pass
-#
+    def get(self, request, path):
+
+        # project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
+        #
+        # playbook_path = os.path.join(settings.PLAYBOOK_PATH, request.GET['folder'], request.GET['name'])
+        #
+        # if request.user.has_perm('users.execute_jobs') or project_auth.can_run_playbooks(AnsibleInventory(), playbook_path):
+        #
+        #     if action == 'getArgs':
+        #
+        #         args_list = list()
+        #
+        #         for args in PlaybookArgs.objects.filter(name=request.GET['name'], folder=request.GET['folder']).values():
+        #
+        #             args_list.append(args)
+        #
+        #         data = {'status': 'ok', 'args': args_list}
+        #
+        #     else:
+        #
+        #         return HttpResponseNotFound('Invalid action')
+        #
+        # else:
+        #
+        #     data = {'status': 'denied'}
+        #
+        # return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+        return self._api_response({'data': data})
+
+
 # class JobView(View):
 #
 #     @staticmethod

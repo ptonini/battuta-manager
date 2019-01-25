@@ -7,7 +7,7 @@ urlpatterns = [
 
     path('playbooks', login_required(PlaybookView.as_view())),
 
-    re_path(r'^playbooks/(?P<path>(?s).*)/args$', login_required(PlaybookArgsView.as_view()), kwargs={'root': 'playbooks'}),
+    re_path(r'^playbooks/(?P<path>(?s).*)/args$', login_required(PlaybookArgsView.as_view())),
 
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #

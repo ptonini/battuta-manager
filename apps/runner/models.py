@@ -1,9 +1,13 @@
 from django.db import models
+from django.core.cache import caches
 
+from main.extras.mixins import ModelSerializerMixin
+from apps.inventory.extras import AnsibleInventory
+from apps.iam.extras import Authorizer
 from apps.iam.models import LocalUser, Credential
 
 
-class AdHocTask(models.Model):
+class AdHocTask(models.Model, ModelSerializerMixin):
 
     hosts = models.CharField(max_length=64, blank=True)
 
@@ -14,7 +18,7 @@ class AdHocTask(models.Model):
     become = models.BooleanField()
 
 
-class PlaybookArgs(models.Model):
+class PlaybookArgs(models.Model, ModelSerializerMixin):
 
     path = models.CharField(max_length=512)
 
@@ -26,12 +30,46 @@ class PlaybookArgs(models.Model):
 
     extra_vars = models.CharField(max_length=128, blank=True, null=True)
 
+    def serialize(self, fields, user):
+
+        attributes = {
+            'path': self.path,
+            'tags': self.tags,
+            'skip_tags': self.skip_tags,
+            'subset': self.subset,
+            'extra_vars': self.extra_vars
+        }
+
+        links = {'self': '/'.join(['runner/playbooks', self.path, str(self.id)])}
+
+        meta = self.authorizer(user)
+
+        data = self._serializer(fields, attributes, links, meta)
+
+        return data
+
+    def authorizer(self, user):
+
+        authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
+
+        readable = [
+            user.has_perm('users.execute_jobs'),
+            authorizer.can_run_playbooks(AnsibleInventory(), self.path)
+        ]
+
+        editable = readable
+
+        deletable = readable
+
+        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+
+
     class Meta:
 
         unique_together = ('path', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
-class Job(models.Model):
+class Job(models.Model, ModelSerializerMixin):
 
     user = models.ForeignKey(LocalUser, on_delete=models.CASCADE)
 
@@ -66,7 +104,7 @@ class Job(models.Model):
     stats = models.TextField(max_length=4096, blank=True, null=True)
 
 
-class Play(models.Model):
+class Play(models.Model, ModelSerializerMixin):
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
@@ -81,7 +119,7 @@ class Play(models.Model):
     message = models.CharField(max_length=1024, blank=True, null=True)
 
 
-class Task(models.Model):
+class Task(models.Model, ModelSerializerMixin):
 
     play = models.ForeignKey(Play, on_delete=models.CASCADE)
 
@@ -94,7 +132,7 @@ class Task(models.Model):
     is_running = models.BooleanField(default=False)
 
 
-class Result(models.Model):
+class Result(models.Model, ModelSerializerMixin):
 
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
