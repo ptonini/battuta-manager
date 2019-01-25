@@ -80,23 +80,6 @@ class FileHandler(ModelSerializerMixin):
 
         return re.sub(r'/$', '', path)
 
-    @staticmethod
-    def sort_path_list(path_list):
-
-        root_file_list = list()
-
-        subfolder_file_list = list()
-
-        for path in path_list:
-
-            root_file_list.append(path) if '/' not in path else subfolder_file_list.append(path)
-
-        root_file_list.sort()
-
-        subfolder_file_list.sort(key=lambda f: os.path.basename(f))
-
-        return root_file_list + subfolder_file_list
-
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):
 
@@ -149,17 +132,17 @@ class FileHandler(ModelSerializerMixin):
         return True if len(errors) == 0 else errors
 
     @classmethod
-    def _actions(cls, fs_object_type):
+    def _action(cls, fs_object_type):
 
         def create_file(path):
 
-            cls._actions('file')['copy'](cls.file_template, path) if cls.file_template else open(path, 'w').close()
+            cls._action('file')['copy'](cls.file_template, path) if cls.file_template else open(path, 'w').close()
 
         def create_folder(path):
 
             if cls.root_folder_template and os.path.dirname(path) == cls.root_path:
 
-                cls._actions('folder')['copy'](cls.root_folder_template, path)
+                cls._action('folder')['copy'](cls.root_folder_template, path)
 
             else:
 
@@ -180,6 +163,23 @@ class FileHandler(ModelSerializerMixin):
 
         return actions[fs_object_type]
 
+    @staticmethod
+    def sort_path_list(path_list):
+
+        root_file_list = list()
+
+        subfolder_file_list = list()
+
+        for path in path_list:
+
+            root_file_list.append(path) if '/' not in path else subfolder_file_list.append(path)
+
+        root_file_list.sort()
+
+        subfolder_file_list.sort(key=lambda f: os.path.basename(f))
+
+        return root_file_list + subfolder_file_list
+
     @classmethod
     def get_root_class(cls, root):
 
@@ -190,7 +190,6 @@ class FileHandler(ModelSerializerMixin):
         }
 
         return roots[root]
-
 
     @classmethod
     def list(cls, user):
@@ -243,7 +242,7 @@ class FileHandler(ModelSerializerMixin):
 
                     if source.authorizer()['readable']:
 
-                        cls._actions(fs_obj_type)['copy'](source.absolute_path, absolute_path)
+                        cls._action(fs_obj_type)['copy'](source.absolute_path, absolute_path)
 
                     else:
 
@@ -251,7 +250,7 @@ class FileHandler(ModelSerializerMixin):
 
                 else:
 
-                    cls._actions(fs_obj_type)['create'](absolute_path)
+                    cls._action(fs_obj_type)['create'](absolute_path)
 
                 clear_authorizer.send(cls)
 
@@ -326,7 +325,7 @@ class FileHandler(ModelSerializerMixin):
 
         if self.authorizer()['deletable']:
 
-            self._actions(self.type)['delete'](self.absolute_path)
+            self._action(self.type)['delete'](self.absolute_path)
 
             clear_authorizer.send(self.__class__)
 
@@ -422,6 +421,14 @@ class PlaybookHandler(FileHandler):
         {'folder': None, 'file': file_types['yaml']['re']},
         {'folder': '.*', 'file': file_types['yaml']['re']}
     ]
+
+    def serialize(self, fields=None):
+
+        links = {'args': '/'.join(['runner', str(self.id), 'args'])}
+
+        data = self._serializer(fields, {}, links, {}, super(PlaybookHandler, self).serialize(fields))
+
+        return data
 
 
 class RoleHandler(FileHandler):

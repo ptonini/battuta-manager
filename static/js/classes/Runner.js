@@ -23,7 +23,7 @@ Runner.prototype.view = function () {
 
         let playbookRoot = new Playbook({links: {self: Entities['playbooks'].href}});
 
-        playbookRoot.selectorField($container.find('#playbook_list'))
+        playbookRoot.playbookForm($container.find('form.playbook-form'), $container.find('form.args-form'))
 
         // self.fetchJson('GET', '/runner/playbooks').then(result => {
         //

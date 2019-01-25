@@ -1,11 +1,13 @@
-from django.urls import path
+from django.urls import path, re_path
 from django.contrib.auth.decorators import login_required
 
-from apps.runner.views import PlaybookView
+from apps.runner.views import PlaybookView, PlaybookArgsView
 
 urlpatterns = [
 
     path('playbooks', login_required(PlaybookView.as_view())),
+
+    re_path(r'^playbooks/(?P<path>(?s).*)/args$', login_required(PlaybookArgsView.as_view()), kwargs={'root': 'playbooks'}),
 
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #

@@ -1,4 +1,4 @@
-function Credential(param) {
+function PlaybookArgs(param) {
 
     Main.call(this, param);
 
@@ -6,21 +6,21 @@ function Credential(param) {
 
 }
 
-Credential.prototype = Object.create(Main.prototype);
+PlaybookArgs.prototype = Object.create(Main.prototype);
 
-Credential.prototype.constructor = Credential;
-
-
-
-Credential.prototype.type = 'creds';
-
-Credential.prototype.label = {single: 'credential', plural: 'credentials'};
-
-Credential.prototype.templates = 'templates_Credential.html';
+PlaybookArgs.prototype.constructor = PlaybookArgs;
 
 
 
-Credential.prototype.selector = function ($container) {
+PlaybookArgs.prototype.type = 'arguments';
+
+PlaybookArgs.prototype.label = {single: 'arguments', plural: 'arguments'};
+
+PlaybookArgs.prototype.templates = 'templates_PlaybookArgs.html';
+
+
+
+PlaybookArgs.prototype.selector = function ($container) {
 
     let self = this;
 
@@ -38,7 +38,7 @@ Credential.prototype.selector = function ($container) {
 
 };
 
-Credential.prototype.buildSelector = function ($selector, $formContainer, startValue) {
+PlaybookArgs.prototype.buildSelector = function ($selector, $formContainer, startValue) {
 
     let self = this;
 
@@ -100,7 +100,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
             if ($formContainer) {
 
-                let cred = new Credential($(this).find(':selected').data());
+                let cred = new PlaybookArgs($(this).find(':selected').data());
 
                 $formContainer.html(Templates['credential-form']());
 
@@ -112,7 +112,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                         $selector.trigger('build', response.data.id);
 
-                        Main.prototype.statusAlert('success', 'Credential saved')
+                        Main.prototype.statusAlert('success', 'PlaybookArgs saved')
 
                     };
 
@@ -143,3 +143,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
     $selector.trigger('build', startValue);
 
 };
+
+PlaybookArgs.prototype.argsForm = function ($form) {
+
+}

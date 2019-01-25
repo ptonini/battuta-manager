@@ -159,6 +159,11 @@ class PlaybookView(View, ApiViewMixin):
         #     data = {'status': 'denied'}
         #
         # return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+class PlaybookArgsView(View, ApiViewMixin):
+
+    pass
 #
 # class JobView(View):
 #

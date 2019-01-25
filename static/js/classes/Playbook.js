@@ -34,19 +34,39 @@ Playbook.prototype.tableButtons = function (self) {
 };
 
 
-Playbook.prototype.selectorField = function ($selector) {
+Playbook.prototype.playbookForm = function ($playbookForm, $argsForm) {
 
     let self = this;
+
+    let $playbookSelector = $playbookForm.find('select#playbook-list');
 
     self.read(true, {list: true}).then(result => {
 
         for (let i = 0; i < result.data.length; i++) {
 
-            $selector.append(
+            $playbookSelector.append(
                 $('<option>').data(result.data[i]).attr('value', result.data[i].attributes.path).html(result.data[i].attributes.path)
             );
 
         }
+
+        $playbookSelector.change(function () {
+
+            let args = new PlaybookArgs({links: {self: self.links.args}});
+
+            args.argsForm($argsForm)
+
+            // $('#edit_playbook').off().click(function () {
+            //
+            //     playbook.edit()
+            //
+            // });
+            //
+            // playbook.form($('#playbook_args'));
+
+
+
+        }).change();
 
         // $container.find('#playbook_list')
         //     .change(function () {
@@ -81,7 +101,7 @@ Playbook.prototype.selectorField = function ($selector) {
 //
 //     let user = new User({username: sessionStorage.getItem('user_name')});
 //
-//     return self.fetchHtml('form_PlaybookArguments.html', $container).then($element => {
+//     return self.fetchHtml('templates_PlaybookArgs.html', $container).then($element => {
 //
 //         self.bindElement($element);
 //

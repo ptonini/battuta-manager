@@ -11,12 +11,12 @@
         </ul>
         <div class="tab-content card shadow p-3 mt-2">
             <div class="tab-pane active" id="playbook_tab">
-                <form id="playbook_form">
+                <form class="playbook-form">
                     <div class="row">
                         <div class="col-6 form-group">
-                            <label for="playbook_list">Select playbook</label>
+                            <label for="playbook-list">Select playbook</label>
                             <div class="input-group">
-                                <select id="playbook_list" class="select form-control form-control-sm"></select>
+                                <select id="playbook-list" class="select form-control form-control-sm"></select>
                                 <div class="input-group-append">
                                     <button id="edit_playbook" type="button" class="btn btn-light btn-sm">
                                         <span class="fas fa-fw fa-pencil-alt" title="Edit"></span>
@@ -26,9 +26,63 @@
                         </div>
                     </div>
                 </form>
-                <div class="row">
-                    <div id="playbook_args" class="col-6"></div>
-                </div>
+                <form class="args-form">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="row">
+                                <div id="play_args_selector_container" class="col-12 form-group">
+                                    <label for="play_args_selector">Saved arguments</label>
+                                    <select id="play_args_selector" class="select form-control form-control-sm"></select>
+                                </div>
+                                <div class="col-9 form-group">
+                                    <label for="limit">Limit</label>
+                                    <div id="pattern_field_group" class="input-group">
+                                        <input id="limit" data-bind="args.subset" class="form-control form-control-sm pattern_field" type="text">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-light btn-sm" title="Build pattern" type="button">
+                                                <span class="fas fa-fw fa-pencil-alt"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-3 text-right align-self-end">
+                                    <button data-bind="args.check" class="btn btn-light btn-sm">Check</button>
+                                </div>
+                                <div class="col-12 form-group">
+                                    <label for="extra_vars">Extra vars</label>
+                                    <input id="extra_vars" data-bind="args.extra_vars" class="form-control form-control-sm" type="text">
+                                </div>
+                                <div class="col-6 form-group">
+                                    <label for="tags">Tags</label>
+                                    <input id="tags" data-bind="args.tags" class="form-control form-control-sm" type="text">
+                                </div>
+                                <div class="col-6 form-group">
+                                    <label for="skip_tags">Skip tags</label>
+                                    <input id="skip_tags" data-bind="args.skip_tags" class="form-control form-control-sm" type="text">
+                                </div>
+                                <div class="col-6 form-group">
+                                    <label for="credentials_selector">Credentials</label>
+                                    <select id="credentials_selector" class="select form-control form-control-sm" data-bind="cred"></select>
+                                </div>
+                                <div id="buttons_container" class="col-6 form-group text-right align-self-end">
+                                    <button class="close-button btn btn-icon" title="Close" type="button">
+                                        <span class="fas fa-fw fa-times"></span>
+                                    </button>
+                                    <button class="delete-button btn btn-icon" title="Delete" type="button">
+                                        <span class="fas fa-fw fa-trash"></span>
+                                    </button>
+                                    <button class="save-button btn btn-icon" title="Save" type="button">
+                                        <span class="fas fa-fw fa-save"></span>
+                                    </button>
+                                    <button class="run-button btn btn-icon" title="Run" type="button">
+                                        <span class="fas fa-fw fa-cogs"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="tab-pane" id="task_tab">
                 <table id="adhoc_table" class="table table-condensed table-hover table-striped"></table>

@@ -25,12 +25,12 @@ FileObj.prototype.tableButtons = function (self) {
         {
             text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
             className: 'btn-sm btn-icon',
-            action: function () { new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create') }
+            action: () => new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create')
         },
         {
             text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
             className: 'btn-sm btn-icon',
-            action: function () { self.upload() }
+            action: () => self.upload()
         }
     ];
 
@@ -59,11 +59,7 @@ FileObj.prototype.upload = function () {
 
     });
 
-    $dialog.find('button.cancel-button').click(function () {
-
-        $dialog.dialog('close', function () { $input.fileinput('cancel') }).dialog('close');
-
-    });
+    $dialog.find('button.cancel-button').click(() => $dialog.dialog('close', () => $input.fileinput('cancel')).dialog('close'));
 
     self.bindElement($dialog);
 
@@ -74,7 +70,7 @@ FileObj.prototype.upload = function () {
             progressClass: 'progress-bar progress-bar-success active',
             uploadUrl: self.links.self,
             uploadAsync: true,
-            uploadExtraData: function () { return {csrfmiddlewaretoken: self._getCookie('csrftoken')} }
+            uploadExtraData: () => { return {csrfmiddlewaretoken: self._getCookie('csrftoken')} }
         })
         .on('fileuploaded', function (event, data) {
 
@@ -88,7 +84,7 @@ FileObj.prototype.upload = function () {
 
                 $('section.container').trigger('reload');
 
-                setTimeout(function () { $dialog.find('button.cancel-button').click() }, 5000)
+                setTimeout(() => $dialog.find('button.cancel-button').click(), 5000)
 
             }
 
@@ -177,7 +173,7 @@ FileObj.prototype.contentEditor = function () {
 
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
-    $.each(modes, function (index, mode){ $selector.append($('<option>').attr('value', mode.name).html(mode.label)) });
+    $.each(modes, (index, mode) => $selector.append($('<option>').attr('value', mode.name).html(mode.label)));
 
     $selector
         .val(aceMode)

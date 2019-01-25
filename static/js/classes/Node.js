@@ -12,25 +12,13 @@ Node.prototype.constructor = Node;
 Node.prototype.tabs = {
     variables: {
         label: 'Variables',
-        validator: function () {return true},
-        generator: function (self, $container) {
-
-            new Variable().table($container, self)
-
-        }
+        validator: () => { return true },
+        generator: (self, $container) => new Variable().table($container, self),
     },
     parents: {
         label: 'Parents',
-        validator: function (self) {
-
-            return (self.type === Host.prototype.type || self.name !== 'all')
-
-        },
-        generator: function (self, $container) {
-
-            self.relationGrid('parents', self.label.plural, $container, 'name', self.reloadTables)
-
-        }
+        validator: self => { return (self.type === Host.prototype.type || self.name !== 'all')},
+        generator: (self, $container) => self.relationGrid('parents', self.label.plural, $container, 'name', self.reloadTables)
     },
 };
 
@@ -50,15 +38,11 @@ Node.prototype.selector = function () {
 
         let $grid = $container.find('#node_grid');
 
-        let addNode = () => {
+        let addNode = () => new Entities[self.type].Class({links: {self: route}}).editor(function () {
 
-            new Entities[self.type].Class({links: {self: route}}).editor(function () {
+            $container.trigger('reload')
 
-                $container.trigger('reload')
-
-            });
-
-        };
+        });
 
         document.title = 'Battuta - ' + self.label.plural;
 
@@ -77,8 +61,8 @@ Node.prototype.selector = function () {
             }],
             order: [[0, "asc"]],
             rowCallback: self.selectorRowCallback,
-            preDrawCallback: function () { sessionStorage.setItem('current_table_position', $table.parent().scrollTop()) },
-            drawCallback: function () {  $table.parent().scrollTop(sessionStorage.getItem('current_table_position'))  }
+            preDrawCallback: () => sessionStorage.setItem('current_table_position', $table.parent().scrollTop()),
+            drawCallback: () => $table.parent().scrollTop(sessionStorage.getItem('current_table_position'))
         });
 
         $grid.DynaGrid({
@@ -98,11 +82,7 @@ Node.prototype.selector = function () {
                 $gridItem
                     .html(data.attributes.name)
                     .css('cursor', 'pointer')
-                    .click(function () {
-
-                        Router.navigate(data.links.self)
-
-                    });
+                    .click(() => Router.navigate(data.links.self))
 
             },
             addButtonAction: addNode,
@@ -110,17 +90,9 @@ Node.prototype.selector = function () {
 
         new $.fn.dataTable.Buttons($table.DataTable(), {buttons: [{extend: 'csv'}]});
 
-        $('#download_button').click(function () {
+        $('#download_button').click(() => $table.DataTable().buttons(1, null).trigger());
 
-            $table.DataTable().buttons(1, null).trigger()
-
-        });
-
-        $('#facts_button').click(function () {
-
-            new Job({hosts: 'all'}).getFacts()
-
-        });
+        $('#facts_button').click(() => new Job({hosts: 'all'}).getFacts());
 
         $('#delete_button').click(function () {
 
@@ -159,11 +131,7 @@ Node.prototype.selector = function () {
 
         });
 
-        $grid.find('input.dynagrid-search').keyup(function(){
-
-            $table.DataTable().search($(this).val()).draw();
-
-        });
+        $grid.find('input.dynagrid-search').keyup(() => $table.DataTable().search($(this).val()).draw());
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
@@ -189,8 +157,4 @@ Node.prototype.selector = function () {
 
 };
 
-Node.prototype.reloadTables = function () {
-
-    $('table.variable-table').DataTable().ajax.reload();
-
-};
+Node.prototype.reloadTables = () =>  $('table.variable-table').DataTable().ajax.reload();
