@@ -1,6 +1,5 @@
 import json
 import os
-import yaml
 
 from django.conf import settings
 from django.db.models.signals import post_save, post_delete, m2m_changed
@@ -139,7 +138,7 @@ class Authorizer:
 
         for pattern in [play['hosts'] for play in playbook_dict]:
 
-            conditions.add(inventory.get_host_names(pattern).issubset(self._runnable_task_hosts))
+            conditions.append(inventory.get_host_names(pattern).issubset(self._runnable_task_hosts))
 
         return all(conditions)
 

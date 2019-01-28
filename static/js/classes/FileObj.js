@@ -43,7 +43,7 @@ FileObj.prototype.upload = function () {
 
     let $dialog = self.confirmationDialog();
 
-    let $form = Templates['upload-file-form']();
+    let $form = Templates['upload-file-form'];
 
     let $input = $form.find('input.input-file');
 
@@ -165,7 +165,7 @@ FileObj.prototype.contentEditor = function () {
 
     else if (self.get('mime_type') === 'text/x-python') aceMode = 'python';
 
-    let $form = Templates['file-editor-form']();
+    let $form = Templates['file-editor-form'];
 
     let $selector = $form.find('select.mode-selector');
 
@@ -279,7 +279,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     let $dialog = self.confirmationDialog();
 
-    $dialog.find('div.dialog-content').html(Templates[actions[action].template]());
+    $dialog.find('div.dialog-content').html(Templates[actions[action].template]);
 
     $dialog.find('h5.dialog-header').replaceWith(
         $('<h6>').html(actions[action].title).append('&nbsp;', $('<span>').attr('data-bind', 'type'))
@@ -341,11 +341,113 @@ FileObj.prototype.selector = function () {
 
     Templates.load(self.templates).then(() => {
 
-        $container.html(Templates['file-selector']());
+        $container.html(Templates['file-selector']);
 
         self.bindElement($container);
 
         let $table = $container.find('table.file-table');
+
+        let reloadTable = () => {
+
+            self.read(true).then(response => {
+
+                if (self.type === 'file') Router.navigate(self.links.parent);
+
+                else {
+
+                    let pathArray = self.links.self.split('/');
+
+                    let buildBreadcrumbs = () => {
+
+                        $container.find('li.path-breadcrumb').remove();
+
+                        for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
+
+                            $container.find('ol.path-breadcrumbs').append(
+                                Templates['path-breadcrumb'].html(pathArray[i]).click(function() {
+
+                                    Router.navigate(pathArray.slice(0,i + 1).join('/'))
+
+                                })
+                            )
+
+                        }
+
+                    };
+
+                    $container.find('li.root-breadcrumb')
+                        .html(self.get('root'))
+                        .off()
+                        .click(() => Router.navigate(self.links.root));
+
+                    $container.find('button.edit-path-button').off().click(function ()  {
+
+                        let $pathButton = $(this);
+
+                        if ($pathButton.hasClass('checked-button')) {
+
+                            $pathButton.removeClass('checked-button');
+
+                            buildBreadcrumbs()
+
+                        } else {
+
+                            $pathButton.addClass('checked-button');
+
+                            let $pathInput = Templates['path-input'];
+
+                            let $breadCrumbs = $container.find('ol.path-breadcrumbs');
+
+                            $container.find('li.path-breadcrumb').remove();
+
+                            $breadCrumbs.append(Templates['path-breadcrumb'].append($pathInput));
+
+                            $pathInput
+                                .focus()
+                                .val(pathArray.slice(pathArrayViewableIndex).join('/'))
+                                .css('width', $breadCrumbs.width() * .87 + 'px')
+                                .keypress(function (event) {
+
+                                    if (event.keyCode === 13) {
+
+                                        self.fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
+
+                                            $pathButton.removeClass('checked-button');
+
+                                            buildBreadcrumbs();
+
+                                            Router.navigate(self.links.root + '/' + $(this).val());
+
+                                        })
+
+                                    }
+
+                                    else if (event.key === 27) {
+
+                                        $pathButton.removeClass('checked-button');
+
+                                        buildBreadcrumbs();
+
+                                    }
+
+                                })
+
+                        }
+                    });
+
+                    $table.DataTable().clear();
+
+                    $table.DataTable().rows.add(response['included']);
+
+                    $table.DataTable().columns.adjust().draw();
+
+                    buildBreadcrumbs()
+
+                }
+
+            })
+
+        };
 
         $table.DataTable({
             scrollY: (window.innerHeight - 316).toString() + 'px',
@@ -395,7 +497,7 @@ FileObj.prototype.selector = function () {
                 $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
 
                 if (self.links.root !== self.links.self) $table
-                    .prepend(Templates['previous-folder-row']())
+                    .prepend(Templates['previous-folder-row'])
                     .find('td.previous-folder-link')
                     .click(function () { Router.navigate(self.links.parent) });
 
@@ -404,108 +506,7 @@ FileObj.prototype.selector = function () {
             }
         });
 
-        $container.off().on('reload', function () {
-
-            let fields = {attributes: ['name', 'mime_type', 'size', 'modified', 'root', 'path']};
-
-            self.read(true, {fields: fields}).then(response => {
-
-                if (self.type === 'file') Router.navigate(self.links.parent);
-
-                else {
-
-                    let pathArray = self.links.self.split('/');
-
-                    let buildBreadcrumbs = () => { $container.find('li.path-breadcrumb').remove();
-
-                        for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
-
-                            $container.find('ol.path-breadcrumbs').append(
-                                Templates['path-breadcrumb']().html(pathArray[i]).click(function() {
-
-                                    Router.navigate(pathArray.slice(0,i + 1).join('/'))
-
-                                })
-                            )
-
-                        }
-                    };
-
-                    $container.find('li.root-breadcrumb')
-                        .html(self.get('root'))
-                        .off()
-                        .click(function () { Router.navigate(self.links.root) });
-
-                    $container.find('button.edit-path-button').off().click(function ()  {
-
-                        let $pathButton = $(this);
-
-                        if ($pathButton.hasClass('checked-button')) {
-
-                            $pathButton.removeClass('checked-button');
-
-                            buildBreadcrumbs()
-
-                        } else {
-
-                            $pathButton.addClass('checked-button');
-
-                            let $pathInput = Templates['path-input']();
-
-                            let $breadCrumbs = $container.find('ol.path-breadcrumbs');
-
-                            $container.find('li.path-breadcrumb').remove();
-
-                            $breadCrumbs.append(Templates['path-breadcrumb']().append($pathInput));
-
-                            $pathInput
-                                .focus()
-                                .val(pathArray.slice(pathArrayViewableIndex).join('/'))
-                                .css('width', $breadCrumbs.width() * .87 + 'px')
-                                .keypress(function (event) {
-
-                                    if (event.keyCode === 13) {
-
-                                        self.fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
-
-                                            $pathButton.removeClass('checked-button');
-
-                                            buildBreadcrumbs();
-
-                                            Router.navigate(self.links.root + '/' + $(this).val());
-
-                                        })
-
-                                    }
-
-                                    else if (event.key === 27) {
-
-                                        $pathButton.removeClass('checked-button');
-
-                                        buildBreadcrumbs();
-
-                                    }
-
-                                })
-
-                        }
-                    });
-
-                    $table.DataTable().clear();
-
-                    $table.DataTable().rows.add(response['included']);
-
-                    $table.DataTable().columns.adjust().draw();
-
-                    buildBreadcrumbs()
-
-                }
-
-            })
-
-        });
-
-        $container.trigger('reload')
+        $container.off().on('reload', reloadTable).trigger('reload')
 
     });
 

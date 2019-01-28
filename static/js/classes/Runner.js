@@ -14,50 +14,16 @@ Runner.prototype.view = function () {
 
     let $container = $('section.container');
 
-
     Templates.load(self.templates).then(() => {
 
-        $container.html(Templates['runner-view']());
+        $container.html(Templates['runner-viewer']);
 
         $container.find('#job_tabs').rememberTab();
 
         let playbook = new Playbook({links: {self: Entities['playbooks'].href}});
 
-        playbook.buildSelector($container.find('div.playbook-selector-container'), $container.find('form.args-form'))
+        playbook.buildSelector($container.find('div.playbook-selector-container'), $container.find('div.playbook-args-container'))
 
-        // self.fetchJson('GET', '/runner/playbooks').then(result => {
-        //
-        //     for (let i = 0; i < result.data.length; i++) {
-        //
-        //         $container.find('#playbook_list').append(
-        //             $('<option>').data(result.data[i]).attr('value', result.data[i].attributes.path).html(result.data[i].attributes.path)
-        //         );
-        //
-        //     }
-        //
-        //     // $container.find('#playbook_list')
-        //     //     .change(function () {
-        //     //
-        //     //         let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
-        //     //
-        //     //         if (file_data) {
-        //     //
-        //     //             let playbook = new Playbook(file_data);
-        //     //
-        //     //             $('#edit_playbook').off().click(function () {
-        //     //
-        //     //                 playbook.edit()
-        //     //
-        //     //             });
-        //     //
-        //     //             playbook.form($('#playbook_args'));
-        //     //
-        //     //         }
-        //     //
-        //     //     })
-        //     //     .change();
-        //
-        // });
 
         // $container.find('#adhoc_table').DataTable({
         //     scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',

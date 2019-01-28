@@ -36,7 +36,7 @@ Group.prototype.info = function ($container) {
 
     let self = this;
 
-    $container.html(Templates['group-form']());
+    $container.html(Templates['group-form']);
 
     self.bindElement($container);
 

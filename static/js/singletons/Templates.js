@@ -10,7 +10,7 @@ let Templates = {
 
         if (self._loaded.includes(file)) return Promise.resolve();
 
-        else return fetch('/static/templates/' + file, {credentials: 'include'}).then(response => {
+        else return fetch('/static/html/' + file, {credentials: 'include'}).then(response => {
 
             self._loaded.push(file);
 
@@ -18,13 +18,11 @@ let Templates = {
 
         }).then(text => {
 
-            let $body = $('<div>').html(text);
-
-            $body.find('[data-template]').each(function () {
+            $('<div>').html(text).find('[data-template]').each(function () {
 
                 let $template = $(this);
 
-                self[$template.data('template')] = function () { return $template.clone().removeAttr('data-template') }
+                Object.defineProperty(self, $template.data('template'), { get: function () { return $template.clone().removeAttr('data-template') }});
 
             });
 

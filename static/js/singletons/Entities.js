@@ -21,31 +21,31 @@ let Entities = {
         Class: Host,
         href: '/inventory/hosts',
         regex: /^inventory\/hosts\/?([0-9]+)?$/,
-        action: function (param) { param[0] ? new Host({id: param[0], links: {self: param.input}}).view() : new Host().selector() }
+        action: function (param) { param[0] ? new Host({id: param[0], links: {self: param.input}}).viewer() : new Host().selector() }
     },
     groups: {
         Class: Group,
         href: '/inventory/groups',
         regex: /^inventory\/groups\/?([0-9]+)?$/,
-        action: function (param) { param[0] ? new Group({id: param[0], links: {self: param.input}}).view() : new Group().selector() }
+        action: function (param) { param[0] ? new Group({id: param[0], links: {self: param.input}}).viewer() : new Group().selector() }
     },
     users: {
         href: '/iam/users',
         regex: /^iam\/users\/?([0-9]+)?$/,
         Class: User,
-        action: function (param) { param[0] ? new User({id: param[0], links: {self: param.input}}).view() : new User().selector() }
+        action: function (param) { param[0] ? new User({id: param[0], links: {self: param.input}}).viewer() : new User().selector() }
     },
     usergroups: {
         href: '/iam/usergroups',
         regex: /^iam\/usergroups\/?([0-9]+)?$/,
         Class: UserGroup,
-        action: function (param) { param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).view() : new UserGroup().selector() }
+        action: function (param) { param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).viewer() : new UserGroup().selector() }
     },
     projects: {
         href: '/projects',
         regex: /^projects\/?([0-9]+)?$/,
         Class: Project,
-        action: function (param) { param[0] ? new Project({id: param[0], links: {self: param.input}}).view() : new Project().selector() }
+        action: function (param) { param[0] ? new Project({id: param[0], links: {self: param.input}}).viewer() : new Project().selector() }
     },
     repository: {
         href: '/files/repository',

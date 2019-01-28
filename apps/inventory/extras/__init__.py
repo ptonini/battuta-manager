@@ -1,10 +1,11 @@
-import json
-
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
 from ansible.inventory import Inventory, Host as AnsibleHost
 
 from django.conf import settings
+from django.core.cache import cache
+from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.dispatch import receiver
 
 from apps.inventory.models import Host, Group
 
@@ -65,3 +66,13 @@ class AnsibleInventory:
     def get_host_names(self, pattern):
 
         return {host.name for host in self.inventory.get_hosts(pattern=pattern)}
+
+
+@receiver(post_save)
+@receiver(post_delete)
+@receiver(m2m_changed)
+def clear_inventory(sender, **kwargs):
+
+    if sender in [Host, Group]:
+
+        cache.delete('inventory')

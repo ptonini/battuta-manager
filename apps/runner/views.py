@@ -5,7 +5,7 @@ import ast
 from pytz import timezone
 from multiprocessing import Process
 
-from django.http import HttpResponse, Http404, HttpResponseNotFound
+from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.core.exceptions import PermissionDenied
@@ -39,7 +39,7 @@ from apps.inventory.extras import AnsibleInventory
 #
 #             return render(request, "runner/job_selector.html")
 #
-#         elif kwargs['page'] == 'view':
+#         elif kwargs['page'] == 'viewer':
 #
 #             return render(request, "runner/job_view.html", {'job_id': kwargs['job_id']})
 #
@@ -66,10 +66,19 @@ class PlaybookView(View, ApiViewMixin):
 
 class PlaybookArgsView(View, ApiViewMixin):
 
-    @staticmethod
-    def post(request, action):
+    form_class = PlaybookArgsForm
 
-        pass
+    def post(self, request, path, args_id):
+
+        args = PlaybookArgs(path=path)
+
+        if args.authorizer(request.user)['editable']:
+
+            return self._api_response(self._save_instance(request, args))
+
+        else:
+
+            return HttpResponseForbidden()
 
         # project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
         #
@@ -135,17 +144,58 @@ class PlaybookArgsView(View, ApiViewMixin):
         #
         # return HttpResponse(json.dumps(data), content_type='application/json')
 
-    def get(self, request, path):
+    def get(self, request, path, args_id):
 
         data = list()
 
-        for a in PlaybookArgs.objects.filter(path=path):
+        if args_id:
 
-            if a.authorizer()['readable']:
+            args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-                data = [a.serialize(None, request.user) ]
+            if args.authorizer(request.user)['readable']:
 
-        return self._api_response({'data': data})
+                return self._api_response({'data': args.serialize(request.JSON.get('fields'), request.user)})
+
+            else:
+
+                return HttpResponseForbidden()
+
+        else:
+
+            for a in PlaybookArgs.objects.filter(path=path):
+
+                if a.authorizer(request.user)['readable']:
+
+                    data.append(a.serialize(None, request.user))
+
+            return self._api_response({'data': data})
+
+    def patch(self, request, path, args_id):
+
+        args = get_object_or_404(PlaybookArgs, pk=args_id)
+
+        if args.authorizer(request.user)['editable'] and args.path == path:
+
+            return self._api_response(self._save_instance(request, args))
+
+        else:
+
+            return HttpResponseForbidden()
+
+    @staticmethod
+    def delete(request, path, args_id):
+
+        args = get_object_or_404(PlaybookArgs, pk=args_id)
+
+        if args.authorizer(request.user)['deletable'] and args.path == path:
+
+            args.delete()
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
 
 # class JobView(View):
 #

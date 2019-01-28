@@ -65,7 +65,7 @@ UserGroup.prototype.entityDialog = function () {
 
     let $dialog = self.confirmationDialog();
 
-    $dialog.find('div.dialog-content').append(Templates['user-group-form']());
+    $dialog.find('div.dialog-content').append(Templates['user-group-form']);
 
     return $dialog
 

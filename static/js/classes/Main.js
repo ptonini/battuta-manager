@@ -301,7 +301,7 @@ Main.prototype = {
 
     fetchHtml: function (file, $container) {
 
-        return fetch('/static/templates/' + file, {credentials: 'include'}).then(response => {
+        return fetch('/static/html/' + file, {credentials: 'include'}).then(response => {
 
             return response.text()
 
@@ -417,7 +417,7 @@ Main.prototype = {
 
             let defaultValue = $element.data('default');
 
-            if (value !== undefined && value !== null) {
+            if (value !== undefined) {
 
                 if (value === '' && defaultValue) value = defaultValue;
 
@@ -474,12 +474,12 @@ Main.prototype = {
 
     notificationDialog: function (headless=false) {
 
-        let $dialog = Templates['dialog']();
+        let $dialog = Templates['dialog'];
 
         headless && $dialog.find('h5.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(
-            Templates['close-button']().click(function () { $dialog.dialog('close') })
+            Templates['close-button'].click(function () { $dialog.dialog('close') })
         );
 
         return $dialog
@@ -488,13 +488,14 @@ Main.prototype = {
 
     confirmationDialog: function (headless=false) {
 
-        let $dialog = Templates['dialog']();
+        let $dialog = Templates['dialog'];
 
         headless && $dialog.find('h5.dialog-header').remove();
 
         $dialog.find('div.dialog-footer').append(
-            Templates['cancel-button']().click(function () { $dialog.dialog('close') }),
-            Templates['confirm-button']());
+            Templates['cancel-button'].click(function () { $dialog.dialog('close') }),
+            Templates['confirm-button']
+        );
 
         return $dialog
 
@@ -504,16 +505,16 @@ Main.prototype = {
 
         let $dialog = Main.prototype.confirmationDialog();
 
-        $dialog.find('div.dialog-content').append(Templates['entity-form']());
+        $dialog.find('div.dialog-content').append(Templates['entity-form']);
 
         return $dialog
     },
 
     notificationAlert: function () {
 
-        let $alert = Templates['alert']();
+        let $alert = Templates['alert'];
 
-        $alert.find('div.button-container').append(Templates['close-icon']());
+        $alert.find('div.button-container').append(Templates['close-icon']);
 
         return $alert
 
@@ -521,9 +522,9 @@ Main.prototype = {
 
     confirmationAlert: function () {
 
-        let $alert = Templates['alert']();
+        let $alert = Templates['alert'];
 
-        $alert.find('div.button-container').append(Templates['cancel-icon'](), Templates['confirm-icon']());
+        $alert.find('div.button-container').append(Templates['cancel-icon'], Templates['confirm-icon']);
 
         return $alert
 
@@ -610,114 +611,83 @@ Main.prototype = {
 
     },
 
-    patternField: function ($container) {
+    patternEditor: function (binding) {
 
         let self = this;
 
-        let $input = $container.find('input');
+        let originalPattern = self.get(binding);
 
-        let binding = $input.attr('data-bind');
+        let updatePattern = function (action, nodeName) {
 
-        let locked = $input.prop('disabled');
+            let sep = {select: ':', and: ':&', exclude: ':!'};
 
-        $container.find('button').prop('disabled', locked).click(function () {
+            let currentPattern = self.get(binding);
 
-            let oldPattern = self.get(binding);
+            if (action !== 'select' && currentPattern === '') self.statusAlert('warning', 'Select host or group first');
 
-            self.fetchHtml('form_PatternBuilder.html').then($element => {
+            else {
 
-                let updatePattern = function (action, nodeName) {
+                if (currentPattern) self.set(binding, currentPattern + sep[action] + nodeName);
 
-                    const sep = {select: ':', and: ':&', exclude: ':!'};
+                else self.set(binding, nodeName)
 
-                    let currentPattern = self.get(binding);
+            }
 
-                    if (action !== 'select' && currentPattern === '') {
+        };
 
-                        self.statusAlert('warning', 'Select host or group first');
+        let $dialog = self.notificationDialog(true);
 
-                    }
+        $dialog.find('div.dialog-content').append(Templates['pattern-form']);
 
-                    else {
+        $dialog.find('input.pattern-input').attr('data-bind', binding);
 
-                        if (currentPattern) self.set(binding, currentPattern + sep[action] + nodeName);
+        $dialog.find('button.clear-button').click(() => self.set(binding, ''));
 
-                        else self.set(binding, nodeName)
+        $dialog.find('button.reload-button').click(() => self.set(binding, originalPattern));
 
-                    }
+        self.bindElement($dialog);
 
-                };
+        [Host.prototype.type, Group.prototype.type].forEach(function (type) {
 
-                let $dialog = self.notificationDialog();
+            $dialog.find('div.' + type + '-grid').DynaGrid({
+                showFilter: true,
+                minHeight: 300,
+                maxHeight: 300,
+                gridBodyTopMargin: 10,
+                itemToggle: false,
+                truncateItemText: true,
+                gridBodyClasses: 'inset-container scrollbar',
+                columns: sessionStorage.getItem('selection_modal_columns'),
+                ajaxUrl: Entities[type].href,
+                formatItem: function($gridContainer, $gridItem, data) {
 
-                $element.find('#pattern_preview').attr('data-bind', binding);
+                    let nodeName = data.attributes.name;
 
-                $element.find('button.clear-button').click(function () {
+                    $gridItem.html('').removeAttr('title').removeClass('text-truncate').addClass('dropdown').append(
+                        $('<a>').attr({'data-toggle': 'dropdown', class: 'pattern-grid'}).html(nodeName),
+                        $('<div>').attr('class', 'dropdown-menu').append(
+                            $('<a>')
+                                .attr({class: 'pattern-grid dropdown-item'})
+                                .html('Select')
+                                .click(() => updatePattern('select', nodeName)),
+                            $('<a>')
+                                .attr({class: 'pattern-grid dropdown-item'})
+                                .html('And')
+                                .click(() => updatePattern('and', nodeName)),
+                            $('<a>')
+                                .attr({class: 'pattern-grid dropdown-item'})
+                                .html('Not')
+                                .click(() => updatePattern('exclude', nodeName))
+                        )
+                    )
 
-                    self.set(binding, '')
-
-                });
-
-                $element.find('button.reload-button').click(function () {
-
-                    self.set(binding, oldPattern)
-
-                });
-
-                self.bindElement($element);
-
-                [Host.prototype.type, Group.prototype.type].forEach(function (type) {
-
-                    $element.find('div.' + type + '-grid').DynaGrid({
-                        showFilter: true,
-                        minHeight: 300,
-                        maxHeight: 300,
-                        gridBodyTopMargin: 10,
-                        itemToggle: false,
-                        truncateItemText: true,
-                        gridBodyClasses: 'inset-container scrollbar',
-                        columns: sessionStorage.getItem('selection_modal_columns'),
-                        ajaxUrl: Entities[type].href,
-                        formatItem: function($gridContainer, $item, data) {
-
-                            let nodeName = data.attributes.name;
-
-                            $item.html('').removeAttr('title').removeClass('text-truncate').addClass('dropdown').append(
-                                $('<a>').attr({'data-toggle': 'dropdown', href: '#', class: 'pattern-grid'}).html(nodeName),
-                                $('<div>').attr('class', 'dropdown-menu').append(
-                                    $('<a>').attr({class: 'pattern-grid dropdown-item', href:'#'}).html('Select').click(function () {
-
-                                        updatePattern('select', nodeName)
-
-                                    }),
-                                    $('<a>').attr({class: 'pattern-grid dropdown-item', href:'#'}).html('And').click(function () {
-
-                                        updatePattern('and', nodeName)
-
-                                    }),
-                                    $('<a>').attr({class: 'pattern-grid dropdown-item', href:'#'}).html('Not').click(function () {
-
-                                        updatePattern('exclude', nodeName)
-
-                                    }),
-                                )
-                            )
-
-                        }
-
-                    });
-
-                });
-
-                $dialog.find('h5.dialog-header').remove();
-
-                $dialog.find('div.dialog-content').append($element);
-
-                $dialog.dialog({width: 700})
+                }
 
             });
 
         });
+
+        $dialog.dialog({width: 700})
 
     },
 
@@ -877,7 +847,7 @@ Main.prototype = {
                         readable && link && Router.navigate(link);
 
                     }),
-                    Templates['remove-icon']().click(function () {
+                    Templates['remove-icon'].click(function () {
 
                         self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
 
@@ -927,9 +897,9 @@ Main.prototype = {
 
         Templates.load(self.templates).then(() => {
 
-            let $selector = Templates['entity-selector']();
+            let $selector = Templates['entity-selector'];
 
-            let $table = Templates['table']();
+            let $table = Templates['table'];
 
             let tableOptions = {
                 scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
@@ -977,7 +947,7 @@ Main.prototype = {
 
     },
 
-    view: function () {
+    viewer: function () {
 
         let self = this;
 
@@ -985,7 +955,7 @@ Main.prototype = {
 
         Templates.load(self.templates).then(() => {
 
-            $container.html(Templates['entity-view']());
+            $container.html(Templates['entity-viewer']);
 
             return self.read(false)
 

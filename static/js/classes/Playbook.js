@@ -34,11 +34,11 @@ Playbook.prototype.tableButtons = function (self) {
 };
 
 
-Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
+Playbook.prototype.buildSelector = function ($selectorContainer, $argsContainer) {
 
     let self = this;
 
-    let $playbookSelector = $playbookForm.find('select.playbook-selector');
+    let $playbookSelector = $selectorContainer.find('select.playbook-selector');
 
     self.read(true, {list: true}).then(result => {
 
@@ -54,44 +54,21 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 
             let playbook = new Playbook($(this).find(':selected').data());
 
-            let args = new PlaybookArgs({links: {self: playbook.links.args}});
+            let args = new PlaybookArgs({attributes: {path: playbook.path}, links: {self: playbook.links.args}});
 
-            args.argsForm($argsForm);
-
-            $playbookForm.find('button.edit-playbook-button').off().click(function () {
+            $selectorContainer.find('button.edit-playbook-button').off().click(function () {
 
                 Templates.load(FileObj.prototype.templates).then(() => playbook.edit());
 
             });
 
-        }).change();
+            args.selector($argsContainer);
 
-        // $container.find('#playbook_list')
-        //     .change(function () {
-        //
-        //         let file_data = $('#playbook_list').find('option[value="' + $(this).val() + '"]').data();
-        //
-        //         if (file_data) {
-        //
-        //             let playbook = new Playbook(file_data);
-        //
-        //             $('#edit_playbook').off().click(function () {
-        //
-        //                 playbook.edit()
-        //
-        //             });
-        //
-        //             playbook.form($('#playbook_args'));
-        //
-        //         }
-        //
-        //     })
-        //     .change();
+        }).change();
 
     });
 
-
-}
+};
 
 // Playbook.prototype.form = function ($container, args) {
 //
@@ -103,7 +80,7 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 //
 //         self.bindElement($element);
 //
-//         self.patternField($element.find('#pattern_field_group'), 'args.subset');
+//         self.patternEditor($element.find('#pattern_field_group'), 'args.subset');
 //
 //         user.credentialsSelector(null, true, $element.find('#credentials_selector'));
 //
@@ -114,33 +91,7 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 //
 //                 self.fetchJson('GET', self.paths.api.playbook + 'getArgs/', self).then(data => {
 //
-//                     $argsSelector.empty();
-//
-//                     $.each(data.args, function (index, args) {
-//
-//                         let optionLabel = [];
-//
-//                         args.subset && optionLabel.push('--limit ' + args.subset);
-//
-//                         args.tags && optionLabel.push('--tags ' + args.tags);
-//
-//                         args.skip_tags && optionLabel.push('--skip_tags ' + args.skip_tags);
-//
-//                         args.extra_vars && optionLabel.push('--extra_vars "' + args.extra_vars + '"');
-//
-//                         $argsSelector.append($('<option>').html(optionLabel.join(' ')).val(args.id).data(args))
-//
-//                     });
-//
-//                     $argsSelector.append($('<option>').html('new').val('new').data({
-//                         check: false,
-//                         tags: '',
-//                         skip_tags: '',
-//                         extra_vars: '',
-//                         subset: '',
-//                     }));
-//
-//                     args ? self.set('args', args) : $argsSelector.change();
+
 //
 //                 })
 //
@@ -157,7 +108,7 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 //
 //             })
 //             .trigger('build');
-//
+
 //         $element.find('button.run-button').click(function () {
 //
 //             self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
@@ -206,7 +157,7 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 //             });
 //
 //         });
-//
+
 //         $element.find('button.save-button').click(function () {
 //
 //             if (!(!self.args.subset && !self.args.tags && !self.args.skip_tags && !self.args.extra_vars)) self.postArgs('saveArgs');
@@ -224,7 +175,7 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 //             })
 //
 //         });
-//
+
 //         $element.find('button.close-button').hide();
 //
 //         $element.find('input').keypress(function (event) {
@@ -236,12 +187,12 @@ Playbook.prototype.buildSelector = function ($playbookForm, $argsForm) {
 //     });
 //
 // };
-//
+
 // Playbook.prototype.dialog = function (args) {
 //
 //     let self = this;
 //
-//     let $dialog = Templates['dialog']();
+//     let $dialog = Templates['dialog'];
 //
 //     $dialog.find('h5.dialog-header').html(self.name);
 //

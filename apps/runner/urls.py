@@ -7,13 +7,15 @@ urlpatterns = [
 
     path('playbooks', login_required(PlaybookView.as_view())),
 
-    re_path(r'^playbooks/(?P<path>(?s).*)/args$', login_required(PlaybookArgsView.as_view())),
+    re_path(r'^playbooks/(?P<path>(?s).*)/args$', login_required(PlaybookArgsView.as_view()), kwargs={'args_id': None}),
+
+    re_path(r'^playbooks/(?P<path>(?s).*)/args/(?P<args_id>[0-9]+)$', login_required(PlaybookArgsView.as_view())),
 
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #
     # url(r'^job/$', login_required(views.PageView.as_view()), kwargs={'page': 'selector'}),
     #
-    # url(r'^job/(?P<job_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'view'}),
+    # url(r'^job/(?P<job_id>[0-9]+)/$', login_required(views.PageView.as_view()), kwargs={'page': 'viewer'}),
     #
     # url(r'^api/job/([a-z_]+)/$', login_required(views.JobView.as_view())),
     #

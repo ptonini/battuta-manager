@@ -47,7 +47,7 @@ Variable.prototype.table = function ($container, node) {
 
     let self = this;
 
-    let $table = Templates['table']();
+    let $table = Templates['table'];
 
     Templates.load(self.templates).then(() => {
 
@@ -215,7 +215,7 @@ Variable.prototype.table = function ($container, node) {
 
                             $(mainValue[1]).find('td:eq(0)').html('').append(
                                 $('<span>').html(mainValue[0].attributes.key),
-                                Templates['show-values-icon']().click(function () {
+                                Templates['show-values-icon'].click(function () {
 
                                     if (rowApi.child.isShown()) {
 
@@ -257,7 +257,7 @@ Variable.prototype.entityDialog = function () {
 
     let $dialog = Main.prototype.confirmationDialog();
 
-    $dialog.find('div.dialog-content').append(Templates['variable-form']());
+    $dialog.find('div.dialog-content').append(Templates['variable-form']);
 
     $dialog.find('#key-input').autocomplete({source: this.internalVars});
 

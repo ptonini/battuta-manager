@@ -268,7 +268,7 @@ class Variable(models.Model, ModelSerializerMixin):
 
     def authorizer(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
         node = Host.objects.get(pk=getattr(self.host, 'id')) if self.host else Group.objects.get(pk=getattr(self.group, 'id'))
 

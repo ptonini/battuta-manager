@@ -60,7 +60,7 @@ AdHoc.prototype.dialog = function (callback) {
 
         let $argumentsContainer = $element.find('div.module-arguments-container');
 
-        self.patternField($element.find('#pattern_field_group'), 'hosts');
+        self.patternEditor($element.find('#pattern_field_group'), 'hosts');
 
         $element.find('#run_task').click(function ()  {
 

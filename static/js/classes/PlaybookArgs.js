@@ -18,143 +18,180 @@ PlaybookArgs.prototype.label = {single: 'arguments', plural: 'arguments'};
 PlaybookArgs.prototype.templates = 'templates_PlaybookArgs.html';
 
 
-PlaybookArgs.prototype.argsForm = function ($form) {
+PlaybookArgs.prototype.toString = function () {
 
     let self = this;
 
-    $form.find('input, textarea').val('');
+    let stringArray = [];
 
-    $form.find('button.checked-button').removeClass('checked-button');
+    self.subset && stringArray.push('--limit ' + self.subset);
 
-    self.read(true).then(result => {
+    self.tags && stringArray.push('--tags ' + self.tags);
 
+    self.skip_tags && stringArray.push('--skip_tags ' + self.skip_tags);
+
+    self.extra_vars && stringArray.push('--extra_vars "' + self.extra_vars + '"');
+
+    return stringArray.join(' ')
+
+};
+
+PlaybookArgs.prototype.loadForm = function ($container) {
+
+    let self = this;
+
+    return Templates.load(self.templates).then(() => {
+
+        $container.html(Templates['playbook-args-selector']);
+
+    })
+
+};
+
+PlaybookArgs.prototype.selector = function ($argsContainer, value) {
+
+    let self = this;
+
+    self.loadForm($argsContainer).then(() => {
+
+        return self.read(true)
+
+    }).then(result => {
+
+        let $selector = $argsContainer.find('select.args-selector');
+
+        let $form = $argsContainer.find('form.args-form');
+
+        let $newOption = Templates['select-option'].data({
+            attributes: {
+                check: false,
+                tags: '',
+                skip_tags: '',
+                extra_vars: '',
+                subset: '',
+                path: self.path
+            },
+            links: {self: self.links.self}
+        });
+
+        $form.find('button.close-button').hide();
+
+        $selector.empty();
+
+        $.each(result.data, function (index, data) {
+
+            let args = new PlaybookArgs(data);
+
+            $selector.append($('<option>').html(args.toString()).val(args.id).data(data))
+
+        });
+
+        $selector.append($newOption);
+
+        $selector.on('change', function () {
+
+            let $option = $('option:selected', $(this));
+
+            let playArgs = new PlaybookArgs($option.data());
+
+            playArgs.bindElement($form);
+
+            $form.find('button.pattern-editor-button').off().click(() => playArgs.patternEditor('subset'));
+
+            $form.find('button.save-button').off().click(function () {
+
+                if (!(!playArgs.subset && !playArgs.tags && !playArgs.skip_tags && !playArgs.extra_vars)) {
+
+                    if (playArgs.id) playArgs.update(true).then(result => {
+
+                        $option.html(playArgs.toString()).data(result.data)
+
+                    });
+
+                    else playArgs.create(true).then(result => {
+
+                        $newOption.before($('<option>').html(playArgs.toString()).val(playArgs.id).data(result.data));
+
+                        $selector.val(playArgs.id).change();
+
+                    });
+
+                }
+
+                else self.statusAlert('warning', 'Can not save empty form');
+
+            });
+
+            $form.find('button.delete-button').off().prop('disabled', $option.val() === 'new').click(function () {
+
+                playArgs.delete(true, () => {
+
+                    $option.remove();
+
+                    $selector.change()
+
+                })
+
+            });
+
+            // $form.find('button.run-button').click(function () {
+            //
+            //     self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
+            //
+            //         if (data.status === 'ok' ) {
+            //
+            //             if (self.validator.playbooks(data.text)) return jsyaml.load(data.text);
+            //
+            //         }
+            //
+            //         else {
+            //
+            //             self.statusAlert('danger', data.msg);
+            //
+            //             return Promise.reject();
+            //
+            //         }
+            //
+            //
+            //     }).then(data => {
+            //
+            //         let job = new Job(self);
+            //
+            //         $.each(data, function (index, play) {
+            //
+            //             let trueValues = ['true','True','TRUE','yes','Yes','YES','y','Y','on','On','ON'];
+            //
+            //             (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) && job.set('become', true);
+            //
+            //         });
+            //
+            //         job.set('type', 'playbook');
+            //
+            //         job.set('subset', self.args.subset || '');
+            //
+            //         job.set('tags', self.args.tags || '');
+            //
+            //         job.set('skip_tags', self.args.skip_tags || '');
+            //
+            //         job.set('extra_vars', self.args.extra_vars || '');
+            //
+            //         job.set('cred', $element.find('#credentials_selector option[value="'+ self.cred + '"]').data());
+            //
+            //         job.run();
+            //
+            //     });
+            //
+            // });
+
+        });
+
+        value && $selector.val(value);
+
+        $selector.change()
 
     })
 
 };
 
 
-// PlaybookArgs.prototype.selector = function ($container) {
-//
-//     let self = this;
-//
-//     let $selectorContainer;
-//
-//     Templates.load(self.templates).then(() => {
-//
-//         $selectorContainer = Templates['credentials-selector']();
-//
-//         self.buildSelector($selectorContainer.find('select'), $selectorContainer.find('div.credentials-form-container'));
-//
-//         $container.html($selectorContainer);
-//
-//     })
-//
-// };
-//
-// PlaybookArgs.prototype.buildSelector = function ($selector, $formContainer, startValue) {
-//
-//     let self = this;
-//
-//     let newCred = {
-//         id: null,
-//         type: self.type,
-//         attributes: {
-//             user: self.user,
-//             ask_pass: true,
-//             ask_sudo_pass: true,
-//             is_default: false,
-//             is_shared: false,
-//             username: null,
-//             password: null,
-//             rsa_key: null,
-//             sudo_pass: null,
-//             sudo_user: null,
-//             title: null
-//         },
-//         links: {self: self.links.self},
-//         meta: {deletable: false, editable: true}
-//     };
-//
-//     $selector
-//         .on('build', function (event, startValue) {
-//
-//             self.read(false).then(response => {
-//
-//                 $selector.empty();
-//
-//                 for (let i = 0; i < response.data.length; i++) {
-//
-//                     let cred = response.data[i];
-//
-//                     let title = cred.attributes.title;
-//
-//                     if (cred.attributes.is_default) {
-//
-//                         title += ' (default)';
-//
-//                         if (!startValue) startValue = cred.id;
-//
-//                     }
-//
-//                     $selector.append($('<option>').val(cred.id).data(cred).append(title));
-//
-//                 }
-//
-//                 if ($formContainer) $selector.append($('<option>').val('new').data(newCred).append('new'));
-//
-//                 else $selector.append($('<option>').val('').html('ask').data('id', 0));
-//
-//                 startValue ? $selector.val(startValue).change() : $formContainer && $selector.val('new').change();
-//
-//             });
-//
-//         })
-//         .on('change', function () {
-//
-//             if ($formContainer) {
-//
-//                 let cred = new PlaybookArgs($(this).find(':selected').data());
-//
-//                 $formContainer.html(Templates['credential-form']());
-//
-//                 cred.bindElement($formContainer);
-//
-//                 $formContainer.find('button.save-button').off().click(function () {
-//
-//                     let callback = response => {
-//
-//                         $selector.trigger('build', response.data.id);
-//
-//                         Main.prototype.statusAlert('success', 'PlaybookArgs saved')
-//
-//                     };
-//
-//                     if (cred.id) cred.update(false).then(callback);
-//
-//                     else cred.create(false).then(callback)
-//
-//                 });
-//
-//                 $formContainer.find('button.delete-button').off().prop('disabled', !cred.meta['deletable']).click(function () {
-//
-//                     cred.delete(false, () => $selector.trigger('build', null))
-//
-//                 });
-//
-//                 $formContainer.find('button.save-button').prop('disabled', !cred.meta['editable']);
-//
-//                 cred.is_default && $formContainer.find('button[data-bind="is_default"]').off();
-//
-//                 cred.password && $formContainer.find('button[data-bind="ask_pass"]').prop('disabled', true);
-//
-//                 cred.sudo_pass && $formContainer.find('button[data-bind="ask_sudo_pass"]').prop('disabled', true);
-//
-//             }
-//
-//         });
-//
-//     $selector.trigger('build', startValue);
-//
-// };
 

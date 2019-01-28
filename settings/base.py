@@ -62,6 +62,7 @@ TEMPLATES = [
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'TIMEOUT': 3600
     },
     'authorizer': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',

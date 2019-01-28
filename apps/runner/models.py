@@ -20,6 +20,8 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
 class PlaybookArgs(models.Model, ModelSerializerMixin):
 
+    type = 'arguments'
+
     path = models.CharField(max_length=512)
 
     tags = models.CharField(max_length=64, blank=True, null=True)
@@ -40,7 +42,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
             'extra_vars': self.extra_vars
         }
 
-        links = {'self': '/'.join(['runner/playbooks', self.path, str(self.id)])}
+        links = {'self': '/'.join(['runner/playbooks', self.path, 'args', str(self.id)])}
 
         meta = self.authorizer(user)
 
@@ -50,9 +52,9 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
     def authorizer(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
-        inventory = cache.get_or_set('inventory', AnsibleInventory())
+        inventory = cache.get_or_set('inventory', AnsibleInventory)
 
         readable = [
             user.has_perm('users.execute_jobs'),

@@ -1,0 +1,58 @@
+<div data-template="playbook-args-selector">
+    <div class="row">
+        <div class="col-12 form-group">
+            <label>Arguments</label>
+            <select class="args-selector select form-control form-control-sm" title="Arguments"></select>
+        </div>
+    </div>
+    <form class="args-form">
+        <div class="row">
+            <div class="col-9 form-group">
+                <label>Limit</label>
+                <div class="input-group">
+                    <input data-bind="subset" class="form-control form-control-sm pattern_field" type="text" title="Limit">
+                    <div class="input-group-append">
+                        <button class="pattern-editor-button btn btn-light btn-sm" title="Build pattern" type="button">
+                            <span class="fas fa-fw fa-pencil-alt"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-3 text-right align-self-end">
+                <button data-bind="check" class="btn btn-light btn-sm" type=button>Check</button>
+            </div>
+            <div class="col-12 form-group">
+                <label>Extra vars</label>
+                <input data-bind="extra_vars" class="form-control form-control-sm" type="text" title="Extra vars">
+            </div>
+            <div class="col-6 form-group">
+                <label>Tags</label>
+                <input data-bind="tags" class="form-control form-control-sm" type="text" title="Tags">
+            </div>
+            <div class="col-6 form-group">
+                <label>Skip tags</label>
+                <input data-bind="skip_tags" class="form-control form-control-sm" type="text" title="Skip tags">
+            </div>
+            <div class="col-6 form-group">
+                <label for="credentials_selector">Credentials</label>
+                <select id="credentials_selector" class="select form-control form-control-sm" data-bind="cred"></select>
+            </div>
+            <div id="buttons_container" class="col-6 form-group text-right align-self-end">
+                <button class="close-button btn btn-icon" title="Close" type="button">
+                    <span class="fas fa-fw fa-times"></span>
+                </button>
+                <button class="delete-button btn btn-icon" title="Delete" type="button">
+                    <span class="fas fa-fw fa-trash"></span>
+                </button>
+                <button class="save-button btn btn-icon" title="Save" type="button">
+                    <span class="fas fa-fw fa-save"></span>
+                </button>
+                <button class="run-button btn btn-icon" title="Run" type="button">
+                    <span class="fas fa-fw fa-cogs"></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+

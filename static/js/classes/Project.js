@@ -33,7 +33,7 @@ Project.prototype.info = function ($container) {
 
     let self = this;
 
-    $container.append(Templates['project-form']());
+    $container.append(Templates['project-form']);
 
     self.bindElement($container);
 

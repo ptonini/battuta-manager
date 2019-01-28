@@ -25,7 +25,7 @@ class FileHandler(ModelSerializerMixin):
 
     root_path = settings.REPOSITORY_PATH
 
-    root_route = 'files/repository'
+    root_route = '/files/repository'
 
     mime_types = {
         'editable': [
@@ -381,7 +381,7 @@ class FileHandler(ModelSerializerMixin):
 
     def authorizer(self):
 
-        authorizer = caches['authorizer'].get_or_set(self.user.username, Authorizer(self.user))
+        authorizer = caches['authorizer'].get_or_set(self.user.username, lambda: Authorizer(self.user))
 
         group_auth = self.user.has_perm('users.edit_' + 'files' if self.root == 'repository' else self.root)
 
@@ -437,7 +437,7 @@ class PlaybookHandler(FileHandler):
 
     def serialize(self, fields=None):
 
-        links = {'args': '/'.join(['runner', str(self.id), 'args'])}
+        links = {'args': '/'.join(['/runner', str(self.id), 'args'])}
 
         data = self._serializer(fields, {}, links, {}, super(PlaybookHandler, self).serialize(fields))
 

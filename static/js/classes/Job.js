@@ -224,7 +224,7 @@ Job.prototype.statistics = function (modal) {
 
     let self = this;
 
-    let $table = Templates['table']();
+    let $table = Templates['table'];
 
     let tableOptions = {
         paging: false,

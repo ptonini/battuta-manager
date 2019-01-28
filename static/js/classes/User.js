@@ -48,7 +48,7 @@ User.prototype.info = function ($container) {
 
     $('h4.description-header').remove();
 
-    $container.append(Templates['user-details-form']());
+    $container.append(Templates['user-details-form']);
 
     $container.find('[data-bind="timezone"]').timezones();
 
@@ -101,7 +101,7 @@ User.prototype.entityDialog = function () {
 
     $dialog.find('h5.dialog-header').html('Add user');
 
-    $dialog.find('div.dialog-content').append(Templates['user-form']());
+    $dialog.find('div.dialog-content').append(Templates['user-form']);
 
     if (self.id) {
 

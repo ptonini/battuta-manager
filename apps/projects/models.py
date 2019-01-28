@@ -84,7 +84,7 @@ class Project(models.Model, ModelSerializerMixin):
 
     def authorizer(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
         readable = any([
             user.has_perm('users.edit_projects'),
