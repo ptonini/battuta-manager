@@ -102,11 +102,7 @@ PlaybookArgs.prototype.selector = function ($argsContainer, value) {
 
                 if (!(!playArgs.subset && !playArgs.tags && !playArgs.skip_tags && !playArgs.extra_vars)) {
 
-                    if (playArgs.id) playArgs.update(true).then(result => {
-
-                        $option.html(playArgs.toString()).data(result.data)
-
-                    });
+                    if (playArgs.id) playArgs.update(true).then(result => $option.html(playArgs.toString()).data(result.data));
 
                     else playArgs.create(true).then(result => {
 
@@ -116,9 +112,7 @@ PlaybookArgs.prototype.selector = function ($argsContainer, value) {
 
                     });
 
-                }
-
-                else self.statusAlert('warning', 'Can not save empty form');
+                } else self.statusAlert('warning', 'Can not save empty form');
 
             });
 
