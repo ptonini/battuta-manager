@@ -15,7 +15,7 @@ Playbook.prototype.label = {single: 'playbook', plural: 'playbooks'};
 
 Playbook.prototype.tableButtons = function (self) {
 
-    let buttons  = FileObj.prototype.tableButtons();
+    let buttons  = FileObj.prototype.tableButtons(self);
 
     buttons[0]['action'] = function () {
 
