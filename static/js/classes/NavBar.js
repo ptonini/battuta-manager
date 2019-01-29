@@ -1,8 +1,4 @@
-function NavBar() {
-
-    return this;
-
-}
+function NavBar() {return this}
 
 NavBar.prototype = Object.create(Main.prototype);
 
@@ -21,6 +17,8 @@ NavBar.prototype.build = function () {
             sessionStorage.setItem('current_user', response.meta.user.attributes['username']);
 
             sessionStorage.setItem('current_user_tz', response.meta.user.attributes['timezone']);
+
+            sessionStorage.setItem('current_user_id', response.meta.user.id);
 
             new Preferences().load();
 
@@ -88,7 +86,7 @@ NavBar.prototype.build = function () {
                 };
 
                 self.fetchJson('POST', '/login', requestData, false).then(() => {
-;
+
                     self.build();
 
                     Router.navigate('/main');

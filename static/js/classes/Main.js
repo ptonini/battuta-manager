@@ -207,7 +207,7 @@ Main.prototype = {
 
             response['msg'] && Main.prototype.statusAlert('success', response['msg']);
 
-        } else  if (response.hasOwnProperty('errors')) {
+        } else if (response.hasOwnProperty('errors')) {
 
             failCallback && failCallback(response);
 
@@ -429,7 +429,7 @@ Main.prototype = {
 
                 else if ($element.is('a')) $element.attr('href', value);
 
-                else $element.html(value.toString());
+                else $element.html(value ? value.toString() : null);
 
             }
 
@@ -663,23 +663,28 @@ Main.prototype = {
 
                     let nodeName = data.attributes.name;
 
-                    $gridItem.html('').removeAttr('title').removeClass('text-truncate').addClass('dropdown').append(
-                        $('<a>').attr({'data-toggle': 'dropdown', class: 'pattern-grid'}).html(nodeName),
-                        $('<div>').attr('class', 'dropdown-menu').append(
-                            $('<a>')
-                                .attr({class: 'pattern-grid dropdown-item'})
-                                .html('Select')
-                                .click(() => updatePattern('select', nodeName)),
-                            $('<a>')
-                                .attr({class: 'pattern-grid dropdown-item'})
-                                .html('And')
-                                .click(() => updatePattern('and', nodeName)),
-                            $('<a>')
-                                .attr({class: 'pattern-grid dropdown-item'})
-                                .html('Not')
-                                .click(() => updatePattern('exclude', nodeName))
+                    $gridItem
+                        .html('')
+                        .removeAttr('title')
+                        .removeClass('text-truncate')
+                        .addClass('dropdown pointer')
+                        .append(
+                            $('<a>').attr({'data-toggle': 'dropdown', class: 'pattern-grid'}).html(nodeName),
+                            $('<div>').attr('class', 'dropdown-menu').append(
+                                $('<a>')
+                                    .attr({class: 'pattern-grid dropdown-item'})
+                                    .html('Select')
+                                    .click(() => updatePattern('select', nodeName)),
+                                $('<a>')
+                                    .attr({class: 'pattern-grid dropdown-item'})
+                                    .html('And')
+                                    .click(() => updatePattern('and', nodeName)),
+                                $('<a>')
+                                    .attr({class: 'pattern-grid dropdown-item'})
+                                    .html('Not')
+                                    .click(() => updatePattern('exclude', nodeName))
+                            )
                         )
-                    )
 
                 }
 
@@ -728,14 +733,12 @@ Main.prototype = {
 
     selectorRowCallback: function(row, data) {
 
-        $(row).find('td:first')
-            .css('cursor', 'pointer')
-            .click(function () { Router.navigate(data.links.self) });
+        $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
 
         if (data.meta.deletable) $(row).find('td:last').empty().append(
             Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
 
-                new Entities[data.type].Class(data).delete(false, function () { $('section.container').trigger('reload') })
+                new Entities[data.type].Class(data).delete(false, () => $('section.container').trigger('reload'))
 
             })
         );
@@ -759,11 +762,7 @@ Main.prototype = {
 
         $dialog.find('h5.dialog-header').remove();
 
-        $dialog.find('button.cancel-button').click(function () {
-
-            $dialog.find('input.filter_box').val('');
-
-        });
+        $dialog.find('button.cancel-button').click(() => $dialog.find('input.filter_box').val(''));
 
         $dialog.find('button.confirm-button').click(function () {
 
@@ -790,9 +789,7 @@ Main.prototype = {
             dataArray: options.dataArray || [],
             formatItem: function($gridContainer, $gridItem, data) {
 
-                $gridItem
-                    .html(data.attributes[options.itemValueKey])
-                    .addClass('pointer');
+                $gridItem.html(data.attributes[options.itemValueKey]).addClass('pointer');
 
                 if (options.type === 'one') $gridItem.click(function () {
 

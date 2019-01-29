@@ -36,31 +36,25 @@ PlaybookArgs.prototype.toString = function () {
 
 };
 
-PlaybookArgs.prototype.loadForm = function ($container) {
+PlaybookArgs.prototype.selector = function (container, value) {
 
     let self = this;
 
-    return Templates.load(self.templates).then(() => {
+    let creds;
 
-        $container.html(Templates['playbook-args-selector']);
-
-    })
-
-};
-
-PlaybookArgs.prototype.selector = function ($argsContainer, value) {
-
-    let self = this;
-
-    self.loadForm($argsContainer).then(() => {
+    Templates.load(self.templates).then(() => {
 
         return self.read(true)
 
     }).then(result => {
 
-        let $selector = $argsContainer.find('select.args-selector');
+        container.html(Templates['playbook-args-selector']);
 
-        let $form = $argsContainer.find('form.args-form');
+        let credsLink = [Entities['users'].href, sessionStorage.getItem('current_user_id'), 'creds'].join('/');
+
+        let $selector = container.find('select.args-selector');
+
+        let $form = container.find('form.args-form');
 
         let $newOption = Templates['select-option'].data({
             attributes: {
@@ -73,6 +67,10 @@ PlaybookArgs.prototype.selector = function ($argsContainer, value) {
             },
             links: {self: self.links.self}
         });
+
+        creds = new Credential({links: {self: credsLink}});
+
+        creds.buildSelector($form.find('select.credentials-select'));
 
         $form.find('button.close-button').hide();
 
