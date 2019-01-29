@@ -74,8 +74,8 @@ button .fas, button .far, button .fal, button .fab {
 /* Pattern editor *********************/
 
 a.pattern-tab.nav-link.active {
-    background-color: var(--container-bkg-color);
-    border-bottom-color:  var(--container-bkg-color);
+    background-color: var(--container-bkg-color) !important;
+    border-bottom-color:  var(--container-bkg-color) !important;
 }
 
 a.pattern-grid {
