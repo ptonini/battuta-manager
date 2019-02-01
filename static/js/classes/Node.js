@@ -100,9 +100,13 @@ Node.prototype.selector = function () {
                 title: 'Delete nodes',
                 type: 'many',
                 objectType: self.type,
-                url: route + self.objToQueryStr({fields: {attributes: ['name']}}),
+                url: route + self.objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
                 itemValueKey: 'name',
                 action: function (selection, $dialog) {
+
+                    let selectedIds = [];
+
+                    for (let i = 0; i < selection.length; i++) selectedIds.push({id: selection[i].id})
 
                     $dialog.dialog({
                         close: function () {
@@ -116,7 +120,7 @@ Node.prototype.selector = function () {
 
                     self.deleteAlert(function () {
 
-                        self.fetchJson('DELETE', route, {data: selection}, true).then(() => { $dialog.dialog('close') })
+                        self.fetchJson('DELETE', route, {data: selectedIds}, true).then(() => { $dialog.dialog('close') })
 
                     })
 

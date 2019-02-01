@@ -663,28 +663,34 @@ Main.prototype = {
 
                     let nodeName = data.attributes.name;
 
-                    $gridItem
-                        .html('')
-                        .removeAttr('title')
-                        .removeClass('text-truncate')
-                        .addClass('dropdown pointer')
-                        .append(
-                            $('<a>').attr({'data-toggle': 'dropdown', class: 'pattern-grid'}).html(nodeName),
-                            $('<div>').attr('class', 'dropdown-menu').append(
-                                $('<a>')
-                                    .attr({class: 'pattern-grid dropdown-item'})
-                                    .html('Select')
-                                    .click(() => updatePattern('select', nodeName)),
-                                $('<a>')
-                                    .attr({class: 'pattern-grid dropdown-item'})
-                                    .html('And')
-                                    .click(() => updatePattern('and', nodeName)),
-                                $('<a>')
-                                    .attr({class: 'pattern-grid dropdown-item'})
-                                    .html('Not')
-                                    .click(() => updatePattern('exclude', nodeName))
-                            )
-                        )
+                    let dropdownMenu = Templates['pattern-grid-dropdown'];
+
+                    dropdownMenu.find('a.dropdown-toggle').html(nodeName);
+
+                    dropdownMenu.find('a.dropdown-item:contains("Select")').click(() => updatePattern('select', nodeName));
+
+                    dropdownMenu.find('a.dropdown-item:contains("And")').click(() => updatePattern('and', nodeName));
+
+                    dropdownMenu.find('a.dropdown-item:contains("Not")').click(() => updatePattern('not', nodeName));
+
+                    $gridItem().removeAttr('title').removeClass('text-truncate').html(dropdownMenu)
+
+                    //         $('<a>').attr({'data-toggle': 'dropdown', class: 'pattern-grid'}).html(nodeName),
+                    //         $('<div>').attr('class', 'dropdown-menu').append(
+                    //             $('<a>')
+                    //                 .attr({class: 'pattern-grid dropdown-item'})
+                    //                 .html('Select')
+                    //                 .click(() => updatePattern('select', nodeName)),
+                    //             $('<a>')
+                    //                 .attr({class: 'pattern-grid dropdown-item'})
+                    //                 .html('And')
+                    //                 .click(() => updatePattern('and', nodeName)),
+                    //             $('<a>')
+                    //                 .attr({class: 'pattern-grid dropdown-item'})
+                    //                 .html('Not')
+                    //                 .click(() => updatePattern('exclude', nodeName))
+                    //         )
+                    //     )
 
                 }
 

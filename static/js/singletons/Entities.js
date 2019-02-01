@@ -42,7 +42,7 @@ let Entities = {
         action: function (param) { param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).viewer() : new UserGroup().selector() }
     },
     projects: {
-        href: '/projects',
+        href: '/projects/',
         regex: /^projects\/?([0-9]+)?$/,
         Class: Project,
         action: function (param) { param[0] ? new Project({id: param[0], links: {self: param.input}}).viewer() : new Project().selector() }

@@ -112,7 +112,7 @@ class Authorizer:
 
     def is_manager(self, project):
 
-        return True if project in self._managed_projects else False
+        return True if project.id and project in self._managed_projects else False
 
     def can_edit_variables(self, node):
 

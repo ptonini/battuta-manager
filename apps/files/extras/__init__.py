@@ -414,7 +414,7 @@ class PlaybookHandler(FileHandler):
 
     root_path = settings.PLAYBOOK_PATH
 
-    root_route = 'files/playbooks'
+    root_route = '/files/playbooks'
 
     file_template = settings.PLAYBOOK_TEMPLATE
 
@@ -450,7 +450,7 @@ class RoleHandler(FileHandler):
 
     root_path = settings.ROLES_PATH
 
-    root_route = 'files/roles'
+    root_route = '/files/roles'
 
     root_folder_template = settings.ROLE_TEMPLATE
 
