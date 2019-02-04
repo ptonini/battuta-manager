@@ -46,6 +46,15 @@ $.extend($.fn.DynaGrid.defaults, {
     ajaxContentType: 'application/vnd.api+json',
     gridBodyClasses: 'scrollbar',
     gridItemClasses: 'shadow-sm',
+    loadCallback: function ($gridContainer) {
+
+        $gridContainer.find('.truncate').each(function () {
+
+            if (truncated(this)) $(this).attr('title', $(this).text())
+
+        });
+
+    },
 });
 
 
@@ -177,8 +186,10 @@ function generateCopiedFileName(name) {
 
 }
 
+function truncated(element) {
 
+    return element.offsetWidth < element.scrollWidth
 
-
+}
 
 

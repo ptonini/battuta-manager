@@ -145,29 +145,13 @@
 
 <option data-template="select-option" value="new">new</option>
 
-{#$('<div>').attr('class', 'dropdown-menu').append(#}
-{#    $('<a>')#}
-{#        .attr({class: 'pattern-grid dropdown-item'})#}
-{#        .html('Select')#}
-{#        .click(() => updatePattern('select', nodeName)),#}
-{#    $('<a>')#}
-{#        .attr({class: 'pattern-grid dropdown-item'})#}
-{#        .html('And')#}
-{#        .click(() => updatePattern('and', nodeName)),#}
-{#    $('<a>')#}
-{#        .attr({class: 'pattern-grid dropdown-item'})#}
-{#        .html('Not')#}
-{#        .click(() => updatePattern('exclude', nodeName))#}
-{#)#}
-<div data-template="pattern-grid-dropdown" class="dropdown">
-
-    <a class="pattern-grid dropdown-toggle pointer" data-toggle="dropdown"></a>
+<div data-template="pattern-dropdown" class="dropdown pattern-dropdown">
+    <span class="dropdown-toggle pointer truncate" data-toggle="dropdown"></span>
     <div class="dropdown-menu">
-        <a class="dropdown-item pattern-grid">Select</a>
-        <a class="dropdown-item pattern-grid">And</a>
-        <a class="dropdown-item pattern-grid">Not</a>
+        <span class="dropdown-item">Select</span>
+        <span class="dropdown-item">And</span>
+        <span class="dropdown-item">Not</span>
     </div>
-
 </div>
 
 

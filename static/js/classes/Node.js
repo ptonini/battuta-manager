@@ -82,6 +82,7 @@ Node.prototype.selector = function () {
                 $gridItem
                     .html(data.attributes.name)
                     .css('cursor', 'pointer')
+                    .addClass('truncate')
                     .click(() => Router.navigate(data.links.self))
 
             },

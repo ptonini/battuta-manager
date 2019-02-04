@@ -37,7 +37,7 @@ Preferences.prototype = Object.create(Main.prototype);
 Preferences.prototype.constructor = Preferences;
 
 
-Preferences.prototype.links = {self: '/preferences'};
+Preferences.prototype.links = {self: '/preferences/'};
 
 
 Preferences.prototype.load = function () {

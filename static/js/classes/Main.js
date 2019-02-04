@@ -619,7 +619,7 @@ Main.prototype = {
 
         let updatePattern = function (action, nodeName) {
 
-            let sep = {select: ':', and: ':&', exclude: ':!'};
+            let sep = {select: ':', and: ':&', not: ':!'};
 
             let currentPattern = self.get(binding);
 
@@ -663,36 +663,28 @@ Main.prototype = {
 
                     let nodeName = data.attributes.name;
 
-                    let dropdownMenu = Templates['pattern-grid-dropdown'];
+                    let dropdownMenu = Templates['pattern-dropdown'];
 
-                    dropdownMenu.find('a.dropdown-toggle').html(nodeName);
+                    dropdownMenu.find('span.dropdown-toggle').html(nodeName).attr('title', nodeName);
 
-                    dropdownMenu.find('a.dropdown-item:contains("Select")').click(() => updatePattern('select', nodeName));
+                    dropdownMenu.find('span.dropdown-item:contains("Select")').click(() => updatePattern('select', nodeName));
 
-                    dropdownMenu.find('a.dropdown-item:contains("And")').click(() => updatePattern('and', nodeName));
+                    dropdownMenu.find('span.dropdown-item:contains("And")').click(() => updatePattern('and', nodeName));
 
-                    dropdownMenu.find('a.dropdown-item:contains("Not")').click(() => updatePattern('not', nodeName));
+                    dropdownMenu.find('span.dropdown-item:contains("Not")').click(() => updatePattern('not', nodeName));
 
-                    $gridItem().removeAttr('title').removeClass('text-truncate').html(dropdownMenu)
+                    $gridItem.removeAttr('title').removeClass('text-truncate').html(dropdownMenu)
 
-                    //         $('<a>').attr({'data-toggle': 'dropdown', class: 'pattern-grid'}).html(nodeName),
-                    //         $('<div>').attr('class', 'dropdown-menu').append(
-                    //             $('<a>')
-                    //                 .attr({class: 'pattern-grid dropdown-item'})
-                    //                 .html('Select')
-                    //                 .click(() => updatePattern('select', nodeName)),
-                    //             $('<a>')
-                    //                 .attr({class: 'pattern-grid dropdown-item'})
-                    //                 .html('And')
-                    //                 .click(() => updatePattern('and', nodeName)),
-                    //             $('<a>')
-                    //                 .attr({class: 'pattern-grid dropdown-item'})
-                    //                 .html('Not')
-                    //                 .click(() => updatePattern('exclude', nodeName))
-                    //         )
-                    //     )
-
-                }
+                },
+                // loadCallback: function($gridContainer) {
+                //
+                //     let $body = $gridContainer.find('div.dynagrid-body');
+                //
+                //     let $outerBody = $gridContainer.find('div.dynagrid-outer-body');
+                //
+                //     //$body.css('min-height', $outerBody.outerHeight() * .8)
+                //
+                // }
 
             });
 
@@ -795,7 +787,13 @@ Main.prototype = {
             dataArray: options.dataArray || [],
             formatItem: function($gridContainer, $gridItem, data) {
 
-                $gridItem.html(data.attributes[options.itemValueKey]).addClass('pointer');
+                $gridItem.resize(() => console.log(data.attributes[options.itemValueKey]));
+
+                $gridItem
+                    .html(data.attributes[options.itemValueKey])
+                    .addClass('pointer')
+                    .addClass('truncate')
+                    .resize(() => console.log(data.attributes[options.itemValueKey]));
 
                 if (options.type === 'one') $gridItem.click(function () {
 
@@ -844,22 +842,21 @@ Main.prototype = {
 
                 let readable = data.meta && data.meta.hasOwnProperty('readable') ? data.meta.readable : true;
 
-                $gridItem.append(
-                    $('<span>').append(data.attributes[key]).toggleClass('pointer', readable && link).click(function () {
+                let nameLabel = $('<span>')
+                    .append(data.attributes[key])
+                    .addClass('truncate')
+                    .toggleClass('pointer', readable && link)
+                    .click(() => readable && link && Router.navigate(link));
 
-                        readable && link && Router.navigate(link);
+                $gridItem.addClass('relation-grid-item').append(nameLabel, Templates['remove-icon'].click(function () {
 
-                    }),
-                    Templates['remove-icon'].click(function () {
+                    self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
 
-                        self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
-
-                            $grid.trigger('reload');
-
-                        })
+                        $grid.trigger('reload');
 
                     })
-                )
+
+                }));
 
             },
             addButtonAction: function () {

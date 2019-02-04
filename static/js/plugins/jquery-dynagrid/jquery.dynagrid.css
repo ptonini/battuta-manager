@@ -12,9 +12,7 @@ div.dynagrid-item {
     line-height: 14px;
     text-align: left;
     border: thin solid #F8F8F8;
-    display: flex;
     align-items: center;
-    word-break: break-all !important;
 }
 
 div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}
@@ -26,12 +24,6 @@ div.dynagrid-item.toggle-on, div.dynagrid-item:active  {
 
 div.dynagrid-item.toggle-on:hover {background: #BABABA; color: #FFFFFF}
 
-.dynagrid-item-child {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 span.dynagrid-title {margin-right: 1em}
 
 a.dynagrid-btn {border-style: hidden}
@@ -39,5 +31,3 @@ a.dynagrid-btn {border-style: hidden}
 a.dynagrid-btn, button.dynagrid-btn, span.dynagrid-counter {margin-right: 1rem}
 
 input.dynagrid-search {margin-left: 8px}
-
-.text-truncate {text-overflow: ellipsis; white-space: nowrap; overflow: hidden}

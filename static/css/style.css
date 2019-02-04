@@ -32,6 +32,15 @@ body {
     src: url(/static/components/Assistant/cZGJYnIjSi6H75xkzaGW8.ttf)
 }
 
+input, textarea, select, option, td,
+button.btn,
+div.dynagrid-item,
+div.form-group input,
+div.item-value,
+.ui-widget input {
+    font-family: "Elements", sans-serif !important;
+}
+
 h3, h4, h5, h6, label, th, a, li,
 div.navbar,
 div.dataTables_info,
@@ -40,16 +49,6 @@ div.item-label,
 #runner_status {
     font-family: "Headers", sans-serif !important;
     text-shadow: var(--main-text-shadow);
-}
-
-input, textarea, select, option, td,
-button.btn,
-div.dynagrid-item,
-div.form-group input,
-a.pattern-grid,
-div.item-value,
-.ui-widget input {
-    font-family: "Elements", sans-serif !important;
 }
 
 
@@ -78,9 +77,24 @@ a.pattern-tab.nav-link.active {
     border-bottom-color:  var(--container-bkg-color) !important;
 }
 
-a.pattern-grid {
-    font-size: .875rem
+div.pattern-dropdown {
+    font-size: .875rem !important;
 }
+
+div.pattern-dropdown div.dropdown-menu {
+    position: absolute !important;
+    z-index: 1000;
+}
+
+div.pattern-dropdown span.dropdown-item {
+    font-size: smaller;
+    cursor: pointer;
+}
+
+div.pattern-dropdown span.dropdown-toggle::after {
+     content: none;
+}
+
 
 /* Tabs  *****************************/
 
@@ -411,6 +425,20 @@ div.dataTables_paginate a.page-link:hover {
     background-color: var(--btn-checked-color)
 }
 
+/* Relation grid *********************/
+
+.relation-grid-item {
+    display: flex;
+    min-width: 0
+}
+
+
 .pointer:hover {
     cursor: pointer;
+}
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }

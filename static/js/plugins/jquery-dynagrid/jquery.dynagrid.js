@@ -372,8 +372,8 @@
     };
 
     $.fn.DynaGrid.defaults = {
-        loadCallback: function(gridContainer) {},
-        formatItem: function(gridContainer, gridItem) {},
+        loadCallback: function($gridContainer) {},
+        formatItem: function($gridContainer, gridItem) {},
         addButtonAction: function(gridContainer, addButton) {},
         headerTag: '<h5>',
         gridTitle: null,
