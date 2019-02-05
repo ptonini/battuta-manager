@@ -46,21 +46,7 @@ $.extend($.fn.DynaGrid.defaults, {
     ajaxContentType: 'application/vnd.api+json',
     gridBodyClasses: 'scrollbar',
     gridItemClasses: 'shadow-sm',
-    loadCallback: function ($gridContainer) {
-
-        $gridContainer.find('.truncate').each(function () {
-
-            if (truncated(this)) {
-
-                $(this).attr('title', $(this).text());
-
-                console.log($(this).text())
-
-            }
-
-        });
-
-    },
+    loadCallback: addTitleToTruncatedElements,
 });
 
 
@@ -198,4 +184,32 @@ function truncated(element) {
 
 }
 
+function addTitleToTruncatedElements() {
 
+    console.log('running')
+
+    $(document.body).find('.truncate').each(function () {
+
+        if (truncated(this)) {
+
+            console.log(this.textContent);
+
+            $(this).attr('title', $(this).text())
+
+        } else {
+
+            $(this).removeAttr('title')
+
+        }
+
+    });
+
+}
+
+$('a.nav-link').on('shown.bs.tab', function () {
+
+    console.log('tag');
+
+    addTitleToTruncatedElements()
+
+});

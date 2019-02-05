@@ -621,17 +621,11 @@ Main.prototype = {
 
             let sep = {Select: ':', And: ':&', Not: ':!'};
 
-            let currentPattern = self.get(binding);
+            let p = self.get(binding);
 
-            if (action !== 'Select' && currentPattern === '') self.statusAlert('warning', 'Select host or group first');
+            if (action !== 'Select' && p === '') self.statusAlert('warning', 'Select host or group first');
 
-            else {
-
-                if (currentPattern) self.set(binding, currentPattern + sep[action] + nodeName);
-
-                else self.set(binding, nodeName)
-
-            }
+            else p ? self.set(binding, p + sep[action] + nodeName) : self.set(binding, nodeName)
 
         };
 
@@ -669,7 +663,7 @@ Main.prototype = {
 
                     $dropdownMenu.find('span.dropdown-item').click(function () {
 
-                        updatePattern($(this).html(), nodeName)
+                        updatePattern(this.textContent, nodeName)
 
                     });
 
