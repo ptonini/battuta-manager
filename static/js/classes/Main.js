@@ -619,11 +619,11 @@ Main.prototype = {
 
         let updatePattern = function (action, nodeName) {
 
-            let sep = {select: ':', and: ':&', not: ':!'};
+            let sep = {Select: ':', And: ':&', Not: ':!'};
 
             let currentPattern = self.get(binding);
 
-            if (action !== 'select' && currentPattern === '') self.statusAlert('warning', 'Select host or group first');
+            if (action !== 'Select' && currentPattern === '') self.statusAlert('warning', 'Select host or group first');
 
             else {
 
@@ -663,28 +663,19 @@ Main.prototype = {
 
                     let nodeName = data.attributes.name;
 
-                    let dropdownMenu = Templates['pattern-dropdown'];
+                    let $dropdownMenu = Templates['pattern-dropdown'];
 
-                    dropdownMenu.find('span.dropdown-toggle').html(nodeName).attr('title', nodeName);
+                    $dropdownMenu.find('span.dropdown-toggle').html(nodeName);
 
-                    dropdownMenu.find('span.dropdown-item:contains("Select")').click(() => updatePattern('select', nodeName));
+                    $dropdownMenu.find('span.dropdown-item').click(function () {
 
-                    dropdownMenu.find('span.dropdown-item:contains("And")').click(() => updatePattern('and', nodeName));
+                        updatePattern($(this).html(), nodeName)
 
-                    dropdownMenu.find('span.dropdown-item:contains("Not")').click(() => updatePattern('not', nodeName));
+                    });
 
-                    $gridItem.removeAttr('title').removeClass('text-truncate').html(dropdownMenu)
+                    $gridItem.html($dropdownMenu)
 
                 },
-                // loadCallback: function($gridContainer) {
-                //
-                //     let $body = $gridContainer.find('div.dynagrid-body');
-                //
-                //     let $outerBody = $gridContainer.find('div.dynagrid-outer-body');
-                //
-                //     //$body.css('min-height', $outerBody.outerHeight() * .8)
-                //
-                // }
 
             });
 
@@ -726,29 +717,6 @@ Main.prototype = {
         let self = this;
 
         self.warningAlert('This action cannot be reversed. Continue?', function () { action && action() })
-
-    },
-
-    selectorRowCallback: function(row, data) {
-
-        $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
-
-        if (data.meta.deletable) $(row).find('td:last').empty().append(
-            Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
-
-                new Entities[data.type].Class(data).delete(false, () => $('section.container').trigger('reload'))
-
-            })
-        );
-    },
-
-    selectorDrawCallback: function(settings) {
-
-        let $table = $(settings.nTable);
-
-        $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) });
-
-        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 
     },
 
@@ -944,6 +912,29 @@ Main.prototype = {
             $table.DataTable(tableOptions);
 
         })
+
+    },
+
+    selectorRowCallback: function(row, data) {
+
+        $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
+
+        if (data.meta.deletable) $(row).find('td:last').empty().append(
+            Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
+
+                new Entities[data.type].Class(data).delete(false, () => $('section.container').trigger('reload'))
+
+            })
+        );
+    },
+
+    selectorDrawCallback: function(settings) {
+
+        let $table = $(settings.nTable);
+
+        $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) });
+
+        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 
     },
 

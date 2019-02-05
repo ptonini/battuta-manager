@@ -119,18 +119,13 @@ class Credential(models.Model, ModelSerializerMixin):
 
     def authorizer(self, user):
 
-        readable = any([
-            user.has_perm('users.edit_users') and not self.user.is_superuser,
-            user.is_superuser,
-            user.id == self.user.id
-        ]),
+        readable = user.has_perm('users.edit_users') or user.id == self.user.id,
 
         editable = readable
 
         deletable = all([
             self != self.user.default_cred,
-            user.has_perm('users.edit_users') and not self.user.is_superuser,
-            user.is_superuser or user.id == self.user.id,
+            user.has_perm('users.edit_users') or user.id == self.user.id,
         ])
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}

@@ -54,19 +54,16 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
-        inventory = cache.get_or_set('inventory', AnsibleInventory)
-
-        readable = [
+        readable = any([
             user.has_perm('users.execute_jobs'),
-            authorizer.can_run_playbooks(inventory, self.path)
-        ]
+            authorizer.can_run_playbooks(cache.get_or_set('inventory', AnsibleInventory), self.path)
+        ])
 
         editable = readable
 
         deletable = readable
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
-
 
     class Meta:
 

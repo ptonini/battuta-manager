@@ -102,15 +102,11 @@ Preferences.prototype.dialog = function () {
 
             let result = validatePreference($(this).data('dataType'), $(this).val());
 
-            if (result[0]) {
-
-                data.push({
-                    id: $(this).data('name'),
-                    type: 'preference_item',
-                    attributes: {value: $(this).val()}
-                })
-
-            }
+            if (result[0]) data.push({
+                id: $(this).data('name'),
+                type: 'preference_item',
+                attributes: {value: $(this).val()}
+            });
 
             else {
 
@@ -122,19 +118,16 @@ Preferences.prototype.dialog = function () {
 
         });
 
-        if (noError) {
+        noError && self.fetchJson('PATCH', self.links.self, {data: data}, true).then(() => {
 
-            self.fetchJson('PATCH', self.links.self, {data: data}, true).then(() => {
+            $dialog.dialog('close');
 
-                $dialog.dialog('close');
+            new NavBar().build();
 
-                new NavBar().build();
+            location.reload();
 
-                Router.check(window.location.hash.split('#')[1]);
+        });
 
-            });
-
-        }
 
     });
 

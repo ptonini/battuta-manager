@@ -50,7 +50,13 @@ $.extend($.fn.DynaGrid.defaults, {
 
         $gridContainer.find('.truncate').each(function () {
 
-            if (truncated(this)) $(this).attr('title', $(this).text())
+            if (truncated(this)) {
+
+                $(this).attr('title', $(this).text());
+
+                console.log($(this).text())
+
+            }
 
         });
 

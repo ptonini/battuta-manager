@@ -51,7 +51,6 @@ div.item-label,
     text-shadow: var(--main-text-shadow);
 }
 
-
 .title-header:first-letter {
     text-transform: capitalize;
 }
@@ -422,7 +421,7 @@ div.dataTables_paginate a.page-link:hover {
 .checked-button,
 .checked-button:focus,
 .checked-button:hover {
-    background-color: var(--btn-checked-color)
+    background-color: var(--btn-checked-color) !important
 }
 
 /* Relation grid *********************/
@@ -436,6 +435,8 @@ div.dataTables_paginate a.page-link:hover {
 .pointer:hover {
     cursor: pointer;
 }
+
+
 .truncate {
     white-space: nowrap;
     overflow: hidden;
