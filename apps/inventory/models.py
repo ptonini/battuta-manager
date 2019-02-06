@@ -250,7 +250,10 @@ class Variable(models.Model, ModelSerializerMixin):
 
             host_id_str = str(getattr(self.host, 'id'))
 
-            links = {'self': '/'.join([Host.route, host_id_str, Variable.type, str(self.id)])}
+            links = {
+                'self': '/'.join([Host.route, host_id_str, Variable.type, str(self.id)]),
+                'parent': '/'.join([Host.route, host_id_str])
+            }
 
             attributes['host'] = host_id_str
 
@@ -258,7 +261,10 @@ class Variable(models.Model, ModelSerializerMixin):
 
             group_id_str = str(getattr(self.group, 'id'))
 
-            links = {'self': '/'.join([Group.route, group_id_str, Variable.type, str(self.id)])}
+            links = {
+                'self': '/'.join([Group.route, group_id_str, Variable.type, str(self.id)]),
+                'parent': '/'.join([Group.route, group_id_str])
+            }
 
             attributes['group'] = group_id_str
 

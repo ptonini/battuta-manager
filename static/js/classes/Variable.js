@@ -43,13 +43,13 @@ Variable.prototype.internalVars = [
     'ansible_shell_executable'
 ];
 
-Variable.prototype.table = function ($container, node) {
+Variable.prototype.table = function ($container) {
 
     let self = this;
 
-    let $table = Templates['table'];
-
     Templates.load(self.templates).then(() => {
+
+        let $table = Templates['table'];
 
         $table.addClass('class', 'variable-table');
 
@@ -68,15 +68,11 @@ Variable.prototype.table = function ($container, node) {
                     className: 'btn-sm btn-icon',
                     action: function () {
 
-                        let variable = new Variable({links: {self: node.links.vars}});
+                        let variable = new Variable(self.serialize());
 
-                        variable.set(node.label.single, node.id);
+                        variable.links = {self: self.links.self};
 
-                        variable.editor(function () {
-
-                            $table.DataTable().ajax.reload()
-
-                        })
+                        variable.editor(() => $table.DataTable().ajax.reload())
 
                     }
                 },
@@ -85,16 +81,12 @@ Variable.prototype.table = function ($container, node) {
                     className: 'btn-sm btn-icon',
                     action: function () {
 
-                        self.copyVariables(node, function () {
-
-                            $table.DataTable().ajax.reload()
-
-                        });
+                        self.copyVariables(self, () => $table.DataTable().ajax.reload());
 
                     }
                 }
             ],
-            ajax: {url: node.links.vars ,dataSrc: 'data'},
+            ajax: {url: self.links.self ,dataSrc: 'data'},
             columns: [
                 {title: 'key', data: 'attributes.key', width: '30%'},
                 {title: 'value', data: 'attributes.value', width: '50%'},

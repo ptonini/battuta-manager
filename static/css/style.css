@@ -19,6 +19,24 @@ body {
     color: var(--main-font-color);
 }
 
+/* Text highlighting *****************/
+
+body {
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;;
+}
+
+h4 {
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
 
 /* Fonts *****************************/
 
@@ -41,6 +59,8 @@ div.item-value,
     font-family: "Elements", sans-serif !important;
 }
 
+
+
 h3, h4, h5, h6, label, th, a, li,
 div.navbar,
 div.dataTables_info,
@@ -49,6 +69,7 @@ div.item-label,
 #runner_status {
     font-family: "Headers", sans-serif !important;
     text-shadow: var(--main-text-shadow);
+    user-select: none;
 }
 
 .title-header:first-letter {

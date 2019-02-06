@@ -118,17 +118,6 @@ $.fn.rememberTab = function () {
 
 // Prettify boolean values
 
-$.fn.prettyBoolean = function () {
-
-    this.removeAttr('data-toggle').removeAttr('title').removeClass('text-truncate').addClass('text-center');
-
-    if (this.html() === 'true') this.html($('<span>').attr('class', 'fas fa-check'));
-
-    else this.html('');
-
-    return this;
-
-};
 
 
 function humanBytes(value, unit='B') {
@@ -151,6 +140,12 @@ function humanBytes(value, unit='B') {
     }
 
     else return value
+
+}
+
+function prettyBoolean(data) {
+
+    return data ? '<span class="fas fa-check"></span>' : ''
 
 }
 
@@ -178,38 +173,14 @@ function generateCopiedFileName(name) {
 
 }
 
-function truncated(element) {
-
-    return element.offsetWidth < element.scrollWidth
-
-}
-
 function addTitleToTruncatedElements() {
 
-    console.log('running')
+    $(document.body).find('.truncate').not('[title]').each(function () {
 
-    $(document.body).find('.truncate').each(function () {
-
-        if (truncated(this)) {
-
-            console.log(this.textContent);
-
-            $(this).attr('title', $(this).text())
-
-        } else {
-
-            $(this).removeAttr('title')
-
-        }
+        this.offsetWidth < this.scrollWidth && $(this).attr('title', this.textContent)
 
     });
 
 }
 
-$('a.nav-link').on('shown.bs.tab', function () {
-
-    console.log('tag');
-
-    addTitleToTruncatedElements()
-
-});
+$(document.body).on('shown.bs.tab','a.nav-link', addTitleToTruncatedElements);

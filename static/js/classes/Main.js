@@ -233,7 +233,7 @@ Main.prototype = {
 
     // Data request methods ***********
 
-    fetchJson: function (method, url, obj, blocking) {
+    fetchJson: function (method, url, obj, blocking=true) {
 
         let self = this;
 
@@ -364,11 +364,13 @@ Main.prototype = {
 
     },
 
-    update: function (blocking) {
+    update: function (blocking, param={}) {
 
         let self = this;
 
-        return self.fetchJson('PATCH', self.links.self, {data: self.serialize()}, blocking).then(response => {
+        param.data = self.serialize();
+
+        return self.fetchJson('PATCH', self.links.self, param, blocking).then(response => {
 
             self.constructor(response.data);
 

@@ -13,7 +13,15 @@ Node.prototype.tabs = {
     variables: {
         label: 'Variables',
         validator: () => { return true },
-        generator: (self, $container) => new Variable().table($container, self),
+        generator: (self, $container) => {
+
+            let param = {attributes: {}, links: {self: self.links.vars}};
+
+            param.attributes[self.label.single] = self.id;
+
+            new Variable(param).table($container)
+
+        }
     },
     parents: {
         label: 'Parents',

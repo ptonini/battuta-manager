@@ -36,7 +36,7 @@ User.prototype.selectorColumns = function () {
         {title: 'user', data: 'attributes.username', width: '50%'},
         {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: toUserTZ},
         {title: 'last login', data: 'attributes.last_login', width: '15%', render: toUserTZ},
-        {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: function (data) {return data ? '<span class="fas fa-check"></span>' : ''}},
+        {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: prettyBoolean},
         {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
     ]
 
