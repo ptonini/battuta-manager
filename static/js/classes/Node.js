@@ -19,7 +19,7 @@ Node.prototype.tabs = {
 
             param.attributes[self.label.single] = self.id;
 
-            new Variable(param).table($container)
+            new Variable(param).table($container, self.reloadTables)
 
         }
     },

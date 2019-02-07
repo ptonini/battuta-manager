@@ -8,20 +8,25 @@ function Main (param) {
 
     self.set('id', param ? param.id : null);
 
-    if (param && param.hasOwnProperty('attributes')) {
+    if (param) {
 
-        for (let k in param.attributes) if (param.attributes.hasOwnProperty(k)) self.set(k, param.attributes[k]);
+        if (param.hasOwnProperty('attributes')) {
 
-    }
+            for (let k in param.attributes) if (param.attributes.hasOwnProperty(k)) self.set(k, param.attributes[k]);
 
-    if (param && param.hasOwnProperty('links')) {
+        }
 
-        for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k]);
-    }
+        if (param.hasOwnProperty('links')) {
 
-    if (param && param.hasOwnProperty('meta')) {
+            for (let k in param.links) if (param.links.hasOwnProperty(k)) self.set('links.' + k, param.links[k]);
 
-        for (let k in param.meta) if (param.meta.hasOwnProperty(k)) self.set('meta.' + k, param.meta[k]);
+        }
+
+        if (param.hasOwnProperty('meta')) {
+
+            for (let k in param.meta) if (param.meta.hasOwnProperty(k)) self.set('meta.' + k, param.meta[k]);
+
+        }
 
     }
 
@@ -549,15 +554,11 @@ Main.prototype = {
 
         $('section.container').append($alert.hide());
 
-        $alert.find('span.fa-times').click(function () {
-
-            $alert.fadeOut(function () { $alert.remove() })
-
-        });
+        $alert.find('span.fa-times').click(() => $alert.fadeOut(() => $alert.remove()));
 
         $alert.fadeIn();
 
-        setTimeout(function () { $alert.find('span.fa-times').click() }, 10000)
+        setTimeout(() => $alert.find('span.fa-times').click(), 10000)
 
     },
 
@@ -755,8 +756,7 @@ Main.prototype = {
 
                 $gridItem
                     .html(data.attributes[options.itemValueKey])
-                    .addClass('pointer')
-                    .addClass('truncate')
+                    .addClass('pointer truncate')
                     .resize(() => console.log(data.attributes[options.itemValueKey]));
 
                 if (options.type === 'one') $gridItem.click(function () {
@@ -849,7 +849,6 @@ Main.prototype = {
         });
 
     },
-
 
     // Views **************************
 
@@ -950,19 +949,19 @@ Main.prototype = {
 
             document.title = 'Battuta - ' + self.name;
 
-            $container.find('[data-bind="description"]').data('default', '<i>No description available</i>');
+            $container.find('[data-bind="description"]').data('default', Templates['no-description'].outerHTML());
 
             self.bindElement($container);
 
             $container.find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
 
-                self.editor(function () { self.read(false) });
+                self.editor(() => self.read(false));
 
             });
 
             $container.find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
 
-                self.delete(false, function () {  Router.navigate(Entities[self.type].href) })
+                self.delete(false, () => Router.navigate(Entities[self.type].href))
 
             });
 

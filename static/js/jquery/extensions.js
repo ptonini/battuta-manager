@@ -115,6 +115,10 @@ $.fn.rememberTab = function () {
 
 };
 
+$.fn.outerHTML = function() {
+
+    return jQuery('<div />').append(this.eq(0).clone()).html();
+};
 
 // Prettify boolean values
 
@@ -155,7 +159,6 @@ function toUserTZ(time) {
     return time ? moment.utc(time).tz(sessionStorage.getItem('current_user_tz')).format('YYYY-MM-DD HH:mm:ss') : time
 
 }
-
 
 function generateCopiedFileName(name) {
 

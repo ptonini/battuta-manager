@@ -580,15 +580,39 @@ class VariableView(View, ApiViewMixin):
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        var = node.variable_set.create()
+        if 'source' in request.JSON.get('meta', {}):
 
-        if var.authorizer(request.user)['editable']:
+            source_data = request.JSON['meta']['source']
 
-            return self._api_response(self._save_instance(request, var))
+            source = get_object_or_404(Host if source_data['type'] == Host.type else Group, pk=source_data['id'])
+
+            temp_var = Variable()
+
+            temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
+
+            if temp_var.authorizer(request.user)['editable']:
+
+                for source_var in source.variable_set.all():
+
+                    node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
+
+                return HttpResponse(status=204)
+
+            else:
+
+                return HttpResponseForbidden()
 
         else:
 
-            return HttpResponseForbidden()
+            var = node.variable_set.create()
+
+            if var.authorizer(request.user)['editable']:
+
+                return self._api_response(self._save_instance(request, var))
+
+            else:
+
+                return HttpResponseForbidden()
 
     def get(self, request, node_id, var_id, node_type):
 
@@ -665,41 +689,15 @@ class VariableView(View, ApiViewMixin):
 
     def patch(self, request, node_id, var_id, node_type):
 
-        if 'data' in request.JSON:
+        var = get_object_or_404(Variable, pk=var_id)
 
-            var = get_object_or_404(Variable, pk=var_id)
+        if var.authorizer(request.user)['editable']:
 
-            if var.authorizer(request.user)['editable']:
+            return self._api_response(self._save_instance(request, var))
 
-                return self._api_response(self._save_instance(request, var))
+        else:
 
-            else:
-
-                return HttpResponseForbidden()
-
-        elif 'source' in request.JSON.get('meta', {}):
-
-            source_data = request.JSON['meta']['source']
-
-            source = get_object_or_404(Host if source_data['type'] == Host.type else Group, pk=source_data['id'])
-
-            node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
-
-            temp_var = Variable()
-
-            temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
-
-            if temp_var.authorizer(request.user)['editable']:
-
-                for source_var in source.variable_set.all():
-
-                    node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
-
-                return HttpResponse(status=204)
-
-            else:
-
-                return HttpResponseForbidden()
+            return HttpResponseForbidden()
 
     @staticmethod
     def delete(request, node_id, var_id, node_type):

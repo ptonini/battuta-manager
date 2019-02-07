@@ -11,13 +11,11 @@ Variable.prototype = Object.create(Main.prototype);
 Variable.prototype.constructor = Variable;
 
 
-
 Variable.prototype.type = 'vars';
 
 Variable.prototype.label = {single: 'variable', plural: 'variables'};
 
 Variable.prototype.templates = 'templates_Variable.html';
-
 
 
 Variable.prototype.internalVars = [
@@ -79,11 +77,7 @@ Variable.prototype.table = function ($container) {
                 {
                     text: '<span class="fas fa-fw fa-clone" title="Copy from node"></span>',
                     className: 'btn-sm btn-icon',
-                    action: function () {
-
-                        self.copyVariables(self, () => $table.DataTable().ajax.reload());
-
-                    }
+                    action: () => self.copyVariables(() => $table.DataTable().ajax.reload())
                 }
             ],
             ajax: {url: self.links.self ,dataSrc: 'data'},
@@ -101,7 +95,7 @@ Variable.prototype.table = function ($container) {
                         .addClass('font-italic')
                         .css('cursor', 'pointer')
                         .attr('title', 'Open ' + data.meta.source.attributes.name)
-                        .click(function () { Router.navigate(data.meta.source.links.self) });
+                        .click(() => Router.navigate(data.meta.source.links.self));
 
                 }
 
@@ -256,7 +250,7 @@ Variable.prototype.entityDialog = function () {
     return $dialog
 };
 
-Variable.prototype.copyVariables = function (node, callback) {
+Variable.prototype.copyVariables = function (callback) {
 
     let self = this;
 
@@ -279,13 +273,13 @@ Variable.prototype.copyVariables = function (node, callback) {
             itemValueKey: 'name',
             action: function (selection, $dialog) {
 
-                self.fetchJson('PATCH', node.links.vars, {'meta': {'source': selection}}, true).then(() => {
+                self.create(true, {'meta': {'source': selection}}).then(() => {
 
                     $dialog.dialog('close');
 
                     callback && callback()
 
-                })
+                });
 
             }
         });
