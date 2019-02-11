@@ -332,7 +332,7 @@ Job.prototype.view = function () {
 
                 let $resultContainer = $('.result-container');
 
-                let $taskContainers = $('.task-table-container');
+                let $taskContainers = $('.task-selector-container');
 
                 let $playbookOnly = $('.playbook-only');
 
@@ -424,7 +424,7 @@ Job.prototype.view = function () {
 
             let $playContainerTemplate = $element.find('.play-container');
 
-            let $taskTableTemplate = $element.find('.task-table-container');
+            let $taskTableTemplate = $element.find('.task-selector-container');
 
             let playContainers = {};
 

@@ -18,6 +18,19 @@ Variable.prototype.label = {single: 'variable', plural: 'variables'};
 Variable.prototype.templates = 'templates_Variable.html';
 
 
+Variable.prototype.selectorColumns = function () {
+
+    return [
+        {title: 'key', data: 'attributes.key', width: '30%'},
+        {title: 'value', data: 'attributes.value', width: '50%'},
+        {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+    ]
+
+};
+
+
+
 Variable.prototype.internalVars = [
     'ansible_connection',
     'ansible_host',
@@ -41,7 +54,7 @@ Variable.prototype.internalVars = [
     'ansible_shell_executable'
 ];
 
-Variable.prototype.table = function ($container) {
+Variable.prototype.selector = function ($container) {
 
     let self = this;
 
@@ -49,7 +62,7 @@ Variable.prototype.table = function ($container) {
 
         let $table = Templates['table'];
 
-        $table.addClass('class', 'variable-table');
+        $table.addClass('class', 'variable-selector');
 
         $container.append($table);
 
@@ -81,12 +94,7 @@ Variable.prototype.table = function ($container) {
                 }
             ],
             ajax: {url: self.links.self ,dataSrc: 'data'},
-            columns: [
-                {title: 'key', data: 'attributes.key', width: '30%'},
-                {title: 'value', data: 'attributes.value', width: '50%'},
-                {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
-                {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-            ],
+
             rowCallback: function(row, data) {
 
                 if (data.meta.source) {

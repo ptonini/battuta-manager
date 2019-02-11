@@ -1,8 +1,12 @@
 function UserGroup(param) {
 
-    Main.call(this, param);
+    let self = this;
 
-    return this;
+    self.links = {self: Entities[self.type].href};
+
+    Main.call(self, param);
+
+    return self;
 
 }
 

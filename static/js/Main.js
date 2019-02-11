@@ -426,7 +426,7 @@ Main.prototype = {
 
             if (value !== undefined) {
 
-                if (value === '' && defaultValue) value = defaultValue;
+                if ((value === '' || value === null) && defaultValue) value = defaultValue;
 
                 if ($element.is('input, textarea, select')) $element.val(value);
 
@@ -436,7 +436,7 @@ Main.prototype = {
 
                 else if ($element.is('a')) $element.attr('href', value);
 
-                else $element.html(value ? value.toString() : null);
+                else $element.html(value.toString());
 
             }
 
@@ -600,13 +600,15 @@ Main.prototype = {
 
     addTab: function (name, title) {
 
-        let $tabContentContainer = $('<div>').attr({id: name + '_tab', class: 'tab-pane'});
+        let tabId = name + '_tab';
 
-        $('ul.nav-tabs').append(
-            $('<li>').attr('class', 'nav-item').append(
-                $('<a>').attr({class: 'nav-link', href: '#' + name + '_tab', 'data-toggle': 'tab'}).html(title)
-            )
-        );
+        let $tabContentContainer = Templates['tab-pane'].attr('id', tabId);
+
+        let $tabLink = Templates['tab-link'];
+
+        $tabLink.find('a').attr('href', '#' + tabId).html(title);
+
+        $('ul.nav-tabs').append($tabLink);
 
         $('div.tab-content').append($tabContentContainer);
 
@@ -850,55 +852,48 @@ Main.prototype = {
 
     },
 
+
     // Views **************************
 
-    selector: function () {
+    selector: function ($container) {
 
         let self = this;
 
-        let $container = $('section.container');
-
         Templates.load(self.templates).then(() => {
+
+            let offset = 'tab_table_offset';
+
+            if (!$container) {
+
+                $container = $('section.container');
+
+                offset = 'entity_table_offset'
+
+            }
+
+            console.log($container);
 
             let $selector = Templates['entity-selector'];
 
             let $table = Templates['table'];
 
             let tableOptions = {
-                scrollY: (window.innerHeight - sessionStorage.getItem('entity_table_offset')).toString() + 'px',
+                scrollY: (window.innerHeight - sessionStorage.getItem(offset)).toString() + 'px',
                 scrollCollapse: true,
-                ajax: {
-                    url: Entities[self.type].href,
-                    dataSrc: 'data'
-                },
+                ajax: {url: self.links.self, dataSrc: 'data'},
                 paging: false,
                 dom: 'Bfrtip',
                 columns: self.selectorColumns(),
-                buttons: [
-                    {
-                        text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
-                        action: function () {
-
-                            new Entities[self.type].Class({links: {self: Entities[self.type].href}}).editor(function () {
-
-                                $container.trigger('reload')
-
-                            });
-
-                        },
-                        className: 'btn-sm btn-icon'
-                    }
-                ],
+                buttons: self.selectorButtons(),
                 rowCallback: self.selectorRowCallback,
-                preDrawCallback: function () { sessionStorage.setItem('current_table_position', $table.parent().scrollTop()) },
+                preDrawCallback: () => sessionStorage.setItem('current_table_position', $table.parent().scrollTop()),
                 drawCallback: self.selectorDrawCallback,
             };
 
-            $selector.find('div.table-container').append($table);
+            $selector.find('div.selector-container').append($table);
 
             $container
                 .off()
-                .on('reload', function () { $table.DataTable().ajax.reload() })
                 .empty()
                 .append($selector);
 
@@ -906,7 +901,29 @@ Main.prototype = {
 
             $table.DataTable(tableOptions);
 
+            $('section.container').on('reload', () => $table.DataTable().ajax.reload());
+
         })
+
+    },
+
+    selectorButtons: function () {
+
+        let self = this;
+
+        return [{
+            text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
+            action: function () {
+
+                new Entities[self.type].Class({links: {self: Entities[self.type].href}}).editor(function () {
+
+                    $('section.container').trigger('reload')
+
+                });
+
+            },
+            className: 'btn-sm btn-icon'
+        }]
 
     },
 

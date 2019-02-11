@@ -2,6 +2,8 @@ function User(param) {
 
     let self = this;
 
+    self.links = {self: Entities[self.type].href};
+
     Main.call(self, param);
 
     self.get('date_joined') && self.set('date_joined', toUserTZ(param.attributes['date_joined']));

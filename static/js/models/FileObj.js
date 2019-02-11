@@ -345,7 +345,7 @@ FileObj.prototype.selector = function () {
 
         self.bindElement($container);
 
-        let $table = $container.find('table.file-table');
+        let $table = $container.find('table.file-selector');
 
         let reloadTable = () => {
 

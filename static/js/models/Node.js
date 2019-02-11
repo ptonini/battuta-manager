@@ -1,8 +1,12 @@
 function Node(param) {
 
-    Main.call(this, param);
+    let self = this;
 
-    return this;
+    self.links = {self: Entities[self.type].href};
+
+    Main.call(self, param);
+
+    return self;
 }
 
 Node.prototype = Object.create(Main.prototype);
@@ -19,7 +23,7 @@ Node.prototype.tabs = {
 
             param.attributes[self.label.single] = self.id;
 
-            new Variable(param).table($container, self.reloadTables)
+            new Variable(param).selector($container, self.reloadTables)
 
         }
     },
@@ -103,40 +107,36 @@ Node.prototype.selector = function () {
 
         $('#facts_button').click(() => new Job({hosts: 'all'}).getFacts());
 
-        $('#delete_button').click(function () {
+        $('#delete_button').click(() => self.gridDialog({
+            title: 'Delete nodes',
+            type: 'many',
+            objectType: self.type,
+            url: route + self.objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
+            itemValueKey: 'name',
+            action: function (selection, $dialog) {
 
-            self.gridDialog({
-                title: 'Delete nodes',
-                type: 'many',
-                objectType: self.type,
-                url: route + self.objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
-                itemValueKey: 'name',
-                action: function (selection, $dialog) {
+                let selectedIds = [];
 
-                    let selectedIds = [];
+                for (let i = 0; i < selection.length; i++) selectedIds.push({id: selection[i].id})
 
-                    for (let i = 0; i < selection.length; i++) selectedIds.push({id: selection[i].id})
+                $dialog.dialog({
+                    close: function () {
 
-                    $dialog.dialog({
-                        close: function () {
+                        $(this).remove();
 
-                            $(this).remove();
+                        $container.trigger('reload')
 
-                            $container.trigger('reload')
+                    }
+                });
 
-                        }
-                    });
+                self.deleteAlert(function () {
 
-                    self.deleteAlert(function () {
+                    self.fetchJson('DELETE', route, {data: selectedIds}, true).then(() => { $dialog.dialog('close') })
 
-                        self.fetchJson('DELETE', route, {data: selectedIds}, true).then(() => { $dialog.dialog('close') })
+                })
 
-                    })
-
-                }
-            });
-
-        });
+            }
+        }));
 
         $container.find('.dataTables_filter input[type="search"]').keyup(function(){
 
@@ -170,4 +170,4 @@ Node.prototype.selector = function () {
 
 };
 
-Node.prototype.reloadTables = () =>  $('table.variable-table').DataTable().ajax.reload();
+Node.prototype.reloadTables = () =>  $('selector.variable-selector').DataTable().ajax.reload();

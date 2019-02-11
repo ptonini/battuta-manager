@@ -1,8 +1,12 @@
 function Group(param) {
 
-    Main.call(this, param);
+    let self = this;
 
-    return this;
+    self.links = {self: Entities[self.type].href};
+
+    Main.call(self, param);
+
+    return self;
 
 }
 
@@ -114,13 +118,13 @@ Group.prototype.info = function ($container) {
     //
     //             let $dialog = Main.prototype.notificationDialog();
     //
-    //             let $table = Templates['table']();
+    //             let $selector = Templates['selector']();
     //
     //             $dialog.find('h5.dialog-header').html(key).addClass('text-capitalize');
     //
-    //             $dialog.find('.dialog-content').append($table);
+    //             $dialog.find('.dialog-content').append($selector);
     //
-    //             $table.DataTable({
+    //             $selector.DataTable({
     //                 data: infoTables[key].data,
     //                 autoWidth: false,
     //                 scrollY: '360px',
@@ -135,7 +139,7 @@ Group.prototype.info = function ($container) {
     //
     //             $dialog.dialog({width: '700px'});
     //
-    //             $table.DataTable().columns.adjust().draw();
+    //             $selector.DataTable().columns.adjust().draw();
     //
     //         });
     //

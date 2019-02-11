@@ -7,17 +7,6 @@ from apps.iam.extras import Authorizer
 from apps.iam.models import LocalUser, Credential
 
 
-class AdHocTask(models.Model, ModelSerializerMixin):
-
-    hosts = models.CharField(max_length=64, blank=True)
-
-    module = models.CharField(max_length=32)
-
-    arguments = models.TextField(max_length=1024, blank=True)
-
-    become = models.BooleanField()
-
-
 class PlaybookArgs(models.Model, ModelSerializerMixin):
 
     type = 'arguments'
@@ -68,6 +57,51 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
     class Meta:
 
         unique_together = ('path', 'tags', 'subset', 'skip_tags', 'extra_vars')
+
+
+class AdHocTask(models.Model, ModelSerializerMixin):
+
+    type = 'tasks'
+
+    hosts = models.CharField(max_length=64, blank=True)
+
+    module = models.CharField(max_length=32)
+
+    arguments = models.TextField(max_length=1024, blank=True)
+
+    become = models.BooleanField()
+
+    def serialize(self, fields, user):
+
+        attributes = {
+            'hosts': self.hosts,
+            'module': self.module,
+            'arguments': self.arguments,
+            'become': self.become,
+        }
+
+        links = {'self': '/'.join(['runner/playbooks', self.path, 'args', str(self.id)])}
+
+        meta = self.authorizer(user)
+
+        data = self._serializer(fields, attributes, links, meta)
+
+        return data
+
+    def authorizer(self, user):
+
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+
+        readable = any([
+            user.has_perm('users.execute_jobs'),
+            authorizer.can_run_playbooks(cache.get_or_set('inventory', AnsibleInventory), self.path)
+        ])
+
+        editable = readable
+
+        deletable = readable
+
+        return {'readable': readable, 'editable': editable, 'deletable': deletable}
 
 
 class Job(models.Model, ModelSerializerMixin):

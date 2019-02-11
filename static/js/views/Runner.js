@@ -22,8 +22,9 @@ Runner.prototype.view = function () {
 
         let playbook = new Playbook({links: {self: Entities['playbooks'].href}});
 
-        playbook.buildSelector($container.find('div.playbook-selector-container'), $container.find('div.playbook-args-container'))
+        //let task = new Task({links: {self: Entities['playbooks'].href}});
 
+        playbook.buildSelector($container.find('div.playbook-selector-container'), $container.find('div.playbook-args-container'));
 
         // $container.find('#adhoc_table').DataTable({
         //     scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
@@ -49,7 +50,7 @@ Runner.prototype.view = function () {
         //             className: 'btn-sm btn-icon',
         //             action: function () {
         //
-        //                 new AdHoc().dialog(function () {
+        //                 new AdHocTask().dialog(function () {
         //
         //                     $('#adhoc_table').DataTable().ajax.reload()
         //
@@ -60,7 +61,7 @@ Runner.prototype.view = function () {
         //     ],
         //     rowCallback: function (row, data) {
         //
-        //         let adhoc = new AdHoc(data);
+        //         let adhoc = new AdHocTask(data);
         //
         //         $(row).find('td:eq(2)').html(adhoc.argumentsToString()).attr('title', adhoc.argumentsToString());
         //

@@ -58,11 +58,7 @@ $.extend($.ui.dialog.prototype.options, {
     show: true,
     hide: true,
     resizable: false,
-    close: function() {
-
-        $(this).remove()
-
-    }
+    close: function() { $(this).remove() }
 });
 
 
@@ -103,7 +99,7 @@ $.fn.rememberTab = function () {
 
     this.find('a[data-toggle="tab"]').on('shown.bs.tab', function () {
 
-        $($(this).attr('href')).find('.dataTables_scrollBody table').DataTable().columns.adjust().draw()
+        $($(this).attr('href')).find('.dataTables_scrollBody selector').DataTable().columns.adjust().draw()
 
     });
 
@@ -114,6 +110,7 @@ $.fn.rememberTab = function () {
     return this;
 
 };
+
 
 $.fn.outerHTML = function() {
 

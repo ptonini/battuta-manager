@@ -171,7 +171,7 @@ class BattutaCallback(CallbackBase):
 
             if self._job.type == 'adhoc':
 
-                play_name = 'AdHoc task'
+                play_name = 'AdHocTask task'
 
                 become = True if self._job.data['become'] else False
 
