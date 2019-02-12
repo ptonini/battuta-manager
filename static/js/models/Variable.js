@@ -134,7 +134,7 @@ Variable.prototype.selector = function ($container) {
 
                 let table = this;
 
-                let variableKeys = table.api().columns(0).data()[0];
+                let variableKeys = element.api().columns(0).data()[0];
 
                 let duplicates = {};
 
@@ -144,7 +144,7 @@ Variable.prototype.selector = function ($container) {
 
                 $btnGroup.remove();
 
-                table.api().rows().every(function () {
+                element.api().rows().every(function () {
 
                     this.child.isShown() && this.child.hide();
 
@@ -205,7 +205,7 @@ Variable.prototype.selector = function ($container) {
 
                         if (mainValue) {
 
-                            let rowApi = table.DataTable().row(mainValue[1]);
+                            let rowApi = element.DataTable().row(mainValue[1]);
 
                             $(mainValue[1]).find('td:eq(0)').html('').append(
                                 $('<span>').html(mainValue[0].attributes.key),

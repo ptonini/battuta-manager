@@ -16,7 +16,7 @@ Job.prototype.apiPath = '';
 Job.prototype.crud = {
     titlePlural: 'Jobs',
     dataSrc: null,
-    table: {
+    element: {
         ajax: {url: Job.prototype.apiPath + 'list/'},
         columns:[
             {title: 'run data'},

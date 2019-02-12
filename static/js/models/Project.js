@@ -21,7 +21,8 @@ Project.prototype.label = {single: 'project', plural: 'projects'};
 Project.prototype.templates = 'templates_Project.html';
 
 
-Project.prototype.selectorColumns = function () {
+Project.prototype.selectorTableOptions = {
+    columns :function () {
 
     return [
         {title: 'name', data: 'attributes.name', width: '20%'},
@@ -31,7 +32,9 @@ Project.prototype.selectorColumns = function () {
         {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
     ]
 
+}
 };
+
 
 Project.prototype.info = function ($container) {
 

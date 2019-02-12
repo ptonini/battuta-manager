@@ -855,98 +855,29 @@ Main.prototype = {
 
     // Views **************************
 
-    selector: function ($container) {
+    selector: function () {
 
         let self = this;
 
         Templates.load(self.templates).then(() => {
 
-            let offset = 'tab_table_offset';
-
-            if (!$container) {
-
-                $container = $('section.container');
-
-                offset = 'entity_table_offset'
-
-            }
-
-            console.log($container);
+            let $container = $('section.container');
 
             let $selector = Templates['entity-selector'];
 
-            let $table = Templates['table'];
+            let table = new SelectorTable(self, false);
 
-            let tableOptions = {
-                scrollY: (window.innerHeight - sessionStorage.getItem(offset)).toString() + 'px',
-                scrollCollapse: true,
-                ajax: {url: self.links.self, dataSrc: 'data'},
-                paging: false,
-                dom: 'Bfrtip',
-                columns: self.selectorColumns(),
-                buttons: self.selectorButtons(),
-                rowCallback: self.selectorRowCallback,
-                preDrawCallback: () => sessionStorage.setItem('current_table_position', $table.parent().scrollTop()),
-                drawCallback: self.selectorDrawCallback,
-            };
+            $selector.find('div.table-container').append(table.element);
 
-            $selector.find('div.selector-container').append($table);
-
-            $container
-                .off()
-                .empty()
-                .append($selector);
+            $container.off().empty().append($selector);
 
             self.bindElement($container);
 
-            $table.DataTable(tableOptions);
+            table.initialize();
 
-            $('section.container').on('reload', () => $table.DataTable().ajax.reload());
+            $container.on('reload', table.reload);
 
         })
-
-    },
-
-    selectorButtons: function () {
-
-        let self = this;
-
-        return [{
-            text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
-            action: function () {
-
-                new Entities[self.type].Class({links: {self: Entities[self.type].href}}).editor(function () {
-
-                    $('section.container').trigger('reload')
-
-                });
-
-            },
-            className: 'btn-sm btn-icon'
-        }]
-
-    },
-
-    selectorRowCallback: function(row, data) {
-
-        $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
-
-        if (data.meta.deletable) $(row).find('td:last').empty().append(
-            Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
-
-                new Entities[data.type].Class(data).delete(false, () => $('section.container').trigger('reload'))
-
-            })
-        );
-    },
-
-    selectorDrawCallback: function(settings) {
-
-        let $table = $(settings.nTable);
-
-        $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) });
-
-        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 
     },
 
