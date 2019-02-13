@@ -23,25 +23,23 @@ User.prototype = Object.create(Main.prototype);
 User.prototype.constructor = User;
 
 
-// Properties
-
 User.prototype.type = 'users';
 
 User.prototype.templates = 'templates_User.html';
 
 
-// HTML elements
+User.prototype.selectorTableOptions = {
+    columns: function () {
 
-User.prototype.selectorColumns = function () {
+        return [
+            {title: 'user', data: 'attributes.username', width: '50%'},
+            {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: toUserTZ},
+            {title: 'last login', data: 'attributes.last_login', width: '15%', render: toUserTZ},
+            {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: prettyBoolean},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+        ]
 
-    return [
-        {title: 'user', data: 'attributes.username', width: '50%'},
-        {title: 'date joined', data: 'attributes.date_joined', width: '15%', render: toUserTZ},
-        {title: 'last login', data: 'attributes.last_login', width: '15%', render: toUserTZ},
-        {title: 'superuser', data: 'attributes.is_superuser', width: '10%', render: prettyBoolean},
-        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-    ]
-
+    }
 };
 
 User.prototype.info = function ($container) {

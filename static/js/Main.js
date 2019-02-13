@@ -875,7 +875,7 @@ Main.prototype = {
 
             table.initialize();
 
-            $container.on('reload', table.reload);
+            $container.on('reload', function() {table.reload()});
 
         })
 

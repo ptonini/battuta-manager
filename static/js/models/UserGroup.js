@@ -24,23 +24,33 @@ UserGroup.prototype.templates = 'templates_UserGroup.html';
 
 
 
-UserGroup.prototype.selectorColumns = function () {
+UserGroup.prototype.selectorTableOptions = {
+    columns: function () {
 
-    return [
-        {title: 'name', data: 'attributes.name', width: '80%'},
-        {title: 'members', data: 'attributes.member_count', width: '10%'},
-        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-    ];
+        return [
+            {title: 'name', data: 'attributes.name', width: '80%'},
+            {title: 'members', data: 'attributes.member_count', width: '10%'},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+        ];
+
+    },
+    rowCallback: function(row, data) {
+
+        SelectorTable.prototype.dynamicOptions.rowCallback(row, data);
+
+        if (data.meta['builtin']) $(row).attr('class', 'top-row')
+
+    }
 
 };
 
-UserGroup.prototype.selectorRowCallback = function(row, data) {
-
-    Main.prototype.selectorRowCallback(row, data);
-
-    if (data.meta['builtin']) $(row).attr('class', 'top-row')
-
-};
+// UserGroup.prototype.selectorRowCallback = function(row, data) {
+//
+//     Main.prototype.selectorRowCallback(row, data);
+//
+//     if (data.meta['builtin']) $(row).attr('class', 'top-row')
+//
+// };
 
 UserGroup.prototype.tabs = {
     members: {
