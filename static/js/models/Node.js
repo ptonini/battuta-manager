@@ -13,6 +13,16 @@ Node.prototype = Object.create(Main.prototype);
 
 Node.prototype.constructor = Node;
 
+Node.prototype.templates = 'templates_Node.html';
+
+
+Node.prototype.selectorTableOptions = {
+    ajax: false,
+    offset: 'node_table_offset',
+    // pageResize: true,
+    // stateSave: false,
+};
+
 Node.prototype.tabs = {
     variables: {
         label: 'Variables',
@@ -40,42 +50,35 @@ Node.prototype.selector = function () {
 
     let $container = $('section.container');
 
-    self.fetchHtml('selector_Node.html', $container).then(() => {
+    let route = Entities[self.type].href;
+
+    let addNode = () => new Entities[self.type].Class({links: {self: route}}).editor(function () {
+
+        $container.trigger('reload')
+
+    });
+
+    self.selectorTableOptions.buttons = function () {
+
+        let btns = SelectorTable.prototype.dynamicOptions.buttons(self);
+
+        btns[0].action = addNode;
+
+        return btns
+
+    };
+
+    self.fetchHtml('templates_Node.html', $container).then(() => {
 
         self.bindElement($container);
 
-        let route = Entities[self.type].href;
+        let table = new SelectorTable(self, false);
 
-        let $table = $container.find('#node_table');
+        // let $table = $container.find('#node_table');
 
         let $grid = $container.find('#node_grid');
 
-        let addNode = () => new Entities[self.type].Class({links: {self: route}}).editor(function () {
-
-            $container.trigger('reload')
-
-        });
-
         document.title = 'Battuta - ' + self.label.plural;
-
-        $table.DataTable({
-            pageResize: true,
-            stateSave: false,
-            paging: false,
-            scrollY: (window.innerHeight - sessionStorage.getItem('node_table_offset')).toString() + 'px',
-            scrollCollapse: true,
-            columns: self.selectorColumns(),
-            dom: 'Bfrtip',
-            buttons: [{
-                text: '<span class="fas fa-plus fa-fw" title="Add '+ self.type + '"></span>',
-                action: addNode,
-                className: 'btn-sm btn-icon'
-            }],
-            order: [[0, "asc"]],
-            rowCallback: self.selectorRowCallback,
-            preDrawCallback: () => sessionStorage.setItem('current_table_position', $table.parent().scrollTop()),
-            drawCallback: () => $table.parent().scrollTop(sessionStorage.getItem('current_table_position'))
-        });
 
         $grid.DynaGrid({
             headerTag: '<div>',
@@ -101,9 +104,9 @@ Node.prototype.selector = function () {
             addButtonAction: addNode,
         });
 
-        new $.fn.dataTable.Buttons($table.DataTable(), {buttons: [{extend: 'csv'}]});
+        new $.fn.dataTable.Buttons(table.dtObj, {buttons: [{extend: 'csv'}]});
 
-        $('#download_button').click(() => $table.DataTable().buttons(1, null).trigger());
+        $('#download_button').click(() => table.dtObj.buttons(1, null).trigger());
 
         $('#facts_button').click(() => new Job({hosts: 'all'}).getFacts());
 
@@ -154,11 +157,11 @@ Node.prototype.selector = function () {
 
                 $grid.DynaGrid('load', response.data);
 
-                $table.DataTable().clear();
+                table.dtObj.clear();
 
-                $table.DataTable().rows.add(response.data);
+                table.dtObj.rows.add(response.data);
 
-                $table.DataTable().columns.adjust().draw();
+                table.dtObj.columns.adjust().draw();
 
             })
 

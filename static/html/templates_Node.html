@@ -1,3 +1,38 @@
+<div data-template="node-selector" class="row">
+    <div class="col-md-12">
+        <h4 data-bind="label.plural" class="title-header"></h4>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#table_tab">
+                    <span class="fas fa-fw fa-list"></span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a  class="nav-link" data-toggle="tab" href="#grid_tab">
+                    <span class="fas fa-fw fa-th"></span>
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content card shadow p-3 mt-2">
+            <div class="node-table-container tab-pane mb-2 in active" id="table_tab"></div>
+            <div class="node-grid-container tab-pane mb-2" id="grid_tab">
+                <div id="node_grid"></div>
+            </div>
+            <div class="tab-footer">
+                <button id="download_button" class="btn btn-light btn-sm btn-icon" type="button">
+                    <span class="fas fa-fw fa-download" title="Export to CSV"></span>
+                </button>
+                <button id="facts_button" class="btn btn-light btn-sm btn-icon" type="button">
+                    <span class="fas fa-fw fa-clipboard-list" title="Gather facts"></span>
+                </button>
+                <button id="delete_button" class="btn btn-light btn-sm btn-icon" type="button">
+                    <span class="fas fa-fw fa-trash" title="Delete nodes"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div data-template="host-info" class="row">
     <div class="main-info-column hide_when_empty col-5 mt-4">
         <div class="row no-gutters">
@@ -78,3 +113,7 @@
         </button>
     </div>
 </div>
+
+<form data-template="group-form" class="mt-4">
+    <button class="toggle-config-button btn btn-light btn-sm" data-bind="config" type="button">Configuration group</button>
+</form>

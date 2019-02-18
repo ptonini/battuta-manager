@@ -2,7 +2,13 @@ function SelectorTable(obj, initialize=true) {
 
     let self = this;
 
+    let mergedOptions = Object.assign({}, self.dynamicOptions, obj.selectorTableOptions ? obj.selectorTableOptions : {});
+
+    let url;
+
     self.element = Templates['table'];
+
+    self.dtObj = self.element.DataTable();
 
     self.loaded = false;
 
@@ -13,28 +19,28 @@ function SelectorTable(obj, initialize=true) {
         lengthMenu: [5, 10, 25, 50, 100],
         scrollCollapse: true,
         dom: 'Bfrtip',
-        ajax: {url: obj.links.self, dataSrc: 'data'},
-        preDrawCallback:  () => sessionStorage.setItem('current_table_position', self.element.parent().scrollTop()),
-        initComplete: () => self.element.parent().scrollTop(sessionStorage.getItem('current_table_position'))
     };
 
-    if ('selectorTableOptions' in obj) for (let key in obj.selectorTableOptions) {
+    if (mergedOptions.ajax) self.options['ajax'] = {
+        url: mergedOptions.ajax,
+        dataSrc: 'data'
+    };
 
-        if (obj.selectorTableOptions.hasOwnProperty(key)) self.dynamicOptions[key] = obj.selectorTableOptions[key];
+    self.options['scrollY'] = (window.innerHeight - sessionStorage.getItem(mergedOptions.offset)).toString() + 'px';
 
-    }
+    self.options['paging'] =  mergedOptions.paging;
 
-    self.options['scrollY'] = (window.innerHeight - sessionStorage.getItem(self.dynamicOptions.offset)).toString() + 'px';
+    self.options['columns'] =  mergedOptions.columns();
 
-    self.options['paging'] =  self.dynamicOptions.paging;
+    self.options['buttons'] =  mergedOptions.buttons(obj);
 
-    self.options['columns'] =  self.dynamicOptions.columns();
+    self.options['rowCallback'] =  mergedOptions.rowCallback;
 
-    self.options['buttons'] =  self.dynamicOptions.buttons(obj);
+    self.options['preDrawCallback'] =  mergedOptions.preDrawCallback;
 
-    self.options['rowCallback'] =  self.dynamicOptions.rowCallback;
+    self.options['drawCallback'] =  mergedOptions.drawCallback;
 
-    self.options['drawCallback'] =  self.dynamicOptions.drawCallback;
+    self.options['order'] = mergedOptions.options;
 
     initialize && self.loadParam();
 
@@ -73,6 +79,7 @@ SelectorTable.prototype.dynamicOptions = {
 
         return [{
             text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
+            className: 'btn-sm btn-icon',
             action: function () {
 
                 new Entities[self.type].Class({links: {self: Entities[self.type].href}}).editor(function () {
@@ -81,8 +88,7 @@ SelectorTable.prototype.dynamicOptions = {
 
                 });
 
-            },
-            className: 'btn-sm btn-icon'
+            }
         }]
 
     },
@@ -99,13 +105,26 @@ SelectorTable.prototype.dynamicOptions = {
             })
         );
     },
+    preDrawCallback: function (settings) {
+
+        sessionStorage.setItem('current_table_position', $(settings.nTable).parent().scrollTop())
+
+    },
     drawCallback: function(settings) {
 
         let $table = $(settings.nTable);
 
         $table.find('tr.top-row').reverse().each(function (index, row) { $table.prepend(row) });
 
+        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'))
+
     },
     offset: 'entity_table_offset',
-    paging: false
+    paging: false,
+    order: [[0, "asc"]],
+    ajax: true,
+    url: function () { return }
 };
+
+Object.defineProperty(SelectorTable, 'dtObj', {get: function () { return this.element.DataTable() }});
+

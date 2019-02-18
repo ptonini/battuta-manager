@@ -44,13 +44,6 @@ UserGroup.prototype.selectorTableOptions = {
 
 };
 
-// UserGroup.prototype.selectorRowCallback = function(row, data) {
-//
-//     Main.prototype.selectorRowCallback(row, data);
-//
-//     if (data.meta['builtin']) $(row).attr('class', 'top-row')
-//
-// };
 
 UserGroup.prototype.tabs = {
     members: {

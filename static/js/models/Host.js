@@ -15,16 +15,12 @@ Host.prototype = Object.create(Node.prototype);
 Host.prototype.constructor = Host;
 
 
-
 Host.prototype.type = 'hosts';
 
 Host.prototype.label = {single: 'host', plural: 'hosts'};
 
-Host.prototype.templates = 'templates_Host.html';
 
-
-
-Host.prototype.selectorColumns = function () {
+Host.prototype.selectorTableOptions.columns = function () {
 
     if (sessionStorage.getItem('use_ec2_facts') === 'true') return [
         {title: 'Host', data: 'attributes.name'},
