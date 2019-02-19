@@ -36,7 +36,7 @@ UserGroup.prototype.selectorTableOptions = {
     },
     rowCallback: function(row, data) {
 
-        SelectorTable.prototype.dynamicOptions.rowCallback(row, data);
+        SelectorTable.prototype.defaultOptions.rowCallback(row, data);
 
         if (data.meta['builtin']) $(row).attr('class', 'top-row')
 

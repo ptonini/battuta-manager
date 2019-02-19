@@ -60,7 +60,7 @@ Node.prototype.selector = function () {
 
     self.selectorTableOptions.buttons = function () {
 
-        let btns = SelectorTable.prototype.dynamicOptions.buttons(self);
+        let btns = SelectorTable.prototype.defaultOptions.buttons(self);
 
         btns[0].action = addNode;
 
