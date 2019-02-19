@@ -19,30 +19,33 @@ Host.prototype.type = 'hosts';
 
 Host.prototype.label = {single: 'host', plural: 'hosts'};
 
+Host.prototype.selectorTableOptions = {
+    columns: function () {
 
-Host.prototype.selectorTableOptions.columns = function () {
+        if (sessionStorage.getItem('use_ec2_facts') === 'true') return [
+            {title: 'Host', data: 'attributes.name'},
+            {title: 'Address', data: 'attributes.address'},
+            {title: 'Public address', data: 'attributes.public_address'},
+            {title: 'Instance Id', data: 'attributes.instance_id'},
+            {title: 'Type', data: 'attributes.instance_type'},
+            {title: 'Cores', data: 'attributes.cores'},
+            {title: 'Memory', data: 'attributes.memory', render: function(data) { return humanBytes(data, 'MB') }},
+            {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false},
+        ];
 
-    if (sessionStorage.getItem('use_ec2_facts') === 'true') return [
-        {title: 'Host', data: 'attributes.name'},
-        {title: 'Address', data: 'attributes.address'},
-        {title: 'Public address', data: 'attributes.public_address'},
-        {title: 'Instance Id', data: 'attributes.instance_id'},
-        {title: 'Type', data: 'attributes.instance_type'},
-        {title: 'Cores', data: 'attributes.cores'},
-        {title: 'Memory', data: 'attributes.memory', render: function(data) { return humanBytes(data, 'MB') }},
-        {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
-        {title: '', defaultContent: '', class: 'float-right', orderable: false},
-    ];
+        else return [
+            {title: 'Host', data: 'attributes.name'},
+            {title: 'Address', data: 'attributes.address'},
+            {title: 'Cores', data: 'attributes.cores'},
+            {title: 'Memory', data: 'attributes.memory', render: function(data) { return  humanBytes(data, 'MB') }},
+            {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false}
+        ];
 
-    else return [
-        {title: 'Host', data: 'attributes.name'},
-        {title: 'Address', data: 'attributes.address'},
-        {title: 'Cores', data: 'attributes.cores'},
-        {title: 'Memory', data: 'attributes.memory', render: function(data) { return  humanBytes(data, 'MB') }},
-        {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
-        {title: '', defaultContent: '', class: 'float-right', orderable: false}
-    ];
-
+    },
+    ajax: Node.prototype.selectorTableOptions.ajax,
+    offset: Node.prototype.selectorTableOptions.offset,
 };
 
 Host.prototype.info = function ($container) {

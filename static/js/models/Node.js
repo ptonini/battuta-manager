@@ -19,8 +19,6 @@ Node.prototype.templates = 'templates_Node.html';
 Node.prototype.selectorTableOptions = {
     ajax: false,
     offset: 'node_table_offset',
-    // pageResize: true,
-    // stateSave: false,
 };
 
 Node.prototype.tabs = {
@@ -48,7 +46,7 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    let $container = $('section.container');
+    let $container = $('section.container').off().empty();
 
     let route = Entities[self.type].href;
 
@@ -68,17 +66,21 @@ Node.prototype.selector = function () {
 
     };
 
-    self.fetchHtml('templates_Node.html', $container).then(() => {
+    Templates.load(self.templates).then(() => {
+
+        $container.append(Templates['node-selector']);
 
         self.bindElement($container);
 
-        let table = new SelectorTable(self, false);
-
-        // let $table = $container.find('#node_table');
-
         let $grid = $container.find('#node_grid');
 
+        let table = new SelectorTable(self, false);
+
+        $container.find('div.node-table-container').append(table.element);
+
         document.title = 'Battuta - ' + self.label.plural;
+
+        table.initialize();
 
         $grid.DynaGrid({
             headerTag: '<div>',
@@ -147,7 +149,7 @@ Node.prototype.selector = function () {
 
         });
 
-        $grid.find('input.dynagrid-search').keyup(() => $table.DataTable().search($(this).val()).draw());
+        $grid.find('input.dynagrid-search').keyup(() => table.dtObj.search($(this).val()).draw());
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 

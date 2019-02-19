@@ -1,5 +1,7 @@
 function SelectorTable(obj, initialize=true) {
 
+    console.log(obj);
+
     let self = this;
 
     let mergedOptions = Object.assign({}, self.defaultOptions, obj.selectorTableOptions ? obj.selectorTableOptions : {});
@@ -13,47 +15,33 @@ function SelectorTable(obj, initialize=true) {
         lengthMenu: [5, 10, 25, 50, 100],
         scrollCollapse: true,
         dom: 'Bfrtip',
-        // ajax: {url: Entities[obj.type].href, dataSrc: 'data'}
+        paging: mergedOptions.paging,
+        columns: mergedOptions.columns(),
+        rowCallback: mergedOptions.rowCallback,
+        preDrawCallback: mergedOptions.preDrawCallback,
+        drawCallback: mergedOptions.drawCallback,
+        order: mergedOptions.order,
+        buttons: mergedOptions.buttons(obj),
+        scrollY: (window.innerHeight - sessionStorage.getItem(mergedOptions.offset)).toString() + 'px',
     };
 
-    self.options['scrollY'] = (window.innerHeight - sessionStorage.getItem(mergedOptions.offset)).toString() + 'px';
-
-    self.options['paging'] =  mergedOptions.paging;
-
-    self.options['columns'] =  mergedOptions.columns();
-
-    self.options['buttons'] =  mergedOptions.buttons(obj);
-
-    self.options['rowCallback'] =  mergedOptions.rowCallback;
-
-    self.options['preDrawCallback'] =  mergedOptions.preDrawCallback;
-
-    self.options['drawCallback'] =  mergedOptions.drawCallback;
-
-    self.options['order'] = mergedOptions.options;
+    if (mergedOptions.ajax) self.options.ajax = mergedOptions.ajax(obj);
 
     initialize && self.loadOptions();
 
 }
+
 SelectorTable.prototype = {
 
-    get dtObj() { return this.element.DataTable() },
-
-    initialize: function () { $.fn.dataTable.isDataTable(this.element) || this.loadOptions() },
-
-    loadOptions: function () { this.element.DataTable(self.options) },
-
-    reload: function () { this.element.DataTable().ajax.reload() },
-
     defaultOptions: {
-        buttons: function (self) {
+        buttons: function (obj) {
 
             return [{
-                text: '<span class="fas fa-plus fa-fw" title="Add ' + self.label.single + '"></span>',
+                text: '<span class="fas fa-plus fa-fw" title="Add ' + obj.label.single + '"></span>',
                 className: 'btn-sm btn-icon',
                 action: function () {
 
-                    new Entities[self.type].Class({links: {self: Entities[self.type].href}}).editor(function () {
+                    new Entities[obj.type].Class({links: {self: Entities[obj.type].href}}).editor(function () {
 
                         $('section.container').trigger('reload')
 
@@ -93,7 +81,15 @@ SelectorTable.prototype = {
         offset: 'entity_table_offset',
         paging: false,
         order: [[0, "asc"]],
-    }
+        ajax: function (obj) { return {url: Entities[obj.type].href, dataSrc: 'data'}}
+    },
+
+    get dtObj() { return this.element.DataTable() },
+
+    initialize: function () { $.fn.dataTable.isDataTable(this.element) || this.loadOptions() },
+
+    loadOptions: function () { this.element.DataTable(this.options) },
+
+    reload: function () { this.element.DataTable().ajax.reload() },
 
 };
-

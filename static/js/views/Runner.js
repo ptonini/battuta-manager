@@ -12,7 +12,7 @@ Runner.prototype.view = function () {
 
     let self = this;
 
-    let $container = $('section.container');
+    let $container = $('section.container')
 
     Templates.load(self.templates).then(() => {
 

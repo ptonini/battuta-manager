@@ -861,7 +861,7 @@ Main.prototype = {
 
         Templates.load(self.templates).then(() => {
 
-            let $container = $('section.container');
+            let $container = $('section.container').off().empty();
 
             let $selector = Templates['entity-selector'];
 
@@ -869,13 +869,13 @@ Main.prototype = {
 
             $selector.find('div.table-container').append(table.element);
 
-            $container.off().empty().append($selector);
+            $container.append($selector);
 
             self.bindElement($container);
 
             table.initialize();
 
-            $container.on('reload', function() {table.reload()});
+            $container.on('reload', () => table.reload());
 
         })
 

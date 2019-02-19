@@ -25,15 +25,11 @@ UserGroup.prototype.templates = 'templates_UserGroup.html';
 
 
 UserGroup.prototype.selectorTableOptions = {
-    columns: function () {
-
-        return [
-            {title: 'name', data: 'attributes.name', width: '80%'},
-            {title: 'members', data: 'attributes.member_count', width: '10%'},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-        ];
-
-    },
+    columns: function () {return [
+        {title: 'name', data: 'attributes.name', width: '80%'},
+        {title: 'members', data: 'attributes.member_count', width: '10%'},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+    ]},
     rowCallback: function(row, data) {
 
         SelectorTable.prototype.defaultOptions.rowCallback(row, data);

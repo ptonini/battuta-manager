@@ -22,17 +22,13 @@ Project.prototype.templates = 'templates_Project.html';
 
 
 Project.prototype.selectorTableOptions = {
-    columns :function () {
-
-        return [
-            {title: 'name', data: 'attributes.name', width: '20%'},
-            {title: 'description', data: 'attributes.description', width: '40%'},
-            {title: 'manager', data: 'attributes.manager', width: '15%'},
-            {title: 'host group', data: 'attributes.host_group', width: '15%'},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-        ]
-
-    }
+    columns: function () {return [
+        {title: 'name', data: 'attributes.name', width: '20%'},
+        {title: 'description', data: 'attributes.description', width: '40%'},
+        {title: 'manager', data: 'attributes.manager', width: '15%'},
+        {title: 'host group', data: 'attributes.host_group', width: '15%'},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+    ]}
 };
 
 

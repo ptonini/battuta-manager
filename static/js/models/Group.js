@@ -20,9 +20,8 @@ Group.prototype.type = 'groups';
 Group.prototype.label = {single: 'group', plural: 'groups'};
 
 
-Group.prototype.selectorTableOptions.columns = function () {
-
-    return [
+Group.prototype.selectorTableOptions = {
+    columns: function () { return [
         {title: 'Group', data: 'attributes.name'},
         {title: 'Description', data: 'attributes.description'},
         {title: 'Members', data: 'attributes.members'},
@@ -30,8 +29,9 @@ Group.prototype.selectorTableOptions.columns = function () {
         {title: 'Children', data: 'attributes.children'},
         {title: 'Variables', data: 'attributes.variables'},
         {title: '', defaultContent: '', class: 'float-right',  orderable: false}
-    ]
-
+    ]},
+    ajax: Node.prototype.selectorTableOptions.ajax,
+    offset: Node.prototype.selectorTableOptions.offset,
 };
 
 Group.prototype.info = function ($container) {
