@@ -1,7 +1,5 @@
 function SelectorTable(obj, initialize=true) {
 
-    console.log(obj);
-
     let self = this;
 
     let mergedOptions = Object.assign({}, self.defaultOptions, obj.selectorTableOptions ? obj.selectorTableOptions : {});

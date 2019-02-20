@@ -2,6 +2,26 @@ function Playbook (param) {
 
     FileObj.call(this, param);
 
+    // this.selectorTableOptions.buttons = function (self) {
+    //
+    //     let buttons  = FileObj.prototype.selectorTableOptions.buttons(self);
+    //
+    //     buttons[0]['action'] = function () {
+    //
+    //         let playbook = new Playbook({links: {parent: self.links.self}, type: 'file'});
+    //
+    //         playbook.nameEditor('create', function (response) {
+    //
+    //             response.data.type === 'file' &&  playbook.constructor(response.data).contentEditor()
+    //
+    //         })
+    //
+    //     };
+    //
+    //     return buttons
+    //
+    // };
+
     return this;
 
 }
@@ -13,24 +33,30 @@ Playbook.prototype.constructor = Playbook;
 
 Playbook.prototype.label = {single: 'playbook', plural: 'playbooks'};
 
-Playbook.prototype.tableButtons = function (self) {
+Playbook.prototype.selectorTableOptions = {
+    offset: FileObj.prototype.selectorTableOptions.offset,
+    ajax: FileObj.prototype.selectorTableOptions.ajax,
+    columns: FileObj.prototype.selectorTableOptions.columns,
+    buttons: function (self) {
 
-    let buttons  = FileObj.prototype.tableButtons(self);
+        let buttons  = FileObj.prototype.selectorTableOptions.buttons(self);
 
-    buttons[0]['action'] = function () {
+        buttons[0]['action'] = function () {
 
-        let playbook = new Playbook({links: {parent: self.links.self}, type: 'file'});
+            let playbook = new Playbook({links: {parent: self.links.self}, type: 'file'});
 
-        playbook.nameEditor('create', function (response) {
+            playbook.nameEditor('create', function (response) {
 
-            response.data.type === 'file' &&  playbook.constructor(response.data).contentEditor()
+                response.data.type === 'file' &&  playbook.constructor(response.data).contentEditor()
 
-        })
+            })
 
-    };
+        };
 
-    return buttons
+        return buttons
 
+    },
+    rowCallback: FileObj.prototype.selectorTableOptions.rowCallback
 };
 
 

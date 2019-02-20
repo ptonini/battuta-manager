@@ -108,11 +108,11 @@ Node.prototype.selector = function () {
 
         new $.fn.dataTable.Buttons(table.dtObj, {buttons: [{extend: 'csv'}]});
 
-        $('#download_button').click(() => table.dtObj.buttons(1, null).trigger());
+        $container.find('button.download-button').click(() => table.dtObj.buttons(1, null).trigger());
 
-        $('#facts_button').click(() => new Job({hosts: 'all'}).getFacts());
+        $container.find('button.facts-button').click(() => new Job({hosts: 'all'}).getFacts());
 
-        $('#delete_button').click(() => self.gridDialog({
+        $container.find('button.delete-button').click(() => self.gridDialog({
             title: 'Delete nodes',
             type: 'many',
             objectType: self.type,

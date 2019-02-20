@@ -18,15 +18,17 @@ Variable.prototype.label = {single: 'variable', plural: 'variables'};
 Variable.prototype.templates = 'templates_Variable.html';
 
 
-Variable.prototype.selectorColumns = function () {
-
-    return [
-        {title: 'key', data: 'attributes.key', width: '30%'},
-        {title: 'value', data: 'attributes.value', width: '50%'},
-        {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
-        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-    ]
-
+Variable.prototype.selectorTableOptions =  {
+    offset: 'tab_table_offset',
+    order: [[ 2, 'asc' ], [ 0, 'asc' ]],
+    columns: function() {
+        return [
+            {title: 'key', data: 'attributes.key', width: '30%'},
+            {title: 'value', data: 'attributes.value', width: '50%'},
+            {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+        ]
+    }
 };
 
 
@@ -58,21 +60,23 @@ Variable.prototype.selector = function ($container) {
 
     let self = this;
 
+    self.selectorTableOptions.ajax = {url: self.links.self ,dataSrc: 'data'};
+
     Templates.load(self.templates).then(() => {
 
-        let $table = Templates['table'];
+        let table = new SelectorTable(self, false);
 
-        $table.addClass('class', 'variable-selector');
+        table.element.addClass('class', 'variable-selector');
 
-        $container.append($table);
+        $container.append(table);
 
         $table.DataTable({
-            scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',
-            scrollCollapse: true,
-            autoWidth: false,
-            order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-            paging: false,
-            dom: 'Bfrtip',
+            // scrollY: (window.innerHeight - sessionStorage.getItem()).toString() + 'px',
+            // scrollCollapse: true,
+            // autoWidth: false,
+
+            // paging: false,
+            // dom: 'Bfrtip',
             buttons: [
                 {
                     text: '<span class="fas fa-fw fa-plus" title="Add variable"></span>',

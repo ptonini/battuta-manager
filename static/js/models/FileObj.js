@@ -6,8 +6,6 @@ function FileObj(param) {
 
     param && self.set('type', param.type);
 
-    return this;
-
 }
 
 FileObj.prototype = Object.create(Main.prototype);
@@ -19,22 +17,65 @@ FileObj.prototype.label = {single: 'file', plural: 'file repository'};
 
 FileObj.prototype.templates = 'templates_FileObj.html';
 
-FileObj.prototype.tableButtons = function (self) {
+FileObj.prototype.selectorTableOptions = {
+    offset: 'file_table_offset',
+    ajax: false,
+    columns: function () { return [
+        {title: 'name', data: 'attributes.name', width: '50%'},
+        {title: 'type', data: 'attributes.mime_type', width: '15%'},
+        {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
+        {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
+    ]},
+    buttons: function (self) {
+        return [
+            {
+                text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
+                className: 'btn-sm btn-icon',
+                action: () => new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create')
+            },
+            {
+                text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
+                className: 'btn-sm btn-icon',
+                action: () => self.upload()
+            }
+        ];
 
-    return [
-        {
-            text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
-            className: 'btn-sm btn-icon',
-            action: () => new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create')
-        },
-        {
-            text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
-            className: 'btn-sm btn-icon',
-            action: () => self.upload()
+    },
+    rowCallback: function (row, data) {
+
+        let fs_obj = new Entities[data.attributes.root].Class(data);
+
+        if (fs_obj.type === 'folder') {
+
+            let $row = $(row).attr('class', 'folder-row');
+
+            $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(fs_obj.links.self) });
+
+            $row.find('td:eq(2)').html('');
+
         }
-    ];
 
+        if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
+
+        $(row).find('td:eq(4)').html('').removeAttr('title').append(
+            fs_obj.tableBtn('fas fa-pencil-alt', 'Edit', function () { fs_obj.edit() }),
+            fs_obj.tableBtn('fas fa-clone', 'Copy', function () { fs_obj.nameEditor('copy') }),
+            fs_obj.tableBtn('fas fa-download ', 'Download ' + fs_obj.name, function () {
+
+                window.open(fs_obj.links.self + '?download=true', '_self');
+
+            }),
+            fs_obj.tableBtn('fas fa-trash', 'Delete', function () {
+
+                fs_obj.delete(false, function () { $('section.container').trigger('reload') })
+
+            })
+        )
+
+    }
 };
+
 
 
 FileObj.prototype.upload = function () {
@@ -335,17 +376,34 @@ FileObj.prototype.selector = function () {
 
     let self = this;
 
-    let $container = $('section.container');
+    let $container = $('section.container').off().empty();
 
     let pathArrayViewableIndex = 3;
+
+    self.selectorTableOptions.drawCallback = function (settings) {
+
+        let $table = $(settings.nTable);
+
+        $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
+
+        if (self.links.root !== self.links.self) $table
+            .prepend(Templates['previous-folder-row'])
+            .find('td.previous-folder-link')
+            .click(function () { Router.navigate(self.links.parent) });
+
+        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
+
+    };
+
+    let table = new SelectorTable(self, false);
 
     Templates.load(self.templates).then(() => {
 
         $container.html(Templates['file-selector']);
 
-        self.bindElement($container);
+        $container.find('div.file-table-container').html(table.element);
 
-        let $table = $container.find('table.file-selector');
+        self.bindElement($container);
 
         let reloadTable = () => {
 
@@ -420,9 +478,7 @@ FileObj.prototype.selector = function () {
 
                                         })
 
-                                    }
-
-                                    else if (event.key === 27) {
+                                    } else if (event.key === 27) {
 
                                         $pathButton.removeClass('checked-button');
 
@@ -435,11 +491,11 @@ FileObj.prototype.selector = function () {
                         }
                     });
 
-                    $table.DataTable().clear();
+                    table.dtObj.clear();
 
-                    $table.DataTable().rows.add(response['included']);
+                    table.dtObj.rows.add(response['included']);
 
-                    $table.DataTable().columns.adjust().draw();
+                    table.dtObj.columns.adjust().draw();
 
                     buildBreadcrumbs()
 
@@ -449,64 +505,9 @@ FileObj.prototype.selector = function () {
 
         };
 
-        $table.DataTable({
-            scrollY: (window.innerHeight - 316).toString() + 'px',
-            scrollCollapse: true,
-            columns: [
-                {title: 'name', data: 'attributes.name', width: '50%'},
-                {title: 'type', data: 'attributes.mime_type', width: '15%'},
-                {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
-                {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
-                {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
-            ],
-            order: [[0, 'asc']],
-            paging: false,
-            dom: 'Bfrtip',
-            buttons: self.tableButtons(self),
-            rowCallback: function (row, data) {
+        table.initialize();
 
-                let fs_obj = new Entities[data.attributes.root].Class(data);
-
-                if (fs_obj.type === 'folder') {
-
-                    let $row = $(row).attr('class', 'folder-row');
-
-                    $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(fs_obj.links.self) });
-
-                    $row.find('td:eq(2)').html('');
-
-                }
-
-                if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
-
-                $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () { fs_obj.edit() }),
-                    self.tableBtn('fas fa-clone', 'Copy', function () { fs_obj.nameEditor('copy') }),
-                    self.tableBtn('fas fa-download ', 'Download ' + fs_obj.name, function () {
-
-                        window.open(fs_obj.links.self + '?download=true', '_self');
-
-                    }),
-                    self.tableBtn('fas fa-trash', 'Delete', function () { fs_obj.delete(false, function () { $container.trigger('reload') }) })
-                )
-
-            },
-            preDrawCallback: function () { sessionStorage.setItem('current_table_position', $table.parent().scrollTop()) },
-            drawCallback: function () {
-
-                $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
-
-                if (self.links.root !== self.links.self) $table
-                    .prepend(Templates['previous-folder-row'])
-                    .find('td.previous-folder-link')
-                    .click(function () { Router.navigate(self.links.parent) });
-
-                $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
-
-            }
-        });
-
-        $container.off().on('reload', reloadTable).trigger('reload')
+        $container.on('reload', reloadTable).trigger('reload')
 
     });
 
