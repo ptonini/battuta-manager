@@ -79,7 +79,7 @@ SelectorTable.prototype = {
         offset: 'entity_table_offset',
         paging: false,
         order: [[0, "asc"]],
-        ajax: function (obj) { return {url: Entities[obj.type].href, dataSrc: 'data'}}
+        ajax: function (obj) { return {url: Entities[obj.type].href, dataSrc: 'data'} }
     },
 
     get dtObj() { return this.element.DataTable() },
