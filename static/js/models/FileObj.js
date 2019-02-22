@@ -17,66 +17,7 @@ FileObj.prototype.label = {single: 'file', plural: 'file repository'};
 
 FileObj.prototype.templates = 'templates_FileObj.html';
 
-FileObj.prototype.selectorTableOptions = {
-    offset: 'file_table_offset',
-    ajax: false,
-    columns: function () { return [
-        {title: 'name', data: 'attributes.name', width: '50%'},
-        {title: 'type', data: 'attributes.mime_type', width: '15%'},
-        {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
-        {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
-        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
-    ]},
-    buttons: function (self) {
-        return [
-            {
-                text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
-                className: 'btn-sm btn-icon',
-                action: () => new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'}).nameEditor('create')
-            },
-            {
-                text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
-                className: 'btn-sm btn-icon',
-                action: () => self.upload()
-            }
-        ];
-
-    },
-    rowCallback: function (row, data) {
-
-        let fs_obj = new Entities[data.attributes.root].Class(data);
-
-        if (fs_obj.type === 'folder') {
-
-            let $row = $(row).attr('class', 'folder-row');
-
-            $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(fs_obj.links.self) });
-
-            $row.find('td:eq(2)').html('');
-
-        }
-
-        if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
-
-        $(row).find('td:eq(4)').html('').removeAttr('title').append(
-            fs_obj.tableBtn('fas fa-pencil-alt', 'Edit', function () { fs_obj.edit() }),
-            fs_obj.tableBtn('fas fa-clone', 'Copy', function () { fs_obj.nameEditor('copy') }),
-            fs_obj.tableBtn('fas fa-download ', 'Download ' + fs_obj.name, function () {
-
-                window.open(fs_obj.links.self + '?download=true', '_self');
-
-            }),
-            fs_obj.tableBtn('fas fa-trash', 'Delete', function () {
-
-                fs_obj.delete(false, function () { $('section.container').trigger('reload') })
-
-            })
-        )
-
-    }
-};
-
-
+FileObj.prototype.addCallback = false;
 
 FileObj.prototype.upload = function () {
 
@@ -380,22 +321,89 @@ FileObj.prototype.selector = function () {
 
     let pathArrayViewableIndex = 3;
 
-    self.selectorTableOptions.drawCallback = function (settings) {
+    self.selectorTableOptions = {
+        offset: 'file_table_offset',
+        ajax: false,
+        columns: function () { return [
+            {title: 'name', data: 'attributes.name', width: '50%'},
+            {title: 'type', data: 'attributes.mime_type', width: '15%'},
+            {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
+            {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
+        ]},
+        buttons: function (self) {
+            return [
+                {
+                    text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
+                    className: 'btn-sm btn-icon',
+                    action: () => {
 
-        let $table = $(settings.nTable);
+                        let fsobj = new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'});
 
-        $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
+                        fsobj.nameEditor('create', function (response) {
 
-        if (self.links.root !== self.links.self) $table
-            .prepend(Templates['previous-folder-row'])
-            .find('td.previous-folder-link')
-            .click(function () { Router.navigate(self.links.parent) });
+                            self.addCallback && self.addCallback(response)
 
-        $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
+                        })
+                    }
+                },
+                {
+                    text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
+                    className: 'btn-sm btn-icon',
+                    action: () => self.upload()
+                }
+            ];
 
+        },
+        rowCallback: function (row, data) {
+
+            let fs_obj = new Entities[data.attributes.root].Class(data);
+
+            if (fs_obj.type === 'folder') {
+
+                let $row = $(row).attr('class', 'folder-row');
+
+                $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(fs_obj.links.self) });
+
+                $row.find('td:eq(2)').html('');
+
+            }
+
+            if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
+
+            $(row).find('td:eq(4)').html('').removeAttr('title').append(
+                fs_obj.tableBtn('fas fa-pencil-alt', 'Edit', function () { fs_obj.edit() }),
+                fs_obj.tableBtn('fas fa-clone', 'Copy', function () { fs_obj.nameEditor('copy') }),
+                fs_obj.tableBtn('fas fa-download ', 'Download ' + fs_obj.name, function () {
+
+                    window.open(fs_obj.links.self + '?download=true', '_self');
+
+                }),
+                fs_obj.tableBtn('fas fa-trash', 'Delete', function () {
+
+                    fs_obj.delete(false, function () { $('section.container').trigger('reload') })
+
+                })
+            )
+
+        },
+        drawCallback: function (settings) {
+
+            let $table = $(settings.nTable);
+
+            $table.find('tr.folder-row').reverse().each(function (index, row) { $table.prepend(row) });
+
+            if (self.links.root !== self.links.self) $table
+                .prepend(Templates['previous-folder-row'])
+                .find('td.previous-folder-link')
+                .click(function () { Router.navigate(self.links.parent) });
+
+            $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
+
+        }
     };
 
-    let table = new SelectorTable(self, false);
+    let table = new SelectorTable(self);
 
     Templates.load(self.templates).then(() => {
 

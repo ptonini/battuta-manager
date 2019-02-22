@@ -74,7 +74,7 @@ Node.prototype.selector = function () {
 
         let $grid = $container.find('#node_grid');
 
-        let table = new SelectorTable(self, false);
+        let table = new SelectorTable(self);
 
         $container.find('div.node-table-container').append(table.element);
 

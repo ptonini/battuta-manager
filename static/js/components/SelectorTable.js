@@ -1,4 +1,4 @@
-function SelectorTable(obj, initialize=true) {
+function SelectorTable(obj, initialize=false) {
 
     let self = this;
 

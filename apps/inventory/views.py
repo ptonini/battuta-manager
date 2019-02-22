@@ -626,7 +626,9 @@ class VariableView(View, ApiViewMixin):
 
             variables = dict()
 
-            inventory = cache.get_or_set('inventory', AnsibleInventory)
+            #inventory = cache.get_or_set('inventory', AnsibleInventory)
+
+            inventory = AnsibleInventory()
 
             for var in node.variable_set.all():
 

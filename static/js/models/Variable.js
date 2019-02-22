@@ -18,21 +18,6 @@ Variable.prototype.label = {single: 'variable', plural: 'variables'};
 Variable.prototype.templates = 'templates_Variable.html';
 
 
-Variable.prototype.selectorTableOptions =  {
-    offset: 'tab_table_offset',
-    order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-    columns: function() {
-        return [
-            {title: 'key', data: 'attributes.key', width: '30%'},
-            {title: 'value', data: 'attributes.value', width: '50%'},
-            {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-        ]
-    }
-};
-
-
-
 Variable.prototype.internalVars = [
     'ansible_connection',
     'ansible_host',
@@ -60,192 +45,203 @@ Variable.prototype.selector = function ($container) {
 
     let self = this;
 
-    self.selectorTableOptions.ajax = {url: self.links.self ,dataSrc: 'data'};
+    let $mainContainer = $('section.container');
+
+    self.selectorTableOptions =  {
+        offset: 'tab_table_offset',
+        order: [[ 2, 'asc' ], [ 0, 'asc' ]],
+        columns: function() {
+
+            return [
+                {title: 'key', data: 'attributes.key', width: '30%'},
+                {title: 'value', data: 'attributes.value', width: '50%'},
+                {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
+                {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+            ]
+
+        },
+        ajax: function () { return {url: self.links.self ,dataSrc: 'data'} },
+        buttons: function () { return [
+            {
+                text: '<span class="fas fa-fw fa-plus" title="Add variable"></span>',
+                className: 'btn-sm btn-icon',
+                action: function () {
+
+                    let variable = new Variable(self.serialize());
+
+                    variable.links = {self: self.links.self};
+
+                    variable.editor(() => $table.DataTable().ajax.reload())
+
+                }
+            },
+            {
+                text: '<span class="fas fa-fw fa-clone" title="Copy from node"></span>',
+                className: 'btn-sm btn-icon',
+                action: () => self.copyVariables(() => $table.DataTable().ajax.reload())
+            }
+        ]},
+        rowCallback: function(row, data) {
+
+            if (data.meta.source) {
+
+                $(row).find('td:eq(2)')
+                    .addClass('font-italic')
+                    .css('cursor', 'pointer')
+                    .attr('title', 'Open ' + data.meta.source.attributes.name)
+                    .click(() => Router.navigate(data.meta.source.links.self));
+
+            }
+
+            else  {
+
+                let variable =  new Variable(data);
+
+                let buttonCell = $(row).find('td:eq(3)').empty();
+
+                variable['meta']['editable'] && buttonCell.append(
+                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+
+                        variable.editor(function () { $mainContainer.trigger('reload') })
+
+                    })
+                );
+
+                variable['meta']['deletable'] && buttonCell.append(
+                    self.tableBtn('fas fa-trash', 'Delete', function () {
+
+                        variable.delete(false, function () { $mainContainer.trigger('reload') });
+
+                    })
+                );
+            }
+        },
+        drawCallback: function(settings) {
+
+            let table = this;
+
+            let variableKeys = table.api().columns(0).data()[0];
+
+            let duplicates = {};
+
+            let $btnGroup = $container.find('.dt-buttons');
+
+            SelectorTable.prototype.defaultOptions.drawCallback(settings);
+
+            $container.find('.dataTables_wrapper').prepend($btnGroup.children());
+
+            $btnGroup.remove();
+
+            table.api().rows().every(function () {
+
+                this.child.isShown() && this.child.hide();
+
+                let rowKey = this.data().attributes.key;
+
+                let rowData = [this.data(), this.node()];
+
+                let keyIndexes = [];
+
+                let i = -1;
+
+                while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
+
+                if (keyIndexes.length > 1)  {
+
+                    if (duplicates.hasOwnProperty(rowKey)) {
+
+                        if (this.data().meta.primary) duplicates[rowKey].hasMainValue = true;
+
+                        duplicates[rowKey].values.push(rowData);
+
+                    }
+
+                    else duplicates[rowKey] = {hasMainValue: this.data().meta.primary, values: [rowData]}
+
+                }
+            });
+
+            Object.keys(duplicates).forEach(function (key) {
+
+                if (duplicates[key].hasMainValue) {
+
+                    let mainValue = null;
+
+                    let rowArray = [];
+
+                    $.each(duplicates[key].values, function (index, value) {
+
+                        if (value[0].meta.primary) mainValue = value;
+
+                        else {
+
+                            let $newRow = $(value[1]).clone().css('color', '#777');
+
+                            $newRow.find('td:eq(2)').click(function() {
+
+                                window.open(value[0].meta.source_link, '_self')
+
+                            });
+
+                            rowArray.push($newRow);
+
+                            $(value[1]).remove()
+
+                        }
+
+                    });
+
+                    if (mainValue) {
+
+                        let rowApi = table.DataTable().row(mainValue[1]);
+
+                        $(mainValue[1]).find('td:eq(0)').html('').append(
+                            $('<span>').html(mainValue[0].attributes.key),
+                            Templates['show-values-icon'].click(function () {
+
+                                if (rowApi.child.isShown()) {
+
+                                    $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
+
+                                    $(mainValue[1]).removeClass('font-weight-bold');
+
+                                    rowApi.child.hide()
+
+                                }
+
+                                else {
+
+                                    $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
+
+                                    $(mainValue[1]).addClass('font-weight-bold');
+
+                                    rowApi.child(rowArray).show();
+
+                                }
+
+                            })
+                        );
+
+                    }
+
+                }
+
+            });
+
+        }
+    };
 
     Templates.load(self.templates).then(() => {
 
-        let table = new SelectorTable(self, false);
+        let table = new SelectorTable(self);
 
         table.element.addClass('class', 'variable-selector');
 
-        $container.append(table);
+        $container.html(table.element);
 
-        $table.DataTable({
-            // scrollY: (window.innerHeight - sessionStorage.getItem()).toString() + 'px',
-            // scrollCollapse: true,
-            // autoWidth: false,
+        $mainContainer.on('reload', () => table.reload());
 
-            // paging: false,
-            // dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: '<span class="fas fa-fw fa-plus" title="Add variable"></span>',
-                    className: 'btn-sm btn-icon',
-                    action: function () {
-
-                        let variable = new Variable(self.serialize());
-
-                        variable.links = {self: self.links.self};
-
-                        variable.editor(() => $table.DataTable().ajax.reload())
-
-                    }
-                },
-                {
-                    text: '<span class="fas fa-fw fa-clone" title="Copy from node"></span>',
-                    className: 'btn-sm btn-icon',
-                    action: () => self.copyVariables(() => $table.DataTable().ajax.reload())
-                }
-            ],
-            ajax: {url: self.links.self ,dataSrc: 'data'},
-
-            rowCallback: function(row, data) {
-
-                if (data.meta.source) {
-
-                    $(row).find('td:eq(2)')
-                        .addClass('font-italic')
-                        .css('cursor', 'pointer')
-                        .attr('title', 'Open ' + data.meta.source.attributes.name)
-                        .click(() => Router.navigate(data.meta.source.links.self));
-
-                }
-
-                else  {
-
-                    let variable =  new Variable(data);
-
-                    let buttonCell = $(row).find('td:eq(3)').empty();
-
-                    variable['meta']['editable'] && buttonCell.append(
-                        self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
-
-                            variable.editor(function () { $table.DataTable().ajax.reload() })
-
-                        })
-                    );
-
-                    variable['meta']['deletable'] && buttonCell.append(
-                        self.tableBtn('fas fa-trash', 'Delete', function () {
-
-                            variable.delete(false, function () { $table.DataTable().ajax.reload() });
-
-                        })
-                    );
-                }
-            },
-            drawCallback: function() {
-
-                let table = this;
-
-                let variableKeys = element.api().columns(0).data()[0];
-
-                let duplicates = {};
-
-                let $btnGroup = $container.find('.dt-buttons');
-
-                $container.find('.dataTables_wrapper').prepend($btnGroup.children());
-
-                $btnGroup.remove();
-
-                element.api().rows().every(function () {
-
-                    this.child.isShown() && this.child.hide();
-
-                    let rowKey = this.data().attributes.key;
-
-                    let rowData = [this.data(), this.node()];
-
-                    let keyIndexes = [];
-
-                    let i = -1;
-
-                    while ( (i = variableKeys.indexOf(rowKey, i+1)) !== -1) keyIndexes.push(i);
-
-                    if (keyIndexes.length > 1)  {
-
-                        if (duplicates.hasOwnProperty(rowKey)) {
-
-                            if (this.data().meta.primary) duplicates[rowKey].hasMainValue = true;
-
-                            duplicates[rowKey].values.push(rowData);
-
-                        }
-
-                        else duplicates[rowKey] = {hasMainValue: this.data().meta.primary, values: [rowData]}
-
-                    }
-                });
-
-                Object.keys(duplicates).forEach(function (key) {
-
-                    if (duplicates[key].hasMainValue) {
-
-                        let mainValue = null;
-
-                        let rowArray = [];
-
-                        $.each(duplicates[key].values, function (index, value) {
-
-                            if (value[0].meta.primary) mainValue = value;
-
-                            else {
-
-                                let $newRow = $(value[1]).clone().css('color', '#777');
-
-                                $newRow.find('td:eq(2)').click(function() {
-
-                                    window.open(value[0].meta.source_link, '_self')
-
-                                });
-
-                                rowArray.push($newRow);
-
-                                $(value[1]).remove()
-
-                            }
-
-                        });
-
-                        if (mainValue) {
-
-                            let rowApi = element.DataTable().row(mainValue[1]);
-
-                            $(mainValue[1]).find('td:eq(0)').html('').append(
-                                $('<span>').html(mainValue[0].attributes.key),
-                                Templates['show-values-icon'].click(function () {
-
-                                    if (rowApi.child.isShown()) {
-
-                                        $(this).removeClass('fa-chevron-up').addClass('fa-chevron-down');
-
-                                        $(mainValue[1]).removeClass('font-weight-bold');
-
-                                        rowApi.child.hide()
-
-                                    }
-
-                                    else {
-
-                                        $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
-
-                                        $(mainValue[1]).addClass('font-weight-bold');
-
-                                        rowApi.child(rowArray).show();
-
-                                    }
-
-                                })
-                            );
-
-                        }
-
-                    }
-
-                });
-
-            }
-        });
+        table.initialize()
 
     })
 

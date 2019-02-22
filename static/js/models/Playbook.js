@@ -34,9 +34,6 @@ Playbook.prototype.constructor = Playbook;
 Playbook.prototype.label = {single: 'playbook', plural: 'playbooks'};
 
 Playbook.prototype.selectorTableOptions = {
-    offset: FileObj.prototype.selectorTableOptions.offset,
-    ajax: FileObj.prototype.selectorTableOptions.ajax,
-    columns: FileObj.prototype.selectorTableOptions.columns,
     buttons: function (self) {
 
         let buttons  = FileObj.prototype.selectorTableOptions.buttons(self);

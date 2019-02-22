@@ -865,7 +865,7 @@ Main.prototype = {
 
             let $selector = Templates['entity-selector'];
 
-            let table = new SelectorTable(self, false);
+            let table = new SelectorTable(self);
 
             $selector.find('div.table-container').append(table.element);
 
@@ -885,7 +885,7 @@ Main.prototype = {
 
         let self = this;
 
-        let $container = $('section.container');
+        let $container = $('section.container').off().empty();
 
         Templates.load(self.templates).then(() => {
 
@@ -921,7 +921,7 @@ Main.prototype = {
 
             });
 
-            $('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
+            $container.find('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
         });
 
