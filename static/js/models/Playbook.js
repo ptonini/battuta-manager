@@ -2,28 +2,6 @@ function Playbook (param) {
 
     FileObj.call(this, param);
 
-    // this.selectorTableOptions.buttons = function (self) {
-    //
-    //     let buttons  = FileObj.prototype.selectorTableOptions.buttons(self);
-    //
-    //     buttons[0]['action'] = function () {
-    //
-    //         let playbook = new Playbook({links: {parent: self.links.self}, type: 'file'});
-    //
-    //         playbook.nameEditor('create', function (response) {
-    //
-    //             response.data.type === 'file' &&  playbook.constructor(response.data).contentEditor()
-    //
-    //         })
-    //
-    //     };
-    //
-    //     return buttons
-    //
-    // };
-
-    return this;
-
 }
 
 Playbook.prototype = Object.create(FileObj.prototype);
@@ -33,47 +11,32 @@ Playbook.prototype.constructor = Playbook;
 
 Playbook.prototype.label = {single: 'playbook', plural: 'playbooks'};
 
-Playbook.prototype.selectorTableOptions = {
-    buttons: function (self) {
-
-        let buttons  = FileObj.prototype.selectorTableOptions.buttons(self);
-
-        buttons[0]['action'] = function () {
-
-            let playbook = new Playbook({links: {parent: self.links.self}, type: 'file'});
-
-            playbook.nameEditor('create', function (response) {
-
-                response.data.type === 'file' &&  playbook.constructor(response.data).contentEditor()
-
-            })
-
-        };
-
-        return buttons
-
-    },
-    rowCallback: FileObj.prototype.selectorTableOptions.rowCallback
-};
-
-
-Playbook.prototype.buildSelector = function ($selectorContainer, $argsContainer) {
+Playbook.prototype.addCallback = function () {
 
     let self = this;
 
-    let $playbookSelector = $selectorContainer.find('select.playbook-selector');
+    self.type === 'file' && self.read(false, {fields: {attributes: ['name', 'content']}}).then(() => self.contentEditor());
+
+};
+
+
+Playbook.prototype.selectorField = function ($selectorContainer, $argsContainer) {
+
+    let self = this;
+
+    let selectorField = $selectorContainer.find('select.playbook-selector');
 
     self.read(true, {list: true}).then(result => {
 
         for (let i = 0; i < result.data.length; i++) {
 
-            $playbookSelector.append(
+            selectorField.append(
                 $('<option>').data(result.data[i]).attr('value', result.data[i].attributes.path).html(result.data[i].attributes.path)
             );
 
         }
 
-        $playbookSelector.change(function () {
+        selectorField.change(function () {
 
             let playbook = new Playbook($(this).find(':selected').data());
 

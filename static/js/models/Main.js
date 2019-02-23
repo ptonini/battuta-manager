@@ -105,11 +105,7 @@ Main.prototype = {
 
         let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts', 'label'];
 
-        let data = {
-            id: self.id,
-            type: self.type,
-            attributes: {}
-        };
+        let data = {id: self.id, type: self.type, attributes: {}};
 
         for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && self[p] != null) {
 
@@ -117,9 +113,7 @@ Main.prototype = {
 
                 data.attributes[p] = Main.prototype.isPrototypeOf(self[p]) ?  self[p].serialize() : JSON.stringify(self[p]);
 
-            }
-
-            else data.attributes[p] = self[p]
+            } else data.attributes[p] = self[p]
 
         }
 
@@ -228,15 +222,9 @@ Main.prototype = {
 
             Main.prototype.statusAlert('danger', $message);
 
-
-        }
-
-        else Main.prototype.statusAlert('danger', 'Unknown response');
+        } else Main.prototype.statusAlert('danger', 'Unknown response');
 
     },
-
-
-    // Data request methods ***********
 
     fetchJson: function (method, url, obj, blocking=true) {
 

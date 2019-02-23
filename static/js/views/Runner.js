@@ -1,4 +1,5 @@
-function Runner() { return this; }
+function Runner() { }
+
 
 Runner.prototype = Object.create(Main.prototype);
 
@@ -12,7 +13,11 @@ Runner.prototype.view = function () {
 
     let self = this;
 
-    let $container = $('section.container');
+    let $container = $('section.container').off().empty();
+
+    let playbooks = new Playbook({links: {self: Entities['playbooks'].href}});
+
+    let tasks = new AdHocTask();
 
     Templates.load(self.templates).then(() => {
 
@@ -20,11 +25,9 @@ Runner.prototype.view = function () {
 
         $container.find('#job_tabs').rememberTab();
 
-        let playbook = new Playbook({links: {self: Entities['playbooks'].href}});
+        playbooks.selectorField($container.find('div.playbook-selector-container'), $container.find('div.playbook-args-container'));
 
-        //let task = new Task({links: {self: Entities['playbooks'].href}});
-
-        playbook.buildSelector($container.find('div.playbook-selector-container'), $container.find('div.playbook-args-container'));
+        tasks.selector($container.find('div.task-table-container'))
 
         // $container.find('#adhoc_table').DataTable({
         //     scrollY: (window.innerHeight - sessionStorage.getItem('tab_table_offset')).toString() + 'px',

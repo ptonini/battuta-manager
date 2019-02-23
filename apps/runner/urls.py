@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 from django.contrib.auth.decorators import login_required
 
-from apps.runner.views import PlaybookView, PlaybookArgsView
+from apps.runner.views import PlaybookView, PlaybookArgsView, AdHocTaskView
 
 urlpatterns = [
 
@@ -10,6 +10,10 @@ urlpatterns = [
     re_path(r'^playbooks/(?P<path>(?s).*)/args$', login_required(PlaybookArgsView.as_view()), kwargs={'args_id': None}),
 
     re_path(r'^playbooks/(?P<path>(?s).*)/args/(?P<args_id>[0-9]+)$', login_required(PlaybookArgsView.as_view())),
+
+    path('adhoctasks', login_required(AdHocTaskView.as_view()), kwargs={'task_id': None}),
+
+    path('adhoctasks/<int:task_id>/', login_required(AdHocTaskView.as_view())),
 
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #

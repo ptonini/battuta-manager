@@ -61,7 +61,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
 class AdHocTask(models.Model, ModelSerializerMixin):
 
-    type = 'tasks'
+    type = ' adhoc_tasks'
 
     hosts = models.CharField(max_length=64, blank=True)
 
@@ -80,7 +80,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
             'become': self.become,
         }
 
-        links = {'self': '/'.join(['runner/playbooks', self.path, 'args', str(self.id)])}
+        links = {'self': '/'.join(['runner/adhoc', self.path, 'args', str(self.id)])}
 
         meta = self.authorizer(user)
 

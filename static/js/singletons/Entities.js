@@ -71,6 +71,12 @@ let Entities = {
         Class: null,
         action: function () { new Runner().view() }
     },
+    // adhoctask: {
+    //     href: '/runner/adhock',
+    //     regex: /^runner\/runner$/,
+    //     Class: null,
+    //     action: function () { new Runner().view() }
+    // },
 };
 
 for (let k in Entities) if (Entities.hasOwnProperty(k)) Router.add(Entities[k].regex, Entities[k].action);

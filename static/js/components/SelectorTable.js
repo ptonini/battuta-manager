@@ -32,7 +32,8 @@ function SelectorTable(obj, initialize=false) {
 SelectorTable.prototype = {
 
     defaultOptions: {
-        buttons: function (obj) {
+        ajax: obj => { return {url: Entities[obj.type].href, dataSrc: 'data'} },
+        buttons: obj => {
 
             return [{
                 text: '<span class="fas fa-plus fa-fw" title="Add ' + obj.label.single + '"></span>',
@@ -49,8 +50,8 @@ SelectorTable.prototype = {
             }]
 
         },
-        columns: function () { return [] },
-        rowCallback: function(row, data) {
+        columns: () => { return [] },
+        rowCallback: (row, data) => {
 
             $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
 
@@ -62,12 +63,8 @@ SelectorTable.prototype = {
                 })
             );
         },
-        preDrawCallback: function (settings) {
-
-            sessionStorage.setItem('current_table_position', $(settings.nTable).parent().scrollTop())
-
-        },
-        drawCallback: function(settings) {
+        preDrawCallback: settings => sessionStorage.setItem('current_table_position', $(settings.nTable).parent().scrollTop()),
+        drawCallback: settings => {
 
             let $table = $(settings.nTable);
 
@@ -79,7 +76,6 @@ SelectorTable.prototype = {
         offset: 'entity_table_offset',
         paging: false,
         order: [[0, "asc"]],
-        ajax: function (obj) { return {url: Entities[obj.type].href, dataSrc: 'data'} }
     },
 
     get dtObj() { return this.element.DataTable() },

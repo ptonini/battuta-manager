@@ -19,6 +19,7 @@ FileObj.prototype.templates = 'templates_FileObj.html';
 
 FileObj.prototype.addCallback = false;
 
+
 FileObj.prototype.upload = function () {
 
     let self = this;
@@ -119,7 +120,7 @@ FileObj.prototype.contentEditor = function () {
 
     let matchExtension = (filename) => {
 
-        let fileNameArray = filename.split('.');
+        let fileNameArray = filename.toLowerCase().split('.');
 
         let fileExtension = fileNameArray[fileNameArray.length - 1];
 
@@ -342,7 +343,9 @@ FileObj.prototype.selector = function () {
 
                         fsobj.nameEditor('create', function (response) {
 
-                            self.addCallback && self.addCallback(response)
+                            fsobj.constructor(response.data);
+
+                            fsobj.addCallback && fsobj.addCallback()
 
                         })
                     }

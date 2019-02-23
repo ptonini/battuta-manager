@@ -26,28 +26,6 @@ from apps.inventory.extras import AnsibleInventory
 #from apps.projects.extras import ProjectAuthorizer
 
 
-# class PageView(View):
-#
-#     @staticmethod
-#     def get(request, **kwargs):
-#
-#         if kwargs['page'] == 'runner':
-#
-#             return render(request, 'runner/runner.html')
-#
-#         elif kwargs['page'] == 'selector':
-#
-#             return render(request, "runner/job_selector.html")
-#
-#         elif kwargs['page'] == 'viewer':
-#
-#             return render(request, "runner/job_view.html", {'job_id': kwargs['job_id']})
-#
-#         else:
-#
-#             raise Http404
-
-
 class PlaybookView(View, ApiViewMixin):
 
     def get(self, request):
@@ -61,7 +39,6 @@ class PlaybookView(View, ApiViewMixin):
                 data.append(p.serialize({'attributes': ['path'], 'links': ['self', 'args']}))
 
         return self._api_response({'data': data})
-
 
 
 class PlaybookArgsView(View, ApiViewMixin):
@@ -132,6 +109,51 @@ class PlaybookArgsView(View, ApiViewMixin):
         else:
 
             return HttpResponseForbidden()
+
+
+class AdHocTaskView(View, ApiViewMixin):
+
+    form_class = AdHocTaskForm
+
+    def post(self, request, task_id):
+
+        pass
+
+    def get(self, request, task_id):
+
+        if task_id:
+
+            task = get_object_or_404(AdHocTask, pk=task_id)
+
+            if task.authorizer(request.user)['readable']:
+
+                response = {'data': (task.serialize(request.JSON.get('fields'), request.user))}
+
+            else:
+
+                return HttpResponseForbidden()
+
+        else:
+
+            data = list()
+
+            for task in AdHocTask.objects.all():
+
+                if task.authorizer(request.user)['readable']:
+
+                    data.append(task.serialize(request.JSON.get('fields'), request.user))
+
+            response = {'data': data}
+
+        return self._api_response(response)
+
+    def patch(self, request, task_id):
+
+        pass
+
+    def delete(self, request, task_id):
+
+        pass
 
 # class AdHocView(View):
 #

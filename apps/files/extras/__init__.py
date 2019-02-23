@@ -100,7 +100,7 @@ class FileHandler(ModelSerializerMixin):
 
                     pattern_elements.append(p['file'])
 
-                if re.compile(''.join(['^', ''.join(pattern_elements), '$'])).match(path):
+                if re.compile(''.join(['^', ''.join(pattern_elements), '$']), flags=re.IGNORECASE).match(path):
 
                     matched = True if fs_obj_type == 'folder' or p['file'] else False
 
@@ -133,17 +133,23 @@ class FileHandler(ModelSerializerMixin):
         return True if len(errors) == 0 else errors
 
     @classmethod
-    def _action(cls, fs_object_type):
+    def _action(cls, fs_object_type, root):
 
         def create_file(path):
 
-            cls._action('file')['copy'](cls.file_template, path) if cls.file_template else open(path, 'w').close()
+            file_template = cls.get_root_class(root).file_template
+
+            cls._action('file', root)['copy'](file_template, path) if file_template else open(path, 'w').close()
 
         def create_folder(path):
 
-            if cls.root_folder_template and os.path.dirname(path) == cls.root_path:
+            root_class = cls.get_root_class(root)
 
-                cls._action('folder')['copy'](cls.root_folder_template, path)
+            root_folder_template = root_class.root_folder_template
+
+            if root_folder_template and os.path.dirname(path) == root_class.root_path:
+
+                cls._action('folder', root)['copy'](root_folder_template, path)
 
             else:
 
@@ -217,11 +223,11 @@ class FileHandler(ModelSerializerMixin):
 
             root_path = cls.get_root_class(root).root_path
 
+            fs_obj_type = request.JSON.get('data', {}).get('type', 'file')
+
             source_dict = request.JSON.get('source', None)
 
             file_data = request.FILES.get('file_data', None)
-
-            fs_obj_type = request.JSON.get('data', {}).get('type', 'file')
 
             absolute_path = os.path.join(root_path, path)
 
@@ -243,7 +249,7 @@ class FileHandler(ModelSerializerMixin):
 
                     if source.authorizer()['readable']:
 
-                        cls._action(fs_obj_type)['copy'](source.absolute_path, absolute_path)
+                        cls._action(fs_obj_type, root)['copy'](source.absolute_path, absolute_path)
 
                     else:
 
@@ -251,7 +257,7 @@ class FileHandler(ModelSerializerMixin):
 
                 else:
 
-                    cls._action(fs_obj_type)['create'](absolute_path)
+                    cls._action(fs_obj_type, root)['create'](absolute_path)
 
                 clear_authorizer.send(cls)
 
@@ -326,7 +332,7 @@ class FileHandler(ModelSerializerMixin):
 
         if self.authorizer()['deletable']:
 
-            self._action(self.type)['delete'](self.absolute_path)
+            self._action(self.type, self.root)['delete'](self.absolute_path)
 
             clear_authorizer.send(self.__class__)
 
