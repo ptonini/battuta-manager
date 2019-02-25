@@ -27,6 +27,8 @@ class FileHandler(ModelSerializerMixin):
 
     root_route = '/files/repository'
 
+    inventory_variable = '{{ repository_path }}'
+
     mime_types = {
         'editable': [
             '^text\/',
@@ -212,9 +214,35 @@ class FileHandler(ModelSerializerMixin):
         return [cls(p, user) for p in cls.sort_path_list(path_list)]
 
     @classmethod
-    def search(cls):
+    def search(cls, term, type, user):
 
+        result = []
 
+        for handler_class in [FileHandler, RoleHandler]:
+
+            handler_results = list()
+
+            for root, folders, files in os.walk(handler_class.root_path):
+
+                relative_root = root #.replace(handler_class.root_path, '/')
+
+                for file_name in files:
+
+                    handler_results.append(os.path.join(relative_root, file_name))
+
+                for folder_name in folders:
+
+                    handler_results.append(os.path.join(relative_root, folder_name))
+
+            handler_results = list(filter(lambda x: term in x, handler_results))
+
+            # handler_results = list(map(lambda x: handler_class.inventory_variable + x, handler_results))
+
+            result = result + handler_results
+
+        result.sort()
+
+        return result
 
     @classmethod
     def factory(cls, root, path, user):
@@ -429,6 +457,8 @@ class PlaybookHandler(FileHandler):
 
     file_template = settings.PLAYBOOK_TEMPLATE
 
+    inventory_variable = None
+
     skeleton = [
         {'folder': None, 'file': file_types['yaml']['re']},
         {'folder': '.*', 'file': file_types['yaml']['re']}
@@ -464,6 +494,8 @@ class RoleHandler(FileHandler):
     root_route = '/files/roles'
 
     root_folder_template = settings.ROLE_TEMPLATE
+
+    inventory_variable = '{{ roles_path }}'
 
     skeleton = [
         {'folder': '[^\/]*', 'file': None},

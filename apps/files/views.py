@@ -91,7 +91,7 @@ class FileView(View, ApiViewMixin):
 
             elif request.GET.get('term', False):
 
-                print(request.GET.get('term'))
+                return self._api_response(FileHandler.search(request.GET.get('term'), request.GET.get('term'), request.user))
 
             else:
 

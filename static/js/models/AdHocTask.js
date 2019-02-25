@@ -178,9 +178,7 @@ AdHocTask.prototype.editor = function (callback) {
 
         $.each(self.modules.sort(), (index, value) => $selector.append($('<option>').attr('value', value).append(value)));
 
-        if (self.id) $selector.val(self.module).change();
-
-        else $selector.val('shell').change();
+        $selector.val(self.module ? self.module : 'shell').change()
 
     });
 
