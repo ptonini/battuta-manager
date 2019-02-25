@@ -1,12 +1,10 @@
 function SelectorTable(obj, initialize=false) {
 
-    let self = this;
+    let mergedOptions = Object.assign({}, this.defaultOptions, obj.selectorTableOptions ? obj.selectorTableOptions : {});
 
-    let mergedOptions = Object.assign({}, self.defaultOptions, obj.selectorTableOptions ? obj.selectorTableOptions : {});
+    this.element = Templates['table'];
 
-    self.element = Templates['table'];
-
-    self.options = {
+    this.options = {
         stateSave: true,
         language: {'emptyTable': ' '},
         pageLength: 10,
@@ -15,17 +13,17 @@ function SelectorTable(obj, initialize=false) {
         dom: 'Bfrtip',
         paging: mergedOptions.paging,
         columns: mergedOptions.columns(),
-        rowCallback: mergedOptions.rowCallback,
-        preDrawCallback: mergedOptions.preDrawCallback,
-        drawCallback: mergedOptions.drawCallback,
         order: mergedOptions.order,
         buttons: mergedOptions.buttons(obj),
         scrollY: (window.innerHeight - sessionStorage.getItem(mergedOptions.offset)).toString() + 'px',
+        rowCallback: mergedOptions.rowCallback,
+        preDrawCallback: mergedOptions.preDrawCallback,
+        drawCallback: mergedOptions.drawCallback,
     };
 
-    if (mergedOptions.ajax) self.options.ajax = mergedOptions.ajax(obj);
+    if (mergedOptions.ajax) this.options.ajax = mergedOptions.ajax(obj);
 
-    initialize && self.loadOptions();
+    initialize && this.loadOptions();
 
 }
 
@@ -42,7 +40,7 @@ SelectorTable.prototype = {
 
                     new Entities[obj.type].Class({links: {self: Entities[obj.type].href}}).editor(function () {
 
-                        $('section.container').trigger('reload')
+                        $(mainContainer).trigger('reload')
 
                     });
 
@@ -56,9 +54,9 @@ SelectorTable.prototype = {
             $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
 
             if (data.meta.deletable) $(row).find('td:last').empty().append(
-                Main.prototype.tableBtn('fas fa-trash', 'Delete', function () {
+                new TableButton('fas fa-trash', 'Delete', function () {
 
-                    new Entities[data.type].Class(data).delete(false, () => $('section.container').trigger('reload'))
+                    new Entities[data.type].Class(data).delete(false, () => $(mainContainer).trigger('reload'))
 
                 })
             );

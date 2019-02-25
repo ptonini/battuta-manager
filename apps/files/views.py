@@ -89,6 +89,10 @@ class FileView(View, ApiViewMixin):
 
                 return self._api_response({'data': data})
 
+            elif request.GET.get('term', False):
+
+                print(request.GET.get('term'))
+
             else:
 
                 return self._api_response(fs_obj.read(request.JSON.get('fields')))

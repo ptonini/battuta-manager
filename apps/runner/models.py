@@ -1,3 +1,5 @@
+import json
+
 from django.db import models
 from django.core.cache import caches, cache
 
@@ -61,7 +63,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
 class AdHocTask(models.Model, ModelSerializerMixin):
 
-    type = ' adhoc_tasks'
+    type = 'adhoctasks'
 
     hosts = models.CharField(max_length=64, blank=True)
 
@@ -76,7 +78,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
         attributes = {
             'hosts': self.hosts,
             'module': self.module,
-            'arguments': self.arguments,
+            'arguments': json.loads(self.arguments),
             'become': self.become,
         }
 

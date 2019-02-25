@@ -58,7 +58,7 @@
 <form data-template="pattern-form">
     <div class="row">
         <div class="col-6 mb-2">
-            <h4>Pattern builder</h4>
+            <h5>Pattern editor</h5>
         </div>
         <div class="col-6 mb-2 text-right">
             <a href="http://docs.ansible.com/ansible/intro_patterns.html" target="_blank">patterns reference</a>
@@ -98,7 +98,7 @@
 </form>
 
 
-<!-- Default view -->
+<!-- Views -->
 
 <div data-template="entity-viewer" class="row">
     <div class="col">
@@ -130,11 +130,19 @@
     </div>
 </div>
 
+<div data-template="search-viewer">
+    <h4>Search results for: <span class="pattern-container"></span></h4>
+    <div class="result-container card shadow p-3 mt-2 scrollbar">
+        <div class="hosts-grid"></div>
+        <div class="groups-grid"></div>
+    </div>
+</div>
+
 
 <!-- Default selector -->
 
 <div data-template="entity-selector">
-    <h4 data-bind="label.plural" class="title-header"></h4>
+    <h4 data-bind="label.collective" class="title-header"></h4>
     <div class="table-container card shadow p-3"></div>
 </div>
 

@@ -9,7 +9,7 @@ Playbook.prototype = Object.create(FileObj.prototype);
 Playbook.prototype.constructor = Playbook;
 
 
-Playbook.prototype.label = {single: 'playbook', plural: 'playbooks'};
+Playbook.prototype.label = {single: 'playbook', collective: 'playbooks'};
 
 Playbook.prototype.addCallback = function () {
 

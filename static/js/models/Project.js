@@ -16,7 +16,7 @@ Project.prototype.constructor = Project;
 
 Project.prototype.type = 'projects';
 
-Project.prototype.label = {single: 'project', plural: 'projects'};
+Project.prototype.label = {single: 'project', collective: 'projects'};
 
 Project.prototype.templates = 'templates_Project.html';
 
@@ -58,7 +58,7 @@ Project.prototype.tabs = {
         validator: function () { return true },
         generator: function (self, $container) {
 
-            self.relationGrid('playbooks', 'playbooks', $container, 'path', function () {})
+            self.relationGrid('playbooks', 'playbooks', $container, 'path')
 
         },
     },
@@ -67,7 +67,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('roles', 'roles', $container, 'path', function () {})
+            self.relationGrid('roles', 'roles', $container, 'path')
 
         }
     },
@@ -76,7 +76,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('can_edit_variables', 'users', $container, 'username', function () {})
+            self.relationGrid('can_edit_variables', 'users', $container, 'username')
 
         }
     },
@@ -85,7 +85,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('can_run_tasks', 'users', $container, 'username', function () {})
+            self.relationGrid('can_run_tasks', 'users', $container, 'username')
 
         }
     },
@@ -94,7 +94,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('can_edit_tasks', 'users', $container, 'username', function () {})
+            self.relationGrid('can_edit_tasks', 'users', $container, 'username')
 
         }
     },
@@ -103,7 +103,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('can_run_playbooks', 'users', $container, 'username', function () {})
+            self.relationGrid('can_run_playbooks', 'users', $container, 'username')
 
         }
     },
@@ -112,7 +112,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('can_edit_playbooks', 'users', $container, 'username', function () {})
+            self.relationGrid('can_edit_playbooks', 'users', $container, 'username')
 
         }
     },
@@ -121,7 +121,7 @@ Project.prototype.tabs = {
         validator: function () {return true},
         generator: function (self, $container) {
 
-            self.relationGrid('can_edit_roles', 'users', $container, 'username', function () {})
+            self.relationGrid('can_edit_roles', 'users', $container, 'username')
 
         }
     },

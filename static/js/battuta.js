@@ -1,3 +1,10 @@
+/// Global variables
+
+const mainContainer = 'section.container';
+
+
+/// JQuery Extensions /////////////////
+
 // DataTables
 
 $.fn.dataTableExt.sErrMode = 'throw';
@@ -117,9 +124,10 @@ $.fn.outerHTML = function() {
     return jQuery('<div />').append(this.eq(0).clone()).html();
 };
 
+
+/// Functions /////////////////////////
+
 // Prettify boolean values
-
-
 
 function humanBytes(value, unit='B') {
 
@@ -144,6 +152,7 @@ function humanBytes(value, unit='B') {
 
 }
 
+
 function prettyBoolean(data) {
 
     return data ? '<span class="fas fa-check"></span>' : ''
@@ -156,6 +165,7 @@ function toUserTZ(time) {
     return time ? moment.utc(time).tz(sessionStorage.getItem('current_user_tz')).format('YYYY-MM-DD HH:mm:ss') : time
 
 }
+
 
 function generateCopiedFileName(name) {
 
@@ -173,6 +183,7 @@ function generateCopiedFileName(name) {
 
 }
 
+
 function addTitleToTruncatedElements() {
 
     $(document.body).find('.truncate').not('[title]').each(function () {
@@ -182,5 +193,18 @@ function addTitleToTruncatedElements() {
     });
 
 }
+
+function getUserCreds() {
+
+    return new Credential({
+        links: {
+            self: [Entities['users'].href, sessionStorage.getItem('current_user_id'), 'creds'].join('/')
+        }
+    });
+
+}
+
+
+/// Events ////////////////////////////
 
 $(document.body).on('shown.bs.tab','a.nav-link', addTitleToTruncatedElements);

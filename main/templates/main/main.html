@@ -32,7 +32,7 @@
     <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ext-beautify.js' %}"></script>
     <script type="text/javascript" src="{% static 'components/blockUI/jquery.blockUI.js' %}"></script>
     <script type="text/javascript" src="{% static 'plugins/jquery-dynagrid/jquery.dynagrid.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/extensions.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/battuta.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/models/Main.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/models/AdHocTask.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/models/FileObj.js' %}"></script>
@@ -51,33 +51,34 @@
     <script type="text/javascript" src="{% static 'js/models/Variable.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/components/NavBar.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/components/SelectorTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/components/TableButton.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/components/PatternEditor.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/views/Inventory.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/views/Runner.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/views/Search.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/singletons/Router.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/singletons/Templates.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/singletons/Entities.js' %}"></script>
+{% block navbar %}
+    <script type="text/javascript">
+        $(document).ready(function () {
 
-    {% block navbar %}
-        <script type="text/javascript">
-            $(document).ready(function () {
+            Templates.load().then(() => {
 
-                Templates.load().then(() => {
+                Router.listen();
 
-                    Router.listen();
+                if (window.location.hash) Router.check(window.location.hash.substring(2));
 
-                    if (window.location.hash) Router.check(window.location.hash.substring(2));
+                else Router.navigate(Entities.main.href);
 
-                    else Router.navigate(Entities.main.href);
+                new NavBar().build();
 
-                    new NavBar().build();
+            });
 
-                });
-
-            })
-        </script>
-    {% endblock %}
-    {% block scripts %}{% endblock %}
+        })
+    </script>
+{% endblock %}
+{% block scripts %}{% endblock %}
     <meta charset="utf-8">
     <meta http-equiv='cache-control' content='no-cache'>
     <meta http-equiv='expires' content='0'>

@@ -1,4 +1,4 @@
-let Templates = {
+const Templates = {
 
     _loaded: [],
 
@@ -22,7 +22,7 @@ let Templates = {
 
                 let $template = $(this);
 
-                Object.defineProperty(self, $template.data('template'), { get: function () { return $template.clone().removeAttr('data-template') }});
+                Object.defineProperty(self, $template.data('template'), { get: () => { return $template.clone().removeAttr('data-template') }});
 
             });
 

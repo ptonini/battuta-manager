@@ -13,7 +13,7 @@ Variable.prototype.constructor = Variable;
 
 Variable.prototype.type = 'vars';
 
-Variable.prototype.label = {single: 'variable', plural: 'variables'};
+Variable.prototype.label = {single: 'variable', collective: 'variables'};
 
 Variable.prototype.templates = 'templates_Variable.html';
 
@@ -45,12 +45,10 @@ Variable.prototype.selector = function ($container) {
 
     let self = this;
 
-    let $mainContainer = $('section.container');
-
     self.selectorTableOptions =  {
         offset: 'tab_table_offset',
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-        columns: function() {
+        columns: function () {
 
             return [
                 {title: 'key', data: 'attributes.key', width: '30%'},
@@ -60,8 +58,8 @@ Variable.prototype.selector = function ($container) {
             ]
 
         },
-        ajax: function () { return {url: self.links.self ,dataSrc: 'data'} },
-        buttons: function () { return [
+        ajax: () => { return {url: self.links.self ,dataSrc: 'data'} },
+        buttons: () => { return [
             {
                 text: '<span class="fas fa-fw fa-plus" title="Add variable"></span>',
                 className: 'btn-sm btn-icon',
@@ -71,17 +69,17 @@ Variable.prototype.selector = function ($container) {
 
                     variable.links = {self: self.links.self};
 
-                    variable.editor(() => $table.DataTable().ajax.reload())
+                    variable.editor(() => $(mainContainer).trigger('reload'))
 
                 }
             },
             {
                 text: '<span class="fas fa-fw fa-clone" title="Copy from node"></span>',
                 className: 'btn-sm btn-icon',
-                action: () => self.copyVariables(() => $table.DataTable().ajax.reload())
+                action: () => self.copyVariables(() => $(mainContainer).trigger('reload'))
             }
         ]},
-        rowCallback: function(row, data) {
+        rowCallback: (row, data) => {
 
             if (data.meta.source) {
 
@@ -91,36 +89,34 @@ Variable.prototype.selector = function ($container) {
                     .attr('title', 'Open ' + data.meta.source.attributes.name)
                     .click(() => Router.navigate(data.meta.source.links.self));
 
-            }
-
-            else  {
+            } else {
 
                 let variable =  new Variable(data);
 
                 let buttonCell = $(row).find('td:eq(3)').empty();
 
                 variable['meta']['editable'] && buttonCell.append(
-                    self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
+                    new TableButton('fas fa-pencil-alt', 'Edit', function () {
 
-                        variable.editor(function () { $mainContainer.trigger('reload') })
+                        variable.editor(() => $(mainContainer).trigger('reload'))
 
                     })
                 );
 
                 variable['meta']['deletable'] && buttonCell.append(
-                    self.tableBtn('fas fa-trash', 'Delete', function () {
+                    new TableButton('fas fa-trash', 'Delete', function () {
 
-                        variable.delete(false, function () { $mainContainer.trigger('reload') });
+                        variable.delete(false, () => $(mainContainer).trigger('reload'));
 
                     })
                 );
             }
         },
-        drawCallback: function(settings) {
+        drawCallback: settings => {
 
-            let table = this;
+            let api = new $.fn.dataTable.Api(settings);
 
-            let variableKeys = table.api().columns(0).data()[0];
+            let variableKeys = api.columns(0).data()[0];
 
             let duplicates = {};
 
@@ -132,7 +128,7 @@ Variable.prototype.selector = function ($container) {
 
             $btnGroup.remove();
 
-            table.api().rows().every(function () {
+            api.rows().every(function () {
 
                 this.child.isShown() && this.child.hide();
 
@@ -193,7 +189,7 @@ Variable.prototype.selector = function ($container) {
 
                     if (mainValue) {
 
-                        let rowApi = table.DataTable().row(mainValue[1]);
+                        let rowApi = api.row(mainValue[1]);
 
                         $(mainValue[1]).find('td:eq(0)').html('').append(
                             $('<span>').html(mainValue[0].attributes.key),
@@ -207,9 +203,7 @@ Variable.prototype.selector = function ($container) {
 
                                     rowApi.child.hide()
 
-                                }
-
-                                else {
+                                } else {
 
                                     $(this).removeClass('fa-chevron-down').addClass('fa-chevron-up');
 
@@ -235,11 +229,9 @@ Variable.prototype.selector = function ($container) {
 
         let table = new SelectorTable(self);
 
-        table.element.addClass('class', 'variable-selector');
-
         $container.html(table.element);
 
-        $mainContainer.on('reload', () => table.reload());
+        $(mainContainer).on('reload', () => table.reload());
 
         table.initialize()
 
@@ -249,7 +241,7 @@ Variable.prototype.selector = function ($container) {
 
 Variable.prototype.entityDialog = function () {
 
-    let $dialog = Main.prototype.confirmationDialog();
+    let $dialog = this.confirmationDialog();
 
     $dialog.find('div.dialog-content').append(Templates['variable-form']);
 

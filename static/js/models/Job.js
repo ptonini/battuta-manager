@@ -14,7 +14,7 @@ Job.prototype.key = 'job';
 Job.prototype.apiPath = '';
 
 Job.prototype.crud = {
-    titlePlural: 'Jobs',
+    titlecollective: 'Jobs',
     dataSrc: null,
     element: {
         ajax: {url: Job.prototype.apiPath + 'list/'},
@@ -579,7 +579,7 @@ Job.prototype.view = function () {
                 $('<pre>').attr('class', 'text-danger font-weight-bold').html(self.message)
             );
 
-            $('section.container').append($jobContainer);
+            $(mainContainer).append($jobContainer);
 
             buildResults();
 

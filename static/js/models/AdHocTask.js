@@ -2,8 +2,6 @@ function AdHocTask (param) {
 
     Main.call(this, param);
 
-    return this;
-
 }
 
 AdHocTask.prototype = Object.create(Main.prototype);
@@ -13,72 +11,23 @@ AdHocTask.prototype.constructor = AdHocTask;
 
 AdHocTask.prototype.type = 'adhoctasks';
 
-AdHocTask.prototype.label = {single: 'task', plural: 'tasks'};
+AdHocTask.prototype.label = {single: 'task', collective: 'tasks'};
 
+AdHocTask.prototype.templates = 'templates_AdHocTask.html';
 
-AdHocTask.prototype.selector = function ($container) {
+AdHocTask.prototype.modules = [
+    'copy',
+    'debug',
+    'ec2_facts',
+    'file',
+    'ping',
+    'script',
+    'service',
+    'setup',
+    'shell',
+    'unarchive'
+];
 
-    let self = this;
-
-    self.selectorTableOptions = {
-        offset: 'tab_table_offset',
-        ajax: () => { return {url: '/runner/adhoctasks', dataSrc: 'data'} },
-        columns: () => { return [
-            {title: 'hosts', data: 'hosts', width: '20%'},
-            {title: 'module', data: 'module', width: '15%'},
-            {title: 'arguments', data: 'arguments', width: '45%'},
-            {title: 'sudo', data: 'become', width: '10%', render: prettyBoolean},
-            {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
-        ]},
-        buttons: () => { return [
-            {
-                text: '<span class="fas fa-plus fa-fw" title="Create task"></span>',
-                className: 'btn-sm btn-icon',
-                action: function () {
-
-                    new AdHocTask().dialog(() => $('section.container').trigger('reload'));
-
-                }
-            }
-        ]},
-        rowCallback: function (row, data) {
-
-            let task = new AdHocTask(data);
-
-            $(row).find('td:eq(2)').html(task.argumentsToString()).attr('title', task.argumentsToString());
-
-            $(row).find('td:eq(4)').empty().append(
-                self.tableBtn('fas fa-pencil-alt', 'Edit', function () {
-
-                    task.dialog(() => $('section.container').trigger('reload'))
-
-                }),
-                self.tableBtn('fas fa-clone', 'Copy', function () {
-
-                    task.id = '';
-
-                    task.create(() => $('section.container').trigger('reload'))
-
-                }),
-                self.tableBtn('fas fa-trash', 'Delete', function () {
-
-                    task.delete(() => $('section.container').trigger('reload'))
-
-                })
-            )
-        }
-
-    };
-
-    let table = new SelectorTable(self);
-
-    $container.html(table.element);
-
-    table.initialize();
-
-    $('section.container').on('reload', () => table.reload())
-
-};
 
 AdHocTask.prototype.argumentsToString = function () {
 
@@ -96,31 +45,82 @@ AdHocTask.prototype.argumentsToString = function () {
 
 };
 
-AdHocTask.prototype.dialog = function (callback) {
+AdHocTask.prototype.selector = function ($container) {
 
     let self = this;
 
-    let user = new User({username: sessionStorage.getItem('user_name')});
+    self.selectorTableOptions = {
+        offset: 'tab_table_offset',
+        columns: () => { return [
+            {title: 'hosts', data: 'hosts', width: '20%'},
+            {title: 'module', data: 'module', width: '15%'},
+            {title: 'arguments', data: 'arguments', width: '45%'},
+            {title: 'sudo', data: 'become', width: '10%', render: prettyBoolean},
+            {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
+        ]},
+        rowCallback: (row, data) => {
 
-    self.fetchHtml('form_AdHocTask.html').then($element => {
+            let task = new AdHocTask(data);
 
-        let $selector = $element.find('#module_selector');
+            $(row).find('td:eq(2)').html(task.argumentsToString()).attr('title', task.argumentsToString());
 
-        let $argumentsContainer = $element.find('div.module-arguments-container');
+            $(row).find('td:eq(4)').empty().append(
+                new TableButton('fas fa-pencil-alt', 'Edit', function () {
 
-        self.patternEditor($element.find('#pattern_field_group'), 'hosts');
+                    task.dialog(() => $(mainContainer).trigger('reload'))
 
-        $element.find('#run_task').click(function ()  {
+                }),
+                new TableButton('fas fa-clone', 'Copy', function () {
 
-            let job = new Job(self);
+                    task.id = '';
 
-            job.set('cred', $element.find('#task_credentials_selector option[value="'+ self.cred + '"]').data());
+                    task.create(() => $(mainContainer).trigger('reload'))
 
-            job.run()
+                }),
+                new TableButton('fas fa-trash', 'Delete', function () {
+
+                    task.delete(() => $(mainContainer).trigger('reload'))
+
+                })
+            )
+        }
+    };
+
+    let table = new SelectorTable(self);
+
+    $container.html(table.element);
+
+    table.initialize();
+
+    $(mainContainer).on('reload', () => table.reload())
+
+};
+
+AdHocTask.prototype.editor = function (callback) {
+
+    let self = this;
+
+    Templates.load(self.templates).then(() => {
+
+        let $form = Templates['adhoctask-form'];
+
+        let $selector = $form.find('select.module-selector');
+
+        let $argumentsContainer = $form.find('div.module-arguments-container');
+
+        $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'hosts'));
+
+        $form.find('button.run-button').click(function ()  {
+
+            // let job = new Job(self);
+            //
+            // job.set('cred', $form.find('#task_credentials_selector option[value="'+ self.cred + '"]').data());
+            //
+            // job.run()
 
         });
 
-        $element.find('#save_task').click(function () {
+        $form.find('button.save-button').click(function () {
 
             self.hosts = self.pattern;
 
@@ -132,73 +132,55 @@ AdHocTask.prototype.dialog = function (callback) {
 
         });
 
-        $element.find('#close_task').click(function () { $element.dialog('close') });
+        $form.find('button.close-button').click(() => $form.dialog('close'));
 
-        $element.dialog({autoOpen: false, width: 600, closeOnEscape: false});
+        $form.dialog({width: 600, closeOnEscape: false});
 
         $selector.change(function () {
 
             self.module = $(this).val();
 
+            let template = self.module + '-module-fields';
+
             self.name = '[adhoc task] ' + self.module;
 
-            $('#module_reference_anchor').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
+            $form.find('a.module-reference-link').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
 
-            $argumentsContainer.empty();
+            $argumentsContainer.empty().html(Templates.hasOwnProperty(template) ? Templates[template] : '');
 
-            self.fetchHtml('ansible_modules/' + self.module + '.html', $argumentsContainer).then( () => {
+            self.bindElement($form);
 
-                self.bindElement($element);
+            $form.find('a.repository-link').attr('href', '/#' + Entities.repository.href);
 
-                $('a.label_link').attr('href', self.paths.selector.file);
+            if (self.module === 'copy') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.href + '?type=file'});
 
-                if (self.module === 'copy') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
+            else if (self.module === 'script') $form.find('[data-bind="arguments._raw_params"]').autocomplete({source: Entities.repository.href + '?type=file'});
 
-                else if (self.module === 'script') $element.find('[data-bind="arguments._raw_params"]').autocomplete({source: self.paths.api.file + 'search/?type=file'});
+            else if (self.module === 'unarchive') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.href + '?type=archive'});
 
-                else if (self.module === 'unarchive') $element.find('[data-bind="arguments.src"]').autocomplete({source: self.paths.api.file + 'search/?type=archive'});
+            self.hasOwnProperty(arguments) && Object.keys(self.arguments).forEach(function (key) {
 
-                Object.keys(self.arguments).forEach(function (key) {
-
-                    if ($element.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
-
-                });
-
-                $element
-                    .dialog('open')
-                    .find('input').keypress(function (event) {
-
-                        if (event.keyCode === 13) {
-
-                            event.preventDefault();
-
-                            $(this).next().find('button:contains("Run")').click()
-
-                        }
-
-                    });
-
-                user.credentialsSelector(null, true, $element.find('#task_credentials_selector'));
-
-            })
-
-        });
-
-        self.getData('modules', true, function (data) {
-
-            data.modules.sort();
-
-            $.each(data.modules.sort(), function (index, value) {
-
-                $selector.append($('<option>').attr('value', value).append(value))
+                if ($form.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
 
             });
 
-            if (self.id) $selector.val(self.module).change();
+            $form.dialog('open').submit((event) => {
 
-            else $selector.val('shell').change();
+                event.preventDefault();
+
+                $form.find('button.run-button').click()
+
+            });
 
         });
+
+        getUserCreds().buildSelector($form.find('select.credentials-select'));
+
+        $.each(self.modules.sort(), (index, value) => $selector.append($('<option>').attr('value', value).append(value)));
+
+        if (self.id) $selector.val(self.module).change();
+
+        else $selector.val('shell').change();
 
     });
 

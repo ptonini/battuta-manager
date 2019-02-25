@@ -424,7 +424,7 @@ Main.prototype = {
 
                 else if ($element.is('a')) $element.attr('href', value);
 
-                else $element.html(value.toString());
+                else $element.html(value ? value.toString() : '');
 
             }
 
@@ -525,22 +525,13 @@ Main.prototype = {
 
     },
 
-    tableBtn: function (styles, title, action) {
-
-        return $('<button>').attr({class: 'btn btn-sm btn-icon', title: title})
-            .click(action)
-            .append($('<span>').attr('class', styles))
-
-    },
-
-
     // UI Elements ********************
 
     _deployAlert: function ($alert) {
 
         $('div.alert').fadeOut(function() { $(this).remove() });
 
-        $('section.container').append($alert.hide());
+        $(mainContainer).append($alert.hide());
 
         $alert.find('span.fa-times').click(() => $alert.fadeOut(() => $alert.remove()));
 
@@ -601,74 +592,6 @@ Main.prototype = {
         $('div.tab-content').append($tabContentContainer);
 
         return $tabContentContainer
-
-    },
-
-    patternEditor: function (binding) {
-
-        let self = this;
-
-        let originalPattern = self.get(binding);
-
-        let updatePattern = function (action, nodeName) {
-
-            let sep = {Select: ':', And: ':&', Not: ':!'};
-
-            let p = self.get(binding);
-
-            if (action !== 'Select' && p === '') self.statusAlert('warning', 'Select host or group first');
-
-            else p ? self.set(binding, p + sep[action] + nodeName) : self.set(binding, nodeName)
-
-        };
-
-        let $dialog = self.notificationDialog(true);
-
-        $dialog.find('div.dialog-content').append(Templates['pattern-form']);
-
-        $dialog.find('input.pattern-input').attr('data-bind', binding);
-
-        $dialog.find('button.clear-button').click(() => self.set(binding, ''));
-
-        $dialog.find('button.reload-button').click(() => self.set(binding, originalPattern));
-
-        self.bindElement($dialog);
-
-        [Host.prototype.type, Group.prototype.type].forEach(function (type) {
-
-            $dialog.find('div.' + type + '-grid').DynaGrid({
-                showFilter: true,
-                minHeight: 300,
-                maxHeight: 300,
-                gridBodyTopMargin: 10,
-                itemToggle: false,
-                truncateItemText: true,
-                gridBodyClasses: 'inset-container scrollbar',
-                columns: sessionStorage.getItem('selection_modal_columns'),
-                ajaxUrl: Entities[type].href,
-                formatItem: function($gridContainer, $gridItem, data) {
-
-                    let nodeName = data.attributes.name;
-
-                    let $dropdownMenu = Templates['pattern-dropdown'];
-
-                    $dropdownMenu.find('span.dropdown-toggle').html(nodeName);
-
-                    $dropdownMenu.find('span.dropdown-item').click(function () {
-
-                        updatePattern(this.textContent, nodeName)
-
-                    });
-
-                    $gridItem.html($dropdownMenu)
-
-                },
-
-            });
-
-        });
-
-        $dialog.dialog({width: 700})
 
     },
 
@@ -762,7 +685,7 @@ Main.prototype = {
 
     },
 
-    relationGrid: function (relation, relationType, $container, key, reloadCallback) {
+    relationGrid: function (relation, relationType, $container, key) {
 
         let self = this;
 
@@ -770,7 +693,7 @@ Main.prototype = {
 
             $(this).DynaGrid('load');
 
-            reloadCallback && reloadCallback();
+            $(mainContainer).trigger('reload')
 
         });
 
@@ -847,9 +770,9 @@ Main.prototype = {
 
         let self = this;
 
-        Templates.load(self.templates).then(() => {
+        $(mainContainer).off().empty();
 
-            let $container = $('section.container').off().empty();
+        Templates.load(self.templates).then(() => {
 
             let $selector = Templates['entity-selector'];
 
@@ -857,13 +780,13 @@ Main.prototype = {
 
             $selector.find('div.table-container').append(table.element);
 
-            $container.append($selector);
+            $(mainContainer).append($selector);
 
-            self.bindElement($container);
+            self.bindElement($(mainContainer));
 
             table.initialize();
 
-            $container.on('reload', () => table.reload());
+            $(mainContainer).on('reload', () => table.reload());
 
         })
 
@@ -873,11 +796,11 @@ Main.prototype = {
 
         let self = this;
 
-        let $container = $('section.container').off().empty();
+        $(mainContainer).off().empty();
 
         Templates.load(self.templates).then(() => {
 
-            $container.html(Templates['entity-viewer']);
+            $(mainContainer).html(Templates['entity-viewer']);
 
             return self.read(false)
 
@@ -885,23 +808,23 @@ Main.prototype = {
 
             document.title = 'Battuta - ' + self.name;
 
-            $container.find('[data-bind="description"]').data('default', Templates['no-description'].outerHTML());
+            $(mainContainer).find('[data-bind="description"]').data('default', Templates['no-description'].outerHTML());
 
-            self.bindElement($container);
+            self.bindElement($(mainContainer));
 
-            $container.find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
+            $(mainContainer).find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
 
                 self.editor(() => self.read(false));
 
             });
 
-            $container.find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
+            $(mainContainer).find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
 
                 self.delete(false, () => Router.navigate(Entities[self.type].href))
 
             });
 
-            self.info && self.info($container.find("#info_container"));
+            self.info && self.info($(mainContainer).find("#info_container"));
 
             Object.keys(self.tabs).forEach(function (key) {
 
@@ -909,7 +832,7 @@ Main.prototype = {
 
             });
 
-            $container.find('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
+            $(mainContainer).find('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
         });
 

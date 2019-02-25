@@ -212,6 +212,11 @@ class FileHandler(ModelSerializerMixin):
         return [cls(p, user) for p in cls.sort_path_list(path_list)]
 
     @classmethod
+    def search(cls):
+
+
+
+    @classmethod
     def factory(cls, root, path, user):
 
         return cls.get_root_class(root)(path, user)
@@ -476,8 +481,6 @@ class RoleHandler(FileHandler):
         fs_obj_list.sort(key=lambda f: f.path)
 
         return fs_obj_list
-
-
 
 
 class FileHandlerException(Exception):

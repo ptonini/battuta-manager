@@ -13,7 +13,7 @@ PlaybookArgs.prototype.constructor = PlaybookArgs;
 
 PlaybookArgs.prototype.type = 'arguments';
 
-PlaybookArgs.prototype.label = {single: 'arguments', plural: 'arguments'};
+PlaybookArgs.prototype.label = {single: 'arguments', collective: 'arguments'};
 
 PlaybookArgs.prototype.templates = 'templates_PlaybookArgs.html';
 
@@ -36,7 +36,7 @@ PlaybookArgs.prototype.toString = function () {
 
 };
 
-PlaybookArgs.prototype.selector = function (container, value) {
+PlaybookArgs.prototype.selector = function ($container, value) {
 
     let self = this;
 
@@ -48,13 +48,11 @@ PlaybookArgs.prototype.selector = function (container, value) {
 
     }).then(result => {
 
-        container.html(Templates['playbook-args-selector']);
+        $container.html(Templates['playbook-args-selector']);
 
-        let credsLink = [Entities['users'].href, sessionStorage.getItem('current_user_id'), 'creds'].join('/');
+        let $selector = $container.find('select.args-selector');
 
-        let $selector = container.find('select.args-selector');
-
-        let $form = container.find('form.args-form');
+        let $form = $container.find('form.args-form');
 
         let $newOption = Templates['select-option'].data({
             attributes: {
@@ -68,9 +66,7 @@ PlaybookArgs.prototype.selector = function (container, value) {
             links: {self: self.links.self}
         });
 
-        creds = new Credential({links: {self: credsLink}});
-
-        creds.buildSelector($form.find('select.credentials-select'));
+        getUserCreds().buildSelector($form.find('select.credentials-select'));
 
         $form.find('button.close-button').hide();
 
@@ -94,7 +90,7 @@ PlaybookArgs.prototype.selector = function (container, value) {
 
             playArgs.bindElement($form);
 
-            $form.find('button.pattern-editor-button').off().click(() => playArgs.patternEditor('subset'));
+            $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'subset'));
 
             $form.find('button.save-button').off().click(function () {
 
@@ -126,7 +122,7 @@ PlaybookArgs.prototype.selector = function (container, value) {
 
             });
 
-            // $form.find('button.run-button').click(function () {
+            $form.find('button.run-button').click(function () {
             //
             //     self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
             //
@@ -173,7 +169,7 @@ PlaybookArgs.prototype.selector = function (container, value) {
             //
             //     });
             //
-            // });
+            });
 
         });
 

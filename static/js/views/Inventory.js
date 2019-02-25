@@ -2,7 +2,7 @@ function Inventory() {
 
     let self = this;
 
-    self.fetchHtml('view_InventoryManager.html', $('section.container')).then($element => {
+    self.fetchHtml('view_InventoryManager.html', $(mainContainer)).then($element => {
 
         $element.find('#manage_inventory_tabs').rememberTab();
 

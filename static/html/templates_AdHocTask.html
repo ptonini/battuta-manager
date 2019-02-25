@@ -1,0 +1,203 @@
+<!-- Forms -->
+
+<form data-template="adhoctask-form">
+    <div class="row">
+        <div class="col-12"><h5>AdHoc task</h5></div>
+        <div class="col-8 form-group">
+            <label>Hosts</label>
+            <div class="input-group">
+                <input data-bind="hosts" class="form-control form-control-sm pattern_field" type="text" title="Hosts">
+                <div class="input-group-append">
+                    <button class="pattern-editor-button btn btn-light btn-sm" title="Build pattern" type="button">
+                        <span class="fas fa-fw fa-pencil-alt"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 form-group">
+            <label>
+                <span>Module</span>
+                <small>
+                    <a class="module-reference-link" target="_blank">
+                        <span class="fas fa-info-circle" title="Module reference"></span>
+                    </a>
+                </small>
+            </label>
+            <select class="select form-control form-control-sm module-selector" title="Module"></select>
+        </div>
+        <div class="col-12 module-arguments-container"> </div>
+    </div>
+    <div class="row">
+        <div class="col-6 form-group">
+            <label>Credentials</label>
+            <select class="select credentials-select form-control form-control-sm" data-bind="cred" title="Credentials"></select>
+        </div>
+        <div class="buttons-container col-6 form-group text-right align-self-end">
+            <button class="close-button btn btn-icon" title="Close" type="button">
+                <span class="fas fa-fw fa-times"></span>
+            </button>
+            <button class="save-button btn btn-icon" title="Save" type="button">
+                <span class="fas fa-fw fa-save"></span>
+            </button>
+            <button class="run-button btn btn-icon" title="Run" type="button">
+                <span class="fas fa-fw fa-cogs"></span>
+            </button>
+          </div>
+    </div>
+</form>
+
+
+<!-- Module specific fields -->
+
+<div data-template="copy-module-fields" class="row">
+    <div class="col-12 form-group">
+        <label>
+            <span>Source</span>
+            <small>
+                <a target="_blank" class="repository-link">
+                    <span class="fas fa-fw fa-upload" title="Upload file"></span>
+                </a>
+            </small>
+        </label>
+        <input class="form-control form-control-sm ui-autocomplete-input" type="text" data-bind="arguments.src" autocomplete="off" title="Source">
+    </div>
+    <div class="col-12 form-group">
+        <label>Destination</label>
+        <input class="form-control form-control-sm" type="text" data-bind="arguments.dest" title="Destination">
+    </div>
+    <div class="col-10 form-group">
+        <label>Extra parameters</label>
+        <input class="form-control form-control-sm" type="text" data-bind="arguments.extra_params" title="Extra parameters">
+    </div>
+    <div class="col-2 text-right form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+</div>
+
+<div data-template="debug-module-fields" class="row">
+    <div class="col form-group">
+        <label>Message</label>
+        <input class="form-control form-control-sm" type="text" data-bind="arguments.msg" title="Message">
+    </div>
+</div>
+
+<div data-template="file-module-fields" class="row">
+    <div class="col-8 form-group">
+        <label>Path</label>
+        <input class="form-control form-control-sm" type="text" data-bind="arguments.path" title="Path">
+    </div>
+    <div class="col-4 form-group">
+        <label for="state_field">State</label>
+        <select id="state_field" class="select form-control form-control-sm" data-bind="arguments.state">
+            <option value="file">File</option>
+            <option value="link">Link</option>
+            <option value="directory">Directory</option>
+            <option value="hard">Hard</option>
+            <option value="touch">Touch</option>
+            <option value="absent">Absent</option>
+        </select>
+    </div>
+    <div class="col-10 form-group">
+        <label for="param_field">Extra parameters</label>
+        <input id="param_field" class="form-control form-control-sm" type="text" data-bind="arguments.extra_params">
+    </div>
+    <div class="col-2 text-right form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+</div>
+
+<div data-template="ping-module-fields" class="row">
+    <div class="col form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+</div>
+
+<div data-template="script-module-fields" class="row">
+    <div class="col-12 form-group">
+        <label>
+            <span>Source</span>
+            <small>
+                <a target="_blank" class="repository-link">
+                    <span class="fas fa-fw fa-upload" title="Upload file"></span>
+                </a>
+            </small>
+        </label>
+        <input class="form-control form-control-sm ui-autocomplete-input" type="text" data-bind="arguments._raw_params" autocomplete="off" title="Source">
+    </div>
+    <div class="col-10 form-group">
+        <label for="param_field">Extra parameters</label>
+        <input id="param_field" class="form-control form-control-sm" type="text" data-bind="arguments.extra_params">
+    </div>
+    <div class="col-2 text-right form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+</div>
+
+<div data-template="service-module-fields" class="row">
+    <div class="col-8 form-group">
+        <label for="name_field">Name</label>
+        <input id="name_field" class="form-control form-control-sm" type="text" data-bind="arguments.name">
+    </div>
+    <div class="col-4 form-group">
+        <label for="state_field">State</label>
+        <select id="state_field" class="select form-control form-control-sm" data-bind="arguments.state">
+            <option value="started">Started</option>
+            <option value="stopped">Stopped</option>
+            <option value="restarted">Restarted</option>
+            <option value="reloaded">Reloaded</option>
+        </select>
+    </div>
+    <div class="col-10 form-group">
+        <label for="param_field">Extra parameters</label>
+        <input id="param_field" class="form-control form-control-sm" type="text" data-bind="arguments.extra_params">
+    </div>
+    <div class="col-2 text-right form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+    <div class="col-4 form-group">
+        <label for="enabled_field">Enabled</label>
+        <select id="enabled_field" class="select form-control form-control-sm" data-bind="arguments.enabled">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+        </select>
+    </div>
+</div>
+
+<div data-template="shell-module-fields" class="row">
+    <div class="col-12 form-group">
+        <label for="command_field">Command</label>
+        <input id="command_field" class="form-control form-control-sm" type="text" data-bind="arguments._raw_params">
+    </div>
+    <div class="col-10 form-group">
+        <label for="param_field">Extra parameters</label>
+        <input id="param_field" class="form-control form-control-sm" type="text" data-bind="arguments.extra_params">
+    </div>
+    <div class="col-2 text-right form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+</div>
+
+<div data-template="unarchive-module-fields" class="row">
+    <div class="col-12 form-group">
+        <label for="source_field">
+            <span>Source</span>
+            <small>
+                <a target="_blank" class="label_link">
+                    <span class="fas fa-fw fa-upload" title="Upload file"></span>
+                </a>
+            </small>
+        </label>
+        <input id="source_field" class="form-control form-control-sm ui-autocomplete-input" type="text" data-bind="arguments.src" autocomplete="off">
+    </div>
+    <div class="col-12 form-group">
+        <label for="dest_field">Destination</label>
+        <input id="dest_field" class="form-control form-control-sm" type="text" data-bind="arguments.dest">
+    </div>
+    <div class="col-10 form-group">
+        <label for="param_field">Extra parameters</label>
+        <input id="param_field" class="form-control form-control-sm" type="text" data-bind="arguments.extra_params">
+    </div>
+    <div class="col-2 text-right form-group align-self-end">
+        <button class="btn btn-light btn-sm" title="Run with sudo" data-bind="become">Sudo</button>
+    </div>
+</div>

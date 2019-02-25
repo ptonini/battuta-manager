@@ -10,11 +10,9 @@ function User(param) {
 
     self.get('last_login') && self.set('last_login', toUserTZ(param.attributes['last_login']));
 
-    self.get('is_superuser') ? self.set('label', {single: 'superuser', plural: 'users'}) : self.set('label', {single: 'user', plural: 'users'});
+    self.get('is_superuser') ? self.set('label', {single: 'superuser', collective: 'users'}) : self.set('label', {single: 'user', collective: 'users'});
 
     self.set('name', self.get('username'));
-
-    return this;
 
 }
 
@@ -52,11 +50,7 @@ User.prototype.info = function ($container) {
 
     $container.find('button.save-button').click(function () {
 
-        self.update(true).then(() => {
-
-            Main.prototype.statusAlert('success', 'User saved')
-
-        });
+        self.update(true).then(() => Main.prototype.statusAlert('success', 'User saved'));
 
     });
 
@@ -65,8 +59,8 @@ User.prototype.info = function ($container) {
 User.prototype.tabs = {
     credentials: {
         label: 'Credentials',
-        validator: function () {return true},
-        generator: function (self, $container) {
+        validator: () => { return true },
+        generator: (self, $container) => {
 
             let data =  {
                 links: {self: self.links[Credential.prototype.type]},
@@ -79,27 +73,20 @@ User.prototype.tabs = {
     },
     groups: {
         label: 'Groups',
-        validator: function (self) {return !self.get('is_superuser')},
-        generator: function (self, $container) {
-
-            self.relationGrid('usergroups', UserGroup.prototype.label.plural, $container, 'name', function() {})
-
-        }
-
+        validator: self => { return !self.get('is_superuser') },
+        generator: (self, $container) => self.relationGrid('usergroups', UserGroup.prototype.label.collective, $container, 'name')
     }
 };
 
 User.prototype.entityDialog = function () {
 
-    let self = this;
-
-    let $dialog = self.confirmationDialog();
+    let $dialog = this.confirmationDialog();
 
     $dialog.find('h5.dialog-header').html('Add user');
 
     $dialog.find('div.dialog-content').append(Templates['user-form']);
 
-    if (self.id) {
+    if (this.id) {
 
         $dialog.find('div.current-pass-input-container').removeClass('d-none');
 

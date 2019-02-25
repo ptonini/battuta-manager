@@ -2,15 +2,19 @@ function Search(pattern) {
 
     let self = this;
 
-    let $resultContainer = $('<div>')
-        .attr('class', 'inset-container scrollbar')
-        .css('max-height', window.innerHeight - sessionStorage.getItem('search_box_offset'));
+    $(mainContainer).empty().off();
 
-    $('section.container').empty().append($('<h4>').html('Search results for: ' + pattern), $resultContainer);
+    $(mainContainer).html(Templates['search-viewer']);
+
+    $(mainContainer).find('span.pattern-container').html(pattern);
+
+    let $resultContainer = $(mainContainer).find('div.result-container');
+
+    $resultContainer.css('max-height', window.innerHeight - sessionStorage.getItem('search_box_offset'));
 
     $.each([Host.prototype.type, Group.prototype.type], function (index, type) {
 
-        $resultContainer.append($('<div>').DynaGrid({
+        $(mainContainer).find('div.' + type + '-grid').DynaGrid({
             gridTitle: type,
             gridHeaderClasses: 'text-capitalize',
             showCount: true,
@@ -22,15 +26,10 @@ function Search(pattern) {
             ajaxUrl: Entities[type].href + self.objToQueryStr({filter: pattern}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
-                $gridItem.css('cursor', 'pointer').html(data.attributes.name).click(function () {
-
-                    Router.navigate(data.links.self)
-
-                });
+                $gridItem.css('cursor', 'pointer').html(data.attributes.name).click(() => Router.navigate(data.links.self))
 
             }
-
-        }));
+        });
 
     });
 

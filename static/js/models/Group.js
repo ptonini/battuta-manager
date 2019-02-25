@@ -17,7 +17,7 @@ Group.prototype.constructor = Group;
 
 Group.prototype.type = 'groups';
 
-Group.prototype.label = {single: 'group', plural: 'groups'};
+Group.prototype.label = {single: 'group', collective: 'groups'};
 
 
 Group.prototype.selectorTableOptions = {
@@ -56,7 +56,7 @@ Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
 
-            self.relationGrid('children', self.label.plural, $container, 'name', self.reloadTables)
+            self.relationGrid('children', self.label.collective, $container, 'name')
 
         }
     },
@@ -65,7 +65,7 @@ Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
         validator: function (self) {return (self.name !== 'all')},
         generator: function (self, $container) {
 
-            self.relationGrid('members', self.label.plural, $container, 'name', self.reloadTables)
+            self.relationGrid('members', self.label.collective, $container, 'name')
 
         }
     },

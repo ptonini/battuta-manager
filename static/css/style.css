@@ -243,6 +243,7 @@ nav.navbar a.dropdown-item:active {
 /* Scrollbar ***************/
 
 div.scrollbar {
+    scroll-padding-top: 15px;
     overflow-y: scroll;
 }
 

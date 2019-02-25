@@ -14,7 +14,7 @@ Credential.prototype.constructor = Credential;
 
 Credential.prototype.type = 'creds';
 
-Credential.prototype.label = {single: 'credential', plural: 'credentials'};
+Credential.prototype.label = {single: 'credential', collective: 'credentials'};
 
 Credential.prototype.templates = 'templates_Credential.html';
 

@@ -10,4 +10,4 @@ Role.prototype = Object.create(FileObj.prototype);
 
 Role.prototype.constructor = Role;
 
-Role.prototype.label = {single: 'role', plural: 'roles'};
+Role.prototype.label = {single: 'role', collective: 'roles'};

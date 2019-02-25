@@ -15,13 +15,11 @@ UserGroup.prototype = Object.create(Main.prototype);
 UserGroup.prototype.constructor = UserGroup;
 
 
-
 UserGroup.prototype.type = 'usergroups';
 
-UserGroup.prototype.label = {single: 'user group', plural: 'user groups'};
+UserGroup.prototype.label = {single: 'user group', collective: 'user groups'};
 
 UserGroup.prototype.templates = 'templates_UserGroup.html';
-
 
 
 UserGroup.prototype.selectorTableOptions = {
@@ -45,20 +43,12 @@ UserGroup.prototype.tabs = {
     members: {
         label: 'Members',
         validator: function () {return true},
-        generator: function (self, $container) {
-
-            self.relationGrid('users', 'users', $container, 'username', function() {});
-
-        }
+        generator: (self, $container) => self.relationGrid('users', 'users', $container, 'username')
     },
     permissions: {
         label: 'Permissions',
         validator: function () {return true},
-        generator: function (self, $container) {
-
-            self.relationGrid('permissions', 'permissions',$container, 'name', function() {});
-
-        }
+        generator: (self, $container) => self.relationGrid('permissions', 'permissions',$container, 'name')
     }
 };
 

@@ -17,7 +17,7 @@ Host.prototype.constructor = Host;
 
 Host.prototype.type = 'hosts';
 
-Host.prototype.label = {single: 'host', plural: 'hosts'};
+Host.prototype.label = {single: 'host', collective: 'hosts'};
 
 Host.prototype.selectorTableOptions = {
     columns: function () {

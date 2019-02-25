@@ -13,7 +13,7 @@ FileObj.prototype = Object.create(Main.prototype);
 FileObj.prototype.constructor = FileObj;
 
 
-FileObj.prototype.label = {single: 'file', plural: 'file repository'};
+FileObj.prototype.label = {single: 'file', collective: 'file repository'};
 
 FileObj.prototype.templates = 'templates_FileObj.html';
 
@@ -65,7 +65,7 @@ FileObj.prototype.upload = function () {
 
                 $dialog.find('button.cancel-button').attr('title', 'Close');
 
-                $('section.container').trigger('reload');
+                $(mainContainer).trigger('reload');
 
                 setTimeout(() => $dialog.find('button.cancel-button').click(), 5000)
 
@@ -199,7 +199,7 @@ FileObj.prototype.contentEditor = function () {
 
                 $dialog.dialog('close');
 
-                $('section.container').trigger('reload')
+                $(mainContainer).trigger('reload')
 
             });
 
@@ -286,7 +286,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
             $dialog.dialog('close');
 
-            $('section.container').trigger('reload')
+            $(mainContainer).trigger('reload')
 
         })
 
@@ -318,9 +318,9 @@ FileObj.prototype.selector = function () {
 
     let self = this;
 
-    let $container = $('section.container').off().empty();
-
     let pathArrayViewableIndex = 3;
+
+    $(mainContainer).off().empty();
 
     self.selectorTableOptions = {
         offset: 'file_table_offset',
@@ -366,7 +366,7 @@ FileObj.prototype.selector = function () {
 
                 let $row = $(row).attr('class', 'folder-row');
 
-                $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(function () { Router.navigate(fs_obj.links.self) });
+                $row.find('td:eq(0)').addClass('pointer font-weight-bold').off('click').click(() => Router.navigate(fs_obj.links.self));
 
                 $row.find('td:eq(2)').html('');
 
@@ -375,16 +375,16 @@ FileObj.prototype.selector = function () {
             if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
 
             $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                fs_obj.tableBtn('fas fa-pencil-alt', 'Edit', function () { fs_obj.edit() }),
-                fs_obj.tableBtn('fas fa-clone', 'Copy', function () { fs_obj.nameEditor('copy') }),
-                fs_obj.tableBtn('fas fa-download ', 'Download ' + fs_obj.name, function () {
+                new TableButton('fas fa-pencil-alt', 'Edit', () => fs_obj.edit()),
+                new TableButton('fas fa-clone', 'Copy', () => fs_obj.nameEditor('copy')),
+                new TableButton('fas fa-download', 'Download ' + fs_obj.name, () => {
 
                     window.open(fs_obj.links.self + '?download=true', '_self');
 
                 }),
-                fs_obj.tableBtn('fas fa-trash', 'Delete', function () {
+                new TableButton('fas fa-trash', 'Delete', () => {
 
-                    fs_obj.delete(false, function () { $('section.container').trigger('reload') })
+                    fs_obj.delete(false, () => $(mainContainer).trigger('reload'))
 
                 })
             )
@@ -399,7 +399,7 @@ FileObj.prototype.selector = function () {
             if (self.links.root !== self.links.self) $table
                 .prepend(Templates['previous-folder-row'])
                 .find('td.previous-folder-link')
-                .click(function () { Router.navigate(self.links.parent) });
+                .click(() => Router.navigate(self.links.parent));
 
             $table.parent().scrollTop(sessionStorage.getItem('current_table_position'));
 
@@ -410,11 +410,11 @@ FileObj.prototype.selector = function () {
 
     Templates.load(self.templates).then(() => {
 
-        $container.html(Templates['file-selector']);
+        $(mainContainer).html(Templates['file-selector']);
 
-        $container.find('div.file-table-container').html(table.element);
+        $(mainContainer).find('div.file-table-container').html(table.element);
 
-        self.bindElement($container);
+        self.bindElement($(mainContainer));
 
         let reloadTable = () => {
 
@@ -428,11 +428,11 @@ FileObj.prototype.selector = function () {
 
                     let buildBreadcrumbs = () => {
 
-                        $container.find('li.path-breadcrumb').remove();
+                        $(mainContainer).find('li.path-breadcrumb').remove();
 
                         for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
 
-                            $container.find('ol.path-breadcrumbs').append(
+                            $(mainContainer).find('ol.path-breadcrumbs').append(
                                 Templates['path-breadcrumb'].html(pathArray[i]).click(function() {
 
                                     Router.navigate(pathArray.slice(0,i + 1).join('/'))
@@ -444,12 +444,12 @@ FileObj.prototype.selector = function () {
 
                     };
 
-                    $container.find('li.root-breadcrumb')
+                    $(mainContainer).find('li.root-breadcrumb')
                         .html(self.get('root'))
                         .off()
                         .click(() => Router.navigate(self.links.root));
 
-                    $container.find('button.edit-path-button').off().click(function ()  {
+                    $(mainContainer).find('button.edit-path-button').off().click(function ()  {
 
                         let $pathButton = $(this);
 
@@ -465,9 +465,9 @@ FileObj.prototype.selector = function () {
 
                             let $pathInput = Templates['path-input'];
 
-                            let $breadCrumbs = $container.find('ol.path-breadcrumbs');
+                            let $breadCrumbs = $(mainContainer).find('ol.path-breadcrumbs');
 
-                            $container.find('li.path-breadcrumb').remove();
+                            $(mainContainer).find('li.path-breadcrumb').remove();
 
                             $breadCrumbs.append(Templates['path-breadcrumb'].append($pathInput));
 
@@ -518,7 +518,7 @@ FileObj.prototype.selector = function () {
 
         table.initialize();
 
-        $container.on('reload', reloadTable).trigger('reload')
+        $(mainContainer).on('reload', reloadTable).trigger('reload')
 
     });
 

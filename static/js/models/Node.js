@@ -31,14 +31,14 @@ Node.prototype.tabs = {
 
             param.attributes[self.label.single] = self.id;
 
-            new Variable(param).selector($container, self.reloadTables)
+            new Variable(param).selector($container)
 
         }
     },
     parents: {
         label: 'Parents',
         validator: self => { return (self.type === Host.prototype.type || self.name !== 'all')},
-        generator: (self, $container) => self.relationGrid('parents', self.label.plural, $container, 'name', self.reloadTables)
+        generator: (self, $container) => self.relationGrid('parents', self.label.collective, $container, 'name')
     },
 };
 
@@ -46,15 +46,15 @@ Node.prototype.selector = function () {
 
     let self = this;
 
-    let $container = $('section.container').off().empty();
-
     let route = Entities[self.type].href;
 
     let addNode = () => new Entities[self.type].Class({links: {self: route}}).editor(function () {
 
-        $container.trigger('reload')
+        $(mainContainer).trigger('reload')
 
     });
+
+    $(mainContainer).off().empty();
 
     self.selectorTableOptions.buttons = function () {
 
@@ -68,17 +68,17 @@ Node.prototype.selector = function () {
 
     Templates.load(self.templates).then(() => {
 
-        $container.append(Templates['node-selector']);
+        $(mainContainer).append(Templates['node-selector']);
 
-        self.bindElement($container);
+        self.bindElement($(mainContainer));
 
-        let $grid = $container.find('#node_grid');
+        let $grid = $(mainContainer).find('#node_grid');
 
         let table = new SelectorTable(self);
 
-        $container.find('div.node-table-container').append(table.element);
+        $(mainContainer).find('div.node-table-container').append(table.element);
 
-        document.title = 'Battuta - ' + self.label.plural;
+        document.title = 'Battuta - ' + self.label.collective;
 
         table.initialize();
 
@@ -108,11 +108,11 @@ Node.prototype.selector = function () {
 
         new $.fn.dataTable.Buttons(table.dtObj, {buttons: [{extend: 'csv'}]});
 
-        $container.find('button.download-button').click(() => table.dtObj.buttons(1, null).trigger());
+        $(mainContainer).find('button.download-button').click(() => table.dtObj.buttons(1, null).trigger());
 
-        $container.find('button.facts-button').click(() => new Job({hosts: 'all'}).getFacts());
+        $(mainContainer).find('button.facts-button').click(() => new Job({hosts: 'all'}).getFacts());
 
-        $container.find('button.delete-button').click(() => self.gridDialog({
+        $(mainContainer).find('button.delete-button').click(() => self.gridDialog({
             title: 'Delete nodes',
             type: 'many',
             objectType: self.type,
@@ -129,7 +129,7 @@ Node.prototype.selector = function () {
 
                         $(this).remove();
 
-                        $container.trigger('reload')
+                        $(mainContainer).trigger('reload')
 
                     }
                 });
@@ -143,7 +143,7 @@ Node.prototype.selector = function () {
             }
         }));
 
-        $container.find('.dataTables_filter input[type="search"]').keyup(function(){
+        $(mainContainer).find('.dataTables_filter input[type="search"]').keyup(function(){
 
             $grid.find('input').val($(this).val()).trigger('keyup');
 
@@ -153,7 +153,7 @@ Node.prototype.selector = function () {
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
-        $container.off().on('reload', function () {
+        $(mainContainer).off().on('reload', function () {
 
             self.fetchJson('GET', route, null, true).then(response => {
 
@@ -169,10 +169,8 @@ Node.prototype.selector = function () {
 
         });
 
-        $container.trigger('reload')
+        $(mainContainer).trigger('reload')
 
     });
 
 };
-
-Node.prototype.reloadTables = () =>  $('selector.variable-selector').DataTable().ajax.reload();
