@@ -152,11 +152,11 @@ AdHocTask.prototype.editor = function (callback) {
 
             $form.find('a.repository-link').attr('href', '/#' + Entities.repository.href);
 
-            if (self.module === 'copy') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.href + '?type=file'});
+            if (self.module === 'copy') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.search});
 
-            else if (self.module === 'script') $form.find('[data-bind="arguments._raw_params"]').autocomplete({source: Entities.repository.href + '?type=file'});
+            else if (self.module === 'script') $form.find('[data-bind="arguments._raw_params"]').autocomplete({source: Entities.repository.search + '?type=editable'});
 
-            else if (self.module === 'unarchive') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.href + '?type=archive'});
+            else if (self.module === 'unarchive') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.search + '?type=archive'});
 
             self.hasOwnProperty(arguments) && Object.keys(self.arguments).forEach(function (key) {
 

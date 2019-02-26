@@ -49,6 +49,7 @@ const Entities = {
     },
     repository: {
         href: '/files/repository',
+        search:'/files/search',
         regex: /^files\/repository\/?[\s\S]*$/,
         Class: FileObj,
         action: param => new FileObj({links: {self: param.input}}).selector()

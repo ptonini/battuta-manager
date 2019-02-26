@@ -3,7 +3,7 @@ import shutil
 import ntpath
 import tempfile
 
-from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
 from django.core.exceptions import PermissionDenied
 from django.views.generic import View
 
@@ -91,7 +91,7 @@ class FileView(View, ApiViewMixin):
 
             elif request.GET.get('term', False):
 
-                return self._api_response(FileHandler.search(request.GET.get('term'), request.GET.get('term'), request.user))
+                return self._api_response(FileHandler.search(request.GET.get('term'), request.GET.get('type'), request.user))
 
             else:
 
@@ -145,4 +145,17 @@ class FileView(View, ApiViewMixin):
             fs_obj.delete()
 
             return HttpResponse(status=204)
+
+
+class FileSearchView(View, ApiViewMixin):
+
+    def get(self, request):
+
+        if request.GET.get('term'):
+
+            return self._api_response(FileHandler.search(request.GET.get('term'), request.GET.get('type'), request.user))
+
+        else:
+
+            return HttpResponseBadRequest
 

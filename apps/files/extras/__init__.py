@@ -29,30 +29,30 @@ class FileHandler(ModelSerializerMixin):
 
     inventory_variable = '{{ repository_path }}'
 
-    mime_types = {
-        'editable': [
-            '^text\/',
-             '\/xml$',
-            '\/json$',
-            '^inode\/x-empty$',
-        ],
-        'archive': [
-            '\/zip$',
-            '\/gzip$',
-            '\/x-tar$',
-            '\/x-gtar$'
-        ]
-    }
-
     file_template = None
 
     root_folder_template = None
 
     skeleton = None
 
+    mime_types = {
+        'editable': [
+            '^text\/.*',
+            '.*\/xml$',
+            '.*\/json$',
+            '^inode\/x-empty$',
+        ],
+        'archive': [
+            '.*\/zip$',
+            '.*\/gzip$',
+            '.*\/x-tar$',
+            '.*\/x-gtar$'
+        ]
+    }
+
     def __init__(self, path, user):
 
-        path = self._strip_trailing_slash(path)
+        path = path.strip('/')
 
         self.user = user
 
@@ -77,11 +77,6 @@ class FileHandler(ModelSerializerMixin):
         self.parent_path, self.name = os.path.split(path)
 
         self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
-
-    @staticmethod
-    def _strip_trailing_slash(path):
-
-        return re.sub(r'/$', '', path)
 
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):
@@ -214,7 +209,29 @@ class FileHandler(ModelSerializerMixin):
         return [cls(p, user) for p in cls.sort_path_list(path_list)]
 
     @classmethod
-    def search(cls, term, type, user):
+    def search(cls, term, file_type, user):
+
+        def is_match (r, path):
+
+            if term in path:
+
+                fs_obj = cls.factory(r, path, user)
+
+                if fs_obj.authorizer()['readable']:
+
+                    return bool(re.match('|'.join(cls.mime_types[file_type]), fs_obj.mime_type)) if file_type else True
+
+        def path_list_generator(iterator, parent_path, c_root):
+
+            path_list = list()
+
+            for name in iterator:
+
+                path = os.path.join(parent_path, name)
+
+                path_list.append(path) if is_match(c_root, path) else None
+
+            return path_list
 
         result = []
 
@@ -224,19 +241,15 @@ class FileHandler(ModelSerializerMixin):
 
             for root, folders, files in os.walk(handler_class.root_path):
 
-                relative_root = root #.replace(handler_class.root_path, '/')
+                relative_root = root.replace(handler_class.root_path, '/' if root == handler_class.root_path else '')
 
-                for file_name in files:
+                handler_results = handler_results + path_list_generator(files, relative_root, handler_class.root)
 
-                    handler_results.append(os.path.join(relative_root, file_name))
+                if not file_type:
 
-                for folder_name in folders:
+                    handler_results = handler_results + path_list_generator(folders, relative_root, handler_class.root)
 
-                    handler_results.append(os.path.join(relative_root, folder_name))
-
-            handler_results = list(filter(lambda x: term in x, handler_results))
-
-            # handler_results = list(map(lambda x: handler_class.inventory_variable + x, handler_results))
+            handler_results = list(map(lambda x: handler_class.inventory_variable + x, handler_results))
 
             result = result + handler_results
 
@@ -373,6 +386,11 @@ class FileHandler(ModelSerializerMixin):
 
             raise PermissionDenied
 
+    @property
+    def mime_type(self):
+
+        return magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else ''
+
     def serialize(self, fields=None):
 
         prefs = get_preferences()
@@ -383,7 +401,7 @@ class FileHandler(ModelSerializerMixin):
             'name': self.name,
             'size': os.path.getsize(self.absolute_path) if self.type == 'file' else 0,
             'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
-            'mime_type': magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else '',
+            'mime_type': self.mime_type,
             'root': self.root,
             'path': self.path,
         }
@@ -394,9 +412,11 @@ class FileHandler(ModelSerializerMixin):
             'root': self.root_route,
         }
 
+        print(self.path, re.match('|'.join(self.mime_types['editable']), self.mime_type), self.mime_type, self.mime_types['editable'])
+
         content_is_readable = all([
             self.type == 'file',
-            re.match('|'.join(self.mime_types['editable']), attributes.get('mime_type')),
+            re.match('|'.join(self.mime_types['editable']), self.mime_type),
             attributes['size'] <= prefs['max_edit_size'],
         ])
 

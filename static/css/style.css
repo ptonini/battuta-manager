@@ -55,6 +55,7 @@ button.btn,
 div.dynagrid-item,
 div.form-group input,
 div.item-value,
+div.ui-menu-item-wrapper,
 .ui-widget input {
     font-family: "Elements", sans-serif !important;
 }
