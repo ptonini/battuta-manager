@@ -104,7 +104,7 @@ class Authorizer:
 
                 self._readable_files.add(playbook.absolute_path)
 
-                self._readable_folders.update({path for path in playbook.get_paths()})
+                self._readable_folders.update(playbook.path_hierarchy)
 
         for project in can_edit_roles:
 
@@ -118,13 +118,13 @@ class Authorizer:
 
         return True if node.id and node in self._editable_var_nodes else False
 
-    def can_run_tasks(self, inventory, pattern):
+    def can_run_tasks(self, inventory, hosts):
 
-        return inventory.get_host_names(pattern).issubset(self._runnable_task_hosts)
+        return inventory.get_host_names(hosts).issubset(self._runnable_task_hosts)
 
-    def can_edit_tasks(self, inventory, pattern):
+    def can_edit_tasks(self, inventory, hosts):
 
-        return inventory.get_host_names(pattern).issubset(self._editable_task_hosts)
+        return inventory.get_host_names(hosts).issubset(self._editable_task_hosts)
 
     def can_run_playbooks(self, inventory, path):
 

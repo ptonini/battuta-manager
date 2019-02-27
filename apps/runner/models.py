@@ -65,6 +65,8 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
     type = 'adhoctasks'
 
+    route = '/runner/adhoctasks'
+
     hosts = models.CharField(max_length=64, blank=True)
 
     module = models.CharField(max_length=32)
@@ -82,7 +84,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
             'become': self.become,
         }
 
-        links = {'self': '/'.join(['runner/adhoc', self.path, 'args', str(self.id)])}
+        links = {'self': '/'.join([self.route, str(self.id)])}
 
         meta = self.authorizer(user)
 
@@ -96,7 +98,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
         readable = any([
             user.has_perm('users.execute_jobs'),
-            authorizer.can_run_playbooks(cache.get_or_set('inventory', AnsibleInventory), self.path)
+            authorizer.can_edit_tasks(cache.get_or_set('inventory', AnsibleInventory), self.hosts)
         ])
 
         editable = readable

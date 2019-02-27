@@ -89,10 +89,6 @@ class FileView(View, ApiViewMixin):
 
                 return self._api_response({'data': data})
 
-            elif request.GET.get('term', False):
-
-                return self._api_response(FileHandler.search(request.GET.get('term'), request.GET.get('type'), request.user))
-
             else:
 
                 return self._api_response(fs_obj.read(request.JSON.get('fields')))

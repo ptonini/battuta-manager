@@ -16,7 +16,7 @@ from main.extras.signals import clear_authorizer
 from apps.preferences.extras import get_preferences
 from apps.iam.extras import Authorizer
 
-from apps.files import file_types
+from apps.files import file_types, mime_types
 
 
 class FileHandler(ModelSerializerMixin):
@@ -34,21 +34,6 @@ class FileHandler(ModelSerializerMixin):
     root_folder_template = None
 
     skeleton = None
-
-    mime_types = {
-        'editable': [
-            '^text\/.*',
-            '.*\/xml$',
-            '.*\/json$',
-            '^inode\/x-empty$',
-        ],
-        'archive': [
-            '.*\/zip$',
-            '.*\/gzip$',
-            '.*\/x-tar$',
-            '.*\/x-gtar$'
-        ]
-    }
 
     def __init__(self, path, user):
 
@@ -184,42 +169,29 @@ class FileHandler(ModelSerializerMixin):
 
         return root_file_list + subfolder_file_list
 
-    @classmethod
-    def get_root_class(cls, root):
+    @staticmethod
+    def get_root_class(root):
 
         roots = {
-            'repository': cls,
+            'repository': FileHandler,
             'playbooks': PlaybookHandler,
             'roles': RoleHandler
         }
 
         return roots[root]
 
-    @classmethod
-    def list(cls, user):
-
-        path_list = list()
-
-        for root, dirs, files in os.walk(cls.root_path):
-
-            for file_name in files:
-
-                path_list.append(file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name))
-
-        return [cls(p, user) for p in cls.sort_path_list(path_list)]
-
-    @classmethod
-    def search(cls, term, file_type, user):
+    @staticmethod
+    def search(term, file_type, user):
 
         def is_match (r, path):
 
             if term in path:
 
-                fs_obj = cls.factory(r, path, user)
+                fs_obj = FileHandler.factory(r, path, user)
 
                 if fs_obj.authorizer()['readable']:
 
-                    return bool(re.match('|'.join(cls.mime_types[file_type]), fs_obj.mime_type)) if file_type else True
+                    return bool(re.match('|'.join(mime_types[file_type]), fs_obj.mime_type)) if file_type else True
 
         def path_list_generator(iterator, parent_path, c_root):
 
@@ -256,6 +228,19 @@ class FileHandler(ModelSerializerMixin):
         result.sort()
 
         return result
+
+    @classmethod
+    def list(cls, user):
+
+        path_list = list()
+
+        for root, dirs, files in os.walk(cls.root_path):
+
+            for file_name in files:
+
+                path_list.append(file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name))
+
+        return [cls(p, user) for p in cls.sort_path_list(path_list)]
 
     @classmethod
     def factory(cls, root, path, user):
@@ -391,6 +376,31 @@ class FileHandler(ModelSerializerMixin):
 
         return magic.from_file(self.absolute_path, mime='true') if self.type == 'file' else ''
 
+    @property
+    def size(self):
+
+        return os.path.getsize(self.absolute_path) if self.type == 'file' else 0
+
+    @property
+    def modified(self):
+
+        return datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(get_preferences()['date_format'])
+
+    @property
+    def path_hierarchy(self):
+
+        path_set = {self.root_path}
+
+        current_path = None
+
+        for step_path in self.parent_path.split('/'):
+
+            current_path = os.path.join(*filter(None, [current_path, step_path]))
+
+            path_set.add(os.path.join(self.root_path, current_path))
+
+        return path_set
+
     def serialize(self, fields=None):
 
         prefs = get_preferences()
@@ -399,8 +409,8 @@ class FileHandler(ModelSerializerMixin):
 
         attributes = {
             'name': self.name,
-            'size': os.path.getsize(self.absolute_path) if self.type == 'file' else 0,
-            'modified': datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format']),
+            'size': self.size,
+            'modified': self.modified,
             'mime_type': self.mime_type,
             'root': self.root,
             'path': self.path,
@@ -412,12 +422,10 @@ class FileHandler(ModelSerializerMixin):
             'root': self.root_route,
         }
 
-        print(self.path, re.match('|'.join(self.mime_types['editable']), self.mime_type), self.mime_type, self.mime_types['editable'])
-
         content_is_readable = all([
             self.type == 'file',
-            re.match('|'.join(self.mime_types['editable']), self.mime_type),
-            attributes['size'] <= prefs['max_edit_size'],
+            re.match('|'.join(mime_types['editable']), self.mime_type),
+            self.size <= prefs['max_edit_size'],
         ])
 
         content_is_requested = fields and 'content' in fields.get('attributes', [])
@@ -451,20 +459,6 @@ class FileHandler(ModelSerializerMixin):
         deletable = editable
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
-
-    def get_paths(self):
-
-        paths = [self.root_path]
-
-        current_path = None
-
-        for step_path in self.parent_path.split('/'):
-
-            current_path = os.path.join(*filter(None, [current_path, step_path]))
-
-            paths.append(os.path.join(self.root_path, current_path))
-
-        return paths
 
 
 class PlaybookHandler(FileHandler):

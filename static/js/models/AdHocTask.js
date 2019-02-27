@@ -52,10 +52,10 @@ AdHocTask.prototype.selector = function ($container) {
     self.selectorTableOptions = {
         offset: 'tab_table_offset',
         columns: () => { return [
-            {title: 'hosts', data: 'hosts', width: '20%'},
-            {title: 'module', data: 'module', width: '15%'},
-            {title: 'arguments', data: 'arguments', width: '45%'},
-            {title: 'sudo', data: 'become', width: '10%', render: prettyBoolean},
+            {title: 'hosts', data: 'attributes.hosts', width: '20%'},
+            {title: 'module', data: 'attributes.module', width: '15%'},
+            {title: 'arguments', data: 'attributes.arguments', width: '45%'},
+            {title: 'sudo', data: 'attributes.become', width: '10%', render: prettyBoolean},
             {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
         ]},
         rowCallback: (row, data) => {
@@ -96,7 +96,7 @@ AdHocTask.prototype.selector = function ($container) {
 
 };
 
-AdHocTask.prototype.editor = function (callback) {
+AdHocTask.prototype.editor = function () {
 
     let self = this;
 
@@ -122,13 +122,17 @@ AdHocTask.prototype.editor = function (callback) {
 
         $form.find('button.save-button').click(function () {
 
-            self.hosts = self.pattern;
+            let callback = () => {
 
-            self.save(function () {
+                $form.dialog('close');
 
-                callback && callback();
+                $(mainContainer).trigger('reload')
 
-            });
+            };
+
+            if (self.id) self.update().then(callback);
+
+            else self.create().then(callback);
 
         });
 

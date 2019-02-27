@@ -26,3 +26,18 @@ file_types = {
         're': '[^\/]*\.(yml|yaml)'
     }
 }
+
+mime_types = {
+    'editable': [
+        '^text\/.*',
+        '.*\/xml$',
+        '.*\/json$',
+        '^inode\/x-empty$',
+    ],
+    'archive': [
+        '.*\/zip$',
+        '.*\/gzip$',
+        '.*\/x-tar$',
+        '.*\/x-gtar$'
+    ]
+}

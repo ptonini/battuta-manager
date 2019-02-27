@@ -34,7 +34,7 @@ class PlaybookView(View, ApiViewMixin):
 
         for p in PlaybookHandler.list(request.user):
 
-            if p.authorizer()['readable']:
+            if p.permissions['readable']:
 
                 data.append(p.serialize({'attributes': ['path'], 'links': ['self', 'args']}))
 
@@ -117,7 +117,15 @@ class AdHocTaskView(View, ApiViewMixin):
 
     def post(self, request, task_id):
 
-        pass
+        task = AdHocTask()
+
+        if task.authorizer(request.user)['editable']:
+
+            return self._api_response(self._save_instance(request, task))
+
+        else:
+
+            return HttpResponseForbidden()
 
     def get(self, request, task_id):
 
