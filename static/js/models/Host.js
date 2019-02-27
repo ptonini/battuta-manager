@@ -4,7 +4,7 @@ function Host(param) {
 
     self.links = {self: Entities[self.type].href};
 
-    Main.call(self, param);
+    BaseModel.call(self, param);
 
     return self;
 
@@ -121,7 +121,7 @@ Host.prototype.info = function ($container) {
 
             for (let key in infoTables) $container.find('#show_' + key).click(function () {
 
-                let $dialog = Main.prototype.notificationDialog();
+                let $dialog = BaseModel.prototype.notificationDialog();
 
                 let $table = Templates['table'];
 
@@ -150,7 +150,7 @@ Host.prototype.info = function ($container) {
 
             $('#show_facts').click(function () {
 
-                let $dialog = Main.prototype.notificationDialog();
+                let $dialog = BaseModel.prototype.notificationDialog();
 
                 $dialog.find('h5.dialog-header').html(self.name + ' facts');
 

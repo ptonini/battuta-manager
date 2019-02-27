@@ -18,7 +18,7 @@ class AdHocTaskForm(forms.ModelForm):
 
         model = AdHocTask
 
-        fields = ['hosts', 'module', 'arguments', 'become']
+        fields = ['name', 'hosts', 'module', 'arguments', 'become']
 
 
 class PlaybookArgsForm(forms.ModelForm):

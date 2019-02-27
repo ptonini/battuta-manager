@@ -1,4 +1,4 @@
-function Main (param) {
+function BaseModel (param) {
 
     let self = this;
 
@@ -34,7 +34,7 @@ function Main (param) {
 
 }
 
-Main.prototype = {
+BaseModel.prototype = {
 
     templates: 'templates_Main.html',
 
@@ -111,7 +111,7 @@ Main.prototype = {
 
             if (typeof self[p] === 'object' ) {
 
-                data.attributes[p] = Main.prototype.isPrototypeOf(self[p]) ?  self[p].serialize() : JSON.stringify(self[p]);
+                data.attributes[p] = BaseModel.prototype.isPrototypeOf(self[p]) ?  self[p].serialize() : JSON.stringify(self[p]);
 
             } else data.attributes[p] = self[p]
 
@@ -124,66 +124,6 @@ Main.prototype = {
 
     // Data request processors ********
 
-    _getCookie: function (name) {
-
-        let cookieValue = null;
-
-        if (document.cookie && document.cookie !== '') {
-
-            let cookies = document.cookie.split(';');
-
-            for (let i = 0; i < cookies.length; i++) {
-
-                let cookie = jQuery.trim(cookies[i]);
-
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-
-                    break;
-
-                }
-            }
-
-        }
-
-        return cookieValue;
-
-    },
-
-    _csrfSafeMethod: function (method) {
-
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-
-    },
-
-    objToQueryStr: function (obj) {
-
-        for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
-
-        return '?' + $.param(obj);
-
-    },
-
-    ajaxBeforeSend: function (xhr, settings) {
-
-        settings['blocking'] && $.blockUI({
-            message: null,
-            css: {
-                border: 'none',
-                backgroundColor: 'transparent'
-            },
-            overlayCSS: {backgroundColor: 'transparent'}
-        });
-
-        if (!Main.prototype._csrfSafeMethod(settings.type) && !settings.crossDomain) {
-
-            xhr.setRequestHeader("X-CSRFToken", Main.prototype._getCookie('csrftoken'));
-
-        }
-
-    },
-
     ajaxError: function (xhr, status, error) {
 
         let message;
@@ -194,7 +134,7 @@ Main.prototype = {
 
         else message = error;
 
-        Main.prototype.statusAlert('danger', message + ' (' + xhr.status + ')')
+        BaseModel.prototype.statusAlert('danger', message + ' (' + xhr.status + ')')
 
     },
 
@@ -204,7 +144,7 @@ Main.prototype = {
 
             callback && callback(response);
 
-            response['msg'] && Main.prototype.statusAlert('success', response['msg']);
+            response['msg'] && BaseModel.prototype.statusAlert('success', response['msg']);
 
         } else if (response.hasOwnProperty('errors')) {
 
@@ -216,13 +156,11 @@ Main.prototype = {
 
                 if (response.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + response.error[key][0].message))
 
-            }
+            } else if (response['msg']) $message.html(response['msg']);
 
-            else if (response['msg']) $message.html(response['msg']);
+            BaseModel.prototype.statusAlert('danger', $message);
 
-            Main.prototype.statusAlert('danger', $message);
-
-        } else Main.prototype.statusAlert('danger', 'Unknown response');
+        } else BaseModel.prototype.statusAlert('danger', 'Unknown response');
 
     },
 
@@ -237,11 +175,11 @@ Main.prototype = {
             'Accept': 'application/vnd.api+json',
         });
 
-        self._csrfSafeMethod(method) || init.headers.set('X-CSRFToken', self._getCookie('csrftoken'));
+        csrfSafeMethod(method) || init.headers.set('X-CSRFToken', getCookie('csrftoken'));
 
         if (obj) {
 
-            if (method === 'GET' || method === 'DELETE') url = url + self.objToQueryStr(obj);
+            if (method === 'GET' || method === 'DELETE') url = url + objToQueryStr(obj);
 
             else init.body = JSON.stringify(obj);
 
@@ -264,7 +202,7 @@ Main.prototype = {
 
             else {
 
-                Main.prototype.statusAlert('danger', response.statusText);
+                BaseModel.prototype.statusAlert('danger', response.statusText);
 
                 throw response.statusText
 
@@ -282,7 +220,7 @@ Main.prototype = {
 
             } else {
 
-                Main.prototype.statusAlert('danger', 'Unknown response');
+                BaseModel.prototype.statusAlert('danger', 'Unknown response');
 
                 throw 'Unknown response'
 
@@ -320,7 +258,7 @@ Main.prototype = {
 
         }
 
-        Main.prototype.statusAlert('danger', $messageContainer);
+        BaseModel.prototype.statusAlert('danger', $messageContainer);
 
     },
 
@@ -498,7 +436,7 @@ Main.prototype = {
 
     entityDialog: function () {
 
-        let $dialog = Main.prototype.confirmationDialog();
+        let $dialog = BaseModel.prototype.confirmationDialog();
 
         $dialog.find('div.dialog-content').append(Templates['entity-form']);
 
@@ -525,6 +463,7 @@ Main.prototype = {
 
     },
 
+
     // UI Elements ********************
 
     _deployAlert: function ($alert) {
@@ -543,7 +482,7 @@ Main.prototype = {
 
     warningAlert: function (message, confirmationCallback) {
 
-        let $alert = Main.prototype.confirmationAlert();
+        let $alert = BaseModel.prototype.confirmationAlert();
 
         $alert.find('div.alert').addClass('alert-warning');
 
@@ -561,19 +500,19 @@ Main.prototype = {
 
         });
 
-        Main.prototype._deployAlert($alert)
+        BaseModel.prototype._deployAlert($alert)
 
     },
 
     statusAlert: function (status, message) {
 
-        let $alert = Main.prototype.notificationAlert();
+        let $alert = BaseModel.prototype.notificationAlert();
 
         $alert.find('div.alert').addClass('alert-' + status);
 
         $alert.find('div.message-container').append(message);
 
-        Main.prototype._deployAlert($alert)
+        BaseModel.prototype._deployAlert($alert)
 
     },
 
@@ -712,7 +651,7 @@ Main.prototype = {
             maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
             hideBodyIfEmpty: true,
             columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.links[relation] + self.objToQueryStr({fields: {attributes: [key], links: ['self']}}),
+            ajaxUrl: self.links[relation] + objToQueryStr({fields: {attributes: [key], links: ['self']}}),
             formatItem: function ($gridContainer, $gridItem, data) {
 
                 let link = data.links ? data.links.self : false;
@@ -742,7 +681,7 @@ Main.prototype = {
                     title: 'Select ' + relationType,
                     type: 'many',
                     objectType: self.type,
-                    url: self.links[relation] + self.objToQueryStr({fields: {attributes: [key], links: ['self']}, related: false}),
+                    url: self.links[relation] + objToQueryStr({fields: {attributes: [key], links: ['self']}, related: false}),
                     itemValueKey: key,
                     action: function (selection, $dialog) {
 

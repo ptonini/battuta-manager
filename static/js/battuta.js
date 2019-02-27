@@ -59,7 +59,7 @@ $.extend($.fn.DynaGrid.defaults, {
 
 // Modal dialog options
 
-$.extend($.ui.dialog.prototype.options, {
+$.extend($.ui['dialog'].prototype.options, {
     width: '360',
     modal: true,
     show: true,
@@ -125,6 +125,55 @@ $.fn.outerHTML = function() {
 
 
 /// Functions /////////////////////////
+
+function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== '') {
+
+        let cookies = document.cookie.split(';');
+
+        for (let i = 0; i < cookies.length; i++) {
+
+            let cookie = jQuery.trim(cookies[i]);
+
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+
+                break;
+
+            }
+        }
+
+    }
+
+    return cookieValue;
+
+}
+
+function csrfSafeMethod(method) {
+
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+
+}
+
+function ajaxBeforeSend(xhr, sett) {
+
+    sett['blocking'] && $.blockUI({
+        message: null,
+        css: {
+            border: 'none',
+            backgroundColor: 'transparent'
+        },
+        overlayCSS: {backgroundColor: 'transparent'}
+
+    });
+
+    csrfSafeMethod(sett.type) && !sett.crossDomain && xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+
+}
 
 function humanBytes(value, unit='B') {
 
@@ -194,6 +243,14 @@ function getUserCreds() {
             self: [Entities['users'].href, sessionStorage.getItem('current_user_id'), 'creds'].join('/')
         }
     });
+
+}
+
+function objToQueryStr(obj) {
+
+    for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
+
+    return '?' + $.param(obj);
 
 }
 

@@ -1,12 +1,12 @@
 function Credential(param) {
 
-    Main.call(this, param);
+    BaseModel.call(this, param);
 
     return this;
 
 }
 
-Credential.prototype = Object.create(Main.prototype);
+Credential.prototype = Object.create(BaseModel.prototype);
 
 Credential.prototype.constructor = Credential;
 
@@ -110,7 +110,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                 $selector.trigger('build', response.data.id);
 
-                Main.prototype.statusAlert('success', 'Credential saved')
+                BaseModel.prototype.statusAlert('success', 'Credential saved')
 
             };
 

@@ -157,11 +157,30 @@ class AdHocTaskView(View, ApiViewMixin):
 
     def patch(self, request, task_id):
 
-        pass
+        task = get_object_or_404(AdHocTask, pk=task_id)
 
-    def delete(self, request, task_id):
+        if task.authorizer(request.user)['editable']:
 
-        pass
+            return self._api_response(self._save_instance(request, task))
+
+        else:
+
+            return HttpResponseForbidden()
+
+    @staticmethod
+    def delete(request, task_id):
+
+        task = get_object_or_404(AdHocTask, pk=task_id)
+
+        if task.authorizer(request.user)['deletable']:
+
+            task.delete()
+
+            return HttpResponse(status=204)
+
+        else:
+
+            return HttpResponseForbidden()
 
 # class AdHocView(View):
 #

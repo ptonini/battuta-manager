@@ -4,7 +4,7 @@ function Group(param) {
 
     self.links = {self: Entities[self.type].href};
 
-    Main.call(self, param);
+    BaseModel.call(self, param);
 
     return self;
 

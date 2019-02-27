@@ -6,7 +6,7 @@ const Templates = {
 
         let self = this;
 
-        file = file ? file : Main.prototype.templates;
+        file = file ? file : BaseModel.prototype.templates;
 
         if (self._loaded.includes(file)) return Promise.resolve();
 

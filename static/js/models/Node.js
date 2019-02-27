@@ -4,12 +4,12 @@ function Node(param) {
 
     self.links = {self: Entities[self.type].href};
 
-    Main.call(self, param);
+    BaseModel.call(self, param);
 
     return self;
 }
 
-Node.prototype = Object.create(Main.prototype);
+Node.prototype = Object.create(BaseModel.prototype);
 
 Node.prototype.constructor = Node;
 
@@ -116,7 +116,7 @@ Node.prototype.selector = function () {
             title: 'Delete nodes',
             type: 'many',
             objectType: self.type,
-            url: route + self.objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
+            url: route + objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
             itemValueKey: 'name',
             action: function (selection, $dialog) {
 

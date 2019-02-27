@@ -4,7 +4,7 @@ function User(param) {
 
     self.links = {self: Entities[self.type].href};
 
-    Main.call(self, param);
+    BaseModel.call(self, param);
 
     self.get('date_joined') && self.set('date_joined', toUserTZ(param.attributes['date_joined']));
 
@@ -16,7 +16,7 @@ function User(param) {
 
 }
 
-User.prototype = Object.create(Main.prototype);
+User.prototype = Object.create(BaseModel.prototype);
 
 User.prototype.constructor = User;
 
@@ -50,7 +50,7 @@ User.prototype.info = function ($container) {
 
     $container.find('button.save-button').click(function () {
 
-        self.update(true).then(() => Main.prototype.statusAlert('success', 'User saved'));
+        self.update(true).then(() => BaseModel.prototype.statusAlert('success', 'User saved'));
 
     });
 
@@ -116,7 +116,7 @@ User.prototype.entityFormValidator = function ($dialog) {
 
         for (let i = 0; i < messages.length; i++) $messagesContainer.append($('<div>').html(messages[i]))
 
-        Main.prototype.statusAlert('danger', $messagesContainer)
+        BaseModel.prototype.statusAlert('danger', $messagesContainer)
 
     }
 

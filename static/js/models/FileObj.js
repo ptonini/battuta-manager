@@ -2,13 +2,13 @@ function FileObj(param) {
 
     let self = this;
 
-    Main.call(this, param);
+    BaseModel.call(this, param);
 
     param && self.set('type', param.type);
 
 }
 
-FileObj.prototype = Object.create(Main.prototype);
+FileObj.prototype = Object.create(BaseModel.prototype);
 
 FileObj.prototype.constructor = FileObj;
 
@@ -50,10 +50,11 @@ FileObj.prototype.upload = function () {
 
     $input
         .fileinput({
+            // ajaxSettings: {method: 'POST', beforeSend: ajaxBeforeSend, error: self.ajaxError},
             progressClass: 'progress-bar progress-bar-success active',
             uploadUrl: self.links.self,
             uploadAsync: true,
-            uploadExtraData: () => { return {csrfmiddlewaretoken: self._getCookie('csrftoken')} }
+            uploadExtraData: () => { return {csrfmiddlewaretoken: getCookie('csrftoken')} }
         })
         .on('fileuploaded', function (event, data) {
 

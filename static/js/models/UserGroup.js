@@ -4,13 +4,13 @@ function UserGroup(param) {
 
     self.links = {self: Entities[self.type].href};
 
-    Main.call(self, param);
+    BaseModel.call(self, param);
 
     return self;
 
 }
 
-UserGroup.prototype = Object.create(Main.prototype);
+UserGroup.prototype = Object.create(BaseModel.prototype);
 
 UserGroup.prototype.constructor = UserGroup;
 

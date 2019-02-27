@@ -67,6 +67,8 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
     route = '/runner/adhoctasks'
 
+    name = models.CharField(max_length=64)
+
     hosts = models.CharField(max_length=64, blank=True)
 
     module = models.CharField(max_length=32)
@@ -78,6 +80,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
     def serialize(self, fields, user):
 
         attributes = {
+            'name': self.name,
             'hosts': self.hosts,
             'module': self.module,
             'arguments': json.loads(self.arguments),

@@ -1,10 +1,10 @@
 function AdHocTask (param) {
 
-    Main.call(this, param);
+    BaseModel.call(this, param);
 
 }
 
-AdHocTask.prototype = Object.create(Main.prototype);
+AdHocTask.prototype = Object.create(BaseModel.prototype);
 
 AdHocTask.prototype.constructor = AdHocTask;
 
@@ -52,9 +52,10 @@ AdHocTask.prototype.selector = function ($container) {
     self.selectorTableOptions = {
         offset: 'tab_table_offset',
         columns: () => { return [
-            {title: 'hosts', data: 'attributes.hosts', width: '20%'},
+            {title: 'name', data: 'attributes.name', width: '15%'},
+            {title: 'hosts', data: 'attributes.hosts', width: '15%'},
             {title: 'module', data: 'attributes.module', width: '15%'},
-            {title: 'arguments', data: 'attributes.arguments', width: '45%'},
+            {title: 'arguments', data: 'attributes.arguments', width: '35%'},
             {title: 'sudo', data: 'attributes.become', width: '10%', render: prettyBoolean},
             {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
         ]},
@@ -62,26 +63,16 @@ AdHocTask.prototype.selector = function ($container) {
 
             let task = new AdHocTask(data);
 
-            $(row).find('td:eq(2)').html(task.argumentsToString()).attr('title', task.argumentsToString());
+            $(row).find('td:eq(3)').html(task.argumentsToString()).attr('title', task.argumentsToString());
 
-            $(row).find('td:eq(4)').empty().append(
-                new TableButton('fas fa-pencil-alt', 'Edit', function () {
+            $(row).find('td:eq(5)').empty().append(
+                new TableButton('fas fa-pencil-alt', 'Edit', () => task.editor()),
+                new TableButton('fas fa-clone', 'Copy', () => task.set('id', '').editor()),
+                new TableButton('fas fa-trash', 'Delete', () => task.delete(false, function () {
 
-                    task.dialog(() => $(mainContainer).trigger('reload'))
+                    $(mainContainer).trigger('reload')
 
-                }),
-                new TableButton('fas fa-clone', 'Copy', function () {
-
-                    task.id = '';
-
-                    task.create(() => $(mainContainer).trigger('reload'))
-
-                }),
-                new TableButton('fas fa-trash', 'Delete', function () {
-
-                    task.delete(() => $(mainContainer).trigger('reload'))
-
-                })
+                }))
             )
         }
     };
@@ -110,15 +101,7 @@ AdHocTask.prototype.editor = function () {
 
         $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'hosts'));
 
-        $form.find('button.run-button').click(function ()  {
-
-            // let job = new Job(self);
-            //
-            // job.set('cred', $form.find('#task_credentials_selector option[value="'+ self.cred + '"]').data());
-            //
-            // job.run()
-
-        });
+        $form.find('button.run-button').click(function () {});
 
         $form.find('button.save-button').click(function () {
 
@@ -146,7 +129,7 @@ AdHocTask.prototype.editor = function () {
 
             let template = self.module + '-module-fields';
 
-            self.name = '[adhoc task] ' + self.module;
+            self.name = self.id ? self.name : '[adhoc task] ' + self.module;
 
             $form.find('a.module-reference-link').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
 

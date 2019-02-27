@@ -32,7 +32,7 @@ function Preferences(param) {
     return this;
 }
 
-Preferences.prototype = Object.create(Main.prototype);
+Preferences.prototype = Object.create(BaseModel.prototype);
 
 Preferences.prototype.constructor = Preferences;
 

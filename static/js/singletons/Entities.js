@@ -85,6 +85,6 @@ Router.add(/[\s\S]*/, function () {
 
     $(mainContainer).empty();
 
-    Main.prototype.statusAlert('warning', 'Page not found')
+    BaseModel.prototype.statusAlert('warning', 'Page not found')
 
 });

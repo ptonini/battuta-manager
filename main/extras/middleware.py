@@ -50,6 +50,8 @@ class JSONParsingMiddleware(MiddlewareMixin):
     @staticmethod
     def process_request(request):
 
+        request.JSON = {}
+
         if request.content_type == 'application/vnd.api+json':
 
             try:
@@ -60,16 +62,11 @@ class JSONParsingMiddleware(MiddlewareMixin):
 
                 elif request.method in ['GET', 'DELETE']:
 
-                    request.JSON = {}
-
                     for k, v in request.GET.items():
 
                         request.JSON[k] = json.loads(v)
 
-            except ValueError as ve:
+            except ValueError as e:
 
-                return HttpResponseBadRequest('Unable to parse JSON data. Error : {0}'.format(ve))
+                return HttpResponseBadRequest('Unable to parse JSON data. Error : {0}'.format(e))
 
-        else:
-
-            request.JSON = {}

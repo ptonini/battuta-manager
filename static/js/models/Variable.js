@@ -1,12 +1,12 @@
 function Variable(param) {
 
-    Main.call(this, param);
+    BaseModel.call(this, param);
 
     return this;
 
 }
 
-Variable.prototype = Object.create(Main.prototype);
+Variable.prototype = Object.create(BaseModel.prototype);
 
 Variable.prototype.constructor = Variable;
 

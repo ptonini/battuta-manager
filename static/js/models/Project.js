@@ -4,12 +4,12 @@ function Project(param) {
 
     self.links = {self: Entities[self.type].href};
 
-    Main.call(self, param);
+    BaseModel.call(self, param);
 
     return self;
 }
 
-Project.prototype = Object.create(Main.prototype);
+Project.prototype = Object.create(BaseModel.prototype);
 
 Project.prototype.constructor = Project;
 

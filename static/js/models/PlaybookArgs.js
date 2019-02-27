@@ -1,12 +1,12 @@
 function PlaybookArgs(param) {
 
-    Main.call(this, param);
+    BaseModel.call(this, param);
 
     return this;
 
 }
 
-PlaybookArgs.prototype = Object.create(Main.prototype);
+PlaybookArgs.prototype = Object.create(BaseModel.prototype);
 
 PlaybookArgs.prototype.constructor = PlaybookArgs;
 

@@ -8,7 +8,7 @@ function Inventory() {
 
         $('#upload_field')
             .fileinput({
-                ajaxSettings: {method: 'PATCH', beforeSend: self.ajaxBeforeSend, error: self.ajaxError},
+                ajaxSettings: {method: 'PATCH', beforeSend: ajaxBeforeSend, error: self.ajaxError},
                 mergeAjaxCallbacks: 'before',
                 uploadUrl: Entities.manage.href,
                 uploadExtraData: function () {
@@ -100,7 +100,7 @@ function Inventory() {
 
 }
 
-Inventory.prototype = Object.create(Main.prototype);
+Inventory.prototype = Object.create(BaseModel.prototype);
 
 Inventory.prototype.constructor = Inventory;
 
