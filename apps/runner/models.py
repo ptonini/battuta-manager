@@ -83,7 +83,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
             'name': self.name,
             'hosts': self.hosts,
             'module': self.module,
-            'arguments': json.loads(self.arguments),
+            'arguments': json.loads(self.arguments if self.arguments else '{}'),
             'become': self.become,
         }
 
