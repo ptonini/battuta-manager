@@ -67,7 +67,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
     route = '/runner/adhoctasks'
 
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
 
     hosts = models.CharField(max_length=64, blank=True)
 
