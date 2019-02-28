@@ -113,35 +113,25 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
 class Job(models.Model, ModelSerializerMixin):
 
+    name = models.CharField(max_length=512, blank=True, null=True)
+
+    type = models.CharField(max_length=16, choices=(('playbook', 'playbook'), ('task', 'task'), ('facts', 'facts')))
+
+    parameters = models.CharField(max_length=2048, blank=True, null=True)
+
+    check = models.BooleanField()
+
     user = models.ForeignKey(LocalUser, on_delete=models.CASCADE)
 
     cred = models.ForeignKey(Credential, blank=True, null=True, on_delete=models.CASCADE)
 
-    is_running = models.BooleanField(default=False)
-
-    type = models.CharField(max_length=16, choices=(('playbook', 'playbook'),
-                                                    ('adhoc', 'adhoc'),
-                                                    ('gather_facts', 'gather_facts')))
-
-    created_on = models.DateTimeField(auto_now_add=True)
-
-    path = models.CharField(max_length=512, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     pid = models.IntegerField(blank=True, null=True)
 
     status = models.CharField(max_length=32)
 
     message = models.CharField(max_length=1024, blank=True, null=True)
-
-    tags = models.CharField(max_length=64, blank=True, null=True)
-
-    skip_tags = models.CharField(max_length=64, blank=True, null=True)
-
-    extra_vars = models.CharField(max_length=128, blank=True, null=True)
-
-    subset = models.CharField(max_length=1024, blank=True, null=True)
-
-    check = models.BooleanField()
 
     stats = models.TextField(max_length=4096, blank=True, null=True)
 

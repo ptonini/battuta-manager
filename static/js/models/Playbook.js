@@ -19,6 +19,18 @@ Playbook.prototype.addCallback = function () {
 
 };
 
+Playbook.prototype.parse = function () {
+
+    let self = this;
+
+    return self.read(false, {fields: {attributes: ['content']}}).then(() => {
+
+        return YAML.parse(self.content)
+
+    });
+
+};
+
 
 Playbook.prototype.selectorField = function ($selectorContainer, $argsContainer) {
 
@@ -47,7 +59,7 @@ Playbook.prototype.selectorField = function ($selectorContainer, $argsContainer)
 
             });
 
-            args.selector($argsContainer);
+            args.selector($argsContainer, playbook);
 
         }).change();
 

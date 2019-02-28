@@ -76,6 +76,11 @@ const Entities = {
         href:'/runner/adhoctasks',
         Class: AdHocTask,
         regex: null
+    },
+    jobs: {
+        href: '/runner/jobs',
+        Class: Job,
+        regex: /^runner\/jobs\/?([0-9]+)?$/,
     }
 };
 

@@ -1,6 +1,7 @@
 from ansible.parsing.dataloader import DataLoader
-from ansible.vars import VariableManager
-from ansible.inventory import Inventory, Host as AnsibleHost
+from ansible.vars.manager import VariableManager
+from ansible.inventory.manager import InventoryManager
+from ansible.inventory.host import Host as AnsibleHost
 
 from django.conf import settings
 from django.core.cache import cache
@@ -37,13 +38,11 @@ class AnsibleInventory:
 
     def __init__(self, subset=None):
 
-        self.var_manager = VariableManager()
-
         self.loader = DataLoader()
 
-        self.inventory = Inventory(loader=self.loader, variable_manager=self.var_manager)
+        self.inventory = InventoryManager(loader=self.loader, sources='/opt/battuta/extras/scripts/get_inventory.sh')
 
-        self.var_manager.set_inventory(self.inventory)
+        self.var_manager= VariableManager(loader=self.loader, inventory=self.inventory)
 
         self.inventory.subset(subset)
 
@@ -57,9 +56,9 @@ class AnsibleInventory:
 
             host = AnsibleHost('temp_host')
 
-            host.add_group(self.inventory.get_group(node.name))
+            self.inventory.groups[node.name].add_host(host)
 
-        host_vars = self.var_manager.get_vars(self.loader, host=host)
+        host_vars = self.var_manager.get_vars(host=host)
 
         return host_vars[key] if key in host_vars else None
 

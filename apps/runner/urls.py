@@ -16,7 +16,6 @@ urlpatterns = [
 
     path(AdHocTask.type + '/<int:task_id>', login_required(AdHocTaskView.as_view())),
 
-
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #
     # url(r'^job/$', login_required(views.PageView.as_view()), kwargs={'page': 'selector'}),

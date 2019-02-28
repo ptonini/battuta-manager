@@ -36,11 +36,9 @@ PlaybookArgs.prototype.toString = function () {
 
 };
 
-PlaybookArgs.prototype.selector = function ($container, value) {
+PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
     let self = this;
-
-    let creds;
 
     Templates.load(self.templates).then(() => {
 
@@ -123,52 +121,38 @@ PlaybookArgs.prototype.selector = function ($container, value) {
             });
 
             $form.find('button.run-button').click(function () {
-            //
-            //     self.fetchJson('GET', self.paths.api.file + 'read/', self).then(data => {
-            //
-            //         if (data.status === 'ok' ) {
-            //
-            //             if (self.validator.playbooks(data.text)) return jsyaml.load(data.text);
-            //
-            //         }
-            //
-            //         else {
-            //
-            //             self.statusAlert('danger', data.msg);
-            //
-            //             return Promise.reject();
-            //
-            //         }
-            //
-            //
-            //     }).then(data => {
-            //
-            //         let job = new Job(self);
-            //
-            //         $.each(data, function (index, play) {
-            //
-            //             let trueValues = ['true','True','TRUE','yes','Yes','YES','y','Y','on','On','ON'];
-            //
-            //             (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) && job.set('become', true);
-            //
-            //         });
-            //
-            //         job.set('type', 'playbook');
-            //
-            //         job.set('subset', self.args.subset || '');
-            //
-            //         job.set('tags', self.args.tags || '');
-            //
-            //         job.set('skip_tags', self.args.skip_tags || '');
-            //
-            //         job.set('extra_vars', self.args.extra_vars || '');
-            //
-            //         job.set('cred', $element.find('#credentials_selector option[value="'+ self.cred + '"]').data());
-            //
-            //         job.run();
-            //
-            //     });
-            //
+
+                let job = new Job({
+                    attributes: {
+                        name: self.path,
+                        type: 'playbook',
+                        parameters: {
+                            subset: self.subset,
+                            extra_vars: self.extra_vars,
+                            tags: self.tags,
+                            skip_tags: self.skip_tags
+                        },
+                        user: sessionStorage.getItem('current_user_id'),
+                        cred: self.cred
+                    },
+                    links: {self: Entities.jobs.href}
+                });
+
+                let become = false;
+
+                let trueValues = ['true','True','TRUE','yes','Yes','YES','y','Y','on','On','ON'];
+
+                playbook.parse().then(playbookObj => {
+
+               $.each(playbookObj, function (index, play) {
+
+                        if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) become = true;
+
+                    });
+                });
+
+                job.run(become)
+
             });
 
         });

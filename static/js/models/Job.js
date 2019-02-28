@@ -2,47 +2,19 @@ function Job(param) {
 
     BaseModel.call(this, param);
 
-    return this;
 }
 
 Job.prototype = Object.create(BaseModel.prototype);
 
 Job.prototype.constructor = Job;
 
-Job.prototype.key = 'job';
 
-Job.prototype.apiPath = '';
+Job.prototype.type = 'job';
 
-Job.prototype.crud = {
-    titlecollective: 'Jobs',
-    dataSrc: null,
-    element: {
-        ajax: {url: Job.prototype.apiPath + 'list/'},
-        columns:[
-            {title: 'run data'},
-            {title: 'user'},
-            {title: 'name'},
-            {title: 'hosts/subset'},
-            {title: 'status'}
-        ],
-        rowCallback:  function (row, data) {
+Job.prototype.label = {single: 'task', collective: 'tasks'};
 
-            $(row).addClass(Job.prototype.states[data[4]]).css('cursor', 'pointer').click(function () {
+Job.prototype.templates = 'templates_Job';
 
-                BaseModel.prototype.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
-
-            })
-        },
-        scrollY: (window.innerHeight - sessionStorage.getItem('job_table_offset')).toString() + 'px',
-        order: [[0, "desc"]],
-        pageLength: 10,
-        serverSide: true,
-        processing: true,
-        paging: true,
-        dom: "<'row'<'col-12'l><'col-12'tr>><'row'<'col-4' i><'col-8 text-right'p>>"
-    }
-
-};
 
 Job.prototype.states = {
     starting: 'text-primary',
@@ -61,6 +33,39 @@ Job.prototype.taskStates = {
     error: 'text-danger',
     failed: 'text-danger'
 };
+
+
+// Job.prototype.crud = {
+//     titlecollective: 'Jobs',
+//     dataSrc: null,
+//     element: {
+//         ajax: {url: Job.prototype.apiPath + 'list/'},
+//         columns:[
+//             {title: 'run data'},
+//             {title: 'user'},
+//             {title: 'name'},
+//             {title: 'hosts/subset'},
+//             {title: 'status'}
+//         ],
+//         rowCallback:  function (row, data) {
+//
+//             $(row).addClass(Job.prototype.states[data[4]]).css('cursor', 'pointer').click(function () {
+//
+//                 BaseModel.prototype.popupCenter(Job.prototype.paths.views.job + data[5] + '/', data[5], 1000);
+//
+//             })
+//         },
+//         scrollY: (window.innerHeight - sessionStorage.getItem('job_table_offset')).toString() + 'px',
+//         order: [[0, "desc"]],
+//         pageLength: 10,
+//         serverSide: true,
+//         processing: true,
+//         paging: true,
+//         dom: "<'row'<'col-12'l><'col-12'tr>><'row'<'col-4' i><'col-8 text-right'p>>"
+//     }
+//
+// };
+
 
 Job.prototype.loadParam = function (param) {
 
@@ -176,7 +181,7 @@ Job.prototype.run = function (sameWindow) {
 
     if (askUser || askUserPass || askSudoUser || askSudoPass) {
 
-        self.fetchHtml('form_JobPasswords.html').then($element => {
+        self.fetchHtml('templates_Job.html').then($element => {
 
             self.bindElement($element);
 

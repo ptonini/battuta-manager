@@ -20,7 +20,6 @@ from apps.runner.extras.handlers import JobTableHandler
 
 from main.extras.mixins import ApiViewMixin
 from apps.files.extras import PlaybookHandler
-from apps.iam.models import Credential
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
 #from apps.projects.extras import ProjectAuthorizer
@@ -182,101 +181,12 @@ class AdHocTaskView(View, ApiViewMixin):
 
             return HttpResponseForbidden()
 
-# class AdHocView(View):
-#
-#     @staticmethod
-#     def get(request, action):
-#
-#         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
-#
-#         inventory = AnsibleInventory()
-#
-#         if action == 'list':
-#
-#             task_list = list()
-#
-#             for task in AdHocTask.objects.all().values():
-#
-#                 auth = {
-#                     request.GET['pattern'] == '' or request.GET['pattern'] == task['hosts'],
-#                     request.user.has_perm('users.edit_tasks') or project_auth.can_edit_tasks(inventory, task['hosts'])
-#                 }
-#
-#                 if auth == {True}:
-#
-#                     task['arguments'] = json.loads(task['arguments']) if task['arguments'] else ''
-#
-#                     task_list.append(task)
-#
-#             data = {'status': 'ok', 'task_list': task_list}
-#
-#         elif action == 'modules':
-#
-#             module_folder = os.path.join(settings.STATICFILES_DIRS[0], 'templates', 'ansible_modules')
-#
-#             modules = cache.get_or_set('modules', os.listdir(module_folder), settings.CACHE_TIMEOUT)
-#
-#             data = {'status': 'ok', 'modules': [m.split('.')[0] for m in modules]}
-#
-#         else:
-#
-#             return HttpResponseNotFound('Invalid action')
-#
-#         return HttpResponse(json.dumps(data), content_type='application/json')
-#
-#     @staticmethod
-#     def post(request, action):
-#
-#         project_auth = cache.get_or_set(str(request.user.username + '_auth'), ProjectAuthorizer(request.user), settings.CACHE_TIMEOUT)
-#
-#         auth = {
-#             request.user.has_perm('users.edit_tasks'),
-#             project_auth.can_edit_tasks(AnsibleInventory(), request.POST.get('hosts', ''))
-#         }
-#
-#         if True in auth:
-#
-#             if request.POST.get('id'):
-#
-#                 adhoc = get_object_or_404(AdHocTask, pk=request.POST['id'])
-#
-#                 new_task = False
-#
-#             else:
-#
-#                 adhoc = AdHocTask()
-#
-#                 new_task = True
-#
-#             form = AdHocTaskForm(request.POST or None, instance=adhoc)
-#
-#             if action == 'save':
-#
-#                 if form.is_valid():
-#
-#                     saved_task = form.save(commit=True)
-#
-#                     data = {'status': 'ok', 'id': saved_task.id, 'msg': 'Task created' if new_task else 'Task saved'}
-#
-#                 else:
-#
-#                     data = {'status': 'failed', 'msg': str(form.errors)}
-#
-#             elif action == 'delete':
-#
-#                 adhoc.delete()
-#
-#                 data = {'status': 'ok', 'msg': 'Task deleted'}
-#
-#             else:
-#
-#                 return HttpResponseNotFound('Invalid action')
-#
-#         else:
-#
-#             data = {'status': 'denied'}
-#
-#         return HttpResponse(json.dumps(data), content_type='application/json')
+
+class JobView(View, ApiViewMixin):
+
+    def post(self, request, job_id):
+
+        pass
 
 
 # class JobView(View):

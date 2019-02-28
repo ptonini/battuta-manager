@@ -28,7 +28,6 @@
     "jquery-jsonview": "^1.2.3",
     "bootstrap-fileinput": "^4.4.9",
     "ace": "^1.3.3",
-    "js-yaml": "^3.12.0",
     "timezones": "^0.1.0",
     "ace-builds": "^1.3.3",
     "font-awesome": "font-awsome#^5.4.1",
@@ -36,7 +35,8 @@
     "blockUI": "blockui#*",
     "Assistant": "https://google-fonts.azurewebsites.net/googleFonts/Assistant?family=Assistant",
     "Kanit": "https://google-fonts.azurewebsites.net/googleFonts/Kanit?family=Kanit",
-    "popper.js": "^1.14.4"
+    "popper.js": "^1.14.4",
+    "yaml.js": "^0.3.0"
   },
   "resolutions": {
     "jquery": "^3.3.1"
