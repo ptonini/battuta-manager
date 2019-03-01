@@ -9,7 +9,7 @@ class JobForm(forms.ModelForm):
 
         model = Job
 
-        fields = ['name', 'type', 'parameters', 'user', 'cred', 'check']
+        fields = ['name', 'job_type', 'parameters', 'user', 'cred', 'check']
 
 
 class AdHocTaskForm(forms.ModelForm):

@@ -40,7 +40,7 @@ class AnsibleInventory:
 
         self.loader = DataLoader()
 
-        self.inventory = InventoryManager(loader=self.loader, sources='/opt/battuta/extras/scripts/get_inventory.sh')
+        self.inventory = InventoryManager(loader=self.loader, sources=settings.INVENTORY_SCRIPT)
 
         self.var_manager= VariableManager(loader=self.loader, inventory=self.inventory)
 

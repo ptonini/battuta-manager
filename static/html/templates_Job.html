@@ -1,18 +1,18 @@
 <form data-template="password-form">
-    <div id="username_form_group" class="form-group">
-        <label for="username-input" >Username</label>
-        <input id="username-input" data-bind="remote_user" class="form-control form-control-sm" type="text">
+    <div class="form-group username-group">
+        <label>Username</label>
+        <input data-bind="remote_user" class="username-input form-control form-control-sm" type="text" title="Username">
     </div>
-    <div id="password_form_group" class="form-group">
-        <label for="password-input">Password for user <i data-bind="remote_user"></i></label>
-        <input id="password-input" data-bind="remote_pass" class="form-control form-control-sm" type="password" autocomplete="new-password">
+    <div class="form-group password-group">
+        <label>Password for user <i data-bind="remote_user"></i></label>
+        <input data-bind="remote_pass" class="password-input form-control form-control-sm" type="password" title="Password" autocomplete="new-password">
     </div>
-    <div id="sudo_user_form_group" class="form-group">
-        <label for="become-user-input">Sudo user </label>
-        <input id="become-user-input" data-bind="become_user" class="form-control form-control-sm" type="text">
+    <div class="form-group sudo-user-group">
+        <label>Sudo user</label>
+        <input id="" data-bind="become_user" class="become-user-input form-control form-control-sm" type="text" title="Sudo user">
     </div>
-    <div id="sudo_pass_form_group" class="form-group">
-        <label for="become-pass-input">Sudo password (defaults to user)</label>
-        <input id="become-pass-input" data-bind="become_pass" class="form-control form-control-sm" type="password" autocomplete="new-password">
+    <div class="form-group sudo-pass-group">
+        <label>Sudo password (defaults to user)</label>
+        <input data-bind="become_pass" class="become-pass-input form-control form-control-sm" type="password" title="Sudo password" autocomplete="new-password">
     </div>
 </form>

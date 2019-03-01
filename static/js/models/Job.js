@@ -1,8 +1,4 @@
-function Job(param) {
-
-    BaseModel.call(this, param);
-
-}
+function Job(param) { BaseModel.call(this, param) };
 
 Job.prototype = Object.create(BaseModel.prototype);
 
@@ -13,7 +9,7 @@ Job.prototype.type = 'job';
 
 Job.prototype.label = {single: 'task', collective: 'tasks'};
 
-Job.prototype.templates = 'templates_Job';
+Job.prototype.templates = 'templates_Job.html';
 
 
 Job.prototype.states = {
@@ -67,57 +63,57 @@ Job.prototype.taskStates = {
 // };
 
 
-Job.prototype.loadParam = function (param) {
-
-    let self = this;
-
-    self.set('status', param.status);
-
-    self.set('hosts', param.hosts);
-
-    self.set('subset', param.subset || '');
-
-    self.set('stats', param.stats);
-
-    self.set('name', param.name);
-
-    self.set('tags', param.tags || '');
-
-    self.set('cred', param.cred);
-
-    self.set('message', param.message);
-
-    self.set('pid', param.pid);
-
-    self.set('created_on', param.created_on);
-
-    self.set('is_running', param.is_running);
-
-    self.set('check', param.check);
-
-    self.set('username', param.username);
-
-    self.set('skip_tags', param.skip_tags || '');
-
-    self.set('user', param.user);
-
-    self.set('extra_vars', param.extra_vars || '');
-
-    self.set('plays', param.plays || []);
-
-    self.set('folder', param.folder);
-
-    self.set('type', param.type);
-
-    self.set('id', param.id);
-
-    self.set('become', param.become);
-
-    self.set('module', param.module);
-
-    self.set('arguments', param.arguments || '');
-
-};
+// Job.prototype.loadParam = function (param) {
+//
+//     let self = this;
+//
+//     self.set('status', param.status);
+//
+//     self.set('hosts', param.hosts);
+//
+//     self.set('subset', param.subset || '');
+//
+//     self.set('stats', param.stats);
+//
+//     self.set('name', param.name);
+//
+//     self.set('tags', param.tags || '');
+//
+//     self.set('cred', param.cred);
+//
+//     self.set('message', param.message);
+//
+//     self.set('pid', param.pid);
+//
+//     self.set('created_on', param.created_on);
+//
+//     self.set('is_running', param.is_running);
+//
+//     self.set('check', param.check);
+//
+//     self.set('username', param.username);
+//
+//     self.set('skip_tags', param.skip_tags || '');
+//
+//     self.set('user', param.user);
+//
+//     self.set('extra_vars', param.extra_vars || '');
+//
+//     self.set('plays', param.plays || []);
+//
+//     self.set('folder', param.folder);
+//
+//     self.set('type', param.type);
+//
+//     self.set('id', param.id);
+//
+//     self.set('become', param.become);
+//
+//     self.set('module', param.module);
+//
+//     self.set('arguments', param.arguments || '');
+//
+// };
 
 Job.prototype.stateColor = function () {
 
@@ -127,101 +123,87 @@ Job.prototype.stateColor = function () {
 
 };
 
-Job.prototype.getFacts = function () {
+// Job.prototype.getFacts = function () {
+//
+//     let self = this;
+//
+//     new User({username: sessionStorage.getItem('user_name')}).defaultCred(function (data) {
+//
+//         self.loadParam({type: 'gather_facts', hosts: self.hosts, cred: data.cred});
+//
+//         self.run()
+//
+//     });
+//
+// };
+
+Job.prototype.run = function (become, cred, sameWindow) {
 
     let self = this;
 
-    new User({username: sessionStorage.getItem('user_name')}).defaultCred(function (data) {
+    let askUser =  cred.id === 0;
 
-        self.loadParam({type: 'gather_facts', hosts: self.hosts, cred: data.cred});
-
-        self.run()
-
-    });
-
-};
-
-Job.prototype.run = function (sameWindow) {
-
-    let self = this;
-
-    let askUser =  self.cred.id === 0;
-
-    let askUserPass = self.cred.id === 0 || !self.cred.password && self.cred.ask_pass && !self.cred.rsa_key;
+    let askUserPass = cred.id === 0 || !cred.password && cred.ask_pass && !cred.rsa_key;
 
     let askSudoUser = false;
 
-    let askSudoPass =  self.cred.id === 0 || self.become && !self.cred.sudo_pass && self.cred.ask_sudo_pass;
+    let askSudoPass =  cred.id === 0 || become && !cred.sudo_pass && cred.ask_sudo_pass;
 
-    let post = () => {
+    let post = () => self.create(true).then(() => {
 
-        self.cred = self.cred.id;
+        if (sameWindow) window.open(self.links.self, '_self');
 
-        self.postData('run', true, function (data) {
+        else {
 
-            self.loadParam(data.job);
+            let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
 
-            let jobUrl = self.paths.views.job + self.id + '/';
+            self.popupCenter(self.links.self, title, 1000);
 
-            if (sameWindow) window.open(jobUrl, '_self');
+        }
 
-            else {
+    });
 
-                let windowTitle = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
+    Templates.load(self.templates).then(() => {
 
-                self.popupCenter(jobUrl, windowTitle, 1000);
+        if (askUser || askUserPass || askSudoUser || askSudoPass) {
 
-            }
-
-            return Promise.resolve();
-
-        });
-
-    };
-
-    if (askUser || askUserPass || askSudoUser || askSudoPass) {
-
-        self.fetchHtml('templates_Job.html').then($element => {
-
-            self.bindElement($element);
+            let $form = Templates['password-form'];
 
             let $dialog = self.confirmationDialog();
 
+            self.bindElement($form);
+
             $dialog.find('h5.dialog-header').remove();
 
-            $dialog.find('div.dialog-content').append($element);
+            $dialog.find('div.dialog-content').append($form);
 
-            self.cred.username && self.set('remote_user', self.cred.username);
+            cred.username && self.set('remote_user', cred.username);
 
-            askUser || $element.find('#username_form_group').hide();
+            askUser || $form.find('div.username-group').hide();
 
-            askUserPass || $element.find('#password_form_group').hide();
+            askUserPass || $form.find('div.password-group').hide();
 
-            askSudoUser || $element.find('#sudo_user_form_group').hide();
+            askSudoUser || $form.find('div.sudo-user-group').hide();
 
-            askSudoPass || $element.find('#sudo_pass_form_group').hide();
+            askSudoPass || $form.find('div.sudo-pass-group').hide();
 
             $dialog.find('button.confirm-button').click(function () {
 
                 $dialog.dialog('close');
 
-                post(sameWindow)
+                post()
 
             });
 
-            $dialog
-                .dialog({width: '360'})
-                .keypress(function (event) {
+            $dialog.dialog({width: '360'}).keypress(function (event) {
 
-                    if (event.keyCode === 13) $dialog.find('button.confirm-button').click()
+                if (event.keyCode === 13) $dialog.find('button.confirm-button').click()
 
-                });
+            });
 
-        });
+        } else post();
 
-    }
-
-    else post(sameWindow);
+    })
 
 };
 

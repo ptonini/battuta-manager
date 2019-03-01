@@ -70,11 +70,11 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
             for (let i = 0; i < response.data.length; i++) {
 
-                let cred = response.data[i];
+                let cred = new Credential(response.data[i]);
 
-                let title = cred.attributes.title;
+                let title = cred.title;
 
-                if (cred.attributes.is_default) {
+                if (cred.is_default) {
 
                     title += ' (default)';
 

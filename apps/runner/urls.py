@@ -1,8 +1,8 @@
 from django.urls import path, re_path
 from django.contrib.auth.decorators import login_required
 
-from apps.runner.views import PlaybookView, PlaybookArgsView, AdHocTaskView
-from apps.runner.models import AdHocTask
+from apps.runner.views import PlaybookView, PlaybookArgsView, AdHocTaskView, JobView
+from apps.runner.models import AdHocTask, Job
 
 urlpatterns = [
 
@@ -15,6 +15,10 @@ urlpatterns = [
     path(AdHocTask.type, login_required(AdHocTaskView.as_view()), kwargs={'task_id': None}),
 
     path(AdHocTask.type + '/<int:task_id>', login_required(AdHocTaskView.as_view())),
+
+    path(Job.type, login_required(JobView.as_view()), kwargs={'job_id': None}),
+
+    path(Job.type + '/<int:job_id>', login_required(JobView.as_view())),
 
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #

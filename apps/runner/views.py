@@ -184,9 +184,19 @@ class AdHocTaskView(View, ApiViewMixin):
 
 class JobView(View, ApiViewMixin):
 
+    form_class = JobForm
+
     def post(self, request, job_id):
 
-        pass
+        job = Job()
+
+        if job.authorizer(request.user)['editable']:
+
+            return self._api_response(self._save_instance(request, job))
+
+        else:
+
+            return HttpResponseForbidden()
 
 
 # class JobView(View):

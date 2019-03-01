@@ -52,6 +52,8 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
         let $form = $container.find('form.args-form');
 
+        let $credentialsSelector = $form.find('select.credentials-select');
+
         let $newOption = Templates['select-option'].data({
             attributes: {
                 check: false,
@@ -64,7 +66,7 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
             links: {self: self.links.self}
         });
 
-        getUserCreds().buildSelector($form.find('select.credentials-select'));
+        getUserCreds().buildSelector($credentialsSelector);
 
         $form.find('button.close-button').hide();
 
@@ -125,15 +127,16 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
                 let job = new Job({
                     attributes: {
                         name: self.path,
-                        type: 'playbook',
+                        type: Job.prototype.type,
                         parameters: {
-                            subset: self.subset,
-                            extra_vars: self.extra_vars,
-                            tags: self.tags,
-                            skip_tags: self.skip_tags
+                            subset: playArgs.subset,
+                            extra_vars: playArgs.extra_vars,
+                            tags: playArgs.tags,
+                            skip_tags: playArgs.skip_tags,
                         },
+                        job_type: 'playbook',
                         user: sessionStorage.getItem('current_user_id'),
-                        cred: self.cred
+                        cred: playArgs.cred
                     },
                     links: {self: Entities.jobs.href}
                 });
@@ -144,14 +147,15 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
                 playbook.parse().then(playbookObj => {
 
-               $.each(playbookObj, function (index, play) {
+                   $.each(playbookObj, function (index, play) {
 
                         if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) become = true;
 
                     });
+
                 });
 
-                job.run(become)
+                job.run(become, $credentialsSelector.find(":selected").data())
 
             });
 

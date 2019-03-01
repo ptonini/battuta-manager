@@ -5,6 +5,7 @@ from django.core.cache import caches, cache
 
 from main.extras.mixins import ModelSerializerMixin
 from apps.inventory.extras import AnsibleInventory
+from apps.preferences.extras import get_preferences
 from apps.iam.extras import Authorizer
 from apps.iam.models import LocalUser, Credential
 
@@ -113,9 +114,13 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
 class Job(models.Model, ModelSerializerMixin):
 
+    type = 'jobs'
+
+    route = '/runner/jobs'
+
     name = models.CharField(max_length=512, blank=True, null=True)
 
-    type = models.CharField(max_length=16, choices=(('playbook', 'playbook'), ('task', 'task'), ('facts', 'facts')))
+    job_type = models.CharField(max_length=16, choices=(('playbook', 'playbook'), ('task', 'task'), ('facts', 'facts')))
 
     parameters = models.CharField(max_length=2048, blank=True, null=True)
 
@@ -134,6 +139,44 @@ class Job(models.Model, ModelSerializerMixin):
     message = models.CharField(max_length=1024, blank=True, null=True)
 
     stats = models.TextField(max_length=4096, blank=True, null=True)
+
+    def serialize(self, fields, user):
+
+        attributes = {
+            'name': self.name,
+            'job_type': self.job_type,
+            'parameters': json.loads(self.parameters),
+            'check': self.check,
+            'user': self.user.id,
+            'cred': self.cred.id,
+            'created': self.created.strftime(get_preferences()['date_format']),
+            'pid': self.pid,
+            'status': self.status,
+            'message': self.message,
+            'stats': self.stats
+        }
+
+        links = {'self': '/'.join([self.route, str(self.id)])}
+
+        meta = self.authorizer(user)
+
+        data = self._serializer(fields, attributes, links, meta)
+
+        return data
+
+    def authorizer(self, user):
+
+        # authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+
+        readable = True
+
+        editable = readable
+
+        deletable = readable
+
+        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+
+
 
 
 class Play(models.Model, ModelSerializerMixin):
