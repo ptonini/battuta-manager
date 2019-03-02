@@ -189,7 +189,7 @@ class FileHandler(ModelSerializerMixin):
 
                 fs_obj = FileHandler.factory(r, path, user)
 
-                if fs_obj.authorizer()['readable']:
+                if fs_obj.permissions()['readable']:
 
                     return bool(re.match('|'.join(mime_types[file_type]), fs_obj.mime_type)) if file_type else True
 
@@ -250,7 +250,7 @@ class FileHandler(ModelSerializerMixin):
     @classmethod
     def create(cls, root, path, request):
 
-        if cls.factory(root, os.path.split(path)[0], request.user).authorizer()['editable']:
+        if cls.factory(root, os.path.split(path)[0], request.user).permissions()['editable']:
 
             root_path = cls.get_root_class(root).root_path
 
@@ -278,7 +278,7 @@ class FileHandler(ModelSerializerMixin):
 
                     source = cls.factory(source_dict['root'], source_dict['path'], request.user)
 
-                    if source.authorizer()['readable']:
+                    if source.permissions()['readable']:
 
                         cls._action(fs_obj_type, root)['copy'](source.absolute_path, absolute_path)
 
@@ -312,13 +312,13 @@ class FileHandler(ModelSerializerMixin):
 
                 fs_obj = FileHandler.factory(self.root, os.path.join(self.path, fs_obj_name), self.user)
 
-                response['included'].append(fs_obj.serialize(fields)) if fs_obj.authorizer()['readable'] else None
+                response['included'].append(fs_obj.serialize(fields)) if fs_obj.permissions()['readable'] else None
 
             return response
 
         else:
 
-            if self.authorizer()['readable']:
+            if self.permissions()['readable']:
 
                 return {'data': self.serialize(fields)}
 
@@ -328,7 +328,7 @@ class FileHandler(ModelSerializerMixin):
 
     def update(self, attributes):
 
-        if self.authorizer()['editable']:
+        if self.permissions()['editable']:
 
             new_name = attributes.get('new_name')
 
@@ -361,7 +361,7 @@ class FileHandler(ModelSerializerMixin):
 
     def delete(self):
 
-        if self.authorizer()['deletable']:
+        if self.permissions()['deletable']:
 
             self._action(self.type, self.root)['delete'](self.absolute_path)
 
@@ -440,13 +440,13 @@ class FileHandler(ModelSerializerMixin):
 
                 attributes['content'] = file_content
 
-        meta = self.authorizer()
+        meta = self.permissions()
 
         meta['valid'] = self._validate(self.root, self.type, self.path, file_content)
 
         return self._serializer(fields, attributes, links, meta)
 
-    def authorizer(self):
+    def permissions(self):
 
         authorizer = caches['authorizer'].get_or_set(self.user.username, lambda: Authorizer(self.user))
 

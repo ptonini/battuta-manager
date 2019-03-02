@@ -128,32 +128,29 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
                     attributes: {
                         name: self.path,
                         type: Job.prototype.type,
+                        job_type: 'playbook',
+                        check: playArgs.check,
+                        user: sessionStorage.getItem('current_user_id'),
+                        cred: playArgs.cred,
                         parameters: {
                             subset: playArgs.subset,
                             extra_vars: playArgs.extra_vars,
                             tags: playArgs.tags,
                             skip_tags: playArgs.skip_tags,
                         },
-                        job_type: 'playbook',
-                        user: sessionStorage.getItem('current_user_id'),
-                        cred: playArgs.cred
                     },
                     links: {self: Entities.jobs.href}
                 });
 
                 let become = false;
 
-                let trueValues = ['true','True','TRUE','yes','Yes','YES','y','Y','on','On','ON'];
+                let r = /true|yes|on|y/i;
 
-                playbook.parse().then(playbookObj => {
+                playbook.parse().then(playbookObj => $.each(playbookObj, (index, play) => {
 
-                   $.each(playbookObj, function (index, play) {
+                    if (r.test(play['become']) || r.test(play['sudo'])) become = true;
 
-                        if (trueValues.indexOf(play.become) > -1 || trueValues.indexOf(play.sudo) > -1) become = true;
-
-                    });
-
-                });
+                }));
 
                 job.run(become, $credentialsSelector.find(":selected").data())
 

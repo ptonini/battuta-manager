@@ -40,11 +40,17 @@ class AnsibleInventory:
 
         self.loader = DataLoader()
 
-        self.inventory = InventoryManager(loader=self.loader, sources=settings.INVENTORY_SCRIPT)
+        self.inventory = InventoryManager(loader=self.loader)
 
-        self.var_manager= VariableManager(loader=self.loader, inventory=self.inventory)
+        self.inventory.parse_source(settings.INVENTORY_SCRIPT, cache=False)
 
         self.inventory.subset(subset)
+
+    @property
+    def var_manager(self):
+
+        return VariableManager(loader=self.loader, inventory=self.inventory)
+
 
     def get_variable(self, key, node):
 

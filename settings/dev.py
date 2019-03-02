@@ -23,7 +23,7 @@ DATABASES = {
 
 DATA_PATH = '/opt/ans_data'
 
-INVENTORY_SCRIPT = os.path.join(DATA_PATH, 'extras', 'scripts', 'get_inventory.sh')
+INVENTORY_SCRIPT = '/opt/battuta/extras/scripts/get_inventory.sh'
 
 REPOSITORY_PATH = os.path.join(DATA_PATH, 'files')
 ROLES_PATH = os.path.join(DATA_PATH, 'roles')

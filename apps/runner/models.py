@@ -36,13 +36,13 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
         links = {'self': '/'.join(['runner/playbooks', self.path, 'args', str(self.id)])}
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         data = self._serializer(fields, attributes, links, meta)
 
         return data
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
@@ -90,13 +90,13 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
         links = {'self': '/'.join([self.route, str(self.id)])}
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         data = self._serializer(fields, attributes, links, meta)
 
         return data
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
@@ -138,7 +138,7 @@ class Job(models.Model, ModelSerializerMixin):
 
     message = models.CharField(max_length=1024, blank=True, null=True)
 
-    stats = models.TextField(max_length=4096, blank=True, null=True)
+    statistics = models.TextField(max_length=4096, blank=True, null=True)
 
     def serialize(self, fields, user):
 
@@ -153,18 +153,18 @@ class Job(models.Model, ModelSerializerMixin):
             'pid': self.pid,
             'status': self.status,
             'message': self.message,
-            'stats': self.stats
+            'statistics': self.statistics
         }
 
         links = {'self': '/'.join([self.route, str(self.id)])}
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         data = self._serializer(fields, attributes, links, meta)
 
         return data
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         # authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 

@@ -17,7 +17,7 @@ class ProjectView(View, ApiViewMixin):
 
         project = Project()
 
-        if project.authorizer(request.user)['editable']:
+        if project.permissions(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, project))
 
@@ -31,7 +31,7 @@ class ProjectView(View, ApiViewMixin):
 
             project = get_object_or_404(Project, pk=project_id)
 
-            if project.authorizer(request.user)['readable']:
+            if project.permissions(request.user)['readable']:
 
                 response = {'data': project.serialize(request.JSON.get('fields'), request.user)}
 
@@ -45,7 +45,7 @@ class ProjectView(View, ApiViewMixin):
 
             for project in Project.objects.order_by('name').all():
 
-                if project.authorizer(request.user)['readable']:
+                if project.permissions(request.user)['readable']:
 
                     data.append(project.serialize(request.JSON.get('fields'), request.user))
 
@@ -57,7 +57,7 @@ class ProjectView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['editable']:
+        if project.permissions(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, project))
 
@@ -70,7 +70,7 @@ class ProjectView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['deletable']:
+        if project.permissions(request.user)['deletable']:
 
             project.delete()
 
@@ -87,7 +87,7 @@ class RelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['editable']:
+        if project.permissions(request.user)['editable']:
 
             related = project.get_relationships(relation)
 
@@ -123,7 +123,7 @@ class RelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['readable']:
+        if project.permissions(request.user)['readable']:
 
             fields = request.JSON.get('fields')
 
@@ -171,7 +171,7 @@ class RelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['editable']:
+        if project.permissions(request.user)['editable']:
 
             related = project.get_relationships(relation)
 
@@ -201,7 +201,7 @@ class FsObjRelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['editable']:
+        if project.permissions(request.user)['editable']:
 
             result_set = set(json.loads(getattr(project, relation)))
 
@@ -221,7 +221,7 @@ class FsObjRelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['readable']:
+        if project.permissions(request.user)['readable']:
 
             fields = request.JSON.get('fields')
 
@@ -238,7 +238,7 @@ class FsObjRelationsView(View, ApiViewMixin):
 
         project = get_object_or_404(Project, pk=project_id)
 
-        if project.authorizer(request.user)['editable']:
+        if project.permissions(request.user)['editable']:
 
             delete_ids = [f['attributes']['path'] for f in request.JSON.get('data', list())]
 

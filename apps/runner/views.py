@@ -4,6 +4,7 @@ import os
 import ast
 from pytz import timezone
 from multiprocessing import Process
+from itertools import chain
 
 from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
@@ -48,7 +49,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
         args = PlaybookArgs(path=path)
 
-        if args.authorizer(request.user)['editable']:
+        if args.permissions(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, args))
 
@@ -64,7 +65,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
             args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-            if args.authorizer(request.user)['readable']:
+            if args.permissions(request.user)['readable']:
 
                 return self._api_response({'data': args.serialize(request.JSON.get('fields'), request.user)})
 
@@ -76,7 +77,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
             for a in PlaybookArgs.objects.filter(path=path):
 
-                if a.authorizer(request.user)['readable']:
+                if a.permissions(request.user)['readable']:
 
                     data.append(a.serialize(None, request.user))
 
@@ -86,7 +87,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
         args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-        if args.authorizer(request.user)['editable'] and args.path == path:
+        if args.permissions(request.user)['editable'] and args.path == path:
 
             return self._api_response(self._save_instance(request, args))
 
@@ -99,7 +100,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
         args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-        if args.authorizer(request.user)['deletable'] and args.path == path:
+        if args.permissions(request.user)['deletable'] and args.path == path:
 
             args.delete()
 
@@ -118,7 +119,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
         task = AdHocTask()
 
-        if task.authorizer(request.user)['editable']:
+        if task.permissions(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, task))
 
@@ -132,7 +133,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
             task = get_object_or_404(AdHocTask, pk=task_id)
 
-            if task.authorizer(request.user)['readable']:
+            if task.permissions(request.user)['readable']:
 
                 response = {'data': (task.serialize(request.JSON.get('fields'), request.user))}
 
@@ -146,7 +147,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
             for task in AdHocTask.objects.all():
 
-                if task.authorizer(request.user)['readable']:
+                if task.permissions(request.user)['readable']:
 
                     data.append(task.serialize(request.JSON.get('fields'), request.user))
 
@@ -158,7 +159,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
         task = get_object_or_404(AdHocTask, pk=task_id)
 
-        if task.authorizer(request.user)['editable']:
+        if task.permissions(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, task))
 
@@ -171,7 +172,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
         task = get_object_or_404(AdHocTask, pk=task_id)
 
-        if task.authorizer(request.user)['deletable']:
+        if task.permissions(request.user)['deletable']:
 
             task.delete()
 
@@ -190,13 +191,33 @@ class JobView(View, ApiViewMixin):
 
         job = Job()
 
-        if job.authorizer(request.user)['editable']:
+        if job.permissions(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, job))
 
         else:
 
             return HttpResponseForbidden()
+
+    def get(self, request, job_id):
+
+        if job_id:
+
+            job = get_object_or_404(Job, pk=job_id)
+
+            if job.permissions(request.user)['readable']:
+
+                return self._api_response({'data': job.serialize(request.JSON.get('fields'), request.user)})
+
+            else:
+
+                return HttpResponseForbidden()
+
+        else:
+
+            queryset = list(chain(Job.objects.none(), [j for j in Job.objects.all() if j.permissions(request.user)['readable']]))
+
+            return self._api_response({'data': JobTableHandler(request, queryset).build_response()})
 
 
 # class JobView(View):

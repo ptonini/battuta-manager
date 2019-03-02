@@ -38,11 +38,11 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
             LocalGroup.type: '/'.join([self.route, str(self.id), LocalGroup.type])
         }
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         return self._serializer(fields, attributes, links, meta)
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         readable = any([
             user.has_perm('users.edit_users') and not self.is_superuser,
@@ -60,9 +60,9 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
 
-class Meta:
+    class Meta:
 
-        ordering = ['username']
+            ordering = ['username']
 
 
 class Credential(models.Model, ModelSerializerMixin):
@@ -113,11 +113,11 @@ class Credential(models.Model, ModelSerializerMixin):
 
         links = {'self': '/'.join([self.user.route, str(self.user.id), Credential.type, str(self.id)])}
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         return self._serializer(fields, attributes, links, meta)
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         readable = user.has_perm('users.edit_users') or user.id == self.user.id,
 
@@ -153,13 +153,13 @@ class LocalGroup(Group, ModelSerializerMixin):
             'permissions': '/'.join([self.route, str(self.id), 'permissions'])
         }
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         meta['builtin'] = self.name in builtin_groups
 
         return self._serializer(fields, attributes, links, meta)
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         readable = user.has_perm('users.edit_user_groups')
 

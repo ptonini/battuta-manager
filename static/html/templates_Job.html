@@ -16,3 +16,119 @@
         <input data-bind="become_pass" class="become-pass-input form-control form-control-sm" type="password" title="Sudo password" autocomplete="new-password">
     </div>
 </form>
+
+<div data-template="job-navbar" class="container">
+    <a class="navbar-brand mr-auto job-navbar">
+        <span class="mr-3" data-bind="name"></span>
+        <small data-bind="status"></small>
+        <span id="job_cog" class="fas fa-cog fa-spin fa-fw fa-xs"></span>
+    </a>
+    <ul class="navbar-nav navbar-right">
+        <li class="nav-item mr-1">
+            <button id="cancel_button" class="nav-link btn btn-icon" title="Cancel">
+                <span class="fas fa-fw fa-times text-danger"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button id="rerun_button" class="nav-link btn btn-icon" title="Execute job again">
+                <span class="fas fa-fw fa-redo-alt"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button id="stats_button" class="nav-link btn btn-icon" title="Statistics">
+                <span class="fas fa-fw fa-list"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button id="print_button" class="nav-link btn btn-icon" title="Print">
+                <span class="fas fa-fw fa-print"></span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button id="scroll_button" data-bind="auto_scroll" class="nav-link btn btn-icon" title="Auto scroll">
+                <span class="fas fa-fw fa-angle-double-down"></span>
+            </button>
+        </li>
+    </ul>
+</div>
+
+<div data-template="job-container" class="job-container">
+        <h4 class="d-none d-print-block my-3">
+            <strong data-bind="name"></strong>
+        </h4>
+        <div class="row">
+            <div class="col-4">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">User:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="username"></div>
+                </div>
+            </div>
+            <div class="col-4 playbook-only">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Subset:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="subset"></div>
+                </div>
+            </div>
+            <div class="col-4 playbook-only">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Extra vars:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="extra_vars"></div>
+                </div>
+            </div>
+            <div class="col-4 playbook-only">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Tags:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="tags"></div>
+                </div>
+            </div>
+            <div class="col-4 playbook-only">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Skip tags:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="skip_tags"></div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Check:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="check"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Run date:</div>
+                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="created_on"></div>
+                </div>
+            </div>
+        </div>
+        <div class="result-container inset-container scrollbar my-2"></div>
+        <div class="statistics-container"></div>
+    </div>
+
+<div data-template="play-container" class="play-container">
+        <div class="row">
+            <div class="col-12">
+                <h4></h4>
+            </div>
+            <div class="col-4">
+                <div class="row no-gutters">
+                    <div class="col-4 item-label">Hosts:</div>
+                    <div id="host_field" class="col-8 item-value text-truncate font-weight-bold"></div>
+                    <div class="col-4 item-label">Become:</div>
+                    <div id="become_field" class="col-8 item-value text-truncate font-weight-bold"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div data-template="task-container" class="task-table-container card shadow my-2 p-3">
+        <div class="row">
+            <div class="col-12 task-table-header">
+                <strong></strong>
+                <small class="d-none d-print-block">&nbsp;(<span class="counter"></span>)</small>&nbsp;
+                <span class="badge badge-pill badge-secondary d-print-none counter"></span>
+            </div>
+        </div>
+        <table class="table table-condensed table-hover table-striped"></table>
+    </div>

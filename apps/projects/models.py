@@ -78,11 +78,11 @@ class Project(models.Model, ModelSerializerMixin):
             'roles': '/'.join([self.route, str(self.id), 'roles']),
         }
 
-        meta = self.authorizer(user)
+        meta = self.permissions(user)
 
         return self._serializer(fields, attributes, links, meta)
 
-    def authorizer(self, user):
+    def permissions(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 

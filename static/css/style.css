@@ -19,6 +19,9 @@ body {
     color: var(--main-font-color);
 }
 
+table th, table td {
+    color: var(--main-font-color);
+}
 /* Text highlighting *****************/
 
 body {
