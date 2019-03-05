@@ -24,15 +24,13 @@ FileObj.prototype.upload = function () {
 
     let self = this;
 
-    let $dialog = self.confirmationDialog();
-
     let $form = Templates['upload-file-form'];
+
+    let $dialog = Modal.confirmation(true, $form);
 
     let $input = $form.find('input.input-file');
 
     $dialog.find('h5.dialog-header').replaceWith($('<h6>').html('Upload file'));
-
-    $dialog.find('div.dialog-content').append($form);
 
     $dialog.find('button.confirm-button').click(function () {
 
@@ -58,7 +56,7 @@ FileObj.prototype.upload = function () {
         })
         .on('fileuploaded', function (event, data) {
 
-            if (data.response.hasOwnProperty('errors')) self.errorAlert(data.response.errors);
+            if (data.response.hasOwnProperty('errors')) apiErrorAlert(data.response.errors);
 
             else {
 
@@ -153,7 +151,7 @@ FileObj.prototype.contentEditor = function () {
 
     let $selector = $form.find('select.mode-selector');
 
-    let $dialog = self.confirmationDialog();
+    let $dialog = Modal.confirmation();
 
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
@@ -182,8 +180,6 @@ FileObj.prototype.contentEditor = function () {
 
     $form.find('div.editor-container').css('height', window.innerHeight * 0.7);
 
-    $dialog.find('h5.dialog-header').remove();
-
     $dialog.find('div.dialog-content').append($form);
 
     $dialog.find('input.filename-input').val(self.get('name'));
@@ -206,7 +202,7 @@ FileObj.prototype.contentEditor = function () {
 
         }
 
-        else self.statusAlert('warning', 'Please enter a filename');
+        else AlertBox.status('warning', 'Please enter a filename');
 
     });
 
@@ -253,7 +249,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
             template: 'update-file-form',
             save: function (newName) {
 
-                let fsObj = new Entities[self.root].Class({links: {self: [self.links.parent, newName].join('/')}, type: self.type});
+                let fsObj = new Entities[self.root].model({links: {self: [self.links.parent, newName].join('/')}, type: self.type});
 
                 return fsObj.create(false, {source: {root: self.root, path: self.path}});
 
@@ -261,9 +257,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
         }
     };
 
-    let $dialog = self.confirmationDialog();
-
-    $dialog.find('div.dialog-content').html(Templates[actions[action].template]);
+    let $dialog = Modal.confirmation(true, Templates[actions[action].template]);
 
     $dialog.find('h5.dialog-header').replaceWith(
         $('<h6>').html(actions[action].title).append('&nbsp;', $('<span>').attr('data-bind', 'type'))
@@ -340,7 +334,7 @@ FileObj.prototype.selector = function () {
                     className: 'btn-sm btn-icon',
                     action: () => {
 
-                        let fsobj = new Entities[self.root].Class({links: {parent: self.links.self}, type: 'file'});
+                        let fsobj = new Entities[self.root].model({links: {parent: self.links.self}, type: 'file'});
 
                         fsobj.nameEditor('create', function (response) {
 
@@ -361,7 +355,7 @@ FileObj.prototype.selector = function () {
         },
         rowCallback: function (row, data) {
 
-            let fs_obj = new Entities[data.attributes.root].Class(data);
+            let fs_obj = new Entities[data.attributes.root].model(data);
 
             if (fs_obj.type === 'folder') {
 
@@ -480,7 +474,7 @@ FileObj.prototype.selector = function () {
 
                                     if (event.keyCode === 13) {
 
-                                        self.fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
+                                        fetchJson('GET', self.links.root + '/' + $(this).val(), null, false).then(() => {
 
                                             $pathButton.removeClass('checked-button');
 

@@ -51,7 +51,6 @@ class AnsibleInventory:
 
         return VariableManager(loader=self.loader, inventory=self.inventory)
 
-
     def get_variable(self, key, node):
 
         if node.type == Host.type:

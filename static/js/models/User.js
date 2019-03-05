@@ -50,7 +50,7 @@ User.prototype.info = function ($container) {
 
     $container.find('button.save-button').click(function () {
 
-        self.update(true).then(() => BaseModel.prototype.statusAlert('success', 'User saved'));
+        self.update(true).then(() => AlertBox.status('success', 'User saved'));
 
     });
 
@@ -80,11 +80,7 @@ User.prototype.tabs = {
 
 User.prototype.entityDialog = function () {
 
-    let $dialog = this.confirmationDialog();
-
-    $dialog.find('h5.dialog-header').html('Add user');
-
-    $dialog.find('div.dialog-content').append(Templates['user-form']);
+    let $dialog = Modal.confirmation('Add user', Templates['user-form']);
 
     if (this.id) {
 
@@ -116,7 +112,7 @@ User.prototype.entityFormValidator = function ($dialog) {
 
         for (let i = 0; i < messages.length; i++) $messagesContainer.append($('<div>').html(messages[i]))
 
-        BaseModel.prototype.statusAlert('danger', $messagesContainer)
+        AlertBox.status('danger', $messagesContainer)
 
     }
 

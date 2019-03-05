@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{% csrf_token %}
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-ui/themes/base/jquery-ui.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/bootstrap-fileinput/css/fileinput.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/jquery-jsonview/dist/jquery.jsonview.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'components/font-awesome/css/all.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/jquery-dynagrid/jquery.dynagrid.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+    <script type="text/javascript" src="{% static 'components/jquery/dist/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap-fileinput/js/fileinput.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/bootstrap-fileinput/themes/fa/theme.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons/js/buttons.html5.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/jquery-jsonview/dist/jquery.jsonview.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/yaml.js/dist/yaml.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/timezones/dist/timezones.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/moment/min/moment.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/moment-timezone/builds/moment-timezone-with-data.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ace.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/ace-builds/src-min/ext-beautify.js' %}"></script>
+    <script type="text/javascript" src="{% static 'components/blockUI/jquery.blockUI.js' %}"></script>
+    <script type="text/javascript" src="/static/plugins/jquery-dynagrid/jquery.dynagrid.js"></script>
+    <script type="text/javascript" src="/static/js/battuta.js"></script>
+    <script type="text/javascript" src="/static/js/components/AlertBox.js"></script>
+    <script type="text/javascript" src="/static/js/singletons/Templates.js"></script>
+    {% block appdata %}{% endblock %}
+{% block scripts %}{% endblock %}
+    <meta charset="utf-8">
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Battuta - An Ansible frontend">
+    <meta name="author" content="Pedro Tonini">
+    <title>Battuta</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand"></nav>
+    <section class="container p-0"></section>
+</body>
+</html>

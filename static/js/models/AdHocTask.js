@@ -52,9 +52,9 @@ AdHocTask.prototype.selector = function ($container) {
     self.selectorTableOptions = {
         offset: 'tab_table_offset',
         columns: () => { return [
-            {title: 'name', data: 'attributes.name', width: '15%'},
+            {title: 'name', data: 'attributes.name', width: '20%'},
             {title: 'hosts', data: 'attributes.hosts', width: '15%'},
-            {title: 'module', data: 'attributes.module', width: '15%'},
+            {title: 'module', data: 'attributes.module', width: '10%'},
             {title: 'arguments', data: 'attributes.arguments', width: '35%'},
             {title: 'sudo', data: 'attributes.become', width: '10%', render: prettyBoolean},
             {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
@@ -63,7 +63,7 @@ AdHocTask.prototype.selector = function ($container) {
 
             let task = new AdHocTask(data);
 
-            $(row).find('td:eq(3)').html(task.argumentsToString()).attr('title', task.argumentsToString());
+            $(row).find('td:eq(3)').html(task.argumentsToString());
 
             $(row).find('td:eq(5)').empty().append(
                 new TableButton('fas fa-pencil-alt', 'Edit', () => task.editor()),
@@ -79,7 +79,7 @@ AdHocTask.prototype.selector = function ($container) {
 
     let table = new SelectorTable(self);
 
-    $container.html(table.element);
+    $container.append(table.element);
 
     table.initialize();
 
@@ -99,9 +99,35 @@ AdHocTask.prototype.editor = function () {
 
         let $argumentsContainer = $form.find('div.module-arguments-container');
 
+        let $credentialsSelector = $form.find('select.credentials-select');
+
         $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'hosts'));
 
-        $form.find('button.run-button').click(function () {});
+        $form.find('button.run-button').click(function () {
+
+            let job = new Job({
+                attributes: {
+                    name: self.name,
+                    type: Job.prototype.type,
+                    job_type: 'task',
+                    subset: self.hosts,
+                    check: self.check,
+                    user: sessionStorage.getItem('current_user_id'),
+                    cred: self.cred,
+                    parameters: {
+                        name: self.name,
+                        hosts: self.hosts,
+                        module: self.module,
+                        arguments: self.arguments,
+                        become: self.become
+                    },
+                },
+                links: {self: Entities.jobs.href}
+            });
+
+            job.run(self.become, $credentialsSelector.find(":selected").data())
+
+        });
 
         $form.find('button.save-button').click(function () {
 
@@ -161,7 +187,7 @@ AdHocTask.prototype.editor = function () {
 
         });
 
-        getUserCreds().buildSelector($form.find('select.credentials-select'));
+        getUserCreds().buildSelector($credentialsSelector);
 
         $.each(self.modules.sort(), (index, value) => $selector.append($('<option>').attr('value', value).append(value)));
 

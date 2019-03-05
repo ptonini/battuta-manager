@@ -19,9 +19,19 @@ body {
     color: var(--main-font-color);
 }
 
-table th, table td {
-    color: var(--main-font-color);
+/*table th, table td {*/
+    /*color: var(--main-font-color);*/
+/*}*/
+
+div.row > div.centered-col {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    height: 50%;
+    width: 50%;
+    background: red;
 }
+
 /* Text highlighting *****************/
 
 body {
@@ -367,7 +377,12 @@ input.path-input {
 
 table.dataTable {
     border-collapse: collapse !important;
+    table-layout: fixed;
+    word-wrap:break-word;
 }
+
+
+
 
 table.dataTable thead th,
 table.dataTable tbody td  {

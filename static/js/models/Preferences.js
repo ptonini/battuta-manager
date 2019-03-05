@@ -64,13 +64,13 @@ Preferences.prototype.dialog = function () {
 
     let self = this;
 
-    let $dialog = self.confirmationDialog().dialog({autoOpen: false, width: 800});
+    let $dialog = Modal.confirmation('Preferences').dialog({autoOpen: false, width: 800});
 
-    $dialog.find('h5.dialog-header').append('Preferences', Templates['restore-button']);
+    $dialog.find('h5.dialog-header').append(Templates['restore-button']);
 
     $dialog.find('button.restore-button').click(function () {
 
-        self.warningAlert('Restore all preferences to default values?', function () {
+        AlertBox.warning('Restore all preferences to default values?', function () {
 
             $dialog.find('.item-input').each(function (index, input) {
 
@@ -78,7 +78,7 @@ Preferences.prototype.dialog = function () {
 
             });
 
-            self.statusAlert('success', 'Preferences restored')
+            AlertBox.status('success', 'Preferences restored')
 
         })
 
@@ -118,11 +118,11 @@ Preferences.prototype.dialog = function () {
 
         });
 
-        noError && self.fetchJson('PATCH', self.links.self, {data: data}, true).then(() => {
+        noError && fetchJson('PATCH', self.links.self, {data: data}, true).then(() => {
 
             $dialog.dialog('close');
 
-            new NavBar().build();
+            new MainNavBar().build();
 
             location.reload();
 

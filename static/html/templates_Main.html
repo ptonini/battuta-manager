@@ -97,6 +97,32 @@
     </div>
 </form>
 
+<form data-template="login-form" class="mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h4>Login</h4>
+        </div>
+        <div class="col-12">
+            <table>
+                <tr>
+                    <td>
+                        <input class="form-control form-control-sm mr-1 mb-2" type="text" placeholder="Username">
+                        <input class="form-control form-control-sm mr-1 mb-2" type="password" placeholder="Password">
+                    </td>
+                    <td>
+                        <button class="btn btn-link login-button" title="Login">
+                            <span class="fas fa-fw fa-sign-in-alt"></span>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+
+    </div>
+</form>
+
 
 <!-- Views -->
 
@@ -144,6 +170,76 @@
 <div data-template="entity-selector">
     <h4 data-bind="label.collective" class="title-header"></h4>
     <div class="table-container card shadow p-3"></div>
+</div>
+
+
+<!-- Main NavBar -->
+
+<div data-template="main-navbar" class="container">
+    <a class="navbar-brand" href="/">Battuta</a>
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item dropdown">
+            <a id="inventory-menu" class="nav-link" href="#" data-toggle="dropdown">Inventory</a>
+            <div class="dropdown-menu" aria-labelledby="inventory-menu">
+                <a href='#' class="dropdown-item" data-route="hosts">Hosts</a>
+                <a href='#' class="dropdown-item" data-route="groups">Groups</a>
+                <a href='#' class="dropdown-item" data-route="manage">Manage inventory</a>
+            </div>
+        </li>
+        <li class="nav-item dropdown">
+            <a id="runner-menu" href="#" class="nav-link" data-toggle="dropdown">Runner</a>
+            <div class="dropdown-menu">
+                <a href='#' class="dropdown-item" data-route="runner">New job</a>
+                <a href='#' class="dropdown-item" data-route="jobs">History</a>
+            </div>
+        </li>
+        <li class="nav-item dropdown">
+            <a id="files-menu" href="#" class="nav-link" data-toggle="dropdown">Files</a>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item" data-route="repository">Repository</a>
+                <a href="#" class="dropdown-item" data-route="playbooks">Playbooks</a>
+                <a href="#" class="dropdown-item" data-route="roles">Roles</a>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-route="projects">Projects</a>
+        </li>
+        <li class="nav-item dropdown">
+            <a id="iam-menu" href="#" class="nav-link" data-toggle="dropdown">IAM</a>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item" data-route="users">Users</a>
+                <a href="#" class="dropdown-item" data-route="usergroups">Groups</a>
+            </div>
+        </li>
+    </ul>
+    <ul class="navbar-nav navbar-right mr-3">
+        <li class="nav-item">
+            <div class="input-group">
+                <input class="form-control form-control-sm search-input" type="text" title="Search">
+                <div class="input-group-append">
+                    <button class="btn btn-light btn-sm search-button" type="button">
+                        <span class="fas fa-fw fa-search"></span>
+                    </button>
+                </div>
+            </div>
+        </li>
+    </ul>
+    <ul class="navbar-nav navbar-right">
+        <li class="nav-item">
+            <a href="#" class="nav-link preferences-link" title="Preferences">
+                <span class="fas fa-fw fa-cog"></span>
+            </a>
+        </li>
+        <li class="nav-item dropdown">
+            <a href="#" class="nav-link" data-toggle="dropdown">
+                <span id="user_icon" class="fas fa-fw fa-user"></span>
+            </a>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item profile-link">Profile</a>
+                <a href="#" class="dropdown-item logout-link">Logout</a>
+            </div>
+        </li>
+    </ul>
 </div>
 
 

@@ -241,9 +241,7 @@ Variable.prototype.selector = function ($container) {
 
 Variable.prototype.entityDialog = function () {
 
-    let $dialog = this.confirmationDialog();
-
-    $dialog.find('div.dialog-content').append(Templates['variable-form']);
+    let $dialog = Modal.confirmation(true, Templates['variable-form']);
 
     $dialog.find('#key-input').autocomplete({source: this.internalVars});
 
@@ -254,11 +252,9 @@ Variable.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    let $dialog = self.notificationDialog();
+    let $dialog = Modal.notification('Select source type', Templates['source-type-selector']);
 
-    $dialog.find('h5.dialog-header').addClass('text-center mb-3').html('Select source type');
-
-    $dialog.find('div.dialog-content').append(Templates['source-type-selector']);
+    $dialog.find('h5.dialog-header').addClass('text-center mb-3');
 
     $dialog.find('button.node-button').click(function () {
 

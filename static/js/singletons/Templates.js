@@ -6,8 +6,6 @@ const Templates = {
 
         let self = this;
 
-        file = file ? file : BaseModel.prototype.templates;
-
         if (self._loaded.includes(file)) return Promise.resolve();
 
         else return fetch('/static/html/' + file, {credentials: 'include'}).then(response => {

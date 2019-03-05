@@ -9,7 +9,7 @@ class JobForm(forms.ModelForm):
 
         model = Job
 
-        fields = ['name', 'job_type', 'parameters', 'user', 'cred', 'check']
+        fields = ['name', 'job_type', 'parameters', 'subset', 'user', 'cred', 'check']
 
 
 class AdHocTaskForm(forms.ModelForm):
@@ -19,6 +19,15 @@ class AdHocTaskForm(forms.ModelForm):
         model = AdHocTask
 
         fields = ['name', 'hosts', 'module', 'arguments', 'become']
+
+
+class AdHocJobForm(forms.ModelForm):
+
+    class Meta:
+
+        model = AdHocTask
+
+        fields = ['hosts', 'module', 'arguments', 'become']
 
 
 class PlaybookArgsForm(forms.ModelForm):

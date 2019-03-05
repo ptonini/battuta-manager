@@ -15,7 +15,7 @@ class DataTableRequestHandler:
         self._length = int(request.GET['length'])
 
         self._search = {
-            'value': request.GET['search[value]'],
+            'value': request.GET.get('search[value]'),
             'regex': request.GET['search[regex]'] == 'true'
         }
 
@@ -27,7 +27,7 @@ class DataTableRequestHandler:
 
         self._queryset = queryset
 
-        self._tz = timezone(request.user.userdata.timezone)
+        self._tz = timezone(request.user.timezone)
 
         i = 0
 

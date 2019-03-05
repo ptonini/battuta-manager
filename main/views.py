@@ -11,24 +11,16 @@ class PageView(View):
     @staticmethod
     def get(request):
 
-        return render(request, 'main/main.html')
+        return render(request, 'main/main.html') if request.user.is_authenticated else render(request, 'main/login.html')
 
 
 class MainView(View, ApiViewMixin):
 
     def get(self, request):
 
-        if request.user.is_authenticated:
+        fields = {'attributes': ['username', 'timezone'], 'links':['self']}
 
-            fields = {'attributes': ['username', 'timezone'], 'links':['self']}
-
-            response = {'meta': {'user': request.user.serialize(fields, request.user)}}
-
-        else:
-
-            response = {'meta': {'user': None}}
-
-        return self._api_response(response)
+        return self._api_response({'meta': {'user': request.user.serialize(fields, request.user)}})
 
 
 class LoginView(View, ApiViewMixin):

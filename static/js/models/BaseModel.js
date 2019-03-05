@@ -36,50 +36,7 @@ function BaseModel (param) {
 
 BaseModel.prototype = {
 
-    templates: 'templates_Main.html',
-
-
     // Properties methods *************
-
-    _setValue: function (keyArray, value, obj) {
-
-        let self = this;
-
-        if (keyArray.length === 1) obj[keyArray[0]] = value;
-
-        else {
-
-            if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
-
-            obj = obj[keyArray.shift()];
-
-            self._setValue(keyArray, value, obj)
-
-        }
-
-    },
-
-    _updateDOM: function (key, value) {
-
-        let self = this;
-
-        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
-
-        else for (let k in value) self._updateDOM(key + '.' + k, value[k])
-
-    },
-
-    set: function (key, value) {
-
-        let self = this;
-
-        self._setValue(key.split('.'), value, self);
-
-        self._updateDOM(key, value);
-
-        return self;
-
-    },
 
     get: function(key) {
 
@@ -118,212 +75,6 @@ BaseModel.prototype = {
         }
 
         return data
-
-    },
-
-
-    // Data request processors ********
-
-    ajaxError: function (xhr, status, error) {
-
-        let message;
-
-        if (xhr.status === 403) message = 'Permission denied';
-
-        else if (xhr.responseText) message = xhr.responseText;
-
-        else message = error;
-
-        BaseModel.prototype.statusAlert('danger', message + ' (' + xhr.status + ')')
-
-    },
-
-    ajaxSuccess: function (response, callback, failCallback) {
-
-        if (response.hasOwnProperty('data')) {
-
-            callback && callback(response);
-
-            response['msg'] && BaseModel.prototype.statusAlert('success', response['msg']);
-
-        } else if (response.hasOwnProperty('errors')) {
-
-            failCallback && failCallback(response);
-
-            let $message = $('<div>');
-
-            if (response.error) for (let key in response.error) {
-
-                if (response.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + response.error[key][0].message))
-
-            } else if (response['msg']) $message.html(response['msg']);
-
-            BaseModel.prototype.statusAlert('danger', $message);
-
-        } else BaseModel.prototype.statusAlert('danger', 'Unknown response');
-
-    },
-
-    fetchJson: function (method, url, obj, blocking=true) {
-
-        let self = this;
-
-        let init = {credentials: 'include', method: method};
-
-        init.headers = new Headers({
-            'Content-Type': 'application/vnd.api+json',
-            'Accept': 'application/vnd.api+json',
-        });
-
-        csrfSafeMethod(method) || init.headers.set('X-CSRFToken', getCookie('csrftoken'));
-
-        if (obj) {
-
-            if (method === 'GET' || method === 'DELETE') url = url + objToQueryStr(obj);
-
-            else init.body = JSON.stringify(obj);
-
-        }
-
-        blocking && $.blockUI({
-            message: null,
-            css: {
-                border: 'none',
-                backgroundColor: 'transparent'
-            },
-            overlayCSS: {backgroundColor: 'transparent'}
-        });
-
-        return fetch(url, init).then(response => {
-
-            blocking && $.unblockUI();
-
-            if (response.ok) return response.status === 204 ? response : response.json();
-
-            else {
-
-                BaseModel.prototype.statusAlert('danger', response.statusText);
-
-                throw response.statusText
-
-            }
-
-        }).then(response => {
-
-            if (response.hasOwnProperty('data') || response.hasOwnProperty('meta') || response.status === 204) return response;
-
-            else if (response.hasOwnProperty('errors')) {
-
-                self.errorAlert(response.errors);
-
-                throw response.errors
-
-            } else {
-
-                BaseModel.prototype.statusAlert('danger', 'Unknown response');
-
-                throw 'Unknown response'
-
-            }
-
-        })
-
-    },
-
-    fetchHtml: function (file, $container) {
-
-        return fetch('/static/html/' + file, {credentials: 'include'}).then(response => {
-
-            return response.text()
-
-        }).then(text => {
-
-            return $container ? $container.empty().html(text) : $('<div>').append(text);
-
-        })
-
-    },
-
-    errorAlert: function (errors) {
-
-        let $messageContainer = $('<div>');
-
-        for (let i = 0; i < errors.length; i++) {
-
-            let message = errors[i].title;
-
-            if (errors[i].hasOwnProperty('source')) message = errors[i].source.parameter + ': ' + message;
-
-            $messageContainer.append($('<div>').html(message))
-
-        }
-
-        BaseModel.prototype.statusAlert('danger', $messageContainer);
-
-    },
-
-
-    // Resource CRUD helpers ***********
-
-    create: function (blocking, param={}) {
-
-        let self = this;
-
-        param.data = self.serialize();
-
-        return self.fetchJson('POST', self.links.self, param, blocking).then(response => {
-
-            self.constructor(response.data);
-
-            return response
-
-        });
-
-    },
-
-    read: function (blocking, param) {
-
-        let self = this;
-
-        return self.fetchJson('GET', self.links.self, param, blocking).then(response => {
-
-            self.constructor(response.data);
-
-            return response
-
-        });
-
-    },
-
-    update: function (blocking, param={}) {
-
-        let self = this;
-
-        param.data = self.serialize();
-
-        return self.fetchJson('PATCH', self.links.self, param, blocking).then(response => {
-
-            self.constructor(response.data);
-
-            return response
-
-        });
-
-    },
-
-    delete: function (blocking, callback) {
-
-        let self = this;
-
-        self.deleteAlert(() => {
-
-            return self.fetchJson('DELETE', self.links.self, null, blocking).then(response => {
-
-                callback && callback(response)
-
-            });
-
-        })
 
     },
 
@@ -388,9 +139,19 @@ BaseModel.prototype = {
             .data('bindId', bindId)
             .each(function () { loadData($(this), self.get($(this).data('bind'))) });
 
+        $container.find('select[data-bind]').each(function () {
+
+            let bind_key = $(this).data('bind');
+
+            let $selectedOption = $('option:selected', $(this));
+
+            if (!self.get(bind_key)) self.set(bind_key, $selectedOption.val())
+
+        });
+
         self.pubSub.off(message).on(message, function (event, source, property, value) {
 
-            if (source === 'dom') self.set(property, value);
+            source === 'dom' && self.set(property, value);
 
             $container.find('[data-bind="' + property + '"]').each(function () {
 
@@ -402,119 +163,158 @@ BaseModel.prototype = {
 
     },
 
+    _setValue: function (keyArray, value, obj) {
 
-    // Templates **********************
+        let self = this;
 
-    notificationDialog: function (headless=false) {
+        if (keyArray.length === 1) obj[keyArray[0]] = value;
 
-        let $dialog = Templates['dialog'];
+        else {
 
-        headless && $dialog.find('h5.dialog-header').remove();
+            if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
 
-        $dialog.find('div.dialog-footer').append(
-            Templates['close-button'].click(function () { $dialog.dialog('close') })
-        );
+            obj = obj[keyArray.shift()];
 
-        return $dialog
+            self._setValue(keyArray, value, obj)
 
-    },
-
-    confirmationDialog: function (headless=false) {
-
-        let $dialog = Templates['dialog'];
-
-        headless && $dialog.find('h5.dialog-header').remove();
-
-        $dialog.find('div.dialog-footer').append(
-            Templates['cancel-button'].click(function () { $dialog.dialog('close') }),
-            Templates['confirm-button']
-        );
-
-        return $dialog
+        }
 
     },
 
-    entityDialog: function () {
+    _updateDOM: function (key, value) {
 
-        let $dialog = BaseModel.prototype.confirmationDialog();
+        let self = this;
 
-        $dialog.find('div.dialog-content').append(Templates['entity-form']);
+        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
 
-        return $dialog
-    },
-
-    notificationAlert: function () {
-
-        let $alert = Templates['alert'];
-
-        $alert.find('div.button-container').append(Templates['close-icon']);
-
-        return $alert
+        else for (let k in value) self._updateDOM(key + '.' + k, value[k])
 
     },
 
-    confirmationAlert: function () {
+    set: function (key, value) {
 
-        let $alert = Templates['alert'];
+        let self = this;
 
-        $alert.find('div.button-container').append(Templates['cancel-icon'], Templates['confirm-icon']);
+        self._setValue(key.split('.'), value, self);
 
-        return $alert
+        self._updateDOM(key, value);
+
+        return self;
+
+    },
+
+
+    // Data request processors ********
+
+    ajaxError: function (xhr, status, error) {
+
+        let message;
+
+        if (xhr.status === 403) message = 'Permission denied';
+
+        else if (xhr.responseText) message = xhr.responseText;
+
+        else message = error;
+
+        AlertBox.status('danger', message + ' (' + xhr.status + ')')
+
+    },
+
+    ajaxSuccess: function (response, callback, failCallback) {
+
+        if (response.hasOwnProperty('data')) {
+
+            callback && callback(response);
+
+            response['msg'] && AlertBox.status('success', response['msg']);
+
+        } else if (response.hasOwnProperty('errors')) {
+
+            failCallback && failCallback(response);
+
+            let $message = $('<div>');
+
+            if (response.error) for (let key in response.error) {
+
+                if (response.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + response.error[key][0].message))
+
+            } else if (response['msg']) $message.html(response['msg']);
+
+            AlertBox.status('danger', $message);
+
+        } else AlertBox.status('danger', 'Unknown response');
+
+    },
+
+
+    // Resource CRUD helpers ***********
+
+    create: function (blocking, param={}) {
+
+        let self = this;
+
+        param.data = self.serialize();
+
+        return fetchJson('POST', self.links.self, param, blocking).then(response => {
+
+            self.constructor(response.data);
+
+            return response
+
+        });
+
+    },
+
+    read: function (blocking, param) {
+
+        let self = this;
+
+        return fetchJson('GET', self.links.self, param, blocking).then(response => {
+
+            self.constructor(response.data);
+
+            return response
+
+        });
+
+    },
+
+    update: function (blocking, param={}) {
+
+        let self = this;
+
+        param.data = self.serialize();
+
+        return fetchJson('PATCH', self.links.self, param, blocking).then(response => {
+
+            self.constructor(response.data);
+
+            return response
+
+        });
+
+    },
+
+    delete: function (blocking, callback) {
+
+        let self = this;
+
+        self.deleteAlert(() => {
+
+            return fetchJson('DELETE', self.links.self, null, blocking).then(response => {
+
+                callback && callback(response)
+
+            });
+
+        })
 
     },
 
 
     // UI Elements ********************
 
-    _deployAlert: function ($alert) {
-
-        $('div.alert').fadeOut(function() { $(this).remove() });
-
-        $(mainContainer).append($alert.hide());
-
-        $alert.find('span.fa-times').click(() => $alert.fadeOut(() => $alert.remove()));
-
-        $alert.fadeIn();
-
-        setTimeout(() => $alert.find('span.fa-times').click(), 10000)
-
-    },
-
-    warningAlert: function (message, confirmationCallback) {
-
-        let $alert = BaseModel.prototype.confirmationAlert();
-
-        $alert.find('div.alert').addClass('alert-warning');
-
-        $alert.find('div.message-container').append(message);
-
-        $alert.find('span.confirm-button').click(function () {
-
-            $alert.fadeOut(function () {
-
-                $alert.remove();
-
-                confirmationCallback && confirmationCallback();
-
-            })
-
-        });
-
-        BaseModel.prototype._deployAlert($alert)
-
-    },
-
-    statusAlert: function (status, message) {
-
-        let $alert = BaseModel.prototype.notificationAlert();
-
-        $alert.find('div.alert').addClass('alert-' + status);
-
-        $alert.find('div.message-container').append(message);
-
-        BaseModel.prototype._deployAlert($alert)
-
-    },
+    entityDialog: () => { return Modal.confirmation(true, Templates['entity-form']) },
 
     addTab: function (name, title) {
 
@@ -563,19 +363,13 @@ BaseModel.prototype = {
 
     deleteAlert: function (action) {
 
-        let self = this;
-
-        self.warningAlert('This action cannot be reversed. Continue?', function () { action && action() })
+        AlertBox.warning('This action cannot be reversed. Continue?', function () { action && action() })
 
     },
 
     gridDialog: function (options) {
 
-        let self = this;
-
-        let $dialog = self.confirmationDialog();
-
-        $dialog.find('h5.dialog-header').remove();
+        let $dialog = Modal.confirmation();
 
         $dialog.find('button.cancel-button').click(() => $dialog.find('input.filter_box').val(''));
 
@@ -666,7 +460,7 @@ BaseModel.prototype = {
 
                 $gridItem.addClass('relation-grid-item').append(nameLabel, Templates['remove-icon'].click(function () {
 
-                    self.fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
+                    fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
 
                         $grid.trigger('reload');
 
@@ -685,7 +479,7 @@ BaseModel.prototype = {
                     itemValueKey: key,
                     action: function (selection, $dialog) {
 
-                        self.fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
+                        fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
 
                             $grid.trigger('reload');
 

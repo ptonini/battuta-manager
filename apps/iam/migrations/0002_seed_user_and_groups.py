@@ -42,7 +42,7 @@ def add_admin_user(apps, schema_editor):
 def add_user_groups(apps, schema_editor):
 
     groups = {
-        'Inventory Admins': ['edit_hosts', 'edit_groups'],
+        'InventoryManager Admins': ['edit_hosts', 'edit_groups'],
         'Runner Admins': ['edit_playbooks', 'edit_tasks', 'edit_roles', 'execute_jobs', 'view_job_history'],
         'User Admins': ['edit_users', 'edit_user_groups', 'edit_user_files', 'edit_permissions'],
         'File Admins': ['edit_files'],

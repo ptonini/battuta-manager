@@ -23,24 +23,24 @@ Host.prototype.selectorTableOptions = {
     columns: function () {
 
         if (sessionStorage.getItem('use_ec2_facts') === 'true') return [
-            {title: 'Host', data: 'attributes.name'},
-            {title: 'Address', data: 'attributes.address'},
-            {title: 'Public address', data: 'attributes.public_address'},
-            {title: 'Instance Id', data: 'attributes.instance_id'},
-            {title: 'Type', data: 'attributes.instance_type'},
-            {title: 'Cores', data: 'attributes.cores'},
-            {title: 'Memory', data: 'attributes.memory', render: function(data) { return humanBytes(data, 'MB') }},
-            {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false},
+            {title: 'Host', data: 'attributes.name', width: '21%'},
+            {title: 'Address', data: 'attributes.address', width: '12%'},
+            {title: 'Public address', data: 'attributes.public_address', width: '12%'},
+            {title: 'Instance Id', data: 'attributes.instance_id', width: '10%'},
+            {title: 'Type', data: 'attributes.instance_type', width: '10%'},
+            {title: 'Cores', data: 'attributes.cores', width: '10%'},
+            {title: 'Memory', data: 'attributes.memory', width: '10%', render: function(data) { return humanBytes(data, 'MB') }},
+            {title: 'Disc', data: 'attributes.disc', width: '10%', render: function(data) { return humanBytes(data) }},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'},
         ];
 
         else return [
-            {title: 'Host', data: 'attributes.name'},
-            {title: 'Address', data: 'attributes.address'},
-            {title: 'Cores', data: 'attributes.cores'},
-            {title: 'Memory', data: 'attributes.memory', render: function(data) { return  humanBytes(data, 'MB') }},
-            {title: 'Disc', data: 'attributes.disc', render: function(data) { return humanBytes(data) }},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false}
+            {title: 'Host', data: 'attributes.name', width: '35%'},
+            {title: 'Address', data: 'attributes.address', width: '15%'},
+            {title: 'Cores', data: 'attributes.cores', width: '15%'},
+            {title: 'Memory', data: 'attributes.memory', width: '15%', render: function(data) { return  humanBytes(data, 'MB') }},
+            {title: 'Disc', data: 'attributes.disc', width: '15%', render: function(data) { return humanBytes(data) }},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
         ];
 
     },
@@ -58,7 +58,7 @@ Host.prototype.info = function ($container) {
 
     $container.find('.hide_when_empty').hide();
 
-    return self.fetchJson('GET', self.links.self, {fields: {attributes: ['facts']}}).then(response => {
+    return fetchJson('GET', self.links.self, {fields: {attributes: ['facts']}}).then(response => {
 
         self.set('facts', response.data['facts']);
 
@@ -121,13 +121,11 @@ Host.prototype.info = function ($container) {
 
             for (let key in infoTables) $container.find('#show_' + key).click(function () {
 
-                let $dialog = BaseModel.prototype.notificationDialog();
-
                 let $table = Templates['table'];
 
-                $dialog.find('h5.dialog-header').html(key).addClass('text-capitalize');
+                let $dialog = Modal.notification(key, $table);
 
-                $dialog.find('.dialog-content').append($table);
+                $dialog.find('h5.dialog-header').addClass('text-capitalize');
 
                 $table.DataTable({
                     data: infoTables[key].data,
@@ -150,16 +148,12 @@ Host.prototype.info = function ($container) {
 
             $('#show_facts').click(function () {
 
-                let $dialog = BaseModel.prototype.notificationDialog();
+                let $content = $('<div>')
+                    .attr('class', 'well inset-container scrollbar')
+                    .css('max-height', (window.innerHeight * .6).toString() + 'px')
+                    .JSONView(self.get('facts'), {'collapsed': true});
 
-                $dialog.find('h5.dialog-header').html(self.name + ' facts');
-
-                $dialog.find('.dialog-content').append(
-                    $('<div>')
-                        .attr('class', 'well inset-container scrollbar')
-                        .css('max-height', (window.innerHeight * .6).toString() + 'px')
-                        .JSONView(self.get('facts'), {'collapsed': true})
-                );
+                let $dialog = Modal.notification(self.name + ' facts', $content);
 
                 $dialog.dialog({width: 900})
 

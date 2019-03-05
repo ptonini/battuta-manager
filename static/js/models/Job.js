@@ -5,9 +5,9 @@ Job.prototype = Object.create(BaseModel.prototype);
 Job.prototype.constructor = Job;
 
 
-Job.prototype.type = 'job';
+Job.prototype.type = 'jobs';
 
-Job.prototype.label = {single: 'task', collective: 'tasks'};
+Job.prototype.label = {single: 'job', collective: 'job history'};
 
 Job.prototype.templates = 'templates_Job.html';
 
@@ -31,18 +31,36 @@ Job.prototype.taskStates = {
 };
 
 
+Job.prototype.selectorTableOptions = {
+    ajax: () => { return {url: Entities.jobs.href} },
+    columns: () => { return [
+        {title: 'date'},
+        {title: 'user'},
+        {title: 'name'},
+        {title: 'subset'},
+        {title: 'status'}
+    ]},
+    buttons: () => { return [] },
+    rowCallback:  function (row, data) {
+
+        $(row).addClass(Job.prototype.states[data[4]]).css('cursor', 'pointer').click(function () {
+
+            BaseModel.prototype.popupCenter(Entities.jobs.href + '/' + data[5], data[5], 1000);
+
+        })
+    },
+    offset: 'job_table_offset',
+    paging: true,
+    dom: "<'row'<'col-6'l><'col-6'f><'col-12'tr>><'row'<'col-4' i><'col-8 text-right'p>>",
+    serverSide: true
+};
+
 // Job.prototype.crud = {
 //     titlecollective: 'Jobs',
 //     dataSrc: null,
 //     element: {
 //         ajax: {url: Job.prototype.apiPath + 'list/'},
-//         columns:[
-//             {title: 'run data'},
-//             {title: 'user'},
-//             {title: 'name'},
-//             {title: 'hosts/subset'},
-//             {title: 'status'}
-//         ],
+//         ,
 //         rowCallback:  function (row, data) {
 //
 //             $(row).addClass(Job.prototype.states[data[4]]).css('cursor', 'pointer').click(function () {
@@ -151,15 +169,15 @@ Job.prototype.run = function (become, cred, sameWindow) {
 
     let post = () => self.create(true).then(() => {
 
-        if (sameWindow) window.open(self.links.self, '_self');
-
-        else {
-
-            let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
-
-            self.popupCenter(self.links.self, title, 1000);
-
-        }
+        // if (sameWindow) window.open(self.links.self, '_self');
+        //
+        // else {
+        //
+        //     let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
+        //
+        //     self.popupCenter(self.links.self, title, 1000);
+        //
+        // }
 
     });
 
@@ -169,13 +187,9 @@ Job.prototype.run = function (become, cred, sameWindow) {
 
             let $form = Templates['password-form'];
 
-            let $dialog = self.confirmationDialog();
+            let $dialog = Modal.confirmation(false, $form);
 
             self.bindElement($form);
-
-            $dialog.find('h5.dialog-header').remove();
-
-            $dialog.find('div.dialog-content').append($form);
 
             cred.username && self.set('remote_user', cred.username);
 
@@ -231,11 +245,7 @@ Job.prototype.statistics = function (modal) {
 
     if (modal) {
 
-        let $dialog = self.notificationDialog();
-
-        $dialog.find('h5.dialog-header').html('Statistics');
-
-        $dialog.find('.dialog-content').append($table);
+        let $dialog = Modal.notification('Statistics', $table);
 
         tableOptions.scrollY = '360px';
 

@@ -46,7 +46,7 @@ Project.prototype.info = function ($container) {
 
         let property = $(this).data('property');
 
-        self.fetchJson('DELETE', self.links[property]).then( self.set(property, '') )
+        fetchJson('DELETE', self.links[property]).then( self.set(property, '') )
 
     })
 
@@ -145,7 +145,7 @@ Project.prototype.setProperty =  function (property) {
         itemValueKey: properties[property]['key'],
         action: function (selection, $dialog) {
 
-            self.fetchJson('POST', self.links[property], {data: {type: selection.type, id: selection.id}}, false).then(response => {
+            fetchJson('POST', self.links[property], {data: {type: selection.type, id: selection.id}}, false).then(response => {
 
                 self.set(property, response.data.attributes[properties[property]['key']]);
 

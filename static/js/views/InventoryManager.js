@@ -1,12 +1,14 @@
-function Inventory() {
+function InventoryManager() {
 
     let self = this;
 
-    self.fetchHtml('view_InventoryManager.html', $(mainContainer)).then($element => {
+    Templates.load('templates_InventoryManager.html').then(() => {
 
-        $element.find('#manage_inventory_tabs').rememberTab();
+        let $manager = Templates['inventory-manager'];
 
-        $('#upload_field')
+        $manager.find('#manage_inventory_tabs').rememberTab();
+
+        $manager.find('#upload_field')
             .fileinput({
                 ajaxSettings: {method: 'PATCH', beforeSend: ajaxBeforeSend, error: self.ajaxError},
                 mergeAjaxCallbacks: 'before',
@@ -20,17 +22,17 @@ function Inventory() {
             })
             .on('fileuploaded', function (event, data) {
 
-                $('#upload_field').fileinput('clear').fileinput('enable');
+                $manager.find('#upload_field').fileinput('clear').fileinput('enable');
 
-                $('#upload_field_title').html('Select file');
+                $manager.find('#upload_field_title').html('Select file');
 
-                $('#import_button').prop('disabled', true);
+                $manager.find('#import_button').prop('disabled', true);
 
-                $element.find('div.file-caption-main').show();
+                $manager.find('div.file-caption-main').show();
 
                 self.ajaxSuccess(data.response, function() {
 
-                    self.statusAlert('success', $('<div>').append(
+                    AlertBox.status('success', $('<div>').append(
                         $('<div>').attr('class','mb-2 font-weight-bold').html('Import successful'),
                         $('<div>').attr('class','mb-1').html('Hosts added: ' + data.response.data.added_hosts),
                         $('<div>').attr('class','mb-1').html('Groups added: ' + data.response.data.added_groups),
@@ -42,65 +44,54 @@ function Inventory() {
             })
             .on('fileloaded', function () {
 
-                $('#import_button')
+                $manager.find('#import_button')
                     .prop('disabled', false)
                     .off('click')
                     .click(function () {
 
-                        $element.find('#upload_field').fileinput('upload');
+                        $manager.find('#upload_field').fileinput('upload');
 
-                        $element.find('div.file-caption-main').hide()
+                        $manager.find('div.file-caption-main').hide()
 
                     });
 
             });
 
-        $('#export_button').click(function () {
+        $manager.find('#export_button').click(function () {
 
             let format = $('input[type="radio"][name="export_file_type"]:checked').val();
 
             if (format === 'filezilla') {
 
-                let $dialog = self.confirmationDialog();
-
-                $dialog.find('h5.dialog-header').remove();
-
-                $dialog.find('div.dialog-content').append(
-                    $('<label>').attr('for', 'input-sftp-user').html('SFTP default user'),
-                    $('<input>').attr({id: 'input-sftp-user', 'data-bind': 'sftp_user', class: 'form-control form-control-sm', type: 'text', })
-                );
+                let $dialog = Modal.confirmation(false, Templates['sftp-user-form']);
 
                 $dialog.find('button.confirm-button').click(function () {
 
-                    if (self.sftp_user) {
+                    let sftpUSer = $dialog.find('input.sftp-user-input').val();
 
-                        window.open(Entities.manage.href + '?format=' + format + '&sftp_user=' + self.sftp_user, '_self');
+                    if (sftpUSer) {
+
+                        window.open(Entities.manage.href + '?format=' + format + '&sftp_user=' + sftpUSer, '_self');
 
                         $dialog.dialog('close')
 
                     }
 
-                    else self.statusAlert('warning', 'Enter default user');
+                    else AlertBox.status('warning', 'Enter default user');
 
                 });
 
-                self.bindElement($dialog);
-
                 $dialog.dialog()
 
-            }
-
-            else window.open(Entities.manage.href + '?format=' + format, '_self');
+            } else window.open(Entities.manage.href + '?format=' + format, '_self');
 
         });
+
+        $(mainContainer).html($manager)
 
     });
 
     return this;
 
-}
-
-Inventory.prototype = Object.create(BaseModel.prototype);
-
-Inventory.prototype.constructor = Inventory;
+};
 

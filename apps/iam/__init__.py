@@ -1,5 +1,5 @@
 builtin_groups = [
-    'Inventory Admins',
+    'InventoryManager Admins',
     'Runner Admins',
     'User Admins',
     'File Admins',

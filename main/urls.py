@@ -9,9 +9,9 @@ urlpatterns = [
 
     path('', views.PageView.as_view()),
 
-    path('main', views.MainView.as_view()),
-
     path('login', views.LoginView.as_view(), kwargs={'action': 'login'}),
+
+    path('main', login_required(views.MainView.as_view())),
 
     path('logout', login_required(views.LoginView.as_view()), kwargs={'action': 'logout'}),
 

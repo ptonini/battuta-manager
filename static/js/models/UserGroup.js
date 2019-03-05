@@ -54,12 +54,6 @@ UserGroup.prototype.tabs = {
 
 UserGroup.prototype.entityDialog = function () {
 
-    let self = this;
-
-    let $dialog = self.confirmationDialog();
-
-    $dialog.find('div.dialog-content').append(Templates['user-group-form']);
-
-    return $dialog
+    return Modal.confirmation(true, Templates['user-group-form'])
 
 };

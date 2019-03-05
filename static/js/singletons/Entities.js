@@ -1,86 +1,86 @@
 const Entities = {
     main: {
-        Class: null,
+        model: null,
         href: '/main',
         regex: /^main$/,
         action: () => $(mainContainer).off().empty()
     },
     search: {
-        Class: null,
+        model: null,
         href: '/search',
         regex: /^search\/?([-_a-zA-Z0-9]+)?/,
         action: param => new Search(param[0])
     },
     manage: {
-        Class: null,
+        model: null,
         href: '/inventory/manage',
         regex: /^inventory\/manage$/,
-        action: () => new Inventory()
+        action: () => new InventoryManager()
     },
     hosts: {
-        Class: Host,
+        model: Host,
         href: '/inventory/hosts',
         regex: /^inventory\/hosts\/?([0-9]+)?$/,
         action: param => param[0] ? new Host({id: param[0], links: {self: param.input}}).viewer() : new Host().selector()
     },
     groups: {
-        Class: Group,
+        model: Group,
         href: '/inventory/groups',
         regex: /^inventory\/groups\/?([0-9]+)?$/,
         action: param => param[0] ? new Group({id: param[0], links: {self: param.input}}).viewer() : new Group().selector()
     },
     users: {
+        model: User,
         href: '/iam/users',
         regex: /^iam\/users\/?([0-9]+)?$/,
-        Class: User,
         action: param => param[0] ? new User({id: param[0], links: {self: param.input}}).viewer() : new User().selector()
     },
     usergroups: {
+        model: UserGroup,
         href: '/iam/usergroups',
         regex: /^iam\/usergroups\/?([0-9]+)?$/,
-        Class: UserGroup,
         action: param => param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).viewer() : new UserGroup().selector()
     },
     projects: {
+        model: Project,
         href: '/projects/',
         regex: /^projects\/?([0-9]+)?$/,
-        Class: Project,
         action: param => param[0] ? new Project({id: param[0], links: {self: param.input}}).viewer() : new Project().selector()
     },
     repository: {
+        model: FileObj,
         href: '/files/repository',
         search:'/files/search',
         regex: /^files\/repository\/?[\s\S]*$/,
-        Class: FileObj,
         action: param => new FileObj({links: {self: param.input}}).selector()
     },
     playbooks: {
+        model: Playbook,
         href: '/files/playbooks',
         regex: /^files\/playbooks\/?[\s\S]*$/,
-        Class: Playbook,
         action: param => new Playbook({links: {self: param.input}}).selector()
     },
     roles: {
+        model: Role,
         href: '/files/roles',
         regex: /^files\/roles\/?[\s\S]*$/,
-        Class: Role,
         action: param => new Role({links: {self: param.input}}).selector()
     },
     runner: {
+        model: null,
         href: '/runner/runner',
         regex: /^runner\/runner$/,
-        Class: null,
         action: () => new Runner()
     },
     adhoctasks: {
+        model: AdHocTask,
         href:'/runner/adhoctasks',
-        Class: AdHocTask,
-        regex: null
     },
     jobs: {
+        model: Job,
         href: '/runner/jobs',
-        Class: Job,
-        regex: /^runner\/jobs\/?([0-9]+)?$/,
+        regex: /^runner\/jobs\/?[\s\S]*$/,
+        action: () =>  new Job().selector()
     }
 };
 
@@ -90,6 +90,6 @@ Router.add(/[\s\S]*/, function () {
 
     $(mainContainer).empty();
 
-    BaseModel.prototype.statusAlert('warning', 'Page not found')
+    AlertBox.status('warning', 'Page not found')
 
 });

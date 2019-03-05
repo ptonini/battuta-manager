@@ -34,8 +34,3 @@ function Search(pattern) {
     return this;
 
 }
-
-Search.prototype = Object.create(BaseModel.prototype);
-
-Search.prototype.constructor = Search;
-

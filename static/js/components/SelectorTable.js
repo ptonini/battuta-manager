@@ -10,7 +10,8 @@ function SelectorTable(obj, initialize=false) {
         pageLength: 10,
         lengthMenu: [5, 10, 25, 50, 100],
         scrollCollapse: true,
-        dom: 'Bfrtip',
+        dom: mergedOptions.dom,
+        serverSide: mergedOptions.serverSide,
         paging: mergedOptions.paging,
         columns: mergedOptions.columns(),
         order: mergedOptions.order,
@@ -38,7 +39,7 @@ SelectorTable.prototype = {
                 className: 'btn-sm btn-icon',
                 action: function () {
 
-                    new Entities[obj.type].Class({links: {self: Entities[obj.type].href}}).editor(function () {
+                    new Entities[obj.type].model({links: {self: Entities[obj.type].href}}).editor(function () {
 
                         $(mainContainer).trigger('reload')
 
@@ -56,12 +57,16 @@ SelectorTable.prototype = {
             if (data.meta.deletable) $(row).find('td:last').empty().append(
                 new TableButton('fas fa-trash', 'Delete', function () {
 
-                    new Entities[data.type].Class(data).delete(false, () => $(mainContainer).trigger('reload'))
+                    new Entities[data.type].model(data).delete(false, () => $(mainContainer).trigger('reload'))
 
                 })
             );
         },
-        preDrawCallback: settings => sessionStorage.setItem('current_table_position', $(settings.nTable).parent().scrollTop()),
+        preDrawCallback: settings => {
+            sessionStorage.setItem('current_table_position', $(settings.nTable).parent().scrollTop());
+
+            addTitleToTruncatedElements()
+        },
         drawCallback: settings => {
 
             let $table = $(settings.nTable);
@@ -74,6 +79,8 @@ SelectorTable.prototype = {
         offset: 'entity_table_offset',
         paging: false,
         order: [[0, "asc"]],
+        serverSide: false,
+        dom: 'Bfrtip'
     },
 
     get dtObj() { return this.element.DataTable() },

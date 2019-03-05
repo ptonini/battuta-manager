@@ -6,7 +6,10 @@ from pytz import timezone
 from multiprocessing import Process
 from itertools import chain
 
-from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden
+from ansible.playbook import Playbook
+from ansible.playbook.play import Play
+
+from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django.core.exceptions import PermissionDenied
@@ -15,9 +18,11 @@ from django.forms import model_to_dict
 from django.core.cache import cache
 
 from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
-from apps.runner.forms import AdHocTaskForm, JobForm, PlaybookArgsForm
+from apps.runner.forms import AdHocTaskForm, AdHocJobForm, JobForm, PlaybookArgsForm
 from apps.runner.extras import run_job
 from apps.runner.extras.handlers import JobTableHandler
+
+from apps.iam.models import Credential
 
 from main.extras.mixins import ApiViewMixin
 from apps.files.extras import PlaybookHandler
@@ -189,11 +194,157 @@ class JobView(View, ApiViewMixin):
 
     def post(self, request, job_id):
 
+        request_attr = request.JSON.get('data').get('attributes')
+
+        job_parameters = json.loads(request_attr.get('parameters'))
+
         job = Job()
 
         if job.permissions(request.user)['editable']:
 
-            return self._api_response(self._save_instance(request, job))
+            inventory = AnsibleInventory()
+
+            run_data = {
+                'job_type': request_attr.get('job_type'),
+                'inventory': inventory.inventory,
+                'var_manager': inventory.var_manager,
+                'loader': inventory.loader,
+            }
+
+            if request_attr.get('cred') == '':
+
+                cred = None
+
+                run_data['cred'] = None
+
+            else:
+
+                cred = get_object_or_404(Credential, pk=request_attr.get('cred'))
+
+                if cred.user.username != request.user.username and not cred.is_shared:
+
+                    return HttpResponseForbidden
+
+            run_data['remote_user'] = cred.username if cred else request_attr.get('remote_user')
+
+            run_data['remote_pass'] = cred.password if cred else request_attr.get('remote_pass')
+
+            run_data['become_user'] = cred.sudo_user if cred else request_attr.get('become_user')
+
+            if cred:
+
+                run_data['become_pass'] = cred.sudo_pass if cred.sudo_pass else run_data.get('remote_pass')
+
+            else:
+
+                run_data['become_pass'] = request_attr.get('become_pass') if 'become_pass' in request_attr else run_data.get('remote_pass')
+
+            if request_attr.get('job_type') == 'playbook':
+
+                playbook = PlaybookHandler(request_attr['name'], request.user)
+
+                pb = Playbook.load(playbook.absolute_path, variable_manager=run_data['var_manager'], loader=run_data['loader'])
+
+                run_data['plays'] = pb.get_plays()
+
+                run_data = {**run_data, **job_parameters}
+
+            elif request_attr.get('job_type') == 'task':
+
+                task_form = AdHocJobForm(job_parameters)
+
+                if task_form.is_valid():
+
+                    if 'extra_params' in job_parameters['arguments']:
+
+                        for arg in job_parameters['arguments']['extra_params'].split():
+
+                            key, value = arg.split('=')
+
+                            job_parameters['arguments'][key] = value
+
+                        job_parameters['arguments'].pop('extra_params')
+
+                    task = dict()
+
+                    task[job_parameters['module']] = job_parameters['arguments']
+
+                    play_dict = {
+                        'name': job_parameters['name'],
+                        'hosts': job_parameters['hosts'],
+                        'gather_facts': False,
+                        'tasks': [task]
+                    }
+
+                    run_data['plays'] = [Play().load(play_dict, variable_manager=run_data['var_manager'], loader=run_data['loader'])]
+
+                else:
+
+                    return self._api_response(self.build_error_dict(task_form.errors))
+
+            elif request_attr.get('job_type') == 'facts':
+
+                pass
+
+            job_form = JobForm(request_attr)
+
+            if job_form.is_valid():
+
+                job = job_form.save(commit=False)
+
+                job.user = request.user
+
+                job.status = 'created'
+
+                if cred and cred.rsa_key:
+
+                    job.save()
+
+                    rsa_file_name = '/tmp/tmp_job_' + str(job.id)
+
+                    rsa_file = open(rsa_file_name, 'w+')
+
+                    rsa_file.write(cred.rsa_key)
+
+                    rsa_file.flush()
+
+                    run_data['rsa_file'] = rsa_file_name
+
+                setattr(job, 'data', run_data)
+
+                setattr(job, 'prefs', get_preferences())
+
+                job.save()
+
+                try:
+
+                    p = Process(target=run_job, args=(job,))
+
+                    p.start()
+
+                except Exception as e:
+
+                    job.delete()
+
+                    try:
+
+                        os.remove(run_data['rsa_file'])
+
+                    except OSError:
+
+                        pass
+
+                    # data = {'status': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
+
+                    return self._api_response({'errors': [{'title': e.message}]})
+
+                else:
+
+                    return self._api_response({'data': job.serialize(request.JSON.get('fields'), request.user)})
+
+            else:
+
+                return self._api_response(self.build_error_dict(job_form.errors))
 
         else:
 
@@ -215,16 +366,22 @@ class JobView(View, ApiViewMixin):
 
         else:
 
-            queryset = list(chain(Job.objects.none(), [j for j in Job.objects.all() if j.permissions(request.user)['readable']]))
+            if request.user.has_perm('users.view_job_history'):
 
-            return self._api_response({'data': JobTableHandler(request, queryset).build_response()})
+                queryset = Job.objects.all()
+
+            else:
+
+                queryset = Job.objects.filter(user=request.user)
+
+            return self._api_response(JobTableHandler(request, queryset).build_response())
 
 
 # class JobView(View):
 #
 #     @staticmethod
 #     def get(request, action):
-#
+
 #         if action == 'list':
 #
 #             if request.user.has_perm('users.view_job_history'):
@@ -236,7 +393,7 @@ class JobView(View, ApiViewMixin):
 #                 queryset = Job.objects.filter(user=request.user)
 #
 #             data = JobTableHandler(request, queryset).build_response()
-#
+
 #         elif action == 'get':
 #
 #             job = get_object_or_404(Job, pk=request.GET['id'])
@@ -278,7 +435,7 @@ class JobView(View, ApiViewMixin):
 #             else:
 #
 #                 data = {'status': 'denied'}
-#
+
 #         elif action == 'get_task':
 #
 #             task = get_object_or_404(Task, pk=request.GET['task_id'])
@@ -364,7 +521,7 @@ class JobView(View, ApiViewMixin):
 #
 #             # Execute task
 #             elif job_data['type'] == 'adhoc':
-#
+
 #                 # job_data['hosts'] = job_data['hosts'] or 'all'
 #
 #                 auth = {
@@ -412,7 +569,7 @@ class JobView(View, ApiViewMixin):
 #                 else:
 #
 #                     data = {'status': 'denied'}
-#
+
 #             elif job_data['type'] == 'gather_facts':
 #
 #                 auth = {

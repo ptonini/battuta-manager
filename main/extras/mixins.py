@@ -17,15 +17,21 @@ class ApiViewMixin:
 
         else:
 
-            errors = list()
-
-            for k, v in form.errors.get_json_data().items():
-
-                errors = errors + [{'code': e['code'], 'title': e['message'],'source': {'parameter': k}} for e in v]
-
-            response = {'errors': errors}
+            response = self.build_error_dict(form.errors)
 
         return response
+
+    @staticmethod
+    def build_error_dict(form_errors):
+
+        errors = list()
+
+        for k, v in form_errors.get_json_data().items():
+
+            errors = errors + [{'code': e['code'], 'title': e['message'],'source': {'parameter': k}} for e in v]
+
+        return {'errors': errors}
+
 
     @staticmethod
     def _api_response(response):

@@ -1,6 +1,8 @@
-/// Global variables
+/// Global selectors
 
 const mainContainer = 'section.container';
+
+const navBarContainer = 'nav.navbar';
 
 
 /// JQuery Extensions /////////////////
@@ -175,6 +177,88 @@ function ajaxBeforeSend(xhr, sett) {
 
 }
 
+function fetchJson (method, url, obj, blocking=true) {
+
+    let init = {credentials: 'include', method: method};
+
+    init.headers = new Headers({
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+    });
+
+    csrfSafeMethod(method) || init.headers.set('X-CSRFToken', getCookie('csrftoken'));
+
+    if (obj) {
+
+        if (method === 'GET' || method === 'DELETE') url = url + objToQueryStr(obj);
+
+        else init.body = JSON.stringify(obj);
+
+    }
+
+    blocking && $.blockUI({
+        message: null,
+        css: {
+            border: 'none',
+            backgroundColor: 'transparent'
+        },
+        overlayCSS: {backgroundColor: 'transparent'}
+    });
+
+    return fetch(url, init).then(response => {
+
+        blocking && $.unblockUI();
+
+        if (response.ok) return response.status === 204 ? response : response.json();
+
+        else {
+
+            AlertBox.status('danger', response.statusText);
+
+            throw response.statusText
+
+        }
+
+    }).then(response => {
+
+        if (response.hasOwnProperty('data') || response.hasOwnProperty('meta') || response.status === 204) return response;
+
+        else if (response.hasOwnProperty('errors')) {
+
+            apiErrorAlert(response.errors);
+
+            throw response.errors
+
+        } else {
+
+            AlertBox.status('danger', 'Unknown response');
+
+            throw 'Unknown response'
+
+        }
+
+    })
+
+}
+
+function apiErrorAlert (errors) {
+
+    let $messageContainer = $('<div>');
+
+    for (let i = 0; i < errors.length; i++) {
+
+        let message = errors[i].title;
+
+        if (errors[i].hasOwnProperty('source')) message = errors[i].source.parameter + ': ' + message;
+
+        $messageContainer.append($('<div>').html(message))
+
+    }
+
+    AlertBox.status('danger', $messageContainer);
+
+}
+
 function humanBytes(value, unit='B') {
 
     if (value) {
@@ -261,6 +345,6 @@ $(document.body).on('shown.bs.tab','a.nav-link', () => {
 
     addTitleToTruncatedElements();
 
-    $('table.dataTable').DataTable().draw()
+    $('table.dataTable').DataTable().columns.adjust().draw()
 
 });

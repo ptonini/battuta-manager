@@ -70,7 +70,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
     name = models.CharField(max_length=64, unique=True)
 
-    hosts = models.CharField(max_length=64, blank=True)
+    hosts = models.CharField(max_length=64)
 
     module = models.CharField(max_length=32)
 
@@ -122,6 +122,8 @@ class Job(models.Model, ModelSerializerMixin):
 
     job_type = models.CharField(max_length=16, choices=(('playbook', 'playbook'), ('task', 'task'), ('facts', 'facts')))
 
+    subset = models.CharField(max_length=128, blank=True, null=True)
+
     parameters = models.CharField(max_length=2048, blank=True, null=True)
 
     check = models.BooleanField()
@@ -145,6 +147,7 @@ class Job(models.Model, ModelSerializerMixin):
         attributes = {
             'name': self.name,
             'job_type': self.job_type,
+            'subset': self.subset,
             'parameters': json.loads(self.parameters),
             'check': self.check,
             'user': self.user.id,
@@ -175,8 +178,6 @@ class Job(models.Model, ModelSerializerMixin):
         deletable = readable
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
-
-
 
 
 class Play(models.Model, ModelSerializerMixin):

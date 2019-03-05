@@ -99,8 +99,7 @@ class BattutaCallback(CallbackBase):
 
             self._execute_query('update', sql_query, (self._current_task_id,))
 
-        sql_query = 'INSERT INTO runner_task (play_id, name, module, is_handler, is_running) ' \
-                    'VALUES (%s, %s, %s, %s, TRUE)'
+        sql_query = 'INSERT INTO runner_task (play_id, name, module, is_handler, is_running) VALUES (%s, %s, %s, %s, TRUE)'
 
         var_tuple = (self._current_play_id, task_name, self._current_task_module, is_handler)
 
@@ -146,7 +145,7 @@ class BattutaCallback(CallbackBase):
 
             message = None
 
-        self._execute_query('update', 'UPDATE runner_job SET status="running" WHERE id=%s', (self._job.id,))
+        self._execute_query('update', 'UPDATE runner_job SET status=%s WHERE id=%s', ('running', self._job.id,))
 
         # Get host pattern
         hosts = ', '.join(play.__dict__['_attributes']['hosts'])
@@ -155,7 +154,7 @@ class BattutaCallback(CallbackBase):
 
         become = False
 
-        if self._job.type == 'playbook':
+        if self._job.job_type == 'playbook':
 
             play_name = play.get_name().strip()
 
@@ -165,23 +164,22 @@ class BattutaCallback(CallbackBase):
 
         else:
 
-            self._execute_query('update', 'UPDATE runner_job SET subset=%s WHERE id=%s', (hosts, self._job.id))
+            # self._execute_query('update', 'UPDATE runner_job SET subset=%s WHERE id=%s', (hosts, self._job.id))
 
             self._gather_facts = False
 
-            if self._job.type == 'adhoc':
+            if self._job.job_type == 'task':
 
                 play_name = 'AdHocTask task'
 
                 become = True if self._job.data['become'] else False
 
-            elif self._job.type == 'gather_facts':
+            elif self._job.job_type == 'facts':
 
                 play_name = 'Gather facts'
 
         # Save play to database
-        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts, message)' \
-                    ' VALUES (%s, %s, %s, %s, %s, %s)'
+        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts, message) VALUES (%s, %s, %s, %s, %s, %s)'
 
         var_tuple = (self._job.id, play_name, hosts, become, self._gather_facts, message)
 
@@ -220,15 +218,13 @@ class BattutaCallback(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
 
-        #print pp.pprint(result._result)
-
         self._job.data['has_exceptions'] = True
 
         host, response = self._extract_result(result)
 
         message = response.get('msg')
 
-        if self._current_task_module == 'command' or self._current_task_module == 'script':
+        if self._current_task_module in ['command', 'script']:
 
             message = response.get('stdout') if response.get('stdout') else response.get('stderr')
 
@@ -270,7 +266,7 @@ class BattutaCallback(CallbackBase):
 
             self._execute_query('update', 'UPDATE inventory_host SET facts=%s WHERE name=%s', (json.dumps(facts), host))
 
-        if self._current_task_module == 'command' or self._current_task_module == 'script':
+        if self._current_task_module in ['command', 'script']:
 
             message = response.get('stdout') if response.get('stdout') else response.get('stderr')
 

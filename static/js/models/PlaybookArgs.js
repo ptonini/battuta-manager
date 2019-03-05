@@ -86,33 +86,33 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
             let $option = $('option:selected', $(this));
 
-            let playArgs = new PlaybookArgs($option.data());
+            let args = new PlaybookArgs($option.data());
 
-            playArgs.bindElement($form);
+            args.bindElement($form);
 
             $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'subset'));
 
             $form.find('button.save-button').off().click(function () {
 
-                if (!(!playArgs.subset && !playArgs.tags && !playArgs.skip_tags && !playArgs.extra_vars)) {
+                if (!(!args.subset && !args.tags && !args.skip_tags && !args.extra_vars)) {
 
-                    if (playArgs.id) playArgs.update(true).then(result => $option.html(playArgs.toString()).data(result.data));
+                    if (args.id) args.update(true).then(result => $option.html(args.toString()).data(result.data));
 
-                    else playArgs.create(true).then(result => {
+                    else args.create(true).then(result => {
 
-                        $newOption.before($('<option>').html(playArgs.toString()).val(playArgs.id).data(result.data));
+                        $newOption.before($('<option>').html(args.toString()).val(args.id).data(result.data));
 
-                        $selector.val(playArgs.id).change();
+                        $selector.val(args.id).change();
 
                     });
 
-                } else self.statusAlert('warning', 'Can not save empty form');
+                } else AlertBox.status('warning', 'Can not save empty form');
 
             });
 
             $form.find('button.delete-button').off().prop('disabled', $option.val() === 'new').click(function () {
 
-                playArgs.delete(true, () => {
+                args.delete(true, () => {
 
                     $option.remove();
 
@@ -126,17 +126,19 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
                 let job = new Job({
                     attributes: {
-                        name: self.path,
+                        name: args.path,
                         type: Job.prototype.type,
                         job_type: 'playbook',
-                        check: playArgs.check,
+                        subset: args.subset,
+                        check: args.check,
                         user: sessionStorage.getItem('current_user_id'),
-                        cred: playArgs.cred,
+                        cred: args.cred,
                         parameters: {
-                            subset: playArgs.subset,
-                            extra_vars: playArgs.extra_vars,
-                            tags: playArgs.tags,
-                            skip_tags: playArgs.skip_tags,
+                            path: args.path,
+                            subset: args.subset,
+                            extra_vars: args.extra_vars,
+                            tags: args.tags,
+                            skip_tags: args.skip_tags,
                         },
                     },
                     links: {self: Entities.jobs.href}

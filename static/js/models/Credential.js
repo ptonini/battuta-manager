@@ -110,7 +110,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                 $selector.trigger('build', response.data.id);
 
-                BaseModel.prototype.statusAlert('success', 'Credential saved')
+                AlertBox.status('success', 'Credential saved')
 
             };
 

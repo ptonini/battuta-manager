@@ -8,15 +8,13 @@ function PatternEditor(obj, binding) {
 
         let p = obj.get(binding);
 
-        if (action !== 'Select' && p === '') obj.statusAlert('warning', 'Select host or group first');
+        if (action !== 'Select' && p === '') AlertBox.status('warning', 'Select host or group first');
 
         else p ? obj.set(binding, p + sep[action] + nodeName) : obj.set(binding, nodeName)
 
     };
 
-    let $dialog = obj.notificationDialog(true);
-
-    $dialog.find('div.dialog-content').append(Templates['pattern-form']);
+    let $dialog = Modal.notification(false, Templates['pattern-form']);
 
     $dialog.find('input.pattern-input').attr('data-bind', binding);
 

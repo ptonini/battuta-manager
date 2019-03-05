@@ -48,7 +48,7 @@ Node.prototype.selector = function () {
 
     let route = Entities[self.type].href;
 
-    let addNode = () => new Entities[self.type].Class({links: {self: route}}).editor(function () {
+    let addNode = () => new Entities[self.type].model({links: {self: route}}).editor(function () {
 
         $(mainContainer).trigger('reload')
 
@@ -136,7 +136,7 @@ Node.prototype.selector = function () {
 
                 self.deleteAlert(function () {
 
-                    self.fetchJson('DELETE', route, {data: selectedIds}, true).then(() => { $dialog.dialog('close') })
+                    fetchJson('DELETE', route, {data: selectedIds}, true).then(() => { $dialog.dialog('close') })
 
                 })
 
@@ -155,7 +155,7 @@ Node.prototype.selector = function () {
 
         $(mainContainer).off().on('reload', function () {
 
-            self.fetchJson('GET', route, null, true).then(response => {
+            fetchJson('GET', route, null, true).then(response => {
 
                 $grid.DynaGrid('load', response.data);
 
