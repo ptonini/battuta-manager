@@ -73,8 +73,6 @@ class UserView(View, ApiViewMixin):
 
                 if user.permissions(request.user)['readable']:
 
-                    print(user.username)
-
                     data.append(user.serialize(request.JSON.get('fields'), request.user))
 
             response = {'data': data}

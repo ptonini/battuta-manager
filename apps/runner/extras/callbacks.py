@@ -2,9 +2,6 @@ import json
 
 from ansible.plugins.callback import CallbackBase
 
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
 
 class BattutaCallback(CallbackBase):
 
@@ -33,7 +30,7 @@ class BattutaCallback(CallbackBase):
     @staticmethod
     def _extract_result(result):
 
-        return result._host.get_name(), result._result
+        return getattr(result, '_host').get_name(), getattr(result, '_result')
 
     def _execute_query(self, action, sql_query, var_tuple):
 
@@ -59,9 +56,7 @@ class BattutaCallback(CallbackBase):
 
         if self._current_task_id:
 
-            sql_query = 'UPDATE runner_task SET is_running=FALSE WHERE play_id=%s'
-
-            self._execute_query('update', sql_query, (self._current_play_id,))
+            self._execute_query('update', 'UPDATE runner_task SET is_running=FALSE WHERE play_id=%s', (self._current_play_id,))
 
     def _on_task_start(self, task, is_handler=False):
 
@@ -137,13 +132,11 @@ class BattutaCallback(CallbackBase):
 
         self._finish_current_play_tasks()
 
-        if len(play._variable_manager._inventory.get_hosts(play.__dict__['_ds']['hosts'])) == 0:
+        var_manager = getattr(play, '_variable_manager')
 
-            message = 'No hosts matched'
+        inventory = getattr(var_manager, '_inventory')
 
-        else:
-
-            message = None
+        message = 'No hosts matched' if len(inventory.get_hosts(play.__dict__['_ds']['hosts'])) == 0 else None
 
         self._execute_query('update', 'UPDATE runner_job SET status=%s WHERE id=%s', ('running', self._job.id,))
 
@@ -164,7 +157,7 @@ class BattutaCallback(CallbackBase):
 
         else:
 
-            # self._execute_query('update', 'UPDATE runner_job SET subset=%s WHERE id=%s', (hosts, self._job.id))
+            self._execute_query('update', 'UPDATE runner_job SET subset=%s WHERE id=%s', (hosts, self._job.id))
 
             self._gather_facts = False
 

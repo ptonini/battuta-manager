@@ -19,18 +19,6 @@ body {
     color: var(--main-font-color);
 }
 
-/*table th, table td {*/
-    /*color: var(--main-font-color);*/
-/*}*/
-
-div.row > div.centered-col {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    height: 50%;
-    width: 50%;
-    background: red;
-}
 
 /* Text highlighting *****************/
 
@@ -73,8 +61,6 @@ div.ui-menu-item-wrapper,
     font-family: "Elements", sans-serif !important;
 }
 
-
-
 h3, h4, h5, h6, label, th, a, li,
 div.navbar,
 div.dataTables_info,
@@ -96,11 +82,12 @@ button.toggle-config-button {
     font-size: smaller;
 }
 
+
 /* FontAwesome icons ******************/
 
-button .fas, button .far, button .fal, button .fab {
+button .fas, button .far, button .fal, button .fab,
+div.input-group-btn.input-group-append > div > span {
     color: var(--main-font-color);
-    text-shadow: var(--main-text-shadow);
 }
 
 
@@ -381,16 +368,13 @@ table.dataTable {
     word-wrap:break-word;
 }
 
-
-
-
 table.dataTable thead th,
 table.dataTable tbody td  {
     border: none;
     padding-top: 6px;
     padding-bottom: 6px;
     line-height: 23px;
-
+    color: var(--main-font-color);
 }
 
 table.dataTable tbody td {
