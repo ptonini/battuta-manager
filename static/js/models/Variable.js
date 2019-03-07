@@ -239,39 +239,41 @@ Variable.prototype.selector = function ($container) {
 
 };
 
-Variable.prototype.entityDialog = function () {
+Variable.prototype.buildEntityForm = function () {
 
-    let $dialog = Modal.confirmation(true, Templates['variable-form']);
+    let $form = Templates['variable-form'];
 
-    $dialog.find('#key-input').autocomplete({source: this.internalVars});
+    $form.find('#key-input').autocomplete({source: this.internalVars});
 
-    return $dialog
+    return $form
 };
 
 Variable.prototype.copyVariables = function (callback) {
 
     let self = this;
 
-    let $dialog = Modal.notification('Select source type', Templates['source-type-selector']);
+    let $typeSelector = Templates['source-type-selector'];
 
-    $dialog.find('h5.dialog-header').addClass('text-center mb-3');
+    let modal = new ModalBox('notification', 'Select source type', $typeSelector);
 
-    $dialog.find('button.node-button').click(function () {
+    modal.header.addClass('text-center mb-3');
 
-        $dialog.dialog('close');
+    $typeSelector.find('button.node-button').click(function () {
 
-        self.gridDialog({
+        modal.close();
+
+        new GridDialog({
             title: 'Select node',
             type: 'one',
             objectType: $(this).data('type'),
             url: Entities[$(this).data('type')].href,
             ajaxDataKey: 'data',
             itemValueKey: 'name',
-            action: function (selection, $dialog) {
+            action: function (selection, modal) {
 
                 self.create(true, {'meta': {'source': selection}}).then(() => {
 
-                    $dialog.dialog('close');
+                    modal.close();
 
                     callback && callback()
 
@@ -282,6 +284,6 @@ Variable.prototype.copyVariables = function (callback) {
 
     });
 
-    $dialog.dialog({width: 280});
+    modal.open({width: 280});
 
 };

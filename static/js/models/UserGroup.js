@@ -43,17 +43,17 @@ UserGroup.prototype.tabs = {
     members: {
         label: 'Members',
         validator: function () {return true},
-        generator: (self, $container) => self.relationGrid('users', 'users', $container, 'username')
+        generator: (self, $container) => new RelationGrid(self, 'users', 'users', $container, 'username')
     },
     permissions: {
         label: 'Permissions',
         validator: function () {return true},
-        generator: (self, $container) => self.relationGrid('permissions', 'permissions',$container, 'name')
+        generator: (self, $container) => new RelationGrid(self, 'permissions', 'permissions',$container, 'name')
     }
 };
 
-UserGroup.prototype.entityDialog = function () {
+UserGroup.prototype.buildEntityForm = function () {
 
-    return Modal.confirmation(true, Templates['user-group-form'])
+    return Templates['user-group-form']
 
 };

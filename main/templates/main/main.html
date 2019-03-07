@@ -1,5 +1,5 @@
 {% extends 'main/base.html' %}
-{% block appdata %}
+{% block scripts %}
     <script type="text/javascript" src="/static/js/models/BaseModel.js"></script>
     <script type="text/javascript" src="/static/js/models/AdHocTask.js"></script>
     <script type="text/javascript" src="/static/js/models/FileObj.js"></script>
@@ -16,24 +16,20 @@
     <script type="text/javascript" src="/static/js/models/Credential.js"></script>
     <script type="text/javascript" src="/static/js/models/Project.js"></script>
     <script type="text/javascript" src="/static/js/models/Variable.js"></script>
-    <script type="text/javascript" src="/static/js/components/MainNavBar.js"></script>
-    <script type="text/javascript" src="/static/js/components/SelectorTable.js"></script>
-    <script type="text/javascript" src="/static/js/components/TableButton.js"></script>
-    <script type="text/javascript" src="/static/js/components/PatternEditor.js"></script>
-    <script type="text/javascript" src="/static/js/components/Modal.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/MainNavBar.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/SelectorTable.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/TableButton.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/PatternEditor.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/ModalBox.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/GridDialog.js"></script>
+    <script type="text/javascript" src="/static/js/fragments/RelationGrid.js"></script>
     <script type="text/javascript" src="/static/js/views/InventoryManager.js"></script>
     <script type="text/javascript" src="/static/js/views/Runner.js"></script>
     <script type="text/javascript" src="/static/js/views/Search.js"></script>
     <script type="text/javascript" src="/static/js/views/Main.js"></script>
     <script type="text/javascript" src="/static/js/singletons/Router.js"></script>
     <script type="text/javascript" src="/static/js/singletons/Entities.js"></script>
-{% endblock %}
-{% block scripts%}
-    <script type="text/javascript">
-
-        $(document).ready(() => new Main())
-
-    </script>
+    <script type="text/javascript">$(document).ready(() => new Main())</script>
 {% endblock %}
 
 

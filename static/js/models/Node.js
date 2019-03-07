@@ -9,6 +9,8 @@ function Node(param) {
     return self;
 }
 
+Object.assign(BaseModel, Node);
+
 Node.prototype = Object.create(BaseModel.prototype);
 
 Node.prototype.constructor = Node;
@@ -38,7 +40,7 @@ Node.prototype.tabs = {
     parents: {
         label: 'Parents',
         validator: self => { return (self.type === Host.prototype.type || self.name !== 'all')},
-        generator: (self, $container) => self.relationGrid('parents', self.label.collective, $container, 'name')
+        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'parents', self.label.collective, 'name'))
     },
 };
 
@@ -54,8 +56,6 @@ Node.prototype.selector = function () {
 
     });
 
-    $(mainContainer).off().empty();
-
     self.selectorTableOptions.buttons = function () {
 
         let btns = SelectorTable.prototype.defaultOptions.buttons(self);
@@ -68,17 +68,19 @@ Node.prototype.selector = function () {
 
     Templates.load(self.templates).then(() => {
 
-        $(mainContainer).append(Templates['node-selector']);
+        let $selector = Templates['node-selector'];
 
-        self.bindElement($(mainContainer));
-
-        let $grid = $(mainContainer).find('#node_grid');
+        let $grid = $selector.find('#node_grid');
 
         let table = new SelectorTable(self);
 
-        $(mainContainer).find('div.node-table-container').append(table.element);
+        self.bindElement($selector);
 
-        document.title = 'Battuta - ' + self.label.collective;
+        $(mainContainer).html($selector);
+
+        $selector.find('div.node-table-container').append(table.element);
+
+        document.title = 'Battuta - ' + capitalize(self.label.collective);
 
         table.initialize();
 
@@ -108,42 +110,39 @@ Node.prototype.selector = function () {
 
         new $.fn.dataTable.Buttons(table.dtObj, {buttons: [{extend: 'csv'}]});
 
-        $(mainContainer).find('button.download-button').click(() => table.dtObj.buttons(1, null).trigger());
+        $selector.find('button.download-button').click(() => table.dtObj.buttons(1, null).trigger());
 
-        $(mainContainer).find('button.facts-button').click(() => new Job({hosts: 'all'}).getFacts());
+        $selector.find('button.facts-button').click(() => new Job({hosts: 'all'}).getFacts());
 
-        $(mainContainer).find('button.delete-button').click(() => self.gridDialog({
+        $selector.find('button.delete-button').click(() => new GridDialog({
             title: 'Delete nodes',
             type: 'many',
             objectType: self.type,
             url: route + objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
             itemValueKey: 'name',
-            action: function (selection, $dialog) {
+            action: function (selection, modal) {
 
                 let selectedIds = [];
 
                 for (let i = 0; i < selection.length; i++) selectedIds.push({id: selection[i].id})
 
-                $dialog.dialog({
-                    close: function () {
+                if (selectedIds.length > 0) AlertBox.deletion(() => {
 
-                        $(this).remove();
+                    fetchJson('DELETE', route, {data: selectedIds}, true).then(() => {
 
-                        $(mainContainer).trigger('reload')
+                        $(mainContainer).trigger('reload');
 
-                    }
-                });
+                        modal.close()
 
-                self.deleteAlert(function () {
-
-                    fetchJson('DELETE', route, {data: selectedIds}, true).then(() => { $dialog.dialog('close') })
+                    })
 
                 })
 
             }
+
         }));
 
-        $(mainContainer).find('.dataTables_filter input[type="search"]').keyup(function(){
+        $selector.find('.dataTables_filter input[type="search"]').keyup(function(){
 
             $grid.find('input').val($(this).val()).trigger('keyup');
 
@@ -153,7 +152,7 @@ Node.prototype.selector = function () {
 
         $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
-        $(mainContainer).off().on('reload', function () {
+        $(mainContainer).on('reload', function () {
 
             fetchJson('GET', route, null, true).then(response => {
 

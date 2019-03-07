@@ -41,6 +41,8 @@ const Router = {
 
                 match.shift();
 
+                $(mainContainer).off().empty();
+
                 this.routes[i].handler.apply({}, [match]);
 
                 return this;

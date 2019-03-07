@@ -129,9 +129,9 @@ def run_job(job):
     #
     # elif job.data['type'] == 'adhoc' or job.data['type'] == 'gather_facts':
 
-    for play_dict in job.data['plays']:
+    for play in job.data['plays']:
 
-        play = Play().load(play_dict, variable_manager=job.data['var_manager'], loader=job.data['loader'])
+        # play = Play().load(play_dict, variable_manager=job.data['var_manager'], loader=job.data['loader'])
 
         tqm = None
 

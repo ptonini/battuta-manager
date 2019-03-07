@@ -1,6 +1,12 @@
 function Main () {
 
+    document.title = 'Battuta';
+
     Templates.load('templates_Main.html').then(() => {
+
+        return new Preferences().load()
+
+    }).then(() => {
 
         return fetchJson('GET', '/main', null, false)
 
@@ -16,15 +22,11 @@ function Main () {
 
         Router.listen();
 
+        new MainNavBar();
+
         if (window.location.hash) Router.check(window.location.hash.substring(2));
 
         else Router.navigate(Entities.main.href);
-
-        $(mainContainer).off().empty();
-
-        new Preferences().load();
-
-        new MainNavBar();
 
     })
 

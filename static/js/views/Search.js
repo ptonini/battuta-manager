@@ -1,18 +1,20 @@
 function Search(pattern) {
 
-    $(mainContainer).empty().off();
+    let $search = Templates['search-viewer'];
 
-    $(mainContainer).html(Templates['search-viewer']);
+    let $resultContainer = $search.find('div.result-container');
 
-    $(mainContainer).find('span.pattern-container').html(pattern);
+    $(mainContainer).html($search);
 
-    let $resultContainer = $(mainContainer).find('div.result-container');
+    document.title = 'Battuta - Search ' + pattern;
+
+    $search.find('span.pattern-container').html(pattern);
 
     $resultContainer.css('max-height', window.innerHeight - sessionStorage.getItem('search_box_offset'));
 
     $.each([Host.prototype.type, Group.prototype.type], function (index, type) {
 
-        $(mainContainer).find('div.' + type + '-grid').DynaGrid({
+        $search.find('div.' + type + '-grid').DynaGrid({
             gridTitle: type,
             gridHeaderClasses: 'text-capitalize',
             showCount: true,

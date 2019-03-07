@@ -7,7 +7,7 @@ from multiprocessing import Process
 from itertools import chain
 
 from ansible.playbook import Playbook
-from ansible.playbook.play import Play
+from ansible.playbook.play import Play as AnsiblePlay
 
 from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
@@ -276,7 +276,7 @@ class JobView(View, ApiViewMixin):
                         'tasks': [task]
                     }
 
-                    run_data['plays'] = [Play().load(play_dict, variable_manager=run_data['var_manager'], loader=run_data['loader'])]
+                    run_data['plays'] = [AnsiblePlay().load(play_dict, variable_manager=run_data['var_manager'], loader=run_data['loader'])]
 
                 else:
 

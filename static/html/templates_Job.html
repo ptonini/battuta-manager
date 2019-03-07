@@ -21,31 +21,31 @@
     <a class="navbar-brand mr-auto job-navbar">
         <span class="mr-3" data-bind="name"></span>
         <small data-bind="status"></small>
-        <span id="job_cog" class="fas fa-cog fa-spin fa-fw fa-xs"></span>
+        <span class="job-cog-span fas fa-cog fa-spin fa-fw fa-xs"></span>
     </a>
     <ul class="navbar-nav navbar-right">
         <li class="nav-item mr-1">
-            <button id="cancel_button" class="nav-link btn btn-icon" title="Cancel">
+            <button class="cancel-button nav-link btn btn-icon" title="Cancel">
                 <span class="fas fa-fw fa-times text-danger"></span>
             </button>
         </li>
         <li class="nav-item mr-1">
-            <button id="rerun_button" class="nav-link btn btn-icon" title="Execute job again">
+            <button class="rerun-button nav-link btn btn-icon" title="Execute job again">
                 <span class="fas fa-fw fa-redo-alt"></span>
             </button>
         </li>
         <li class="nav-item mr-1">
-            <button id="stats_button" class="nav-link btn btn-icon" title="Statistics">
+            <button class="stats-button nav-link btn btn-icon" title="Statistics">
                 <span class="fas fa-fw fa-list"></span>
             </button>
         </li>
         <li class="nav-item mr-1">
-            <button id="print_button" class="nav-link btn btn-icon" title="Print">
+            <button class="print-button nav-link btn btn-icon" title="Print">
                 <span class="fas fa-fw fa-print"></span>
             </button>
         </li>
         <li class="nav-item">
-            <button id="scroll_button" data-bind="auto_scroll" class="nav-link btn btn-icon" title="Auto scroll">
+            <button data-bind="auto_scroll" class="scroll-button nav-link btn btn-icon" title="Auto scroll">
                 <span class="fas fa-fw fa-angle-double-down"></span>
             </button>
         </li>
@@ -132,3 +132,5 @@
     </div>
     <table class="table table-condensed table-hover table-striped"></table>
 </div>
+
+<pre data-template="job-error-box" class="text-danger font-weight-bold"></pre>

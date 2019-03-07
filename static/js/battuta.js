@@ -59,7 +59,7 @@ $.extend($.fn.DynaGrid.defaults, {
 });
 
 
-// Modal dialog options
+// ModalBox dialog options
 
 $.extend($.ui['dialog'].prototype.options, {
     width: '360',
@@ -335,6 +335,53 @@ function objToQueryStr(obj) {
     for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
 
     return '?' + $.param(obj);
+
+}
+
+function addTab(name, title) {
+
+    let tabId = name + '_tab';
+
+    let $tabContentContainer = Templates['tab-pane'].attr('id', tabId);
+
+    let $tabLink = Templates['tab-link'];
+
+    $tabLink.find('a').attr('href', '#' + tabId).html(title);
+
+    $('ul.nav-tabs').append($tabLink);
+
+    $('div.tab-content').append($tabContentContainer);
+
+    return $tabContentContainer
+
+}
+
+function capitalize(string) { return string.charAt(0).toUpperCase() + string.slice(1) }
+
+function popupCenter(url, title, w) {
+
+    let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left;
+
+    let dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top;
+
+    let width = window.innerWidth
+        ? window.innerWidth : document.documentElement.clientWidth
+            ? document.documentElement.clientWidth : screen.width;
+
+    let height = window.innerHeight
+        ? window.innerHeight : document.documentElement.clientHeight
+            ? document.documentElement.clientHeight : screen.height;
+
+    let h = height - 50;
+
+    let left = ((width / 2) - (w / 2)) + dualScreenLeft;
+
+    let top = ((height / 2) - (h / 2)) + dualScreenTop;
+
+    let newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+    // Puts focus on the newWindow
+    window.focus && newWindow.focus();
 
 }
 

@@ -81,17 +81,53 @@ BaseModel.prototype = {
 
     // Data binding ****************
 
+    _setValue: function (keyArray, value, obj) {
+
+        let self = this;
+
+        if (keyArray.length === 1) obj[keyArray[0]] = value;
+
+        else {
+
+            if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
+
+            obj = obj[keyArray.shift()];
+
+            self._setValue(keyArray, value, obj)
+
+        }
+
+    },
+
+    _updateDOM: function (key, value) {
+
+        let self = this;
+
+        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
+
+        else for (let k in value) self._updateDOM(key + '.' + k, value[k])
+
+    },
+
+    set: function (key, value) {
+
+        let self = this;
+
+        self._setValue(key.split('.'), value, self);
+
+        self._updateDOM(key, value);
+
+        return self;
+
+    },
+
     bindElement: function ($container) {
 
         let self = this;
 
         let previousId = false;
 
-        Object.keys(self.bindings).forEach(function (key) {
-
-            if (self.bindings[key] === $container) previousId = key;
-
-        });
+        Object.keys(self.bindings).forEach(key => {if (self.bindings[key] === $container) previousId = key});
 
         let bindId = previousId ? previousId : Math.random().toString(36).substring(2, 10);
 
@@ -160,46 +196,6 @@ BaseModel.prototype = {
             });
 
         });
-
-    },
-
-    _setValue: function (keyArray, value, obj) {
-
-        let self = this;
-
-        if (keyArray.length === 1) obj[keyArray[0]] = value;
-
-        else {
-
-            if (!obj[keyArray[0]]) obj[keyArray[0]] = {};
-
-            obj = obj[keyArray.shift()];
-
-            self._setValue(keyArray, value, obj)
-
-        }
-
-    },
-
-    _updateDOM: function (key, value) {
-
-        let self = this;
-
-        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
-
-        else for (let k in value) self._updateDOM(key + '.' + k, value[k])
-
-    },
-
-    set: function (key, value) {
-
-        let self = this;
-
-        self._setValue(key.split('.'), value, self);
-
-        self._updateDOM(key, value);
-
-        return self;
 
     },
 
@@ -299,7 +295,7 @@ BaseModel.prototype = {
 
         let self = this;
 
-        self.deleteAlert(() => {
+        AlertBox.deletion(() => {
 
             return fetchJson('DELETE', self.links.self, null, blocking).then(response => {
 
@@ -311,199 +307,11 @@ BaseModel.prototype = {
 
     },
 
-
-    // UI Elements ********************
-
-    entityDialog: () => { return Modal.confirmation(true, Templates['entity-form']) },
-
-    addTab: function (name, title) {
-
-        let tabId = name + '_tab';
-
-        let $tabContentContainer = Templates['tab-pane'].attr('id', tabId);
-
-        let $tabLink = Templates['tab-link'];
-
-        $tabLink.find('a').attr('href', '#' + tabId).html(title);
-
-        $('ul.nav-tabs').append($tabLink);
-
-        $('div.tab-content').append($tabContentContainer);
-
-        return $tabContentContainer
-
-    },
-
-    popupCenter:function (url, title, w) {
-
-        let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : screen.left;
-
-        let dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top;
-
-        let width = window.innerWidth
-            ? window.innerWidth : document.documentElement.clientWidth
-                ? document.documentElement.clientWidth : screen.width;
-
-        let height = window.innerHeight
-            ? window.innerHeight : document.documentElement.clientHeight
-                ? document.documentElement.clientHeight : screen.height;
-
-        let h = height - 50;
-
-        let left = ((width / 2) - (w / 2)) + dualScreenLeft;
-
-        let top = ((height / 2) - (h / 2)) + dualScreenTop;
-
-        let newWindow = window.open(url, title, 'scrollbars=yes,  width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
-
-        // Puts focus on the newWindow
-        window.focus && newWindow.focus();
-
-    },
-
-    deleteAlert: function (action) {
-
-        AlertBox.warning('This action cannot be reversed. Continue?', function () { action && action() })
-
-    },
-
-    gridDialog: function (options) {
-
-        let $dialog = Modal.confirmation();
-
-        $dialog.find('button.cancel-button').click(() => $dialog.find('input.filter_box').val(''));
-
-        $dialog.find('button.confirm-button').click(function () {
-
-            options.action($dialog.find('div.dialog-content').DynaGrid('getSelected'), $dialog);
-
-        });
-
-        options.type === 'one' && $dialog.find('button.confirm-button').remove();
-
-        $dialog.find('div.dialog-content').DynaGrid({
-            gridTitle: options.title,
-            showFilter: true,
-            addButtonTitle: 'Add ' + options['entityType'],
-            minHeight: 400,
-            maxHeight: 400,
-            gridBodyTopMargin: 10,
-            itemToggle: (options.type === 'many'),
-            truncateItemText: true,
-            gridBodyClasses: 'inset-container scrollbar',
-            columns: sessionStorage.getItem('selection_modal_columns'),
-            ajaxUrl: options.url,
-            ajaxData: options.data,
-            dataSource: options.dataSource || 'ajax',
-            dataArray: options.dataArray || [],
-            formatItem: function($gridContainer, $gridItem, data) {
-
-                $gridItem.resize(() => console.log(data.attributes[options.itemValueKey]));
-
-                $gridItem
-                    .html(data.attributes[options.itemValueKey])
-                    .addClass('pointer truncate')
-                    .resize(() => console.log(data.attributes[options.itemValueKey]));
-
-                if (options.type === 'one') $gridItem.click(function () {
-
-                    options.action && options.action($(this).data(), $dialog)
-
-                });
-
-            }
-        });
-
-        $dialog.dialog({width: 700})
-
-    },
-
-    relationGrid: function (relation, relationType, $container, key) {
-
-        let self = this;
-
-        let $grid = $('<div>').attr('id', relation + '_grid').on('reload', function () {
-
-            $(this).DynaGrid('load');
-
-            $(mainContainer).trigger('reload')
-
-        });
-
-        $container.append($grid);
-
-        $grid.DynaGrid({
-            headerTag: '<div>',
-            showAddButton: true,
-            showFilter: true,
-            showCount: true,
-            gridBodyTopMargin: 10,
-            gridBodyBottomMargin: 10,
-            addButtonType: 'icon',
-            addButtonClass: 'btn-icon',
-            addButtonTitle: 'Add ' + relationType,
-            maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
-            hideBodyIfEmpty: true,
-            columns: sessionStorage.getItem('node_grid_columns'),
-            ajaxUrl: self.links[relation] + objToQueryStr({fields: {attributes: [key], links: ['self']}}),
-            formatItem: function ($gridContainer, $gridItem, data) {
-
-                let link = data.links ? data.links.self : false;
-
-                let readable = data.meta && data.meta.hasOwnProperty('readable') ? data.meta.readable : true;
-
-                let nameLabel = $('<span>')
-                    .append(data.attributes[key])
-                    .addClass('truncate')
-                    .toggleClass('pointer', readable && link)
-                    .click(() => readable && link && Router.navigate(link));
-
-                $gridItem.addClass('relation-grid-item').append(nameLabel, Templates['remove-icon'].click(function () {
-
-                    fetchJson('DELETE', self.links[relation], {data: [data]}, true).then(() => {
-
-                        $grid.trigger('reload');
-
-                    })
-
-                }));
-
-            },
-            addButtonAction: function () {
-
-                self.gridDialog({
-                    title: 'Select ' + relationType,
-                    type: 'many',
-                    objectType: self.type,
-                    url: self.links[relation] + objToQueryStr({fields: {attributes: [key], links: ['self']}, related: false}),
-                    itemValueKey: key,
-                    action: function (selection, $dialog) {
-
-                        fetchJson('POST', self.links[relation], {data: selection}, true).then(() => {
-
-                            $grid.trigger('reload');
-
-                            $dialog.dialog('close')
-
-                        })
-
-                    }
-                });
-
-            }
-
-        });
-
-    },
-
-
     // Views **************************
 
     selector: function () {
 
         let self = this;
-
-        $(mainContainer).off().empty();
 
         Templates.load(self.templates).then(() => {
 
@@ -511,11 +319,13 @@ BaseModel.prototype = {
 
             let table = new SelectorTable(self);
 
+            document.title = 'Battuta - ' + capitalize(self.label.collective);
+
             $selector.find('div.table-container').append(table.element);
 
-            $(mainContainer).append($selector);
+            $(mainContainer).html($selector);
 
-            self.bindElement($(mainContainer));
+            self.bindElement($selector);
 
             table.initialize();
 
@@ -529,43 +339,43 @@ BaseModel.prototype = {
 
         let self = this;
 
-        $(mainContainer).off().empty();
-
         Templates.load(self.templates).then(() => {
-
-            $(mainContainer).html(Templates['entity-viewer']);
 
             return self.read(false)
 
         }).then(() => {
 
-            document.title = 'Battuta - ' + self.name;
+            let $viewer = Templates['entity-viewer'];
 
-            $(mainContainer).find('[data-bind="description"]').data('default', Templates['no-description'].outerHTML());
+            $(mainContainer).html($viewer);
 
-            self.bindElement($(mainContainer));
+            document.title = 'Battuta - ' + self.label.single + ' ' + self.name;
 
-            $(mainContainer).find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
+            $viewer.find('[data-bind="description"]').data('default', Templates['no-description'].outerHTML());
+
+            self.bindElement($viewer);
+
+            $viewer.find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
 
                 self.editor(() => self.read(false));
 
             });
 
-            $(mainContainer).find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
+            $viewer.find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
 
                 self.delete(false, () => Router.navigate(Entities[self.type].href))
 
             });
 
-            self.info && self.info($(mainContainer).find("#info_container"));
+            self.info && self.info($viewer.find("#info_container"));
 
             Object.keys(self.tabs).forEach(function (key) {
 
-                self.tabs[key].validator(self) && self.tabs[key].generator(self, self.addTab(key, self.tabs[key].label))
+                self.tabs[key].validator(self) && self.tabs[key].generator(self, addTab(key, self.tabs[key].label))
 
             });
 
-            $(mainContainer).find('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
+            $viewer.find('ul.nav-tabs').attr('id', self.type + '_' + self.id + '_tabs').rememberTab();
 
         });
 
@@ -575,19 +385,17 @@ BaseModel.prototype = {
 
         let self = this;
 
-        let $dialog = self.entityDialog();
+        let $form = self.buildEntityForm ? self.buildEntityForm() : Templates['entity-form'];
 
-        self.bindElement($dialog);
+        let header = (self.id ? 'Edit '  : 'Add ') + self.label.single;
 
-        $dialog.find('h5.dialog-header').html(self.id ? 'Edit ' + self.label.single : 'Add ' + self.label.single);
+        let onConfirmation = function () {
 
-        $dialog.find('button.confirm-button').click(function () {
-
-            if (self.entityFormValidator($dialog)) {
+            if (!self.entityFormValidator || self.entityFormValidator($form)) {
 
                 let callback = response => {
 
-                    $dialog.dialog('close');
+                    modal.close();
 
                     action && action(response);
 
@@ -599,12 +407,16 @@ BaseModel.prototype = {
 
             }
 
-        });
+        };
 
-        $dialog.dialog();
+        let modal = new ModalBox('confirmation', header, $form, onConfirmation);
+
+        self.bindElement($form);
+
+        $form.submit(() => modal.confirm());
+
+        modal.open();
 
     },
-
-    entityFormValidator: function () {return true}
 
 };

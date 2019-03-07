@@ -142,6 +142,11 @@ class Job(models.Model, ModelSerializerMixin):
 
     statistics = models.TextField(max_length=4096, blank=True, null=True)
 
+    @property
+    def link(self):
+
+        return '/'.join([self.route, str(self.id)])
+
     def serialize(self, fields, user):
 
         attributes = {
@@ -159,7 +164,7 @@ class Job(models.Model, ModelSerializerMixin):
             'statistics': self.statistics
         }
 
-        links = {'self': '/'.join([self.route, str(self.id)])}
+        links = {'self': self.link}
 
         meta = self.permissions(user)
 
@@ -167,9 +172,10 @@ class Job(models.Model, ModelSerializerMixin):
 
         return data
 
-    def permissions(self, user):
+    @staticmethod
+    def permissions(user):
 
-        # authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
         readable = True
 

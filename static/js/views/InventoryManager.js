@@ -6,6 +6,10 @@ function InventoryManager() {
 
         let $manager = Templates['inventory-manager'];
 
+        $(mainContainer).html($manager);
+
+        document.title = 'Battuta - Inventory manager';
+
         $manager.find('#manage_inventory_tabs').rememberTab();
 
         $manager.find('#upload_field')
@@ -63,31 +67,33 @@ function InventoryManager() {
 
             if (format === 'filezilla') {
 
-                let $dialog = Modal.confirmation(false, Templates['sftp-user-form']);
+                let $form = Templates['sftp-user-form'];
 
-                $dialog.find('button.confirm-button').click(function () {
+                let onConfirmation = () => {
 
-                    let sftpUSer = $dialog.find('input.sftp-user-input').val();
+                    let sftpUSer = $form.find('input.sftp-user-input').val();
 
                     if (sftpUSer) {
 
                         window.open(Entities.manage.href + '?format=' + format + '&sftp_user=' + sftpUSer, '_self');
 
-                        $dialog.dialog('close')
+                        modal.close()
 
                     }
 
                     else AlertBox.status('warning', 'Enter default user');
 
-                });
+                };
 
-                $dialog.dialog()
+                let modal = new ModalBox('confirmation', false, $form, onConfirmation);
+
+                $form.submit(() => modal.confirm());
+
+                modal.open();
 
             } else window.open(Entities.manage.href + '?format=' + format, '_self');
 
         });
-
-        $(mainContainer).html($manager)
 
     });
 

@@ -53,21 +53,13 @@ Group.prototype.info = function ($container) {
 Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
     children: {
         label: 'Children',
-        validator: function (self) {return (self.name !== 'all')},
-        generator: function (self, $container) {
-
-            self.relationGrid('children', self.label.collective, $container, 'name')
-
-        }
+        validator: self => {return (self.name !== 'all')},
+        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'children', self.label.collective, 'name'))
     },
     members: {
         label: 'Members',
-        validator: function (self) {return (self.name !== 'all')},
-        generator: function (self, $container) {
-
-            self.relationGrid('members', self.label.collective, $container, 'name')
-
-        }
+        validator: self => {return (self.name !== 'all')},
+        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'members', self.label.collective, 'name'))
     },
 });
 

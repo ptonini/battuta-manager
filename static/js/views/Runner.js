@@ -4,17 +4,19 @@ function Runner() {
 
     let tasks = new AdHocTask();
 
-    $(mainContainer).off().empty();
-
     Templates.load('templates_Runner.html').then(() => {
 
-        $(mainContainer).html(Templates['runner-viewer']);
+        let $runner = Templates['runner-viewer'];
 
-        $(mainContainer).find('#job_tabs').rememberTab();
+        $(mainContainer).html($runner);
 
-        playbooks.selectorField($(mainContainer).find('div.playbook-selector-container'), $(mainContainer).find('div.playbook-args-container'));
+        document.title = 'Battuta - Runner';
 
-        tasks.selector($(mainContainer).find('div.task-table-container'))
+        $runner.find('#job_tabs').rememberTab();
+
+        playbooks.selectorField($runner.find('div.playbook-selector-container'), $runner.find('div.playbook-args-container'));
+
+        tasks.selector($runner.find('div.task-table-container'))
 
     })
 

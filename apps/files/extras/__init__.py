@@ -63,6 +63,83 @@ class FileHandler(ModelSerializerMixin):
 
         self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
 
+    @staticmethod
+    def sort_path_list(path_list):
+
+        root_file_list = list()
+
+        subfolder_file_list = list()
+
+        for path in path_list:
+
+            root_file_list.append(path) if '/' not in path else subfolder_file_list.append(path)
+
+        root_file_list.sort()
+
+        subfolder_file_list.sort(key=lambda f: os.path.basename(f))
+
+        return root_file_list + subfolder_file_list
+
+    @staticmethod
+    def get_root_class(root):
+
+        roots = {
+            'repository': FileHandler,
+            'playbooks': PlaybookHandler,
+            'roles': RoleHandler
+        }
+
+        return roots[root]
+
+    @staticmethod
+    def search(term, file_type, user):
+
+        def is_match (r, path):
+
+            if term in path:
+
+                fs_obj = FileHandler.factory(r, path, user)
+
+                if fs_obj.permissions()['readable']:
+
+                    return bool(re.match('|'.join(mime_types[file_type]), fs_obj.mime_type)) if file_type else True
+
+        def path_list_generator(iterator, parent_path, c_root):
+
+            path_list = list()
+
+            for name in iterator:
+
+                path = os.path.join(parent_path, name)
+
+                path_list.append(path) if is_match(c_root, path) else None
+
+            return path_list
+
+        result = []
+
+        for handler_class in [FileHandler, RoleHandler]:
+
+            handler_results = list()
+
+            for root, folders, files in os.walk(handler_class.root_path):
+
+                relative_root = root.replace(handler_class.root_path, '/' if root == handler_class.root_path else '')
+
+                handler_results = handler_results + path_list_generator(files, relative_root, handler_class.root)
+
+                if not file_type:
+
+                    handler_results = handler_results + path_list_generator(folders, relative_root, handler_class.root)
+
+            handler_results = list(map(lambda x: handler_class.inventory_variable + x, handler_results))
+
+            result = result + handler_results
+
+        result.sort()
+
+        return result
+
     @classmethod
     def _validate(cls, root, fs_obj_type, path, content):
 
@@ -151,83 +228,6 @@ class FileHandler(ModelSerializerMixin):
         }
 
         return actions[fs_object_type]
-
-    @staticmethod
-    def sort_path_list(path_list):
-
-        root_file_list = list()
-
-        subfolder_file_list = list()
-
-        for path in path_list:
-
-            root_file_list.append(path) if '/' not in path else subfolder_file_list.append(path)
-
-        root_file_list.sort()
-
-        subfolder_file_list.sort(key=lambda f: os.path.basename(f))
-
-        return root_file_list + subfolder_file_list
-
-    @staticmethod
-    def get_root_class(root):
-
-        roots = {
-            'repository': FileHandler,
-            'playbooks': PlaybookHandler,
-            'roles': RoleHandler
-        }
-
-        return roots[root]
-
-    @staticmethod
-    def search(term, file_type, user):
-
-        def is_match (r, path):
-
-            if term in path:
-
-                fs_obj = FileHandler.factory(r, path, user)
-
-                if fs_obj.permissions()['readable']:
-
-                    return bool(re.match('|'.join(mime_types[file_type]), fs_obj.mime_type)) if file_type else True
-
-        def path_list_generator(iterator, parent_path, c_root):
-
-            path_list = list()
-
-            for name in iterator:
-
-                path = os.path.join(parent_path, name)
-
-                path_list.append(path) if is_match(c_root, path) else None
-
-            return path_list
-
-        result = []
-
-        for handler_class in [FileHandler, RoleHandler]:
-
-            handler_results = list()
-
-            for root, folders, files in os.walk(handler_class.root_path):
-
-                relative_root = root.replace(handler_class.root_path, '/' if root == handler_class.root_path else '')
-
-                handler_results = handler_results + path_list_generator(files, relative_root, handler_class.root)
-
-                if not file_type:
-
-                    handler_results = handler_results + path_list_generator(folders, relative_root, handler_class.root)
-
-            handler_results = list(map(lambda x: handler_class.inventory_variable + x, handler_results))
-
-            result = result + handler_results
-
-        result.sort()
-
-        return result
 
     @classmethod
     def list(cls, user):

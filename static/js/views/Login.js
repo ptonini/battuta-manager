@@ -21,7 +21,7 @@ function Login () {
 
         $(navBarContainer).remove();
 
-        $(mainContainer).off().html($loginForm)
+        $(mainContainer).html($loginForm)
 
     })
 

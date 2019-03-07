@@ -2,7 +2,11 @@ function PatternEditor(obj, binding) {
 
     let originalPattern = obj.get(binding);
 
-    let updatePattern = function (action, nodeName) {
+    let $form = Templates['pattern-form'];
+
+    let modal = new ModalBox('notification', false, $form);
+
+    let updatePattern = (action, nodeName) => {
 
         let sep = {Select: ':', And: ':&', Not: ':!'};
 
@@ -14,19 +18,17 @@ function PatternEditor(obj, binding) {
 
     };
 
-    let $dialog = Modal.notification(false, Templates['pattern-form']);
+    $form.find('input.pattern-input').attr('data-bind', binding);
 
-    $dialog.find('input.pattern-input').attr('data-bind', binding);
+    $form.find('button.clear-button').click(() => obj.set(binding, ''));
 
-    $dialog.find('button.clear-button').click(() => obj.set(binding, ''));
+    $form.find('button.reload-button').click(() => obj.set(binding, originalPattern));
 
-    $dialog.find('button.reload-button').click(() => obj.set(binding, originalPattern));
-
-    obj.bindElement($dialog);
+    obj.bindElement($form);
 
     [Host.prototype.type, Group.prototype.type].forEach(function (type) {
 
-        $dialog.find('div.' + type + '-grid').DynaGrid({
+        $form.find('div.' + type + '-grid').DynaGrid({
             showFilter: true,
             minHeight: 300,
             maxHeight: 300,
@@ -44,11 +46,7 @@ function PatternEditor(obj, binding) {
 
                 $dropdownMenu.find('span.dropdown-toggle').html(nodeName);
 
-                $dropdownMenu.find('span.dropdown-item').click(function () {
-
-                    updatePattern(this.textContent, nodeName)
-
-                });
+                $dropdownMenu.find('span.dropdown-item').click(function () { updatePattern(this.textContent, nodeName) });
 
                 $gridItem.html($dropdownMenu)
 
@@ -58,7 +56,7 @@ function PatternEditor(obj, binding) {
 
     });
 
-    $dialog.dialog({width: 700})
+    modal.open({width: 700})
 
 }
 

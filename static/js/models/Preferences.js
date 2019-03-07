@@ -64,15 +64,13 @@ Preferences.prototype.dialog = function () {
 
     let self = this;
 
-    let $dialog = Modal.confirmation('Preferences').dialog({autoOpen: false, width: 800});
+    let $form = Templates['form'];
 
-    $dialog.find('h5.dialog-header').append(Templates['restore-button']);
-
-    $dialog.find('button.restore-button').click(function () {
+    let $restoreButton = Templates['restore-button'].click(() => {
 
         AlertBox.warning('Restore all preferences to default values?', function () {
 
-            $dialog.find('.item-input').each(function (index, input) {
+            modal.element.find('.item-input').each(function (index, input) {
 
                 $(input).val($(input).data('default').toString())
 
@@ -84,7 +82,7 @@ Preferences.prototype.dialog = function () {
 
     });
 
-    $dialog.find('button.confirm-button').click(function () {
+    let onConfirmation = () => {
 
         let data = [];
 
@@ -98,7 +96,7 @@ Preferences.prototype.dialog = function () {
 
         };
 
-        $dialog.find('.item-input').each(function () {
+        $form.find('.item-input').each(function () {
 
             let result = validatePreference($(this).data('dataType'), $(this).val());
 
@@ -118,28 +116,21 @@ Preferences.prototype.dialog = function () {
 
         });
 
-        noError && fetchJson('PATCH', self.links.self, {data: data}, true).then(() => {
+        noError && fetchJson('PATCH', self.links.self, {data: data}, true).then(() => location.reload());
 
-            $dialog.dialog('close');
+    };
 
-            new MainNavBar().build();
+    let modal = new ModalBox('confirmation', 'Preferences', $form, onConfirmation);
 
-            location.reload();
+    modal.header.append($restoreButton);
 
-        });
-
-
-    });
-
-    let $dialogContent = $dialog.find('div.dialog-content')
-        .addClass('inset-container scrollbar')
-        .css('max-height', window.innerHeight * 0.5 + 'px');
+    modal.content.addClass('inset-container scrollbar').css('max-height', window.innerHeight * 0.5 + 'px');
 
     return self.read(false).then(response => {
 
         self.constructor(response);
 
-        $dialogContent.empty();
+        $form.empty();
 
         for (let i = 0; i < self.groups.length; i++) {
 
@@ -147,7 +138,7 @@ Preferences.prototype.dialog = function () {
 
             $header.find('h6').attr('title', self.groups[i].description).html(self.groups[i].name);
 
-            $dialogContent.append($header);
+            $form.append($header);
 
             for (let j = 0; j < self.items.length; j++) if (self.items[j].group === self.groups[i].id) {
 
@@ -168,14 +159,16 @@ Preferences.prototype.dialog = function () {
 
                 $itemContainer.find('.error_label').attr('id', self.items[j].name + '_error');
 
-                $dialogContent.append($itemContainer);
+                $form.append($itemContainer);
             }
 
-            $dialogContent.children().last().removeClass('mb-1').addClass('mb-4')
+            $form.children().last().removeClass('mb-1').addClass('mb-4')
 
         }
 
-        $dialog.dialog('open')
+        $form.submit(() => modal.confirm());
+
+        modal.open({width: 800})
 
     });
 

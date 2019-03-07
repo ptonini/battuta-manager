@@ -79,16 +79,14 @@ const Entities = {
     jobs: {
         model: Job,
         href: '/runner/jobs',
-        regex: /^runner\/jobs\/?[\s\S]*$/,
-        action: () =>  new Job().selector()
+        regex: /^runner\/jobs\/?([0-9]+)?$/,
+        action: param => param[0] ? new Job({id: param[0], links: {self: param.input}}).viewer() : new Job().selector()
     }
 };
 
 for (let k in Entities) if (Entities.hasOwnProperty(k)) Entities[k].regex && Router.add(Entities[k].regex, Entities[k].action);
 
 Router.add(/[\s\S]*/, function () {
-
-    $(mainContainer).empty();
 
     AlertBox.status('warning', 'Page not found')
 

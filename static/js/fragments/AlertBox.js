@@ -28,12 +28,6 @@ function AlertBox(type, status, message) {
 
 }
 
-AlertBox.status = function (status, message) {
-
-    new AlertBox('notification', status, message).deploy()
-
-};
-
 AlertBox.warning = function (message, confirmationCallback) {
 
     let alert = new AlertBox('confirmation', 'warning', message);
@@ -53,6 +47,10 @@ AlertBox.warning = function (message, confirmationCallback) {
     alert.deploy()
 
 };
+
+AlertBox.deletion = action => AlertBox.warning('This action cannot be reversed. Continue?', action);
+
+AlertBox.status = (status, message) => new AlertBox('notification', status, message).deploy();
 
 AlertBox.prototype = {
 

@@ -26,29 +26,28 @@ FileObj.prototype.upload = function () {
 
     let $form = Templates['upload-file-form'];
 
-    let $dialog = Modal.confirmation(true, $form);
-
     let $input = $form.find('input.input-file');
 
-    $dialog.find('h5.dialog-header').replaceWith($('<h6>').html('Upload file'));
-
-    $dialog.find('button.confirm-button').click(function () {
+    let onConfirmation = () => {
 
         $input.fileinput('refresh', {uploadUrl: [self.links.self, $form.find('input.file-caption-name').val()].join('/')}).fileinput('upload');
 
         $form.find('div.file-caption-main').hide()
 
-    });
+    };
 
-    $dialog.find('button.cancel-button').click(() => $dialog.dialog('close', () => $input.fileinput('cancel')).dialog('close'));
+    let modal = new ModalBox('confirmation', true, $form, onConfirmation, () => $input.fileinput('cancel'));
 
-    self.bindElement($dialog);
+    modal.header.replaceWith($('<h6>').html('Upload file'));
 
-    $dialog.dialog();
+    self.bindElement($form);
+
+    $form.submit(() => modal.confirm());
+
+    modal.open();
 
     $input
         .fileinput({
-            // ajaxSettings: {method: 'POST', beforeSend: ajaxBeforeSend, error: self.ajaxError},
             progressClass: 'progress-bar progress-bar-success active',
             uploadUrl: self.links.self,
             uploadAsync: true,
@@ -60,13 +59,13 @@ FileObj.prototype.upload = function () {
 
             else {
 
-                $dialog.find('button.confirm-button').hide();
+                modal.confirmButton.hide();
 
-                $dialog.find('button.cancel-button').attr('title', 'Close');
+                modal.cancelButton.attr('title', 'Close');
 
                 $(mainContainer).trigger('reload');
 
-                setTimeout(() => $dialog.find('button.cancel-button').click(), 5000)
+                setTimeout(() => modal.cancelButton.click(), 5000)
 
             }
 
@@ -151,7 +150,27 @@ FileObj.prototype.contentEditor = function () {
 
     let $selector = $form.find('select.mode-selector');
 
-    let $dialog = Modal.confirmation();
+    let onConfirmation = () => {
+
+        self.set('new_name', $form.find('input.filename-input').val());
+
+        if (self.get('new_name')) {
+
+            self.set('content', textEditor.getValue());
+
+            self.update(false).then(() => {
+
+                modal.close();
+
+                $(mainContainer).trigger('reload')
+
+            });
+
+        } else AlertBox.status('warning', 'Please enter a filename');
+
+    };
+
+    let modal = new ModalBox('confirmation', false, $form, onConfirmation);
 
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
@@ -180,39 +199,11 @@ FileObj.prototype.contentEditor = function () {
 
     $form.find('div.editor-container').css('height', window.innerHeight * 0.7);
 
-    $dialog.find('div.dialog-content').append($form);
+    $form.find('input.filename-input').val(self.get('name'));
 
-    $dialog.find('input.filename-input').val(self.get('name'));
+    $form.submit(() => modal.confirm());
 
-    $dialog.find('button.confirm-button').click(function () {
-
-        self.set('new_name', $dialog.find('input.filename-input').val());
-
-        if (self.get('new_name')) {
-
-            self.set('content', textEditor.getValue());
-
-            self.update(false).then(() => {
-
-                $dialog.dialog('close');
-
-                $(mainContainer).trigger('reload')
-
-            });
-
-        }
-
-        else AlertBox.status('warning', 'Please enter a filename');
-
-    });
-
-    $dialog.find('button.cancel-button').click(function () {
-
-        $dialog.dialog('close')
-
-    });
-
-    $dialog.dialog({width: 900, closeOnEscape: false});
+    modal.open({width: 900, closeOnEscape: false});
 
     textEditor.focus();
 
@@ -257,15 +248,31 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
         }
     };
 
-    let $dialog = Modal.confirmation(true, Templates[actions[action].template]);
+    let $form = Templates[actions[action].template];
 
-    $dialog.find('h5.dialog-header').replaceWith(
+    let onConfirmation = () => {
+
+        let newName = $form.find('input.filename-input').val();
+
+        newName && actions[action].save(newName).then(() => {
+
+            modal.close();
+
+            $(mainContainer).trigger('reload')
+
+        })
+
+    };
+
+    let modal = new ModalBox('confirmation', true, $form, onConfirmation);
+
+    modal.header.replaceWith(
         $('<h6>').html(actions[action].title).append('&nbsp;', $('<span>').attr('data-bind', 'type'))
     );
 
-    $dialog.find('input.filename-input').val(actions[action].displayName(self.name));
+    $form.find('input.filename-input').val(actions[action].displayName(self.name));
 
-    $dialog.find('button.folder-button').click(function () {
+    $form.find('button.folder-button').click(function () {
 
         $(this).toggleClass('checked-button');
 
@@ -273,25 +280,11 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     });
 
-    $dialog.find('button.confirm-button').click(function() {
+    $form.submit(() => modal.confirm());
 
-        let newName = $dialog.find('input.filename-input').val();
+    self.bindElement($form);
 
-        newName && actions[action].save(newName).then(() => {
-
-            $dialog.dialog('close');
-
-            $(mainContainer).trigger('reload')
-
-        })
-
-    });
-
-    self.bindElement($dialog);
-
-    $dialog
-        .dialog()
-        .keypress(function (event) { event.keyCode === 13 && $dialog.find('.confirm-button').click() });
+    modal.open()
 
 };
 
@@ -314,8 +307,6 @@ FileObj.prototype.selector = function () {
     let self = this;
 
     let pathArrayViewableIndex = 3;
-
-    $(mainContainer).off().empty();
 
     self.selectorTableOptions = {
         offset: 'file_table_offset',
@@ -405,11 +396,7 @@ FileObj.prototype.selector = function () {
 
     Templates.load(self.templates).then(() => {
 
-        $(mainContainer).html(Templates['file-selector']);
-
-        $(mainContainer).find('div.file-table-container').html(table.element);
-
-        self.bindElement($(mainContainer));
+        let $selector = Templates['file-selector'];
 
         let reloadTable = () => {
 
@@ -423,11 +410,11 @@ FileObj.prototype.selector = function () {
 
                     let buildBreadcrumbs = () => {
 
-                        $(mainContainer).find('li.path-breadcrumb').remove();
+                        $selector.find('li.path-breadcrumb').remove();
 
                         for (let i = pathArrayViewableIndex; i < pathArray.length; i ++) {
 
-                            $(mainContainer).find('ol.path-breadcrumbs').append(
+                            $selector.find('ol.path-breadcrumbs').append(
                                 Templates['path-breadcrumb'].html(pathArray[i]).click(function() {
 
                                     Router.navigate(pathArray.slice(0,i + 1).join('/'))
@@ -439,12 +426,14 @@ FileObj.prototype.selector = function () {
 
                     };
 
-                    $(mainContainer).find('li.root-breadcrumb')
+                    document.title = 'Battuta - ' + self.id;
+
+                    $selector.find('li.root-breadcrumb')
                         .html(self.get('root'))
                         .off()
                         .click(() => Router.navigate(self.links.root));
 
-                    $(mainContainer).find('button.edit-path-button').off().click(function ()  {
+                    $selector.find('button.edit-path-button').off().click(function ()  {
 
                         let $pathButton = $(this);
 
@@ -460,9 +449,9 @@ FileObj.prototype.selector = function () {
 
                             let $pathInput = Templates['path-input'];
 
-                            let $breadCrumbs = $(mainContainer).find('ol.path-breadcrumbs');
+                            let $breadCrumbs = $selector.find('ol.path-breadcrumbs');
 
-                            $(mainContainer).find('li.path-breadcrumb').remove();
+                            $selector.find('li.path-breadcrumb').remove();
 
                             $breadCrumbs.append(Templates['path-breadcrumb'].append($pathInput));
 
@@ -510,6 +499,12 @@ FileObj.prototype.selector = function () {
             })
 
         };
+
+        $(mainContainer).html($selector);
+
+        $selector.find('div.file-table-container').html(table.element);
+
+        self.bindElement($selector);
 
         table.initialize();
 

@@ -74,27 +74,27 @@ User.prototype.tabs = {
     groups: {
         label: 'Groups',
         validator: self => { return !self.get('is_superuser') },
-        generator: (self, $container) => self.relationGrid('usergroups', UserGroup.prototype.label.collective, $container, 'name')
+        generator: (self, $container) => new RelationGrid(self, 'usergroups', UserGroup.prototype.label.collective, $container, 'name')
     }
 };
 
-User.prototype.entityDialog = function () {
+User.prototype.buildEntityForm = function () {
 
-    let $dialog = Modal.confirmation('Add user', Templates['user-form']);
+    let $form = Templates['user-form'];
 
     if (this.id) {
 
-        $dialog.find('div.current-pass-input-container').removeClass('d-none');
+        $form.find('div.current-pass-input-container').removeClass('d-none');
 
-        $dialog.find('span.current-user').html(sessionStorage.getItem('current_user'))
+        $form.find('span.current-user').html(sessionStorage.getItem('current_user'))
 
     }
 
-    return $dialog
+    return $form
 
 };
 
-User.prototype.entityFormValidator = function ($dialog) {
+User.prototype.entityFormValidator = function ($form) {
 
     let self = this;
 
@@ -102,7 +102,7 @@ User.prototype.entityFormValidator = function ($dialog) {
 
     if (self.id && !self.current_password) messages.push('Please enter current user password.');
 
-    if (self.password && self.password !== $dialog.find('input#retype-pass-input').val()) messages.push('Passwords do not match.')
+    if (self.password && self.password !== $form.find('input#retype-pass-input').val()) messages.push('Passwords do not match.');
 
     if (messages.length === 0) return true;
 

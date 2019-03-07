@@ -25,5 +25,5 @@ class JobTableHandler(DataTableRequestHandler):
                 job.name,
                 job.subset,
                 job.status,
-                job.id
+                job.link
             ])

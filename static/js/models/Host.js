@@ -123,9 +123,9 @@ Host.prototype.info = function ($container) {
 
                 let $table = Templates['table'];
 
-                let $dialog = Modal.notification(key, $table);
+                let modal = new ModalBox('notification', key, $table);
 
-                $dialog.find('h5.dialog-header').addClass('text-capitalize');
+                modal.header.addClass('text-capitalize');
 
                 $table.DataTable({
                     data: infoTables[key].data,
@@ -140,7 +140,7 @@ Host.prototype.info = function ($container) {
                     rowCallback: infoTables[key].rowCallback
                 });
 
-                $dialog.dialog({width: '700px'});
+                modal.open({width: 700});
 
                 $table.DataTable().columns.adjust().draw();
 
@@ -153,15 +153,13 @@ Host.prototype.info = function ($container) {
                     .css('max-height', (window.innerHeight * .6).toString() + 'px')
                     .JSONView(self.get('facts'), {'collapsed': true});
 
-                let $dialog = Modal.notification(self.name + ' facts', $content);
-
-                $dialog.dialog({width: 900})
+               new ModalBox('notification', self.name + ' facts', $content).open({width: 900})
 
             });
 
         }
 
-        else  $container.find('#gather_facts').attr('title', 'Gather facts');
+        else $container.find('#gather_facts').attr('title', 'Gather facts');
 
         $container.find('#gather_facts').click(function () {
 

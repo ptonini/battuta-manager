@@ -1,11 +1,5 @@
 {% extends 'main/base.html' %}
-{% block appdata %}
-    <script type="text/javascript" src="/static/js/views/Login.js"></script>
-{% endblock %}
 {% block scripts %}
-    <script type="text/javascript">
-
-        $(document).ready(() => new Login())
-
-    </script>
+    <script type="text/javascript" src="/static/js/views/Login.js"></script>
+    <script type="text/javascript">$(document).ready(() => new Login())</script>
 {% endblock %}
