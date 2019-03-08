@@ -65,17 +65,17 @@ class Project(models.Model, ModelSerializerMixin):
         }
 
         links = {
-            'self': '/'.join([self.route, str(self.id)]),
-            'manager': '/'.join([self.route, str(self.id), 'manager']),
-            'host_group': '/'.join([self.route, str(self.id), 'host_group']),
-            'can_edit_variables': '/'.join([self.route, str(self.id), 'can_edit_variables']),
-            'can_run_tasks': '/'.join([self.route, str(self.id), 'can_run_tasks']),
-            'can_edit_tasks': '/'.join([self.route, str(self.id), 'can_edit_tasks']),
-            'can_run_playbooks': '/'.join([self.route, str(self.id), 'can_run_playbooks']),
-            'can_edit_playbooks': '/'.join([self.route, str(self.id), 'can_edit_playbooks']),
-            'can_edit_roles': '/'.join([self.route, str(self.id), 'can_edit_roles']),
-            'playbooks': '/'.join([self.route, str(self.id), 'playbooks']),
-            'roles': '/'.join([self.route, str(self.id), 'roles']),
+            'self': self.link,
+            'manager': '/'.join([self.link, 'manager']),
+            'host_group': '/'.join([self.link, 'host_group']),
+            'can_edit_variables': '/'.join([self.link, 'can_edit_variables']),
+            'can_run_tasks': '/'.join([self.link, 'can_run_tasks']),
+            'can_edit_tasks': '/'.join([self.link, 'can_edit_tasks']),
+            'can_run_playbooks': '/'.join([self.link, 'can_run_playbooks']),
+            'can_edit_playbooks': '/'.join([self.link, 'can_edit_playbooks']),
+            'can_edit_roles': '/'.join([self.link, 'can_edit_roles']),
+            'playbooks': '/'.join([self.link, 'playbooks']),
+            'roles': '/'.join([self.link, 'roles']),
         }
 
         meta = self.permissions(user)

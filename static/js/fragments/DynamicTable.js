@@ -1,4 +1,4 @@
-function SelectorTable(obj, initialize=false) {
+function DynamicTable(obj, initialize=false) {
 
     let mergedOptions = Object.assign({}, this.defaultOptions, obj.selectorTableOptions ? obj.selectorTableOptions : {});
 
@@ -28,7 +28,7 @@ function SelectorTable(obj, initialize=false) {
 
 }
 
-SelectorTable.prototype = {
+DynamicTable.prototype = {
 
     defaultOptions: {
         ajax: obj => { return {url: Entities[obj.type].href, dataSrc: 'data'} },

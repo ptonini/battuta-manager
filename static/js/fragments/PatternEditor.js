@@ -4,8 +4,6 @@ function PatternEditor(obj, binding) {
 
     let $form = Templates['pattern-form'];
 
-    let modal = new ModalBox('notification', false, $form);
-
     let updatePattern = (action, nodeName) => {
 
         let sep = {Select: ':', And: ':&', Not: ':!'};
@@ -56,7 +54,7 @@ function PatternEditor(obj, binding) {
 
     });
 
-    modal.open({width: 700})
+    new ModalBox('notification', false, $form).open({width: 700})
 
 }
 

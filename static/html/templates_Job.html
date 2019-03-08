@@ -60,37 +60,37 @@
             <div class="col-4">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">User:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="username"></div>
+                    <div class="col-8 item-value text-truncate" data-bind="user"></div>
                 </div>
             </div>
             <div class="col-4 playbook-only">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">Subset:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="subset"></div>
+                    <div class="col-8 item-value text-truncate" data-bind="subset"></div>
                 </div>
             </div>
             <div class="col-4 playbook-only">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">Extra vars:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="extra_vars"></div>
+                    <div class="col-8 item-value text-truncate" data-bind="parameters.extra_vars"></div>
                 </div>
             </div>
             <div class="col-4 playbook-only">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">Tags:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="tags"></div>
+                    <div class="col-8 item-value text-truncate" data-bind="parameters.tags"></div>
                 </div>
             </div>
             <div class="col-4 playbook-only">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">Skip tags:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="skip_tags"></div>
+                    <div class="col-8 item-value text-truncate" data-bind="parameters.skip_tags"></div>
                 </div>
             </div>
             <div class="col-4">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">Check:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="check"></div>
+                    <div class="col-8 item-value text-truncate" data-bind="check"></div>
                 </div>
             </div>
         </div>
@@ -114,9 +114,9 @@
             <div class="col-4">
                 <div class="row no-gutters">
                     <div class="col-4 item-label">Hosts:</div>
-                    <div id="host_field" class="col-8 item-value text-truncate font-weight-bold"></div>
+                    <div id="host_field" class="col-8 item-value text-truncate"></div>
                     <div class="col-4 item-label">Become:</div>
-                    <div id="become_field" class="col-8 item-value text-truncate font-weight-bold"></div>
+                    <div id="become_field" class="col-8 item-value text-truncate"></div>
                 </div>
             </div>
         </div>
@@ -134,3 +134,5 @@
 </div>
 
 <pre data-template="job-error-box" class="text-danger font-weight-bold"></pre>
+
+<div data-template="result-details" class="well inset-container result-details"></div>

@@ -41,6 +41,12 @@ class ApiViewMixin:
 
 class ModelSerializerMixin:
 
+    @property
+    def link(self):
+
+        return '/'.join([getattr(self, 'route'), str(getattr(self, 'id'))])
+
+
     def _serializer(self, fields, attributes, links, meta, data=False):
 
         data = data if data else {'id': getattr(self, 'id'), 'type': getattr(self, 'type')}

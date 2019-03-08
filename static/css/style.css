@@ -82,6 +82,10 @@ button.toggle-config-button {
     font-size: smaller;
 }
 
+div.result-details li {
+    color: var(--main-font-color);
+    text-shadow: none;
+}
 
 /* FontAwesome icons ******************/
 
@@ -277,7 +281,9 @@ div.alert div.button-container span {
     cursor: pointer
 }
 
-
+div.message-container {
+    white-space: pre-wrap;
+}
 /* Adhoc dialog **********************/
 
 .module-arguments-container {height: 280px; overflow-x: hidden;}
@@ -369,12 +375,16 @@ table.dataTable {
 }
 
 table.dataTable thead th,
-table.dataTable tbody td  {
+table.dataTable tbody {
+    color: var(--main-font-color);
+}
+
+table.dataTable thead th,
+table.dataTable tbody td{
     border: none;
     padding-top: 6px;
     padding-bottom: 6px;
     line-height: 23px;
-    color: var(--main-font-color);
 }
 
 table.dataTable tbody td {

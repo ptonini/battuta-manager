@@ -77,7 +77,7 @@ AdHocTask.prototype.selector = function ($container) {
         }
     };
 
-    let table = new SelectorTable(self);
+    let table = new DynamicTable(self);
 
     $container.append(table.element);
 

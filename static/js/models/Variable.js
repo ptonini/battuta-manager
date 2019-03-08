@@ -122,7 +122,7 @@ Variable.prototype.selector = function ($container) {
 
             let $btnGroup = $container.find('.dt-buttons');
 
-            SelectorTable.prototype.defaultOptions.drawCallback(settings);
+            DynamicTable.prototype.defaultOptions.drawCallback(settings);
 
             $container.find('.dataTables_wrapper').prepend($btnGroup.children());
 
@@ -227,7 +227,7 @@ Variable.prototype.selector = function ($container) {
 
     Templates.load(self.templates).then(() => {
 
-        let table = new SelectorTable(self);
+        let table = new DynamicTable(self);
 
         $container.html(table.element);
 

@@ -8,14 +8,11 @@ from itertools import chain
 
 from ansible.playbook import Playbook
 from ansible.playbook.play import Play as AnsiblePlay
+from ansible.errors import AnsibleParserError
 
 from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
-from django.core.exceptions import PermissionDenied
-from django.conf import settings
-from django.forms import model_to_dict
-from django.core.cache import cache
 
 from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
 from apps.runner.forms import AdHocTaskForm, AdHocJobForm, JobForm, PlaybookArgsForm
@@ -28,7 +25,6 @@ from main.extras.mixins import ApiViewMixin
 from apps.files.extras import PlaybookHandler
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
-#from apps.projects.extras import ProjectAuthorizer
 
 
 class PlaybookView(View, ApiViewMixin):
@@ -202,7 +198,7 @@ class JobView(View, ApiViewMixin):
 
         if job.permissions(request.user)['editable']:
 
-            inventory = AnsibleInventory()
+            inventory = AnsibleInventory(subset=request_attr.get('subset'))
 
             run_data = {
                 'job_type': request_attr.get('job_type'),
@@ -237,13 +233,19 @@ class JobView(View, ApiViewMixin):
 
             else:
 
-                run_data['become_pass'] = request_attr.get('become_pass') if 'become_pass' in request_attr else run_data.get('remote_pass')
+                run_data['become_pass'] = request_attr.get('become_pass', run_data.get('remote_pass'))
 
             if request_attr.get('job_type') == 'playbook':
 
                 playbook = PlaybookHandler(request_attr['name'], request.user)
 
-                pb = Playbook.load(playbook.absolute_path, variable_manager=run_data['var_manager'], loader=run_data['loader'])
+                try:
+
+                    pb = Playbook.load(playbook.absolute_path, variable_manager=run_data['var_manager'], loader=run_data['loader'])
+
+                except AnsibleParserError as e:
+
+                    return self._api_response({'errors': [{'title': e.message}]})
 
                 run_data['plays'] = pb.get_plays()
 
@@ -375,6 +377,49 @@ class JobView(View, ApiViewMixin):
                 queryset = Job.objects.filter(user=request.user)
 
             return self._api_response(JobTableHandler(request, queryset).build_response())
+
+
+class TaskView(View, ApiViewMixin):
+
+    def get(self, request, task_id):
+
+        task = get_object_or_404(Task, pk=task_id)
+
+        if task.play.job.permissions(request.user)['readable']:
+
+            fields = {'attributes': ['host', 'status', 'message']}
+
+            return self._api_response({'data': [r.serialize(fields, request.user) for r in task.result_set.all()]})
+
+        else:
+
+            return HttpResponseForbidden
+
+
+class ResultView(View, ApiViewMixin):
+
+    def get(self, request, result_id):
+
+        result = get_object_or_404(Result, pk=result_id)
+
+        if result.task.play.job.permissions(request.user)['readable']:
+
+            return self._api_response({'data': result.serialize(request.JSON.get('fields'), request.user)})
+
+        else:
+
+            return HttpResponseForbidden()
+
+
+
+
+
+
+
+
+
+
+
 
 
 # class JobView(View):

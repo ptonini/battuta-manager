@@ -166,8 +166,6 @@ Preferences.prototype.dialog = function () {
 
         }
 
-        $form.submit(() => modal.confirm());
-
         modal.open({width: 800})
 
     });

@@ -97,6 +97,8 @@ class Credential(models.Model, ModelSerializerMixin):
 
         prefs = get_preferences()
 
+        setattr(self, 'route', '/'.join([self.user.route, str(self.user.id), Credential.type]))
+
         attributes = {
             'user': self.user.id,
             'title': self.title,
@@ -111,7 +113,7 @@ class Credential(models.Model, ModelSerializerMixin):
             'ask_sudo_pass': self.ask_sudo_pass
         }
 
-        links = {'self': '/'.join([self.user.route, str(self.user.id), Credential.type, str(self.id)])}
+        links = {'self': self.link}
 
         meta = self.permissions(user)
 
@@ -119,13 +121,13 @@ class Credential(models.Model, ModelSerializerMixin):
 
     def permissions(self, user):
 
-        readable = user.has_perm('users.edit_users') or user.id == self.user.id,
+        readable = user.has_perm('users.edit_users') or user.id == self.user.id
 
         editable = readable
 
         deletable = all([
             self != self.user.default_cred,
-            user.has_perm('users.edit_users') or user.id == self.user.id,
+            user.has_perm('users.edit_users') or user.id == self.user.id
         ])
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
@@ -148,9 +150,9 @@ class LocalGroup(Group, ModelSerializerMixin):
         attributes = {'name': self.name, 'member_count': self.user_set.all().count()}
 
         links = {
-            'self': '/'.join([self.route, str(self.id)]),
-            LocalUser.type: '/'.join([self.route, str(self.id), LocalUser.type]),
-            'permissions': '/'.join([self.route, str(self.id), 'permissions'])
+            'self': self.link,
+            LocalUser.type: '/'.join([self.link, LocalUser.type]),
+            'permissions': '/'.join([self.link, 'permissions'])
         }
 
         meta = self.permissions(user)

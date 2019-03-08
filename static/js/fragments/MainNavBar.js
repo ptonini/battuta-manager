@@ -42,7 +42,7 @@ function MainNavBar() {
 
         e.preventDefault();
 
-        fetchJson('POST', 'logout', null, false).then(() => location.reload());
+        fetchJson('POST', 'logout', null, false).then(() =>  window.open('/', '_self'));
 
     })
 

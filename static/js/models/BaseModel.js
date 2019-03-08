@@ -313,7 +313,7 @@ BaseModel.prototype = {
 
             let $selector = Templates['entity-selector'];
 
-            let table = new SelectorTable(self);
+            let table = new DynamicTable(self);
 
             document.title = 'Battuta - ' + capitalize(self.label.collective);
 
@@ -388,7 +388,7 @@ BaseModel.prototype = {
 
         let header = (self.id ? 'Edit '  : 'Add ') + self.label.single;
 
-        let onConfirmation = function () {
+        let onConfirmation = function (modal) {
 
             if (!self.entityFormValidator || self.entityFormValidator($form)) {
 
@@ -408,13 +408,9 @@ BaseModel.prototype = {
 
         };
 
-        let modal = new ModalBox('confirmation', header, $form, onConfirmation);
-
         self.bindElement($form);
 
-        $form.submit(() => modal.confirm());
-
-        modal.open();
+        new ModalBox('confirmation', header, $form, onConfirmation).open();
 
     },
 

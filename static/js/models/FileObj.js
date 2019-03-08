@@ -42,8 +42,6 @@ FileObj.prototype.upload = function () {
 
     self.bindElement($form);
 
-    $form.submit(() => modal.confirm());
-
     modal.open();
 
     $input
@@ -116,6 +114,12 @@ FileObj.prototype.contentEditor = function () {
         xml: 'xml'
     };
 
+    let $form = Templates['file-editor-form'];
+
+    let $selector = $form.find('select.mode-selector');
+
+    let textEditor = ace.edit($form.find('div.editor-container')[0]);
+
     let matchExtension = (filename) => {
 
         let fileNameArray = filename.toLowerCase().split('.');
@@ -125,6 +129,26 @@ FileObj.prototype.contentEditor = function () {
         if (fileExtension === 'j2') fileExtension = fileNameArray[fileNameArray.length - 2];
 
         return extensions.hasOwnProperty(fileExtension) ? extensions[fileExtension] : false
+
+    };
+
+    let onConfirmation = (modal) => {
+
+        self.set('new_name', $form.find('input.filename-input').val());
+
+        if (self.get('new_name')) {
+
+            self.set('content', textEditor.getValue());
+
+            self.update(false).then(() => {
+
+                modal.close();
+
+                $(mainContainer).trigger('reload')
+
+            });
+
+        } else AlertBox.status('warning', 'Please enter a filename');
 
     };
 
@@ -145,34 +169,6 @@ FileObj.prototype.contentEditor = function () {
     else if (self.get('mime_type') === 'text/yaml') aceMode = 'yaml';
 
     else if (self.get('mime_type') === 'text/x-python') aceMode = 'python';
-
-    let $form = Templates['file-editor-form'];
-
-    let $selector = $form.find('select.mode-selector');
-
-    let onConfirmation = () => {
-
-        self.set('new_name', $form.find('input.filename-input').val());
-
-        if (self.get('new_name')) {
-
-            self.set('content', textEditor.getValue());
-
-            self.update(false).then(() => {
-
-                modal.close();
-
-                $(mainContainer).trigger('reload')
-
-            });
-
-        } else AlertBox.status('warning', 'Please enter a filename');
-
-    };
-
-    let modal = new ModalBox('confirmation', false, $form, onConfirmation);
-
-    let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
     $.each(modes, (index, mode) => $selector.append($('<option>').attr('value', mode.name).html(mode.label)));
 
@@ -201,9 +197,7 @@ FileObj.prototype.contentEditor = function () {
 
     $form.find('input.filename-input').val(self.get('name'));
 
-    $form.submit(() => modal.confirm());
-
-    modal.open({width: 900, closeOnEscape: false});
+    new ModalBox('confirmation', false, $form, onConfirmation).open({width: 900, closeOnEscape: false});
 
     textEditor.focus();
 
@@ -250,7 +244,7 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     let $form = Templates[actions[action].template];
 
-    let onConfirmation = () => {
+    let onConfirmation = (modal) => {
 
         let newName = $form.find('input.filename-input').val();
 
@@ -279,8 +273,6 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
         self.set('type', $(this).hasClass('checked-button') ? 'folder' : 'file');
 
     });
-
-    $form.submit(() => modal.confirm());
 
     self.bindElement($form);
 
@@ -392,7 +384,7 @@ FileObj.prototype.selector = function () {
         }
     };
 
-    let table = new SelectorTable(self);
+    let table = new DynamicTable(self);
 
     Templates.load(self.templates).then(() => {
 

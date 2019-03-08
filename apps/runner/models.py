@@ -142,11 +142,6 @@ class Job(models.Model, ModelSerializerMixin):
 
     statistics = models.TextField(max_length=4096, blank=True, null=True)
 
-    @property
-    def link(self):
-
-        return '/'.join([self.route, str(self.id)])
-
     def serialize(self, fields, user):
 
         attributes = {
@@ -155,7 +150,7 @@ class Job(models.Model, ModelSerializerMixin):
             'subset': self.subset,
             'parameters': json.loads(self.parameters),
             'check': self.check,
-            'user': self.user.id,
+            'user': self.user.username,
             'cred': self.cred.id,
             'created': self.created.strftime(get_preferences()['date_format']),
             'pid': self.pid,
@@ -169,6 +164,8 @@ class Job(models.Model, ModelSerializerMixin):
         meta = self.permissions(user)
 
         data = self._serializer(fields, attributes, links, meta)
+
+        data['relationships'] = {'plays': [p.serialize(None, user) for p in self.play_set.all()]}
 
         return data
 
@@ -188,6 +185,8 @@ class Job(models.Model, ModelSerializerMixin):
 
 class Play(models.Model, ModelSerializerMixin):
 
+    type = 'plays'
+
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=128)
@@ -200,8 +199,29 @@ class Play(models.Model, ModelSerializerMixin):
 
     message = models.CharField(max_length=1024, blank=True, null=True)
 
+    def serialize(self, fields, user):
+
+        attributes = {
+            'job': self.job.id,
+            'name': self.name,
+            'hosts': self.hosts,
+            'become': self.become,
+            'gather_facts': self.gather_facts,
+            'message': self.message
+        }
+
+        data = self._serializer(fields, attributes, {}, {})
+
+        data['relationships'] = {'tasks': [t.serialize(None, user) for t in self.task_set.all()]}
+
+        return data
+
 
 class Task(models.Model, ModelSerializerMixin):
+
+    type = 'tasks'
+
+    route = '/runner/tasks'
 
     play = models.ForeignKey(Play, on_delete=models.CASCADE)
 
@@ -213,8 +233,28 @@ class Task(models.Model, ModelSerializerMixin):
 
     is_running = models.BooleanField(default=False)
 
+    def serialize(self, fields, user):
+
+        attributes = {
+            'play': self.play.id,
+            'name': self.name,
+            'module': self.module,
+            'is_handler': self.is_handler,
+            'is_running': self.is_running,
+        }
+
+        links = {'self': self.link, 'results': '/'.join([self.link, 'results'])}
+
+        data = self._serializer(fields, attributes, links, {})
+
+        return data
+
 
 class Result(models.Model, ModelSerializerMixin):
+
+    type = 'results'
+
+    route = '/runner/results'
 
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
@@ -226,4 +266,18 @@ class Result(models.Model, ModelSerializerMixin):
 
     response = models.TextField(max_length=65536, default='{}')
 
+    def serialize(self, fields, user):
 
+        attributes = {
+            'task': self.task.id,
+            'host': self.host,
+            'status': self.status,
+            'message': self.message,
+            'response': self.response,
+        }
+
+        links = {'self': self.link}
+
+        data = self._serializer(fields, attributes, links, {})
+
+        return data

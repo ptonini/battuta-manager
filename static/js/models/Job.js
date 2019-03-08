@@ -94,15 +94,13 @@ Job.prototype.run = function (become, cred, sameWindow) {
 
             let $form = Templates['password-form'];
 
-            let onConfirmation = () => {
+            let onConfirmation = (modal) => {
 
                 modal.close();
 
                 post()
 
             };
-
-            let modal = new ModalBox('confirmation', false, $form, onConfirmation);
 
             self.bindElement($form);
 
@@ -116,9 +114,7 @@ Job.prototype.run = function (become, cred, sameWindow) {
 
             askSudoPass || $form.find('div.sudo-pass-group').hide();
 
-            $form.submit(() => modal.confirm());
-
-            modal.open({width: '360'})
+            new ModalBox('confirmation', false, $form, onConfirmation).open({width: '360'})
 
         } else post();
 
@@ -150,15 +146,13 @@ Job.prototype.statistics = function (modal) {
 
     if (modal) {
 
-        let modal = new ModalBox('notification','Statistics', $table);
-
         tableOptions.scrollY = '360px';
 
         tableOptions.scrollCollapse = true;
 
         $table.DataTable(tableOptions);
 
-        modal.open({width: 700});
+        new ModalBox('notification','Statistics', $table).open({width: 700});
 
     } else {
 
@@ -185,7 +179,7 @@ Job.prototype.viewer = function () {
 
         return self.read()
 
-    }).then(() => {
+    }).then(result => {
 
         document.title = 'Battuta - ' + self.name;
 
@@ -284,61 +278,60 @@ Job.prototype.viewer = function () {
 
         };
 
-        let buildResults = () => {
+        let buildResults = (plays) => {
 
             self.job_type === 'task' && $('.playbook-only').remove();
 
-            $.each(self['plays'], (index, play) => {
+            $.each(plays, (index, play) => {
+
+                let play_attr = play['attributes'];
 
                 if (!playContainers.hasOwnProperty(play.id)) {
 
                     playContainers[play.id] = $playContainerTemplate.clone();
 
-                    playContainers[play.id].find('h4').html(play.name);
+                    playContainers[play.id].find('h4').html(play_attr.name);
 
-                    playContainers[play.id].find('#host_field').html(play.hosts ? play.hosts : '&nbsp;');
+                    playContainers[play.id].find('#host_field').html(play_attr.hosts ? play_attr.hosts : '&nbsp;');
 
-                    playContainers[play.id].find('#become_field').html(play.become.toString());
+                    playContainers[play.id].find('#become_field').html(play_attr.become.toString());
 
                     $resultContainer.append(playContainers[play.id]);
 
-                    play.message && $resultContainer.append(Templates['job-error-box'].html(play.message));
+                    play_attr.message && $resultContainer.append(Templates['job-error-box'].html(play_attr.message));
 
                 }
 
-                $.each(play.tasks, (index, task) => {
+                $.each(play['relationships']['tasks'], (index, task) => {
 
                     if (!taskContainers.hasOwnProperty(task.id)) {
 
                         taskContainers[task.id] = $taskTableTemplate.clone();
 
-                        taskContainers[task.id].find('strong').html(task.name);
+                        taskContainers[task.id].find('strong').html(task.attributes.name);
 
                         playContainers[play.id].append(taskContainers[task.id]);
 
                         let $taskTable = taskContainers[task.id].find('table');
 
-                        if (task.module !== 'include' || task['host_count'] > 0) {
+                        if (task.attributes.module !== 'include' || task['host_count'] > 0) {
 
                             $taskTable.DataTable({
                                 paginate: false,
                                 searching: false,
                                 dom: "<'row'<'col-12'tr>>",
                                 info: false,
-                                ajax: {
-                                    url: self['apiPath'] + 'get_task/?id=' + self.id + '&task_id=' + task.id,
-                                    dataSrc: 'results'
-                                },
+                                ajax: {url: task.links.results, dataSrc: 'data'},
                                 columns: [
-                                    {title: 'host', data: 'host'},
-                                    {title: 'status', data: 'status'},
-                                    {title: 'message', data: 'message'}
+                                    {title: 'host', data: 'attributes.host'},
+                                    {title: 'status', data: 'attributes.status'},
+                                    {title: 'message', data: 'attributes.message'}
                                 ],
                                 rowCallback: function (row, result) {
 
                                     let rowApi = this.DataTable().row(row);
 
-                                    $(row).addClass(self.taskStates[result.status]);
+                                    $(row).addClass(self.taskStates[result.attributes.status]);
 
                                     $(row).css('cursor', 'pointer').off().click(function () {
 
@@ -352,13 +345,11 @@ Job.prototype.viewer = function () {
 
                                             self.result = result;
 
-                                            self.getData('get_result', true, function (data) {
+                                            fetchJson('GET', result.links.self, {'fields': {'attributes': ['response']}}).then(response => {
 
-                                                let jsonContainer = $('<div>')
-                                                    .attr('class', 'well inset-container')
-                                                    .JSONView(data.result.response, {collapsed: true});
+                                                let $resultDetails = Templates['result-details'].JSONView(response.data.attributes.response, {collapsed: true});
 
-                                                rowApi.child(jsonContainer).show();
+                                                rowApi.child($resultDetails).show();
 
                                                 $(row).addClass('font-weight-bold').next().attr('class', 'child_row ')
 
@@ -411,7 +402,6 @@ Job.prototype.viewer = function () {
 
         };
 
-
         let isRunning = job => { return ['created', 'starting', 'running'].includes(job.status) };
 
         $(navBarContainer).html($navBar);
@@ -428,7 +418,7 @@ Job.prototype.viewer = function () {
 
         $navBar.find('[data-bind="status"]').addClass(self.stateColor());
 
-        buildResults();
+        buildResults(result['data']['relationships']['plays']);
 
         if (isRunning(self)) {
 
@@ -442,11 +432,11 @@ Job.prototype.viewer = function () {
 
             let intervalId = setInterval(function () {
 
-                self.read().then(()  => {
+                self.read(false).then(result  => {
 
                     $navBar.find('[data-bind="status"]').addClass(self.stateColor());
 
-                    buildResults();
+                    buildResults(result['data']['relationships']['plays']);
 
                     self['auto_scroll'] && $resultContainer.scrollTop($resultContainer[0].scrollHeight);
 

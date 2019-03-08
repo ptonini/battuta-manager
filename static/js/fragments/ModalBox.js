@@ -1,4 +1,4 @@
-function ModalBox (type, header, content, onConfirmation, onClose) {
+function ModalBox (type, header, $content, onConfirmation, onClose=false, bindForm=true) {
 
     let self = this;
 
@@ -24,7 +24,7 @@ function ModalBox (type, header, content, onConfirmation, onClose) {
 
     };
 
-    self.onConfirmation = () => onConfirmation && onConfirmation !== true && onConfirmation();
+    self.onConfirmation = () => onConfirmation && onConfirmation !== true && onConfirmation(self);
 
     if (header) {
 
@@ -32,7 +32,7 @@ function ModalBox (type, header, content, onConfirmation, onClose) {
 
     } else self.header.remove();
 
-    content && self.content.append(content);
+    $content && self.content.append($content);
 
     switch (type) {
 
@@ -48,6 +48,18 @@ function ModalBox (type, header, content, onConfirmation, onClose) {
                 self.cancelButton.click(self.onClose),
                 onConfirmation ? self.confirmButton.click(self.onConfirmation) : null
             );
+
+            if (bindForm && $content.is('form')) {
+
+                $content.submit(event => {
+
+                    event.preventDefault();
+
+                    self.confirmButton.click()
+
+                })
+
+            }
 
     }
 

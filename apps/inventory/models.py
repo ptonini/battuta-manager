@@ -80,9 +80,9 @@ class Node(models.Model, ModelSerializerMixin):
         attributes = {'name': self.name, 'description': self.description}
 
         links = {
-            'self': '/'.join([getattr(self, 'route'), str(self.id)]) ,
-            Variable.type: '/'.join([getattr(self, 'route'), str(self.id), Variable.type]),
-            'parents': '/'.join([getattr(self, 'route'), str(self.id), 'parents']),
+            'self': self.link ,
+            Variable.type: '/'.join([self.link, Variable.type]),
+            'parents': '/'.join([self.link, 'parents']),
         }
 
         meta = self.permissions(user)
@@ -202,8 +202,8 @@ class Group(Node):
         }
 
         links = {
-            'children': '/'.join([self.route, str(self.id), 'children']),
-            'members': '/'.join([self.route, str(self.id), 'members'])
+            'children': '/'.join([self.link, 'children']),
+            'members': '/'.join([self.link, 'members'])
         }
 
         meta = self.permissions(user)
@@ -244,29 +244,27 @@ class Variable(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {'key': self.key, 'value': self.value}
-
         if self.host:
 
-            host_id_str = str(getattr(self.host, 'id'))
+            parent_node = self.host
 
-            links = {
-                'self': '/'.join([Host.route, host_id_str, Variable.type, str(self.id)]),
-                'parent': '/'.join([Host.route, host_id_str])
-            }
-
-            attributes['host'] = host_id_str
+            node_key = 'host'
 
         else:
 
-            group_id_str = str(getattr(self.group, 'id'))
+            parent_node = self.group
 
-            links = {
-                'self': '/'.join([Group.route, group_id_str, Variable.type, str(self.id)]),
-                'parent': '/'.join([Group.route, group_id_str])
-            }
+            node_key = 'group'
 
-            attributes['group'] = group_id_str
+        node_route = getattr(parent_node, 'route')
+
+        node_id_str = str(getattr(parent_node, 'id'))
+
+        setattr(self, 'route', '/'.join([node_route, node_id_str, Variable.type]))
+
+        attributes = {'key': self.key, 'value': self.value, node_key: node_id_str}
+
+        links = {'self': self.link, 'parent': '/'.join([node_route, node_id_str])}
 
         meta = self.permissions(user)
 

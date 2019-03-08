@@ -10,28 +10,32 @@ from django.conf import settings
 
 from apps.runner.extras.callbacks import BattutaCallback
 
-AnsibleOptions = namedtuple('Options', ['connection',
-                                        'module_path',
-                                        'forks',
-                                        'become',
-                                        'become_method',
-                                        'become_user',
-                                        'check',
-                                        'diff',
-                                        'remote_user',
-                                        'private_key_file',
-                                        'tags',
-                                        'skip_tags',
-                                        'extra_vars',
-                                        ])
+
+AnsibleOptions = namedtuple('Options', [
+    'connection',
+    'module_path',
+    'forks',
+    'become',
+    'become_method',
+    'become_user',
+    'check',
+    'diff',
+    'remote_user',
+    'private_key_file',
+    'tags',
+    'skip_tags',
+    'extra_vars'
+])
 
 
 def run_job(job):
 
-    db_conn = pymysql.connect(settings.DATABASES['default']['HOST'],
-                              settings.DATABASES['default']['USER'],
-                              settings.DATABASES['default']['PASSWORD'],
-                              settings.DATABASES['default']['NAME'])
+    db_conn = pymysql.connect(
+        settings.DATABASES['default']['HOST'],
+        settings.DATABASES['default']['USER'],
+        settings.DATABASES['default']['PASSWORD'],
+        settings.DATABASES['default']['NAME']
+    )
     db_conn.autocommit(True)
 
     with db_conn as cursor:
@@ -43,8 +47,6 @@ def run_job(job):
     status = None
 
     job.data['show_skipped'] = job.data.get('show_skipped', getattr(c, 'DISPLAY_SKIPPED_HOSTS'))
-
-    job.data['extra_vars'] = job.data['extra_vars'].split(' ') if job.data.get('extra_vars', False) else []
 
     if 'check' not in job.data or job.data['check'] == 'false':
 
@@ -63,19 +65,29 @@ def run_job(job):
         forks=job.data.get('forks', getattr(c, 'DEFAULT_FORKS')),
         become=job.data.get('become', getattr(c, 'DEFAULT_BECOME')),
         become_method=job.data.get('become_method', getattr(c, 'DEFAULT_BECOME_METHOD')),
-        become_user=job.data['become_user'] if job.data['become_user'] else getattr(c, 'DEFAULT_BECOME_USER'),
+        become_user=job.data['become_user'] if job.data.get('become_user') else getattr(c, 'DEFAULT_BECOME_USER'),
         check=job.data['check'],
         diff=False,
         remote_user=job.data['remote_user'],
         private_key_file=job.data.get('rsa_file', ''),
-        tags=job.data.get('tags', ''),
-        skip_tags=job.data.get('skip_tags', ''),
-        extra_vars=job.data['extra_vars']
+        tags=job.data['tags'].split(' ') if job.data.get('tags') else list(),
+        skip_tags=job.data['skip_tags'].split() if job.data.get('skip_tags') else list(),
+        extra_vars=job.data['extra_vars'].split() if job.data.get('extra_vars') else list()
     )
 
     job.data['var_manager'].extra_vars = load_extra_vars(loader=job.data['loader'], options=options)
 
     passwords = {'conn_pass': job.data['remote_pass'], 'become_pass': job.data['become_pass']}
+
+    tqm = TaskQueueManager(
+        inventory=job.data['inventory'],
+        variable_manager=job.data['var_manager'],
+        passwords=passwords,
+        loader=job.data['loader'],
+        stdout_callback=BattutaCallback(job, db_conn),
+        options=options
+    )
+
 
     for play in job.data['plays']:
 
@@ -83,12 +95,7 @@ def run_job(job):
 
         try:
 
-            tqm = TaskQueueManager(inventory=job.data['inventory'],
-                                   variable_manager=job.data['var_manager'],
-                                   passwords=passwords,
-                                   loader=job.data['loader'],
-                                   stdout_callback=BattutaCallback(job, db_conn),
-                                   options=options)
+
 
             tqm.run(play)
 

@@ -58,7 +58,7 @@ Node.prototype.selector = function () {
 
     self.selectorTableOptions.buttons = function () {
 
-        let btns = SelectorTable.prototype.defaultOptions.buttons(self);
+        let btns = DynamicTable.prototype.defaultOptions.buttons(self);
 
         btns[0].action = addNode;
 
@@ -72,7 +72,7 @@ Node.prototype.selector = function () {
 
         let $grid = $selector.find('#node_grid');
 
-        let table = new SelectorTable(self);
+        let table = new DynamicTable(self);
 
         self.bindElement($selector);
 

@@ -69,7 +69,7 @@ function InventoryManager() {
 
                 let $form = Templates['sftp-user-form'];
 
-                let onConfirmation = () => {
+                let onConfirmation = (modal) => {
 
                     let sftpUSer = $form.find('input.sftp-user-input').val();
 
@@ -85,11 +85,7 @@ function InventoryManager() {
 
                 };
 
-                let modal = new ModalBox('confirmation', false, $form, onConfirmation);
-
-                $form.submit(() => modal.confirm());
-
-                modal.open();
+                new ModalBox('confirmation', false, $form, onConfirmation).open();
 
             } else window.open(Entities.manage.href + '?format=' + format, '_self');
 
