@@ -39,7 +39,7 @@ SelectorTable.prototype = {
                 className: 'btn-sm btn-icon',
                 action: function () {
 
-                    new Entities[obj.type].model({links: {self: Entities[obj.type].href}}).editor(function () {
+                    new Entities[obj.type].Model({links: {self: Entities[obj.type].href}}).editor(function () {
 
                         $(mainContainer).trigger('reload')
 
@@ -57,7 +57,7 @@ SelectorTable.prototype = {
             if (data.meta.deletable) $(row).find('td:last').empty().append(
                 new TableButton('fas fa-trash', 'Delete', function () {
 
-                    new Entities[data.type].model(data).delete(false, () => $(mainContainer).trigger('reload'))
+                    new Entities[data.type].Model(data).delete(false, () => $(mainContainer).trigger('reload'))
 
                 })
             );

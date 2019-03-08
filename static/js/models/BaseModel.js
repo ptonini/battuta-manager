@@ -103,7 +103,7 @@ BaseModel.prototype = {
 
         let self = this;
 
-        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['model', key, value]);
+        if (typeof value !== 'object') for (let bindId in self.bindings) self.pubSub.trigger(bindId + ':change', ['Model', key, value]);
 
         else for (let k in value) self._updateDOM(key + '.' + k, value[k])
 

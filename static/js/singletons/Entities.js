@@ -1,83 +1,83 @@
 const Entities = {
     main: {
-        model: null,
+        Model: null,
         href: '/main',
         regex: /^main$/,
         action: () => $(mainContainer).off().empty()
     },
     search: {
-        model: null,
+        Model: null,
         href: '/search',
         regex: /^search\/?([-_a-zA-Z0-9]+)?/,
         action: param => new Search(param[0])
     },
     manage: {
-        model: null,
+        Model: null,
         href: '/inventory/manage',
         regex: /^inventory\/manage$/,
         action: () => new InventoryManager()
     },
     hosts: {
-        model: Host,
+        Model: Host,
         href: '/inventory/hosts',
         regex: /^inventory\/hosts\/?([0-9]+)?$/,
         action: param => param[0] ? new Host({id: param[0], links: {self: param.input}}).viewer() : new Host().selector()
     },
     groups: {
-        model: Group,
+        Model: Group,
         href: '/inventory/groups',
         regex: /^inventory\/groups\/?([0-9]+)?$/,
         action: param => param[0] ? new Group({id: param[0], links: {self: param.input}}).viewer() : new Group().selector()
     },
     users: {
-        model: User,
+        Model: User,
         href: '/iam/users',
         regex: /^iam\/users\/?([0-9]+)?$/,
         action: param => param[0] ? new User({id: param[0], links: {self: param.input}}).viewer() : new User().selector()
     },
     usergroups: {
-        model: UserGroup,
+        Model: UserGroup,
         href: '/iam/usergroups',
         regex: /^iam\/usergroups\/?([0-9]+)?$/,
         action: param => param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).viewer() : new UserGroup().selector()
     },
     projects: {
-        model: Project,
+        Model: Project,
         href: '/projects/',
         regex: /^projects\/?([0-9]+)?$/,
         action: param => param[0] ? new Project({id: param[0], links: {self: param.input}}).viewer() : new Project().selector()
     },
     repository: {
-        model: FileObj,
+        Model: FileObj,
         href: '/files/repository',
         search:'/files/search',
         regex: /^files\/repository\/?[\s\S]*$/,
         action: param => new FileObj({links: {self: param.input}}).selector()
     },
     playbooks: {
-        model: Playbook,
+        Model: Playbook,
         href: '/files/playbooks',
         regex: /^files\/playbooks\/?[\s\S]*$/,
         action: param => new Playbook({links: {self: param.input}}).selector()
     },
     roles: {
-        model: Role,
+        Model: Role,
         href: '/files/roles',
         regex: /^files\/roles\/?[\s\S]*$/,
         action: param => new Role({links: {self: param.input}}).selector()
     },
     runner: {
-        model: null,
+        Model: null,
         href: '/runner/runner',
         regex: /^runner\/runner$/,
         action: () => new Runner()
     },
     adhoctasks: {
-        model: AdHocTask,
+        Model: AdHocTask,
         href:'/runner/adhoctasks',
     },
     jobs: {
-        model: Job,
+        Model: Job,
         href: '/runner/jobs',
         regex: /^runner\/jobs\/?([0-9]+)?$/,
         action: param => param[0] ? new Job({id: param[0], links: {self: param.input}}).viewer() : new Job().selector()

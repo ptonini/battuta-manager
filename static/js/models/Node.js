@@ -50,7 +50,7 @@ Node.prototype.selector = function () {
 
     let route = Entities[self.type].href;
 
-    let addNode = () => new Entities[self.type].model({links: {self: route}}).editor(function () {
+    let addNode = () => new Entities[self.type].Model({links: {self: route}}).editor(function () {
 
         $(mainContainer).trigger('reload')
 
