@@ -30,56 +30,11 @@ function BaseModel (param) {
 
     }
 
-    return self;
-
 }
 
 BaseModel.prototype = {
 
     // Properties methods *************
-
-    get: function(key) {
-
-        let value = this;
-
-        let keyArray = key.split('.');
-
-        for (let i = 0; i < keyArray.length; ++i) {
-
-            if (value && typeof value === 'object' && keyArray[i] in value) value = value[keyArray[i]];
-
-            else return
-
-        }
-
-        return value
-
-    },
-
-    serialize: function () {
-
-        let self = this;
-
-        let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts', 'label'];
-
-        let data = {id: self.id, type: self.type, attributes: {}};
-
-        for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && self[p] != null) {
-
-            if (typeof self[p] === 'object' ) {
-
-                data.attributes[p] = BaseModel.prototype.isPrototypeOf(self[p]) ?  self[p].serialize() : JSON.stringify(self[p]);
-
-            } else data.attributes[p] = self[p]
-
-        }
-
-        return data
-
-    },
-
-
-    // Data binding ****************
 
     _setValue: function (keyArray, value, obj) {
 
@@ -118,6 +73,46 @@ BaseModel.prototype = {
         self._updateDOM(key, value);
 
         return self;
+
+    },
+
+    get: function(key) {
+
+        let value = this;
+
+        let keyArray = key.split('.');
+
+        for (let i = 0; i < keyArray.length; ++i) {
+
+            if (value && typeof value === 'object' && keyArray[i] in value) value = value[keyArray[i]];
+
+            else return
+
+        }
+
+        return value
+
+    },
+
+    serialize: function () {
+
+        let self = this;
+
+        let exclude = ['id', 'type', 'pubSub', 'bindings', 'links', 'meta', 'facts', 'label'];
+
+        let data = {id: self.id, type: self.type, attributes: {}};
+
+        for (let p in self) if (self.hasOwnProperty(p) && !exclude.includes(p) && self[p] != null) {
+
+            if (typeof self[p] === 'object' ) {
+
+                data.attributes[p] = BaseModel.prototype.isPrototypeOf(self[p]) ?  self[p].serialize() : JSON.stringify(self[p]);
+
+            } else data.attributes[p] = self[p]
+
+        }
+
+        return data
 
     },
 
@@ -243,7 +238,7 @@ BaseModel.prototype = {
     },
 
 
-    // Resource CRUD helpers ***********
+    // CRUD helpers ***********
 
     create: function (blocking, param={}) {
 
@@ -306,6 +301,7 @@ BaseModel.prototype = {
         })
 
     },
+
 
     // Views **************************
 
@@ -380,6 +376,9 @@ BaseModel.prototype = {
         });
 
      },
+
+
+    // Fragments
 
     editor: function (action) {
 
