@@ -177,13 +177,19 @@ class Group(Node):
 
         group_dict = dict()
 
-        if self.members.all().exists():
+        if self.members.all().exists() or self.name == 'all':
 
-            group_dict['hosts'] = [host.name for host in self.members.all()]
+            queryset = Host.objects.all() if self.name == 'all' else self.members.all()
 
-        if self.children.all().exists():
+            group_dict['hosts'] = [h.name for h in queryset]
 
-            group_dict['children'] = [child.name for child in self.children.all()]
+        if self.children.all().exists() or self.name == 'all':
+
+            queryset = Group.objects.all() if self.name == 'all' else self.children.all()
+
+            group_dict['children'] = [g.name for g in queryset]
+
+            group_dict['children'].append('ungrouped') if self.name == 'all' else None
 
         if self.variable_set.all().exists():
 

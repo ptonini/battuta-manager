@@ -43,9 +43,7 @@ Host.prototype.selectorTableOptions = {
             {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
         ];
 
-    },
-    ajax: Node.prototype.selectorTableOptions.ajax,
-    offset: Node.prototype.selectorTableOptions.offset,
+    }
 };
 
 Host.prototype.info = function ($container) {

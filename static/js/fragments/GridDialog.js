@@ -21,17 +21,13 @@ function GridDialog (options) {
                 .html(data.attributes[options.itemValueKey])
                 .addClass('pointer truncate');
 
-            if (options.type === 'one') $gridItem.click(function () {
-
-                options.action && options.action($(this).data(), modal)
-
-            });
+            if (options.type === 'one') $gridItem.click(() => options.action && options.action($gridItem.data(), modal))
 
         }
     });
 
     let onConfirmation = options.type === 'many' ? () => options.action($grid.DynaGrid('getSelected'), modal) : false;
 
-    new ModalBox('confirmation', false, $grid, null, onConfirmation).open({width: 700})
+    let modal = new ModalBox('confirmation', false, $grid, null, onConfirmation).open({width: 700})
 
 }

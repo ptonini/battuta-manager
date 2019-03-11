@@ -56,42 +56,42 @@ Project.prototype.tabs = {
     playbooks: {
         label: 'Playbooks',
         validator: function () { return true },
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'playbooks', 'playbooks', 'path'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'playbooks', 'playbooks', 'path').element)
     },
     roles: {
         label: 'Roles',
         validator: function () {return true},
-        generator: (self, $container)  => $container.html(RelationGrid.getGrid(self, 'roles', 'roles', 'path'))
+        generator: (self, $container)  => $container.html(new RelationGrid(self, 'roles', 'roles', 'path').element)
     },
     can_edit_variables: {
         label: 'Variable editors',
         validator: function () {return true},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'can_edit_variables', 'users', 'username'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'can_edit_variables', 'users', 'username').element)
     },
     can_run_tasks: {
         label: 'Task runners',
         validator: function () {return true},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'can_run_tasks', 'users', 'username'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'can_run_tasks', 'users', 'username').element)
     },
     can_edit_tasks: {
         label: 'Task editors',
         validator: function () {return true},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'can_edit_tasks', 'users', 'username'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'can_edit_tasks', 'users', 'username').element)
     },
     can_run_playbooks: {
         label: 'Playbook runners',
         validator: function () {return true},
-        generator: (self, $container)  => $container.html(RelationGrid.getGrid(self, 'can_run_playbooks', 'users', 'username'))
+        generator: (self, $container)  => $container.html(new RelationGrid(self, 'can_run_playbooks', 'users', 'username').element)
     },
     can_edit_playbooks: {
         label: 'Playbook editors',
         validator: function () {return true},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'can_edit_playbooks', 'users', 'username'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'can_edit_playbooks', 'users', 'username').element)
     },
     can_edit_roles: {
         label: 'Role editors',
         validator: function () {return true},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'can_edit_roles', 'users', 'username'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'can_edit_roles', 'users', 'username').element)
     },
 };
 

@@ -246,60 +246,18 @@ DEFAULT_PREFERENCES = [
         ]
     },
     {
-        'name': 'Window offset',
+        'name': 'Canvas margins',
         'description': '',
         'items': [
             {
-                'name': 'node_table_offset',
-                'value': 348,
+                'name': 'outer_canvas_margin',
+                'value': 25,
                 'data_type': 'number',
                 'description': '',
             },
             {
-                'name': 'node_grid_offset',
-                'value': 299,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'file_table_offset',
-                'value': 316,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'job_result_offset',
-                'value': 180,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'job_table_offset',
-                'value': 268,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'entity_table_offset',
-                'value': 260,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'tab_table_offset',
-                'value': 310,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'tab_grid_offset',
-                'value': 261,
-                'data_type': 'number',
-                'description': '',
-            },
-            {
-                'name': 'search_box_offset',
-                'value': 147,
+                'name': 'inner_canvas_margin',
+                'value': 20,
                 'data_type': 'number',
                 'description': '',
             },

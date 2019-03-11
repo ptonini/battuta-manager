@@ -36,7 +36,8 @@
     "Assistant": "https://google-fonts.azurewebsites.net/googleFonts/Assistant?family=Assistant",
     "Kanit": "https://google-fonts.azurewebsites.net/googleFonts/Kanit?family=Kanit",
     "popper.js": "^1.14.4",
-    "yaml.js": "^0.3.0"
+    "yaml.js": "^0.3.0",
+    "jquery.actual": "https://github.com/dreamerslab/jquery.actual.git#^1.0.19"
   },
   "resolutions": {
     "jquery": "^3.3.1"

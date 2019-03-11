@@ -359,6 +359,12 @@
 
                     break;
 
+                case 'resize':
+
+                    opts.onResize($gridContainer, arguments[1]);
+
+                    break;
+
                 default:
 
                     throw '- invalid option';
@@ -375,6 +381,7 @@
         loadCallback: function($gridContainer) {},
         formatItem: function($gridContainer, gridItem) {},
         addButtonAction: function(gridContainer, addButton) {},
+        onResize: function() {},
         headerTag: '<h5>',
         gridTitle: null,
         showCount: false,

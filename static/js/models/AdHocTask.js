@@ -1,8 +1,4 @@
-function AdHocTask (param) {
-
-    BaseModel.call(this, param);
-
-}
+function AdHocTask (param) { BaseModel.call(this, param) }
 
 AdHocTask.prototype = Object.create(BaseModel.prototype);
 
@@ -50,7 +46,6 @@ AdHocTask.prototype.selector = function ($container) {
     let self = this;
 
     self.selectorTableOptions = {
-        offset: 'tab_table_offset',
         columns: () => { return [
             {title: 'name', data: 'attributes.name', width: '20%'},
             {title: 'hosts', data: 'attributes.hosts', width: '15%'},
@@ -77,7 +72,7 @@ AdHocTask.prototype.selector = function ($container) {
         }
     };
 
-    let table = new DynamicTable(self);
+    let table = new EntityTable(self);
 
     $container.append(table.element);
 
@@ -108,7 +103,6 @@ AdHocTask.prototype.editor = function () {
             let job = new Job({
                 attributes: {
                     name: self.name,
-                    type: Job.prototype.type,
                     job_type: 'task',
                     subset: self.hosts,
                     check: self.check,

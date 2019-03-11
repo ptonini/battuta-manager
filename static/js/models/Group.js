@@ -29,9 +29,7 @@ Group.prototype.selectorTableOptions = {
         {title: 'Children', data: 'attributes.children'},
         {title: 'Variables', data: 'attributes.variables'},
         {title: '', defaultContent: '', class: 'float-right',  orderable: false}
-    ]},
-    ajax: Node.prototype.selectorTableOptions.ajax,
-    offset: Node.prototype.selectorTableOptions.offset,
+    ]}
 };
 
 Group.prototype.info = function ($container) {
@@ -54,12 +52,12 @@ Group.prototype.tabs = Object.assign({}, Node.prototype.tabs, {
     children: {
         label: 'Children',
         validator: self => {return (self.name !== 'all')},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'children', self.label.collective, 'name'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'children', self.label.collective, 'name').element)
     },
     members: {
         label: 'Members',
         validator: self => {return (self.name !== 'all')},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'members', self.label.collective, 'name'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'members', self.label.collective, 'name').element)
     },
 });
 

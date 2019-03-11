@@ -24,7 +24,6 @@ urlpatterns = [
 
     path(Result.type + '/<int:result_id>', login_required(ResultView.as_view())),
 
-
     # url(r'^$', login_required(views.PageView.as_view()), kwargs={'page': 'runner'}),
     #
     # url(r'^job/$', login_required(views.PageView.as_view()), kwargs={'page': 'selector'}),

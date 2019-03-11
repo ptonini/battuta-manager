@@ -301,7 +301,7 @@ FileObj.prototype.selector = function () {
     let pathArrayViewableIndex = 3;
 
     self.selectorTableOptions = {
-        offset: 'file_table_offset',
+        offset: 0,
         ajax: false,
         columns: function () { return [
             {title: 'name', data: 'attributes.name', width: '45%'},
@@ -384,9 +384,9 @@ FileObj.prototype.selector = function () {
         }
     };
 
-    let table = new DynamicTable(self);
+    let table = new EntityTable(self);
 
-    Templates.load(self.templates).then(() => {
+    return Templates.load(self.templates).then(() => {
 
         let $selector = Templates['file-selector'];
 

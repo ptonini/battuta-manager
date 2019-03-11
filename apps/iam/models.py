@@ -97,7 +97,7 @@ class Credential(models.Model, ModelSerializerMixin):
 
         prefs = get_preferences()
 
-        setattr(self, 'route', '/'.join([self.user.route, str(self.user.id), Credential.type]))
+        setattr(self, 'route', '/'.join([self.user.route, str(self.user.id), self.type]))
 
         attributes = {
             'user': self.user.id,

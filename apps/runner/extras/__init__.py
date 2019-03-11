@@ -44,29 +44,19 @@ def run_job(job):
 
     message = None
 
-    status = None
-
     job.data['show_skipped'] = job.data.get('show_skipped', getattr(c, 'DISPLAY_SKIPPED_HOSTS'))
 
-    if 'check' not in job.data or job.data['check'] == 'false':
-
-        job.data['check'] = False
-
-    elif job.data['check'] == 'true':
-
-        job.data['show_skipped'] = True
-
-        job.data['check'] = True
+    job.data['show_skipped'] = True if job.check else job.data['show_skipped']
 
     # Create ansible options tuple
     options = AnsibleOptions(
         connection=job.data.get('connection', 'paramiko'),
         module_path=job.data.get('module_path'),
-        forks=job.data.get('forks', getattr(c, 'DEFAULT_FORKS')),
+        forks=1, #job.data.get('forks', getattr(c, 'DEFAULT_FORKS')),
         become=job.data.get('become', getattr(c, 'DEFAULT_BECOME')),
         become_method=job.data.get('become_method', getattr(c, 'DEFAULT_BECOME_METHOD')),
         become_user=job.data['become_user'] if job.data.get('become_user') else getattr(c, 'DEFAULT_BECOME_USER'),
-        check=job.data['check'],
+        check=job.check,
         diff=False,
         remote_user=job.data['remote_user'],
         private_key_file=job.data.get('rsa_file', ''),
@@ -88,37 +78,29 @@ def run_job(job):
         options=options
     )
 
+    try:
 
-    for play in job.data['plays']:
-
-        tqm = None
-
-        try:
-
-
+        for play in job.data['plays']:
 
             tqm.run(play)
 
-        except Exception as e:
+    except Exception as e:
 
-            status = 'failed'
+        status = 'failed'
 
-            message = type(e).__name__ + ': ' + e.__str__()
+        message = type(e).__name__ + ': ' + e.__str__()
 
-            break
-
-        finally:
-
-            if tqm is not None:
-
-                tqm.cleanup()
-
-            shutil.rmtree(getattr(c, 'DEFAULT_LOCAL_TMP'), True)
-
-
-    if not status:
+    else:
 
         status = 'finished with errors' if job.data['has_exceptions'] else 'finished'
+
+    finally:
+
+        tqm.cleanup()
+
+        job.data['loader'].cleanup_all_tmp_files()
+
+        shutil.rmtree(getattr(c, 'DEFAULT_LOCAL_TMP'), True)
 
     try:
 

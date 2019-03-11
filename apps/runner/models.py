@@ -212,9 +212,13 @@ class Play(models.Model, ModelSerializerMixin):
 
         data = self._serializer(fields, attributes, {}, {})
 
-        data['relationships'] = {'tasks': [t.serialize(None, user) for t in self.task_set.all()]}
+        data['relationships'] = {'tasks': [t.serialize({'attributes': ['name'], 'meta': list()}, user) for t in self.task_set.all()]}
 
         return data
+
+    def permissions(self, user):
+
+        return self.job.permissions(user)
 
 
 class Task(models.Model, ModelSerializerMixin):
@@ -249,6 +253,9 @@ class Task(models.Model, ModelSerializerMixin):
 
         return data
 
+    def permissions(self, user):
+
+        return self.play.job.permissions(user)
 
 class Result(models.Model, ModelSerializerMixin):
 
@@ -281,3 +288,7 @@ class Result(models.Model, ModelSerializerMixin):
         data = self._serializer(fields, attributes, links, {})
 
         return data
+
+    def permissions(self, user):
+
+        return self.task.play.job.permissions(user)

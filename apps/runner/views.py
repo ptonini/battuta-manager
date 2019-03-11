@@ -198,7 +198,7 @@ class JobView(View, ApiViewMixin):
 
         if job.permissions(request.user)['editable']:
 
-            inventory = AnsibleInventory(subset=request_attr.get('subset'))
+            inventory = AnsibleInventory(subset=request_attr['subset'])
 
             run_data = {
                 'job_type': request_attr.get('job_type'),
@@ -336,9 +336,7 @@ class JobView(View, ApiViewMixin):
 
                         pass
 
-                    # data = {'status': 'failed', 'msg': e.__class__.__name__ + ': ' + e.message}
-
-                    return self._api_response({'errors': [{'title': e.message}]})
+                    return self._api_response({'errors': [{'title': getattr(e, 'message')}]})
 
                 else:
 
@@ -385,7 +383,7 @@ class TaskView(View, ApiViewMixin):
 
         task = get_object_or_404(Task, pk=task_id)
 
-        if task.play.job.permissions(request.user)['readable']:
+        if task.permissions(request.user)['readable']:
 
             fields = {'attributes': ['host', 'status', 'message']}
 
@@ -402,7 +400,7 @@ class ResultView(View, ApiViewMixin):
 
         result = get_object_or_404(Result, pk=result_id)
 
-        if result.task.play.job.permissions(request.user)['readable']:
+        if result.permissions(request.user)['readable']:
 
             return self._api_response({'data': result.serialize(request.JSON.get('fields'), request.user)})
 

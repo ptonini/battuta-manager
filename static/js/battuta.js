@@ -385,13 +385,46 @@ function popupCenter(url, title, w) {
 
 }
 
+function calculateHeight($element, offset=false) {
+
+    let canvasMargin = parseInt(sessionStorage.getItem('outer_canvas_margin'));
+
+    let innerCanvasMargin = parseInt(sessionStorage.getItem('inner_canvas_margin'));
+
+    offset = offset !== false ? offset + innerCanvasMargin : 0;
+
+    return window.innerHeight - ($element.offset()['top'] + offset + canvasMargin)
+
+}
+
+
+function setCanvasHeight ($container) {
+
+    $container.find('div.canvas').each(function () {
+
+        $(this).css('height', calculateHeight($(this)))
+
+    })
+
+}
+
 
 /// Events ////////////////////////////
 
-$(document.body).on('shown.bs.tab','a.nav-link', () => {
+$(document.body).on('shown.bs.tab','a.nav-link', function () {
 
-    addTitleToTruncatedElements();
+    $($(this).attr('href')).find('table.dataTable').each(function () {
 
-    $('table.dataTable').DataTable().columns.adjust().draw()
+        let $table = $(this);
+
+        $table.find('th').first().css('width') === '-32px' && $table.DataTable().columns.adjust().draw();
+
+        $table.data('resizeEntityTable') && $table.data('resizeEntityTable')();
+
+    });
+
+    $($(this).attr('href')).find('div.dynagrid-container').each(function () { $(this).DynaGrid('resize') })
 
 });
+
+$(window).resize(() => setCanvasHeight($(mainContainer)));

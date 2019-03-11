@@ -33,6 +33,6 @@ function Search(pattern) {
 
     });
 
-    return this;
+    setCanvasHeight($search)
 
 }

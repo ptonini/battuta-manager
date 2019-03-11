@@ -46,7 +46,6 @@ Variable.prototype.selector = function ($container) {
     let self = this;
 
     self.selectorTableOptions =  {
-        offset: 'tab_table_offset',
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
         columns: function () {
 
@@ -122,7 +121,7 @@ Variable.prototype.selector = function ($container) {
 
             let $btnGroup = $container.find('.dt-buttons');
 
-            DynamicTable.prototype.defaultOptions.drawCallback(settings);
+            EntityTable.prototype.defaultOptions.drawCallback(settings);
 
             $container.find('.dataTables_wrapper').prepend($btnGroup.children());
 
@@ -227,7 +226,7 @@ Variable.prototype.selector = function ($container) {
 
     Templates.load(self.templates).then(() => {
 
-        let table = new DynamicTable(self);
+        let table = new EntityTable(self);
 
         $container.html(table.element);
 

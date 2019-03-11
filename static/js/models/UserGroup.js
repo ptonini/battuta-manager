@@ -30,7 +30,7 @@ UserGroup.prototype.selectorTableOptions = {
     ]},
     rowCallback: function(row, data) {
 
-        DynamicTable.prototype.defaultOptions.rowCallback(row, data);
+        EntityTable.prototype.defaultOptions.rowCallback(row, data);
 
         if (data.meta['builtin']) $(row).attr('class', 'top-row')
 
@@ -43,12 +43,12 @@ UserGroup.prototype.tabs = {
     members: {
         label: 'Members',
         validator: function () {return true},
-        generator: (self, $container) => new RelationGrid(self, 'users', 'users', $container, 'username')
+        generator: (self, $container) => $container(new RelationGrid(self, 'users', 'users', 'username').element)
     },
     permissions: {
         label: 'Permissions',
         validator: function () {return true},
-        generator: (self, $container) => new RelationGrid(self, 'permissions', 'permissions',$container, 'name')
+        generator: (self, $container) => $container(new RelationGrid(self, 'permissions', 'permissions', 'name').element)
     }
 };
 

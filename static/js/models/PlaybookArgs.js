@@ -90,7 +90,7 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
             args.bindElement($form);
 
-            $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'subset'));
+            $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(args, 'subset'));
 
             $form.find('button.save-button').off().click(function () {
 
@@ -127,7 +127,6 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
                 let job = new Job({
                     attributes: {
                         name: args.path,
-                        type: Job.prototype.type,
                         job_type: 'playbook',
                         subset: args.subset,
                         check: args.check,

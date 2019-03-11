@@ -18,11 +18,6 @@ Node.prototype.constructor = Node;
 Node.prototype.templates = 'templates_Node.html';
 
 
-Node.prototype.selectorTableOptions = {
-    ajax: false,
-    offset: 'node_table_offset',
-};
-
 Node.prototype.tabs = {
     variables: {
         label: 'Variables',
@@ -40,7 +35,7 @@ Node.prototype.tabs = {
     parents: {
         label: 'Parents',
         validator: self => { return (self.type === Host.prototype.type || self.name !== 'all')},
-        generator: (self, $container) => $container.html(RelationGrid.getGrid(self, 'parents', self.label.collective, 'name'))
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'parents', self.label.collective, 'name').element)
     },
 };
 
@@ -58,7 +53,7 @@ Node.prototype.selector = function () {
 
     self.selectorTableOptions.buttons = function () {
 
-        let btns = DynamicTable.prototype.defaultOptions.buttons(self);
+        let btns = EntityTable.prototype.defaultOptions.buttons(self);
 
         btns[0].action = addNode;
 
@@ -66,13 +61,19 @@ Node.prototype.selector = function () {
 
     };
 
-    Templates.load(self.templates).then(() => {
+    self.selectorTableOptions.ajax = false;
+
+    return Templates.load(self.templates).then(() => {
 
         let $selector = Templates['node-selector'];
 
         let $grid = $selector.find('#node_grid');
 
-        let table = new DynamicTable(self);
+        let footerHeight = 23; //$selector.find('div.tab-footer').actual('height');
+
+        self.selectorTableOptions.offset = footerHeight;
+
+        let table = new EntityTable(self);
 
         self.bindElement($selector);
 
@@ -89,7 +90,6 @@ Node.prototype.selector = function () {
             dataSource: 'array',
             showFilter: true,
             gridBodyTopMargin: 10,
-            maxHeight: window.innerHeight - sessionStorage.getItem('node_grid_offset'),
             columns: sessionStorage.getItem('node_grid_columns'),
             showAddButton: true,
             addButtonType: 'icon',
@@ -106,6 +106,13 @@ Node.prototype.selector = function () {
 
             },
             addButtonAction: addNode,
+            onResize: function ($gridContainer) {
+
+                let $scrollBody = $gridContainer.find('div.scrollbar');
+
+                $scrollBody.css('max-height', calculateHeight($scrollBody, footerHeight));
+
+            }
         });
 
         new $.fn.dataTable.Buttons(table.dtObj, {buttons: [{extend: 'csv'}]});
@@ -148,15 +155,17 @@ Node.prototype.selector = function () {
 
         });
 
-        $grid.find('input.dynagrid-search').keyup(() => table.dtObj.search($(this).val()).draw());
+        $selector.find('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
-        $('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
+        $grid.find('input.dynagrid-search').keyup(() => table.dtObj.search($(this).val()).draw());
 
         $(mainContainer).on('reload', function () {
 
             fetchJson('GET', route, null, true).then(response => {
 
                 $grid.DynaGrid('load', response.data);
+
+                $grid.DynaGrid('resize');
 
                 table.dtObj.clear();
 
@@ -168,7 +177,15 @@ Node.prototype.selector = function () {
 
         });
 
-        $(mainContainer).trigger('reload')
+        $(mainContainer).trigger('reload');
+
+        $(window).resize(() => {
+
+            $grid.DynaGrid('resize');
+
+            table.resize()
+
+        });
 
     });
 

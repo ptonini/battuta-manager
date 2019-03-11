@@ -309,11 +309,11 @@ BaseModel.prototype = {
 
         let self = this;
 
-        Templates.load(self.templates).then(() => {
+        return Templates.load(self.templates).then(() => {
 
             let $selector = Templates['entity-selector'];
 
-            let table = new DynamicTable(self);
+            let table = new EntityTable(self);
 
             document.title = 'Battuta - ' + capitalize(self.label.collective);
 
@@ -335,7 +335,7 @@ BaseModel.prototype = {
 
         let self = this;
 
-        Templates.load(self.templates).then(() => {
+        return Templates.load(self.templates).then(() => {
 
             return self.read(false)
 

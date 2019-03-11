@@ -21,50 +21,50 @@ const Entities = {
         Model: Host,
         href: '/inventory/hosts',
         regex: /^inventory\/hosts\/?([0-9]+)?$/,
-        action: param => param[0] ? new Host({id: param[0], links: {self: param.input}}).viewer() : new Host().selector()
+        action: param => {return param[0] ? new Host({id: param[0], links: {self: param.input}}).viewer() : new Host().selector()}
     },
     groups: {
         Model: Group,
         href: '/inventory/groups',
         regex: /^inventory\/groups\/?([0-9]+)?$/,
-        action: param => param[0] ? new Group({id: param[0], links: {self: param.input}}).viewer() : new Group().selector()
+        action: param => {return param[0] ? new Group({id: param[0], links: {self: param.input}}).viewer() : new Group().selector()}
     },
     users: {
         Model: User,
         href: '/iam/users',
         regex: /^iam\/users\/?([0-9]+)?$/,
-        action: param => param[0] ? new User({id: param[0], links: {self: param.input}}).viewer() : new User().selector()
+        action: param => {return param[0] ? new User({id: param[0], links: {self: param.input}}).viewer() : new User().selector()}
     },
     usergroups: {
         Model: UserGroup,
         href: '/iam/usergroups',
         regex: /^iam\/usergroups\/?([0-9]+)?$/,
-        action: param => param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).viewer() : new UserGroup().selector()
+        action: param => {return param[0] ? new UserGroup({id: param[0], links: {self: param.input}}).viewer() : new UserGroup().selector()}
     },
     projects: {
         Model: Project,
         href: '/projects/',
         regex: /^projects\/?([0-9]+)?$/,
-        action: param => param[0] ? new Project({id: param[0], links: {self: param.input}}).viewer() : new Project().selector()
+        action: param => {return param[0] ? new Project({id: param[0], links: {self: param.input}}).viewer() : new Project().selector()}
     },
     repository: {
         Model: FileObj,
         href: '/files/repository',
         search:'/files/search',
         regex: /^files\/repository\/?[\s\S]*$/,
-        action: param => new FileObj({links: {self: param.input}}).selector()
+        action: param => {return new FileObj({links: {self: param.input}}).selector()}
     },
     playbooks: {
         Model: Playbook,
         href: '/files/playbooks',
         regex: /^files\/playbooks\/?[\s\S]*$/,
-        action: param => new Playbook({links: {self: param.input}}).selector()
+        action: param => {return new Playbook({links: {self: param.input}}).selector()}
     },
     roles: {
         Model: Role,
         href: '/files/roles',
         regex: /^files\/roles\/?[\s\S]*$/,
-        action: param => new Role({links: {self: param.input}}).selector()
+        action: param => {return new Role({links: {self: param.input}}).selector()}
     },
     runner: {
         Model: null,
@@ -80,7 +80,7 @@ const Entities = {
         Model: Job,
         href: '/runner/jobs',
         regex: /^runner\/jobs\/?([0-9]+)?$/,
-        action: param => param[0] ? new Job({id: param[0], links: {self: param.input}}).viewer() : new Job().selector()
+        action: param => {return param[0] ? new Job({id: param[0], links: {self: param.input}}).viewer() : new Job().selector()}
     }
 };
 

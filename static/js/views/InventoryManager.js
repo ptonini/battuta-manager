@@ -91,9 +91,9 @@ function InventoryManager() {
 
         });
 
+        setCanvasHeight($manager);
+
     });
 
-    return this;
-
-};
+}
 

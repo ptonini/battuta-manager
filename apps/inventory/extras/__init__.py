@@ -42,9 +42,49 @@ class AnsibleInventory:
 
         self.inventory = InventoryManager(loader=self.loader)
 
-        self.inventory.parse_source(settings.INVENTORY_SCRIPT, cache=False)
+        self._build_inventory()
 
         self.inventory.subset(subset)
+
+    def _build_inventory(self):
+
+        inventory = getattr(self.inventory, '_inventory')
+
+        for g in Group.objects.all():
+
+            inventory.add_group(g.name)
+
+            for h in g.members.all():
+
+                inventory.add_host(h.name, g.name)
+
+            for var in g.variable_set.all():
+
+                inventory.set_variable(g.name, var.key, var.value)
+
+            for c in g.children.all():
+
+                inventory.add_group(c.name)
+
+                inventory.add_child(g.name, c.name)
+
+        inventory.set_variable('all', 'repository_path', settings.REPOSITORY_PATH)
+
+        inventory.set_variable('all', 'roles_path', settings.ROLES_PATH)
+
+        inventory.set_variable('all', 'userdata_path', settings.USERDATA_PATH)
+
+        for h in Host.objects.all():
+
+            inventory.add_host(h.name, 'all')
+
+            for var in h.variable_set.all():
+
+                inventory.set_variable(h.name, var.key, var.value)
+
+        for h in Host.objects.filter(group=None):
+
+            inventory.add_host(h.name, 'ungrouped')
 
     @property
     def var_manager(self):

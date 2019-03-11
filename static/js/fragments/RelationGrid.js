@@ -10,6 +10,16 @@ function RelationGrid(obj, relation, relationType, key) {
 
     });
 
+    self.offset = 0;
+
+    self.resizeGrid = () => {
+
+        let $scrollBody = self.element.find('div.scrollbar');
+
+        $scrollBody.css('max-height', calculateHeight($scrollBody, self.offset));
+
+    };
+
     self.element.DynaGrid({
         headerTag: '<div>',
         showAddButton: true,
@@ -20,7 +30,7 @@ function RelationGrid(obj, relation, relationType, key) {
         addButtonType: 'icon',
         addButtonClass: 'btn-icon',
         addButtonTitle: 'Add ' + relationType,
-        maxHeight: window.innerHeight - sessionStorage.getItem('tab_grid_offset'),
+        maxHeight: calculateHeight(self.element, self.offset),
         hideBodyIfEmpty: true,
         columns: sessionStorage.getItem('node_grid_columns'),
         ajaxUrl: obj.links[relation] + objToQueryStr({fields: {attributes: [key], links: ['self']}}),
@@ -40,7 +50,7 @@ function RelationGrid(obj, relation, relationType, key) {
 
                 fetchJson('DELETE', obj.links[relation], {data: [data]}, true).then(() => {
 
-                    $grid.trigger('reload');
+                    self.element.trigger('reload');
 
                 })
 
@@ -68,8 +78,17 @@ function RelationGrid(obj, relation, relationType, key) {
                 }
             });
 
+        },
+        onResize: function ($gridContainer) {
+
+            let $scrollBody = $gridContainer.find('div.scrollbar');
+
+            $scrollBody.css('max-height', calculateHeight($scrollBody, self.offset));
+
         }
     });
+
+    $(window).resize(() => self.element.DynaGrid('resize'));
 
 }
 

@@ -48,7 +48,7 @@ Job.prototype.selectorTableOptions = {
 
         })
     },
-    offset: 'job_table_offset',
+
     paging: true,
     dom: "<'row'<'col-6'l><'col-6'f><'col-12'tr>><'row'<'col-4' i><'col-8 text-right'p>>",
     serverSide: true
@@ -175,7 +175,7 @@ Job.prototype.viewer = function () {
 
     $(navBarContainer).find('*').css('opacity', '0');
 
-    Templates.load(self.templates).then(() =>{
+    return Templates.load(self.templates).then(() =>{
 
         return self.read()
 
@@ -268,6 +268,8 @@ Job.prototype.viewer = function () {
 
         let taskContainers = {};
 
+        let isRunning = job => { return ['created', 'starting', 'running'].includes(job.status) };
+
         let jobIsStopped = () => {
 
             $jobCog.hide();
@@ -278,131 +280,128 @@ Job.prototype.viewer = function () {
 
         };
 
+        let buildTaskContainer = (play, task) => {
+
+            taskContainers[task.id] = $taskTableTemplate.clone();
+
+            taskContainers[task.id].find('strong').html(task.attributes.name);
+
+            playContainers[play.id].append(taskContainers[task.id]);
+
+            let $taskTable = taskContainers[task.id].find('table');
+
+            if (task.attributes.module !== 'include') {
+
+                $taskTable.DataTable({
+                    paginate: false,
+                    searching: false,
+                    dom: "<'row'<'col-12'tr>>",
+                    info: false,
+                    ajax: {url: task.links.results, dataSrc: 'data'},
+                    columns: [
+                        {title: 'host', data: 'attributes.host'},
+                        {title: 'status', data: 'attributes.status'},
+                        {title: 'message', data: 'attributes.message'}
+                    ],
+                    rowCallback: function (row, result) {
+
+                        let rowApi = this.DataTable().row(row);
+
+                        $(row).addClass(self.taskStates[result.attributes.status]);
+
+                        $(row).css('cursor', 'pointer').off().click(function () {
+
+                            if (rowApi.child['isShown']()) {
+
+                                $(row).removeClass(' font-weight-bold');
+
+                                rowApi.child.hide()
+
+                            } else {
+
+                                self.result = result;
+
+                                fetchJson('GET', result.links.self, {'fields': {'attributes': ['response']}}).then(response => {
+
+                                    let $resultDetails = Templates['result-details'].JSONView(response.data.attributes.response, {collapsed: true});
+
+                                    rowApi.child($resultDetails).show();
+
+                                    $(row).addClass('font-weight-bold').next().attr('class', 'child_row ')
+
+                                });
+
+                            }
+
+                        })
+
+                    },
+                    drawCallback: settings => {
+
+                        let rowCount = $(settings.nTable).DataTable().rows().count();
+
+                        if (rowCount > 0) taskContainers[task.id].find('.counter').html(rowCount).css('display', 'inline');
+
+                    }
+                });
+
+            }
+
+            if (isRunning(self)) {
+
+                let intervalId = setInterval(() => {
+
+                    $taskTable.DataTable().ajax.reload(function () {
+
+                        let task = $taskTable.DataTable().ajax.json();
+
+                        if (!task['is_running'] || !isRunning(self)) clearInterval(intervalId);
+
+                    }, false);
+
+                }, 1000);
+
+
+            }
+
+        };
+
+        let buildPlayContainer = play => {
+
+            let play_attr = play['attributes'];
+
+            if (!playContainers.hasOwnProperty(play.id)) {
+
+                playContainers[play.id] = $playContainerTemplate.clone();
+
+                playContainers[play.id].find('h4').html(play_attr.name);
+
+                playContainers[play.id].find('#host_field').html(play_attr.hosts ? play_attr.hosts : '&nbsp;');
+
+                playContainers[play.id].find('#become_field').html(play_attr.become.toString());
+
+                $resultContainer.append(playContainers[play.id]);
+
+                play_attr.message && playContainers[play.id].append(Templates['job-error-box'].html(play_attr.message));
+
+            }
+
+            $.each(play['relationships']['tasks'], (index, task) => {
+
+                taskContainers.hasOwnProperty(task.id) || buildTaskContainer(play, task)
+
+
+            });
+
+        };
+
         let buildResults = (plays) => {
 
             self.job_type === 'task' && $('.playbook-only').remove();
 
-            $.each(plays, (index, play) => {
-
-                let play_attr = play['attributes'];
-
-                if (!playContainers.hasOwnProperty(play.id)) {
-
-                    playContainers[play.id] = $playContainerTemplate.clone();
-
-                    playContainers[play.id].find('h4').html(play_attr.name);
-
-                    playContainers[play.id].find('#host_field').html(play_attr.hosts ? play_attr.hosts : '&nbsp;');
-
-                    playContainers[play.id].find('#become_field').html(play_attr.become.toString());
-
-                    $resultContainer.append(playContainers[play.id]);
-
-                    play_attr.message && $resultContainer.append(Templates['job-error-box'].html(play_attr.message));
-
-                }
-
-                $.each(play['relationships']['tasks'], (index, task) => {
-
-                    if (!taskContainers.hasOwnProperty(task.id)) {
-
-                        taskContainers[task.id] = $taskTableTemplate.clone();
-
-                        taskContainers[task.id].find('strong').html(task.attributes.name);
-
-                        playContainers[play.id].append(taskContainers[task.id]);
-
-                        let $taskTable = taskContainers[task.id].find('table');
-
-                        if (task.attributes.module !== 'include' || task['host_count'] > 0) {
-
-                            $taskTable.DataTable({
-                                paginate: false,
-                                searching: false,
-                                dom: "<'row'<'col-12'tr>>",
-                                info: false,
-                                ajax: {url: task.links.results, dataSrc: 'data'},
-                                columns: [
-                                    {title: 'host', data: 'attributes.host'},
-                                    {title: 'status', data: 'attributes.status'},
-                                    {title: 'message', data: 'attributes.message'}
-                                ],
-                                rowCallback: function (row, result) {
-
-                                    let rowApi = this.DataTable().row(row);
-
-                                    $(row).addClass(self.taskStates[result.attributes.status]);
-
-                                    $(row).css('cursor', 'pointer').off().click(function () {
-
-                                        if (rowApi.child['isShown']()) {
-
-                                            $(row).removeClass(' font-weight-bold');
-
-                                            rowApi.child.hide()
-
-                                        } else {
-
-                                            self.result = result;
-
-                                            fetchJson('GET', result.links.self, {'fields': {'attributes': ['response']}}).then(response => {
-
-                                                let $resultDetails = Templates['result-details'].JSONView(response.data.attributes.response, {collapsed: true});
-
-                                                rowApi.child($resultDetails).show();
-
-                                                $(row).addClass('font-weight-bold').next().attr('class', 'child_row ')
-
-                                            });
-
-                                        }
-
-                                    })
-
-                                },
-                                drawCallback: function () {
-
-                                    let rowCount = $(this).DataTable().rows().count();
-
-                                    if (rowCount > 0) taskContainers[task.id].show().find('.counter').html(rowCount).css('display', 'inline');
-
-                                    else if (!task['is_running'] && sessionStorage.getItem('show_empty_tasks')) {
-
-                                        taskContainers[task.id].hide()
-
-                                    }
-
-                                }
-                            });
-
-                        }
-
-                        if (isRunning(self)) {
-
-                            let intervalId = setInterval(() => {
-
-                                $taskTable.DataTable().ajax.reload(function () {
-
-                                    let task = $taskTable.DataTable().ajax.json();
-
-                                    if (!task['is_running'] || !isRunning(self)) clearInterval(intervalId);
-
-                                }, false);
-
-                            }, 1000);
-
-
-                        }
-
-                    }
-
-                });
-
-            })
+            $.each(plays, (index, play) => buildPlayContainer(play))
 
         };
-
-        let isRunning = job => { return ['created', 'starting', 'running'].includes(job.status) };
 
         $(navBarContainer).html($navBar);
 

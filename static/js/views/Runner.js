@@ -16,7 +16,9 @@ function Runner() {
 
         playbooks.selectorField($runner.find('div.playbook-selector-container'), $runner.find('div.playbook-args-container'));
 
-        tasks.selector($runner.find('div.task-table-container'))
+        tasks.selector($runner.find('div.task-table-container'));
+
+        setCanvasHeight($runner);
 
     })
 

@@ -283,7 +283,10 @@ div.alert div.button-container span {
 
 div.message-container {
     white-space: pre-wrap;
+    font-size: larger
 }
+
+
 /* Adhoc dialog **********************/
 
 .module-arguments-container {height: 280px; overflow-x: hidden;}

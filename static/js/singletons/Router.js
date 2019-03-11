@@ -43,7 +43,9 @@ const Router = {
 
                 $(mainContainer).off().empty();
 
-                this.routes[i].handler.apply({}, [match]);
+                let result = this.routes[i].handler.apply({}, [match]);
+
+                if (result instanceof Promise) result.then(() => setCanvasHeight($(mainContainer)));
 
                 return this;
 
