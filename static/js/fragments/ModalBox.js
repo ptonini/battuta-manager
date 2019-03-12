@@ -22,7 +22,7 @@ function ModalBox (type, header, $content, onConfirmation, onClose=false, bindFo
 
         self.close()
 
-    };
+    };{width: 700}
 
     self.onConfirmation = () => onConfirmation && onConfirmation !== true && onConfirmation(self);
 
@@ -76,7 +76,11 @@ ModalBox.prototype = {
         close: function() { $(this).remove() }
     },
 
-    open: function(options) { this.element.dialog(Object.assign({}, this.defaultOptions, options ? options : {})) },
+    open: function(options) {
+
+        this.element.dialog(Object.assign({}, this.defaultOptions, options ? options : {}))
+
+    },
 
     close: function() { this.element.dialog('close') },
 

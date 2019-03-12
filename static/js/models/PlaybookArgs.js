@@ -46,13 +46,9 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
     }).then(result => {
 
-        $container.html(Templates['playbook-args-selector']);
+        let $selector = Templates['playbook-args-selector'];
 
-        let $selector = $container.find('select.args-selector');
-
-        let $form = $container.find('form.args-form');
-
-        let $credentialsSelector = $form.find('select.credentials-select');
+        let $argsSelectField = $selector.find('select.args-selector');
 
         let $newOption = Templates['select-option'].data({
             attributes: {
@@ -66,31 +62,27 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
             links: {self: self.links.self}
         });
 
-        getUserCreds().buildSelector($credentialsSelector);
+        $container.html($selector);
 
-        $form.find('button.close-button').hide();
-
-        $selector.empty();
+        $argsSelectField.empty();
 
         $.each(result.data, function (index, data) {
 
             let args = new PlaybookArgs(data);
 
-            $selector.append($('<option>').html(args.toString()).val(args.id).data(data))
+            $argsSelectField.append($('<option>').html(args.toString()).val(args.id).data(data))
 
         });
 
-        $selector.append($newOption);
+        $argsSelectField.append($newOption);
 
-        $selector.on('change', function () {
+        $argsSelectField.on('change', function () {
 
             let $option = $('option:selected', $(this));
 
             let args = new PlaybookArgs($option.data());
 
-            args.bindElement($form);
-
-            $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(args, 'subset'));
+            let $form = args.buildForm();
 
             $form.find('button.save-button').off().click(function () {
 
@@ -102,7 +94,7 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
                         $newOption.before($('<option>').html(args.toString()).val(args.id).data(result.data));
 
-                        $selector.val(args.id).change();
+                        $argsSelectField.val(args.id).change();
 
                     });
 
@@ -116,54 +108,76 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
                     $option.remove();
 
-                    $selector.change()
+                    $argsSelectField.change()
 
                 })
 
             });
 
-            $form.find('button.run-button').click(function () {
+            $form.find('button.run-button').click(() => args.run());
 
-                let job = new Job({
-                    attributes: {
-                        name: args.path,
-                        job_type: 'playbook',
-                        subset: args.subset,
-                        check: args.check,
-                        user: sessionStorage.getItem('current_user_id'),
-                        cred: args.cred,
-                        parameters: {
-                            path: args.path,
-                            subset: args.subset,
-                            extra_vars: args.extra_vars,
-                            tags: args.tags,
-                            skip_tags: args.skip_tags,
-                        },
-                    },
-                    links: {self: Entities.jobs.href}
-                });
-
-                let become = false;
-
-                let r = /true|yes|on|y/i;
-
-                playbook.parse().then(playbookObj => $.each(playbookObj, (index, play) => {
-
-                    if (r.test(play['become']) || r.test(play['sudo'])) become = true;
-
-                }));
-
-                job.run(become, $credentialsSelector.find(":selected").data())
-
-            });
+            $selector.find('div.form-container').html($form)
 
         });
 
-        value && $selector.val(value);
+        value && $argsSelectField.val(value);
 
-        $selector.change()
+        $argsSelectField.change()
 
     })
+
+};
+
+PlaybookArgs.prototype.buildForm = function () {
+
+    let self = this;
+
+    let $form = Templates['playbook-args-form'];
+
+    getUserCreds().buildSelector($form.find('select.credentials-select'));
+
+    $form.find('button.pattern-editor-button').click(() => new PatternEditor(self, 'subset'));
+
+    self.bindElement($form);
+
+    return $form;
+
+};
+
+PlaybookArgs.prototype.run = function (cred) {
+
+    let self = this;
+
+    let become = false;
+
+    let r = /true|yes|on|y/i;
+
+    let job = new Job({
+        attributes: {
+            name: self.path,
+            job_type: 'playbook',
+            subset: self.subset,
+            check: self.check,
+            user: sessionStorage.getItem('current_user_id'),
+            cred: self.cred,
+            parameters: {
+                path: self.path,
+                subset: self.subset,
+                extra_vars: self.extra_vars,
+                tags: self.tags,
+                skip_tags: self.skip_tags,
+            },
+        },
+        links: {self: Entities.jobs.href}
+    });
+
+    Playbook.buildFromPath(self.path).parse().then(playbookObj => $.each(playbookObj, (index, play) => {
+
+        if (r.test(play['become']) || r.test(play['sudo'])) become = true;
+
+    }));
+
+    job.run(become, cred)
 
 };
 

@@ -62,63 +62,88 @@ Job.prototype.stateColor = function () {
 
 };
 
-Job.prototype.run = function (become, cred, sameWindow) {
+Job.prototype.run = function (become, cred2, sameWindow) {
 
     let self = this;
 
-    let askUser =  cred.id === 0;
+    let test, cred, askUser, askUserPass, askSudoUser, askSudoPass;
 
-    let askUserPass = cred.id === 0 || !cred.password && cred.ask_pass && !cred.rsa_key;
+    if (self.cred) {
 
-    let askSudoUser = false;
+        let cred = Credential.buildFromId(self.cred);
 
-    let askSudoPass =  cred.id === 0 || become && !cred.sudo_pass && cred.ask_sudo_pass;
+        test = Credential.buildFromId(self.cred).read().then(() => {return () => {return cred}})
 
-    let post = () => self.create(true).then(() => {
 
-        if (sameWindow) Router.navigate(self.links.self);
+    } else {
 
-        else {
+        test = async () => {return new Credential()}
 
-            let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
+    }
 
-            popupCenter('#' + self.links.self, title, 1000);
+    test().then(cred => console.log(cred))
 
-        }
+    //let cred = Credential.buildFromId(self.cred);
 
-    });
-
-    Templates.load(self.templates).then(() => {
-
-        if (askUser || askUserPass || askSudoUser || askSudoPass) {
-
-            let $form = Templates['password-form'];
-
-            let onConfirmation = (modal) => {
-
-                modal.close();
-
-                post()
-
-            };
-
-            self.bindElement($form);
-
-            cred.username && self.set('remote_user', cred.username);
-
-            askUser || $form.find('div.username-group').hide();
-
-            askUserPass || $form.find('div.password-group').hide();
-
-            askSudoUser || $form.find('div.sudo-user-group').hide();
-
-            askSudoPass || $form.find('div.sudo-pass-group').hide();
-
-            new ModalBox('confirmation', false, $form, onConfirmation).open({width: '360'})
-
-        } else post();
-
-    })
+    // let post = () => self.create(true).then(() => {
+    //
+    //     if (sameWindow) Router.navigate(self.links.self);
+    //
+    //     else {
+    //
+    //         let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
+    //
+    //         popupCenter('#' + self.links.self, title, 1000);
+    //
+    //     }
+    //
+    // });
+    //
+    // let askUser, askUserPass, askSudoUser, askSudoPass;
+    //
+    // cred.read(false).then(() => {
+    //
+    //     askUser =  cred.id === 0;
+    //
+    //     askUserPass = cred.id === 0 || !cred.password && cred.ask_pass && !cred.rsa_key;
+    //
+    //     askSudoUser = false;
+    //
+    //     askSudoPass =  cred.id === 0 || become && !cred.sudo_pass && cred.ask_sudo_pass;
+    //
+    //     return Templates.load(self.templates)
+    //
+    // }).then(() => {
+    //
+    //     if (askUser || askUserPass || askSudoUser || askSudoPass) {
+    //
+    //         let $form = Templates['password-form'];
+    //
+    //         let onConfirmation = (modal) => {
+    //
+    //             modal.close();
+    //
+    //             post()
+    //
+    //         };
+    //
+    //         self.bindElement($form);
+    //
+    //         cred.username && self.set('remote_user', cred.username);
+    //
+    //         askUser || $form.find('div.username-group').hide();
+    //
+    //         askUserPass || $form.find('div.password-group').hide();
+    //
+    //         askSudoUser || $form.find('div.sudo-user-group').hide();
+    //
+    //         askSudoPass || $form.find('div.sudo-pass-group').hide();
+    //
+    //         new ModalBox('confirmation', false, $form, onConfirmation).open({width: '360'})
+    //
+    //     } else post();
+    //
+    // })
 
 };
 
@@ -191,77 +216,6 @@ Job.prototype.viewer = function () {
 
         let $taskTableTemplate = Templates['task-container'];
 
-        let $jobCog = $navBar.find('span.job-cog-span');
-
-        let $cancelBtn = $navBar.find('button.cancel-button').click(function () {
-
-            self.set('status', 'canceled');
-
-            self.update()
-
-        });
-
-        let $scrollBtn = $navBar.find('button.scroll-button');
-
-        let $rerunBtn = $navBar.find('button.rerun-button').click(function () {
-
-            let playbook = new Playbook({
-                name: self.name,
-                folder: self.folder,
-            });
-
-            let args = {
-                subset: self.subset,
-                tags: self.tags,
-                skip_tags: self.skip_tags,
-                extra_vars: self.extra_vars,
-                check: false,
-            };
-
-            playbook.dialog(args);
-
-        });
-
-        let $statsBtn = $navBar.find('button.stats-button').click(() => self.statistics(true));
-
-        let $printBtn = $navBar.find('button.print-button').click(function () {
-
-            self.statistics();
-
-            let $resultContainer = $('.result-container');
-
-            let $taskContainers = $('.task-selector-container');
-
-            let $playbookOnly = $('.playbook-only');
-
-            let pageTitle = $(document).find('title').text();
-
-            $resultContainer.css('height', 'auto');
-
-            $taskContainers.removeClass('shadow');
-
-            $playbookOnly.addClass('hidden-print');
-
-            // Adjust windows for printing
-            document.title = pageTitle.replace('.yml', '');
-
-            // Open print window
-            window.print();
-
-            $('.statistics-container').empty();
-
-            $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
-
-            $taskContainers.addClass('shadow');
-
-            $playbookOnly.removeClass('hidden-print');
-
-            // Adjust windows for printing
-
-            document.title = pageTitle;
-
-        });
-
         let $resultContainer = $jobContainer.find('div.result-container');
 
         let playContainers = {};
@@ -269,16 +223,6 @@ Job.prototype.viewer = function () {
         let taskContainers = {};
 
         let isRunning = job => { return ['created', 'starting', 'running'].includes(job.status) };
-
-        let jobIsStopped = () => {
-
-            $jobCog.hide();
-
-            $cancelBtn.hide();
-
-            $scrollBtn.hide();
-
-        };
 
         let buildTaskContainer = (play, task) => {
 
@@ -395,7 +339,7 @@ Job.prototype.viewer = function () {
 
         };
 
-        let buildResults = (plays) => {
+        let buildResults = plays => {
 
             self.job_type === 'task' && $('.playbook-only').remove();
 
@@ -411,7 +355,82 @@ Job.prototype.viewer = function () {
 
         self.bindElement($jobContainer);
 
-        $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
+        $navBar.find('button.cancel-button').click(() => self.set('status', 'canceled').update());
+
+        $navBar.find('button.scroll-button');
+
+        $navBar.find('button.rerun-button').click(function () {
+
+            switch (self.job_type) {
+
+                case 'playbook':
+
+                    Templates.load(PlaybookArgs.prototype.templates).then(() => {
+
+                        let args = new PlaybookArgs({attributes: self.parameters});
+
+                        let $form = args.buildForm();
+
+                        $form.find('div.buttons-container').remove();
+
+                        new ModalBox('confirmation', self.name, $form, () => args.run()).open({width: 500})
+
+                    });
+
+                    break;
+
+                case 'task':
+
+                    break;
+
+                case 'facts':
+
+
+
+
+            }
+
+        });
+
+        $navBar.find('button.stats-button').click(() => self.statistics(true));
+
+        $navBar.find('button.print-button').click(function () {
+
+            self.statistics();
+
+            let $resultContainer = $('.result-container');
+
+            let $taskContainers = $('.task-selector-container');
+
+            let $playbookOnly = $('.playbook-only');
+
+            let pageTitle = $(document).find('title').text();
+
+            $resultContainer.css('height', 'auto');
+
+            $taskContainers.removeClass('shadow');
+
+            $playbookOnly.addClass('hidden-print');
+
+            // Adjust windows for printing
+            document.title = pageTitle.replace('.yml', '');
+
+            // Open print window
+            window.print();
+
+            $('.statistics-container').empty();
+
+            $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
+
+            $taskContainers.addClass('shadow');
+
+            $playbookOnly.removeClass('hidden-print');
+
+            // Adjust windows for printing
+
+            document.title = pageTitle;
+
+        });
 
         self.message && $resultContainer.append(Templates['job-error-box'].html(self.message));
 
@@ -423,11 +442,7 @@ Job.prototype.viewer = function () {
 
             self.set('auto_scroll', true);
 
-            $rerunBtn.hide();
-
-            $statsBtn.hide();
-
-            $printBtn.hide();
+            $navBar.find('.stopped-element').hide();
 
             let intervalId = setInterval(function () {
 
@@ -441,9 +456,9 @@ Job.prototype.viewer = function () {
 
                     if (!isRunning(self)) {
 
-                        jobIsStopped();
+                        $navBar.find('.stopped-element').show();
 
-                        $printBtn.show();
+                        $navBar.find('.running-element').remove();
 
                         clearInterval(intervalId);
 
@@ -455,7 +470,8 @@ Job.prototype.viewer = function () {
 
             }, 1000);
 
-        } else jobIsStopped();
+        } else $navBar.find('.running-element').remove();
+
 
     })
 

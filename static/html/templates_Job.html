@@ -21,35 +21,35 @@
     <a class="navbar-brand mr-auto job-navbar">
         <span class="mr-3" data-bind="name"></span>
         <small data-bind="status"></small>
-        <span class="job-cog-span fas fa-cog fa-spin fa-fw fa-xs"></span>
+        <span class="job-cog-span fas fa-cog fa-spin fa-fw fa-xs running-element"></span>
     </a>
     <ul class="navbar-nav navbar-right">
         <li class="nav-item mr-1">
-            <button class="cancel-button nav-link btn btn-icon" title="Cancel">
+            <button class="cancel-button nav-link btn btn-icon running-element" title="Cancel">
                 <span class="fas fa-fw fa-times text-danger"></span>
             </button>
         </li>
         <li class="nav-item mr-1">
-            <button class="rerun-button nav-link btn btn-icon" title="Execute job again">
+            <button data-bind="auto_scroll" class="scroll-button nav-link btn btn-icon running-element" title="Auto scroll">
+                <span class="fas fa-fw fa-angle-double-down"></span>
+            </button>
+        </li>
+        <li class="nav-item mr-1">
+            <button class="rerun-button nav-link btn btn-icon stopped-element" title="Execute job again">
                 <span class="fas fa-fw fa-redo-alt"></span>
             </button>
         </li>
         <li class="nav-item mr-1">
-            <button class="stats-button nav-link btn btn-icon" title="Statistics">
+            <button class="stats-button nav-link btn btn-icon stopped-element" title="Statistics">
                 <span class="fas fa-fw fa-list"></span>
             </button>
         </li>
-        <li class="nav-item mr-1">
-            <button class="print-button nav-link btn btn-icon" title="Print">
+        <li class="nav-item">
+            <button class="print-button nav-link btn btn-icon stopped-element" title="Print">
                 <span class="fas fa-fw fa-print"></span>
             </button>
         </li>
-        <li class="nav-item">
-            <button data-bind="auto_scroll" class="scroll-button nav-link btn btn-icon" title="Auto scroll">
-                <span class="fas fa-fw fa-angle-double-down"></span>
-            </button>
-        </li>
-    </ul>
+        </ul>
 </div>
 
 <div data-template="job-container" class="job-container">
@@ -102,7 +102,7 @@
                 </div>
             </div>
         </div>
-        <div class="result-container inset-container scrollbar my-2"></div>
+        <div class="result-container inset-container scrollbar my-2 canvas"></div>
         <div class="statistics-container"></div>
     </div>
 

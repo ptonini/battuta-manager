@@ -4,6 +4,12 @@ function Playbook (param) {
 
 }
 
+Playbook.buildFromPath = function (path) {
+
+    return new Playbook({links: {self: '/files/playbooks/' + path}})
+
+};
+
 Playbook.prototype = Object.create(FileObj.prototype);
 
 Playbook.prototype.constructor = Playbook;

@@ -6,6 +6,12 @@ function Credential(param) {
 
 }
 
+Credential.buildFromId = function (id) {
+
+    return new Credential({links: {self: sessionStorage.getItem('current_user_link') + '/creds/' + id}})
+
+};
+
 Credential.prototype = Object.create(BaseModel.prototype);
 
 Credential.prototype.constructor = Credential;
@@ -64,7 +70,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
     $selector.on('build', function (event, startValue) {
 
-        self.read(false).then(response =>  {
+        self.read(false, {fields: {attributes: ['title', 'is_default'], links: [], meta: []}}).then(response =>  {
 
             $selector.empty();
 
@@ -86,7 +92,7 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
             }
 
-            if ($formContainer) $selector.append($('<option>').val('new').data(newCred).append('new'));
+            if ($formContainer) $selector.append($('<option>').val('new').append('new'));
 
             else $selector.append($('<option>').val('').html('ask').data('id', 0));
 

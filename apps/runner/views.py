@@ -376,6 +376,61 @@ class JobView(View, ApiViewMixin):
 
             return self._api_response(JobTableHandler(request, queryset).build_response())
 
+    def patch(self, request, job_id):
+
+        job = get_object_or_404(Job, pk=job_id)
+
+        if job.permissions(request.user)['editable']:
+
+            job_status = request.JSON.get('data', {}).get('attributes', {}).get('status')
+
+            if job_status == 'canceled':
+
+                try:
+
+                    process = psutil.Process(job.pid)
+
+                except psutil.NoSuchProcess:
+
+                    return self._api_response({'errors': [{'title': 'Job is defunct'}]})
+
+                except psutil.Error as e:
+
+                    return self._api_response({'errors': [{'title':  e.__class__.__name__ + ': ' + str(job.pid)}]})
+
+                else:
+
+                    process.suspend()
+
+                    for child in process.children(recursive=True):
+
+                        child.kill()
+
+                    process.kill()
+
+                finally:
+
+                    try:
+
+                        os.remove('/tmp/tmp_job_' + str(job.id))
+
+                    except OSError:
+
+                        pass
+
+                    job.status = 'canceled'
+
+                    job.is_running = False
+
+                    job.save()
+
+
+            return self._api_response({'data': job.serialize(request.JSON.get('fields'), request.user)})
+
+        else:
+
+            return HttpResponseForbidden()
+
 
 class TaskView(View, ApiViewMixin):
 

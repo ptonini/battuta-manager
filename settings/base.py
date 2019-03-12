@@ -246,18 +246,30 @@ DEFAULT_PREFERENCES = [
         ]
     },
     {
-        'name': 'Canvas margins',
+        'name': 'Offsets',
         'description': '',
         'items': [
             {
-                'name': 'outer_canvas_margin',
+                'name': 'outer_canvas_offset',
                 'value': 25,
                 'data_type': 'number',
                 'description': '',
             },
             {
-                'name': 'inner_canvas_margin',
+                'name': 'inner_canvas_offset',
                 'value': 20,
+                'data_type': 'number',
+                'description': '',
+            },
+            {
+                'name': 'table_offset',
+                'value': 28,
+                'data_type': 'number',
+                'description': '',
+            },
+            {
+                'name': 'node_selector_offset',
+                'value': 23,
                 'data_type': 'number',
                 'description': '',
             },

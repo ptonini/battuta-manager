@@ -69,7 +69,7 @@ Node.prototype.selector = function () {
 
         let $grid = $selector.find('#node_grid');
 
-        let footerHeight = 23; //$selector.find('div.tab-footer').actual('height');
+        let footerHeight = parseInt(sessionStorage.getItem('node_selector_offset'));
 
         self.selectorTableOptions.offset = footerHeight;
 

@@ -330,6 +330,7 @@ function getUserCreds() {
 
 }
 
+
 function objToQueryStr(obj) {
 
     for (let key in obj) if (obj.hasOwnProperty(key)) obj[key] = JSON.stringify(obj[key]);
@@ -387,13 +388,13 @@ function popupCenter(url, title, w) {
 
 function calculateHeight($element, offset=false) {
 
-    let canvasMargin = parseInt(sessionStorage.getItem('outer_canvas_margin'));
+    let canvasOffset = parseInt(sessionStorage.getItem('outer_canvas_offset'));
 
-    let innerCanvasMargin = parseInt(sessionStorage.getItem('inner_canvas_margin'));
+    let innerCanvasOffset = parseInt(sessionStorage.getItem('inner_canvas_offset'));
 
-    offset = offset !== false ? offset + innerCanvasMargin : 0;
+    offset = offset !== false ? offset + innerCanvasOffset : 0;
 
-    return window.innerHeight - ($element.offset()['top'] + offset + canvasMargin)
+    return window.innerHeight - ($element.offset()['top'] + offset + canvasOffset)
 
 }
 

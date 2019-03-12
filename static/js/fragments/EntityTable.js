@@ -71,21 +71,7 @@ EntityTable.prototype = {
 
     get scrollHeight() {
 
-        let offset = this.mergedOptions.offset + 28;
-
-        // if ($.fn.dataTable.isDataTable(this.element)) {
-        //
-        //     let $scrollBody = this.element.parent();
-        //
-        //     let scrollBodyBottom = $scrollBody.offset().top + $scrollBody.outerHeight(true);
-        //
-        //     let $tableContainer = this.element.closest('dataTables_wrapper');
-        //
-        //     let tableContainerBottom = $tableContainer.offset().top + $tableContainer.outerHeight(true);
-        //
-        //     offset = Math.abs(tableContainerBottom - scrollBodyBottom) + this.mergedOptions.offset;
-        //
-        // }
+        let offset = this.mergedOptions.offset + parseInt(sessionStorage.getItem('table_offset'));
 
         return calculateHeight(this.element, offset)
 
