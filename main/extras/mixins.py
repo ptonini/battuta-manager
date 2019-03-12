@@ -47,32 +47,32 @@ class ModelSerializerMixin:
         return '/'.join([getattr(self, 'route'), str(getattr(self, 'id'))])
 
 
-    def _serializer(self, fields, attributes, links, meta, data=False):
+    def _build_filtered_dict(self, fields, **kwargs):
 
-        data = data if data else {'id': getattr(self, 'id'), 'type': getattr(self, 'type')}
+        data = kwargs['data'] if 'data' in kwargs else {'id': getattr(self, 'id'), 'type': getattr(self, 'type')}
 
-        def filter_fields(field_dict, field_dict_name):
+        for field_dict_name, field_dict in kwargs.items():
 
-            if fields and field_dict_name in fields:
+            filtered_fields = None
 
-                filtered_fields = {k: v for k, v in field_dict.items() if k in fields[field_dict_name]}
+            if field_dict_name != 'data':
 
-            else:
+                if fields and field_dict_name in fields:
 
-                filtered_fields = field_dict
+                    if fields[field_dict_name] is not False:
 
-            if len(filtered_fields) > 0:
+                        filtered_fields = {k: v for k, v in field_dict.items() if k in fields[field_dict_name]}
 
-                if field_dict_name not in data:
+                else:
 
-                    data[field_dict_name] = dict()
+                    filtered_fields = field_dict
 
-                data[field_dict_name].update(filtered_fields)
+                if len(filtered_fields) > 0:
 
-        filter_fields(attributes, 'attributes')
+                    if field_dict_name not in data:
 
-        filter_fields(links, 'links')
+                        data[field_dict_name] = dict()
 
-        filter_fields(meta, 'meta')
+                    data[field_dict_name].update(filtered_fields)
 
         return data

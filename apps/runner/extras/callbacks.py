@@ -83,7 +83,7 @@ class BattutaCallback(CallbackBase):
 
             task_name = task.get_name().strip()
 
-        # Check if is a delegate_to task
+        # Check if is a delegated task
         if task.__dict__['_attributes']['delegate_to']:
 
             self._current_task_delegate_to = task.__dict__['_attributes']['delegate_to'] or None
@@ -132,9 +132,7 @@ class BattutaCallback(CallbackBase):
 
         self._finish_current_play_tasks()
 
-        var_manager = getattr(play, '_variable_manager')
-
-        inventory = getattr(var_manager, '_inventory')
+        inventory = getattr(getattr(play, '_variable_manager'), '_inventory')
 
         message = 'No hosts matched' if len(inventory.get_hosts(play.__dict__['_ds']['hosts'])) == 0 else None
 
@@ -163,9 +161,9 @@ class BattutaCallback(CallbackBase):
 
             if self._job.job_type == 'task':
 
-                play_name = 'AdHocTask task'
+                play_name = self._job.name
 
-                become = True if self._job.data['become'] else False
+                become = self._job.data.get('become', False)
 
             elif self._job.job_type == 'facts':
 
@@ -207,7 +205,7 @@ class BattutaCallback(CallbackBase):
                 stats_dict['failures'].get(key, 0)
             ])
 
-        self._execute_query('update', 'UPDATE runner_job SET stats=%s WHERE id=%s', (str(stats_list), self._job.id))
+        self._execute_query('update', 'UPDATE runner_job SET statistics=%s WHERE id=%s', (str(stats_list), self._job.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
 

@@ -132,27 +132,7 @@ Job.prototype.run = function (become, cred2, sameWindow) {
 
         } else post();
 
-
     })
-
-
-
-
-    //let cred = Credential.buildFromId(self.cred);
-
-
-    //
-    // let askUser, askUserPass, askSudoUser, askSudoPass;
-    //
-    // cred.read(false).then(() => {
-    //
-
-    //
-    // }).then(() => {
-    //
-
-    //
-    // })
 
 };
 
@@ -209,7 +189,7 @@ Job.prototype.viewer = function () {
 
     $(navBarContainer).find('*').css('opacity', '0');
 
-    return Templates.load(self.templates).then(() =>{
+    return Templates.load(self.templates).then(() => {
 
         return self.read()
 
@@ -250,7 +230,7 @@ Job.prototype.viewer = function () {
                     searching: false,
                     dom: "<'row'<'col-12'tr>>",
                     info: false,
-                    ajax: {url: task.links.results, dataSrc: 'data'},
+                    ajax: {url: task.links.self, dataSrc: 'included'},
                     columns: [
                         {title: 'host', data: 'attributes.host'},
                         {title: 'status', data: 'attributes.status'},
@@ -306,9 +286,11 @@ Job.prototype.viewer = function () {
 
                     $taskTable.DataTable().ajax.reload(function () {
 
-                        let task = $taskTable.DataTable().ajax.json();
+                        let task = $taskTable.DataTable().ajax.json().data;
 
-                        if (!task['is_running'] || !isRunning(self)) clearInterval(intervalId);
+                        console.log(task);
+
+                        if (!task['attributes']['is_running'] || !isRunning(self)) clearInterval(intervalId);
 
                     }, false);
 
@@ -327,7 +309,7 @@ Job.prototype.viewer = function () {
 
                 playContainers[play.id] = $playContainerTemplate.clone();
 
-                playContainers[play.id].find('h4').html(play_attr.name);
+                playContainers[play.id].find('h5').html(play_attr.name);
 
                 playContainers[play.id].find('#host_field').html(play_attr.hosts ? play_attr.hosts : '&nbsp;');
 
@@ -389,6 +371,8 @@ Job.prototype.viewer = function () {
                     break;
 
                 case 'task':
+
+                    new AdHocTask({attributes: self.parameters}).editor(null, true);
 
                     break;
 

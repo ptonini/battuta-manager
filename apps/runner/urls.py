@@ -20,7 +20,7 @@ urlpatterns = [
 
     path(Job.type + '/<int:job_id>', login_required(JobView.as_view())),
 
-    path(Task.type + '/<int:task_id>/' + Result.type, login_required(TaskView.as_view())),
+    path(Task.type + '/<int:task_id>', login_required(TaskView.as_view())),
 
     path(Result.type + '/<int:result_id>', login_required(ResultView.as_view())),
 

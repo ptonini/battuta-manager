@@ -94,6 +94,8 @@ def run_job(job):
 
         status = 'finished with errors' if job.data['has_exceptions'] else 'finished'
 
+        tqm.send_callback('v2_playbook_on_stats', getattr(tqm, '_stats'))
+
     finally:
 
         tqm.cleanup()

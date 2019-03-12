@@ -440,9 +440,14 @@ class TaskView(View, ApiViewMixin):
 
         if task.permissions(request.user)['readable']:
 
-            fields = {'attributes': ['host', 'status', 'message']}
+            result_fields = {'attributes': ['host', 'status', 'message']}
 
-            return self._api_response({'data': [r.serialize(fields, request.user) for r in task.result_set.all()]})
+            response = {
+                'data': task.serialize(request.JSON.get('fields'), request.user),
+                'included': [r.serialize(result_fields, request.user) for r in task.result_set.all()]
+            }
+
+            return self._api_response(response)
 
         else:
 

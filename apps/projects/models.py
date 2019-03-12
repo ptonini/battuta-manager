@@ -57,7 +57,7 @@ class Project(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'name': self.name,
             'description': self.description,
             'manager': self.manager.username if self.manager else None,
@@ -80,7 +80,7 @@ class Project(models.Model, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        return self._serializer(fields, attributes, links, meta)
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self, user):
 

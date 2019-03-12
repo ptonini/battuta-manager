@@ -20,7 +20,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
 
         prefs = get_preferences()
 
-        attributes = {
+        attr = {
             'username': self.username,
             'first_name': self.first_name,
             'last_name': self.last_name,
@@ -40,7 +40,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        return self._serializer(fields, attributes, links, meta)
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self, user):
 
@@ -99,7 +99,7 @@ class Credential(models.Model, ModelSerializerMixin):
 
         setattr(self, 'route', '/'.join([self.user.route, str(self.user.id), self.type]))
 
-        attributes = {
+        attr = {
             'user': self.user.id,
             'title': self.title,
             'is_shared': self.is_shared,
@@ -117,7 +117,7 @@ class Credential(models.Model, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        return self._serializer(fields, attributes, links, meta)
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self, user):
 
@@ -147,7 +147,7 @@ class LocalGroup(Group, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {'name': self.name, 'member_count': self.user_set.all().count()}
+        attr = {'name': self.name, 'member_count': self.user_set.all().count()}
 
         links = {
             'self': self.link,
@@ -159,7 +159,7 @@ class LocalGroup(Group, ModelSerializerMixin):
 
         meta['builtin'] = self.name in builtin_groups
 
-        return self._serializer(fields, attributes, links, meta)
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self, user):
 

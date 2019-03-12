@@ -29,7 +29,7 @@ AdHocTask.prototype.argumentsToString = function () {
 
     let self = this;
 
-    let dataString = self.arguments._raw_params ? self.arguments._raw_params + ' ' :  '';
+    let dataString = self.arguments['_raw_params'] ? self.arguments['_raw_params'] + ' ' :  '';
 
     Object.keys(self.arguments).forEach(function (key) {
 
@@ -82,7 +82,7 @@ AdHocTask.prototype.selector = function ($container) {
 
 };
 
-AdHocTask.prototype.editor = function () {
+AdHocTask.prototype.editor = function (action, rerun=false) {
 
     let self = this;
 
@@ -96,7 +96,11 @@ AdHocTask.prototype.editor = function () {
 
         let $credentialsSelector = $form.find('select.credentials-select');
 
-        $form.find('button.pattern-editor-button').off().click(() => new PatternEditor(self, 'hosts'));
+        rerun && $form.find('h5').html(self.name);
+
+        $form.find('div.name-input-col').toggle(!rerun);
+
+        $form.find('button.pattern-editor-button').click(() => new PatternEditor(self, 'hosts'));
 
         $form.find('button.run-button').click(function () {
 
@@ -123,7 +127,7 @@ AdHocTask.prototype.editor = function () {
 
         });
 
-        $form.find('button.save-button').click(function () {
+        $form.find('button.save-button').toggle(!rerun).click(function () {
 
             let callback = () => {
 
@@ -185,7 +189,7 @@ AdHocTask.prototype.editor = function () {
 
         $.each(self.modules.sort(), (index, value) => $selector.append($('<option>').attr('value', value).append(value)));
 
-        $selector.val(self.module ? self.module : 'shell').change()
+        $selector.val(self.module ? self.module : 'shell').change().prop('disabled', rerun)
 
     });
 

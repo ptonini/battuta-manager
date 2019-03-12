@@ -77,7 +77,7 @@ class Node(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {'name': self.name, 'description': self.description}
+        attr = {'name': self.name, 'description': self.description}
 
         links = {
             'self': self.link ,
@@ -87,7 +87,7 @@ class Node(models.Model, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        data = self._serializer(fields, attributes, links, meta)
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
@@ -118,7 +118,7 @@ class Host(Node):
 
         facts = json.loads(self.facts)
 
-        attributes = {
+        attr = {
             'public_address': facts.get('ec2_public_ipv4'),
             'instance_type': facts.get('ec2_instance_type'),
             'cores': facts.get('processor_count'),
@@ -128,7 +128,7 @@ class Host(Node):
             'instance_id': facts.get('ec2_instance_id'),
         }
 
-        data = self._serializer(fields, attributes, {}, {}, super(Host, self).serialize(fields, user))
+        data = self._build_filtered_dict(fields, attributes=attr, data=super(Host, self).serialize(fields, user))
 
         if fields and 'facts' in fields.get('attributes', {}):
 
@@ -199,7 +199,7 @@ class Group(Node):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'config': self.config,
             'members': self.members.all().count() if self.id else None,
             'parents': self.group_set.all().count() if self.id else None,
@@ -214,7 +214,7 @@ class Group(Node):
 
         meta = self.permissions(user)
 
-        data = self._serializer(fields, attributes, links, meta, super(Group, self).serialize(fields, user))
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta, data=super(Group, self).serialize(fields, user))
 
         return data
 
@@ -268,13 +268,13 @@ class Variable(models.Model, ModelSerializerMixin):
 
         setattr(self, 'route', '/'.join([node_route, node_id_str, Variable.type]))
 
-        attributes = {'key': self.key, 'value': self.value, node_key: node_id_str}
+        attr = {'key': self.key, 'value': self.value, node_key: node_id_str}
 
         links = {'self': self.link, 'parent': '/'.join([node_route, node_id_str])}
 
         meta = self.permissions(user)
 
-        return self._serializer(fields, attributes, links, meta)
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self, user):
 

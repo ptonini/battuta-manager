@@ -407,7 +407,7 @@ class FileHandler(ModelSerializerMixin):
 
         file_content = None
 
-        attributes = {
+        attr = {
             'name': self.name,
             'size': self.size,
             'modified': self.modified,
@@ -438,13 +438,13 @@ class FileHandler(ModelSerializerMixin):
 
             if content_is_requested:
 
-                attributes['content'] = file_content
+                attr['content'] = file_content
 
         meta = self.permissions()
 
         meta['valid'] = self._validate(self.root, self.type, self.path, file_content)
 
-        return self._serializer(fields, attributes, links, meta)
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self):
 
@@ -494,7 +494,7 @@ class PlaybookHandler(FileHandler):
 
         links = {'args': '/'.join(['/runner', str(self.id), 'args'])}
 
-        data = self._serializer(fields, {}, links, {}, super(PlaybookHandler, self).serialize(fields))
+        data = self._build_filtered_dict(fields, links=links, data=super(PlaybookHandler, self).serialize(fields))
 
         return data
 

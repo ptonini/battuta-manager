@@ -26,7 +26,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'path': self.path,
             'tags': self.tags,
             'skip_tags': self.skip_tags,
@@ -38,7 +38,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        data = self._serializer(fields, attributes, links, meta)
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
@@ -80,7 +80,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'name': self.name,
             'hosts': self.hosts,
             'module': self.module,
@@ -92,7 +92,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        data = self._serializer(fields, attributes, links, meta)
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
@@ -144,7 +144,7 @@ class Job(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'name': self.name,
             'job_type': self.job_type,
             'subset': self.subset,
@@ -153,14 +153,15 @@ class Job(models.Model, ModelSerializerMixin):
             'user': self.user.username,
             'status': self.status,
             'message': self.message,
-            'statistics': self.statistics
+            'statistics': self.statistics,
+            'created': self.created.strftime(get_preferences()['date_format'])
         }
 
         links = {'self': self.link}
 
         meta = self.permissions(user)
 
-        data = self._serializer(fields, attributes, links, meta)
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         data['relationships'] = {'plays': [p.serialize(None, user) for p in self.play_set.all()]}
 
@@ -198,7 +199,7 @@ class Play(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'job': self.job.id,
             'name': self.name,
             'hosts': self.hosts,
@@ -207,9 +208,11 @@ class Play(models.Model, ModelSerializerMixin):
             'message': self.message
         }
 
-        data = self._serializer(fields, attributes, {}, {})
+        data = self._build_filtered_dict(fields, attributes=attr)
 
-        data['relationships'] = {'tasks': [t.serialize({'attributes': ['name'], 'meta': list()}, user) for t in self.task_set.all()]}
+        task_fields = {'attributes': ['name', 'is_running'], 'meta': False}
+
+        data['relationships'] = {'tasks': [t.serialize(task_fields, user) for t in self.task_set.all()]}
 
         return data
 
@@ -236,7 +239,7 @@ class Task(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'play': self.play.id,
             'name': self.name,
             'module': self.module,
@@ -246,9 +249,7 @@ class Task(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link, 'results': '/'.join([self.link, 'results'])}
 
-        data = self._serializer(fields, attributes, links, {})
-
-        return data
+        return self._build_filtered_dict(fields, attributes=attr, links=links)
 
     def permissions(self, user):
 
@@ -272,7 +273,7 @@ class Result(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attributes = {
+        attr = {
             'task': self.task.id,
             'host': self.host,
             'status': self.status,
@@ -282,7 +283,7 @@ class Result(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link}
 
-        data = self._serializer(fields, attributes, links, {})
+        data = self._build_filtered_dict(fields, attributes=attr, links=links)
 
         return data
 

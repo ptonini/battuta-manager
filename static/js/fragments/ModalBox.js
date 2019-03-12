@@ -16,7 +16,7 @@ function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
 
     self.footer = self.element.find('div.dialog-footer');
 
-    self.onClose = () =>  self.close();
+    self.onClose = () => self.close();
 
     self.onConfirmation = () => onConfirmation && onConfirmation !== true && onConfirmation(self);
 
