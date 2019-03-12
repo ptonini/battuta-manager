@@ -159,19 +159,33 @@ class CredentialView(View, ApiViewMixin):
 
     def get(self, request, user_id, cred_id):
 
-        user = get_object_or_404(LocalUser, pk=user_id)
+        if cred_id:
 
-        cred = Credential(user=user)
+            cred = get_object_or_404(Credential, pk=cred_id)
 
-        if cred.permissions(request.user)['readable']:
+            if cred.permissions(request.user)['readable']:
 
-            data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
+                return self._api_response({'data': cred.serialize(request.JSON.get('fields'), request.user)})
 
-            return self._api_response({'data': data})
+            else:
+
+                return HttpResponseForbidden()
 
         else:
 
-            return HttpResponseForbidden()
+            user = get_object_or_404(LocalUser, pk=user_id)
+
+            cred = Credential(user=user)
+
+            if cred.permissions(request.user)['readable']:
+
+                data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
+
+                return self._api_response({'data': data})
+
+            else:
+
+                return HttpResponseForbidden()
 
     def patch(self, request, user_id, cred_id):
 

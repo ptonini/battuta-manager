@@ -66,82 +66,91 @@ Job.prototype.run = function (become, cred2, sameWindow) {
 
     let self = this;
 
-    let test, cred, askUser, askUserPass, askSudoUser, askSudoPass;
+    let credPromise, askUser, askUserPass, askSudoUser, askSudoPass;
+
+    let post = () => self.create(true).then(() => {
+
+        if (sameWindow) Router.navigate(self.links.self);
+
+        else {
+
+            let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
+
+            popupCenter('#' + self.links.self, title, 1000);
+
+        }
+
+    });
 
     if (self.cred) {
 
         let cred = Credential.buildFromId(self.cred);
 
-        test = Credential.buildFromId(self.cred).read().then(() => {return () => {return cred}})
+        credPromise = cred.read().then(() => { return cred })
+
+    } else credPromise = async function () { return new Credential() };
+
+    Templates.load(self.templates).then(() => {
+
+        return credPromise
+
+    }).then(cred => {
+
+        askUser =  !cred.id;
+
+        askUserPass = !cred.id || !cred.password && cred.ask_pass && !cred.rsa_key;
+
+        askSudoUser = false;
+
+        askSudoPass =  become && (!cred.id || become && !cred.sudo_pass && cred.ask_sudo_pass);
+
+        if (askUser || askUserPass || askSudoUser || askSudoPass) {
+
+            let $form = Templates['password-form'];
+
+            let onConfirmation = (modal) => {
+
+                modal.close();
+
+                post()
+
+            };
+
+            self.bindElement($form);
+
+            cred.username && self.set('remote_user', cred.username);
+
+            $form.find('div.username-group').toggle(askUser);
+
+            $form.find('div.password-group').toggle(askUserPass);
+
+            $form.find('div.sudo-user-group').toggle(askSudoUser);
+
+            $form.find('div.sudo-pass-group').toggle(askSudoPass);
+
+            new ModalBox('confirmation', false, $form, onConfirmation).open({width: '360'})
+
+        } else post();
 
 
-    } else {
+    })
 
-        test = async () => {return new Credential()}
 
-    }
 
-    test().then(cred => console.log(cred))
 
     //let cred = Credential.buildFromId(self.cred);
 
-    // let post = () => self.create(true).then(() => {
-    //
-    //     if (sameWindow) Router.navigate(self.links.self);
-    //
-    //     else {
-    //
-    //         let title = sessionStorage.getItem('single_job_window') === 'true' ? 'battuta_result_window' : self.id;
-    //
-    //         popupCenter('#' + self.links.self, title, 1000);
-    //
-    //     }
-    //
-    // });
+
     //
     // let askUser, askUserPass, askSudoUser, askSudoPass;
     //
     // cred.read(false).then(() => {
     //
-    //     askUser =  cred.id === 0;
-    //
-    //     askUserPass = cred.id === 0 || !cred.password && cred.ask_pass && !cred.rsa_key;
-    //
-    //     askSudoUser = false;
-    //
-    //     askSudoPass =  cred.id === 0 || become && !cred.sudo_pass && cred.ask_sudo_pass;
-    //
-    //     return Templates.load(self.templates)
+
     //
     // }).then(() => {
     //
-    //     if (askUser || askUserPass || askSudoUser || askSudoPass) {
-    //
-    //         let $form = Templates['password-form'];
-    //
-    //         let onConfirmation = (modal) => {
-    //
-    //             modal.close();
-    //
-    //             post()
-    //
-    //         };
-    //
-    //         self.bindElement($form);
-    //
-    //         cred.username && self.set('remote_user', cred.username);
-    //
-    //         askUser || $form.find('div.username-group').hide();
-    //
-    //         askUserPass || $form.find('div.password-group').hide();
-    //
-    //         askSudoUser || $form.find('div.sudo-user-group').hide();
-    //
-    //         askSudoPass || $form.find('div.sudo-pass-group').hide();
-    //
-    //         new ModalBox('confirmation', false, $form, onConfirmation).open({width: '360'})
-    //
-    //     } else post();
+
     //
     // })
 

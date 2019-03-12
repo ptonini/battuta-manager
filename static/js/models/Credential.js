@@ -8,7 +8,7 @@ function Credential(param) {
 
 Credential.buildFromId = function (id) {
 
-    return new Credential({links: {self: sessionStorage.getItem('current_user_link') + '/creds/' + id}})
+    return new Credential({id: id, links: {self: sessionStorage.getItem('current_user_link') + '/creds/' + id}})
 
 };
 
@@ -68,9 +68,11 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
         meta: {deletable: false, editable: true}
     };
 
+    let param = $formContainer ? {} : {fields: {attributes: ['title', 'is_default'], links: [], meta: []}};
+
     $selector.on('build', function (event, startValue) {
 
-        self.read(false, {fields: {attributes: ['title', 'is_default'], links: [], meta: []}}).then(response =>  {
+        self.read(false, param).then(response =>  {
 
             $selector.empty();
 
@@ -88,15 +90,13 @@ Credential.prototype.buildSelector = function ($selector, $formContainer, startV
 
                 }
 
-                $selector.append($('<option>').val(cred.id).data(cred).append(title));
+                $selector.append($('<option>').val(cred.id).html(title).data(response.data[i]));
 
             }
 
-            if ($formContainer) $selector.append($('<option>').val('new').append('new'));
+            $selector.append($('<option>').val('').html($formContainer ? 'new' : 'ask').data(newCred));
 
-            else $selector.append($('<option>').val('').html('ask').data('id', 0));
-
-            startValue ? $selector.val(startValue).change() : $formContainer && $selector.val('new').change();
+            startValue ? $selector.val(startValue).change() : $formContainer && $selector.val('').change();
 
         });
 

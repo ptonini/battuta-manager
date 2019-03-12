@@ -119,7 +119,7 @@ AdHocTask.prototype.editor = function () {
                 links: {self: Entities.jobs.href}
             });
 
-            job.run(self.become, $credentialsSelector.find(":selected").data())
+            job.run(self.become)
 
         });
 

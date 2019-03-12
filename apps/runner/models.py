@@ -151,9 +151,6 @@ class Job(models.Model, ModelSerializerMixin):
             'parameters': json.loads(self.parameters),
             'check': self.check,
             'user': self.user.username,
-            'cred': self.cred.id,
-            # 'created': self.created.strftime(get_preferences()['date_format']),
-            # 'pid': self.pid,
             'status': self.status,
             'message': self.message,
             'statistics': self.statistics

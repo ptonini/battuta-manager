@@ -1,4 +1,4 @@
-function ModalBox (type, header, $content, onConfirmation, onClose=false, bindForm=true) {
+function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
 
     let self = this;
 
@@ -16,13 +16,7 @@ function ModalBox (type, header, $content, onConfirmation, onClose=false, bindFo
 
     self.footer = self.element.find('div.dialog-footer');
 
-    self.onClose = () => {
-
-        onClose && onClose();
-
-        self.close()
-
-    };{width: 700}
+    self.onClose = () =>  self.close();
 
     self.onConfirmation = () => onConfirmation && onConfirmation !== true && onConfirmation(self);
 
@@ -46,20 +40,16 @@ function ModalBox (type, header, $content, onConfirmation, onClose=false, bindFo
 
             self.footer.append(
                 self.cancelButton.click(self.onClose),
-                onConfirmation ? self.confirmButton.click(self.onConfirmation) : null
+                onConfirmation ? self.confirmButton : null
             );
 
-            if (bindForm && $content.is('form')) {
+            if (bindForm && $content.is('form')) $content.submit(event => {
 
-                $content.submit(event => {
+                event.preventDefault();
 
-                    event.preventDefault();
+                self.confirmButton.click()
 
-                    self.confirmButton.click()
-
-                })
-
-            }
+            })
 
     }
 
@@ -82,8 +72,10 @@ ModalBox.prototype = {
 
     },
 
-    close: function() { this.element.dialog('close') },
+    close: function () { this.element.dialog('close') },
 
-    confirm: function () { this.confirmButton.click() }
+    confirm: function () { this.confirmButton.click() },
+
+    set onConfirmation(callback) { this.confirmButton.click(callback) },
 
 };

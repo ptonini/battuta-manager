@@ -40,7 +40,7 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
     let self = this;
 
-    Templates.load(self.templates).then(() => {
+    return Templates.load(self.templates).then(() => {
 
         return self.read(true)
 
@@ -148,8 +148,6 @@ PlaybookArgs.prototype.run = function (cred) {
 
     let self = this;
 
-    let become = false;
-
     let r = /true|yes|on|y/i;
 
     let job = new Job({
@@ -171,15 +169,27 @@ PlaybookArgs.prototype.run = function (cred) {
         links: {self: Entities.jobs.href}
     });
 
-    Playbook.buildFromPath(self.path).parse().then(playbookObj => $.each(playbookObj, (index, play) => {
+    return Playbook.buildFromPath(self.path).parse().then(playbookObj => {
 
-        if (r.test(play['become']) || r.test(play['sudo'])) become = true;
+        let become = false;
 
-    }));
+        $.each(playbookObj, (index, play) => {
 
-    job.run(become, cred)
+            if (r.test(play['become']) || r.test(play['sudo'])) {
+
+                become = true;
+
+                return false
+            }
+
+        });
+
+        job.run(become, cred)
+
+    });
+
+
 
 };
-
 
 
