@@ -198,7 +198,7 @@ class JobView(View, ApiViewMixin):
 
         if job.permissions(request.user)['editable']:
 
-            inventory = AnsibleInventory(subset=request_attr['subset'])
+            inventory = AnsibleInventory(subset=request_attr.get('subset'))
 
             run_data = {
                 'job_type': request_attr.get('job_type'),

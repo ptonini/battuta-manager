@@ -65,7 +65,7 @@
 
                     opts.formatItem($gridContainer, $item, data);
 
-                    opts.itemToggle && $item.off('click').click(function () {
+                    opts.itemToggle && $item.addClass('selectable').off('click').click(function () {
 
                         _toggleItemSelection($gridBody, $item)
 

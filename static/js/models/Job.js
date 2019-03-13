@@ -62,7 +62,7 @@ Job.prototype.stateColor = function () {
 
 };
 
-Job.prototype.run = function (become, cred2, sameWindow) {
+Job.prototype.run = function (become, sameWindow=false) {
 
     let self = this;
 
@@ -288,8 +288,6 @@ Job.prototype.viewer = function () {
 
                         let task = $taskTable.DataTable().ajax.json().data;
 
-                        console.log(task);
-
                         if (!task['attributes']['is_running'] || !isRunning(self)) clearInterval(intervalId);
 
                     }, false);
@@ -324,7 +322,6 @@ Job.prototype.viewer = function () {
             $.each(play['relationships']['tasks'], (index, task) => {
 
                 taskContainers.hasOwnProperty(task.id) || buildTaskContainer(play, task)
-
 
             });
 
@@ -364,7 +361,7 @@ Job.prototype.viewer = function () {
 
                         $form.find('div.buttons-container').remove();
 
-                        new ModalBox('confirmation', self.name, $form, () => args.run()).open({width: 500})
+                        new ModalBox('confirmation', self.name, $form, () => args.run(true)).open({width: 500})
 
                     });
 
@@ -377,7 +374,6 @@ Job.prototype.viewer = function () {
                     break;
 
                 case 'facts':
-
 
 
 
@@ -439,13 +435,13 @@ Job.prototype.viewer = function () {
 
             let intervalId = setInterval(function () {
 
-                self.read(false).then(result  => {
+                self.read(false).then(result => {
 
                     $navBar.find('[data-bind="status"]').addClass(self.stateColor());
 
                     buildResults(result['data']['relationships']['plays']);
 
-                    self['auto_scroll'] && $resultContainer.scrollTop($resultContainer[0].scrollHeight);
+                    self.get('auto_scroll') && $resultContainer.scrollTop($resultContainer[0].scrollHeight);
 
                     if (!isRunning(self)) {
 
@@ -455,7 +451,7 @@ Job.prototype.viewer = function () {
 
                         clearInterval(intervalId);
 
-                        self['auto_scroll'] && setTimeout(() => $resultContainer.scrollTop($resultContainer[0].scrollHeight), 1000)
+                        self['auto_scroll'] && setTimeout(() => $resultContainer.scrollTop(), 2000)
 
                     }
 
@@ -464,7 +460,6 @@ Job.prototype.viewer = function () {
             }, 1000);
 
         } else $navBar.find('.running-element').remove();
-
 
     })
 

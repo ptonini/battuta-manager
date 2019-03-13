@@ -96,6 +96,14 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         let $credentialsSelector = $form.find('select.credentials-select');
 
+        let saveCallback = () => {
+
+            $form.dialog('close');
+
+            $(mainContainer).trigger('reload')
+
+        };
+
         rerun && $form.find('h5').html(self.name);
 
         $form.find('div.name-input-col').toggle(!rerun);
@@ -104,42 +112,19 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         $form.find('button.run-button').click(function () {
 
-            let job = new Job({
-                attributes: {
-                    name: self.name,
-                    job_type: 'task',
-                    subset: self.hosts,
-                    check: self.check,
-                    user: sessionStorage.getItem('current_user_id'),
-                    cred: self.cred,
-                    parameters: {
-                        name: self.name,
-                        hosts: self.hosts,
-                        module: self.module,
-                        arguments: self.arguments,
-                        become: self.become
-                    },
-                },
-                links: {self: Entities.jobs.href}
-            });
+            self.save().then(() => {
 
-            job.run(self.become)
+                saveCallback();
+
+                self.run(rerun);
+
+            })
 
         });
 
         $form.find('button.save-button').toggle(!rerun).click(function () {
 
-            let callback = () => {
-
-                $form.dialog('close');
-
-                $(mainContainer).trigger('reload')
-
-            };
-
-            if (self.id) self.update().then(callback);
-
-            else self.create().then(callback);
+            self.save().then(() => saveCallback());
 
         });
 
@@ -192,5 +177,32 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
         $selector.val(self.module ? self.module : 'shell').change().prop('disabled', rerun)
 
     });
+
+};
+
+AdHocTask.prototype.run = function (rerun) {
+
+    let self = this;
+
+    let job = new Job({
+        attributes: {
+            name: self.name,
+            job_type: 'task',
+            subset: self.hosts,
+            check: self.check,
+            user: sessionStorage.getItem('current_user_id'),
+            cred: self.cred,
+            parameters: {
+                name: self.name,
+                hosts: self.hosts,
+                module: self.module,
+                arguments: self.arguments,
+                become: self.become
+            },
+        },
+        links: {self: Entities.jobs.href}
+    });
+
+    job.run(self.become, rerun)
 
 };

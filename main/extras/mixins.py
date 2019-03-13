@@ -53,7 +53,7 @@ class ModelSerializerMixin:
 
         for field_dict_name, field_dict in kwargs.items():
 
-            filtered_fields = None
+            filtered_fields = {}
 
             if field_dict_name != 'data':
 

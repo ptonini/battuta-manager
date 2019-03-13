@@ -161,16 +161,16 @@ class Job(models.Model, ModelSerializerMixin):
 
         meta = self.permissions(user)
 
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        rel = {'plays': [p.serialize(None, user) for p in self.play_set.all()]}
 
-        data['relationships'] = {'plays': [p.serialize(None, user) for p in self.play_set.all()]}
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta, relationships=rel)
 
         return data
 
     @staticmethod
     def permissions(user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        # authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
         readable = True
 
@@ -208,11 +208,12 @@ class Play(models.Model, ModelSerializerMixin):
             'message': self.message
         }
 
-        data = self._build_filtered_dict(fields, attributes=attr)
+        rel = {
+            'tasks': [t.serialize({'attributes': ['name', 'is_running'], 'meta': False}, user) for t in self.task_set.all()]
+        }
 
-        task_fields = {'attributes': ['name', 'is_running'], 'meta': False}
+        data = self._build_filtered_dict(fields, attributes=attr, relationships=rel)
 
-        data['relationships'] = {'tasks': [t.serialize(task_fields, user) for t in self.task_set.all()]}
 
         return data
 
@@ -249,7 +250,9 @@ class Task(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link, 'results': '/'.join([self.link, 'results'])}
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links)
+        meta = self.play.job.permissions(user)
+
+        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
     def permissions(self, user):
 
@@ -283,7 +286,9 @@ class Result(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link}
 
-        data = self._build_filtered_dict(fields, attributes=attr, links=links)
+        meta = self.task.play.job.permissions(user)
+
+        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 

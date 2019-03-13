@@ -17,7 +17,7 @@ div.dynagrid-item {
 
 div.dynagrid-item:hover{background: #F4F4F4; color: #2a2a2a;}
 
-div.dynagrid-item.toggle-on, div.dynagrid-item:active  {
+div.dynagrid-item.selectable.toggle-on, div.dynagrid-item.selectable:active  {
     background: #D3D3D3;
     box-shadow: 0 0 0 !important;
 }

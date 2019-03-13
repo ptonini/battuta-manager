@@ -57,6 +57,7 @@ div.dynagrid-item,
 div.form-group input,
 div.item-value,
 div.ui-menu-item-wrapper,
+div.jsonview li,
 .ui-widget input {
     font-family: "Elements", sans-serif !important;
 }
@@ -289,7 +290,10 @@ div.message-container {
 
 /* Adhoc dialog **********************/
 
-.module-arguments-container {height: 280px; overflow-x: hidden;}
+.module-arguments-container {
+    height: 220px;
+    overflow-x: hidden;
+}
 
 
 /* File manager path container *******/

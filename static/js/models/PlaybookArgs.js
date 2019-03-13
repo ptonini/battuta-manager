@@ -144,7 +144,7 @@ PlaybookArgs.prototype.buildForm = function () {
 
 };
 
-PlaybookArgs.prototype.run = function (cred) {
+PlaybookArgs.prototype.run = function (sameWindow) {
 
     let self = this;
 
@@ -180,15 +180,14 @@ PlaybookArgs.prototype.run = function (cred) {
                 become = true;
 
                 return false
+
             }
 
         });
 
-        job.run(become, cred)
+        job.run(become, sameWindow)
 
     });
-
-
 
 };
 

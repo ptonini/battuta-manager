@@ -302,6 +302,16 @@ BaseModel.prototype = {
 
     },
 
+    save: function () {
+
+        let self = this;
+
+        if (self.id) return self.update();
+
+        else return self.create();
+
+    },
+
 
     // Views **************************
 
