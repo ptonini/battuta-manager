@@ -400,7 +400,9 @@ BaseModel.prototype = {
 
         let header = (self.id ? 'Edit '  : 'Add ') + self.label.single;
 
-        let onConfirmation = function (modal) {
+        let modal = new ModalBox('confirmation', header, $form, true);
+
+        modal.onConfirmation = function (modal) {
 
             if (!self.entityFormValidator || self.entityFormValidator($form)) {
 
@@ -422,7 +424,7 @@ BaseModel.prototype = {
 
         self.bindElement($form);
 
-        new ModalBox('confirmation', header, $form, onConfirmation).open();
+        modal.open();
 
     },
 

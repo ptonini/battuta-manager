@@ -120,6 +120,8 @@ FileObj.prototype.contentEditor = function () {
 
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
+    let modal = new ModalBox('confirmation', false, $form, true);
+
     let matchExtension = (filename) => {
 
         let fileNameArray = filename.toLowerCase().split('.');
@@ -132,25 +134,7 @@ FileObj.prototype.contentEditor = function () {
 
     };
 
-    let onConfirmation = (modal) => {
 
-        self.set('new_name', $form.find('input.filename-input').val());
-
-        if (self.get('new_name')) {
-
-            self.set('content', textEditor.getValue());
-
-            self.update(false).then(() => {
-
-                modal.close();
-
-                $(mainContainer).trigger('reload')
-
-            });
-
-        } else AlertBox.status('warning', 'Please enter a filename');
-
-    };
 
     if (!self.get('mime_type') || self.get('mime_type') === 'text/plain' || self.get('mime_type') === 'inode/x-empty') {
 
@@ -197,7 +181,27 @@ FileObj.prototype.contentEditor = function () {
 
     $form.find('input.filename-input').val(self.get('name'));
 
-    new ModalBox('confirmation', false, $form, onConfirmation).open({width: 900, closeOnEscape: false});
+    modal.onConfirmation = function (modal) {
+
+        self.set('new_name', $form.find('input.filename-input').val());
+
+        if (self.get('new_name')) {
+
+            self.set('content', textEditor.getValue());
+
+            self.update(false).then(() => {
+
+                modal.close();
+
+                $(mainContainer).trigger('reload')
+
+            });
+
+        } else AlertBox.status('warning', 'Please enter a filename');
+
+    };
+
+    modal.open({width: 900, closeOnEscape: false});
 
     textEditor.focus();
 

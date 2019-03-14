@@ -18,7 +18,17 @@ function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
 
     self.onClose = () => self.close();
 
-    self.onConfirmation = () => onConfirmation && onConfirmation !== true && onConfirmation(self);
+    self.onConfirmation = () => {
+
+        if (onConfirmation && onConfirmation !== true) {
+
+            onConfirmation(self);
+
+            self.close();
+
+        }
+
+    };
 
     if (header) {
 

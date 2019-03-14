@@ -176,13 +176,11 @@ Job.prototype.statsTable = function () {
 
     let $table = Templates['table'];
 
-    $table.DataTable({
+    let options = {
         paging: false,
         filter: false,
         dom: "<'row'<'col-12'tr>>",
         data: self['statistics'],
-        scrollY: 360,
-        scrollCollapse: true,
         columns: [
             {title: 'host'},
             {title: 'ok'},
@@ -191,39 +189,27 @@ Job.prototype.statsTable = function () {
             {title: 'failures'},
             {title: 'skip'}
         ]
-    });
+    };
 
-    return $table
+    return {table: $table, options: options}
 
 };
 
-Job.prototype.showStatistics = function (modal) {
+Job.prototype.statsModal = function () {
 
     let self = this;
 
-    let $table = self.statsTable();
+    let st = self.statsTable();
 
-    if (modal) {
+    let modal = new ModalBox('notification','Statistics', st.table).open({width: 700});
 
-        modal = new ModalBox('notification','Statistics', $table).open({width: 700});
+    st.options['scrollY'] = '360px';
 
-        $table.css({'height': 360, 'max-height': 360});
+    st.options['scrollCollapse'] = true;
 
-        modal.center();
+    st.table.DataTable(st.options);
 
-    }
-
-    // else {
-    //
-    //     $table.DataTable(tableOptions);
-    //
-    //     $statsContainer.append($table);
-    //
-    // }
-    //
-    // $table.DataTable().columns.adjust().draw();
-    //
-    // if (!modal) return $statsContainer;
+    modal.center();
 
 };
 
@@ -389,43 +375,35 @@ Job.prototype.viewer = function () {
 
         $navBar.find('button.rerun-button').click(() => self.rerun());
 
-        $navBar.find('button.stats-button').click(() => self.showStatistics(true));
+        $navBar.find('button.stats-button').click(() => self.statsModal());
 
         $navBar.find('button.print-button').click(function () {
 
-            let $statsContainer = self.showStatistics();
+            let st = self.statsTable();
 
-            let $resultContainer = $jobContainer.find('div.result-container');
+            let $statsContainer = Templates['stats-container'].append(st.table);
 
-            let $taskContainers = $jobContainer.find('div.task-selector-container');
+            let $taskContainers = $jobContainer.find('div.task-table-container');
 
             let $playbookOnly = $jobContainer.find('div.playbook-only');
 
             $resultContainer.append($statsContainer);
 
-            $resultContainer.css('height', 'auto');
+            st.table.DataTable(st.options);
 
+            $resultContainer.css('height', 'auto');
 
             $taskContainers.removeClass('shadow');
 
             $playbookOnly.addClass('hidden-print');
 
-            $statsContainer.find('table').each(function () {
+            window.print();
 
-                console.log($(this));
+            $statsContainer.remove();
 
-                $(this).DataTable().columns.adjust().draw();
+            $taskContainers.addClass('shadow');
 
-            });
-
-
-            // window.print();
-            //
-            // $statsContainer.remove();
-            //
-            // $taskContainers.addClass('shadow');
-            //
-            // $playbookOnly.removeClass('hidden-print');
+            $playbookOnly.removeClass('hidden-print');
 
         });
 

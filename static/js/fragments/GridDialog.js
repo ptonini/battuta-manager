@@ -26,8 +26,11 @@ function GridDialog (options) {
         }
     });
 
-    let onConfirmation = options.type === 'many' ? () => options.action($grid.DynaGrid('getSelected'), modal) : false;
+    let modal = new ModalBox('confirmation', false, $grid, true);
 
-    let modal = new ModalBox('confirmation', false, $grid, onConfirmation).open({width: 700})
+    modal.onConfirmation = options.type === 'many' ? () => options.action($grid.DynaGrid('getSelected'), modal) : false;
+
+    modal.open({width: 700})
+
 
 }
