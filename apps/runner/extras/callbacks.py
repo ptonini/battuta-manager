@@ -205,7 +205,7 @@ class BattutaCallback(CallbackBase):
                 stats_dict['failures'].get(key, 0)
             ])
 
-        self._execute_query('update', 'UPDATE runner_job SET statistics=%s WHERE id=%s', (str(stats_list), self._job.id))
+        self._execute_query('update', 'UPDATE runner_job SET statistics=%s WHERE id=%s', (json.dumps(stats_list), self._job.id))
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
 

@@ -58,19 +58,6 @@ $.extend($.fn.DynaGrid.defaults, {
     loadCallback: addTitleToTruncatedElements,
 });
 
-
-// ModalBox dialog options
-
-$.extend($.ui['dialog'].prototype.options, {
-    width: '360',
-    modal: true,
-    show: true,
-    hide: true,
-    resizable: false,
-    close: function() { $(this).remove() }
-});
-
-
 // Bootstrap File Input
 
 $.extend($.fn.fileinput.defaults, {
@@ -282,11 +269,7 @@ function humanBytes(value, unit='B') {
 
 }
 
-function prettyBoolean(data) {
-
-    return data ? '<span class="fas fa-check"></span>' : ''
-
-}
+function prettyBoolean(data) { return data ? '<span class="fas fa-check"></span>' : '' }
 
 function toUserTZ(time) {
 
@@ -329,7 +312,6 @@ function getUserCreds() {
     });
 
 }
-
 
 function objToQueryStr(obj) {
 
@@ -397,7 +379,6 @@ function calculateHeight($element, offset=false) {
     return window.innerHeight - ($element.offset()['top'] + offset + canvasOffset)
 
 }
-
 
 function setCanvasHeight ($container) {
 

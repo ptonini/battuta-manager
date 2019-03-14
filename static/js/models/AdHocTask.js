@@ -96,41 +96,46 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         let $credentialsSelector = $form.find('select.credentials-select');
 
+        let $runButton = Templates['run-button'];
+
+        let modal = new ModalBox('confirmation', rerun ? self.name : 'AdHoc task', $form);
+
         let saveCallback = () => {
 
-            $form.dialog('close');
+            modal.close();
 
             $(mainContainer).trigger('reload')
 
         };
 
-        rerun && $form.find('h5').html(self.name);
+        if (rerun) {
 
-        $form.find('div.name-input-col').toggle(!rerun);
+            $form.find('div.name-input-col').remove();
 
-        $form.find('button.pattern-editor-button').click(() => new PatternEditor(self, 'hosts'));
+            $runButton.attr('title', 'Run').click(() => {
 
-        $form.find('button.run-button').click(function () {
+                modal.close();
 
-            self.save().then(() => {
+                self.run(rerun)
+
+            });
+
+        } else {
+
+            modal.footer.append(Templates['save-button'].click(() => self.save().then(() => saveCallback())));
+
+            $runButton.attr('title', 'Save & Run').click(() => self.save().then(() => {
 
                 saveCallback();
 
                 self.run(rerun);
 
-            })
+            }));
+        }
 
-        });
+        modal.footer.append($runButton);
 
-        $form.find('button.save-button').toggle(!rerun).click(function () {
-
-            self.save().then(() => saveCallback());
-
-        });
-
-        $form.find('button.close-button').click(() => $form.dialog('close'));
-
-        $form.dialog({width: 600, closeOnEscape: false});
+        $form.find('button.pattern-editor-button').click(() => new PatternEditor(self, 'hosts'));
 
         $selector.change(function () {
 
@@ -146,6 +151,8 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
             self.bindElement($form);
 
+            modal.center();
+
             $form.find('a.repository-link').attr('href', '/#' + Entities.repository.href);
 
             if (self.module === 'copy') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.search});
@@ -160,21 +167,15 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
             });
 
-            $form.dialog('open').submit((event) => {
-
-                event.preventDefault();
-
-                $form.find('button.run-button').click()
-
-            });
-
         });
 
         getUserCreds().buildSelector($credentialsSelector);
 
         $.each(self.modules.sort(), (index, value) => $selector.append($('<option>').attr('value', value).append(value)));
 
-        $selector.val(self.module ? self.module : 'shell').change().prop('disabled', rerun)
+        modal.open({width: 600, closeOnEscape: false});
+
+        $selector.val(self.module ? self.module : 'shell').change().prop('disabled', rerun);
 
     });
 

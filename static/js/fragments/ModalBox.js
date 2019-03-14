@@ -47,7 +47,7 @@ function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
 
                 event.preventDefault();
 
-                self.confirmButton.click()
+                self.confirm()
 
             })
 
@@ -63,18 +63,29 @@ ModalBox.prototype = {
         show: true,
         hide: true,
         resizable: false,
+        position: ModalBox.prototype.defaultPosition,
         close: function() { $(this).remove() }
     },
 
+    defaultPosition: {my: 'center', at: 'center', of: window},
+
     open: function(options) {
 
-        this.element.dialog(Object.assign({}, this.defaultOptions, options ? options : {}))
+        this.element.dialog(Object.assign({}, this.defaultOptions, options ? options : {}));
+
+        this.center();
+
+        $(window).resize(() => this.center());
+
+        return this;
 
     },
 
     close: function () { this.element.dialog('close') },
 
     confirm: function () { this.confirmButton.click() },
+
+    center: function () { this.element.dialog('option', 'position', this.defaultPosition) },
 
     set onConfirmation(callback) { this.confirmButton.click(callback) },
 

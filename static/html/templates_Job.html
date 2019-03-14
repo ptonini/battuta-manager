@@ -53,58 +53,60 @@
 </div>
 
 <div data-template="job-container" class="job-container">
-        <h4 class="d-none d-print-block my-3">
-            <strong data-bind="name"></strong>
-        </h4>
-        <div class="row">
-            <div class="col-4">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">User:</div>
-                    <div class="col-8 item-value text-truncate" data-bind="user"></div>
-                </div>
-            </div>
-            <div class="col-4 playbook-only">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">Subset:</div>
-                    <div class="col-8 item-value text-truncate" data-bind="subset"></div>
-                </div>
-            </div>
-            <div class="col-4 playbook-only">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">Extra vars:</div>
-                    <div class="col-8 item-value text-truncate" data-bind="parameters.extra_vars"></div>
-                </div>
-            </div>
-            <div class="col-4 playbook-only">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">Tags:</div>
-                    <div class="col-8 item-value text-truncate" data-bind="parameters.tags"></div>
-                </div>
-            </div>
-            <div class="col-4 playbook-only">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">Skip tags:</div>
-                    <div class="col-8 item-value text-truncate" data-bind="parameters.skip_tags"></div>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">Check:</div>
-                    <div class="col-8 item-value text-truncate" data-bind="check"></div>
-                </div>
+    <h4 class="d-none d-print-block my-3">
+        <strong data-bind="name"></strong>
+    </h4>
+    <div class="row">
+        <div class="col-4">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">User:</div>
+                <div class="col-8 item-value text-truncate" data-bind="user"></div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-4">
-                <div class="row no-gutters">
-                    <div class="col-4 item-label">Run date:</div>
-                    <div class="col-8 item-value text-truncate font-weight-bold" data-bind="created"></div>
-                </div>
+        <div class="col-4 playbook-only">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">Subset:</div>
+                <div class="col-8 item-value text-truncate" data-bind="subset"></div>
             </div>
         </div>
-        <div class="result-container inset-container scrollbar my-2 canvas"></div>
-        <div class="statistics-container"></div>
+        <div class="col-4 playbook-only">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">Extra vars:</div>
+                <div class="col-8 item-value text-truncate" data-bind="parameters.extra_vars"></div>
+            </div>
+        </div>
+        <div class="col-4 playbook-only">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">Tags:</div>
+                <div class="col-8 item-value text-truncate" data-bind="parameters.tags"></div>
+            </div>
+        </div>
+        <div class="col-4 playbook-only">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">Skip tags:</div>
+                <div class="col-8 item-value text-truncate" data-bind="parameters.skip_tags"></div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">Check:</div>
+                <div class="col-8 item-value text-truncate" data-bind="check"></div>
+            </div>
+        </div>
     </div>
+    <div class="row">
+        <div class="col-4">
+            <div class="row no-gutters">
+                <div class="col-4 item-label">Run date:</div>
+                <div class="col-8 item-value text-truncate font-weight-bold" data-bind="created"></div>
+            </div>
+        </div>
+    </div>
+    <div class="result-container inset-container scrollbar my-2 canvas"></div>
+
+</div>
+
+<div data-template="stats-container"><h5>Statistics</h5></div>
 
 <div data-template="play-container" class="play-container mb-5">
         <div class="row">

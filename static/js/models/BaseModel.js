@@ -192,6 +192,8 @@ BaseModel.prototype = {
 
         });
 
+        return self
+
     },
 
 

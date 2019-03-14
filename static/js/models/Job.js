@@ -136,18 +136,53 @@ Job.prototype.run = function (become, sameWindow=false) {
 
 };
 
-Job.prototype.statistics = function (modal) {
+Job.prototype.rerun = function () {
+
+    let self = this;
+
+    switch (self.job_type) {
+
+        case 'playbook':
+
+            Templates.load(PlaybookArgs.prototype.templates).then(() => {
+
+                let args = new PlaybookArgs({attributes: self.parameters});
+
+                let $form = args.buildForm();
+
+                $form.find('div.buttons-container').remove();
+
+                new ModalBox('confirmation', self.name, $form, () => args.run(true)).open({width: 500})
+
+            });
+
+            break;
+
+        case 'task':
+
+            new AdHocTask({attributes: self.parameters}).editor(null, true);
+
+            break;
+
+        case 'facts':
+
+    }
+
+};
+
+Job.prototype.statsTable = function () {
 
     let self = this;
 
     let $table = Templates['table'];
 
-    let tableOptions = {
+    $table.DataTable({
         paging: false,
         filter: false,
         dom: "<'row'<'col-12'tr>>",
-        autoWidth: false,
-        data: self.stats,
+        data: self['statistics'],
+        scrollY: 360,
+        scrollCollapse: true,
         columns: [
             {title: 'host'},
             {title: 'ok'},
@@ -156,30 +191,39 @@ Job.prototype.statistics = function (modal) {
             {title: 'failures'},
             {title: 'skip'}
         ]
-    };
+    });
+
+    return $table
+
+};
+
+Job.prototype.showStatistics = function (modal) {
+
+    let self = this;
+
+    let $table = self.statsTable();
 
     if (modal) {
 
-        tableOptions.scrollY = '360px';
+        modal = new ModalBox('notification','Statistics', $table).open({width: 700});
 
-        tableOptions.scrollCollapse = true;
+        $table.css({'height': 360, 'max-height': 360});
 
-        $table.DataTable(tableOptions);
-
-        new ModalBox('notification','Statistics', $table).open({width: 700});
-
-    } else {
-
-        $table.DataTable(tableOptions);
-
-        $('.statistics-container').append(
-            $('<h5>').html('Statistics'),
-            $table
-        );
+        modal.center();
 
     }
 
-    $table.DataTable().columns.adjust().draw();
+    // else {
+    //
+    //     $table.DataTable(tableOptions);
+    //
+    //     $statsContainer.append($table);
+    //
+    // }
+    //
+    // $table.DataTable().columns.adjust().draw();
+    //
+    // if (!modal) return $statsContainer;
 
 };
 
@@ -232,9 +276,9 @@ Job.prototype.viewer = function () {
                     info: false,
                     ajax: {url: task.links.self, dataSrc: 'included'},
                     columns: [
-                        {title: 'host', data: 'attributes.host'},
-                        {title: 'status', data: 'attributes.status'},
-                        {title: 'message', data: 'attributes.message'}
+                        {title: 'host', data: 'attributes.host', width: '20%'},
+                        {title: 'status', data: 'attributes.status', width: '20%'},
+                        {title: 'message', data: 'attributes.message', width: '60%'}
                     ],
                     rowCallback: function (row, result) {
 
@@ -339,85 +383,49 @@ Job.prototype.viewer = function () {
 
         $(mainContainer).html($jobContainer);
 
-        self.bindElement($navBar);
-
-        self.bindElement($jobContainer);
+        self.bindElement($navBar).bindElement($jobContainer);
 
         $navBar.find('button.cancel-button').click(() => self.set('status', 'canceled').update());
 
-        $navBar.find('button.scroll-button');
+        $navBar.find('button.rerun-button').click(() => self.rerun());
 
-        $navBar.find('button.rerun-button').click(function () {
-
-            switch (self.job_type) {
-
-                case 'playbook':
-
-                    Templates.load(PlaybookArgs.prototype.templates).then(() => {
-
-                        let args = new PlaybookArgs({attributes: self.parameters});
-
-                        let $form = args.buildForm();
-
-                        $form.find('div.buttons-container').remove();
-
-                        new ModalBox('confirmation', self.name, $form, () => args.run(true)).open({width: 500})
-
-                    });
-
-                    break;
-
-                case 'task':
-
-                    new AdHocTask({attributes: self.parameters}).editor(null, true);
-
-                    break;
-
-                case 'facts':
-
-
-
-            }
-
-        });
-
-        $navBar.find('button.stats-button').click(() => self.statistics(true));
+        $navBar.find('button.stats-button').click(() => self.showStatistics(true));
 
         $navBar.find('button.print-button').click(function () {
 
-            self.statistics();
+            let $statsContainer = self.showStatistics();
 
-            let $resultContainer = $('.result-container');
+            let $resultContainer = $jobContainer.find('div.result-container');
 
-            let $taskContainers = $('.task-selector-container');
+            let $taskContainers = $jobContainer.find('div.task-selector-container');
 
-            let $playbookOnly = $('.playbook-only');
+            let $playbookOnly = $jobContainer.find('div.playbook-only');
 
-            let pageTitle = $(document).find('title').text();
+            $resultContainer.append($statsContainer);
 
             $resultContainer.css('height', 'auto');
+
 
             $taskContainers.removeClass('shadow');
 
             $playbookOnly.addClass('hidden-print');
 
-            // Adjust windows for printing
-            document.title = pageTitle.replace('.yml', '');
+            $statsContainer.find('table').each(function () {
 
-            // Open print window
-            window.print();
+                console.log($(this));
 
-            $('.statistics-container').empty();
+                $(this).DataTable().columns.adjust().draw();
 
-            $resultContainer.css('height', (window.innerHeight - sessionStorage.getItem('job_result_offset')).toString() + 'px');
+            });
 
-            $taskContainers.addClass('shadow');
 
-            $playbookOnly.removeClass('hidden-print');
-
-            // Adjust windows for printing
-
-            document.title = pageTitle;
+            // window.print();
+            //
+            // $statsContainer.remove();
+            //
+            // $taskContainers.addClass('shadow');
+            //
+            // $playbookOnly.removeClass('hidden-print');
 
         });
 

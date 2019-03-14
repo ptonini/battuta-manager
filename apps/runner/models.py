@@ -140,7 +140,7 @@ class Job(models.Model, ModelSerializerMixin):
 
     message = models.CharField(max_length=1024, blank=True, null=True)
 
-    statistics = models.TextField(max_length=4096, blank=True, null=True)
+    statistics = models.TextField(max_length=4096, default='{}')
 
     def serialize(self, fields, user):
 
@@ -153,7 +153,7 @@ class Job(models.Model, ModelSerializerMixin):
             'user': self.user.username,
             'status': self.status,
             'message': self.message,
-            'statistics': self.statistics,
+            'statistics': json.loads(getattr(self, 'statistics', '')),
             'created': self.created.strftime(get_preferences()['date_format'])
         }
 

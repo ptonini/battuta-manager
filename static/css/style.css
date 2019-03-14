@@ -19,7 +19,6 @@ body {
     color: var(--main-font-color);
 }
 
-
 /* Text highlighting *****************/
 
 body {
@@ -286,15 +285,6 @@ div.message-container {
     white-space: pre-wrap;
     font-size: larger
 }
-
-
-/* Adhoc dialog **********************/
-
-.module-arguments-container {
-    height: 220px;
-    overflow-x: hidden;
-}
-
 
 /* File manager path container *******/
 
