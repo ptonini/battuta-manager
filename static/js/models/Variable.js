@@ -95,7 +95,7 @@ Variable.prototype.selector = function ($container) {
                 let buttonCell = $(row).find('td:eq(3)').empty();
 
                 variable['meta']['editable'] && buttonCell.append(
-                    new TableButton('fas fa-pencil-alt', 'Edit', function () {
+                    Templates['edit-button'].addClass('btn-sm').click(() => {
 
                         variable.editor(() => $(mainContainer).trigger('reload'))
 
@@ -103,7 +103,7 @@ Variable.prototype.selector = function ($container) {
                 );
 
                 variable['meta']['deletable'] && buttonCell.append(
-                    new TableButton('fas fa-trash', 'Delete', function () {
+                    Templates['delete-button'].addClass('btn-sm').click(() => {
 
                         variable.delete(false, () => $(mainContainer).trigger('reload'));
 
@@ -253,7 +253,7 @@ Variable.prototype.copyVariables = function (callback) {
 
     let $typeSelector = Templates['source-type-selector'];
 
-    let modal = new ModalBox('notification', 'Select source type', $typeSelector);
+    let modal = new ModalBox('Select source type', $typeSelector, false);
 
     modal.header.addClass('text-center mb-3');
 
@@ -263,7 +263,7 @@ Variable.prototype.copyVariables = function (callback) {
 
         new GridDialog({
             title: 'Select node',
-            type: 'one',
+            selectMultiple: false,
             objectType: $(this).data('type'),
             url: Entities[$(this).data('type')].href,
             ajaxDataKey: 'data',

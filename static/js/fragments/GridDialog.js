@@ -7,7 +7,7 @@ function GridDialog (options) {
         minHeight: 400,
         maxHeight: 400,
         gridBodyTopMargin: 10,
-        itemToggle: (options.type === 'many'),
+        itemToggle: options.selectMultiple,
         truncateItemText: true,
         gridBodyClasses: 'inset-container scrollbar',
         columns: sessionStorage.getItem('selection_modal_columns'),
@@ -21,14 +21,14 @@ function GridDialog (options) {
                 .html(data.attributes[options.itemValueKey])
                 .addClass('pointer truncate');
 
-            if (options.type === 'one') $gridItem.click(() => options.action && options.action($gridItem.data(), modal))
+            options.selectMultiple || $gridItem.click(() => options.action && options.action($gridItem.data(), modal))
 
         }
     });
 
-    let modal = new ModalBox('confirmation', false, $grid, true);
+    let modal = new ModalBox(null, $grid, options.selectMultiple);
 
-    modal.onConfirmation = options.type === 'many' ? () => options.action($grid.DynaGrid('getSelected'), modal) : false;
+    if (options.selectMultiple) modal.onConfirmation = () => options.action($grid.DynaGrid('getSelected'), modal);
 
     modal.open({width: 700})
 

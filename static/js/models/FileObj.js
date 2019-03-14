@@ -28,7 +28,9 @@ FileObj.prototype.upload = function () {
 
     let $input = $form.find('input.input-file');
 
-    let onConfirmation = () => {
+    let modal = new ModalBox(true, $form);
+
+    modal.onConfirmation = () => {
 
         $input.fileinput('refresh', {uploadUrl: [self.links.self, $form.find('input.file-caption-name').val()].join('/')}).fileinput('upload');
 
@@ -36,7 +38,7 @@ FileObj.prototype.upload = function () {
 
     };
 
-    let modal = new ModalBox('confirmation', true, $form, onConfirmation, () => $input.fileinput('cancel'));
+    modal.onClose = () => $input.fileinput('cancel');
 
     modal.header.replaceWith($('<h6>').html('Upload file'));
 
@@ -120,7 +122,7 @@ FileObj.prototype.contentEditor = function () {
 
     let textEditor = ace.edit($form.find('div.editor-container')[0]);
 
-    let modal = new ModalBox('confirmation', false, $form, true);
+    let modal = new ModalBox(null, $form);
 
     let matchExtension = (filename) => {
 
@@ -133,8 +135,6 @@ FileObj.prototype.contentEditor = function () {
         return extensions.hasOwnProperty(fileExtension) ? extensions[fileExtension] : false
 
     };
-
-
 
     if (!self.get('mime_type') || self.get('mime_type') === 'text/plain' || self.get('mime_type') === 'inode/x-empty') {
 
@@ -248,7 +248,9 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
 
     let $form = Templates[actions[action].template];
 
-    let onConfirmation = (modal) => {
+    let modal = new ModalBox(true, $form);
+
+    modal.onConfirmation = () => {
 
         let newName = $form.find('input.filename-input').val();
 
@@ -261,8 +263,6 @@ FileObj.prototype.nameEditor = function (action, createCallback) {
         })
 
     };
-
-    let modal = new ModalBox('confirmation', true, $form, onConfirmation);
 
     modal.header.replaceWith(
         $('<h6>').html(actions[action].title).append('&nbsp;', $('<span>').attr('data-bind', 'type'))
@@ -317,7 +317,7 @@ FileObj.prototype.selector = function () {
         buttons: function (self) {
             return [
                 {
-                    text: '<span class="fas fa-fw fa-asterisk" title="Create"></span>',
+                    text: Templates['create-icon'][0],
                     className: 'btn-sm btn-icon',
                     action: () => {
 
@@ -333,7 +333,7 @@ FileObj.prototype.selector = function () {
                     }
                 },
                 {
-                    text: '<span class="fas fa-fw fa-upload" title="Upload"></span>',
+                    text: Templates['upload-icon'][0],
                     className: 'btn-sm btn-icon',
                     action: () => self.upload()
                 }
@@ -357,18 +357,10 @@ FileObj.prototype.selector = function () {
             if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
 
             $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                new TableButton('fas fa-pencil-alt', 'Edit', () => fs_obj.edit()),
-                new TableButton('fas fa-clone', 'Copy', () => fs_obj.nameEditor('copy')),
-                new TableButton('fas fa-download', 'Download ' + fs_obj.name, () => {
-
-                    window.open(fs_obj.links.self + '?download=true', '_self');
-
-                }),
-                new TableButton('fas fa-trash', 'Delete', () => {
-
-                    fs_obj.delete(false, () => $(mainContainer).trigger('reload'))
-
-                })
+                Templates['edit-button'].addClass('btn-sm').click(() => fs_obj.edit()),
+                Templates['copy-button'].addClass('btn-sm').click(() => fs_obj.nameEditor('copy')),
+                Templates['download-button'].addClass('btn-sm').click(() => window.open(fs_obj.links.self + '?download=true', '_self')),
+                Templates['copy-button'].addClass('btn-sm').click(() => fs_obj.delete(false, () => $(mainContainer).trigger('reload')))
             )
 
         },

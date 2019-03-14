@@ -18,7 +18,7 @@ function MainNavBar() {
 
         e.preventDefault();
 
-        new Preferences().dialog()
+        new Preferences().openModal()
 
     });
 

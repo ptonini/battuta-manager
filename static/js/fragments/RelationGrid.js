@@ -61,7 +61,7 @@ function RelationGrid(obj, relation, relationType, key) {
 
             new GridDialog({
                 title: 'Select ' + relationType,
-                type: 'many',
+                selectMultiple: true,
                 objectType: obj.type,
                 url: obj.links[relation] + objToQueryStr({fields: {attributes: [key], links: ['self']}, related: false}),
                 itemValueKey: key,

@@ -54,7 +54,7 @@ function PatternEditor(obj, binding) {
 
     });
 
-    new ModalBox('notification', false, $form).open({width: 700})
+    new ModalBox(null, $form, false).open({width: 700})
 
 }
 

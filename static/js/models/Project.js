@@ -107,7 +107,7 @@ Project.prototype.setProperty =  function (property) {
 
     new GridDialog({
         title: 'Select ' + properties[property]['title'],
-        type: 'one',
+        selectMultiple: false,
         url:  self.links[property] + '?related=false',
         objectType: property,
         itemValueKey: properties[property]['key'],

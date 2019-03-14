@@ -60,7 +60,7 @@ Preferences.prototype.load = function () {
 
 };
 
-Preferences.prototype.dialog = function () {
+Preferences.prototype.openModal = function () {
 
     let self = this;
 
@@ -82,7 +82,9 @@ Preferences.prototype.dialog = function () {
 
     });
 
-    let onConfirmation = () => {
+    let modal = new ModalBox('Preferences', $form);
+
+    modal.onConfirmation = () => {
 
         let data = [];
 
@@ -119,8 +121,6 @@ Preferences.prototype.dialog = function () {
         noError && fetchJson('PATCH', self.links.self, {data: data}, true).then(() => location.reload());
 
     };
-
-    let modal = new ModalBox('confirmation', 'Preferences', $form, onConfirmation);
 
     modal.header.append($restoreButton);
 

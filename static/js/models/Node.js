@@ -123,7 +123,7 @@ Node.prototype.selector = function () {
 
         $selector.find('button.delete-button').click(() => new GridDialog({
             title: 'Delete nodes',
-            type: 'many',
+            selectMultiple: true,
             objectType: self.type,
             url: route + objToQueryStr({fields: {attributes: ['name'], links: [], meta: []}}),
             itemValueKey: 'name',

@@ -61,9 +61,9 @@ AdHocTask.prototype.selector = function ($container) {
             $(row).find('td:eq(3)').html(task.argumentsToString());
 
             $(row).find('td:eq(5)').empty().append(
-                new TableButton('fas fa-pencil-alt', 'Edit', () => task.editor()),
-                new TableButton('fas fa-clone', 'Copy', () => task.set('id', '').editor()),
-                new TableButton('fas fa-trash', 'Delete', () => task.delete(false, function () {
+                Templates['edit-button'].addClass('btn-sm').click(() => task.editor()),
+                Templates['copy-button'].addClass('btn-sm').click(() => task.set('id', '').editor()),
+                Templates['delete-button'].addClass('btn-sm').click(() => task.delete(false, function () {
 
                     $(mainContainer).trigger('reload')
 
@@ -98,7 +98,7 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         let $runButton = Templates['run-button'];
 
-        let modal = new ModalBox('confirmation', rerun ? self.name : 'AdHoc task', $form);
+        let modal = new ModalBox(rerun ? self.name : 'AdHoc task', $form, false);
 
         let saveCallback = () => {
 
@@ -112,7 +112,7 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
             $form.find('div.name-input-col').remove();
 
-            $runButton.attr('title', 'Run').click(() => {
+            $runButton.click(() => {
 
                 modal.close();
 
@@ -147,7 +147,7 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
             $form.find('a.module-reference-link').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
 
-            $argumentsContainer.empty().html(Templates.hasOwnProperty(template) ? Templates[template] : '');
+            $argumentsContainer.html(Templates.hasOwnProperty(template) ? Templates[template] : '');
 
             self.bindElement($form);
 

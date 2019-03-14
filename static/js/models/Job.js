@@ -108,11 +108,13 @@ Job.prototype.run = function (become, sameWindow=false) {
 
             let $form = Templates['password-form'];
 
-            let onConfirmation = (modal) => {
+            let modal = new ModalBox(false, $form);
+
+            modal.onConfirmation = () => {
 
                 modal.close();
 
-                post()
+                post();
 
             };
 
@@ -128,7 +130,7 @@ Job.prototype.run = function (become, sameWindow=false) {
 
             $form.find('div.sudo-pass-group').toggle(askSudoPass);
 
-            new ModalBox('confirmation', false, $form, onConfirmation).open({width: '360'})
+           modal.open({width: '360'})
 
         } else post();
 
@@ -150,9 +152,13 @@ Job.prototype.rerun = function () {
 
                 let $form = args.buildForm();
 
+                let modal = new ModalBox(self.name, $form, false);
+
                 $form.find('div.buttons-container').remove();
 
-                new ModalBox('confirmation', self.name, $form, () => args.run(true)).open({width: 500})
+                modal.footer.append(Templates['run-button'].click(() => args.run(true)));
+
+                modal.open({width: 500})
 
             });
 
@@ -174,8 +180,6 @@ Job.prototype.statsTable = function () {
 
     let self = this;
 
-    let $table = Templates['table'];
-
     let options = {
         paging: false,
         filter: false,
@@ -191,7 +195,7 @@ Job.prototype.statsTable = function () {
         ]
     };
 
-    return {table: $table, options: options}
+    return {table: Templates['table'], options: options}
 
 };
 
@@ -201,7 +205,7 @@ Job.prototype.statsModal = function () {
 
     let st = self.statsTable();
 
-    let modal = new ModalBox('notification','Statistics', st.table).open({width: 700});
+    let modal = new ModalBox('Statistics', st.table, false).open({width: 700});
 
     st.options['scrollY'] = '360px';
 

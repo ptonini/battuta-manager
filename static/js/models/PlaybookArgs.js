@@ -84,7 +84,19 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
             let $form = args.buildForm();
 
-            $form.find('button.save-button').off().click(function () {
+            let $deleteButton = Templates['delete-button'].prop('disabled', $option.val() === 'new').click(function () {
+
+                args.delete(true, () => {
+
+                    $option.remove();
+
+                    $argsSelectField.change()
+
+                })
+
+            });
+
+            let $saveButton = Templates['save-button'].click(function () {
 
                 if (!(!args.subset && !args.tags && !args.skip_tags && !args.extra_vars)) {
 
@@ -102,19 +114,9 @@ PlaybookArgs.prototype.selector = function ($container, playbook, value) {
 
             });
 
-            $form.find('button.delete-button').off().prop('disabled', $option.val() === 'new').click(function () {
+            let $runButton = Templates['run-button'].click(() => args.run());
 
-                args.delete(true, () => {
-
-                    $option.remove();
-
-                    $argsSelectField.change()
-
-                })
-
-            });
-
-            $form.find('button.run-button').click(() => args.run());
+            $form.find('div.button-container').append($deleteButton, $saveButton, $runButton);
 
             $selector.find('div.form-container').html($form)
 

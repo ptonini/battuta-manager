@@ -400,7 +400,7 @@ BaseModel.prototype = {
 
         let header = (self.id ? 'Edit '  : 'Add ') + self.label.single;
 
-        let modal = new ModalBox('confirmation', header, $form, true);
+        let modal = new ModalBox(header, $form);
 
         modal.onConfirmation = function (modal) {
 

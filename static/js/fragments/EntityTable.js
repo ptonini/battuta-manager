@@ -17,7 +17,7 @@ EntityTable.prototype = {
         buttons: obj => {
 
             return [{
-                text: '<span class="fas fa-plus fa-fw" title="Add ' + obj.label.single + '"></span>',
+                text: Templates['add-icon'][0],
                 className: 'btn-sm btn-icon',
                 action: function () {
 
@@ -37,11 +37,12 @@ EntityTable.prototype = {
             $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
 
             if (data.meta.deletable) $(row).find('td:last').empty().append(
-                new TableButton('fas fa-trash', 'Delete', function () {
+                Templates['delete-button'].addClass('btn-sm').click(() => {
 
                     new Entities[data.type].Model(data).delete(false, () => $(mainContainer).trigger('reload'))
 
                 })
+
             );
         },
         preDrawCallback: settings => {

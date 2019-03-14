@@ -1,4 +1,4 @@
-function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
+function ModalBox (header, $content, confirmButton=true, bindForm=true) {
 
     let self = this;
 
@@ -6,29 +6,11 @@ function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
 
     self.closeButton = Templates['close-button'];
 
-    self.cancelButton = Templates['cancel-button'];
-
-    self.confirmButton = Templates['confirm-button'];
-
     self.header = self.element.find('h5.dialog-header');
 
     self.content = self.element.find('div.dialog-content');
 
     self.footer = self.element.find('div.dialog-footer');
-
-    self.onClose = () => self.close();
-
-    self.onConfirmation = () => {
-
-        if (onConfirmation && onConfirmation !== true) {
-
-            onConfirmation(self);
-
-            self.close();
-
-        }
-
-    };
 
     if (header) {
 
@@ -36,30 +18,25 @@ function ModalBox (type, header, $content, onConfirmation, bindForm=true) {
 
     } else self.header.remove();
 
+    self.onClose = () => self.close();
+
     $content && self.content.append($content);
 
-    switch (type) {
+    self.footer.append(self.closeButton);
 
-        case 'notification':
+    if (confirmButton)  {
 
-            self.footer.append(self.closeButton.click(self.onClose));
+        self.confirmButton = Templates['confirm-button'];
 
-            break;
+        self.footer.append(self.confirmButton);
 
-        case 'confirmation':
+        if (bindForm && $content.is('form')) $content.submit(event => {
 
-            self.footer.append(
-                self.cancelButton.click(self.onClose),
-                onConfirmation ? self.confirmButton : null
-            );
+            event.preventDefault();
 
-            if (bindForm && $content.is('form')) $content.submit(event => {
+            self.confirm()
 
-                event.preventDefault();
-
-                self.confirm()
-
-            })
+        });
 
     }
 
@@ -97,6 +74,8 @@ ModalBox.prototype = {
 
     center: function () { this.element.dialog('option', 'position', this.defaultPosition) },
 
-    set onConfirmation(callback) { this.confirmButton.click(callback) },
+    set onConfirmation(action) { this.confirmButton.click(action) },
+
+    set onClose(action) { this.closeButton.click(action) },
 
 };

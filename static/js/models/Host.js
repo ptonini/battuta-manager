@@ -121,7 +121,7 @@ Host.prototype.info = function ($container) {
 
                 let $table = Templates['table'];
 
-                let modal = new ModalBox('notification', key, $table);
+                let modal = new ModalBox(key, $table, false);
 
                 modal.header.addClass('text-capitalize');
 
@@ -151,7 +151,7 @@ Host.prototype.info = function ($container) {
                     .css('max-height', (window.innerHeight * .6).toString() + 'px')
                     .JSONView(self.get('facts'), {'collapsed': true});
 
-               new ModalBox('notification', self.name + ' facts', $content).open({width: 900})
+               new ModalBox(self.name + ' facts', $content, false).open({width: 900})
 
             });
 
