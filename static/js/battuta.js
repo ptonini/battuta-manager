@@ -347,13 +347,9 @@ function popupCenter(url, title, w) {
 
     let dualScreenTop = window.screenTop !== undefined ? window.screenTop : screen.top;
 
-    let width = window.innerWidth
-        ? window.innerWidth : document.documentElement.clientWidth
-            ? document.documentElement.clientWidth : screen.width;
+    let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
 
-    let height = window.innerHeight
-        ? window.innerHeight : document.documentElement.clientHeight
-            ? document.documentElement.clientHeight : screen.height;
+    let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
 
     let h = height - 50;
 

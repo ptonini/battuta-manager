@@ -1,38 +1,36 @@
-function AlertBox(type, status, message) {
+function AlertBox(status, message, confirmIcon) {
 
     let self = this;
 
     self.element = Templates['alert'];
 
+    self.messageContainer = self.element.find('div.message-container');
+
+    self.buttonContainer = self.element.find('div.button-container');
+
+    self.closeIcon = Templates['close-icon'].click(() => self.element.fadeOut(() => self.element.remove()));
+
     self.element.find('div.alert').addClass('alert-' + status);
 
-    self.element.find('div.message-container').append(message);
+    message && self.messageContainer.append(message);
 
-    switch (type) {
+    self.buttonContainer.append(self.closeIcon);
 
-        case 'confirmation':
+    if (confirmIcon) {
 
-            self.element.find('div.button-container').append(Templates['cancel-icon'], Templates['confirm-icon']);
+        self.confirmIcon = Templates['confirm-icon'].addClass('ml-1');
 
-            break;
-
-        case 'notification':
-
-            self.element.find('div.button-container').append(Templates['close-icon']);
+        self.buttonContainer.append(self.confirmIcon)
 
     }
-
-    self.closeButton = self.element.find('span.fa-times');
-
-    self.closeButton.click(() => self.element.fadeOut(() => self.element.remove()));
 
 }
 
 AlertBox.warning = function (message, confirmationCallback) {
 
-    let alert = new AlertBox('confirmation', 'warning', message);
+    let alert = new AlertBox('warning', message, confirmationCallback);
 
-    alert.element.find('span.confirm-button').click(function () {
+    alert.onConfirmation = function () {
 
         alert.element.fadeOut(function () {
 
@@ -42,7 +40,7 @@ AlertBox.warning = function (message, confirmationCallback) {
 
         })
 
-    });
+    };
 
     alert.deploy()
 
@@ -50,7 +48,7 @@ AlertBox.warning = function (message, confirmationCallback) {
 
 AlertBox.deletion = action => AlertBox.warning('This action cannot be reversed. Continue?', action);
 
-AlertBox.status = (status, message) => new AlertBox('notification', status, message).deploy();
+AlertBox.status = (status, message) => new AlertBox(status, message).deploy();
 
 AlertBox.prototype = {
 
@@ -64,9 +62,11 @@ AlertBox.prototype = {
 
         self.element.fadeIn();
 
-        setTimeout(() => self.closeButton.click(), 10000)
+        setTimeout(() => self.close.click(), 10000)
 
     },
+
+    set onConfirmation(action) { this.confirmIcon.click(action) }
 
 };
 

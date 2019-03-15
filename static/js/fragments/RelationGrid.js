@@ -46,15 +46,13 @@ function RelationGrid(obj, relation, relationType, key) {
                 .toggleClass('pointer', readable && link)
                 .click(() => readable && link && Router.navigate(link));
 
-            $gridItem.addClass('relation-grid-item').append(nameLabel, Templates['remove-icon'].click(function () {
+            let removeIcon = Templates['remove-icon'].addClass('ml-auto pointer').click(function () {
 
-                fetchJson('DELETE', obj.links[relation], {data: [data]}, true).then(() => {
+                fetchJson('DELETE', obj.links[relation], {data: [data]}, true).then(() => self.element.trigger('reload'))
 
-                    self.element.trigger('reload');
+            });
 
-                })
-
-            }));
+            $gridItem.addClass('relation-grid-item').append(nameLabel, removeIcon);
 
         },
         addButtonAction: function () {
@@ -91,11 +89,3 @@ function RelationGrid(obj, relation, relationType, key) {
     $(window).resize(() => self.element.DynaGrid('resize'));
 
 }
-
-RelationGrid.getGrid = function (obj, relation, relationType, key) {
-
-    let grid = new RelationGrid(obj, relation, relationType, key);
-
-    return grid.element
-
-};

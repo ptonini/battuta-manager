@@ -36,19 +36,20 @@ Project.prototype.info = function ($container) {
 
     let self = this;
 
-    $container.append(Templates['project-form']);
+    let $form = Templates['project-form'];
+
+    $container.append($form);
 
     self.bindElement($container);
+    
+    ['manager', 'host_group'].forEach(function (item) {
 
-    $container.find('button.set_property').click(function () { self.setProperty($(this).data('property')) });
+        $form.find('span.' + item + '-button-container').append(
+            Templates['edit-button'].addClass('btn-sm').click(() => self.setProperty(item)),
+            Templates['remove-button'].addClass('btn-sm').click(() => fetchJson('DELETE', self.links[item]).then( self.set(item, '') ))
+        )
 
-    $container.find('button.clear_property').click(function () {
-
-        let property = $(this).data('property');
-
-        fetchJson('DELETE', self.links[property]).then( self.set(property, '') )
-
-    })
+    });
 
 };
 
