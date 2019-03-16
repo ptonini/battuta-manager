@@ -56,14 +56,12 @@ AdHocTask.prototype.selector = function ($container) {
         ]},
         rowCallback: (row, data) => {
 
-            let task = new AdHocTask(data);
-
-            $(row).find('td:eq(3)').html(task.argumentsToString());
+            $(row).find('td:eq(3)').html(new AdHocTask(data).argumentsToString());
 
             $(row).find('td:eq(5)').empty().append(
-                Templates['edit-button'].addClass('btn-sm').click(() => task.editor()),
-                Templates['copy-button'].addClass('btn-sm').click(() => task.set('id', '').editor()),
-                Templates['delete-button'].addClass('btn-sm').click(() => task.delete(false, function () {
+                Templates['edit-button'].addClass('btn-sm').click(() => new AdHocTask(data).editor()),
+                Templates['copy-button'].addClass('btn-sm').click(() => new AdHocTask(data).set('id', '').editor()),
+                Templates['delete-button'].addClass('btn-sm').click(() => new AdHocTask(data).delete(false, function () {
 
                     $(mainContainer).trigger('reload')
 
@@ -131,11 +129,14 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
                 self.run(rerun);
 
             }));
+
         }
 
         modal.footer.append($runButton);
 
-        $form.find('button.pattern-editor-button').click(() => new PatternEditor(self, 'hosts'));
+        $form.find('div.pattern-button-container').html(
+            Templates['edit-button'].removeClass('btn-icon').addClass('btn-sm btn-light').click(() => new PatternEditor(self, 'hosts'))
+        );
 
         $selector.change(function () {
 

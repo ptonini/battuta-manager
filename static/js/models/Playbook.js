@@ -44,6 +44,10 @@ Playbook.prototype.selectorField = function ($selectorContainer, $argsContainer)
 
     let selectorField = $selectorContainer.find('select.playbook-selector');
 
+    let editButton = Templates['edit-button'].removeClass('btn-icon').addClass('btn-sm btn-light');
+
+    $selectorContainer.find('div.input-group-append').html(editButton);
+
     self.read(true, {list: true}).then(result => {
 
         for (let i = 0; i < result.data.length; i++) selectorField.append(
@@ -59,7 +63,7 @@ Playbook.prototype.selectorField = function ($selectorContainer, $argsContainer)
 
             let args = new PlaybookArgs({attributes: {path: playbook.path}, links: {self: playbook.links.args}});
 
-            $selectorContainer.find('button.edit-playbook-button').off().click(function () {
+            editButton.off().click(function () {
 
                 Templates.load(FileObj.prototype.templates).then(() => playbook.edit());
 

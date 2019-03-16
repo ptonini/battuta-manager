@@ -60,7 +60,7 @@ Variable.prototype.selector = function ($container) {
         ajax: () => { return {url: self.links.self ,dataSrc: 'data'} },
         buttons: () => { return [
             {
-                text: '<span class="fas fa-fw fa-plus" title="Add variable"></span>',
+                text: Templates['add-icon'].attr('title', 'Add variable')[0],
                 className: 'btn-sm btn-icon',
                 action: function () {
 
@@ -73,7 +73,7 @@ Variable.prototype.selector = function ($container) {
                 }
             },
             {
-                text: '<span class="fas fa-fw fa-clone" title="Copy from node"></span>',
+                text: Templates['copy-icon'].attr('title', 'Copy from node')[0],
                 className: 'btn-sm btn-icon',
                 action: () => self.copyVariables(() => $(mainContainer).trigger('reload'))
             }

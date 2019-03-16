@@ -61,13 +61,15 @@
 
 <span data-template="close-icon" class="close-icon fas fa-fw fa-times" title="Close"></span>
 
-<span data-template="confirm-icon" class="confirm-icon fas fa-fw fa-check confirm-button" title="Confirm"></span>
+<span data-template="confirm-icon" class="confirm-icon fas fa-fw fa-check" title="Confirm"></span>
 
 <span data-template="add-icon" class="add-icon fas fa-fw fa-plus" title="Add"></span>
 
 <span data-template="create-icon" class="create-icon fas fa-fw fa-asterisk" title="Create"></span>
 
 <span data-template="upload-icon" class="upload-icon fas fa-fw fa-upload" title="Upload"></span>
+
+<span data-template="copy-icon" class="copy-icon fas fa-fw fa-clone" title="Copy"></span>
 
 
 <!-- Forms -->
@@ -160,14 +162,7 @@
                 <small data-bind="label.single"></small>
                 <span class="mr-3" data-bind="name"></span>
             </h4>
-            <div class="mb-2">
-                <button class="edit-button btn btn-sm btn-icon d-none" title="Edit">
-                    <span class="fas fa-fw fa-pencil-alt"></span>
-                </button>
-                <button class="delete-button btn btn-sm btn-icon d-none" title="Delete">
-                    <span class="fas fa-fw fa-trash"></span>
-                </button>
-            </div>
+            <div class="button-container mb-2"></div>
         </div>
         <ul class="nav nav-tabs">
             <li class="nav-item">

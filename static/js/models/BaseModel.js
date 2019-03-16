@@ -355,6 +355,8 @@ BaseModel.prototype = {
 
             let $viewer = Templates['entity-viewer'];
 
+            let $buttonContainer = $viewer.find('div.button-container');
+
             $(mainContainer).html($viewer);
 
             document.title = 'Battuta - ' + self.label.single + ' ' + self.name;
@@ -363,17 +365,17 @@ BaseModel.prototype = {
 
             self.bindElement($viewer);
 
-            $viewer.find('button.edit-button').toggleClass('d-none', !self.meta['editable']).click(function () {
+            self.meta['editable'] && $buttonContainer.append(Templates['edit-button'].addClass('btn-sm').click(() => {
 
-                self.editor(() => self.read(false));
+                self.editor(() => self.read(false))
 
-            });
+            }));
 
-            $viewer.find('button.delete-button').toggleClass('d-none', !self.meta['deletable']).click(function () {
+            self.meta['deletable'] && $buttonContainer.append(Templates['delete-button'].addClass('btn-sm').click(() => {
 
                 self.delete(false, () => Router.navigate(Entities[self.type].href))
 
-            });
+            }));
 
             self.info && self.info($viewer.find("#info_container"));
 

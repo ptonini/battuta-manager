@@ -138,7 +138,14 @@ PlaybookArgs.prototype.buildForm = function () {
 
     getUserCreds().buildSelector($form.find('select.credentials-select'));
 
-    $form.find('button.pattern-editor-button').click(() => new PatternEditor(self, 'subset'));
+    $form.find('div.input-group-append').html(
+        Templates['edit-button'].removeClass('btn-icon').addClass('btn-sm btn-light').click(() => {
+
+            new PatternEditor(self, 'subset')
+
+        })
+
+    );
 
     self.bindElement($form);
 
