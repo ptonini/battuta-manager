@@ -197,49 +197,6 @@ BaseModel.prototype = {
     },
 
 
-    // Data request processors ********
-
-    ajaxError: function (xhr, status, error) {
-
-        let message;
-
-        if (xhr.status === 403) message = 'Permission denied';
-
-        else if (xhr.responseText) message = xhr.responseText;
-
-        else message = error;
-
-        AlertBox.status('danger', message + ' (' + xhr.status + ')')
-
-    },
-
-    ajaxSuccess: function (response, callback, failCallback) {
-
-        if (response.hasOwnProperty('data')) {
-
-            callback && callback(response);
-
-            response['msg'] && AlertBox.status('success', response['msg']);
-
-        } else if (response.hasOwnProperty('errors')) {
-
-            failCallback && failCallback(response);
-
-            let $message = $('<div>');
-
-            if (response.error) for (let key in response.error) {
-
-                if (response.error.hasOwnProperty(key)) $message.append($('<p>').html(key + ': ' + response.error[key][0].message))
-
-            } else if (response['msg']) $message.html(response['msg']);
-
-            AlertBox.status('danger', $message);
-
-        } else AlertBox.status('danger', 'Unknown response');
-
-    },
-
-
     // CRUD helpers ***********
 
     create: function (blocking, param={}) {

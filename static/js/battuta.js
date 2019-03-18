@@ -67,7 +67,8 @@ $.extend($.fn.fileinput.defaults, {
     showCancel: false,
     showUpload: false,
     captionClass: 'form-control form-control-sm',
-    browseClass: 'btn btn-light btn-sm'
+    browseClass: 'btn btn-light btn-sm',
+    mergeAjaxCallbacks: 'before'
 });
 
 $.extend($.fn.fileinputLocales.en, {browseLabel: ''});
@@ -150,17 +151,39 @@ function csrfSafeMethod(method) {
 
 function ajaxBeforeSend(xhr, sett) {
 
-    sett['blocking'] && $.blockUI({
-        message: null,
-        css: {
-            border: 'none',
-            backgroundColor: 'transparent'
-        },
-        overlayCSS: {backgroundColor: 'transparent'}
+    !csrfSafeMethod(sett.type) && !sett.crossDomain && xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
 
-    });
+}
 
-    csrfSafeMethod(sett.type) && !sett.crossDomain && xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+function ajaxError(xhr, status, error) {
+
+    let message;
+
+    if (xhr.status === 403) message = 'Permission denied';
+
+    else if (xhr.responseText) message = xhr.responseText;
+
+    else message = error;
+
+    AlertBox.status('danger', message + ' (' + xhr.status + ')')
+
+}
+
+function ajaxSuccess(response, callback) {
+
+    if (response.hasOwnProperty('data')) {
+
+        callback && callback(response);
+
+        response['msg'] && AlertBox.status('success', response['msg']);
+
+    } else if (response.hasOwnProperty('errors')) {
+
+        apiErrorAlert(response.errors);
+
+        throw response.errors;
+
+    } else AlertBox.status('danger', 'Unknown response');
 
 }
 
@@ -269,7 +292,7 @@ function humanBytes(value, unit='B') {
 
 }
 
-function prettyBoolean(data) { return data ? '<span class="fas fa-check"></span>' : '' }
+function prettyBoolean(data) { return data ? Templates['confirm-icon'].removeAttr('title').outerHTML() : '' }
 
 function toUserTZ(time) {
 

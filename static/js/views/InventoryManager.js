@@ -1,10 +1,10 @@
 function InventoryManager() {
 
-    let self = this;
-
     Templates.load('templates_InventoryManager.html').then(() => {
 
         let $manager = Templates['inventory-manager'];
+
+        let $uploadButton = $manager.find('button.upload-button').prop('disabled', true);
 
         $(mainContainer).html($manager);
 
@@ -14,14 +14,12 @@ function InventoryManager() {
 
         $manager.find('#upload_field')
             .fileinput({
-                ajaxSettings: {method: 'PATCH', beforeSend: ajaxBeforeSend, error: self.ajaxError},
-                mergeAjaxCallbacks: 'before',
+                ajaxSettings: {method: 'PATCH', beforeSend: ajaxBeforeSend, error: ajaxError},
                 uploadUrl: Entities.manage.href,
                 uploadExtraData: function () {
 
                     return {
                         format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                        csrfmiddlewaretoken: getCookie('csrftoken')
                     }
 
                 },
@@ -33,11 +31,11 @@ function InventoryManager() {
 
                 $manager.find('#upload_field_title').html('Select file');
 
-                $manager.find('button.upload-button').prop('disabled', true);
+                $uploadButton.prop('disabled', true);
 
                 $manager.find('div.file-caption-main').show();
 
-                self.ajaxSuccess(data.response, function() {
+                ajaxSuccess(data.response, function() {
 
                     let $successMessage = Templates['import-results'];
 
@@ -54,7 +52,7 @@ function InventoryManager() {
             })
             .on('fileloaded', function () {
 
-                $manager.find('button.upload-button')
+                $uploadButton
                     .prop('disabled', false)
                     .off('click')
                     .click(function () {

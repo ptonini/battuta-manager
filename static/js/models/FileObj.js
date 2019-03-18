@@ -32,13 +32,15 @@ FileObj.prototype.upload = function () {
 
     modal.onConfirmation = () => {
 
-        $input.fileinput('refresh', {uploadUrl: [self.links.self, $form.find('input.file-caption-name').val()].join('/')}).fileinput('upload');
+        $input
+            .fileinput('refresh', {uploadUrl: [self.links.self, $form.find('input.file-caption-name').val()].join('/')})
+            .fileinput('upload');
 
         $form.find('div.file-caption-main').hide()
 
     };
 
-    modal.onClose = () => $input.fileinput('cancel');
+
 
     modal.header.replaceWith($('<h6>').html('Upload file'));
 
@@ -48,10 +50,20 @@ FileObj.prototype.upload = function () {
 
     $input
         .fileinput({
+            ajaxSettings: {method: 'POST', beforeSend: ajaxBeforeSend, error: ajaxError},
             progressClass: 'progress-bar progress-bar-success active',
             uploadUrl: self.links.self,
-            uploadAsync: true,
-            uploadExtraData: () => { return {_token: getCookie('csrftoken')} }
+        })
+        .on('fileloaded', function () {
+
+            modal.onClose = () => {
+
+                modal.close();
+
+                $input.fileinput('cancel');
+
+            }
+
         })
         .on('fileuploaded', function (event, data) {
 
@@ -59,13 +71,19 @@ FileObj.prototype.upload = function () {
 
             else {
 
-                modal.confirmButton.hide();
+                let timeout = setTimeout(() => modal.close(), 5000);
 
-                modal.cancelButton.attr('title', 'Close');
+                modal.confirmButton.remove();
+
+                modal.onClose = () => {
+
+                    clearTimeout(timeout);
+
+                    modal.close();
+
+                };
 
                 $(mainContainer).trigger('reload');
-
-                setTimeout(() => modal.cancelButton.click(), 5000)
 
             }
 
@@ -101,20 +119,7 @@ FileObj.prototype.contentEditor = function () {
         {name: 'yaml', label: 'YAML'}
     ];
 
-    let extensions = {
-        properties: 'properties',
-        conf: 'properties',
-        ccf: 'properties',
-        yml: 'yaml',
-        yaml: 'yaml',
-        js: 'javascript',
-        json: 'json',
-        java: 'java',
-        py: 'python',
-        python: 'python',
-        sh: 'sh',
-        xml: 'xml'
-    };
+
 
     let $form = Templates['file-editor-form'];
 
@@ -125,6 +130,21 @@ FileObj.prototype.contentEditor = function () {
     let modal = new ModalBox(null, $form);
 
     let matchExtension = (filename) => {
+
+        let extensions = {
+            properties: 'properties',
+            conf: 'properties',
+            ccf: 'properties',
+            yml: 'yaml',
+            yaml: 'yaml',
+            js: 'javascript',
+            json: 'json',
+            java: 'java',
+            py: 'python',
+            python: 'python',
+            sh: 'sh',
+            xml: 'xml'
+        };
 
         let fileNameArray = filename.toLowerCase().split('.');
 
@@ -310,7 +330,7 @@ FileObj.prototype.selector = function () {
         columns: function () { return [
             {title: 'name', data: 'attributes.name', width: '45%'},
             {title: 'type', data: 'attributes.mime_type', width: '15%'},
-            {title: 'size', data: 'attributes.size', width: '10%', render: function(data) { return humanBytes(data) }},
+            {title: 'size', data: 'attributes.size', width: '10%', render: data => { return humanBytes(data) }},
             {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
             {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
         ]},
@@ -360,7 +380,7 @@ FileObj.prototype.selector = function () {
                 Templates['edit-button'].click(() => fs_obj.edit()),
                 Templates['copy-button'].click(() => fs_obj.nameEditor('copy')),
                 Templates['download-button'].click(() => window.open(fs_obj.links.self + '?download=true', '_self')),
-                Templates['copy-button'].click(() => fs_obj.delete(false, () => $(mainContainer).trigger('reload')))
+                Templates['delete-button'].click(() => fs_obj.delete(false, () => $(mainContainer).trigger('reload')))
             )
 
         },
