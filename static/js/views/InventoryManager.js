@@ -19,7 +19,10 @@ function InventoryManager() {
                 uploadUrl: Entities.manage.href,
                 uploadExtraData: function () {
 
-                    return {format: $('input[type="radio"][name="import_file_type"]:checked').val()}
+                    return {
+                        format: $('input[type="radio"][name="import_file_type"]:checked').val(),
+                        csrfmiddlewaretoken: getCookie('csrftoken')
+                    }
 
                 },
                 uploadAsync: true
@@ -30,25 +33,28 @@ function InventoryManager() {
 
                 $manager.find('#upload_field_title').html('Select file');
 
-                $manager.find('#import_button').prop('disabled', true);
+                $manager.find('button.upload-button').prop('disabled', true);
 
                 $manager.find('div.file-caption-main').show();
 
                 self.ajaxSuccess(data.response, function() {
 
-                    AlertBox.status('success', $('<div>').append(
-                        $('<div>').attr('class','mb-2 font-weight-bold').html('Import successful'),
-                        $('<div>').attr('class','mb-1').html('Hosts added: ' + data.response.data.added_hosts),
-                        $('<div>').attr('class','mb-1').html('Groups added: ' + data.response.data.added_groups),
-                        $('<div>').attr('class','mb-1').html('Variables added: ' + data.response.data.added_vars)
-                    ));
+                    let $successMessage = Templates['import-results'];
+
+                    $successMessage.find('span.host-count').html(data.response.data['added_hosts']);
+
+                    $successMessage.find('span.group-count').html(data.response.data['added_groups']);
+
+                    $successMessage.find('span.vars-count').html(data.response.data['added_vars']);
+
+                    AlertBox.status('success', $successMessage);
 
                 });
 
             })
             .on('fileloaded', function () {
 
-                $manager.find('#import_button')
+                $manager.find('button.upload-button')
                     .prop('disabled', false)
                     .off('click')
                     .click(function () {

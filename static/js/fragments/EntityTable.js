@@ -37,7 +37,7 @@ EntityTable.prototype = {
             $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
 
             if (data.meta.deletable) $(row).find('td:last').empty().append(
-                Templates['delete-button'].addClass('btn-sm').click(() => {
+                Templates['delete-button'].click(() => {
 
                     new Entities[data.type].Model(data).delete(false, () => $(mainContainer).trigger('reload'))
 

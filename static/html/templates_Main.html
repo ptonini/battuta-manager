@@ -16,52 +16,21 @@
 </div>
 
 
-<!-- Buttons -->
-
-<button data-template="close-button" class="close-button btn btn-icon" title="Close" type="button">
-    <span class="fas fa-fw fa-times"></span>
-</button>
-
-<button data-template="confirm-button" class="confirm-button btn btn-icon" title="Confirm" type="button">
-    <span class="fas fa-fw fa-check"></span>
-</button>
-
-<button data-template="save-button" class="save-button btn btn-icon" title="Save" type="button">
-    <span class="fas fa-fw fa-save"></span>
-</button>
-
-<button data-template="run-button" class="run-button btn btn-icon" title="Run" type="button">
-    <span class="fas fa-fw fa-cogs"></span>
-</button>
-
-<button data-template="delete-button" class="delete-button btn btn-icon" title="Delete" type="button">
-    <span class="fas fa-fw fa-trash"></span>
-</button>
-
-<button data-template="edit-button" class="edit-button btn btn-icon" title="Edit" type="button">
-    <span class="fas fa-pencil-alt"></span>
-</button>
-
-<button data-template="copy-button" class="copy-button btn btn-icon" title="Copy" type="button">
-    <span class="fas fa-clone"></span>
-</button>
-
-<button data-template="download-button" class="download-button btn btn-icon" title="Download" type="button">
-    <span class="fas fa-download"></span>
-</button>
-
-<button data-template="remove-button" class="remove-button btn btn-icon btn-sm" title="Remove" type="button">
-    <span class="fas fa-minus-circle"></span>
-</button>
-
-
 <!-- Icons -->
-
-<span data-template="remove-icon" class="remove-icon fas fa-fw fa-minus-circle" title="Remove"></span>
 
 <span data-template="close-icon" class="close-icon fas fa-fw fa-times" title="Close"></span>
 
 <span data-template="confirm-icon" class="confirm-icon fas fa-fw fa-check" title="Confirm"></span>
+
+<span data-template="save-icon" class="save-icon fas fa-fw fa-save" title="Save"></span>
+
+<span data-template="edit-icon" class="edit-icon fas fa-pencil-alt" title="Edit"></span>
+
+<span data-template="delete-icon" class="delete-icon fas fa-fw fa-trash" title="Delete"></span>
+
+<span data-template="copy-icon" class="copy-icon fas fa-fw fa-clone" title="Copy"></span>
+
+<span data-template="remove-icon" class="remove-icon fas fa-fw fa-minus-circle" title="Remove"></span>
 
 <span data-template="add-icon" class="add-icon fas fa-fw fa-plus" title="Add"></span>
 
@@ -69,7 +38,62 @@
 
 <span data-template="upload-icon" class="upload-icon fas fa-fw fa-upload" title="Upload"></span>
 
-<span data-template="copy-icon" class="copy-icon fas fa-fw fa-clone" title="Copy"></span>
+
+<!-- Icon Buttons -->
+
+<button data-template="close-button" class="close-button btn btn-icon btn-sm" title="Close" type="button">
+    <i data-replace="close-icon" data-title=""></i>
+</button>
+
+<button data-template="confirm-button" class="confirm-button btn btn-icon btn-sm" title="Confirm" type="button">
+    <i data-replace="confirm-icon" data-title=""></i>
+</button>
+
+<button data-template="save-button" class="save-button btn btn-icon btn-sm" title="Save" type="button">
+    <i data-replace="save-icon" data-title=""></i>
+</button>
+
+<button data-template="edit-button" class="edit-button btn btn-icon btn-sm" title="Edit" type="button">
+    <i data-replace="edit-icon" data-title=""></i>
+</button>
+
+<button data-template="delete-button" class="delete-button btn btn-icon btn-sm" title="Delete" type="button">
+    <i data-replace="delete-icon" data-title=""></i>
+</button>
+
+<button data-template="copy-button" class="copy-button btn btn-icon btn-sm" title="Copy" type="button">
+    <i data-replace="copy-icon" data-title=""></i>
+</button>
+
+<button data-template="run-button" class="run-button btn btn-icon btn-sm" title="Run" type="button">
+    <span class="fas fa-fw fa-cogs"></span>
+</button>
+
+<button data-template="download-button" class="download-button btn btn-icon btn-sm" title="Download" type="button">
+    <span class="fas fa-download"></span>
+</button>
+
+<button data-template="upload-button" class="upload-button btn btn-icon btn-sm" title="Upload" type="button">
+    <span class="fas fa-upload"></span>
+</button>
+
+
+<!-- Small icon buttons-->
+
+<button data-template="remove-button" class="remove-button btn btn-icon btn-sm" title="Remove" type="button">
+    <span class="fas fa-minus-circle"></span>
+</button>
+
+<button data-template="facts-button" class="facts-button btn btn-icon btn-sm" title="Get facts" type="button">
+    <span class="fas fa-fw fa-clipboard-list"></span>
+</button>
+
+
+<!-- Aggregated buttons -->
+
+<button data-template="pattern-editor-button" class="pattern-editor-button btn btn-sm btn-light" title="Build pattern" type="button">
+    <i data-replace="edit-icon" data-title=""></i>
+</button>
 
 
 <!-- Forms -->
@@ -162,7 +186,10 @@
                 <small data-bind="label.single"></small>
                 <span class="mr-3" data-bind="name"></span>
             </h4>
-            <div class="button-container mb-2"></div>
+            <div class="button-container mb-2">
+                <i data-replace="edit-button"></i>
+                <i data-replace="delete-button"></i>
+            </div>
         </div>
         <ul class="nav nav-tabs">
             <li class="nav-item">

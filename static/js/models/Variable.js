@@ -95,19 +95,11 @@ Variable.prototype.selector = function ($container) {
                 let buttonCell = $(row).find('td:eq(3)').empty();
 
                 variable['meta']['editable'] && buttonCell.append(
-                    Templates['edit-button'].addClass('btn-sm').click(() => {
-
-                        variable.editor(() => $(mainContainer).trigger('reload'))
-
-                    })
+                    Templates['edit-button'].click(() => variable.editor(() => $(mainContainer).trigger('reload')))
                 );
 
                 variable['meta']['deletable'] && buttonCell.append(
-                    Templates['delete-button'].addClass('btn-sm').click(() => {
-
-                        variable.delete(false, () => $(mainContainer).trigger('reload'));
-
-                    })
+                    Templates['delete-button'].click(() => variable.delete(false, () => $(mainContainer).trigger('reload')))
                 );
             }
         },

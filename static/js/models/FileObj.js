@@ -51,7 +51,7 @@ FileObj.prototype.upload = function () {
             progressClass: 'progress-bar progress-bar-success active',
             uploadUrl: self.links.self,
             uploadAsync: true,
-            uploadExtraData: () => { return {csrfmiddlewaretoken: getCookie('csrftoken')} }
+            uploadExtraData: () => { return {_token: getCookie('csrftoken')} }
         })
         .on('fileuploaded', function (event, data) {
 
@@ -357,10 +357,10 @@ FileObj.prototype.selector = function () {
             if (fs_obj.meta.valid !== true) $(row).addClass('text-danger').attr('title', fs_obj.meta.valid);
 
             $(row).find('td:eq(4)').html('').removeAttr('title').append(
-                Templates['edit-button'].addClass('btn-sm').click(() => fs_obj.edit()),
-                Templates['copy-button'].addClass('btn-sm').click(() => fs_obj.nameEditor('copy')),
-                Templates['download-button'].addClass('btn-sm').click(() => window.open(fs_obj.links.self + '?download=true', '_self')),
-                Templates['copy-button'].addClass('btn-sm').click(() => fs_obj.delete(false, () => $(mainContainer).trigger('reload')))
+                Templates['edit-button'].click(() => fs_obj.edit()),
+                Templates['copy-button'].click(() => fs_obj.nameEditor('copy')),
+                Templates['download-button'].click(() => window.open(fs_obj.links.self + '?download=true', '_self')),
+                Templates['copy-button'].click(() => fs_obj.delete(false, () => $(mainContainer).trigger('reload')))
             )
 
         },

@@ -36,9 +36,7 @@
                         <input id="upload_field" class="input-file" type="file">
                     </div>
                     <div class="col-12">
-                        <button id="import_button" class="btn btn-icon btn-sm" title="Import" disabled>
-                            <span class="fas fa-fw fa-upload"></span>
-                        </button>
+                        <i data-replace="upload-button"></i>
                     </div>
                 </div>
             </div>
@@ -87,3 +85,10 @@
     <label>'SFTP default user'</label>
     <input class="sftp-user-input form-control form-control-sm" type="text" title="'SFTP default user'">
 </form>
+
+<div data-template="import-results">
+    <div class="mb-2 font-weight-bold">Import successful</div>
+    <div class="mb-1">Hosts added: <span class="host-count"></span></div>
+    <div class="mb-1">Groups added: <span class="group-count"></span></div>
+    <div class="mb-1">Variables added: <span class="var-count"></span></div>
+</div>

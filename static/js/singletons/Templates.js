@@ -20,7 +20,29 @@ const Templates = {
 
                 let $template = $(this);
 
-                Object.defineProperty(self, $template.data('template'), { get: () => { return $template.clone().removeAttr('data-template') }});
+                Object.defineProperty(self, $template.data('template'), { get: () => {
+
+                    let $newComponent  = $template.clone().removeAttr('data-template');
+
+                    $newComponent.find('[data-replace]').each(function () {
+
+                        let $newChild = Templates[$(this).data('replace')];
+
+                        $(this).data().hasOwnProperty('classes') && $newChild.addClass($(this).data('classes'));
+
+                        if ($(this).data().hasOwnProperty('title'))
+
+                            if ($(this).data('title')) $newChild.attr('title', $(this).data('title'));
+
+                            else $newChild.removeAttr('title');
+
+                        $(this).replaceWith($newChild);
+
+                    });
+
+                    return $newComponent
+
+                }});
 
             });
 

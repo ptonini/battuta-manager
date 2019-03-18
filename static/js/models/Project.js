@@ -45,8 +45,8 @@ Project.prototype.info = function ($container) {
     ['manager', 'host_group'].forEach(function (item) {
 
         $form.find('span.' + item + '-button-container').append(
-            Templates['edit-button'].addClass('btn-sm').click(() => self.setProperty(item)),
-            Templates['remove-button'].addClass('btn-sm').click(() => fetchJson('DELETE', self.links[item]).then( self.set(item, '') ))
+            Templates['edit-button'].click(() => self.setProperty(item)),
+            Templates['remove-button'].click(() => fetchJson('DELETE', self.links[item]).then( self.set(item, '') ))
         )
 
     });

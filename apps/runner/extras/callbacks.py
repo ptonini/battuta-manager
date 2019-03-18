@@ -257,7 +257,7 @@ class BattutaCallback(CallbackBase):
 
             self._execute_query('update', 'UPDATE inventory_host SET facts=%s WHERE name=%s', (json.dumps(facts), host))
 
-        if self._current_task_module in ['command', 'script']:
+        if self._current_task_module in ['command', 'script', 'shell']:
 
             message = response.get('stdout') if response.get('stdout') else response.get('stderr')
 
