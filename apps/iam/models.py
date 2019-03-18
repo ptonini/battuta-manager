@@ -38,11 +38,11 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
             LocalGroup.type: '/'.join([self.route, str(self.id), LocalGroup.type])
         }
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self, user):
+    def perms(self, user):
 
         readable = any([
             user.has_perm('users.edit_users') and not self.is_superuser,
@@ -115,11 +115,11 @@ class Credential(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link}
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self, user):
+    def perms(self, user):
 
         readable = user.has_perm('users.edit_users') or user.id == self.user.id
 
@@ -155,13 +155,13 @@ class LocalGroup(Group, ModelSerializerMixin):
             'permissions': '/'.join([self.link, 'permissions'])
         }
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         meta['builtin'] = self.name in builtin_groups
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self, user):
+    def perms(self, user):
 
         readable = user.has_perm('users.edit_user_groups')
 

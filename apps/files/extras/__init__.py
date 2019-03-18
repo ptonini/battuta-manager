@@ -45,11 +45,11 @@ class FileHandler(ModelSerializerMixin):
 
         if os.path.isdir(self.absolute_path):
 
-            self.type  = 'folder'
+            self.type = 'folder'
 
         elif os.path.isfile(self.absolute_path):
 
-            self.type  = 'file'
+            self.type = 'file'
 
         else:
 
@@ -94,13 +94,13 @@ class FileHandler(ModelSerializerMixin):
     @staticmethod
     def search(term, file_type, user):
 
-        def is_match (r, path):
+        def is_match(r, path):
 
             if term in path:
 
                 fs_obj = FileHandler.factory(r, path, user)
 
-                if fs_obj.permissions()['readable']:
+                if fs_obj.perms()['readable']:
 
                     return bool(re.match('|'.join(mime_types[file_type]), fs_obj.mime_type)) if file_type else True
 
@@ -236,9 +236,9 @@ class FileHandler(ModelSerializerMixin):
 
         for root, dirs, files in os.walk(cls.root_path):
 
-            for file_name in files:
+            for f in files:
 
-                path_list.append(file_name if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), file_name))
+                path_list.append(f if cls.root_path == root else os.path.join(root.replace(cls.root_path + '/', ''), f))
 
         return [cls(p, user) for p in cls.sort_path_list(path_list)]
 
@@ -250,7 +250,7 @@ class FileHandler(ModelSerializerMixin):
     @classmethod
     def create(cls, root, path, request):
 
-        if cls.factory(root, os.path.split(path)[0], request.user).permissions()['editable']:
+        if cls.factory(root, os.path.split(path)[0], request.user).perms()['editable']:
 
             root_path = cls.get_root_class(root).root_path
 
@@ -278,7 +278,7 @@ class FileHandler(ModelSerializerMixin):
 
                     source = cls.factory(source_dict['root'], source_dict['path'], request.user)
 
-                    if source.permissions()['readable']:
+                    if source.perms()['readable']:
 
                         cls._action(fs_obj_type, root)['copy'](source.absolute_path, absolute_path)
 
@@ -312,13 +312,13 @@ class FileHandler(ModelSerializerMixin):
 
                 fs_obj = FileHandler.factory(self.root, os.path.join(self.path, fs_obj_name), self.user)
 
-                response['included'].append(fs_obj.serialize(fields)) if fs_obj.permissions()['readable'] else None
+                response['included'].append(fs_obj.serialize(fields)) if fs_obj.perms()['readable'] else None
 
             return response
 
         else:
 
-            if self.permissions()['readable']:
+            if self.perms()['readable']:
 
                 return {'data': self.serialize(fields)}
 
@@ -328,7 +328,7 @@ class FileHandler(ModelSerializerMixin):
 
     def update(self, attributes):
 
-        if self.permissions()['editable']:
+        if self.perms()['editable']:
 
             new_name = attributes.get('new_name')
 
@@ -338,7 +338,7 @@ class FileHandler(ModelSerializerMixin):
 
             if validation is True:
 
-                if new_name :
+                if new_name:
 
                     os.rename(self.absolute_path, os.path.join(self.absolute_parent_path, new_name))
 
@@ -361,7 +361,7 @@ class FileHandler(ModelSerializerMixin):
 
     def delete(self):
 
-        if self.permissions()['deletable']:
+        if self.perms()['deletable']:
 
             self._action(self.type, self.root)['delete'](self.absolute_path)
 
@@ -440,13 +440,13 @@ class FileHandler(ModelSerializerMixin):
 
                 attr['content'] = file_content
 
-        meta = self.permissions()
+        meta = self.perms()
 
         meta['valid'] = self._validate(self.root, self.type, self.path, file_content)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self):
+    def perms(self):
 
         authorizer = caches['authorizer'].get_or_set(self.user.username, lambda: Authorizer(self.user))
 

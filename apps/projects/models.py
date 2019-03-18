@@ -78,11 +78,11 @@ class Project(models.Model, ModelSerializerMixin):
             'roles': '/'.join([self.link, 'roles']),
         }
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self, user):
+    def perms(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 

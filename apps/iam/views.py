@@ -33,7 +33,7 @@ class UserView(View, ApiViewMixin):
 
             request.JSON['data']['attributes']['timezone'] = get_preferences()['default_timezone']
 
-        if user.permissions(request.user)['editable']:
+        if user.perms(request.user)['editable']:
 
             response = self._save_instance(request, user)
 
@@ -57,7 +57,7 @@ class UserView(View, ApiViewMixin):
 
             user = get_object_or_404(LocalUser, pk=user_id)
 
-            if user.permissions(request.user)['readable']:
+            if user.perms(request.user)['readable']:
 
                 response = {'data': (user.serialize(request.JSON.get('fields'), request.user))}
 
@@ -71,7 +71,7 @@ class UserView(View, ApiViewMixin):
 
             for user in LocalUser.objects.order_by('username').all():
 
-                if user.permissions(request.user)['readable']:
+                if user.perms(request.user)['readable']:
 
                     data.append(user.serialize(request.JSON.get('fields'), request.user))
 
@@ -83,7 +83,7 @@ class UserView(View, ApiViewMixin):
 
         user = get_object_or_404(LocalUser, pk=user_id)
 
-        if user.permissions(request.user)['editable']:
+        if user.perms(request.user)['editable']:
 
             attr = request.JSON.get('data', {}).get('attributes', {})
 
@@ -114,7 +114,7 @@ class UserView(View, ApiViewMixin):
 
             user = get_object_or_404(LocalUser, pk=user_id)
 
-            if user.permissions(request.user)['deletable']:
+            if user.perms(request.user)['deletable']:
 
                 user.delete()
 
@@ -145,7 +145,7 @@ class CredentialView(View, ApiViewMixin):
 
         cred = Credential(user=LocalUser.objects.get(pk=user_id))
 
-        if cred.permissions(request.user)['editable']:
+        if cred.perms(request.user)['editable']:
 
             response = self._save_instance(request, cred)
 
@@ -163,7 +163,7 @@ class CredentialView(View, ApiViewMixin):
 
             cred = get_object_or_404(Credential, pk=cred_id)
 
-            if cred.permissions(request.user)['readable']:
+            if cred.perms(request.user)['readable']:
 
                 return self._api_response({'data': cred.serialize(request.JSON.get('fields'), request.user)})
 
@@ -177,7 +177,7 @@ class CredentialView(View, ApiViewMixin):
 
             cred = Credential(user=user)
 
-            if cred.permissions(request.user)['readable']:
+            if cred.perms(request.user)['readable']:
 
                 data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
 
@@ -193,7 +193,7 @@ class CredentialView(View, ApiViewMixin):
 
         placeholder = get_preferences()['password_placeholder']
 
-        if cred.permissions(request.user)['editable']:
+        if cred.perms(request.user)['editable']:
 
             if request.JSON.get('data', {}).get('attributes', {}).get('password') == placeholder:
 
@@ -230,7 +230,7 @@ class CredentialView(View, ApiViewMixin):
 
         cred = get_object_or_404(Credential, pk=cred_id)
 
-        if cred.permissions(request.user)['deletable']:
+        if cred.perms(request.user)['deletable']:
 
             cred.delete()
 
@@ -249,7 +249,7 @@ class UserGroupView(View, ApiViewMixin):
 
         group = LocalGroup()
 
-        if group.permissions(request.user)['editable']:
+        if group.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, group))
 
@@ -263,7 +263,7 @@ class UserGroupView(View, ApiViewMixin):
 
             group = get_object_or_404(LocalGroup, pk=group_id)
 
-            if group.permissions(request.user)['readable']:
+            if group.perms(request.user)['readable']:
 
                 return self._api_response({'data': group.serialize(request.JSON.get('fields'), request.user)})
 
@@ -277,7 +277,7 @@ class UserGroupView(View, ApiViewMixin):
 
             for group in LocalGroup.objects.order_by('name').all():
 
-                if group.permissions(request.user)['readable']:
+                if group.perms(request.user)['readable']:
 
                     data.append(group.serialize(request.JSON.get('fields'), request.user))
 
@@ -288,7 +288,7 @@ class UserGroupView(View, ApiViewMixin):
 
         group = get_object_or_404(LocalGroup, pk=group_id)
 
-        if group.permissions(request.user)['editable']:
+        if group.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, group))
 
@@ -303,7 +303,7 @@ class UserGroupView(View, ApiViewMixin):
 
             group = get_object_or_404(LocalGroup, pk=group_id)
 
-            if group.permissions(request.user)['deletable']:
+            if group.perms(request.user)['deletable']:
 
                 group.delete()
 
@@ -350,7 +350,7 @@ class RelationsView(View, ApiViewMixin):
 
         obj, r_class, r_manager = self._build_data(obj_type, obj_id, relation)
 
-        if obj.permissions(request.user)['editable'] and r_class().permissions(request.user)['editable']:
+        if obj.perms(request.user)['editable'] and r_class().perms(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
@@ -374,7 +374,7 @@ class RelationsView(View, ApiViewMixin):
 
             data = list()
 
-            if obj.permissions(request.user)['readable']:
+            if obj.perms(request.user)['readable']:
 
                 for r in r_manager.all():
 
@@ -392,7 +392,7 @@ class RelationsView(View, ApiViewMixin):
 
             for r in r_class.objects.exclude(pk__in=[related.id for related in r_manager.all()]):
 
-                if r_class().permissions(request.user)['readable'] and not getattr(r, 'is_superuser', False):
+                if r_class().perms(request.user)['readable'] and not getattr(r, 'is_superuser', False):
 
                     data.append(r.serialize(request.JSON.get('fields'), request.user))
 
@@ -402,7 +402,7 @@ class RelationsView(View, ApiViewMixin):
 
         obj ,related_class, related_manager = self._build_data(obj_type, obj_id, relation)
 
-        if obj.permissions(request.user)['editable'] and related_class().permissions(request.user)['editable']:
+        if obj.perms(request.user)['editable'] and related_class().perms(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
@@ -442,11 +442,11 @@ class PermissionView(View, ApiViewMixin):
 
         group = get_object_or_404(LocalGroup, pk=group_id)
 
-        if group.permissions(request.user)['editable']:
+        if group.perms(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
-                group.permissions.add(Permission.objects.get(codename=selected['id']))
+                group.perms.add(Permission.objects.get(codename=selected['id']))
 
             return HttpResponse(status=204)
 
@@ -458,7 +458,7 @@ class PermissionView(View, ApiViewMixin):
 
         group = get_object_or_404(LocalGroup, pk=group_id)
 
-        if group.permissions(request.user)['readable']:
+        if group.perms(request.user)['readable']:
 
             response = {'data': list()}
 
@@ -485,11 +485,11 @@ class PermissionView(View, ApiViewMixin):
 
         group = get_object_or_404(LocalGroup, pk=group_id)
 
-        if group.permissions(request.user)['editable']:
+        if group.perms(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 
-                group.permissions.remove(Permission.objects.get(codename=selected['id']))
+                group.perms.remove(Permission.objects.get(codename=selected['id']))
 
             return HttpResponse(status=204)
 

@@ -1,5 +1,6 @@
 import yaml
 
+
 def validate_yaml(stream):
 
     try:
@@ -13,6 +14,7 @@ def validate_yaml(stream):
     else:
 
         return True
+
 
 file_types = {
     'any': {

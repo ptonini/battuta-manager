@@ -62,13 +62,13 @@ Job.prototype.stateColor = function () {
 
 };
 
-Job.prototype.run = function (become, sameWindow=false) {
+Job.prototype.run = function (become, sameWindow=false, callback=null) {
 
     let self = this;
 
     let credPromise, askUser, askUserPass, askSudoUser, askSudoPass;
 
-    let post = () => self.create(true).then(() => {
+    let post = () => { return self.create(true).then(() => {
 
         if (sameWindow) Router.navigate(self.links.self);
 
@@ -80,7 +80,9 @@ Job.prototype.run = function (become, sameWindow=false) {
 
         }
 
-    });
+        callback && callback()
+
+    })};
 
     if (self.cred) {
 
@@ -171,6 +173,8 @@ Job.prototype.rerun = function () {
             break;
 
         case 'facts':
+
+            Job.getFacts(self.subset, true)
 
     }
 
@@ -450,6 +454,36 @@ Job.prototype.viewer = function () {
             }, 1000);
 
         } else $navBar.find('.running-element').remove();
+
+    })
+
+};
+
+Job.getFacts = function (pattern, sameWindow, callback) {
+
+    return getUserCreds().read(false, {fields: {attributes: ['is_default'], meta: false}}).then(response => {
+
+        for (let i = 0; i < response.data.length; i++) if (response.data[i].attributes.is_default) {
+
+            let job = new Job({
+                attributes: {
+                    name: 'Gather facts',
+                    job_type: 'facts',
+                    subset: pattern,
+                    check: false,
+                    user: sessionStorage.getItem('current_user_id'),
+                    cred: response.data[i].id,
+                    parameters: {
+                        name: 'Gather facts',
+                        hosts: pattern
+                    },
+                },
+                links: {self: Entities.jobs.href}
+            });
+
+            return job.run(false, sameWindow, callback);
+
+        }
 
     })
 

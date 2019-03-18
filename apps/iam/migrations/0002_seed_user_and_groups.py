@@ -92,7 +92,7 @@ def add_user_groups(apps, schema_editor):
 
             perm = permission_class.objects.get(codename=permission)
 
-            group.permissions.add(perm)
+            group.perms.add(perm)
 
 class Migration(migrations.Migration):
 

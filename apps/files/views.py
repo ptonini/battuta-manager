@@ -83,7 +83,7 @@ class FileView(View, ApiViewMixin):
 
                 for f in FileHandler.get_root_class(root).list(request.user):
 
-                    if f.permissions()['readable']:
+                    if f.perms()['readable']:
 
                         data.append(f.serialize({'attributes': ['path'], 'links': ['self', 'args']}))
 

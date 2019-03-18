@@ -74,7 +74,7 @@ User.prototype.tabs = {
     groups: {
         label: 'Groups',
         validator: self => { return !self.get('is_superuser') },
-        generator: (self, $container) => $container(new RelationGrid(self, 'usergroups', UserGroup.prototype.label.collective, 'name').element)
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'usergroups', UserGroup.prototype.label.collective, 'name').element)
     }
 };
 

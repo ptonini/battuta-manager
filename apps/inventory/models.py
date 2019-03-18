@@ -85,13 +85,13 @@ class Node(models.Model, ModelSerializerMixin):
             'parents': '/'.join([self.link, 'parents']),
         }
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
-    def permissions(self, user):
+    def perms(self, user):
 
         editable = user.has_perm('users.edit_' + getattr(self, 'type'))
 
@@ -212,13 +212,13 @@ class Group(Node):
             'members': '/'.join([self.link, 'members'])
         }
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta, data=super(Group, self).serialize(fields, user))
 
         return data
 
-    def permissions(self, user):
+    def perms(self, user):
 
         editable = all([
             user.has_perm('users.edit_' + self.type),
@@ -272,11 +272,11 @@ class Variable(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link, 'parent': '/'.join([node_route, node_id_str])}
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self, user):
+    def perms(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 

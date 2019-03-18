@@ -36,13 +36,13 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
         links = {'self': '/'.join(['runner/playbooks', self.path, 'args', str(self.id)])}
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
-    def permissions(self, user):
+    def perms(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
@@ -90,13 +90,13 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
         links = {'self': '/'.join([self.route, str(self.id)])}
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
-    def permissions(self, user):
+    def perms(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
@@ -159,7 +159,7 @@ class Job(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link}
 
-        meta = self.permissions(user)
+        meta = self.perms(user)
 
         rel = {'plays': [p.serialize(None, user) for p in self.play_set.all()]}
 
@@ -168,7 +168,7 @@ class Job(models.Model, ModelSerializerMixin):
         return data
 
     @staticmethod
-    def permissions(user):
+    def perms(user):
 
         # authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
@@ -208,18 +208,17 @@ class Play(models.Model, ModelSerializerMixin):
             'message': self.message
         }
 
-        rel = {
-            'tasks': [t.serialize({'attributes': ['name', 'is_running'], 'meta': False}, user) for t in self.task_set.all()]
-        }
+        rel_fields = {'attributes': ['name', 'is_running'], 'meta': False}
+
+        rel = {'tasks': [t.serialize(rel_fields, user) for t in self.task_set.all()]}
 
         data = self._build_filtered_dict(fields, attributes=attr, relationships=rel)
 
-
         return data
 
-    def permissions(self, user):
+    def perms(self, user):
 
-        return self.job.permissions(user)
+        return self.job.perms(user)
 
 
 class Task(models.Model, ModelSerializerMixin):
@@ -250,13 +249,14 @@ class Task(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link, 'results': '/'.join([self.link, 'results'])}
 
-        meta = self.play.job.permissions(user)
+        meta = self.play.job.perms(user)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
-    def permissions(self, user):
+    def perms(self, user):
 
-        return self.play.job.permissions(user)
+        return self.play.job.perms(user)
+
 
 class Result(models.Model, ModelSerializerMixin):
 
@@ -286,12 +286,12 @@ class Result(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link}
 
-        meta = self.task.play.job.permissions(user)
+        meta = self.task.play.job.perms(user)
 
         data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
-    def permissions(self, user):
+    def perms(self, user):
 
-        return self.task.play.job.permissions(user)
+        return self.task.play.job.perms(user)

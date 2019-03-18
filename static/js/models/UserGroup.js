@@ -43,12 +43,12 @@ UserGroup.prototype.tabs = {
     members: {
         label: 'Members',
         validator: function () {return true},
-        generator: (self, $container) => $container(new RelationGrid(self, 'users', 'users', 'username').element)
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'users', 'users', 'username').element)
     },
     permissions: {
         label: 'Permissions',
         validator: function () {return true},
-        generator: (self, $container) => $container(new RelationGrid(self, 'permissions', 'permissions', 'name').element)
+        generator: (self, $container) => $container.html(new RelationGrid(self, 'permissions', 'permissions', 'name').element)
     }
 };
 

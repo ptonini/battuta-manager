@@ -35,7 +35,7 @@ class PlaybookView(View, ApiViewMixin):
 
         for p in PlaybookHandler.list(request.user):
 
-            if p.permissions['readable']:
+            if p.perms['readable']:
 
                 data.append(p.serialize({'attributes': ['path'], 'links': ['self', 'args']}))
 
@@ -50,7 +50,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
         args = PlaybookArgs(path=path)
 
-        if args.permissions(request.user)['editable']:
+        if args.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, args))
 
@@ -66,7 +66,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
             args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-            if args.permissions(request.user)['readable']:
+            if args.perms(request.user)['readable']:
 
                 return self._api_response({'data': args.serialize(request.JSON.get('fields'), request.user)})
 
@@ -78,7 +78,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
             for a in PlaybookArgs.objects.filter(path=path):
 
-                if a.permissions(request.user)['readable']:
+                if a.perms(request.user)['readable']:
 
                     data.append(a.serialize(None, request.user))
 
@@ -88,7 +88,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
         args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-        if args.permissions(request.user)['editable'] and args.path == path:
+        if args.perms(request.user)['editable'] and args.path == path:
 
             return self._api_response(self._save_instance(request, args))
 
@@ -101,7 +101,7 @@ class PlaybookArgsView(View, ApiViewMixin):
 
         args = get_object_or_404(PlaybookArgs, pk=args_id)
 
-        if args.permissions(request.user)['deletable'] and args.path == path:
+        if args.perms(request.user)['deletable'] and args.path == path:
 
             args.delete()
 
@@ -120,7 +120,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
         task = AdHocTask()
 
-        if task.permissions(request.user)['editable']:
+        if task.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, task))
 
@@ -134,7 +134,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
             task = get_object_or_404(AdHocTask, pk=task_id)
 
-            if task.permissions(request.user)['readable']:
+            if task.perms(request.user)['readable']:
 
                 response = {'data': (task.serialize(request.JSON.get('fields'), request.user))}
 
@@ -148,7 +148,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
             for task in AdHocTask.objects.all():
 
-                if task.permissions(request.user)['readable']:
+                if task.perms(request.user)['readable']:
 
                     data.append(task.serialize(request.JSON.get('fields'), request.user))
 
@@ -160,7 +160,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
         task = get_object_or_404(AdHocTask, pk=task_id)
 
-        if task.permissions(request.user)['editable']:
+        if task.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, task))
 
@@ -173,7 +173,7 @@ class AdHocTaskView(View, ApiViewMixin):
 
         task = get_object_or_404(AdHocTask, pk=task_id)
 
-        if task.permissions(request.user)['deletable']:
+        if task.perms(request.user)['deletable']:
 
             task.delete()
 
@@ -188,6 +188,18 @@ class JobView(View, ApiViewMixin):
 
     form_class = JobForm
 
+    @staticmethod
+    def _build_play(tasks, job_parameters, run_data):
+
+        play_dict = {
+            'name': job_parameters['name'],
+            'hosts': job_parameters['hosts'],
+            'gather_facts': False,
+            'tasks': tasks
+        }
+
+        return AnsiblePlay().load(play_dict, variable_manager=run_data['var_manager'], loader=run_data['loader'])
+
     def post(self, request, job_id):
 
         request_attr = request.JSON.get('data').get('attributes')
@@ -196,7 +208,7 @@ class JobView(View, ApiViewMixin):
 
         job = Job()
 
-        if job.permissions(request.user)['editable']:
+        if job.perms(request.user)['editable']:
 
             inventory = AnsibleInventory(subset=request_attr.get('subset'))
 
@@ -271,14 +283,7 @@ class JobView(View, ApiViewMixin):
 
                     task[job_parameters['module']] = job_parameters['arguments']
 
-                    play_dict = {
-                        'name': job_parameters['name'],
-                        'hosts': job_parameters['hosts'],
-                        'gather_facts': False,
-                        'tasks': [task]
-                    }
-
-                    run_data['plays'] = [AnsiblePlay().load(play_dict, variable_manager=run_data['var_manager'], loader=run_data['loader'])]
+                    run_data['plays'] = [self._build_play([task], job_parameters, run_data)]
 
                 else:
 
@@ -286,7 +291,11 @@ class JobView(View, ApiViewMixin):
 
             elif request_attr.get('job_type') == 'facts':
 
-                pass
+                tasks = [{'setup': {}}]
+
+                tasks.append({'ec2_instance_facts': {}}) if get_preferences()['use_ec2_facts'] else None
+
+                run_data['plays'] = [self._build_play(tasks, job_parameters, run_data)]
 
             job_form = JobForm(request_attr)
 
@@ -356,7 +365,7 @@ class JobView(View, ApiViewMixin):
 
             job = get_object_or_404(Job, pk=job_id)
 
-            if job.permissions(request.user)['readable']:
+            if job.perms(request.user)['readable']:
 
                 return self._api_response({'data': job.serialize(request.JSON.get('fields'), request.user)})
 
@@ -380,7 +389,7 @@ class JobView(View, ApiViewMixin):
 
         job = get_object_or_404(Job, pk=job_id)
 
-        if job.permissions(request.user)['editable']:
+        if job.perms(request.user)['editable']:
 
             job_status = request.JSON.get('data', {}).get('attributes', {}).get('status')
 
@@ -424,7 +433,6 @@ class JobView(View, ApiViewMixin):
 
                     job.save()
 
-
             return self._api_response({'data': job.serialize(request.JSON.get('fields'), request.user)})
 
         else:
@@ -438,7 +446,7 @@ class TaskView(View, ApiViewMixin):
 
         task = get_object_or_404(Task, pk=task_id)
 
-        if task.permissions(request.user)['readable']:
+        if task.perms(request.user)['readable']:
 
             result_fields = {'attributes': ['host', 'status', 'message']}
 
@@ -460,7 +468,7 @@ class ResultView(View, ApiViewMixin):
 
         result = get_object_or_404(Result, pk=result_id)
 
-        if result.permissions(request.user)['readable']:
+        if result.perms(request.user)['readable']:
 
             return self._api_response({'data': result.serialize(request.JSON.get('fields'), request.user)})
 
@@ -682,9 +690,7 @@ class ResultView(View, ApiViewMixin):
 #
 #                 if True in auth:
 #
-#                     tasks = [{'action': {'module': 'setup'}}]
-#
-#                     tasks.append({'action': {'module': 'ec2_facts'}}) if prefs['use_ec2_facts'] else None
+
 #
 #                     job_data['name'] = 'Gather facts'
 #

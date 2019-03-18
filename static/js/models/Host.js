@@ -56,17 +56,15 @@ Host.prototype.info = function ($container) {
 
     $container.find('.hide_when_empty').hide();
 
-    return fetchJson('GET', self.links.self, {fields: {attributes: ['facts']}}).then(response => {
+    return self.read(false, {fields: {attributes: ['facts']}}).then(response => {
 
-        self.set('facts', response.data['facts']);
-
-        if (self.get('facts')) {
+        if (Object.keys(self.get('facts')).length > 0) {
 
             $container.find('button.hide_when_empty').show();
 
             $container.find('div.main-info-column').show();
 
-            $container.find('[data-bind="facts.memtotal_mb"]').humanBytes('MB');
+            self.set('facts.memtotal_mb', humanBytes(response.data.attributes['facts']['memtotal_mb'], 'MB'));
 
             if (self.get('facts').system === 'Win32NT') self.get('facts').processor = ['&nbsp;'];
 
@@ -78,15 +76,11 @@ Host.prototype.info = function ($container) {
                 networking: {
                     data: (function () {
 
-                        let interfacesArray = [];
+                        let data = [];
 
-                        $.each(self.get('facts').interfaces, function (index, value) {
+                        self.get('facts.interfaces').forEach(value => data.push(self.get('facts')[value]));
 
-                            interfacesArray.push(self.get('facts')[value])
-
-                        });
-
-                        return interfacesArray
+                        return data
 
                     })(),
                     columns:  [
@@ -96,24 +90,17 @@ Host.prototype.info = function ($container) {
                         {title: 'netmask', data: 'ipv4.netmask', defaultContent: ''},
                         {title: 'mac', data: 'macaddress', defaultContent: ''},
                         {title: 'mtu', data: 'mtu', defaultContent: ''}
-                    ],
-                    rowCallback: function(row, data) {}
-
+                    ]
                 },
                 storage: {
-                    data: self.get('facts')['mounts'],
+                    data: self.get('facts.mounts'),
                     columns: [
-                        {title: 'device', data: 'device'},
-                        {title: 'mount', data: 'mount'},
-                        {title: 'size', data: 'size_total'},
-                        {title: 'type', data: 'fstype'},
-                        {title: 'options', data: 'options'}
-                    ],
-                    rowCallback: function(row) {
-
-                        $(row).find('td:eq(2)').humanBytes('GB')
-
-                    }
+                        {title: 'device', data: 'device', width: '20%'},
+                        {title: 'mount', data: 'mount', width: '20%'},
+                        {title: 'size', data: 'size_total', width: '15%', render: data => { return humanBytes(data)}},
+                        {title: 'type', data: 'fstype', width: '15%'},
+                        {title: 'options', data: 'options', width: '30%'}
+                    ]
                 },
             };
 
@@ -135,12 +122,13 @@ Host.prototype.info = function ($container) {
                     info: false,
                     dom: "<'row'<'col-12'tr>>",
                     columns: infoTables[key].columns,
-                    rowCallback: infoTables[key].rowCallback
                 });
 
                 modal.open({width: 700});
 
                 $table.DataTable().columns.adjust().draw();
+
+                modal.center();
 
             });
 
@@ -159,11 +147,24 @@ Host.prototype.info = function ($container) {
 
         else $container.find('#gather_facts').attr('title', 'Gather facts');
 
-        $container.find('#gather_facts').click(function () {
+        $container.find('button.facts-button').click(() => {
 
-            let job = new Job({hosts: self.name});
+            Job.getFacts(self.name, false, () => {
 
-            job.getFacts();
+                let interval = setInterval(() => self.read(false, {fields: {attributes: ['facts']}}).then(() => {
+
+                    if (Object.keys(self.get('facts')).length > 0) {
+
+                        clearInterval(interval);
+
+                        Router.navigate(self.links.self);
+
+                    }
+
+                }), 1000)
+
+
+            });
 
         });
 

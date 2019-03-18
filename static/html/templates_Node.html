@@ -27,17 +27,17 @@
     </div>
 </div>
 
-<div data-template="host-info" class="row">
-    <div class="main-info-column hide_when_empty col-5 mt-4">
+<div data-template="host-info" class="row mt-4">
+    <div class="main-info-column hide_when_empty col-5">
         <div class="row no-gutters">
             <div class="col-4 item-label">Full hostname:</div>
             <div data-bind="facts.fqdn" class="col-8 item-value font-weight-bold text-truncate"></div>
             <div class="col-4 item-label">Processor:</div>
             <div class="col-8 item-value font-weight-bold text-truncate">
-                <span data-bind="facts.processor.1"></span>&nbsp;
+                <span data-bind="facts.processor.2"></span>&nbsp;
             </div>
             <div class="col-4 item-label">Cores:</div>
-            <div data-bind="facts.processor_count" class="col-8 item-value font-weight-bold text-truncate"></div>
+            <div data-bind="facts.processor_cores" class="col-8 item-value font-weight-bold text-truncate"></div>
             <div class="col-4 item-label">RAM Memory</div>
             <div data-bind="facts.memtotal_mb" class="col-8 item-value font-weight-bold text-truncate"></div>
             <div class="col-4 item-label">System:</div>
@@ -52,29 +52,7 @@
             </div>
         </div>
     </div>
-    <div class="guest-info-column hide_when_empty col-5 mt-4">
-        <div class="row no-gutters">
-            <div class="col-4 item-label">EC2 hostname:</div>
-            <div data-bind="facts.ec2_hostname" class="col-8 item-value font-weight-bold text-truncate"></div>
-        </div>
-        <div class="row no-gutters">
-            <div class="col-4 item-label">EC2 public address:</div>
-            <div data-bind="facts.ec2_public_ipv4" class="col-8 item-value font-weight-bold text-truncate"></div>
-        </div>
-        <div class="row no-gutters">
-            <div class="col-4 item-label">EC2 instance type:</div>
-            <div data-bind="facts.ec2_instance_type" class="col-8 item-value font-weight-bold text-truncate"></div>
-        </div>
-        <div class="row no-gutters">
-            <div class="col-4 item-label">EC2 instance id:</div>
-            <div data-bind="facts.ec2_instance_id" class="col-8 item-value font-weight-bold text-truncate"></div>
-        </div>
-        <div class="row no-gutters">
-            <div class="col-4 item-label">EC2 avaliability zone:</div>
-            <div data-bind="facts.ec2_placement_availability_zone" class="col-8 item-value font-weight-bold text-truncate"></div>
-        </div>
-    </div>
-    <div class="host-info-column hide_when_empty col-5 mt-4">
+    <div class="host-info-column hide_when_empty col-5">
         <div class="row no-gutters">
             <div class="col-4 item-label">System vendor:</div>
             <div data-bind="facts.system_vendor" class="col-8 item-value font-weight-bold text-truncate"></div>
@@ -93,18 +71,16 @@
         </div>
     </div>
     <div class="col-12 mt-4">
-        <button id="show_networking" class="btn btn-icon hide_when_empty" title="Network">
+        <button id="show_networking" class="btn btn-icon btn-sm hide_when_empty" title="Network">
             <span class="fas fa-fw fa-network-wired"></span>
         </button>
-        <button id="show_storage" class="btn btn-icon hide_when_empty" title="Storage">
+        <button id="show_storage" class="btn btn-icon btn-sm hide_when_empty" title="Storage">
             <span class="fas fa-fw fa-hdd"></span>
         </button>
-        <button id="show_facts" class="btn btn-icon hide_when_empty" title="Facts">
+        <button id="show_facts" class="btn btn-icon btn-sm hide_when_empty" title="Facts">
             <span class="fas fa-fw fa-clipboard"></span>
         </button>
-        <button id="gather_facts" class="btn btn-icon" title="Update facts">
-            <span class="fas fa-clipboard-list fa-fw"></span>
-        </button>
+        <i data-replace="facts-button"></i>
     </div>
 </div>
 

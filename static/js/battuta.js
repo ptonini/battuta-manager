@@ -108,10 +108,7 @@ $.fn.rememberTab = function () {
 
 };
 
-$.fn.outerHTML = function() {
-
-    return jQuery('<div />').append(this.eq(0).clone()).html();
-};
+$.fn.outerHTML = function() { return jQuery('<div />').append(this.eq(0).clone()).html() };
 
 
 /// Functions /////////////////////////
@@ -409,12 +406,9 @@ function setCanvasHeight ($container) {
 
 }
 
+function onTabShown(tab) {
 
-/// Events ////////////////////////////
-
-$(document.body).on('shown.bs.tab','a.nav-link', function () {
-
-    $($(this).attr('href')).find('table.dataTable').each(function () {
+    $($(tab).attr('href')).find('table.dataTable').each(function () {
 
         let $table = $(this);
 
@@ -424,8 +418,13 @@ $(document.body).on('shown.bs.tab','a.nav-link', function () {
 
     });
 
-    $($(this).attr('href')).find('div.dynagrid-container').each(function () { $(this).DynaGrid('resize') })
+    $($(tab).attr('href')).find('div.dynagrid-container').each(function () { $(this).DynaGrid('resize') })
 
-});
+}
+
+
+/// Events ////////////////////////////
+
+$(document).on('shown.bs.tab','a.nav-link', function () { onTabShown(this) });
 
 $(window).resize(() => setCanvasHeight($(mainContainer)));

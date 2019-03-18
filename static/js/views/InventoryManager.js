@@ -18,9 +18,7 @@ function InventoryManager() {
                 uploadUrl: Entities.manage.href,
                 uploadExtraData: function () {
 
-                    return {
-                        format: $('input[type="radio"][name="import_file_type"]:checked').val(),
-                    }
+                    return { format: $('input[type="radio"][name="import_file_type"]:checked').val() }
 
                 },
                 uploadAsync: true
@@ -65,7 +63,7 @@ function InventoryManager() {
 
             });
 
-        $manager.find('#export_button').click(function () {
+        $manager.find('button.download-button').click(function () {
 
             let format = $('input[type="radio"][name="export_file_type"]:checked').val();
 

@@ -82,7 +82,7 @@ button.toggle-config-button {
     font-size: smaller;
 }
 
-div.result-details li {
+div.jsonview li {
     color: var(--main-font-color);
     text-shadow: none;
 }

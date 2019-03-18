@@ -457,7 +457,7 @@ class NodeView(View, ApiViewMixin):
 
         node = getattr(self, 'model_class')()
 
-        if node.permissions(request.user)['editable']:
+        if node.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, getattr(self, 'model_class')()))
 
@@ -471,7 +471,7 @@ class NodeView(View, ApiViewMixin):
 
             node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
-            if node.permissions(request.user)['readable']:
+            if node.perms(request.user)['readable']:
 
                 return self._api_response({'data': node.serialize(request.JSON.get('fields'), request.user)})
 
@@ -489,7 +489,7 @@ class NodeView(View, ApiViewMixin):
 
                 match_conditions = all({
                     not filter_pattern or node.name.find(filter_pattern) > -1,
-                    node.permissions(request.user)['readable']
+                    node.perms(request.user)['readable']
                 })
 
                 if match_conditions:
@@ -502,7 +502,7 @@ class NodeView(View, ApiViewMixin):
 
         node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
-        if node.permissions(request.user)['editable']:
+        if node.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, node))
 
@@ -516,7 +516,7 @@ class NodeView(View, ApiViewMixin):
 
             node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
-            if node.permissions(request.user)['deletable']:
+            if node.perms(request.user)['deletable']:
 
                 node.delete()
 
@@ -534,7 +534,7 @@ class NodeView(View, ApiViewMixin):
 
                 node = getattr(self, 'model_class').objects.get(pk=node_dict['id'])
 
-                if node.permissions(request.user)['deletable']:
+                if node.perms(request.user)['deletable']:
 
                     id_list.append(node_dict['id'])
 
@@ -590,7 +590,7 @@ class VariableView(View, ApiViewMixin):
 
             temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
 
-            if temp_var.permissions(request.user)['editable']:
+            if temp_var.perms(request.user)['editable']:
 
                 for source_var in source.variable_set.all():
 
@@ -606,7 +606,7 @@ class VariableView(View, ApiViewMixin):
 
             var = node.variable_set.create()
 
-            if var.permissions(request.user)['editable']:
+            if var.perms(request.user)['editable']:
 
                 return self._api_response(self._save_instance(request, var))
 
@@ -622,7 +622,7 @@ class VariableView(View, ApiViewMixin):
 
         temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
 
-        if temp_var.permissions(request.user)['readable']:
+        if temp_var.perms(request.user)['readable']:
 
             variables = dict()
 
@@ -693,7 +693,7 @@ class VariableView(View, ApiViewMixin):
 
         var = get_object_or_404(Variable, pk=var_id)
 
-        if var.permissions(request.user)['editable']:
+        if var.perms(request.user)['editable']:
 
             return self._api_response(self._save_instance(request, var))
 
@@ -706,7 +706,7 @@ class VariableView(View, ApiViewMixin):
 
         var = get_object_or_404(Variable, pk=var_id)
 
-        if var.permissions(request.user)['deletable']:
+        if var.perms(request.user)['deletable']:
 
             get_object_or_404(Variable, pk=var_id).delete()
 
@@ -724,7 +724,7 @@ class RelationsView(View, ApiViewMixin):
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if node.permissions(request.user)['editable']:
+        if node.perms(request.user)['editable']:
 
             related_set, related_class = node.get_relationships(relation)
 
@@ -777,7 +777,7 @@ class RelationsView(View, ApiViewMixin):
 
         node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
 
-        if node.permissions(request.user)['editable']:
+        if node.perms(request.user)['editable']:
 
             related_set, related_class = node.get_relationships(relation)
 
