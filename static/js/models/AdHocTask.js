@@ -46,14 +46,14 @@ AdHocTask.prototype.selector = function ($container) {
     let self = this;
 
     self.selectorTableOptions = {
-        columns: () => { return [
+        columns: [
             {title: 'name', data: 'attributes.name', width: '20%'},
             {title: 'hosts', data: 'attributes.hosts', width: '15%'},
             {title: 'module', data: 'attributes.module', width: '10%'},
             {title: 'arguments', data: 'attributes.arguments', width: '35%'},
             {title: 'sudo', data: 'attributes.become', width: '10%', render: prettyBoolean},
             {title: '', defaultContent: '', width: '10%', class: 'float-right', orderable: false}
-        ]},
+        ],
         rowCallback: (row, data) => {
 
             $(row).find('td:eq(3)').html(new AdHocTask(data).argumentsToString());

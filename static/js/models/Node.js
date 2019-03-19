@@ -155,9 +155,9 @@ Node.prototype.selector = function () {
 
         });
 
-        $selector.find('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
-
         $grid.find('input.dynagrid-search').keyup(() => table.dtObj.search($(this).val()).draw());
+
+        $selector.find('ul.nav-tabs').attr('id', self.type + '_selector_tabs').rememberTab();
 
         $(mainContainer).on('reload', function () {
 
@@ -181,9 +181,9 @@ Node.prototype.selector = function () {
 
         $(window).resize(() => {
 
-            $grid.DynaGrid('resize');
+            resizeTimeout($grid, () => $grid.DynaGrid('resize'));
 
-            table.resize()
+            resizeTimeout(table.element, () => table.resize())
 
         });
 

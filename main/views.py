@@ -18,9 +18,7 @@ class MainView(View, ApiViewMixin):
 
     def get(self, request):
 
-        fields = {'attributes': ['username', 'timezone'], 'links':['self']}
-
-        return self._api_response({'meta': {'user': request.user.serialize(fields, request.user)}})
+        return self._api_response({'meta': {'user': request.user.serialize(request.JSON.get('fields'), request.user)}})
 
 
 class LoginView(View, ApiViewMixin):

@@ -197,13 +197,13 @@ DEFAULT_PREFERENCES = [
         'items': [
             {
                 'name': 'aws_group',
-                'value': 'datacenter-aws',
+                'value': '',
                 'data_type': 'str',
                 'description': '',
             },
             {
                 'name': 'use_ec2_facts',
-                'value': True,
+                'value': False,
                 'data_type': 'bool',
                 'description': '',
             }

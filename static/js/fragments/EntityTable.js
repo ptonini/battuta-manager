@@ -31,7 +31,7 @@ EntityTable.prototype = {
             }]
 
         },
-        columns: () => { return [] },
+        columns: [],
         rowCallback: (row, data) => {
 
             $(row).find('td:first').css('cursor', 'pointer').click(() => Router.navigate(data.links.self));
@@ -86,7 +86,7 @@ EntityTable.prototype = {
 
             this.loadOptions();
 
-            $(window).resize(() => this.resize());
+            $(window).resize(() => resizeTimeout(this.element, () => this.resize()));
 
         }
 
@@ -105,7 +105,7 @@ EntityTable.prototype = {
             dom: mergedOptions.dom,
             serverSide: mergedOptions.serverSide,
             paging: mergedOptions.paging,
-            columns: mergedOptions.columns(),
+            columns: mergedOptions.columns,
             order: mergedOptions.order,
             buttons: mergedOptions.buttons(this.obj),
             scrollY: this.scrollHeight,
@@ -126,10 +126,6 @@ EntityTable.prototype = {
 
     reload: function () { this.element.DataTable().ajax.reload() },
 
-    resize: function () {
-
-        this.element.parent().css({'height': this.scrollHeight, 'max-height': this.scrollHeight})
-
-    }
+    resize: function () { this.element.parent().css({'height': this.scrollHeight, 'max-height': this.scrollHeight}) }
 
 };

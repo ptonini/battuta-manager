@@ -47,17 +47,13 @@ Variable.prototype.selector = function ($container) {
 
     self.selectorTableOptions =  {
         order: [[ 2, 'asc' ], [ 0, 'asc' ]],
-        columns: function () {
-
-            return [
-                {title: 'key', data: 'attributes.key', width: '30%'},
-                {title: 'value', data: 'attributes.value', width: '50%'},
-                {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
-                {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-            ]
-
-        },
-        ajax: () => { return {url: self.links.self ,dataSrc: 'data'} },
+        columns: [
+            {title: 'key', data: 'attributes.key', width: '30%'},
+            {title: 'value', data: 'attributes.value', width: '50%'},
+            {title: 'source', data: 'meta.source.attributes.name', defaultContent: '', width: '10%'},
+            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
+        ],
+        ajax: () => { return {url: self.links.self, dataSrc: 'data'} },
         buttons: () => { return [
             {
                 text: Templates['add-icon'].attr('title', 'Add variable')[0],

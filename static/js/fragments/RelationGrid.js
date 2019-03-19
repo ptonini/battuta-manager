@@ -86,6 +86,6 @@ function RelationGrid(obj, relation, relationType, key) {
         }
     });
 
-    $(window).resize(() => self.element.DynaGrid('resize'));
+    $(window).resize(() => resizeTimeout(self.element, () => self.element.DynaGrid('resize')));
 
 }

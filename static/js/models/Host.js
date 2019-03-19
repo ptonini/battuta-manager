@@ -20,30 +20,14 @@ Host.prototype.type = 'hosts';
 Host.prototype.label = {single: 'host', collective: 'hosts'};
 
 Host.prototype.selectorTableOptions = {
-    columns: function () {
-
-        if (sessionStorage.getItem('use_ec2_facts') === 'true') return [
-            {title: 'Host', data: 'attributes.name', width: '21%'},
-            {title: 'Address', data: 'attributes.address', width: '12%'},
-            {title: 'Public address', data: 'attributes.public_address', width: '12%'},
-            {title: 'Instance Id', data: 'attributes.instance_id', width: '10%'},
-            {title: 'Type', data: 'attributes.instance_type', width: '10%'},
-            {title: 'Cores', data: 'attributes.cores', width: '10%'},
-            {title: 'Memory', data: 'attributes.memory', width: '10%', render: function(data) { return humanBytes(data, 'MB') }},
-            {title: 'Disc', data: 'attributes.disc', width: '10%', render: function(data) { return humanBytes(data) }},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'},
-        ];
-
-        else return [
-            {title: 'Host', data: 'attributes.name', width: '35%'},
-            {title: 'Address', data: 'attributes.address', width: '15%'},
-            {title: 'Cores', data: 'attributes.cores', width: '15%'},
-            {title: 'Memory', data: 'attributes.memory', width: '15%', render: function(data) { return  humanBytes(data, 'MB') }},
-            {title: 'Disc', data: 'attributes.disc', width: '15%', render: function(data) { return humanBytes(data) }},
-            {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
-        ];
-
-    }
+    columns: [
+        {title: 'Host', data: 'attributes.name', width: '35%'},
+        {title: 'Address', data: 'attributes.address', width: '15%'},
+        {title: 'Cores', data: 'attributes.cores', width: '15%'},
+        {title: 'Memory', data: 'attributes.memory', width: '15%', render: function(data) { return  humanBytes(data, 'MB') }},
+        {title: 'Disc', data: 'attributes.disc', width: '15%', render: function(data) { return humanBytes(data) }},
+        {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '5%'}
+    ]
 };
 
 Host.prototype.info = function ($container) {
@@ -147,26 +131,7 @@ Host.prototype.info = function ($container) {
 
         else $container.find('#gather_facts').attr('title', 'Gather facts');
 
-        $container.find('button.facts-button').click(() => {
-
-            Job.getFacts(self.name, false, () => {
-
-                let interval = setInterval(() => self.read(false, {fields: {attributes: ['facts']}}).then(() => {
-
-                    if (Object.keys(self.get('facts')).length > 0) {
-
-                        clearInterval(interval);
-
-                        Router.navigate(self.links.self);
-
-                    }
-
-                }), 1000)
-
-
-            });
-
-        });
+        $container.find('button.facts-button').click(() => Job.getFacts(self.name, false));
 
     });
 

@@ -32,13 +32,13 @@ Job.prototype.taskStates = {
 
 
 Job.prototype.selectorTableOptions = {
-    columns: () => { return [
+    columns:[
         {title: 'date'},
         {title: 'user'},
         {title: 'name'},
         {title: 'subset'},
         {title: 'status'}
-    ]},
+    ],
     buttons: () => { return [] },
     rowCallback:  function (row, data) {
 
@@ -459,7 +459,7 @@ Job.prototype.viewer = function () {
 
 };
 
-Job.getFacts = function (pattern, sameWindow, callback) {
+Job.getFacts = function (pattern, sameWindow) {
 
     return getUserCreds().read(false, {fields: {attributes: ['is_default'], meta: false}}).then(response => {
 
@@ -481,7 +481,7 @@ Job.getFacts = function (pattern, sameWindow, callback) {
                 links: {self: Entities.jobs.href}
             });
 
-            return job.run(false, sameWindow, callback);
+            return job.run(false, sameWindow);
 
         }
 

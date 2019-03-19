@@ -327,13 +327,13 @@ FileObj.prototype.selector = function () {
     self.selectorTableOptions = {
         offset: 0,
         ajax: false,
-        columns: function () { return [
+        columns: [
             {title: 'name', data: 'attributes.name', width: '45%'},
             {title: 'type', data: 'attributes.mime_type', width: '15%'},
             {title: 'size', data: 'attributes.size', width: '10%', render: data => { return humanBytes(data) }},
             {title: 'modified', data: 'attributes.modified', width: '20%', render: toUserTZ},
             {title: '', defaultContent: '', class: 'float-right', orderable: false, width: '10%'}
-        ]},
+        ],
         buttons: function (self) {
             return [
                 {

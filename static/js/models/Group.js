@@ -21,7 +21,7 @@ Group.prototype.label = {single: 'group', collective: 'groups'};
 
 
 Group.prototype.selectorTableOptions = {
-    columns: function () { return [
+    columns: [
         {title: 'Group', data: 'attributes.name'},
         {title: 'Description', data: 'attributes.description'},
         {title: 'Members', data: 'attributes.members'},
@@ -29,7 +29,7 @@ Group.prototype.selectorTableOptions = {
         {title: 'Children', data: 'attributes.children'},
         {title: 'Variables', data: 'attributes.variables'},
         {title: '', defaultContent: '', class: 'float-right',  orderable: false}
-    ]}
+    ]
 };
 
 Group.prototype.info = function ($container) {

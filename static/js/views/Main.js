@@ -8,7 +8,9 @@ function Main () {
 
     }).then(() => {
 
-        return fetchJson('GET', '/main', null, false)
+        let fields = {fields: {attributes: ['username', 'timezone'], links: ['self', 'creds'], meta: false}};
+
+        return fetchJson('GET', '/main', fields, false)
 
     }).then(response => {
 
@@ -19,6 +21,8 @@ function Main () {
         sessionStorage.setItem('current_user_id', response.meta.user.id);
 
         sessionStorage.setItem('current_user_link', response.meta.user.links.self);
+
+        sessionStorage.setItem('current_user_creds', response.meta.user.links['creds']);
 
         Router.listen();
 

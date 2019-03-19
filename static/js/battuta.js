@@ -325,11 +325,7 @@ function addTitleToTruncatedElements() {
 
 function getUserCreds() {
 
-    return new Credential({
-        links: {
-            self: [Entities['users'].href, sessionStorage.getItem('current_user_id'), 'creds'].join('/')
-        }
-    });
+    return new Credential({links: {self: sessionStorage.getItem('current_user_creds')}});
 
 }
 
@@ -396,19 +392,39 @@ function calculateHeight($element, offset=false) {
 
 }
 
+function calculateMinHeight($canvas) {
+
+   let innerHeight = parseInt(sessionStorage.getItem('inner_canvas_offset'));
+
+   if ($canvas.hasClass('tab-content')) {
+
+       let footerHeight = $canvas.find('div.tab-footer').outerHeight(true);
+
+       innerHeight += $canvas.find('div.tab-pane.active').outerHeight(true);
+
+       innerHeight += footerHeight ? footerHeight : 0;
+
+   } else if ($canvas.hasClass('table-container')) innerHeight += $canvas.outerHeight(true);
+
+   return innerHeight
+
+}
+
 function setCanvasHeight ($container) {
 
     $container.find('div.canvas').each(function () {
 
-        $(this).css('height', calculateHeight($(this)))
+        $(this).css('height', calculateHeight($(this)));
+
+        //$(this).css('min-height', calculateMinHeight($(this)))
 
     })
 
 }
 
-function onTabShown(tab) {
+function onTabShown($tab) {
 
-    $($(tab).attr('href')).find('table.dataTable').each(function () {
+    $($tab.attr('href')).find('table.dataTable').each(function () {
 
         let $table = $(this);
 
@@ -418,13 +434,21 @@ function onTabShown(tab) {
 
     });
 
-    $($(tab).attr('href')).find('div.dynagrid-container').each(function () { $(this).DynaGrid('resize') })
+    $($tab.attr('href')).find('div.dynagrid-container').each(function () { $(this).DynaGrid('resize') })
+
+}
+
+function resizeTimeout($element, action) {
+
+    clearTimeout($element.data('resize_timeout'));
+
+    $element.data('resize_timeout', setTimeout(action, 0))
 
 }
 
 
 /// Events ////////////////////////////
 
-$(document).on('shown.bs.tab','a.nav-link', function () { onTabShown(this) });
+$(document).on('shown.bs.tab','a.nav-link', function () { onTabShown($(this)) });
 
-$(window).resize(() => setCanvasHeight($(mainContainer)));
+$(window).resize(() => resizeTimeout($(mainContainer), () => setCanvasHeight($(mainContainer))));
