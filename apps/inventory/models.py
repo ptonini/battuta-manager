@@ -121,7 +121,7 @@ class Host(Node):
         attr = {
             'public_address': facts.get('ec2_public_ipv4'),
             'instance_type': facts.get('ec2_instance_type'),
-            'cores': facts.get('processor_count'),
+            'cores': facts.get('processor_cores'),
             'memory': facts.get('memtotal_mb'),
             'address': facts.get('default_ipv4', {}).get('address'),
             'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
@@ -130,7 +130,7 @@ class Host(Node):
 
         data = self._build_filtered_dict(fields, attributes=attr, data=super(Host, self).serialize(fields, user))
 
-        if fields and 'facts' in fields.get('attributes', {}):
+        if fields and 'facts' in fields.get('attributes', []):
 
             data['attributes'] = {'facts': OrderedDict(sorted(facts.items()))}
 

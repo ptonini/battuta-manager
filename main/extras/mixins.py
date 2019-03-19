@@ -28,10 +28,9 @@ class ApiViewMixin:
 
         for k, v in form_errors.get_json_data().items():
 
-            errors = errors + [{'code': e['code'], 'title': e['message'],'source': {'parameter': k}} for e in v]
+            errors = errors + [{'code': e['code'], 'title': e['message'], 'source': {'parameter': k}} for e in v]
 
         return {'errors': errors}
-
 
     @staticmethod
     def _api_response(response):
@@ -45,7 +44,6 @@ class ModelSerializerMixin:
     def link(self):
 
         return '/'.join([getattr(self, 'route'), str(getattr(self, 'id'))])
-
 
     def _build_filtered_dict(self, fields, **kwargs):
 

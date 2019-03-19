@@ -355,7 +355,7 @@ function addTab(name, title) {
 
 }
 
-function capitalize(string) { return string.charAt(0).toUpperCase() + string.slice(1) }
+function capitalize(string) { return string['charAt'](0).toUpperCase() + string.slice(1) }
 
 function popupCenter(url, title, w) {
 
@@ -396,6 +396,8 @@ function calculateMinHeight($canvas) {
 
    let innerHeight = parseInt(sessionStorage.getItem('inner_canvas_offset'));
 
+   innerHeight += parseInt($canvas.css('padding-bottom').replace(/\D/g, ''));
+
    if ($canvas.hasClass('tab-content')) {
 
        let footerHeight = $canvas.find('div.tab-footer').outerHeight(true);
@@ -404,7 +406,9 @@ function calculateMinHeight($canvas) {
 
        innerHeight += footerHeight ? footerHeight : 0;
 
-   } else if ($canvas.hasClass('table-container')) innerHeight += $canvas.outerHeight(true);
+   } else if ($canvas.hasClass('table-container')) innerHeight += $canvas.find('div.dataTables_wrapper').outerHeight(true);
+
+   else $canvas.find('div.col-12').each(function () { innerHeight += $(this).outerHeight(true) });
 
    return innerHeight
 
@@ -416,7 +420,7 @@ function setCanvasHeight ($container) {
 
         $(this).css('height', calculateHeight($(this)));
 
-        //$(this).css('min-height', calculateMinHeight($(this)))
+        $(this).css('min-height', calculateMinHeight($(this)))
 
     })
 

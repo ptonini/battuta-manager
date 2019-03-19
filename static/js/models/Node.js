@@ -119,7 +119,7 @@ Node.prototype.selector = function () {
 
         $selector.find('button.download-button').click(() => table.dtObj.buttons(1, null).trigger());
 
-        $selector.find('button.facts-button').click(() => new Job({hosts: 'all'}).getFacts());
+        $selector.find('button.facts-button').click(() => Job.getFacts('all'));
 
         $selector.find('button.delete-button').click(() => new GridDialog({
             title: 'Delete nodes',

@@ -48,19 +48,12 @@ Job.prototype.selectorTableOptions = {
 
         })
     },
-
     paging: true,
     dom: "<'row'<'col-6'l><'col-6'f><'col-12'tr>><'row'<'col-4' i><'col-8 text-right'p>>",
     serverSide: true
 };
 
-Job.prototype.stateColor = function () {
-
-    let self = this;
-
-    return self.status ? self.states[self.status] : 'text-dark'
-
-};
+Job.prototype.stateColor = function () { return this.status ? this.states[this.status] : 'text-dark' };
 
 Job.prototype.run = function (become, sameWindow=false, callback=null) {
 

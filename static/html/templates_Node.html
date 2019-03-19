@@ -28,7 +28,7 @@
 </div>
 
 <div data-template="host-info" class="row mt-4">
-    <div class="main-info-column hide_when_empty col-5">
+    <div class="col-5">
         <div class="row no-gutters">
             <div class="col-4 item-label">Full hostname:</div>
             <div data-bind="facts.fqdn" class="col-8 item-value font-weight-bold text-truncate"></div>
@@ -52,7 +52,7 @@
             </div>
         </div>
     </div>
-    <div class="host-info-column hide_when_empty col-5">
+    <div class="col-5">
         <div class="row no-gutters">
             <div class="col-4 item-label">System vendor:</div>
             <div data-bind="facts.system_vendor" class="col-8 item-value font-weight-bold text-truncate"></div>
@@ -71,13 +71,13 @@
         </div>
     </div>
     <div class="col-12 mt-4">
-        <button id="show_networking" class="btn btn-icon btn-sm hide_when_empty" title="Network">
+        <button class="networking-button btn btn-icon btn-sm" title="Network" type="button">
             <span class="fas fa-fw fa-network-wired"></span>
         </button>
-        <button id="show_storage" class="btn btn-icon btn-sm hide_when_empty" title="Storage">
+        <button class="storage-button btn btn-icon btn-sm" title="Storage" type="button">
             <span class="fas fa-fw fa-hdd"></span>
         </button>
-        <button id="show_facts" class="btn btn-icon btn-sm hide_when_empty" title="Facts">
+        <button class="show-facts-button btn btn-icon btn-sm" title="Facts" type="button">
             <span class="fas fa-fw fa-clipboard"></span>
         </button>
         <i data-replace="facts-button"></i>
@@ -87,3 +87,5 @@
 <form data-template="group-form" class="mt-4">
     <button class="toggle-config-button btn btn-light btn-sm" data-bind="config" type="button">Configuration group</button>
 </form>
+
+<div data-template="facts-container" class="well inset-container scrollbar"></div>

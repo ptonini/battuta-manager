@@ -50,11 +50,11 @@ Host.prototype.info = function ($container) {
 
             self.set('facts.memtotal_mb', humanBytes(response.data.attributes['facts']['memtotal_mb'], 'MB'));
 
-            if (self.get('facts').system === 'Win32NT') self.get('facts').processor = ['&nbsp;'];
-
-            if (self.get('facts')['virtualization_role'] === 'host' || !self.get('facts')['ec2_hostname']) $container.find('div.host-info-column').show();
-
-            if (self.get('facts')['virtualization_role'] === 'guest') $container.find('div.guest-info-column').show();
+            // if (self.get('facts.system') === 'Win32NT') self.get('facts').processor = ['&nbsp;'];
+            //
+            // if (self.get('facts.virtualization_role') === 'host' || !self.get('facts')['ec2_hostname']) $container.find('div.host-info-column').show();
+            //
+            // if (self.get('facts.virtualization_role') === 'guest') $container.find('div.guest-info-column').show();
 
             let infoTables = {
                 networking: {
@@ -88,7 +88,7 @@ Host.prototype.info = function ($container) {
                 },
             };
 
-            for (let key in infoTables) $container.find('#show_' + key).click(function () {
+            for (let key in infoTables) $container.find('button.' + key + '-button').click(function () {
 
                 let $table = Templates['table'];
 
@@ -116,14 +116,13 @@ Host.prototype.info = function ($container) {
 
             });
 
-            $('#show_facts').click(function () {
+            $container.find('button.show-facts-button').click(function () {
 
-                let $content = $('<div>')
-                    .attr('class', 'well inset-container scrollbar')
+                let $factsContainer = Templates['facts-container']
                     .css('max-height', (window.innerHeight * .6).toString() + 'px')
                     .JSONView(self.get('facts'), {'collapsed': true});
 
-               new ModalBox(self.name + ' facts', $content, false).open({width: 900})
+                new ModalBox(self.name + ' facts', $factsContainer, false).open({width: 900})
 
             });
 
