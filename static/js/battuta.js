@@ -444,9 +444,11 @@ function onTabShown($tab) {
 
 function resizeTimeout($element, action) {
 
-    clearTimeout($element.data('resize_timeout'));
+    action();
 
-    $element.data('resize_timeout', setTimeout(action, 0))
+    //clearTimeout($element.data('resize_timeout'));
+
+    //$element.data('resize_timeout', setTimeout(action, 0))
 
 }
 

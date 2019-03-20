@@ -249,7 +249,7 @@ class Task(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link, 'results': '/'.join([self.link, 'results'])}
 
-        meta = self.play.job.perms(user)
+        meta = self.perms(user)
 
         return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
@@ -286,7 +286,7 @@ class Result(models.Model, ModelSerializerMixin):
 
         links = {'self': self.link}
 
-        meta = self.task.play.job.perms(user)
+        meta = self.perms(user)
 
         data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
 
