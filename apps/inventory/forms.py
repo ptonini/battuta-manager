@@ -27,4 +27,4 @@ class VariableForm(forms.ModelForm):
 
         model = Variable
 
-        fields = ['key', 'value', 'host', 'group']
+        fields = ['key', 'value', 'node']

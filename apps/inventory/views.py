@@ -14,9 +14,9 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import View
 from django.core.cache import cache
 
-from apps.inventory.models import Host, Group, Variable
+from apps.inventory.models import Node, Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
-from apps.inventory.extras import AnsibleInventory, inventory_to_dict
+from apps.inventory.extras import AnsibleInventory, inventory_to_dict, import_from_json, import_from_list
 from apps.preferences.extras import get_preferences
 from main.extras import download_file
 from main.extras.mixins import ApiViewMixin
@@ -297,7 +297,7 @@ class ManagerView(View, ApiViewMixin):
 
                 source_file.seek(0, 0)
 
-                data = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
+                result = {'added_hosts': 0, 'added_groups': 0, 'added_vars': 0}
 
                 # Import from CSV
                 if request.PATCH['format'] == 'csv':
@@ -316,35 +316,7 @@ class ManagerView(View, ApiViewMixin):
 
                     else:
 
-                        for row in csv_data:
-
-                            host, created = Host.objects.get_or_create(name=row[host_index])
-
-                            data['added_hosts'] += 1 if created else 0
-
-                            for index, cell in enumerate(row):
-
-                                if index != host_index and cell:
-
-                                    if header[index] == 'group':
-
-                                        group, created = Group.objects.get_or_create(name=cell)
-
-                                        data['added_groups'] += 1 if created else 0
-
-                                        host.group_set.add(group)
-
-                                        host.save()
-
-                                    else:
-
-                                        var, created = Variable.objects.get_or_create(key=header[index], host=host)
-
-                                        data['added_vars'] += 1 if created else 0
-
-                                        var.value = cell
-
-                                        var.save()
+                        result = import_from_list(csv_data, host_index, result)
 
                 # Import from JSON
                 elif request.PATCH['format'] == 'json':
@@ -360,106 +332,28 @@ class ManagerView(View, ApiViewMixin):
 
                     else:
 
-                        # Iterate over JSON data host vars
-                        for host_name in json_data['_meta']['hostvars']:
-
-                            host, created = Host.objects.get_or_create(name=host_name)
-
-                            data['added_hosts'] += 1 if created else 0
-
-                            for key in json_data['_meta']['hostvars'][host_name]:
-
-                                value = json_data['_meta']['hostvars'][host_name][key]
-
-                                if key == '_description':
-
-                                    host.description = value
-
-                                else:
-
-                                    var, created = Variable.objects.get_or_create(key=key, host=host, value=value)
-
-                                    data['added_vars'] += 1 if created else 0
-
-                                    var.save()
-
-                            host.save()
-
-                        json_data.pop('_meta', None)
-
-                        # Iterate over JSON data groups
-                        for group_name in json_data:
-
-                            group, created = Group.objects.get_or_create(name=group_name)
-
-                            # Iterate over group children
-
-                            for child_name in json_data[group_name].get('children', []):
-
-                                child, created = Group.objects.get_or_create(name=child_name)
-
-                                data['added_groups'] += 1 if created else 0
-
-                                group.children.add(child)
-
-                            # Iterate over group hosts
-
-                            for host_name in json_data[group_name].get('hosts', []):
-
-                                host, created = Host.objects.get_or_create(name=host_name)
-
-                                data['added_hosts'] += 1 if created else 0
-
-                                group.members.add(host)
-
-                            # Iterate over group vars
-
-                            for key in json_data[group_name].get('vars', {}):
-
-                                if key == '_description':
-
-                                    group.description = json_data[group_name]['vars'][key]
-
-                                else:
-
-                                    var, created = Variable.objects.get_or_create(key=key, group=group)
-
-                                    data['added_vars'] += 1 if created else 0
-
-                                    var.value = json_data[group_name]['vars'][key]
-
-                                    var.save()
-
-                            if group.name != 'ungrouped':
-
-                                group.save()
-
-                                data['added_groups'] += 1 if created else 0
-
-                            else:
-
-                                group.delete()
+                        result = import_from_json(json_data, result)
 
                 else:
 
                     return HttpResponseBadRequest()
 
-                return self._api_response({'data': data})
+                return self._api_response({'data': result})
 
         else:
 
             return HttpResponseForbidden()
 
 
-class NodeView(View, ApiViewMixin):
+class NodeChildView(View, ApiViewMixin):
 
     def post(self, request, node_id):
 
-        node = getattr(self, 'model_class')()
+        node_child = getattr(self, 'model_class')()
 
-        if node.perms(request.user)['editable']:
+        if node_child.perms(request.user)['editable']:
 
-            return self._api_response(self._save_instance(request, getattr(self, 'model_class')()))
+            return self._api_response(self._save_instance(request, node_child))
 
         else:
 
@@ -469,11 +363,11 @@ class NodeView(View, ApiViewMixin):
 
         if node_id:
 
-            node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
+            node_child = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
 
-            if node.perms(request.user)['readable']:
+            if node_child.perms(request.user)['readable']:
 
-                return self._api_response({'data': node.serialize(request.JSON.get('fields'), request.user)})
+                return self._api_response({'data': node_child.serialize(request.JSON.get('fields'), request.user)})
 
             else:
 
@@ -485,16 +379,16 @@ class NodeView(View, ApiViewMixin):
 
             filter_pattern = request.JSON.get('filter')
 
-            for node in getattr(self, 'model_class').objects.order_by('name').all():
+            for node_child in getattr(self, 'model_class').objects.order_by('name').all():
 
                 match_conditions = all({
-                    not filter_pattern or node.name.find(filter_pattern) > -1,
-                    node.perms(request.user)['readable']
+                    not filter_pattern or node_child.name.find(filter_pattern) > -1,
+                    node_child.perms(request.user)['readable']
                 })
 
                 if match_conditions:
 
-                    data.append(node.serialize(request.JSON.get('fields'), request.user))
+                    data.append(node_child.serialize(request.JSON.get('fields'), request.user))
 
             return self._api_response({'data': data})
 
@@ -552,7 +446,7 @@ class NodeView(View, ApiViewMixin):
         #     }
 
 
-class HostView(NodeView):
+class HostView(NodeChildView):
 
     type = Host.type
 
@@ -561,7 +455,7 @@ class HostView(NodeView):
     form_class = HostForm
 
 
-class GroupView(NodeView):
+class GroupView(NodeChildView):
 
     type = Group.type
 
@@ -578,49 +472,43 @@ class VariableView(View, ApiViewMixin):
 
     def post(self, request, node_id, var_id, node_type):
 
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        node = get_object_or_404(Node, pk=node_id)
 
-        if 'source' in request.JSON.get('meta', {}):
+        var = Variable(node=node)
 
-            source_data = request.JSON['meta']['source']
+        if var.perms(request.user)['editable']:
 
-            source = get_object_or_404(Host if source_data['type'] == Host.type else Group, pk=source_data['id'])
+            if 'source' in request.JSON.get('meta', {}):
 
-            temp_var = Variable()
+                source_data = request.JSON['meta']['source']
 
-            temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
+                source = get_object_or_404(Node, pk=source_data['id'])
 
-            if temp_var.perms(request.user)['editable']:
+                if var.perms(request.user)['editable']:
 
-                for source_var in source.variable_set.all():
+                    for source_var in source.variable_set.all():
 
-                    node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
+                        node.variable_set.update_or_create(key=source_var.key, value=source_var.value)
 
-                return HttpResponse(status=204)
+                    return HttpResponse(status=204)
+
+                else:
+
+                    return HttpResponseForbidden()
 
             else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            var = node.variable_set.create()
-
-            if var.perms(request.user)['editable']:
 
                 return self._api_response(self._save_instance(request, var))
 
-            else:
+        else:
 
-                return HttpResponseForbidden()
+            return HttpResponseForbidden()
 
     def get(self, request, node_id, var_id, node_type):
 
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        node = get_object_or_404(Node, pk=node_id)
 
-        temp_var = Variable()
-
-        temp_var.__setattr__('host' if node_type == Host.type else 'group', node)
+        temp_var = Variable(node=node)
 
         if temp_var.perms(request.user)['readable']:
 
@@ -628,15 +516,13 @@ class VariableView(View, ApiViewMixin):
 
             inventory = cache.get_or_set('inventory', AnsibleInventory)
 
-            #inventory = AnsibleInventory()
-
             for var in node.variable_set.all():
 
                 variables[var.key] = [var.serialize(request.JSON.get('fields'), request.user)]
 
                 variables[var.key][0]['meta']['primary'] = True
 
-            for ancestor in node.get_ancestors():
+            for ancestor in node.get_child_instance().get_ancestors():
 
                 for var in ancestor.variable_set.all():
 
@@ -644,7 +530,7 @@ class VariableView(View, ApiViewMixin):
 
                     additional_meta = {
                         'primary': False,
-                        'source': var.group.serialize({'attributes': ['name'], 'links': ['self']}, request.user)
+                        'source': ancestor.serialize({'attributes': ['name'], 'links': ['self']}, request.user)
                     }
 
                     var_dict['meta'].update(additional_meta)

@@ -258,7 +258,7 @@ Variable.prototype.copyVariables = function (callback) {
             itemValueKey: 'name',
             action: function (selection, modal) {
 
-                self.create(true, {'meta': {'source': selection}}).then(() => {
+                self.create(true, {'meta': {'source': selection.id}}).then(() => {
 
                     modal.close();
 

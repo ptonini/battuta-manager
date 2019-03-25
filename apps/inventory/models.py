@@ -19,6 +19,10 @@ class Node(models.Model, ModelSerializerMixin):
 
         return self.name
 
+    def get_child_instance(self):
+
+        return getattr(self, 'host') if hasattr(self, 'host') else getattr(self, 'group')
+
     def get_relationships(self, relation):
 
         relations = {
@@ -77,7 +81,7 @@ class Node(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        attr = {'name': self.name, 'description': self.description}
+        attr = {'name': self.name, 'description': self.description, 'node': self.id}
 
         links = {
             'self': self.link ,
@@ -103,7 +107,7 @@ class Node(models.Model, ModelSerializerMixin):
 
         ordering = ['name']
 
-        abstract = True
+        # abstract = True
 
 
 class Host(Node):
@@ -119,13 +123,10 @@ class Host(Node):
         facts = json.loads(self.facts)
 
         attr = {
-            'public_address': facts.get('ec2_public_ipv4'),
-            'instance_type': facts.get('ec2_instance_type'),
             'cores': facts.get('processor_cores'),
             'memory': facts.get('memtotal_mb'),
             'address': facts.get('default_ipv4', {}).get('address'),
             'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
-            'instance_id': facts.get('ec2_instance_id'),
         }
 
         data = self._build_filtered_dict(fields, attributes=attr, data=super(Host, self).serialize(fields, user))
@@ -207,27 +208,21 @@ class Group(Node):
             'variables': self.variable_set.all().count() if self.id else None
         }
 
-        links = {
-            'children': '/'.join([self.link, 'children']),
-            'members': '/'.join([self.link, 'members'])
-        }
-
-        meta = self.perms(user)
-
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta, data=super(Group, self).serialize(fields, user))
+        data = self._build_filtered_dict(
+            fields,
+            attributes=attr,
+            links={'children': '/'.join([self.link, 'children']), 'members': '/'.join([self.link, 'members'])},
+            meta=self.perms(user),
+            data=super(Group, self).serialize(fields, user)
+        )
 
         return data
 
     def perms(self, user):
 
-        editable = all([
-            user.has_perm('users.edit_' + self.type),
-            not self.name =='all',
-        ])
+        editable = all([user.has_perm('users.edit_' + self.type), not self.name =='all'])
 
-        deletable = editable
-
-        return { 'readable': True, 'editable': editable, 'deletable': deletable}
+        return {'readable': True, 'editable': editable, 'deletable': editable}
 
 
 class Variable(models.Model, ModelSerializerMixin):
@@ -235,14 +230,12 @@ class Variable(models.Model, ModelSerializerMixin):
     type = 'vars'
 
     key = models.CharField(max_length=128, blank=False, validators=[
-        RegexValidator(regex='\-', message='Key names cannot contain "-"', inverse_match=True)
+        RegexValidator(regex='\-', message='Keys cannot contain "-"', inverse_match=True)
     ])
 
     value = models.CharField(max_length=1024)
 
-    host = models.ForeignKey('Host', blank=True, null=True, on_delete=models.CASCADE)
-
-    group = models.ForeignKey('Group', blank=True, null=True, on_delete=models.CASCADE)
+    node = models.ForeignKey('Node', on_delete=models.CASCADE)
 
     def __str__(self):
 
@@ -250,41 +243,26 @@ class Variable(models.Model, ModelSerializerMixin):
 
     def serialize(self, fields, user):
 
-        if self.host:
+        node_child = self.node.get_child_instance()
 
-            parent_node = self.host
+        setattr(self, 'route', '/'.join([node_child.link, Variable.type]))
 
-            node_key = 'host'
-
-        else:
-
-            parent_node = self.group
-
-            node_key = 'group'
-
-        node_route = getattr(parent_node, 'route')
-
-        node_id_str = str(getattr(parent_node, 'id'))
-
-        setattr(self, 'route', '/'.join([node_route, node_id_str, Variable.type]))
-
-        attr = {'key': self.key, 'value': self.value, node_key: node_id_str}
-
-        links = {'self': self.link, 'parent': '/'.join([node_route, node_id_str])}
-
-        meta = self.perms(user)
-
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._build_filtered_dict(
+            fields,
+            attributes={'key': self.key, 'value': self.value, 'node': self.node.id},
+            links={'self': self.link, 'parent': node_child.link},
+            meta=self.perms(user)
+        )
 
     def perms(self, user):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
 
-        node = Host.objects.get(pk=getattr(self.host, 'id')) if self.host else Group.objects.get(pk=getattr(self.group, 'id'))
+        node_type = Host.type if hasattr(self.node, 'host') else Group.type
 
         return {
-            'editable': user.has_perm('users.edit_' + node.type) or authorizer.can_edit_variables(node),
-            'deletable': user.has_perm('users.edit_' + node.type) or authorizer.can_edit_variables(node),
+            'editable': user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(self.node.name),
+            'deletable': user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(self.node.name),
             'readable': True
         }
 
@@ -292,6 +270,6 @@ class Variable(models.Model, ModelSerializerMixin):
 
         ordering = ['key']
 
-        unique_together = (('key', 'host'), ('key', 'group'))
+        unique_together = (('key', 'node'),)
 
 

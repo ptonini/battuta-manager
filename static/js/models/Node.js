@@ -24,11 +24,7 @@ Node.prototype.tabs = {
         validator: () => { return true },
         generator: (self, $container) => {
 
-            let param = {attributes: {}, links: {self: self.links.vars}};
-
-            param.attributes[self.label.single] = self.id;
-
-            new Variable(param).selector($container)
+            new Variable({attributes: {node: self.id}, links: {self: self.links.vars}}).selector($container)
 
         }
     },

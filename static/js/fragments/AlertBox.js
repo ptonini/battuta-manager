@@ -62,7 +62,7 @@ AlertBox.prototype = {
 
         self.element.fadeIn();
 
-        setTimeout(() => self.close.click(), 10000)
+        // setTimeout(() => self.closeIcon.click(), 10000)
 
     },
 

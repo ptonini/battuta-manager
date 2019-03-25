@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.dispatch import receiver
 
-from apps.inventory.models import Host, Group
+from apps.inventory.models import Host, Group, Variable
 
 
 def inventory_to_dict(include_internal_vars=True):
@@ -32,6 +32,126 @@ def inventory_to_dict(include_internal_vars=True):
         data['all']['vars']['userdata_path'] = settings.USERDATA_PATH
 
     return data
+
+
+def import_from_json(json_data, response):
+
+    # Iterate over JSON data host vars
+    for host_name in json_data.get('_meta', {}).get('hostvars', {}):
+
+        host, created = Host.objects.get_or_create(name=host_name)
+
+        response['added_hosts'] += 1 if created else 0
+
+        for key in json_data['_meta']['hostvars'][host_name]:
+
+            value = json_data['_meta']['hostvars'][host_name][key]
+
+            if key == '_description':
+
+                host.description = value
+
+            else:
+
+                var, created = Variable.objects.get_or_create(key=key, value=value, node=host.node_ptr)
+
+                response['added_vars'] += 1 if created else 0
+
+                var.save()
+
+        host.save()
+
+    json_data.pop('_meta', None)
+
+    # Iterate over JSON data groups
+    for group_name in json_data:
+
+        group, created = Group.objects.get_or_create(name=group_name)
+
+        # Iterate over group children
+
+        for child_name in json_data[group_name].get('children', []):
+
+            child, created = Group.objects.get_or_create(name=child_name)
+
+            response['added_groups'] += 1 if created else 0
+
+            group.children.add(child)
+
+        # Iterate over group hosts
+
+        for host_name in json_data[group_name].get('hosts', []):
+
+            host, created = Host.objects.get_or_create(name=host_name)
+
+            response['added_hosts'] += 1 if created else 0
+
+            group.members.add(host)
+
+        # Iterate over group vars
+
+        for key in json_data[group_name].get('vars', {}):
+
+            if key == '_description':
+
+                group.description = json_data[group_name]['vars'][key]
+
+            else:
+
+                var, created = Variable.objects.get_or_create(key=key, node=group.node_ptr)
+
+                response['added_vars'] += 1 if created else 0
+
+                var.value = json_data[group_name]['vars'][key]
+
+                var.save()
+
+        if group.name != 'ungrouped':
+
+            group.save()
+
+            response['added_groups'] += 1 if created else 0
+
+        else:
+
+            group.delete()
+
+    return response
+
+
+def import_from_list(header, host_list, host_index, result):
+
+    for row in host_list:
+
+        host, created = Host.objects.get_or_create(name=row[host_index])
+
+        result['added_hosts'] += 1 if created else 0
+
+        for index, cell in enumerate(row):
+
+            if index != host_index and cell:
+
+                if header[index] == 'group':
+
+                    group, created = Group.objects.get_or_create(name=cell)
+
+                    result['added_groups'] += 1 if created else 0
+
+                    host.group_set.add(group)
+
+                    host.save()
+
+                else:
+
+                    var, created = Variable.objects.get_or_create(key=header[index], node=host.node_ptr)
+
+                    result['added_vars'] += 1 if created else 0
+
+                    var.value = cell
+
+                    var.save()
+
+    return result
 
 
 class AnsibleInventory:

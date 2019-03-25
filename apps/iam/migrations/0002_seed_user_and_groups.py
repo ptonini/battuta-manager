@@ -19,9 +19,7 @@ def add_admin_user(apps, schema_editor):
         {'name': 'qqq', 'super': False},
         {'name': 'ppp', 'super': False},
         {'name': 'ooo', 'super': False},
-
     ]
-
 
     user_class = apps.get_model('iam', 'LocalUser')
 
@@ -92,7 +90,7 @@ def add_user_groups(apps, schema_editor):
 
             perm = permission_class.objects.get(codename=permission)
 
-            group.perms.add(perm)
+            group.permissions.add(perm)
 
 class Migration(migrations.Migration):
 
