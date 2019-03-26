@@ -14,7 +14,7 @@ from main.extras.mixins import ModelSerializerMixin
 from main.extras.signals import clear_authorizer
 
 from apps.preferences.extras import get_preferences
-from apps.iam.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 
 from apps.files import file_types, mime_types
 
@@ -448,7 +448,7 @@ class FileHandler(ModelSerializerMixin):
 
     def perms(self):
 
-        authorizer = caches['authorizer'].get_or_set(self.user.username, lambda: Authorizer(self.user))
+        authorizer = caches['authorizer'].get_or_set(self.user.username, lambda: ProjectAuthorizer(self.user))
 
         group_auth = self.user.has_perm('users.edit_' + 'files' if self.root == 'repository' else self.root)
 

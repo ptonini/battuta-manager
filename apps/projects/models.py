@@ -5,7 +5,7 @@ from django.core.cache import caches
 
 from main.extras.mixins import ModelSerializerMixin
 from main.extras.signals import clear_authorizer
-from apps.iam.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 from apps.files.extras import FileHandler
 
 
@@ -84,7 +84,7 @@ class Project(models.Model, ModelSerializerMixin):
 
     def perms(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         readable = any([
             user.has_perm('users.edit_projects'),

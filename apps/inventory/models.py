@@ -6,7 +6,7 @@ from django.core.validators import RegexValidator
 from django.core.cache import caches
 
 from main.extras.mixins import ModelSerializerMixin
-from apps.iam.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 
 
 class Node(models.Model, ModelSerializerMixin):
@@ -256,7 +256,7 @@ class Variable(models.Model, ModelSerializerMixin):
 
     def perms(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         node_type = Host.type if hasattr(self.node, 'host') else Group.type
 

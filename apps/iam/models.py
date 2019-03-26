@@ -33,7 +33,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
         }
 
         links = {
-            'self': '/'.join([self.route, str(self.id)]) ,
+            'self': '/'.join([self.route, str(self.id)]),
             Credential.type: '/'.join([self.route, str(self.id), Credential.type]),
             LocalGroup.type: '/'.join([self.route, str(self.id), LocalGroup.type])
         }

@@ -10,7 +10,7 @@ apt-key adv --no-tty --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74C
 add-apt-repository 'deb http://mirror.ufscar.br/mariadb/repo/10.3/debian stretch main'
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 curl -sL https://bootstrap.pypa.io/get-pip.py | sudo -E python -
-apt install -y build-essential python3-dev mariadb-server libssl-dev libffi-dev git nodejs libcurl4-openssl-dev
+apt install -y build-essential python3-dev mariadb-server libssl-dev libffi-dev git nodejs libcurl4-openssl-dev libsasl2-dev libldap2-dev slapd ldap-utils
 apt remove -y python3-httplib2 python3-pycurl
 pip install requests
 pip install -r /opt/battuta/requirements.txt

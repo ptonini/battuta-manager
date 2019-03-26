@@ -6,7 +6,7 @@ from django.core.cache import caches, cache
 from main.extras.mixins import ModelSerializerMixin
 from apps.inventory.extras import AnsibleInventory
 from apps.preferences.extras import get_preferences
-from apps.iam.extras import Authorizer
+from apps.projects.extras import ProjectAuthorizer
 from apps.iam.models import LocalUser, Credential
 
 
@@ -44,7 +44,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
 
     def perms(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         readable = any([
             user.has_perm('users.execute_jobs'),
@@ -98,7 +98,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
 
     def perms(self, user):
 
-        authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         readable = any([
             user.has_perm('users.execute_jobs'),
@@ -167,18 +167,17 @@ class Job(models.Model, ModelSerializerMixin):
 
         return data
 
-    @staticmethod
-    def perms(user):
+    def perms(self, user):
 
-        # authorizer = caches['authorizer'].get_or_set(user.username, lambda: Authorizer(user))
+        authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
-        readable = True
+        inventory = cache.get_or_set('inventory', AnsibleInventory)
 
-        editable = readable
+        readable = any([user.has_perm('users.view_job_history'), authorizer.can_view_job(inventory, self)])
 
-        deletable = readable
+        editable = any([user.has_perm('users.execute_jobs'), authorizer.can_run_job(inventory, self)])
 
-        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+        return {'readable': readable, 'editable': editable, 'deletable': False}
 
 
 class Play(models.Model, ModelSerializerMixin):

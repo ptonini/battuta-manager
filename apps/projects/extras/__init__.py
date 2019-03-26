@@ -8,7 +8,8 @@ from django.core.cache import caches
 
 from main.extras.signals import clear_authorizer
 
-class Authorizer:
+
+class ProjectAuthorizer:
 
     def __init__(self, user):
 
@@ -108,7 +109,9 @@ class Authorizer:
 
         for project in can_edit_roles:
 
-           self._editable_folders.update({RoleHandler(role, self._user).absolute_path for role in json.loads(project.roles)})
+            path_set = {RoleHandler(role, self._user).absolute_path for role in json.loads(project.roles)}
+
+            self._editable_folders.update(path_set)
 
     def is_manager(self, project):
 
@@ -170,17 +173,22 @@ class Authorizer:
 
             return True if path in self._editable_files else False
 
-    def authorize_job(self, inventory, job):
+    def can_run_job(self, inventory, job):
 
         if job.type == 'playbook':
 
-            playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.folder if job.folder else '', job.name)
+            playbook_path = os.path.join(settings.PLAYBOOK_PATH, job.name)
 
             return self.can_run_playbooks(inventory, playbook_path)
 
         else:
 
             return self.can_run_tasks(inventory, job.subset)
+
+    def can_view_job(self, inventory, job):
+
+        return self.can_run_job(inventory, job)
+
 
 @receiver(clear_authorizer)
 @receiver(post_save)

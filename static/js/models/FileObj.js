@@ -119,8 +119,6 @@ FileObj.prototype.contentEditor = function () {
         {name: 'yaml', label: 'YAML'}
     ];
 
-
-
     let $form = Templates['file-editor-form'];
 
     let $selector = $form.find('select.mode-selector');
@@ -201,7 +199,7 @@ FileObj.prototype.contentEditor = function () {
 
     $form.find('input.filename-input').val(self.get('name'));
 
-    modal.onConfirmation = function (modal) {
+    modal.onConfirmation = () => {
 
         self.set('new_name', $form.find('input.filename-input').val());
 

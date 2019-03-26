@@ -39,6 +39,11 @@ MIDDLEWARE = (
     'main.extras.middleware.JSONParsingMiddleware'
 )
 
+# AUTHENTICATION_BACKENDS = [
+#     'django_auth_ldap.backend.LDAPBackend',
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
+
 ROOT_URLCONF = 'main.urls'
 
 AUTH_USER_MODEL = 'iam.LocalUser'
