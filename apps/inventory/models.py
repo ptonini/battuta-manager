@@ -97,7 +97,7 @@ class Node(models.Model, ModelSerializerMixin):
 
     def perms(self, user):
 
-        editable = user.has_perm('users.edit_' + getattr(self, 'type'))
+        editable = user.has_perm('auth.edit_' + getattr(self, 'type'))
 
         deletable = editable
 
@@ -220,7 +220,7 @@ class Group(Node):
 
     def perms(self, user):
 
-        editable = all([user.has_perm('users.edit_' + self.type), not self.name =='all'])
+        editable = all([user.has_perm('auth.edit_' + self.type), not self.name == 'all'])
 
         return {'readable': True, 'editable': editable, 'deletable': editable}
 
@@ -258,18 +258,15 @@ class Variable(models.Model, ModelSerializerMixin):
 
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
-        node_type = Host.type if hasattr(self.node, 'host') else Group.type
+        editable = any([
+            user.has_perm('auth.edit_' + Host.type if hasattr(self.node, 'host') else Group.type),
+            authorizer.can_edit_variables(self.node)
+        ])
 
-        return {
-            'editable': user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(self.node.name),
-            'deletable': user.has_perm('users.edit_' + node_type) or authorizer.can_edit_variables(self.node.name),
-            'readable': True
-        }
+        return {'editable': editable, 'deletable': editable, 'readable': True}
 
     class Meta:
 
         ordering = ['key']
 
         unique_together = (('key', 'node'),)
-
-

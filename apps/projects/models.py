@@ -87,7 +87,7 @@ class Project(models.Model, ModelSerializerMixin):
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         readable = any([
-            user.has_perm('users.edit_projects'),
+            user.has_perm('auth.edit_projects'),
             authorizer.is_manager(self),
             user.is_superuser
         ])
@@ -95,7 +95,7 @@ class Project(models.Model, ModelSerializerMixin):
         editable = readable
 
         deletable = any([
-            user.has_perm('users.edit_projects'),
+            user.has_perm('auth.edit_projects'),
             user.is_superuser
         ])
 

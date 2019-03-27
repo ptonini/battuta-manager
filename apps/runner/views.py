@@ -375,7 +375,7 @@ class JobView(View, ApiViewMixin):
 
         else:
 
-            if request.user.has_perm('users.view_job_history'):
+            if request.user.has_perm('auth.view_job_history'):
 
                 queryset = Job.objects.all()
 

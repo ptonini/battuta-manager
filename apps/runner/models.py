@@ -47,7 +47,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         readable = any([
-            user.has_perm('users.execute_jobs'),
+            user.has_perm('auth.execute_jobs'),
             authorizer.can_run_playbooks(cache.get_or_set('inventory', AnsibleInventory), self.path)
         ])
 
@@ -101,7 +101,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
         authorizer = caches['authorizer'].get_or_set(user.username, lambda: ProjectAuthorizer(user))
 
         readable = any([
-            user.has_perm('users.execute_jobs'),
+            user.has_perm('auth.execute_jobs'),
             authorizer.can_edit_tasks(cache.get_or_set('inventory', AnsibleInventory), self.hosts)
         ])
 
@@ -173,9 +173,9 @@ class Job(models.Model, ModelSerializerMixin):
 
         inventory = cache.get_or_set('inventory', AnsibleInventory)
 
-        readable = any([user.has_perm('users.view_job_history'), authorizer.can_view_job(inventory, self)])
+        readable = any([user.has_perm('auth.view_job_history'), authorizer.can_view_job(inventory, self)])
 
-        editable = any([user.has_perm('users.execute_jobs'), authorizer.can_run_job(inventory, self)])
+        editable = any([user.has_perm('auth.execute_jobs'), authorizer.can_run_job(inventory, self)])
 
         return {'readable': readable, 'editable': editable, 'deletable': False}
 

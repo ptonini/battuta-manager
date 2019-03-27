@@ -15,7 +15,7 @@ def inventory_to_dict(include_internal_vars=True):
 
     data = {g.name: g.to_ansible_dict() for g in Group.objects.all()}
 
-    data['ungrouped'] = [h.name for h in Host.objects.filter(group=None)]
+    data['ungrouped'] = {'hosts': [h.name for h in Host.objects.filter(group=None)]}
 
     data['_meta'] = {'hostvars': {h.name: h.vars_dict() for h in Host.objects.exclude(variable=None)}}
 

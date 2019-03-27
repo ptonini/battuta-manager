@@ -54,7 +54,7 @@ class PreferencesView(View, ApiViewMixin):
     @staticmethod
     def patch(request):
 
-        if request.user.has_perm('users.edit_preferences'):
+        if request.user.has_perm('auth.edit_preferences'):
 
             for item in request.JSON.get('data', {}):
 

@@ -45,7 +45,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
     def perms(self, user):
 
         readable = any([
-            user.has_perm('users.edit_users') and not self.is_superuser,
+            user.has_perm('auth.edit_users') and not self.is_superuser,
             user.is_superuser,
             user.id == self.id
         ])
@@ -53,7 +53,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
         editable = readable
 
         deletable = all([
-            user.has_perm('users.edit_users'),
+            user.has_perm('auth.edit_users'),
             not self.is_superuser,
             user.id != self.id
         ])
@@ -121,13 +121,13 @@ class Credential(models.Model, ModelSerializerMixin):
 
     def perms(self, user):
 
-        readable = user.has_perm('users.edit_users') or user.id == self.user.id
+        readable = user.has_perm('auth.edit_users') or user.id == self.user.id
 
         editable = readable
 
         deletable = all([
             self != self.user.default_cred,
-            user.has_perm('users.edit_users') or user.id == self.user.id
+            user.has_perm('auth.edit_users') or user.id == self.user.id
         ])
 
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
@@ -163,9 +163,9 @@ class LocalGroup(Group, ModelSerializerMixin):
 
     def perms(self, user):
 
-        readable = user.has_perm('users.edit_user_groups')
+        readable = user.has_perm('auth.edit_user_groups')
 
-        editable = False if self.name in builtin_groups else user.has_perm('users.edit_user_groups')
+        editable = False if self.name in builtin_groups else user.has_perm('auth.edit_user_groups')
 
         deletable = editable
 

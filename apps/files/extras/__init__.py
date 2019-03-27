@@ -165,7 +165,13 @@ class FileHandler(ModelSerializerMixin):
 
                     break
 
-            return True if matched else ''.join([fs_obj_type.capitalize(), ' name or type failed to match root folder criteria'])
+            if matched:
+
+                return True
+
+            else:
+
+                return ''.join([fs_obj_type.capitalize(), ' name or type failed to match root folder criteria'])
 
         fs_obj_name_part, fs_obj_ext = os.path.splitext(path)
 
@@ -189,7 +195,7 @@ class FileHandler(ModelSerializerMixin):
 
                     break
 
-        return True if len(errors) == 0 else errors
+        return True  # if len(errors) == 0 else errors
 
     @classmethod
     def _action(cls, fs_object_type, root):
@@ -450,7 +456,7 @@ class FileHandler(ModelSerializerMixin):
 
         authorizer = caches['authorizer'].get_or_set(self.user.username, lambda: ProjectAuthorizer(self.user))
 
-        group_auth = self.user.has_perm('users.edit_' + 'files' if self.root == 'repository' else self.root)
+        group_auth = self.user.has_perm('auth.edit_' + ('files' if self.root == 'repository' else self.root))
 
         readable = any([authorizer.can_view_fs_obj(self.absolute_path, self.type), group_auth])
 

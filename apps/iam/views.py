@@ -340,11 +340,9 @@ class RelationsView(View, ApiViewMixin):
 
         r_class = types[relation]['class']
 
-        r_manager = getattr(obj, types[relation]['manager']).order_by(types[relation]['sort'])
+        r_manager = getattr(obj, types[relation]['manager'])
 
         return obj, r_class, r_manager
-
-
 
     def post(self, request, relation, obj_id, obj_type):
 
@@ -368,7 +366,7 @@ class RelationsView(View, ApiViewMixin):
 
     def get(self, request, relation, obj_id, obj_type):
 
-        obj ,r_class, r_manager = self._build_data(obj_type, obj_id, relation)
+        obj, r_class, r_manager = self._build_data(obj_type, obj_id, relation)
 
         if request.JSON.get('related', True):
 
