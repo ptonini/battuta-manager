@@ -219,7 +219,7 @@ class JobView(View, ApiViewMixin):
                 'loader': inventory.loader,
             }
 
-            if request_attr.get('cred') == '':
+            if request_attr.get('cred', False) == '':
 
                 cred = None
 
@@ -235,9 +235,9 @@ class JobView(View, ApiViewMixin):
 
             run_data['remote_user'] = cred.username if cred else request_attr.get('remote_user')
 
-            run_data['remote_pass'] = cred.password if cred else request_attr.get('remote_pass')
+            run_data['remote_pass'] = cred.password if cred and cred.password else request_attr.get('remote_pass')
 
-            run_data['become_user'] = cred.sudo_user if cred else request_attr.get('become_user')
+            run_data['become_user'] = cred.sudo_user if cred and cred.sudo_user else request_attr.get('become_user')
 
             if cred:
 
@@ -253,7 +253,11 @@ class JobView(View, ApiViewMixin):
 
                 try:
 
-                    pb = Playbook.load(playbook.absolute_path, variable_manager=run_data['var_manager'], loader=run_data['loader'])
+                    pb = Playbook.load(
+                        playbook.absolute_path,
+                        variable_manager=run_data['var_manager'],
+                        loader=run_data['loader']
+                    )
 
                 except AnsibleParserError as e:
 
@@ -475,8 +479,3 @@ class ResultView(View, ApiViewMixin):
         else:
 
             return HttpResponseForbidden()
-
-
-
-
-

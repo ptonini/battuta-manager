@@ -52,7 +52,7 @@ def run_job(job):
     options = AnsibleOptions(
         connection=job.data.get('connection', 'paramiko'),
         module_path=job.data.get('module_path'),
-        forks=1, #job.data.get('forks', getattr(c, 'DEFAULT_FORKS')),
+        forks=job.data.get('forks', getattr(c, 'DEFAULT_FORKS')),
         become=job.data.get('become', getattr(c, 'DEFAULT_BECOME')),
         become_method=job.data.get('become_method', getattr(c, 'DEFAULT_BECOME_METHOD')),
         become_user=job.data['become_user'] if job.data.get('become_user') else getattr(c, 'DEFAULT_BECOME_USER'),

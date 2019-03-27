@@ -1,19 +1,19 @@
 <form data-template="password-form">
-    <div class="form-group username-group">
+    <div class="username-group mb-2">
         <label>Username</label>
         <input data-bind="remote_user" class="username-input form-control form-control-sm" type="text" title="Username">
     </div>
-    <div class="form-group password-group">
+    <div class="password-group mb-2">
         <label>Password for user <i data-bind="remote_user"></i></label>
         <input data-bind="remote_pass" class="password-input form-control form-control-sm" type="password" title="Password" autocomplete="new-password">
     </div>
-    <div class="form-group sudo-user-group">
+    <div class="sudo-user-group mb-2">
         <label>Sudo user</label>
         <input id="" data-bind="become_user" class="become-user-input form-control form-control-sm" type="text" title="Sudo user">
     </div>
-    <div class="form-group sudo-pass-group">
+    <div class="sudo-pass-group mb-2">
         <label>Sudo password (defaults to user)</label>
-        <input data-bind="become_pass" class="become-pass-input form-control form-control-sm" type="password" title="Sudo password" autocomplete="new-password">
+        <input data-bind="become_pass" class="become-pass-input form-control form-control-sm" type="password" title="Sudo password" autocomplete="new-sudo-password">
     </div>
 </form>
 

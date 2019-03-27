@@ -186,7 +186,7 @@ class Group(Node):
 
         if self.children.all().exists() or self.name == 'all':
 
-            queryset = Group.objects.all() if self.name == 'all' else self.children.all()
+            queryset = Group.objects.exclude(name='all') if self.name == 'all' else self.children.all()
 
             group_dict['children'] = [g.name for g in queryset]
 
