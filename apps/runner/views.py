@@ -1,20 +1,17 @@
 import json
 import psutil
 import os
-import ast
-from pytz import timezone
 from multiprocessing import Process
-from itertools import chain
 
 from ansible.playbook import Playbook
 from ansible.playbook.play import Play as AnsiblePlay
 from ansible.errors import AnsibleParserError
 
-from django.http import HttpResponse, Http404, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
-from apps.runner.models import AdHocTask, Job, Play, Task, Result, PlaybookArgs
+from apps.runner.models import AdHocTask, Job, Task, Result, PlaybookArgs
 from apps.runner.forms import AdHocTaskForm, AdHocJobForm, JobForm, PlaybookArgsForm
 from apps.runner.extras import run_job
 from apps.runner.extras.handlers import JobTableHandler

@@ -379,7 +379,7 @@ class NodeChildView(View, ApiViewMixin):
 
             filter_pattern = request.JSON.get('filter')
 
-            for node_child in getattr(self, 'model_class').objects.order_by('name').all():
+            for node_child in getattr(self, 'model_class').objects.all():
 
                 match_conditions = all({
                     not filter_pattern or node_child.name.find(filter_pattern) > -1,
