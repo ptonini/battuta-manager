@@ -7,11 +7,11 @@ from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFoun
 from django.core.exceptions import PermissionDenied
 from django.views.generic import View
 
-from main.extras.mixins import ApiViewMixin
+from main.extras.mixins import RESTfulViewMixin
 from apps.files.extras import FileHandler, FileHandlerException
 
 
-class FileView(View, ApiViewMixin):
+class FileView(View, RESTfulViewMixin):
 
     def post(self, request, root, path):
 
@@ -143,7 +143,7 @@ class FileView(View, ApiViewMixin):
             return HttpResponse(status=204)
 
 
-class FileSearchView(View, ApiViewMixin):
+class FileSearchView(View, RESTfulViewMixin):
 
     def get(self, request):
 

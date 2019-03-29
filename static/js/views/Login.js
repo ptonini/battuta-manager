@@ -15,7 +15,7 @@ function Login () {
                 }
             };
 
-            fetchJson('POST', '/login', requestData, false).then(() => window.open('/', '_self'));
+            fetchJson('POST', '/login', requestData).then(() => window.open('/', '_self'));
 
         });
 

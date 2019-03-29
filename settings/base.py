@@ -39,11 +39,6 @@ MIDDLEWARE = (
     'main.extras.middleware.JSONParsingMiddleware'
 )
 
-# AUTHENTICATION_BACKENDS = [
-#     'django_auth_ldap.backend.LDAPBackend',
-#     'django.contrib.auth.backends.ModelBackend',
-# ]
-
 ROOT_URLCONF = 'main.urls'
 
 AUTH_USER_MODEL = 'iam.LocalUser'
@@ -91,11 +86,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 LOGIN_URL = '/'

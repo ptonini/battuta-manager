@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['name'],
             },
-            bases=(models.Model, main.extras.mixins.ModelSerializerMixin),
+            bases=(models.Model, main.extras.mixins.RESTfulModelMixin),
         ),
         migrations.CreateModel(
             name='Variable',
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['key'],
             },
-            bases=(models.Model, main.extras.mixins.ModelSerializerMixin),
+            bases=(models.Model, main.extras.mixins.RESTfulModelMixin),
         ),
         migrations.CreateModel(
             name='Group',

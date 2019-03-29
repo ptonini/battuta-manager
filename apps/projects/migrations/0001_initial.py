@@ -36,6 +36,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['name'],
             },
-            bases=(models.Model, main.extras.mixins.ModelSerializerMixin),
+            bases=(models.Model, main.extras.mixins.RESTfulModelMixin),
         ),
     ]

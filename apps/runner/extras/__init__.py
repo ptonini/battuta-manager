@@ -55,7 +55,7 @@ def run_job(job):
         forks=job.data.get('forks', getattr(c, 'DEFAULT_FORKS')),
         become=job.data.get('become', getattr(c, 'DEFAULT_BECOME')),
         become_method=job.data.get('become_method', getattr(c, 'DEFAULT_BECOME_METHOD')),
-        become_user=job.data['become_user'] if job.data.get('become_user') else getattr(c, 'DEFAULT_BECOME_USER'),
+        become_user=job.data.get('become_user', getattr(c, 'DEFAULT_BECOME_USER')),
         check=job.check,
         diff=False,
         remote_user=job.data['remote_user'],

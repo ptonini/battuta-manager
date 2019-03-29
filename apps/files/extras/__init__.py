@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.cache import caches
 from django.core.exceptions import PermissionDenied
 
-from main.extras.mixins import ModelSerializerMixin
+from main.extras.mixins import RESTfulModelMixin
 from main.extras.signals import clear_authorizer
 
 from apps.preferences.extras import get_preferences
@@ -19,7 +19,7 @@ from apps.projects.extras import ProjectAuthorizer
 from apps.files import file_types, mime_types
 
 
-class FileHandler(ModelSerializerMixin):
+class FileHandler(RESTfulModelMixin):
 
     root = 'repository'
 

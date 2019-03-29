@@ -18,13 +18,13 @@ from apps.runner.extras.handlers import JobTableHandler
 
 from apps.iam.models import Credential
 
-from main.extras.mixins import ApiViewMixin
+from main.extras.mixins import RESTfulViewMixin
 from apps.files.extras import PlaybookHandler
 from apps.preferences.extras import get_preferences
 from apps.inventory.extras import AnsibleInventory
 
 
-class PlaybookView(View, ApiViewMixin):
+class PlaybookView(View, RESTfulViewMixin):
 
     def get(self, request):
 
@@ -39,7 +39,7 @@ class PlaybookView(View, ApiViewMixin):
         return self._api_response({'data': data})
 
 
-class PlaybookArgsView(View, ApiViewMixin):
+class PlaybookArgsView(View, RESTfulViewMixin):
 
     form_class = PlaybookArgsForm
 
@@ -109,7 +109,7 @@ class PlaybookArgsView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class AdHocTaskView(View, ApiViewMixin):
+class AdHocTaskView(View, RESTfulViewMixin):
 
     form_class = AdHocTaskForm
 
@@ -181,7 +181,7 @@ class AdHocTaskView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class JobView(View, ApiViewMixin):
+class JobView(View, RESTfulViewMixin):
 
     form_class = JobForm
 
@@ -441,7 +441,7 @@ class JobView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class TaskView(View, ApiViewMixin):
+class TaskView(View, RESTfulViewMixin):
 
     def get(self, request, task_id):
 
@@ -463,7 +463,7 @@ class TaskView(View, ApiViewMixin):
             return HttpResponseForbidden
 
 
-class ResultView(View, ApiViewMixin):
+class ResultView(View, RESTfulViewMixin):
 
     def get(self, request, result_id):
 

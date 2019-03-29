@@ -3,13 +3,13 @@ import json
 from django.db import models
 from django.core.cache import caches
 
-from main.extras.mixins import ModelSerializerMixin
+from main.extras.mixins import RESTfulModelMixin
 from main.extras.signals import clear_authorizer
 from apps.projects.extras import ProjectAuthorizer
 from apps.files.extras import FileHandler
 
 
-class Project(models.Model, ModelSerializerMixin):
+class Project(models.Model, RESTfulModelMixin):
 
     type = 'projects'
 

@@ -4,92 +4,27 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
-from main.extras.mixins import ApiViewMixin
+from main.extras.mixins import RESTfulViewMixin
 from apps.projects.models import Project
 from apps.projects.forms import ProjectForm
 
 
-class ProjectView(View, ApiViewMixin):
+class ProjectView(View, RESTfulViewMixin):
+
+    model_class = Project
 
     form_class = ProjectForm
 
-    def post(self, request, project_id):
 
-        project = Project()
+class RelationsView(View, RESTfulViewMixin):
 
-        if project.perms(request.user)['editable']:
+    def post(self, request, **kwargs):
 
-            return self._api_response(self._save_instance(request, project))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def get(self, request, project_id):
-
-        if project_id:
-
-            project = get_object_or_404(Project, pk=project_id)
-
-            if project.perms(request.user)['readable']:
-
-                response = {'data': project.serialize(request.JSON.get('fields'), request.user)}
-
-            else:
-
-                response = HttpResponseForbidden()
-
-        else:
-
-            data = list()
-
-            for project in Project.objects.order_by('name').all():
-
-                if project.perms(request.user)['readable']:
-
-                    data.append(project.serialize(request.JSON.get('fields'), request.user))
-
-            response = {'data': data}
-
-        return self._api_response(response)
-
-    def patch(self, request, project_id):
-
-        project = get_object_or_404(Project, pk=project_id)
+        project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
         if project.perms(request.user)['editable']:
 
-            return self._api_response(self._save_instance(request, project))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    @staticmethod
-    def delete(request, project_id):
-
-        project = get_object_or_404(Project, pk=project_id)
-
-        if project.perms(request.user)['deletable']:
-
-            project.delete()
-
-            return HttpResponse(status=204)
-
-        else:
-
-            return HttpResponseForbidden()
-
-
-class RelationsView(View, ApiViewMixin):
-
-    def post(self, request, relation, project_id):
-
-        project = get_object_or_404(Project, pk=project_id)
-
-        if project.perms(request.user)['editable']:
-
-            related = project.get_relationships(relation)
+            related = project.get_relationships(kwargs['relation'])
 
             if related['many']:
 
@@ -99,7 +34,7 @@ class RelationsView(View, ApiViewMixin):
 
                     if not getattr(s, 'is_superuser', False):
 
-                        getattr(project, relation).add(s)
+                        getattr(project, kwargs['relation']).add(s)
 
                 return HttpResponse(status=204)
 
@@ -109,27 +44,27 @@ class RelationsView(View, ApiViewMixin):
 
                 if not getattr(r, 'is_superuser', False):
 
-                    project.__setattr__(relation, r)
+                    project.__setattr__(kwargs['relation'], r)
 
                     project.save()
 
-                return self._api_response({'data': getattr(project, relation).serialize(None, request.user)})
+                return self._api_response({'data': getattr(project, kwargs['relation']).serialize(None, request.user)})
 
         else:
 
             return HttpResponseForbidden()
 
-    def get(self, request, relation, project_id):
+    def get(self, request, **kwargs):
 
-        project = get_object_or_404(Project, pk=project_id)
+        project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
         if project.perms(request.user)['readable']:
 
             fields = request.JSON.get('fields')
 
-            related = project.get_relationships(relation)
+            related = project.get_relationships(kwargs['relation'])
 
-            related_manager = getattr(project, relation)
+            related_manager = getattr(project, kwargs['relation'])
 
             if request.JSON.get('related', True):
 
@@ -159,31 +94,29 @@ class RelationsView(View, ApiViewMixin):
 
                         data.append(r.serialize(request.JSON.get('fields'), request.user))
 
-
             return self._api_response({'data': data})
 
         else:
 
             return HttpResponseForbidden()
 
-    @staticmethod
-    def delete(request, relation, project_id):
+    def delete(self, request, **kwargs):
 
-        project = get_object_or_404(Project, pk=project_id)
+        project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
         if project.perms(request.user)['editable']:
 
-            related = project.get_relationships(relation)
+            related = project.get_relationships(kwargs['relation'])
 
             if related['many']:
 
                 for selected in request.JSON.get('data', []):
 
-                    getattr(project, relation).remove(get_object_or_404(related['class'], pk=selected['id']))
+                    getattr(project, kwargs['relation']).remove(get_object_or_404(related['class'], pk=selected['id']))
 
             else:
 
-                project.__setattr__(relation, None)
+                project.__setattr__(kwargs['relation'], None)
 
                 project.save()
 
@@ -194,20 +127,20 @@ class RelationsView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class FsObjRelationsView(View, ApiViewMixin):
+class FsObjRelationsView(View, RESTfulViewMixin):
 
     @staticmethod
-    def post(request, relation, project_id):
+    def post(request, **kwargs):
 
-        project = get_object_or_404(Project, pk=project_id)
+        project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
         if project.perms(request.user)['editable']:
 
-            result_set = set(json.loads(getattr(project, relation)))
+            result_set = set(json.loads(getattr(project, kwargs['relation'])))
 
-            result_set.update([f['id'].replace(relation + '/', '') for f in request.JSON.get('data', list())])
+            result_set.update([f['id'].replace(kwargs['relation'] + '/', '') for f in request.JSON.get('data', list())])
 
-            project.__setattr__(relation, json.dumps(list(result_set)))
+            project.__setattr__(kwargs['relation'], json.dumps(list(result_set)))
 
             project.save()
 
@@ -217,15 +150,15 @@ class FsObjRelationsView(View, ApiViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, relation, project_id):
+    def get(self, request, **kwargs):
 
-        project = get_object_or_404(Project, pk=project_id)
+        project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
         if project.perms(request.user)['readable']:
 
             fields = request.JSON.get('fields')
 
-            related_list = project.get_fs_obj_relations(relation, request.user, request.JSON.get('related', True))
+            related_list = project.get_fs_obj_relations(kwargs['relation'], request.user, request.JSON.get('related', True))
 
             return self._api_response({'data': [f.serialize(fields) for f in related_list]})
 
@@ -233,16 +166,15 @@ class FsObjRelationsView(View, ApiViewMixin):
 
             return HttpResponseForbidden()
 
-    @staticmethod
-    def delete(request, relation, project_id):
+    def delete(self, request, **kwargs):
 
-        project = get_object_or_404(Project, pk=project_id)
+        project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
         if project.perms(request.user)['editable']:
 
             delete_ids = [f['attributes']['path'] for f in request.JSON.get('data', list())]
 
-            project.__setattr__(relation, json.dumps([i for i in json.loads(getattr(project, relation)) if i not in delete_ids]))
+            project.__setattr__(kwargs['relation'], json.dumps([i for i in json.loads(getattr(project, kwargs['relation'])) if i not in delete_ids]))
 
             project.save()
 

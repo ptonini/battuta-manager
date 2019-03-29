@@ -19,7 +19,7 @@ from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, inventory_to_dict, import_from_json, import_from_list
 from apps.preferences.extras import get_preferences
 from main.extras import download_file
-from main.extras.mixins import ApiViewMixin
+from main.extras.mixins import RESTfulViewMixin
 
 
 class InventoryView(View):
@@ -40,7 +40,7 @@ class InventoryView(View):
             return HttpResponseForbidden()
 
 
-class ManagerView(View, ApiViewMixin):
+class ManagerView(View, RESTfulViewMixin):
 
     @staticmethod
     def _create_node_var_file(node, folder):
@@ -53,7 +53,7 @@ class ManagerView(View, ApiViewMixin):
 
                 vars_file.write(yaml.safe_dump({var.key: var.value}, default_flow_style=False))
 
-    def get(self, request):
+    def get(self, request, **kwargs):
 
         if request.GET['format'] == 'json':
 
@@ -284,7 +284,7 @@ class ManagerView(View, ApiViewMixin):
 
             return HttpResponseBadRequest()
 
-    def patch(self, request):
+    def patch(self, request, **kwargs):
 
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
@@ -345,134 +345,29 @@ class ManagerView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class NodeChildView(View, ApiViewMixin):
-
-    def post(self, request, node_id):
-
-        node_child = getattr(self, 'model_class')()
-
-        if node_child.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, node_child))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def get(self, request, node_id):
-
-        if node_id:
-
-            node_child = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
-
-            if node_child.perms(request.user)['readable']:
-
-                return self._api_response({'data': node_child.serialize(request.JSON.get('fields'), request.user)})
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            data = list()
-
-            filter_pattern = request.JSON.get('filter')
-
-            for node_child in getattr(self, 'model_class').objects.all():
-
-                match_conditions = all({
-                    not filter_pattern or node_child.name.find(filter_pattern) > -1,
-                    node_child.perms(request.user)['readable']
-                })
-
-                if match_conditions:
-
-                    data.append(node_child.serialize(request.JSON.get('fields'), request.user))
-
-            return self._api_response({'data': data})
-
-    def patch(self, request, node_id):
-
-        node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
-
-        if node.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, node))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def delete(self, request, node_id):
-
-        if node_id:
-
-            node = get_object_or_404(getattr(self, 'model_class'), pk=node_id)
-
-            if node.perms(request.user)['deletable']:
-
-                node.delete()
-
-                return HttpResponse(status=204)
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            id_list = list()
-
-            for node_dict in request.JSON.get('data'):
-
-                node = getattr(self, 'model_class').objects.get(pk=node_dict['id'])
-
-                if node.perms(request.user)['deletable']:
-
-                    id_list.append(node_dict['id'])
-
-            getattr(self, 'model_class').objects.filter(pk__in=id_list).delete()
-
-            return HttpResponse(status=204)
-
-        #
-        # elif action == 'descendants':
-        #
-        #     data = {
-        #         'status': 'ok',
-        #         'group_descendants': [group.to_dict() for group in node.group_descendants],
-        #         'host_descendants': [host.to_dict() for host in node.host_descendants]
-        #     }
-
-
-class HostView(NodeChildView):
-
-    type = Host.type
+class HostView(View, RESTfulViewMixin):
 
     model_class = Host
 
     form_class = HostForm
 
 
-class GroupView(NodeChildView):
-
-    type = Group.type
+class GroupView(View, RESTfulViewMixin):
 
     model_class = Group
 
     form_class = GroupForm
 
 
-class VariableView(View, ApiViewMixin):
+class VariableView(View, RESTfulViewMixin):
 
-    type = Variable.type
+    model_class = Variable
 
     form_class = VariableForm
 
-    def post(self, request, node_id, var_id, node_type):
+    def post(self, request, **kwargs):
 
-        node = get_object_or_404(Node, pk=node_id)
+        node = get_object_or_404(Node, pk=kwargs['node_id'])
 
         var = Variable(node=node)
 
@@ -504,9 +399,9 @@ class VariableView(View, ApiViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, node_id, var_id, node_type):
+    def get(self, request, **kwargs):
 
-        node = get_object_or_404(Node, pk=node_id)
+        node = get_object_or_404(Node, pk=kwargs['node_id'])
 
         temp_var = Variable(node=node)
 
@@ -575,44 +470,21 @@ class VariableView(View, ApiViewMixin):
 
             return HttpResponseForbidden()
 
-    def patch(self, request, node_id, var_id, node_type):
 
-        var = get_object_or_404(Variable, pk=var_id)
-
-        if var.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, var))
-
-        else:
-
-            return HttpResponseForbidden()
+class RelationsView(View, RESTfulViewMixin):
 
     @staticmethod
-    def delete(request, node_id, var_id, node_type):
+    def _get_object(kwargs):
 
-        var = get_object_or_404(Variable, pk=var_id)
+        return get_object_or_404(Host if kwargs['node_type'] == Host.type else Group, pk=kwargs['node_id'])
 
-        if var.perms(request.user)['deletable']:
+    def post(self, request, **kwargs):
 
-            get_object_or_404(Variable, pk=var_id).delete()
-
-            return HttpResponse(status=204)
-
-        else:
-
-            return HttpResponseForbidden()
-
-
-class RelationsView(View, ApiViewMixin):
-
-    @staticmethod
-    def post(request, relation, node_id, node_type):
-
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        node = self._get_object(kwargs)
 
         if node.perms(request.user)['editable']:
 
-            related_set, related_class = node.get_relationships(relation)
+            related_set, related_class = node.get_relationships(kwargs['relation'])
 
             for selected in request.JSON.get('data', []):
 
@@ -624,11 +496,11 @@ class RelationsView(View, ApiViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, relation, node_id, node_type):
+    def get(self, request, **kwargs):
 
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        node = self._get_object(kwargs)
 
-        related_set, related_class = node.get_relationships(relation)
+        related_set, related_class = node.get_relationships(kwargs['relation'])
 
         if 'related' not in request.JSON or request.JSON['related']:
 
@@ -644,11 +516,11 @@ class RelationsView(View, ApiViewMixin):
 
                 excluded_ids.append(node.id)
 
-            if relation == 'parents' and node_type == Group.type:
+            if kwargs['relation'] == 'parents' and kwargs['node_type'] == Group.type:
 
                 excluded_ids = excluded_ids + [g.id for g in node.get_descendants()[0]]
 
-            elif relation == 'children':
+            elif kwargs['relation'] == 'children':
 
                 excluded_ids = excluded_ids + [g.id for g in node.get_ancestors()]
 
@@ -658,14 +530,13 @@ class RelationsView(View, ApiViewMixin):
 
         return self._api_response({'data': data})
 
-    @staticmethod
-    def delete(request, relation, node_id, node_type):
+    def delete(self, request, **kwargs):
 
-        node = get_object_or_404(Host if node_type == Host.type else Group, pk=node_id)
+        node = self._get_object(kwargs)
 
         if node.perms(request.user)['editable']:
 
-            related_set, related_class = node.get_relationships(relation)
+            related_set, related_class = node.get_relationships(kwargs['relation'])
 
             for selected in request.JSON.get('data', []):
 

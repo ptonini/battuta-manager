@@ -5,11 +5,11 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.cache import caches
 
-from main.extras.mixins import ModelSerializerMixin
+from main.extras.mixins import RESTfulModelMixin
 from apps.projects.extras import ProjectAuthorizer
 
 
-class Node(models.Model, ModelSerializerMixin):
+class Node(models.Model, RESTfulModelMixin):
 
     name = models.CharField(max_length=64, blank=False, unique=True)
 
@@ -225,7 +225,7 @@ class Group(Node):
         return {'readable': True, 'editable': editable, 'deletable': editable}
 
 
-class Variable(models.Model, ModelSerializerMixin):
+class Variable(models.Model, RESTfulModelMixin):
 
     type = 'vars'
 

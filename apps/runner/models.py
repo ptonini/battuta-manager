@@ -3,14 +3,14 @@ import json
 from django.db import models
 from django.core.cache import caches, cache
 
-from main.extras.mixins import ModelSerializerMixin
+from main.extras.mixins import RESTfulModelMixin
 from apps.inventory.extras import AnsibleInventory
 from apps.preferences.extras import get_preferences
 from apps.projects.extras import ProjectAuthorizer
 from apps.iam.models import LocalUser, Credential
 
 
-class PlaybookArgs(models.Model, ModelSerializerMixin):
+class PlaybookArgs(models.Model, RESTfulModelMixin):
 
     type = 'arguments'
 
@@ -62,7 +62,7 @@ class PlaybookArgs(models.Model, ModelSerializerMixin):
         unique_together = ('path', 'tags', 'subset', 'skip_tags', 'extra_vars')
 
 
-class AdHocTask(models.Model, ModelSerializerMixin):
+class AdHocTask(models.Model, RESTfulModelMixin):
 
     type = 'adhoctasks'
 
@@ -112,7 +112,7 @@ class AdHocTask(models.Model, ModelSerializerMixin):
         return {'readable': readable, 'editable': editable, 'deletable': deletable}
 
 
-class Job(models.Model, ModelSerializerMixin):
+class Job(models.Model, RESTfulModelMixin):
 
     type = 'jobs'
 
@@ -180,7 +180,7 @@ class Job(models.Model, ModelSerializerMixin):
         return {'readable': readable, 'editable': editable, 'deletable': False}
 
 
-class Play(models.Model, ModelSerializerMixin):
+class Play(models.Model, RESTfulModelMixin):
 
     type = 'plays'
 
@@ -220,7 +220,7 @@ class Play(models.Model, ModelSerializerMixin):
         return self.job.perms(user)
 
 
-class Task(models.Model, ModelSerializerMixin):
+class Task(models.Model, RESTfulModelMixin):
 
     type = 'tasks'
 
@@ -257,7 +257,7 @@ class Task(models.Model, ModelSerializerMixin):
         return self.play.job.perms(user)
 
 
-class Result(models.Model, ModelSerializerMixin):
+class Result(models.Model, RESTfulModelMixin):
 
     type = 'results'
 

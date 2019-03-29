@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 
-from main.extras.mixins import ModelSerializerMixin
+from main.extras.mixins import RESTfulModelMixin
 from apps.preferences.extras import get_preferences
 from apps.iam import builtin_groups
 
 
-class LocalUser(AbstractUser, ModelSerializerMixin):
+class LocalUser(AbstractUser, RESTfulModelMixin):
 
     type = 'users'
 
@@ -65,7 +65,7 @@ class LocalUser(AbstractUser, ModelSerializerMixin):
             ordering = ['username']
 
 
-class Credential(models.Model, ModelSerializerMixin):
+class Credential(models.Model, RESTfulModelMixin):
 
     type = 'creds'
 
@@ -139,7 +139,7 @@ class Credential(models.Model, ModelSerializerMixin):
         ordering = ['title']
 
 
-class LocalGroup(Group, ModelSerializerMixin):
+class LocalGroup(Group, RESTfulModelMixin):
 
     type = 'usergroups'
 

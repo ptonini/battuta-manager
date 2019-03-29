@@ -6,11 +6,12 @@ from django.views.generic import View
 
 from apps.iam.models import LocalUser,  Credential, LocalGroup
 from apps.iam.forms import LocalUserForm, CredentialForm, LocalGroupForm
+from apps.iam.extras import build_default_cred
 from apps.preferences.extras import get_preferences
-from main.extras.mixins import ApiViewMixin
+from main.extras.mixins import RESTfulViewMixin
 
 
-class UserView(View, ApiViewMixin):
+class UserView(View, RESTfulViewMixin):
 
     form_class = LocalUserForm
 
@@ -37,13 +38,7 @@ class UserView(View, ApiViewMixin):
 
             response = self._save_instance(request, user)
 
-            if 'data' in response:
-
-                cred, created = Credential.objects.get_or_create(user=user, username=user.username, title='Default')
-
-                user.default_cred = cred
-
-                user.save()
+            build_default_cred(user) if 'data' in response else None
 
             return self._api_response(response)
 
@@ -128,7 +123,7 @@ class UserView(View, ApiViewMixin):
             return HttpResponseBadRequest()
 
 
-class CredentialView(View, ApiViewMixin):
+class CredentialView(View, RESTfulViewMixin):
 
     form_class = CredentialForm
 
@@ -241,7 +236,7 @@ class CredentialView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class UserGroupView(View, ApiViewMixin):
+class UserGroupView(View, RESTfulViewMixin):
 
     form_class = LocalGroupForm
 
@@ -283,7 +278,6 @@ class UserGroupView(View, ApiViewMixin):
 
             return self._api_response({'data': data})
 
-
     def patch(self, request, group_id):
 
         group = get_object_or_404(LocalGroup, pk=group_id)
@@ -318,7 +312,7 @@ class UserGroupView(View, ApiViewMixin):
             return HttpResponseBadRequest()
 
 
-class RelationsView(View, ApiViewMixin):
+class RelationsView(View, RESTfulViewMixin):
 
     @staticmethod
     def _build_data(obj_type, obj_id, relation):
@@ -413,7 +407,7 @@ class RelationsView(View, ApiViewMixin):
             return HttpResponseForbidden()
 
 
-class PermissionView(View, ApiViewMixin):
+class PermissionView(View, RESTfulViewMixin):
 
     _excluded_perms = [
         'add_group',
