@@ -13,6 +13,8 @@ from main.extras.mixins import RESTfulViewMixin
 
 class UserView(View, RESTfulViewMixin):
 
+    model_class = LocalUser
+
     form_class = LocalUserForm
 
     @staticmethod
@@ -26,7 +28,7 @@ class UserView(View, RESTfulViewMixin):
 
         return user
 
-    def post(self, request, user_id):
+    def post(self, request, **kwargs):
 
         user = self._set_password(request, LocalUser())
 
@@ -46,37 +48,37 @@ class UserView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, user_id):
+    # def get(self, request, user_id):
+    #
+    #     if user_id:
+    #
+    #         user = get_object_or_404(LocalUser, pk=user_id)
+    #
+    #         if user.perms(request.user)['readable']:
+    #
+    #             response = {'data': (user.serialize(request.JSON.get('fields'), request.user))}
+    #
+    #         else:
+    #
+    #             return HttpResponseForbidden()
+    #
+    #     else:
+    #
+    #         data = list()
+    #
+    #         for user in LocalUser.objects.order_by('username').all():
+    #
+    #             if user.perms(request.user)['readable']:
+    #
+    #                 data.append(user.serialize(request.JSON.get('fields'), request.user))
+    #
+    #         response = {'data': data}
+    #
+    #     return self._api_response(response)
 
-        if user_id:
+    def patch(self, request, **kwargs):
 
-            user = get_object_or_404(LocalUser, pk=user_id)
-
-            if user.perms(request.user)['readable']:
-
-                response = {'data': (user.serialize(request.JSON.get('fields'), request.user))}
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            data = list()
-
-            for user in LocalUser.objects.order_by('username').all():
-
-                if user.perms(request.user)['readable']:
-
-                    data.append(user.serialize(request.JSON.get('fields'), request.user))
-
-            response = {'data': data}
-
-        return self._api_response(response)
-
-    def patch(self, request, user_id):
-
-        user = get_object_or_404(LocalUser, pk=user_id)
+        user = get_object_or_404(LocalUser, pk=kwargs['obj_id'])
 
         if user.perms(request.user)['editable']:
 
@@ -102,28 +104,30 @@ class UserView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    @staticmethod
-    def delete(request, user_id):
-
-        if user_id:
-
-            user = get_object_or_404(LocalUser, pk=user_id)
-
-            if user.perms(request.user)['deletable']:
-
-                user.delete()
-
-                return HttpResponse(status=204)
-
-            else:
-
-                return HttpResponseForbidden()
-        else:
-
-            return HttpResponseBadRequest()
+    # @staticmethod
+    # def delete(request, user_id):
+    #
+    #     if user_id:
+    #
+    #         user = get_object_or_404(LocalUser, pk=user_id)
+    #
+    #         if user.perms(request.user)['deletable']:
+    #
+    #             user.delete()
+    #
+    #             return HttpResponse(status=204)
+    #
+    #         else:
+    #
+    #             return HttpResponseForbidden()
+    #     else:
+    #
+    #         return HttpResponseBadRequest()
 
 
 class CredentialView(View, RESTfulViewMixin):
+
+    model_class = Credential
 
     form_class = CredentialForm
 
@@ -136,9 +140,9 @@ class CredentialView(View, RESTfulViewMixin):
 
             cred.user.save()
 
-    def post(self, request, user_id, cred_id):
+    def post(self, request, **kwargs):
 
-        cred = Credential(user=LocalUser.objects.get(pk=user_id))
+        cred = Credential(user=LocalUser.objects.get(pk=kwargs['user_id']))
 
         if cred.perms(request.user)['editable']:
 
@@ -152,11 +156,11 @@ class CredentialView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, user_id, cred_id):
+    def get(self, request, **kwargs):
 
-        if cred_id:
+        if 'obj_id' in kwargs:
 
-            cred = get_object_or_404(Credential, pk=cred_id)
+            cred = get_object_or_404(Credential, pk=kwargs['obj_id'])
 
             if cred.perms(request.user)['readable']:
 
@@ -168,7 +172,7 @@ class CredentialView(View, RESTfulViewMixin):
 
         else:
 
-            user = get_object_or_404(LocalUser, pk=user_id)
+            user = get_object_or_404(LocalUser, pk=kwargs['user_id'])
 
             cred = Credential(user=user)
 
@@ -182,9 +186,9 @@ class CredentialView(View, RESTfulViewMixin):
 
                 return HttpResponseForbidden()
 
-    def patch(self, request, user_id, cred_id):
+    def patch(self, request, **kwargs):
 
-        cred = get_object_or_404(Credential, pk=cred_id)
+        cred = get_object_or_404(Credential, pk=kwargs['obj_id'])
 
         placeholder = get_preferences()['password_placeholder']
 
@@ -221,9 +225,9 @@ class CredentialView(View, RESTfulViewMixin):
             return HttpResponseForbidden()
 
     @staticmethod
-    def delete(request, user_id, cred_id):
+    def delete(request, **kwargs):
 
-        cred = get_object_or_404(Credential, pk=cred_id)
+        cred = get_object_or_404(Credential, pk=kwargs['cred_id'])
 
         if cred.perms(request.user)['deletable']:
 
@@ -238,78 +242,9 @@ class CredentialView(View, RESTfulViewMixin):
 
 class UserGroupView(View, RESTfulViewMixin):
 
+    model_class = LocalGroup
+
     form_class = LocalGroupForm
-
-    def post(self, request, group_id):
-
-        group = LocalGroup()
-
-        if group.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, group))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def get(self, request, group_id):
-
-        if group_id:
-
-            group = get_object_or_404(LocalGroup, pk=group_id)
-
-            if group.perms(request.user)['readable']:
-
-                return self._api_response({'data': group.serialize(request.JSON.get('fields'), request.user)})
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            data = list()
-
-            for group in LocalGroup.objects.order_by('name').all():
-
-                if group.perms(request.user)['readable']:
-
-                    data.append(group.serialize(request.JSON.get('fields'), request.user))
-
-            return self._api_response({'data': data})
-
-    def patch(self, request, group_id):
-
-        group = get_object_or_404(LocalGroup, pk=group_id)
-
-        if group.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, group))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    @staticmethod
-    def delete(request, group_id):
-
-        if group_id:
-
-            group = get_object_or_404(LocalGroup, pk=group_id)
-
-            if group.perms(request.user)['deletable']:
-
-                group.delete()
-
-                return HttpResponse(status=204)
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            return HttpResponseBadRequest()
 
 
 class RelationsView(View, RESTfulViewMixin):
@@ -438,7 +373,7 @@ class PermissionView(View, RESTfulViewMixin):
 
             for selected in request.JSON.get('data', []):
 
-                group.perms.add(Permission.objects.get(codename=selected['id']))
+                group.permissions.add(Permission.objects.get(codename=selected['id']))
 
             return HttpResponse(status=204)
 
@@ -481,7 +416,7 @@ class PermissionView(View, RESTfulViewMixin):
 
             for selected in request.JSON.get('data', []):
 
-                group.perms.remove(Permission.objects.get(codename=selected['id']))
+                group.permissions.remove(Permission.objects.get(codename=selected['id']))
 
             return HttpResponse(status=204)
 

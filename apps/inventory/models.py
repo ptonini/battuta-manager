@@ -251,6 +251,7 @@ class Variable(models.Model, RESTfulModelMixin):
             fields,
             attributes={'key': self.key, 'value': self.value, 'node': self.node.id},
             links={'self': self.link, 'parent': node_child.link},
+            relationships={'node': self.node.serialize({'attributes': False, 'meta': False}, user)},
             meta=self.perms(user)
         )
 

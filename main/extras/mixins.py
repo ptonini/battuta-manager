@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 
 
@@ -21,6 +21,22 @@ class RESTfulViewMixin:
     def _api_response(response):
 
         return HttpResponse(json.dumps(response), content_type='application/vnd.api+json')
+
+    def _save_instance(self, request, instance):
+
+        form = getattr(self, 'form_class')(request.JSON.get('data', {}).get('attributes'), instance=instance)
+
+        if form.is_valid():
+
+            instance = form.save(commit=True)
+
+            response = {'data': instance.serialize(request.JSON.get('fields'), request.user)}
+
+        else:
+
+            response = self.build_error_dict(form.errors)
+
+        return response
 
     def post(self, request, **kwargs):
 
@@ -95,7 +111,7 @@ class RESTfulViewMixin:
 
                 return HttpResponseForbidden()
 
-        else:
+        elif 'data' in request.JSON:
 
             id_list = list()
 
@@ -111,21 +127,10 @@ class RESTfulViewMixin:
 
             return HttpResponse(status=204)
 
-    def _save_instance(self, request, instance):
+        else:
 
-            form = getattr(self, 'form_class')(request.JSON.get('data', {}).get('attributes'), instance=instance)
+            return HttpResponseBadRequest()
 
-            if form.is_valid():
-
-                instance = form.save(commit=True)
-
-                response = {'data': instance.serialize(request.JSON.get('fields'), request.user)}
-
-            else:
-
-                response = self.build_error_dict(form.errors)
-
-            return response
 
 
 class RESTfulModelMixin:

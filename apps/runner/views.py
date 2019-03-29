@@ -41,144 +41,81 @@ class PlaybookView(View, RESTfulViewMixin):
 
 class PlaybookArgsView(View, RESTfulViewMixin):
 
+    model_class = PlaybookArgs
+
     form_class = PlaybookArgsForm
 
-    def post(self, request, path, args_id):
-
-        args = PlaybookArgs(path=path)
-
-        if args.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, args))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def get(self, request, path, args_id):
-
-        data = list()
-
-        if args_id:
-
-            args = get_object_or_404(PlaybookArgs, pk=args_id)
-
-            if args.perms(request.user)['readable']:
-
-                return self._api_response({'data': args.serialize(request.JSON.get('fields'), request.user)})
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            for a in PlaybookArgs.objects.filter(path=path):
-
-                if a.perms(request.user)['readable']:
-
-                    data.append(a.serialize(None, request.user))
-
-            return self._api_response({'data': data})
-
-    def patch(self, request, path, args_id):
-
-        args = get_object_or_404(PlaybookArgs, pk=args_id)
-
-        if args.perms(request.user)['editable'] and args.path == path:
-
-            return self._api_response(self._save_instance(request, args))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    @staticmethod
-    def delete(request, path, args_id):
-
-        args = get_object_or_404(PlaybookArgs, pk=args_id)
-
-        if args.perms(request.user)['deletable'] and args.path == path:
-
-            args.delete()
-
-            return HttpResponse(status=204)
-
-        else:
-
-            return HttpResponseForbidden()
+    # def post(self, request, path, args_id):
+    #
+    #     args = PlaybookArgs(path=path)
+    #
+    #     if args.perms(request.user)['editable']:
+    #
+    #         return self._api_response(self._save_instance(request, args))
+    #
+    #     else:
+    #
+    #         return HttpResponseForbidden()
+    #
+    # def get(self, request, path, args_id):
+    #
+    #     data = list()
+    #
+    #     if args_id:
+    #
+    #         args = get_object_or_404(PlaybookArgs, pk=args_id)
+    #
+    #         if args.perms(request.user)['readable']:
+    #
+    #             return self._api_response({'data': args.serialize(request.JSON.get('fields'), request.user)})
+    #
+    #         else:
+    #
+    #             return HttpResponseForbidden()
+    #
+    #     else:
+    #
+    #         for a in PlaybookArgs.objects.filter(path=path):
+    #
+    #             if a.perms(request.user)['readable']:
+    #
+    #                 data.append(a.serialize(None, request.user))
+    #
+    #         return self._api_response({'data': data})
+    #
+    # def patch(self, request, path, args_id):
+    #
+    #     args = get_object_or_404(PlaybookArgs, pk=args_id)
+    #
+    #     if args.perms(request.user)['editable'] and args.path == path:
+    #
+    #         return self._api_response(self._save_instance(request, args))
+    #
+    #     else:
+    #
+    #         return HttpResponseForbidden()
+    #
+    # @staticmethod
+    # def delete(request, path, args_id):
+    #
+    #     args = get_object_or_404(PlaybookArgs, pk=args_id)
+    #
+    #     if args.perms(request.user)['deletable'] and args.path == path:
+    #
+    #         args.delete()
+    #
+    #         return HttpResponse(status=204)
+    #
+    #     else:
+    #
+    #         return HttpResponseForbidden()
 
 
 class AdHocTaskView(View, RESTfulViewMixin):
 
+    model_class = AdHocTask
+
     form_class = AdHocTaskForm
-
-    def post(self, request, task_id):
-
-        task = AdHocTask()
-
-        if task.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, task))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def get(self, request, task_id):
-
-        if task_id:
-
-            task = get_object_or_404(AdHocTask, pk=task_id)
-
-            if task.perms(request.user)['readable']:
-
-                response = {'data': (task.serialize(request.JSON.get('fields'), request.user))}
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            data = list()
-
-            for task in AdHocTask.objects.all():
-
-                if task.perms(request.user)['readable']:
-
-                    data.append(task.serialize(request.JSON.get('fields'), request.user))
-
-            response = {'data': data}
-
-        return self._api_response(response)
-
-    def patch(self, request, task_id):
-
-        task = get_object_or_404(AdHocTask, pk=task_id)
-
-        if task.perms(request.user)['editable']:
-
-            return self._api_response(self._save_instance(request, task))
-
-        else:
-
-            return HttpResponseForbidden()
-
-    @staticmethod
-    def delete(request, task_id):
-
-        task = get_object_or_404(AdHocTask, pk=task_id)
-
-        if task.perms(request.user)['deletable']:
-
-            task.delete()
-
-            return HttpResponse(status=204)
-
-        else:
-
-            return HttpResponseForbidden()
 
 
 class JobView(View, RESTfulViewMixin):
