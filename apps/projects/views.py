@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
@@ -100,6 +100,10 @@ class RelationsView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
+
     def delete(self, request, **kwargs):
 
         project = get_object_or_404(Project, pk=kwargs['obj_id'])
@@ -129,8 +133,7 @@ class RelationsView(View, RESTfulViewMixin):
 
 class FsObjRelationsView(View, RESTfulViewMixin):
 
-    @staticmethod
-    def post(request, **kwargs):
+    def post(self, request, **kwargs):
 
         project = get_object_or_404(Project, pk=kwargs['obj_id'])
 
@@ -165,6 +168,10 @@ class FsObjRelationsView(View, RESTfulViewMixin):
         else:
 
             return HttpResponseForbidden()
+
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
 
     def delete(self, request, **kwargs):
 

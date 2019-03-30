@@ -72,12 +72,7 @@ class RESTfulViewMixin:
 
             for obj in getattr(self, 'model_class').objects.all():
 
-                match_conditions = all({
-                    not filter_pattern or obj.name.find(filter_pattern) > -1,
-                    obj.perms(request.user)['readable']
-                })
-
-                if match_conditions:
+                if all({not filter_pattern or obj.name.find(filter_pattern) > -1, obj.perms(request.user)['readable']}):
 
                     data.append(obj.serialize(request.JSON.get('fields'), request.user))
 
@@ -130,7 +125,6 @@ class RESTfulViewMixin:
         else:
 
             return HttpResponseBadRequest()
-
 
 
 class RESTfulModelMixin:

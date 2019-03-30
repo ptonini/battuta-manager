@@ -14,7 +14,7 @@ class LocalUser(AbstractUser, RESTfulModelMixin):
 
     timezone = models.CharField(max_length=64)
 
-    default_cred = models.ForeignKey('iam.Credential', blank=True, null=True, on_delete=models.CASCADE)
+    default_cred = models.ForeignKey('Credential', blank=True, null=True, on_delete=models.CASCADE)
 
     def serialize(self, fields, user):
 

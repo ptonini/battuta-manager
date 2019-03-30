@@ -10,7 +10,7 @@ from main.extras.mixins import RESTfulViewMixin
 
 class PreferencesView(View, RESTfulViewMixin):
 
-    def get(self, request):
+    def get(self, request, **kwargs):
 
         response = {'data': list(), 'include': list()}
 
@@ -52,7 +52,7 @@ class PreferencesView(View, RESTfulViewMixin):
         return self._api_response(response)
 
     @staticmethod
-    def patch(request):
+    def patch(request, **kwargs):
 
         if request.user.has_perm('auth.edit_preferences'):
 

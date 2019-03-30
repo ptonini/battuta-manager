@@ -7,7 +7,7 @@ from ansible.playbook import Playbook
 from ansible.playbook.play import Play as AnsiblePlay
 from ansible.errors import AnsibleParserError
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
@@ -26,7 +26,11 @@ from apps.inventory.extras import AnsibleInventory
 
 class PlaybookView(View, RESTfulViewMixin):
 
-    def get(self, request):
+    def post(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
+    def get(self, request, **kwargs):
 
         data = list()
 
@@ -38,77 +42,20 @@ class PlaybookView(View, RESTfulViewMixin):
 
         return self._api_response({'data': data})
 
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
+    def delete(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
 
 class PlaybookArgsView(View, RESTfulViewMixin):
 
     model_class = PlaybookArgs
 
     form_class = PlaybookArgsForm
-
-    # def post(self, request, path, args_id):
-    #
-    #     args = PlaybookArgs(path=path)
-    #
-    #     if args.perms(request.user)['editable']:
-    #
-    #         return self._api_response(self._save_instance(request, args))
-    #
-    #     else:
-    #
-    #         return HttpResponseForbidden()
-    #
-    # def get(self, request, path, args_id):
-    #
-    #     data = list()
-    #
-    #     if args_id:
-    #
-    #         args = get_object_or_404(PlaybookArgs, pk=args_id)
-    #
-    #         if args.perms(request.user)['readable']:
-    #
-    #             return self._api_response({'data': args.serialize(request.JSON.get('fields'), request.user)})
-    #
-    #         else:
-    #
-    #             return HttpResponseForbidden()
-    #
-    #     else:
-    #
-    #         for a in PlaybookArgs.objects.filter(path=path):
-    #
-    #             if a.perms(request.user)['readable']:
-    #
-    #                 data.append(a.serialize(None, request.user))
-    #
-    #         return self._api_response({'data': data})
-    #
-    # def patch(self, request, path, args_id):
-    #
-    #     args = get_object_or_404(PlaybookArgs, pk=args_id)
-    #
-    #     if args.perms(request.user)['editable'] and args.path == path:
-    #
-    #         return self._api_response(self._save_instance(request, args))
-    #
-    #     else:
-    #
-    #         return HttpResponseForbidden()
-    #
-    # @staticmethod
-    # def delete(request, path, args_id):
-    #
-    #     args = get_object_or_404(PlaybookArgs, pk=args_id)
-    #
-    #     if args.perms(request.user)['deletable'] and args.path == path:
-    #
-    #         args.delete()
-    #
-    #         return HttpResponse(status=204)
-    #
-    #     else:
-    #
-    #         return HttpResponseForbidden()
 
 
 class AdHocTaskView(View, RESTfulViewMixin):
@@ -134,7 +81,7 @@ class JobView(View, RESTfulViewMixin):
 
         return AnsiblePlay().load(play_dict, variable_manager=run_data['var_manager'], loader=run_data['loader'])
 
-    def post(self, request, job_id):
+    def post(self, request, **kwargs):
 
         request_attr = request.JSON.get('data').get('attributes')
 
@@ -297,11 +244,11 @@ class JobView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, job_id):
+    def get(self, request,  **kwargs):
 
-        if job_id:
+        if 'obj_id' in kwargs:
 
-            job = get_object_or_404(Job, pk=job_id)
+            job = get_object_or_404(Job, pk=kwargs['obj_id'])
 
             if job.perms(request.user)['readable']:
 
@@ -323,9 +270,9 @@ class JobView(View, RESTfulViewMixin):
 
             return self._api_response(JobTableHandler(request, queryset).build_response())
 
-    def patch(self, request, job_id):
+    def patch(self, request, **kwargs):
 
-        job = get_object_or_404(Job, pk=job_id)
+        job = get_object_or_404(Job, pk=kwargs['obj_id'])
 
         if job.perms(request.user)['editable']:
 
@@ -377,12 +324,20 @@ class JobView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
+    def delete(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['POST', 'GET', 'PATCH'])
+
 
 class TaskView(View, RESTfulViewMixin):
 
-    def get(self, request, task_id):
+    def post(self, request, **kwargs):
 
-        task = get_object_or_404(Task, pk=task_id)
+        return HttpResponseNotAllowed(['GET'])
+
+    def get(self, request, **kwargs):
+
+        task = get_object_or_404(Task, pk=kwargs['obj_id'])
 
         if task.perms(request.user)['readable']:
 
@@ -399,12 +354,24 @@ class TaskView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden
 
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
+    def delete(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
 
 class ResultView(View, RESTfulViewMixin):
 
-    def get(self, request, result_id):
+    def post(self, request, **kwargs):
 
-        result = get_object_or_404(Result, pk=result_id)
+        return HttpResponseNotAllowed(['GET'])
+
+    def get(self, request, **kwargs):
+
+        result = get_object_or_404(Result, pk=kwargs['obj_id'])
 
         if result.perms(request.user)['readable']:
 
@@ -413,3 +380,11 @@ class ResultView(View, RESTfulViewMixin):
         else:
 
             return HttpResponseForbidden()
+
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
+    def delete(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])

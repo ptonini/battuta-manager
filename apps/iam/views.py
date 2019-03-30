@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.views.generic import View
@@ -48,34 +48,6 @@ class UserView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    # def get(self, request, user_id):
-    #
-    #     if user_id:
-    #
-    #         user = get_object_or_404(LocalUser, pk=user_id)
-    #
-    #         if user.perms(request.user)['readable']:
-    #
-    #             response = {'data': (user.serialize(request.JSON.get('fields'), request.user))}
-    #
-    #         else:
-    #
-    #             return HttpResponseForbidden()
-    #
-    #     else:
-    #
-    #         data = list()
-    #
-    #         for user in LocalUser.objects.order_by('username').all():
-    #
-    #             if user.perms(request.user)['readable']:
-    #
-    #                 data.append(user.serialize(request.JSON.get('fields'), request.user))
-    #
-    #         response = {'data': data}
-    #
-    #     return self._api_response(response)
-
     def patch(self, request, **kwargs):
 
         user = get_object_or_404(LocalUser, pk=kwargs['obj_id'])
@@ -103,26 +75,6 @@ class UserView(View, RESTfulViewMixin):
         else:
 
             return HttpResponseForbidden()
-
-    # @staticmethod
-    # def delete(request, user_id):
-    #
-    #     if user_id:
-    #
-    #         user = get_object_or_404(LocalUser, pk=user_id)
-    #
-    #         if user.perms(request.user)['deletable']:
-    #
-    #             user.delete()
-    #
-    #             return HttpResponse(status=204)
-    #
-    #         else:
-    #
-    #             return HttpResponseForbidden()
-    #     else:
-    #
-    #         return HttpResponseBadRequest()
 
 
 class CredentialView(View, RESTfulViewMixin):
@@ -194,23 +146,25 @@ class CredentialView(View, RESTfulViewMixin):
 
         if cred.perms(request.user)['editable']:
 
-            if request.JSON.get('data', {}).get('attributes', {}).get('password') == placeholder:
+            attr = request.JSON.get('data', {}).get('attributes', {})
+
+            if attr.get('password') == placeholder:
 
                 request.JSON['data']['attributes']['password'] = cred.password
 
-            if request.JSON.get('data', {}).get('attributes', {}).get('sudo_pass') == placeholder:
+            if attr.get('sudo_pass') == placeholder:
 
                 request.JSON['data']['attributes']['sudo_pass'] = cred.sudo_pass
 
-            if request.JSON.get('data', {}).get('attributes', {}).get('rsa_key') == placeholder:
+            if attr.get('rsa_key') == placeholder:
 
                 request.JSON['data']['attributes']['rsa_key'] = cred.rsa_key
 
-            if request.JSON.get('data', {}).get('attributes', {}).get('password') or request.JSON.get('data', {}).get('attributes',{}).get('rsa_key'):
+            if attr.get('password') or attr.get('rsa_key'):
 
                 request.JSON['data']['attributes']['ask_pass'] = False
 
-            if request.JSON.get('data', {}).get('attributes', {}).get('sudo_pass'):
+            if attr.get('sudo_pass'):
 
                 request.JSON['data']['attributes']['ask_sudo_pass'] = False
 
@@ -219,21 +173,6 @@ class CredentialView(View, RESTfulViewMixin):
             self._set_default_cred(cred, request, response)
 
             return self._api_response(response)
-
-        else:
-
-            return HttpResponseForbidden()
-
-    @staticmethod
-    def delete(request, **kwargs):
-
-        cred = get_object_or_404(Credential, pk=kwargs['cred_id'])
-
-        if cred.perms(request.user)['deletable']:
-
-            cred.delete()
-
-            return HttpResponse(status=204)
 
         else:
 
@@ -250,7 +189,7 @@ class UserGroupView(View, RESTfulViewMixin):
 class RelationsView(View, RESTfulViewMixin):
 
     @staticmethod
-    def _build_data(obj_type, obj_id, relation):
+    def _build_data(kwargs):
 
         types = {
             'users': {
@@ -265,17 +204,17 @@ class RelationsView(View, RESTfulViewMixin):
             }
         }
 
-        obj = get_object_or_404(types[obj_type]['class'], pk=obj_id)
+        obj = get_object_or_404(types[kwargs['obj_type']]['class'], pk=kwargs['obj_id'])
 
-        r_class = types[relation]['class']
+        r_class = types[kwargs['relation']]['class']
 
-        r_manager = getattr(obj, types[relation]['manager'])
+        r_manager = getattr(obj, types[kwargs['relation']]['manager'])
 
         return obj, r_class, r_manager
 
-    def post(self, request, relation, obj_id, obj_type):
+    def post(self, request, **kwargs):
 
-        obj, r_class, r_manager = self._build_data(obj_type, obj_id, relation)
+        obj, r_class, r_manager = self._build_data(kwargs)
 
         if obj.perms(request.user)['editable'] and r_class().perms(request.user)['editable']:
 
@@ -293,9 +232,9 @@ class RelationsView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, relation, obj_id, obj_type):
+    def get(self, request, **kwargs):
 
-        obj, r_class, r_manager = self._build_data(obj_type, obj_id, relation)
+        obj, r_class, r_manager = self._build_data(kwargs)
 
         if request.JSON.get('related', True):
 
@@ -325,9 +264,13 @@ class RelationsView(View, RESTfulViewMixin):
 
         return self._api_response({'data': data})
 
-    def delete(self, request, relation, obj_id, obj_type):
+    def patch(self, request, **kwargs):
 
-        obj ,related_class, related_manager = self._build_data(obj_type, obj_id, relation)
+        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
+
+    def delete(self, request, **kwargs):
+
+        obj, related_class, related_manager = self._build_data(kwargs)
 
         if obj.perms(request.user)['editable'] and related_class().perms(request.user)['editable']:
 
@@ -365,9 +308,9 @@ class PermissionView(View, RESTfulViewMixin):
         }
 
     @staticmethod
-    def post(request, group_id):
+    def post(request, **kwargs):
 
-        group = get_object_or_404(LocalGroup, pk=group_id)
+        group = get_object_or_404(LocalGroup, pk=kwargs['group_id'])
 
         if group.perms(request.user)['editable']:
 
@@ -381,9 +324,9 @@ class PermissionView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request, group_id):
+    def get(self, request, **kwargs):
 
-        group = get_object_or_404(LocalGroup, pk=group_id)
+        group = get_object_or_404(LocalGroup, pk=kwargs['group_id'])
 
         if group.perms(request.user)['readable']:
 
@@ -407,10 +350,14 @@ class PermissionView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    @staticmethod
-    def delete(request, group_id):
+    def patch(self, request, **kwargs):
 
-        group = get_object_or_404(LocalGroup, pk=group_id)
+        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
+
+    @staticmethod
+    def delete(request, **kwargs):
+
+        group = get_object_or_404(LocalGroup, pk=kwargs['group_id'])
 
         if group.perms(request.user)['editable']:
 

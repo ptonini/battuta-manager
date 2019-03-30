@@ -8,7 +8,7 @@ import yaml
 import uuid
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
@@ -529,6 +529,10 @@ class RelationsView(View, RESTfulViewMixin):
             data = [candidate.serialize(request.JSON.get('fields'), request.user) for candidate in candidate_set]
 
         return self._api_response({'data': data})
+
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
 
     def delete(self, request, **kwargs):
 

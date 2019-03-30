@@ -9,7 +9,8 @@ def validate_yaml(stream):
 
     except yaml.YAMLError as e:
 
-        return ''.join(['YAML error: ', e.problem, ' (line ', str(e.problem_mark.line), ', column ', str(e.problem_mark.column), ')'])
+        return ''.join(['YAML error: ', e.problem, ' (line ', str(e.problem_mark.line),
+                        ', column ', str(e.problem_mark.column), ')'])
 
     else:
 

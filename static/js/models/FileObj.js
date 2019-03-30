@@ -154,29 +154,51 @@ FileObj.prototype.contentEditor = function () {
 
     };
 
-    if (!self.get('mime_type') || self.get('mime_type') === 'text/plain' || self.get('mime_type') === 'inode/x-empty') {
+    switch (self.get('mime_type').split('/')[1]) {
 
-        let mode = matchExtension(self.get('id'));
+        case 'xml':
 
-        if (mode) aceMode = mode;
+            aceMode = 'xml';
+
+            break;
+
+        case 'json':
+
+            aceMode = 'json';
+
+            break;
+
+        case 'x-shellscript':
+
+            aceMode = 'sh';
+
+            break;
+
+        case 'yaml':
+
+            aceMode = 'yaml';
+
+            break;
+
+        case 'x-python':
+
+            aceMode = 'python';
+
+            break;
+
+        default:
+
+            let mode = matchExtension(self.get('id'));
+
+            if (mode) aceMode = mode;
 
     }
-
-    else if (self.get('mime_type') === 'application/xml') aceMode = 'xml';
-
-    else if (self.get('mime_type') === 'application/json') aceMode = 'json';
-
-    else if (self.get('mime_type') === 'text/x-shellscript') aceMode = 'sh';
-
-    else if (self.get('mime_type') === 'text/yaml') aceMode = 'yaml';
-
-    else if (self.get('mime_type') === 'text/x-python') aceMode = 'python';
 
     $.each(modes, (index, mode) => $selector.append($('<option>').attr('value', mode.name).html(mode.label)));
 
     $selector
         .val(aceMode)
-        .change(function () { textEditor.getSession().setMode('ace/mode/' + $(this).val()) })
+        .change(() => textEditor.getSession().setMode('ace/mode/' + $selector.val()))
         .change();
 
     textEditor.setTheme('ace/theme/chrome');

@@ -13,7 +13,7 @@ class JobTableHandler(DataTableRequestHandler):
         queryset = self._queryset.filter(
             Q(user__username__icontains=self._search['value']) |
             Q(name__icontains=self._search['value']) |
-            Q(status__icontains=self._search['value'])|
+            Q(status__icontains=self._search['value']) |
             Q(subset__icontains=self._search['value'])
         )
 

@@ -151,7 +151,13 @@ Job.prototype.rerun = function () {
 
                 $form.find('div.buttons-container').remove();
 
-                modal.footer.append(Templates['run-button'].click(() => args.run(true)));
+                modal.footer.append(Templates['run-button'].click(() => {
+
+                    modal.close();
+
+                    args.run(true)
+
+                }));
 
                 modal.open({width: 500})
 

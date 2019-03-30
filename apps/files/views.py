@@ -3,7 +3,8 @@ import shutil
 import ntpath
 import tempfile
 
-from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseNotFound, \
+    HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.core.exceptions import PermissionDenied
 from django.views.generic import View
 
@@ -13,17 +14,17 @@ from apps.files.extras import FileHandler, FileHandlerException
 
 class FileView(View, RESTfulViewMixin):
 
-    def post(self, request, root, path):
+    def post(self, request, **kwargs):
 
         try:
 
-            FileHandler.factory(root, path, request.user)
+            FileHandler.factory(kwargs['root'], kwargs['path'], request.user)
 
         except FileNotFoundError:
 
             try:
 
-                fs_obj = FileHandler.create(root, path, request)
+                fs_obj = FileHandler.create(kwargs['root'], kwargs['path'], request)
 
             except FileHandlerException as e:
 
@@ -41,11 +42,11 @@ class FileView(View, RESTfulViewMixin):
 
             return self._api_response({'errors': [{'title': 'Name in use'}]})
 
-    def get(self, request, root, path):
+    def get(self, request, **kwargs):
 
         try:
 
-            fs_obj = FileHandler.factory(root, path, request.user)
+            fs_obj = FileHandler.factory(kwargs['root'], kwargs['path'], request.user)
 
         except FileNotFoundError:
 
@@ -65,7 +66,9 @@ class FileView(View, RESTfulViewMixin):
 
                 else:
 
-                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), fs_obj.name), 'zip', fs_obj.absolute_path)
+                    target = shutil.make_archive(os.path.join(tempfile.gettempdir(), fs_obj.name),
+                                                 'zip',
+                                                 fs_obj.absolute_path)
 
                 stream = StreamingHttpResponse((line for line in open(target, 'rb')))
 
@@ -81,7 +84,7 @@ class FileView(View, RESTfulViewMixin):
 
                 data = list()
 
-                for f in FileHandler.get_root_class(root).list(request.user):
+                for f in FileHandler.get_root_class(kwargs['root']).list(request.user):
 
                     if f.perms()['readable']:
 
@@ -93,11 +96,11 @@ class FileView(View, RESTfulViewMixin):
 
                 return self._api_response(fs_obj.read(request.JSON.get('fields')))
 
-    def patch(self, request, root, path):
+    def patch(self, request, **kwargs):
 
         try:
 
-            fs_obj = FileHandler.factory(root, path, request.user)
+            fs_obj = FileHandler.factory(kwargs['root'], kwargs['path'], request.user)
 
         except FileNotFoundError:
 
@@ -121,12 +124,11 @@ class FileView(View, RESTfulViewMixin):
 
                 return self._api_response(fs_obj.read())
 
-    @staticmethod
-    def delete(request, root, path):
+    def delete(self, request, **kwargs):
 
         try:
 
-            fs_obj = FileHandler.factory(root, path, request.user)
+            fs_obj = FileHandler.factory(kwargs['root'], kwargs['path'], request.user)
 
         except FileNotFoundError:
 
@@ -145,13 +147,24 @@ class FileView(View, RESTfulViewMixin):
 
 class FileSearchView(View, RESTfulViewMixin):
 
-    def get(self, request):
+    def post(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
+    def get(self, request, **kwargs):
 
         if request.GET.get('term'):
 
-            return self._api_response(FileHandler.search(request.GET.get('term'), request.GET.get('type'), request.user))
+            return self._api_response(FileHandler.search(request.GET['term'], request.GET.get('type'), request.user))
 
         else:
 
             return HttpResponseBadRequest
 
+    def patch(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])
+
+    def delete(self, request, **kwargs):
+
+        return HttpResponseNotAllowed(['GET'])

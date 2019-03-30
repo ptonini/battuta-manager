@@ -3,31 +3,23 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.management import create_permissions
 
 
-def add_admin_user(apps, schema_editor):
+def add_admin_user(*args):
 
     users = [
-        {'name': 'admin', 'super': True},
-        {'name': 'zzz', 'super': False},
-        {'name': 'yyy', 'super': False},
-        {'name': 'xxx', 'super': False},
-        {'name': 'www', 'super': False},
-        {'name': 'vvv', 'super': False},
-        {'name': 'uuu', 'super': False},
-        {'name': 'ttt', 'super': False},
-        {'name': 'sss', 'super': False},
-        {'name': 'rrr', 'super': False},
-        {'name': 'qqq', 'super': False},
-        {'name': 'ppp', 'super': False},
-        {'name': 'ooo', 'super': False},
+        {'name': 'admin', 'super': True, 'timezone': 'America/Sao_Paulo'},
     ]
 
-    user_class = apps.get_model('iam', 'LocalUser')
+    user_class = args[0].get_model('iam', 'LocalUser')
 
-    credential_class = apps.get_model('iam', 'Credential')
+    credential_class = args[0].get_model('iam', 'Credential')
 
     for user_dict in users:
 
-        user, created = user_class.objects.get_or_create(username=user_dict['name'], is_superuser=user_dict['super'])
+        user, created = user_class.objects.get_or_create(
+            username=user_dict['name'],
+            is_superuser=user_dict['super'],
+            timezone=user_dict['timezone']
+        )
 
         cred, created = credential_class.objects.get_or_create(title='Default', username=user_dict['name'], user=user)
 
@@ -37,7 +29,8 @@ def add_admin_user(apps, schema_editor):
 
         user.save()
 
-def add_user_groups(apps, schema_editor):
+
+def add_user_groups(*args):
 
     groups = {
         'InventoryManager Admins': ['edit_hosts', 'edit_groups'],
@@ -61,25 +54,16 @@ def add_user_groups(apps, schema_editor):
             'edit_preferences',
             'edit_projects',
             'edit_permissions'
-        ],
-        'AAA': [],
-        'BBB': [],
-        'CCC': [],
-        'DDD': [],
-        'EEE': [],
-        'FFF': [],
-        'GGG': [],
-        'HHH': [],
-        'III': [],
+        ]
     }
 
-    group_class = apps.get_model('iam', 'LocalGroup')
+    group_class = args[0].get_model('iam', 'LocalGroup')
 
-    permission_class = apps.get_model('auth', 'Permission')
+    permission_class = args[0].get_model('auth', 'Permission')
 
-    for app_config in apps.get_app_configs():
+    for app_config in args[0].get_app_configs():
         app_config.models_module = True
-        create_permissions(app_config, apps=apps, verbosity=0)
+        create_permissions(app_config, apps=args[0], verbosity=0)
         app_config.models_module = None
 
     for group_name in groups:
@@ -91,6 +75,7 @@ def add_user_groups(apps, schema_editor):
             perm = permission_class.objects.get(codename=permission)
 
             group.permissions.add(perm)
+
 
 class Migration(migrations.Migration):
 

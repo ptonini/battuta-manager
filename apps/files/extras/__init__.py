@@ -61,7 +61,13 @@ class FileHandler(RESTfulModelMixin):
 
         self.parent_path, self.name = os.path.split(path)
 
-        self.absolute_parent_path = os.path.join(self.root_path, self.parent_path) if self.parent_path else self.root_path
+        if self.parent_path:
+
+            self.absolute_parent_path = os.path.join(self.root_path, self.parent_path)
+
+        else:
+
+            self.absolute_parent_path = self.root_path
 
     @staticmethod
     def sort_path_list(path_list):
@@ -390,7 +396,9 @@ class FileHandler(RESTfulModelMixin):
     @property
     def modified(self):
 
-        return datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(get_preferences()['date_format'])
+        prefs = get_preferences()
+
+        return datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format'])
 
     @property
     def path_hierarchy(self):

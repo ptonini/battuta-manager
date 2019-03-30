@@ -463,15 +463,19 @@ div.dataTables_paginate a.page-link:hover {
     min-width: 0
 }
 
-
 .pointer:hover {
     cursor: pointer;
 }
-
 
 .truncate {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+}
+
+/* */
+
+div.play-container:last-of-type {
+    margin-bottom: .5rem !important;
 }

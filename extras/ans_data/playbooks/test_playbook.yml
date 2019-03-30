@@ -1,7 +1,7 @@
 ---
 - name: Templates playbook
   gather_facts: no
-  hosts: zn4 
+  hosts: all 
   become: no
 
   tasks:
@@ -13,20 +13,3 @@
     - name: test 02
       debug:
         msg: "task 02"
-
-    - name: test 03
-      debug:
-        msg: "task 03"
-
-    - name: test 04
-      debug:
-        msg: "task 04"
-
-    - name: test 05
-      debug:
-        msg: "task 05"
-
-    - name: test 06
-      debug:
-        msg: "task 06"
-
