@@ -40,7 +40,7 @@ class LocalUser(AbstractUser, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
     def perms(self, user):
 
@@ -117,7 +117,7 @@ class Credential(models.Model, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
     def perms(self, user):
 
@@ -159,7 +159,7 @@ class LocalGroup(Group, RESTfulModelMixin):
 
         meta['builtin'] = self.name in builtin_groups
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
     def perms(self, user):
 

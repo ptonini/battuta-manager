@@ -458,7 +458,7 @@ class FileHandler(RESTfulModelMixin):
 
         meta['valid'] = self._validate(self.root, self.type, self.path, file_content)
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
     def perms(self):
 
@@ -508,7 +508,7 @@ class PlaybookHandler(FileHandler):
 
         links = {'args': '/'.join(['/runner', str(self.id), 'args'])}
 
-        data = self._build_filtered_dict(fields, links=links, data=super(PlaybookHandler, self).serialize(fields))
+        data = self._serialize_data(fields, links=links, data=super(PlaybookHandler, self).serialize(fields))
 
         return data
 

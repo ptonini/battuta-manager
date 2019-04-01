@@ -76,7 +76,7 @@ BaseModel.prototype = {
 
     },
 
-    get: function(key) {
+    get: function(key, defaultValue) {
 
         let value = this;
 
@@ -90,7 +90,7 @@ BaseModel.prototype = {
 
         }
 
-        return value
+        return value ? value : defaultValue
 
     },
 

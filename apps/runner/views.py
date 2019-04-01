@@ -26,9 +26,7 @@ from apps.inventory.extras import AnsibleInventory
 
 class PlaybookView(View, RESTfulViewMixin):
 
-    def post(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
+    methods = ['GET']
 
     def get(self, request, **kwargs):
 
@@ -42,35 +40,33 @@ class PlaybookView(View, RESTfulViewMixin):
 
         return self._api_response({'data': data})
 
-    def patch(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
-
-    def delete(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
-
 
 class PlaybookArgsView(View, RESTfulViewMixin):
 
-    model_class = PlaybookArgs
+    model = PlaybookArgs
 
-    form_class = PlaybookArgsForm
+    form = PlaybookArgsForm
 
 
 class AdHocTaskView(View, RESTfulViewMixin):
 
-    model_class = AdHocTask
+    model = AdHocTask
 
-    form_class = AdHocTaskForm
+    form = AdHocTaskForm
 
 
 class JobView(View, RESTfulViewMixin):
 
-    form_class = JobForm
+    model = Job
+
+    form = JobForm
+
+    datatable_handler = JobTableHandler
+
+    methods = ['POST', 'GET', 'PATCH']
 
     @staticmethod
-    def _build_play(tasks, job_parameters, run_data):
+    def _build_play_from_tasks(tasks, job_parameters, run_data):
 
         play_dict = {
             'name': job_parameters['name'],
@@ -168,7 +164,7 @@ class JobView(View, RESTfulViewMixin):
 
                     task[job_parameters['module']] = job_parameters['arguments']
 
-                    run_data['plays'] = [self._build_play([task], job_parameters, run_data)]
+                    run_data['plays'] = [self._build_play_from_tasks([task], job_parameters, run_data)]
 
                 else:
 
@@ -180,7 +176,7 @@ class JobView(View, RESTfulViewMixin):
 
                 tasks.append({'ec2_instance_facts': {}}) if get_preferences()['use_ec2_facts'] else None
 
-                run_data['plays'] = [self._build_play(tasks, job_parameters, run_data)]
+                run_data['plays'] = [self._build_play_from_tasks(tasks, job_parameters, run_data)]
 
             job_form = JobForm(request_attr)
 
@@ -244,32 +240,6 @@ class JobView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def get(self, request,  **kwargs):
-
-        if 'obj_id' in kwargs:
-
-            job = get_object_or_404(Job, pk=kwargs['obj_id'])
-
-            if job.perms(request.user)['readable']:
-
-                return self._api_response({'data': job.serialize(request.JSON.get('fields'), request.user)})
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            if request.user.has_perm('auth.view_job_history'):
-
-                queryset = Job.objects.all()
-
-            else:
-
-                queryset = Job.objects.filter(user=request.user)
-
-            return self._api_response(JobTableHandler(request, queryset).build_response())
-
     def patch(self, request, **kwargs):
 
         job = get_object_or_404(Job, pk=kwargs['obj_id'])
@@ -324,67 +294,23 @@ class JobView(View, RESTfulViewMixin):
 
             return HttpResponseForbidden()
 
-    def delete(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['POST', 'GET', 'PATCH'])
-
 
 class TaskView(View, RESTfulViewMixin):
 
-    def post(self, request, **kwargs):
+    model = Task
 
-        return HttpResponseNotAllowed(['GET'])
+    methods = ['GET']
 
-    def get(self, request, **kwargs):
+    @staticmethod
+    def included(request, task):
 
-        task = get_object_or_404(Task, pk=kwargs['obj_id'])
+        result_fields = {'attributes': ['host', 'status', 'message']}
 
-        if task.perms(request.user)['readable']:
-
-            result_fields = {'attributes': ['host', 'status', 'message']}
-
-            response = {
-                'data': task.serialize(request.JSON.get('fields'), request.user),
-                'included': [r.serialize(result_fields, request.user) for r in task.result_set.all()]
-            }
-
-            return self._api_response(response)
-
-        else:
-
-            return HttpResponseForbidden
-
-    def patch(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
-
-    def delete(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
+        return [r.serialize(result_fields, request.user) for r in task.result_set.all()]
 
 
 class ResultView(View, RESTfulViewMixin):
 
-    def post(self, request, **kwargs):
+    model = Result
 
-        return HttpResponseNotAllowed(['GET'])
-
-    def get(self, request, **kwargs):
-
-        result = get_object_or_404(Result, pk=kwargs['obj_id'])
-
-        if result.perms(request.user)['readable']:
-
-            return self._api_response({'data': result.serialize(request.JSON.get('fields'), request.user)})
-
-        else:
-
-            return HttpResponseForbidden()
-
-    def patch(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
-
-    def delete(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET'])
+    methods = ['GET']

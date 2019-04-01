@@ -8,6 +8,8 @@ class JobTableHandler(DataTableRequestHandler):
 
     def _filter_queryset(self):
 
+        filtered_result = list()
+
         prefs = get_preferences()
 
         queryset = self._queryset.filter(
@@ -19,11 +21,17 @@ class JobTableHandler(DataTableRequestHandler):
 
         for job in queryset:
 
-            self._filtered_result.append([
-                job.created.astimezone(self._tz).strftime(prefs['date_format']),
-                job.user.username,
-                job.name,
-                job.subset,
-                job.status,
-                job.link
-            ])
+            if job.perms(self._user)['readable']:
+
+                filtered_result.append([
+                    job.created.astimezone(self._tz).strftime(prefs['date_format']),
+                    job.user.username,
+                    job.name,
+                    job.subset,
+                    job.status,
+                    job.link
+                ])
+
+        self._filtered_result = filtered_result
+
+        return filtered_result

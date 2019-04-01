@@ -19,7 +19,7 @@ from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, inventory_to_dict, import_from_json, import_from_list
 from apps.preferences.extras import get_preferences
 from main.extras import download_file
-from main.extras.mixins import RESTfulViewMixin
+from main.extras.mixins import RESTfulMethods, RESTfulViewMixin
 
 
 class InventoryView(View):
@@ -40,7 +40,7 @@ class InventoryView(View):
             return HttpResponseForbidden()
 
 
-class ManagerView(View, RESTfulViewMixin):
+class ManagerView(View, RESTfulMethods):
 
     @staticmethod
     def _create_node_var_file(node, folder):
@@ -53,7 +53,7 @@ class ManagerView(View, RESTfulViewMixin):
 
                 vars_file.write(yaml.safe_dump({var.key: var.value}, default_flow_style=False))
 
-    def get(self, request, **kwargs):
+    def get(self, request):
 
         if request.GET['format'] == 'json':
 
@@ -284,7 +284,7 @@ class ManagerView(View, RESTfulViewMixin):
 
             return HttpResponseBadRequest()
 
-    def patch(self, request, **kwargs):
+    def patch(self, request):
 
         if request.user.has_perms(['users.edit_hosts', 'users.edit_groups']):
 
@@ -347,23 +347,23 @@ class ManagerView(View, RESTfulViewMixin):
 
 class HostView(View, RESTfulViewMixin):
 
-    model_class = Host
+    model = Host
 
-    form_class = HostForm
+    form = HostForm
 
 
 class GroupView(View, RESTfulViewMixin):
 
-    model_class = Group
+    model = Group
 
-    form_class = GroupForm
+    form = GroupForm
 
 
 class VariableView(View, RESTfulViewMixin):
 
-    model_class = Variable
+    model = Variable
 
-    form_class = VariableForm
+    form = VariableForm
 
     def post(self, request, **kwargs):
 
@@ -480,11 +480,11 @@ class RelationsView(View, RESTfulViewMixin):
 
     def post(self, request, **kwargs):
 
-        node = self._get_object(kwargs)
+        obj = self._get_object(kwargs)
 
-        if node.perms(request.user)['editable']:
+        if obj.perms(request.user)['editable']:
 
-            related_set, related_class = node.get_relationships(kwargs['relation'])
+            related_set, related_class = obj.get_relationships(kwargs['relation'])
 
             for selected in request.JSON.get('data', []):
 

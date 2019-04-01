@@ -38,7 +38,7 @@ class PlaybookArgs(models.Model, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        data = self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
@@ -92,7 +92,7 @@ class AdHocTask(models.Model, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        data = self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
         return data
 
@@ -163,7 +163,7 @@ class Job(models.Model, RESTfulModelMixin):
 
         rel = {'plays': [p.serialize(None, user) for p in self.play_set.all()]}
 
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta, relationships=rel)
+        data = self._serialize_data(fields, attributes=attr, links=links, meta=meta, relationships=rel)
 
         return data
 
@@ -211,7 +211,7 @@ class Play(models.Model, RESTfulModelMixin):
 
         rel = {'tasks': [t.serialize(rel_fields, user) for t in self.task_set.all()]}
 
-        data = self._build_filtered_dict(fields, attributes=attr, relationships=rel)
+        data = self._serialize_data(fields, attributes=attr, relationships=rel)
 
         return data
 
@@ -250,7 +250,7 @@ class Task(models.Model, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
     def perms(self, user):
 
@@ -287,7 +287,7 @@ class Result(models.Model, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        data = self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
         return data
 

@@ -11,9 +11,9 @@ from apps.projects.forms import ProjectForm
 
 class ProjectView(View, RESTfulViewMixin):
 
-    model_class = Project
+    model = Project
 
-    form_class = ProjectForm
+    form = ProjectForm
 
 
 class RelationsView(View, RESTfulViewMixin):

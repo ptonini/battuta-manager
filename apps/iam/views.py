@@ -13,9 +13,9 @@ from main.extras.mixins import RESTfulViewMixin
 
 class UserView(View, RESTfulViewMixin):
 
-    model_class = LocalUser
+    model = LocalUser
 
-    form_class = LocalUserForm
+    form = LocalUserForm
 
     @staticmethod
     def _set_password(request, user):
@@ -79,9 +79,13 @@ class UserView(View, RESTfulViewMixin):
 
 class CredentialView(View, RESTfulViewMixin):
 
-    model_class = Credential
+    model = Credential
 
-    form_class = CredentialForm
+    form = CredentialForm
+
+    def _get_queryset(self, request, kwargs):
+
+        return get_object_or_404(LocalUser, pk=kwargs['user_id']).credential_set.all()
 
     @staticmethod
     def _set_default_cred(cred, request, response):
@@ -107,36 +111,6 @@ class CredentialView(View, RESTfulViewMixin):
         else:
 
             return HttpResponseForbidden()
-
-    def get(self, request, **kwargs):
-
-        if 'obj_id' in kwargs:
-
-            cred = get_object_or_404(Credential, pk=kwargs['obj_id'])
-
-            if cred.perms(request.user)['readable']:
-
-                return self._api_response({'data': cred.serialize(request.JSON.get('fields'), request.user)})
-
-            else:
-
-                return HttpResponseForbidden()
-
-        else:
-
-            user = get_object_or_404(LocalUser, pk=kwargs['user_id'])
-
-            cred = Credential(user=user)
-
-            if cred.perms(request.user)['readable']:
-
-                data = [c.serialize(request.JSON.get('fields'), request.user) for c in user.credential_set.all()]
-
-                return self._api_response({'data': data})
-
-            else:
-
-                return HttpResponseForbidden()
 
     def patch(self, request, **kwargs):
 
@@ -181,9 +155,9 @@ class CredentialView(View, RESTfulViewMixin):
 
 class UserGroupView(View, RESTfulViewMixin):
 
-    model_class = LocalGroup
+    model = LocalGroup
 
-    form_class = LocalGroupForm
+    form = LocalGroupForm
 
 
 class RelationsView(View, RESTfulViewMixin):

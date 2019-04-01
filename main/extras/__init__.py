@@ -27,6 +27,8 @@ class DataTableRequestHandler:
 
         self._queryset = queryset
 
+        self._user = request.user
+
         self._tz = timezone(request.user.timezone)
 
         i = 0
@@ -59,21 +61,21 @@ class DataTableRequestHandler:
 
     def _filter_queryset(self):
 
-        pass
+        return list()
 
     def build_response(self):
 
-        self._filter_queryset()
+        filtered_result = self._filter_queryset()
 
         for col_order in self._order:
 
-            self._filtered_result.sort(key=lambda x: x[col_order['column']], reverse=col_order['dir'] == 'desc')
+            filtered_result.sort(key=lambda x: x[col_order['column']], reverse=col_order['dir'] == 'desc')
 
         return {
             'draw': self._draw,
             'recordsTotal': len(self._queryset),
-            'recordsFiltered': len(self._filtered_result),
-            'data': self._filtered_result[self._start:self._start + self._length]
+            'recordsFiltered': len(filtered_result),
+            'data': filtered_result[self._start:self._start + self._length]
         }
 
 

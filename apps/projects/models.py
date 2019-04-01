@@ -80,7 +80,7 @@ class Project(models.Model, RESTfulModelMixin):
 
         meta = self.perms(user)
 
-        return self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
 
     def perms(self, user):
 

@@ -81,17 +81,15 @@ class Node(models.Model, RESTfulModelMixin):
 
     def serialize(self, fields, user):
 
-        attr = {'name': self.name, 'description': self.description, 'node': self.id}
+        attr = {'name': self.name, 'description': self.description}
 
         links = {
-            'self': self.link ,
+            'self': self.link,
             Variable.type: '/'.join([self.link, Variable.type]),
             'parents': '/'.join([self.link, 'parents']),
         }
 
-        meta = self.perms(user)
-
-        data = self._build_filtered_dict(fields, attributes=attr, links=links, meta=meta)
+        data = self._serialize_data(fields, attributes=attr, links=links, meta=self.perms(user))
 
         return data
 
@@ -99,15 +97,11 @@ class Node(models.Model, RESTfulModelMixin):
 
         editable = user.has_perm('auth.edit_' + getattr(self, 'type'))
 
-        deletable = editable
-
-        return { 'readable': True, 'editable': editable, 'deletable': deletable}
+        return {'readable': True, 'editable': editable, 'deletable': editable}
 
     class Meta:
 
         ordering = ['name']
-
-        # abstract = True
 
 
 class Host(Node):
@@ -129,7 +123,7 @@ class Host(Node):
             'disc': sum([m['size_total'] for m in facts.get('mounts', [])]),
         }
 
-        data = self._build_filtered_dict(fields, attributes=attr, data=super(Host, self).serialize(fields, user))
+        data = self._serialize_data(fields, attributes=attr, data=super(Host, self).serialize(fields, user))
 
         if fields and 'facts' in fields.get('attributes', []):
 
@@ -208,7 +202,7 @@ class Group(Node):
             'variables': self.variable_set.all().count() if self.id else None
         }
 
-        data = self._build_filtered_dict(
+        data = self._serialize_data(
             fields,
             attributes=attr,
             links={'children': '/'.join([self.link, 'children']), 'members': '/'.join([self.link, 'members'])},
@@ -247,7 +241,7 @@ class Variable(models.Model, RESTfulModelMixin):
 
         setattr(self, 'route', '/'.join([node_child.link, Variable.type]))
 
-        return self._build_filtered_dict(
+        return self._serialize_data(
             fields,
             attributes={'key': self.key, 'value': self.value, 'node': self.node.id},
             links={'self': self.link, 'parent': node_child.link},

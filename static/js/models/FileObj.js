@@ -154,6 +154,8 @@ FileObj.prototype.contentEditor = function () {
 
     };
 
+    console.log(self);
+
     switch (self.get('mime_type').split('/')[1]) {
 
         case 'xml':
@@ -328,7 +330,7 @@ FileObj.prototype.edit = function () {
 
     let self = this;
 
-    return self.read(false, {fields: {attributes: ['name', 'content']}}).then(() => {
+    return self.read(false, {fields: {attributes: ['name', 'content', 'mime_type']}}).then(() => {
 
         if (self.hasOwnProperty('content')) self.contentEditor();
 
