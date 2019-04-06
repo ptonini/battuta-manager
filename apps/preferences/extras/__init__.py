@@ -3,7 +3,7 @@ from django.conf import settings
 from apps.preferences.models import Item
 
 
-def get_preferences():
+def get_prefs(*args):
 
     prefs = dict()
     booleans = list()
@@ -37,7 +37,7 @@ def get_preferences():
 
             prefs[item.name] = item.value
 
-    return prefs
+    return prefs if len(args) == 0 else prefs.get(args[0])
 
 
 def get_default_value(key):

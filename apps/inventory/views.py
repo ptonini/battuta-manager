@@ -17,7 +17,7 @@ from django.core.cache import cache
 from apps.inventory.models import Node, Host, Group, Variable
 from apps.inventory.forms import HostForm, GroupForm, VariableForm
 from apps.inventory.extras import AnsibleInventory, inventory_to_dict, import_from_json, import_from_list
-from apps.preferences.extras import get_preferences
+from apps.preferences.extras import get_prefs
 from main.extras import download_file
 from main.extras.mixins import RESTfulMethods, RESTfulViewMixin
 
@@ -31,7 +31,7 @@ class InventoryView(View):
 
         ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
 
-        if request.user.is_authenticated or ip in get_preferences()['ansible_servers'].split(','):
+        if request.user.is_authenticated or ip in get_prefs('ansible_servers').split(','):
 
             return HttpResponse(json.dumps(inventory_to_dict()), content_type='application/json')
 

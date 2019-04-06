@@ -7,7 +7,7 @@ from django.views.generic import View
 from apps.iam.models import LocalUser,  Credential, LocalGroup
 from apps.iam.forms import LocalUserForm, CredentialForm, LocalGroupForm
 from apps.iam.extras import build_default_cred
-from apps.preferences.extras import get_preferences
+from apps.preferences.extras import get_prefs
 from main.extras.mixins import RESTfulViewMixin
 
 
@@ -34,7 +34,7 @@ class UserView(View, RESTfulViewMixin):
 
         if not request.JSON.get('data', {}).get('attributes', {}).get('timezone'):
 
-            request.JSON['data']['attributes']['timezone'] = get_preferences()['default_timezone']
+            request.JSON['data']['attributes']['timezone'] = get_prefs('default_timezone')
 
         if user.perms(request.user)['editable']:
 
@@ -116,7 +116,7 @@ class CredentialView(View, RESTfulViewMixin):
 
         cred = get_object_or_404(Credential, pk=kwargs['obj_id'])
 
-        placeholder = get_preferences()['password_placeholder']
+        placeholder = get_prefs('password_placeholder')
 
         if cred.perms(request.user)['editable']:
 
@@ -161,6 +161,8 @@ class UserGroupView(View, RESTfulViewMixin):
 
 
 class RelationsView(View, RESTfulViewMixin):
+
+    methods = ['GET', 'POST', 'DELETE']
 
     @staticmethod
     def _build_data(kwargs):
@@ -238,15 +240,11 @@ class RelationsView(View, RESTfulViewMixin):
 
         return self._api_response({'data': data})
 
-    def patch(self, request, **kwargs):
-
-        return HttpResponseNotAllowed(['GET', 'POST', 'DELETE'])
-
     def delete(self, request, **kwargs):
 
         obj, related_class, related_manager = self._build_data(kwargs)
 
-        if obj.perms(request.user)['editable'] and related_class().perms(request.user)['editable']:
+        if obj.perms(request.user)['editable']:
 
             for selected in request.JSON.get('data', []):
 

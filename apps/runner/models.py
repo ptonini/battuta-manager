@@ -5,7 +5,7 @@ from django.core.cache import caches, cache
 
 from main.extras.mixins import RESTfulModelMixin
 from apps.inventory.extras import AnsibleInventory
-from apps.preferences.extras import get_preferences
+from apps.preferences.extras import get_prefs
 from apps.projects.extras import ProjectAuthorizer
 from apps.iam.models import LocalUser, Credential
 
@@ -154,7 +154,7 @@ class Job(models.Model, RESTfulModelMixin):
             'status': self.status,
             'message': self.message,
             'statistics': json.loads(getattr(self, 'statistics', '')),
-            'created': self.created.strftime(get_preferences()['date_format'])
+            'created': self.created.strftime(get_prefs('date_format'))
         }
 
         links = {'self': self.link}

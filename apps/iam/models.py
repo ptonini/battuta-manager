@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 
 from main.extras.mixins import RESTfulModelMixin
-from apps.preferences.extras import get_preferences
+from apps.preferences.extras import get_prefs
 from apps.iam import builtin_groups
 
 
@@ -18,29 +18,25 @@ class LocalUser(AbstractUser, RESTfulModelMixin):
 
     def serialize(self, fields, user):
 
-        prefs = get_preferences()
-
         attr = {
             'username': self.username,
             'first_name': self.first_name,
             'last_name': self.last_name,
             'email': self.email,
-            'date_joined': self.date_joined.strftime(prefs['date_format']),
-            'timezone': self.timezone if self.timezone else prefs['default_timezone'],
+            'date_joined': self.date_joined.strftime(get_prefs('date_format')),
+            'timezone': self.timezone if self.timezone else get_prefs('default_timezone'),
             'is_active': self.is_active,
             'is_superuser': self.is_superuser,
-            'last_login': self.last_login.strftime(prefs['date_format']) if self.last_login else None,
+            'last_login': self.last_login.strftime(get_prefs('date_format')) if self.last_login else None,
         }
 
         links = {
-            'self': '/'.join([self.route, str(self.id)]),
-            Credential.type: '/'.join([self.route, str(self.id), Credential.type]),
-            LocalGroup.type: '/'.join([self.route, str(self.id), LocalGroup.type])
+            'self': self.link,
+            Credential.type: '/'.join([self.link, Credential.type]),
+            LocalGroup.type: '/'.join([self.link, LocalGroup.type])
         }
 
-        meta = self.perms(user)
-
-        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links=links, meta=self.perms(user))
 
     def perms(self, user):
 
@@ -50,15 +46,13 @@ class LocalUser(AbstractUser, RESTfulModelMixin):
             user.id == self.id
         ])
 
-        editable = readable
-
         deletable = all([
             user.has_perm('auth.edit_users'),
             not self.is_superuser,
             user.id != self.id
         ])
 
-        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+        return {'readable': readable, 'editable': readable, 'deletable': deletable}
 
     class Meta:
 
@@ -95,7 +89,7 @@ class Credential(models.Model, RESTfulModelMixin):
 
     def serialize(self, fields, user):
 
-        prefs = get_preferences()
+        placeholder = get_prefs('password_placeholder')
 
         setattr(self, 'route', '/'.join([self.user.route, str(self.user.id), self.type]))
 
@@ -105,32 +99,26 @@ class Credential(models.Model, RESTfulModelMixin):
             'is_shared': self.is_shared,
             'is_default': self == self.user.default_cred,
             'username': self.username,
-            'password': prefs['password_placeholder'] if self.password else None,
-            'rsa_key': prefs['password_placeholder'] if self.rsa_key else None,
+            'password': placeholder if self.password else None,
+            'rsa_key': placeholder if self.rsa_key else None,
             'sudo_user': self.sudo_user,
-            'sudo_pass': prefs['password_placeholder'] if self.sudo_pass else None,
+            'sudo_pass': placeholder if self.sudo_pass else None,
             'ask_pass': self.ask_pass,
             'ask_sudo_pass': self.ask_sudo_pass
         }
 
-        links = {'self': self.link}
-
-        meta = self.perms(user)
-
-        return self._serialize_data(fields, attributes=attr, links=links, meta=meta)
+        return self._serialize_data(fields, attributes=attr, links={'self': self.link}, meta=self.perms(user))
 
     def perms(self, user):
 
         readable = user.has_perm('auth.edit_users') or user.id == self.user.id
-
-        editable = readable
 
         deletable = all([
             self != self.user.default_cred,
             user.has_perm('auth.edit_users') or user.id == self.user.id
         ])
 
-        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+        return {'readable': readable, 'editable': readable, 'deletable': deletable}
 
     class Meta:
 
@@ -167,9 +155,7 @@ class LocalGroup(Group, RESTfulModelMixin):
 
         editable = False if self.name in builtin_groups else user.has_perm('auth.edit_user_groups')
 
-        deletable = editable
-
-        return {'readable': readable, 'editable': editable, 'deletable': deletable}
+        return {'readable': readable, 'editable': editable, 'deletable': editable}
 
     class Meta:
 

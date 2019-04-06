@@ -7,7 +7,7 @@ from ansible.playbook import Playbook
 from ansible.playbook.play import Play as AnsiblePlay
 from ansible.errors import AnsibleParserError
 
-from django.http import HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
@@ -18,17 +18,17 @@ from apps.runner.extras.handlers import JobTableHandler
 
 from apps.iam.models import Credential
 
-from main.extras.mixins import RESTfulViewMixin
+from main.extras.mixins import RESTfulMethods, RESTfulViewMixin
 from apps.files.extras import PlaybookHandler
-from apps.preferences.extras import get_preferences
+from apps.preferences.extras import get_prefs
 from apps.inventory.extras import AnsibleInventory
 
 
-class PlaybookView(View, RESTfulViewMixin):
+class PlaybookView(View, RESTfulMethods):
 
     methods = ['GET']
 
-    def get(self, request, **kwargs):
+    def get(self, request):
 
         data = list()
 
@@ -174,7 +174,7 @@ class JobView(View, RESTfulViewMixin):
 
                 tasks = [{'setup': {}}]
 
-                tasks.append({'ec2_instance_facts': {}}) if get_preferences()['use_ec2_facts'] else None
+                tasks.append({'ec2_instance_facts': {}}) if get_prefs('use_ec2_facts') else None
 
                 run_data['plays'] = [self._build_play_from_tasks(tasks, job_parameters, run_data)]
 
@@ -204,7 +204,7 @@ class JobView(View, RESTfulViewMixin):
 
                 setattr(job, 'data', run_data)
 
-                setattr(job, 'prefs', get_preferences())
+                setattr(job, 'prefs', get_prefs)
 
                 job.save()
 

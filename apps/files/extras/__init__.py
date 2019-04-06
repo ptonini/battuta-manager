@@ -13,7 +13,7 @@ from django.core.exceptions import PermissionDenied
 from main.extras.mixins import RESTfulModelMixin
 from main.extras.signals import clear_authorizer
 
-from apps.preferences.extras import get_preferences
+from apps.preferences.extras import get_prefs
 from apps.projects.extras import ProjectAuthorizer
 
 from apps.files import file_types, mime_types
@@ -396,9 +396,7 @@ class FileHandler(RESTfulModelMixin):
     @property
     def modified(self):
 
-        prefs = get_preferences()
-
-        return datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(prefs['date_format'])
+        return datetime.datetime.fromtimestamp(os.path.getmtime(self.absolute_path)).strftime(get_prefs('date_format'))
 
     @property
     def path_hierarchy(self):
@@ -417,7 +415,7 @@ class FileHandler(RESTfulModelMixin):
 
     def serialize(self, fields=None):
 
-        prefs = get_preferences()
+        # prefs = get_preferences()
 
         file_content = None
 
@@ -439,12 +437,12 @@ class FileHandler(RESTfulModelMixin):
         content_is_readable = all([
             self.type == 'file',
             re.match('|'.join(mime_types['editable']), self.mime_type),
-            self.size <= prefs['max_edit_size'],
+            self.size <= get_prefs('max_edit_size'),
         ])
 
         content_is_requested = fields and 'content' in fields.get('attributes', [])
 
-        if content_is_readable and (content_is_requested or prefs['validate_content_on_read']):
+        if content_is_readable and (content_is_requested or get_prefs('validate_content_on_read')):
 
             with open(self.absolute_path, 'r') as f:
 

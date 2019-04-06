@@ -94,7 +94,8 @@ class BattutaCallback(CallbackBase):
 
             self._execute_query('update', sql_query, (self._current_task_id,))
 
-        sql_query = 'INSERT INTO runner_task (play_id, name, module, is_handler, is_running) VALUES (%s, %s, %s, %s, TRUE)'
+        sql_query = 'INSERT INTO runner_task (play_id, name, module, is_handler, is_running) ' \
+                    'VALUES (%s, %s, %s, %s, TRUE)'
 
         var_tuple = (self._current_play_id, task_name, self._current_task_module, is_handler)
 
@@ -102,13 +103,13 @@ class BattutaCallback(CallbackBase):
 
     def _save_result(self, host, status, message, response):
 
-        if self._job.prefs['truncate_responses']:
+        if self._job.prefs('truncate_responses'):
 
-            for key in self._job.prefs['truncated_keys'].split(','):
+            for key in self._job.prefs('truncated_keys').split(','):
 
                 if key in response:
 
-                    response[key] = self._job.prefs['truncate_msg']
+                    response[key] = self._job.prefs('truncate_msg')
 
         if self._current_task_delegate_to:
 
@@ -170,7 +171,8 @@ class BattutaCallback(CallbackBase):
                 play_name = 'Gather facts'
 
         # Save play to database
-        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts, message) VALUES (%s, %s, %s, %s, %s, %s)'
+        sql_query = 'INSERT INTO runner_play (job_id, name, hosts, become, gather_facts, message) ' \
+                    'VALUES (%s, %s, %s, %s, %s, %s)'
 
         var_tuple = (self._job.id, play_name, hosts, become, self._gather_facts, message)
 
