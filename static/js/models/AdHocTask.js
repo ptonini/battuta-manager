@@ -144,7 +144,7 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
             self.name = self.id ? self.name : '[adhoc task] ' + self.module;
 
-            $form.find('a.module-reference-link').attr('href', 'http://docs.ansible.com/ansible/2.3/'+ self.module + '_module.html');
+            $form.find('a.module-reference-link').attr('href', 'http://docs.ansible.com/ansible/2.7/'+ self.module + '_module.html');
 
             $argumentsContainer.html(Templates.hasOwnProperty(template) ? Templates[template] : '');
 

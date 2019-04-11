@@ -38,7 +38,7 @@ def run_job(job):
     )
     db_conn.autocommit(True)
 
-    with db_conn as cursor:
+    with db_conn.cursor() as cursor:
 
         cursor.execute('UPDATE runner_job SET status=%s, pid=%s WHERE id=%s', ('starting', os.getpid(), job.id))
 

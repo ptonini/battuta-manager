@@ -25,7 +25,7 @@ class RESTfulMethods:
 
 class RESTfulViewMixin(RESTfulMethods):
 
-    methods = ['POST', 'GET', 'PATH', 'DELETE']
+    methods = ['POST', 'GET', 'PATCH', 'DELETE']
 
     def _new_instance(self):
 

@@ -103,13 +103,13 @@ class BattutaCallback(CallbackBase):
 
     def _save_result(self, host, status, message, response):
 
-        if self._job.prefs('truncate_responses'):
+        if self._job.data['truncate_responses']:
 
-            for key in self._job.prefs('truncated_keys').split(','):
+            for key in self._job.data['truncated_keys'].split(','):
 
                 if key in response:
 
-                    response[key] = self._job.prefs('truncate_msg')
+                    response[key] = self._job.data['truncate_msg']
 
         if self._current_task_delegate_to:
 
@@ -123,7 +123,7 @@ class BattutaCallback(CallbackBase):
 
             message = json.dumps(message)
 
-        sql_query = 'INSERT INTO runner_result (host,status,message,response,task_id) VALUES (%s, %s, %s, %s, %s)'
+        sql_query = 'INSERT INTO runner_result (host, status, message, response, task_id) VALUES (%s, %s, %s, %s, %s)'
 
         var_tuple = (host, status, message, json.dumps(response), self._current_task_id)
 

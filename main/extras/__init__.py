@@ -1,7 +1,7 @@
-import json
-
 from pytz import timezone
 from django.http import HttpResponse
+
+from apps.preferences.extras import get_prefs
 
 
 class DataTableRequestHandler:
@@ -29,7 +29,7 @@ class DataTableRequestHandler:
 
         self._user = request.user
 
-        self._tz = timezone(request.user.timezone)
+        self._tz = timezone(request.user.timezone if request.user.timezone else get_prefs('default_timezone'))
 
         i = 0
 

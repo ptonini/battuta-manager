@@ -94,6 +94,9 @@ class JobView(View, RESTfulViewMixin):
                 'inventory': inventory.inventory,
                 'var_manager': inventory.var_manager,
                 'loader': inventory.loader,
+                'truncate_responses': get_prefs('truncate_responses'),
+                'truncated_keys': get_prefs('truncated_keys'),
+                'truncate_msg': get_prefs('truncate_msg')
             }
 
             if request_attr.get('cred', False) == '':
@@ -203,8 +206,6 @@ class JobView(View, RESTfulViewMixin):
                     run_data['rsa_file'] = rsa_file_name
 
                 setattr(job, 'data', run_data)
-
-                setattr(job, 'prefs', get_prefs)
 
                 job.save()
 
