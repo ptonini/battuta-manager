@@ -94,10 +94,13 @@ class JobView(View, RESTfulViewMixin):
                 'inventory': inventory.inventory,
                 'var_manager': inventory.var_manager,
                 'loader': inventory.loader,
-                'truncate_responses': get_prefs('truncate_responses'),
-                'truncated_keys': get_prefs('truncated_keys'),
-                'truncate_msg': get_prefs('truncate_msg')
             }
+
+            if get_prefs('truncate_responses'):
+
+                run_data['truncated_keys'] = get_prefs('truncated_keys'),
+
+                run_data['truncate_msg'] = get_prefs('truncate_msg')
 
             if request_attr.get('cred', False) == '':
 

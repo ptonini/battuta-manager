@@ -103,7 +103,7 @@ class BattutaCallback(CallbackBase):
 
     def _save_result(self, host, status, message, response):
 
-        if self._job.data['truncate_responses']:
+        if self._job.data.get('truncate_keys', False):
 
             for key in self._job.data['truncated_keys'].split(','):
 

@@ -120,15 +120,27 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         } else {
 
-            modal.footer.append(Templates['save-button'].click(() => self.save().then(() => saveCallback())));
+            modal.footer.append(Templates['save-button'].click(() =>
 
-            $runButton.attr('title', 'Save & Run').click(() => self.save().then(() => {
+                self.save().then(() =>
 
-                saveCallback();
+                    saveCallback()
 
-                self.run(rerun);
+                )
 
-            }));
+            ));
+
+            $runButton.attr('title', 'Save & Run').click(() =>
+
+                self.save().then(() => {
+
+                    saveCallback();
+
+                    self.run(rerun);
+
+                })
+
+            );
 
         }
 
@@ -138,13 +150,21 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         $selector.change(function () {
 
+            let isDifferentModule = self.module !== $(this).val();
+
             self.module = $(this).val();
 
             let template = self.module + '-module-fields';
 
-            self.name = self.id ? self.name : '[adhoc task] ' + self.module;
+            if (self.id && self.name) {
 
-            $form.find('a.module-reference-link').attr('href', 'http://docs.ansible.com/ansible/2.7/'+ self.module + '_module.html');
+                let re = new RegExp('^\\[adhoc\\ task\\]\\ (?:' + self.modules.join('|') + ')$');
+
+                self.name = self.name.match(re) ? '[adhoc task] ' + self.module : self.name
+
+            } else self.name = '[adhoc task] ' + self.module;
+
+            $form.find('a.module-reference-link').attr('href', 'https://docs.ansible.com/ansible/latest/modules/'+ self.module + '_module.html');
 
             $argumentsContainer.html(Templates.hasOwnProperty(template) ? Templates[template] : '');
 
@@ -160,11 +180,7 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
             else if (self.module === 'unarchive') $form.find('[data-bind="arguments.src"]').autocomplete({source: Entities.repository.search + '?type=archive'});
 
-            self.hasOwnProperty(arguments) && Object.keys(self.arguments).forEach(function (key) {
-
-                if ($form.find('[data-bind="arguments.' + key + '"]').length === 0) delete self.arguments[key]
-
-            });
+            isDifferentModule && delete self.arguments;
 
         });
 
