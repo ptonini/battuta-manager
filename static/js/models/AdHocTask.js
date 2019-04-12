@@ -120,27 +120,15 @@ AdHocTask.prototype.editor = function (action, rerun=false) {
 
         } else {
 
-            modal.footer.append(Templates['save-button'].click(() =>
+            modal.footer.append(Templates['save-button'].click(() => self.save().then(() => saveCallback())));
 
-                self.save().then(() =>
+            $runButton.attr('title', 'Save & Run').click(() => self.save().then(() => {
 
-                    saveCallback()
+                saveCallback();
 
-                )
+                self.run(rerun);
 
-            ));
-
-            $runButton.attr('title', 'Save & Run').click(() =>
-
-                self.save().then(() => {
-
-                    saveCallback();
-
-                    self.run(rerun);
-
-                })
-
-            );
+            }));
 
         }
 
