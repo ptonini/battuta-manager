@@ -125,7 +125,7 @@ class Host(Node):
 
         data = self._serialize_data(fields, attributes=attr, data=super(Host, self).serialize(fields, user))
 
-        if fields and 'facts' in fields.get('attributes', []):
+        if fields and fields.get('attributes') and 'facts' in fields.get('attributes', []):
 
             data['attributes'] = {'facts': OrderedDict(sorted(facts.items()))}
 
