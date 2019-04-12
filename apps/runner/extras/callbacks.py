@@ -56,7 +56,9 @@ class BattutaCallback(CallbackBase):
 
         if self._current_task_id:
 
-            self._execute_query('update', 'UPDATE runner_task SET is_running=FALSE WHERE play_id=%s', (self._current_play_id,))
+            var_tuple = (self._current_play_id,)
+
+            self._execute_query('update', 'UPDATE runner_task SET is_running=FALSE WHERE play_id=%s', var_tuple)
 
     def _on_task_start(self, task, is_handler=False):
 
@@ -207,7 +209,9 @@ class BattutaCallback(CallbackBase):
                 stats_dict['failures'].get(key, 0)
             ])
 
-        self._execute_query('update', 'UPDATE runner_job SET statistics=%s WHERE id=%s', (json.dumps(stats_list), self._job.id))
+        var_tuple = (json.dumps(stats_list), self._job.id)
+
+        self._execute_query('update', 'UPDATE runner_job SET statistics=%s WHERE id=%s', var_tuple)
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
 
@@ -235,7 +239,11 @@ class BattutaCallback(CallbackBase):
 
         if 'ansible_facts' in response:
 
-            facts_str = self._execute_query('single_value', 'SELECT facts FROM inventory_host WHERE name=%s', (host,))
+            host_id = self._execute_query('single_value', 'SELECT id FROM inventory_node WHERE name=%s', (host,))
+
+            query = 'SELECT facts FROM inventory_host WHERE node_ptr_id=%s'
+
+            facts_str = self._execute_query('single_value', query, (host_id,))
 
             facts = json.loads(facts_str) if facts_str else dict()
 
@@ -257,7 +265,9 @@ class BattutaCallback(CallbackBase):
 
                     facts[key] = new_facts[key]
 
-            self._execute_query('update', 'UPDATE inventory_host SET facts=%s WHERE name=%s', (json.dumps(facts), host))
+            query = 'UPDATE inventory_host SET facts=%s WHERE node_ptr_id=%s'
+
+            self._execute_query('update', query, (json.dumps(facts), host_id))
 
         if self._current_task_module in ['command', 'script', 'shell']:
 

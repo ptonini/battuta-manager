@@ -36,6 +36,7 @@ def run_job(job):
         settings.DATABASES['default']['PASSWORD'],
         settings.DATABASES['default']['NAME']
     )
+    
     db_conn.autocommit(True)
 
     with db_conn.cursor() as cursor:
