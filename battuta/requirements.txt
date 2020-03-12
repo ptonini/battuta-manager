@@ -24,7 +24,7 @@ oauth==1.0.1
 PAM==0.4.2
 paramiko==1.16.0
 prettytable==0.7.2
-psutil==3.4.2
+psutil==5.6.6
 pycrypto==2.6.1
 pycurl==7.19.3
 pygobject==3.12.0
