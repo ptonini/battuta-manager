@@ -33,7 +33,7 @@ pyserial==2.6
 python-apt===0.9.3.5ubuntu2
 python-debian===0.1.21-nmu2ubuntu2
 pytz==2015.7
-PyYAML==3.10
+PyYAML==5.4
 redis==2.10.5
 requests==2.2.1
 rq==0.5.6
