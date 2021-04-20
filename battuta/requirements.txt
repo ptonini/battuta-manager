@@ -1,4 +1,4 @@
-ansible==2.0.0.2
+ansible==2.9.20
 apt-xapian-index==0.45
 chardet==2.0.1
 Cheetah==2.4.4
