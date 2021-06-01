@@ -46,7 +46,7 @@ testresources==1.0.0
 Twisted-Core==13.2.0
 Twisted-Names==13.2.0
 Twisted-Web==13.2.0
-urllib3==1.7.1
+urllib3==1.26.5
 wadllib==1.3.2
 wheel==0.26.0
 zope.interface==4.0.5
