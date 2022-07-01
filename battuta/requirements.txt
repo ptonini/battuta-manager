@@ -41,7 +41,7 @@ SecretStorage==2.0.0
 simplejson==3.3.1
 six==1.5.2
 ssh-import-id==3.21
-supervisor==3.0b2
+supervisor==3.0.1
 testresources==1.0.0
 Twisted-Core==13.2.0
 Twisted-Names==13.2.0
